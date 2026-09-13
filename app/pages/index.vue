@@ -103,12 +103,12 @@ useHead(() => ({
           <li v-for="proof in copy.hero.proofs" :key="proof"><i />{{ proof }}</li>
         </ul>
         <div class="hero__actions">
-          <button class="button button--primary" @click="router.push('/artist')">{{ copy.hero.primaryCta }} <span>↗</span></button>
-          <button class="text-button" @click="scrollTo('#problem')">{{ copy.hero.secondaryCta }} ↓</button>
+          <button class="button button--primary" @click="router.push('/artist')">{{ copy.hero.primaryCta }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
+          <button class="text-button" @click="scrollTo('#problem')">{{ copy.hero.secondaryCta }} <span class="arrow arrow--down" aria-hidden="true" /></button>
         </div>
       </div>
       <CueNetwork :state="searchState" :label="networkLabel" />
-      <p class="hero__edge mono">ARTIST → AVAILABILITY → REQUEST → CONFIRMED</p>
+      <p class="hero__edge mono">ARTIST <span class="arrow arrow--right" aria-hidden="true" /> AVAILABILITY <span class="arrow arrow--right" aria-hidden="true" /> REQUEST <span class="arrow arrow--right" aria-hidden="true" /> CONFIRMED</p>
     </section>
 
     <section id="problem" class="problem section-pad">
@@ -162,7 +162,7 @@ useHead(() => ({
         <label>{{ copy.search.when }}<input type="text" value="24 OCT 2026"></label>
         <label>{{ copy.search.sound }}<input type="text" value="Techno"></label>
         <label class="range-field">{{ copy.search.budget }}<output>1.500 €</output><input type="range" min="300" max="3000" value="1500"></label>
-        <button class="button button--primary" type="submit">{{ searchState === 'searching' ? copy.search.searching : copy.search.button }} <span>↗</span></button>
+        <button class="button button--primary" type="submit">{{ searchState === 'searching' ? copy.search.searching : copy.search.button }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
       </form>
       <div class="results" :class="{ 'results--visible': discoveryVisible }" aria-live="polite">
         <header><strong>{{ copy.search.resultCount }}</strong><span>{{ copy.search.visibility }}</span></header>
@@ -175,7 +175,7 @@ useHead(() => ({
             <p>{{ artist.sound }}</p>
             <span class="availability"><i />{{ copy.search.available }}</span>
             <details><summary>{{ copy.search.why }}</summary><ul><li v-for="reason in copy.search.reasons" :key="reason">{{ reason }}</li></ul></details>
-            <NuxtLink class="artist-link" to="/artist">{{ copy.search.request }} <span>↗</span></NuxtLink>
+            <NuxtLink class="artist-link" to="/artist">{{ copy.search.request }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
           </article>
         </div>
       </div>
@@ -196,7 +196,7 @@ useHead(() => ({
           <div class="access-card__top"><span class="mono">{{ activeRoleData.label }}</span><strong>{{ activeRoleData.account }}</strong></div>
           <h3>{{ activeRoleData.headline }}</h3>
           <ol><li v-for="(step, index) in activeRoleData.steps" :key="step"><span>{{ String(index + 1).padStart(2, '0') }}</span>{{ step }}</li></ol>
-          <button class="button button--primary" @click="openPilot(activeRole + 1)">{{ activeRoleData.cta }} <span>↗</span></button>
+          <button class="button button--primary" @click="openPilot(activeRole + 1)">{{ activeRoleData.cta }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
         </article>
         <aside><i /> <span><strong>{{ copy.access.demoTitle }}</strong>{{ copy.access.demoNote }}</span></aside>
       </div>
@@ -213,7 +213,7 @@ useHead(() => ({
         <p class="eyebrow">{{ copy.cta.eyebrow }}</p>
         <h2>{{ copy.cta.title }}</h2>
         <p>{{ copy.cta.body }}</p>
-        <div class="early-access__actions"><NuxtLink class="button button--primary" to="/artist">{{ copy.cta.demoButton }} <span>↗</span></NuxtLink></div>
+        <div class="early-access__actions"><NuxtLink class="button button--primary" to="/artist">{{ copy.cta.demoButton }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink></div>
         <small>{{ copy.cta.note }}</small>
       </div>
       <ClientOnly>
@@ -225,13 +225,13 @@ useHead(() => ({
     <div class="floating-actions" aria-label="Accesos rápidos">
       <Transition name="floating-control">
         <button v-if="backToTopVisible" class="back-to-top" type="button" :aria-label="copy.cta.topButton" @click="scrollTo('#top')">
-          <span>↑</span>
+          <span class="floating-arrow"><i class="arrow arrow--up" aria-hidden="true" /></span>
         </button>
       </Transition>
       <Transition name="floating-control">
         <button v-if="pilotCtaVisible" class="pilot-float" type="button" @click="openPilot()">
           <span><small>{{ copy.cta.floatLabel }}</small><strong>{{ copy.cta.floatButton }}</strong></span>
-          <i>↓</i>
+          <i class="floating-arrow"><span class="arrow arrow--down" aria-hidden="true" /></i>
         </button>
       </Transition>
     </div>

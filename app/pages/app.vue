@@ -172,7 +172,7 @@ useHead(() => ({ title: locale.value === 'es' ? 'Bandeja de booking | CueBooker'
 
     <section class="workspace-intro">
       <div><p class="eyebrow">{{ role === 'dj' ? 'NARA VOSS / BOOKING' : 'VOID AGENCY / 3 ARTISTS' }}</p><h1>{{ copy.title }}</h1><p>{{ copy.subtitle }}</p></div>
-      <button class="button button--ghost guide-button" @click="startTour">{{ copy.guide }} <span>↗</span></button>
+      <button class="button button--ghost guide-button" @click="startTour">{{ copy.guide }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
     </section>
 
     <nav class="workspace-nav" aria-label="Workspace">
@@ -206,13 +206,13 @@ useHead(() => ({ title: locale.value === 'es' ? 'Bandeja de booking | CueBooker'
             <section><h3>{{ copy.contact }}</h3><dl><div><dt>{{ copy.facts.name }}</dt><dd>{{ selected.promoter.name }}</dd></div><div><dt>{{ copy.facts.email }}</dt><dd>{{ selected.promoter.email }}</dd></div><div v-if="selected.promoter.phone"><dt>{{ copy.facts.phone }}</dt><dd>{{ selected.promoter.phone }}</dd></div><div><dt>{{ copy.facts.source }}</dt><dd>{{ copy.facts.sourceValue }}</dd></div></dl></section>
           </div>
 
-          <section class="message-thread"><h3>{{ copy.conversation }}</h3><article v-for="message in selected.messages" :key="message.id" :class="`message message--${message.actor}`"><header><strong>{{ message.actor === 'artist' ? selected.artistName : selected.promoter.name }}</strong><time>{{ formatTime(message.createdAt) }}</time></header><p>{{ message.body }}</p><a v-for="file in message.attachments" :key="file.id" href="#" @click.prevent>↳ {{ copy.attachment }} · {{ file.name }}</a></article></section>
+          <section class="message-thread"><h3>{{ copy.conversation }}</h3><article v-for="message in selected.messages" :key="message.id" :class="`message message--${message.actor}`"><header><strong>{{ message.actor === 'artist' ? selected.artistName : selected.promoter.name }}</strong><time>{{ formatTime(message.createdAt) }}</time></header><p>{{ message.body }}</p><a v-for="file in message.attachments" :key="file.id" href="#" @click.prevent><span class="arrow arrow--right" aria-hidden="true" /> {{ copy.attachment }} · {{ file.name }}</a></article></section>
 
-          <form id="workspace-reply" class="booking-reply" :class="{ 'tour-focus': tourStep === 3 }" @submit.prevent="sendReply"><label>{{ copy.reply }}<textarea v-model="reply" rows="5" :placeholder="copy.replyPlaceholder" /></label><p>{{ copy.emailNote }}</p><button class="button button--primary" :disabled="!reply.trim()">{{ copy.send }} <span>↗</span></button></form>
+          <form id="workspace-reply" class="booking-reply" :class="{ 'tour-focus': tourStep === 3 }" @submit.prevent="sendReply"><label>{{ copy.reply }}<textarea v-model="reply" rows="5" :placeholder="copy.replyPlaceholder" /></label><p>{{ copy.emailNote }}</p><button class="button button--primary" :disabled="!reply.trim()">{{ copy.send }} <span class="arrow arrow--ne" aria-hidden="true" /></button></form>
 
-          <footer id="workspace-actions" class="booking-actions" :class="{ 'tour-focus': tourStep === 4 }"><NuxtLink class="button button--ghost" :to="`/request?id=${selected.id}`">{{ copy.promoterView }} <span>↗</span></NuxtLink><button v-if="selected.status !== 'confirmed'" class="button button--primary" @click="setStatus(selected.id, 'confirmed')">{{ copy.confirm }} <span>✓</span></button><button v-else class="archive-action" @click="archiveSelected">{{ copy.archive }}</button></footer>
+          <footer id="workspace-actions" class="booking-actions" :class="{ 'tour-focus': tourStep === 4 }"><NuxtLink class="button button--ghost" :to="`/request?id=${selected.id}`">{{ copy.promoterView }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink><button v-if="selected.status !== 'confirmed'" class="button button--primary" @click="setStatus(selected.id, 'confirmed')">{{ copy.confirm }} <span>✓</span></button><button v-else class="archive-action" @click="archiveSelected">{{ copy.archive }}</button></footer>
         </article>
-        <div v-else class="booking-placeholder"><span>↳</span><p>{{ copy.choose }}</p></div>
+        <div v-else class="booking-placeholder"><span><i class="arrow arrow--right" aria-hidden="true" /></span><p>{{ copy.choose }}</p></div>
       </div>
     </section>
 
@@ -232,6 +232,6 @@ useHead(() => ({ title: locale.value === 'es' ? 'Bandeja de booking | CueBooker'
 
     <section v-else class="workspace-panel"><p class="eyebrow">{{ copy.facts.device }}</p><h2>{{ copy.settingsTitle }}</h2><p>{{ copy.settingsBody }}</p><div class="settings-row"><span>{{ copy.facts.language }}</span><div class="locale-control"><button :class="{ active: locale === 'es' }" @click="setLocale('es')">ES</button><button :class="{ active: locale === 'en' }" @click="setLocale('en')">EN</button></div></div><div class="settings-row"><span>{{ copy.facts.appearance }}</span><div class="theme-control"><button v-for="value in ['dark', 'light'] as const" :key="value" :class="{ active: theme === value }" @click="setTheme(value)">{{ value.toUpperCase() }}</button></div></div></section>
 
-    <div v-if="currentTour" class="tour-layer" role="dialog" aria-live="polite"><button class="tour-close" @click="tourStep = -1">×<span class="sr-only">{{ copy.close }}</span></button><span class="mono">{{ String(tourStep + 1).padStart(2, '0') }} / {{ String(copy.tour.length).padStart(2, '0') }}</span><strong>{{ currentTour[0] }}</strong><p>{{ currentTour[1] }}</p><button class="button button--primary" @click="nextTour">{{ tourStep === copy.tour.length - 1 ? copy.finish : copy.next }} <span>↗</span></button></div>
+    <div v-if="currentTour" class="tour-layer" role="dialog" aria-live="polite"><button class="tour-close" @click="tourStep = -1">×<span class="sr-only">{{ copy.close }}</span></button><span class="mono">{{ String(tourStep + 1).padStart(2, '0') }} / {{ String(copy.tour.length).padStart(2, '0') }}</span><strong>{{ currentTour[0] }}</strong><p>{{ currentTour[1] }}</p><button class="button button--primary" @click="nextTour">{{ tourStep === copy.tour.length - 1 ? copy.finish : copy.next }} <span class="arrow arrow--ne" aria-hidden="true" /></button></div>
   </main>
 </template>

@@ -79,7 +79,7 @@ useHead(() => ({
         <strong class="availability"><i /> {{ text.available }}</strong>
         <p>{{ text.about }}</p>
         <nav><a href="#">{{ text.listen }}</a><a href="#">{{ text.live }}</a><a href="#">{{ text.dates }}</a><a href="#">{{ text.epk }}</a></nav>
-        <button class="button button--primary" @click="openRequest">{{ text.request }} <span>↗</span></button>
+        <button class="button button--primary" @click="openRequest">{{ text.request }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
       </div>
     </section>
 
@@ -102,15 +102,15 @@ useHead(() => ({
         <label class="request-demo__message">{{ text.message }}<textarea v-model="form.message" required rows="5" placeholder="Contexto, propuesta, producción y cualquier dato que ayude a decidir."></textarea></label>
         <label class="file-field"><span>{{ text.files }}</span><input multiple type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip" @change="selectFiles"><small v-if="attachments.length">{{ attachments.map(file => file.name).join(' · ') }}</small></label>
         <p class="form-privacy">{{ text.privacy }}</p>
-        <button class="button button--primary" :disabled="sending">{{ sending ? text.sending : text.send }} <span>↗</span></button>
+        <button class="button button--primary" :disabled="sending">{{ sending ? text.sending : text.send }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
       </form>
 
       <div v-else class="request-success">
         <span class="success-signal">✓</span><strong>{{ text.sent }}</strong><p>{{ text.sentBody }}</p>
-        <div><NuxtLink class="button button--primary" :to="`/request?id=${sentBookingId}`">{{ text.promoterView }} <span>↗</span></NuxtLink><NuxtLink class="button button--ghost" :to="`/app?booking=${sentBookingId}`">{{ text.djView }} <span>↗</span></NuxtLink></div>
+        <div><NuxtLink class="button button--primary" :to="`/request?id=${sentBookingId}`">{{ text.promoterView }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink><NuxtLink class="button button--ghost" :to="`/app?booking=${sentBookingId}`">{{ text.djView }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink></div>
       </div>
     </section>
 
-    <NuxtLink class="profile-back" to="/">← {{ text.back }}</NuxtLink>
+    <NuxtLink class="profile-back" to="/"><span class="arrow arrow--left" aria-hidden="true" /> {{ text.back }}</NuxtLink>
   </main>
 </template>

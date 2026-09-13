@@ -83,7 +83,7 @@ watch(() => props.locale, () => setBrevoGlobals())
     </div>
     <div id="success-message" class="sib-form-message-panel pilot-form__message pilot-form__message--success" role="status" aria-live="polite">
       <span class="sib-form-message-panel__inner-text">{{ copy.success }}</span>
-      <NuxtLink class="pilot-form__success-link" to="/artist">{{ copy.successCta }} <span>↗</span></NuxtLink>
+      <NuxtLink class="pilot-form__success-link" to="/artist">{{ copy.successCta }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
     </div>
 
     <form id="sib-form" class="pilot-form__body" method="POST" :action="formAction" data-type="subscription">
@@ -140,7 +140,7 @@ watch(() => props.locale, () => setBrevoGlobals())
 
       <button class="sib-form-block__button sib-form-block__button-with-loader button button--primary" form="sib-form" type="submit">
         <svg class="icon clickable__icon progress-indicator__icon sib-hide-loader-icon" viewBox="0 0 512 512" aria-hidden="true"><path d="M460.116 373.846l-20.823-12.022c-5.541-3.199-7.54-10.159-4.663-15.874 30.137-59.886 28.343-131.652-5.386-189.946-33.641-58.394-94.896-95.833-161.827-99.676C261.028 55.961 256 50.751 256 44.352V20.309c0-6.904 5.808-12.337 12.703-11.982 83.556 4.306 160.163 46.558 202.11 123.677 42.063 72.696 44.079 162.316 6.031 236.832-3.14 6.148-10.75 8.461-16.728 5.01z" /></svg>
-        {{ copy.submit }} <span>↗</span>
+        {{ copy.submit }} <span class="arrow arrow--ne" aria-hidden="true" />
       </button>
 
       <input type="text" name="email_address_check" value="" class="input--hidden" tabindex="-1" autocomplete="off">
