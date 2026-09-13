@@ -5,35 +5,16 @@ import en from '../../content/en/home.json'
 const { locale, theme, setLocale, setTheme } = useCuePreferences()
 const copy = computed(() => locale.value === 'es' ? es : en)
 const menuOpen = ref(false)
-const city = ref('Barcelona')
-const date = ref('24 OCT 2026')
-const sound = ref('Techno')
-const budget = ref(2400)
 const searchState = ref<'idle' | 'searching' | 'found'>('idle')
-const selectedArtist = ref(0)
 const activeRole = ref(0)
 const router = useRouter()
 const activeRoleData = computed(() => copy.value.access.roles[activeRole.value] ?? copy.value.access.roles[0]!)
-
-const artists = [
-  { name: 'NARA VOSS', location: 'BERLIN', genres: 'TECHNO / HARDGROOVE', fee: '€€', match: '94%' },
-  { name: 'MILA RHO', location: 'MADRID', genres: 'DETROIT / RAW', fee: '€€', match: '89%' },
-  { name: 'NULLA', location: 'BARCELONA', genres: 'INDUSTRIAL / LIVE', fee: '€€€', match: '84%' }
-]
 
 const networkLabel = computed(() => {
   if (searchState.value === 'searching') return copy.value.hero.networkSearching
   if (searchState.value === 'found') return copy.value.hero.networkFound
   return copy.value.hero.networkIdle
 })
-
-async function discover() {
-  searchState.value = 'searching'
-  await new Promise(resolve => setTimeout(resolve, 720))
-  searchState.value = 'found'
-  await nextTick()
-  document.querySelector('#results')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
 
 function scrollTo(id: string) {
   menuOpen.value = false
@@ -104,39 +85,7 @@ useHead(() => ({
       <p class="problem__statement">{{ copy.problem.statement }}</p>
     </section>
 
-    <section id="product" class="discovery section-pad">
-      <div class="section-mark mono">{{ copy.search.index }}</div>
-      <div class="section-heading discovery__heading">
-        <p class="eyebrow">{{ copy.search.eyebrow }}</p>
-        <h2>{{ copy.search.title }}</h2>
-        <p>{{ copy.search.body }}</p>
-      </div>
-      <form class="search-panel" @submit.prevent="discover">
-        <label><span>{{ copy.search.where }}</span><input v-model="city"></label>
-        <label><span>{{ copy.search.when }}</span><input v-model="date"></label>
-        <label><span>{{ copy.search.sound }}</span><input v-model="sound"></label>
-        <label class="range-field"><span>{{ copy.search.budget }}</span><output>€1K — €{{ (budget / 1000).toFixed(1) }}K</output><input v-model="budget" type="range" min="1200" max="5000" step="100"></label>
-        <button class="button button--primary" :disabled="searchState === 'searching'">{{ searchState === 'searching' ? copy.search.searching : copy.search.button }} <span>↗</span></button>
-      </form>
-
-      <div id="results" class="results" :class="{ 'results--visible': searchState === 'found' }">
-        <header><strong>{{ copy.search.resultCount }}</strong><span>{{ city }} / {{ sound }} / {{ date }}</span></header>
-        <p class="demo-note">{{ copy.search.resultHint }}</p>
-        <div class="artist-grid">
-          <article v-for="(artist, index) in artists" :key="artist.name" class="artist-result" :class="{ active: selectedArtist === index }" @click="selectedArtist = index">
-            <div class="artist-result__visual"><span>{{ String(index + 1).padStart(2, '0') }}</span><i /></div>
-            <p class="mono">{{ artist.location }} / {{ artist.match }}</p>
-            <h3>{{ artist.name }}</h3>
-            <p>{{ artist.genres }} · {{ artist.fee }}</p>
-            <strong class="availability"><i /> {{ copy.search.available }} · {{ date }}</strong>
-            <details :open="selectedArtist === index"><summary>{{ copy.search.why }}</summary><ul><li v-for="reason in copy.search.reasons" :key="reason">{{ reason }}</li></ul></details>
-            <NuxtLink class="artist-link" to="/artist">{{ copy.search.request }} <span>↗</span></NuxtLink>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="connected section-pad">
+    <section id="product" class="connected section-pad">
       <div class="section-mark mono">{{ copy.flow.index }}</div>
       <div class="section-heading">
         <p class="eyebrow">{{ copy.flow.eyebrow }}</p>
