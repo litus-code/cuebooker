@@ -1,10 +1,49 @@
 {
-  "seo": {"title": "CueBooker | Booking de DJs y música electrónica", "description": "Descubre artistas disponibles, envía una solicitud y gestiona el booking de música electrónica desde un mismo lugar."},
+  "seo": {"title": "CueBooker | Booking para DJs, promotores y agencias", "description": "Centraliza la disponibilidad, las solicitudes y el seguimiento de bookings de música electrónica. Prototipo funcional de CueBooker."},
+  "prototype": "PROTOTIPO FUNCIONAL / EN DESARROLLO",
   "nav": {"problem": "El problema", "product": "Cómo funciona", "roles": "Para quién", "earlyAccess": "Acceso anticipado", "workspace": "Ver workspace"},
-  "hero": {"eyebrow": "BOOKING PARA MÚSICA ELECTRÓNICA", "titleTop": "¿QUIÉN", "titleBottom": "PINCHA DESPUÉS?", "body": "Encuentra artistas que encajan con tu fecha, comprueba su disponibilidad y empieza el booking sin perseguir respuestas por cinco canales.", "primaryCta": "Buscar artistas", "secondaryCta": "Ver el problema", "networkIdle": "RED CUEBOOKER", "networkSearching": "BUSCANDO COINCIDENCIAS", "networkFound": "3 ARTISTAS DISPONIBLES"},
-  "problem": {"index": "01 / EL RUIDO", "eyebrow": "ASÍ SE CIERRAN FECHAS HOY", "title": "Demasiados canales. Ningún estado común.", "body": "Instagram para descubrir. WhatsApp para preguntar. Email para negociar. Una hoja para recordar. Otro calendario para comprobar la fecha. El seguimiento se rompe entre medias.", "quoteOne": "¿Disponible el 24 de octubre?", "quoteTwo": "¿Alguna novedad?", "file": "fechas_artistas_FINAL_v8.xlsx", "statement": "Tenía que existir una forma mejor."},
-  "search": {"index": "02 / DESCUBRE", "eyebrow": "PRUEBA EL PRODUCTO", "title": "Haz que la fecha tenga sentido.", "body": "La demo cruza fecha, sonido, ciudad y presupuesto. La disponibilidad privada sigue bajo el control del artista o su agencia.", "where": "Dónde", "when": "Cuándo", "sound": "Sonido", "budget": "Presupuesto", "button": "Descubrir", "searching": "Buscando", "resultCount": "3 artistas disponibles", "resultHint": "Resultado de demostración. Artistas ficticios.", "available": "Disponible", "request": "Abrir artista", "why": "Por qué encaja", "reasons": ["Disponible en tu fecha", "Sonido compatible", "Dentro del presupuesto"]},
-  "flow": {"index": "03 / CONECTADO", "eyebrow": "DEL DESCUBRIMIENTO A LA FECHA CERRADA", "title": "Un booking. Un hilo. Un siguiente paso.", "body": "El promotor no necesita instalar otra aplicación. Envía la solicitud, recibe las respuestas por email y puede volver al hilo mediante un enlace seguro. El artista o la agencia mantiene el estado, la oferta y el calendario dentro de CueBooker.", "steps": ["Descubre", "Disponible", "Solicitud", "Negocia", "Confirma", "Gestiona"]},
-  "roles": {"index": "04 / TU LADO", "eyebrow": "UNA MISMA RED. TRES FORMAS DE TRABAJAR.", "title": "Cada persona ve lo que necesita.", "items": [{"name": "Promotor o sala", "headline": "Encuentra quién está realmente disponible.", "body": "Busca por fecha y contexto, envía una propuesta completa y sigue la conversación sin perder el hilo."}, {"name": "Artista", "headline": "Convierte una consulta en una fecha cerrada.", "body": "Controla qué disponibilidad muestras, responde ofertas y actualiza tu calendario desde el mismo panel."}, {"name": "Manager o agencia", "headline": "Tu roster, sus calendarios y cada solicitud.", "body": "Dirige las consultas al artista correcto y sabe qué necesita atención sin revisar cadenas de correos."}]},
-  "cta": {"eyebrow": "ACCESO ANTICIPADO / BARCELONA", "title": "Estamos construyendo CueBooker con gente que cierra fechas de verdad.", "body": "Cuéntanos cómo recibes y gestionas tus bookings. Queremos enseñarte el prototipo y escuchar dónde se rompe hoy tu proceso.", "button": "Quiero probar CueBooker", "email": "contacto@carlesfar.com", "note": "Sin inventar promesas. Primero, resolver un flujo real."}
+  "hero": {
+    "eyebrow": "BOOKING PARA MÚSICA ELECTRÓNICA", "titleTop": "¿QUIÉN", "titleBottom": "PINCHA DESPUÉS?",
+    "body": "Encuentra artistas disponibles para tu fecha, envía una solicitud completa y lleva el booking hasta la confirmación desde un mismo hilo.",
+    "primaryCta": "Probar la búsqueda", "secondaryCta": "Ver cómo funciona", "networkIdle": "RED CUEBOOKER", "networkSearching": "BUSCANDO COINCIDENCIAS", "networkFound": "3 ARTISTAS DISPONIBLES",
+    "proofs": ["Disponibilidad controlada por el artista", "Tarifas y datos privados", "Respuestas y seguimiento en un mismo booking"]
+  },
+  "problem": {
+    "index": "01 / EL RUIDO", "eyebrow": "ASÍ SE CIERRAN FECHAS HOY", "title": "Demasiados canales. Ningún estado común.",
+    "body": "El contacto puede empezar en Instagram, WhatsApp, email o una web. CueBooker convierte esa primera conversación en una solicitud ordenada para que el DJ sepa qué responder, qué sigue pendiente y qué fecha ya está cerrada.",
+    "quoteOne": "¿Disponible el 24 de octubre?", "quoteTwo": "¿Alguna novedad?", "file": "fechas_artistas_FINAL_v8.xlsx", "statement": "Cada contacto necesita un siguiente paso."
+  },
+  "search": {
+    "index": "02 / DESCUBRE", "eyebrow": "PRUEBA EL PRODUCTO", "title": "Haz que la fecha tenga sentido.",
+    "body": "La demo cruza fecha, sonido, ciudad y presupuesto. Cada DJ o agencia decide qué disponibilidad comparte y quién recibe la solicitud.",
+    "where": "Dónde", "when": "Cuándo", "sound": "Sonido", "budget": "Presupuesto", "button": "Descubrir", "searching": "Buscando", "resultCount": "3 artistas disponibles", "resultHint": "Resultado de demostración. Artistas ficticios.", "available": "Disponible", "request": "Abrir artista", "why": "Por qué encaja", "reasons": ["Disponible en tu fecha", "Sonido compatible", "Dentro del presupuesto"]
+  },
+  "flow": {
+    "index": "03 / CONECTADO", "eyebrow": "DEL PRIMER CONTACTO A LA FECHA CERRADA", "title": "Un booking. Un hilo. Un siguiente paso.",
+    "body": "El promotor puede explorar y preparar la solicitud sin crear una cuenta. Al enviarla se registra para recibir respuestas, negociar y confirmar. El DJ o la agencia trabaja desde su panel y mantiene el control de la fecha.",
+    "steps": ["Descubre", "Comprueba", "Regístrate", "Solicita", "Negocia", "Confirma"]
+  },
+  "roles": {
+    "index": "04 / QUIÉN EMPIEZA", "eyebrow": "EL DJ ACTIVA SU RED DE BOOKING", "title": "Empieza con artistas. Conecta al resto.",
+    "items": [
+      {"name": "DJ independiente", "headline": "Tu perfil, tu disponibilidad y cada consulta.", "body": "Crea tu cuenta, comparte tu enlace en Instagram, Linktree o tu web y convierte mensajes dispersos en solicitudes que puedes seguir."},
+      {"name": "Promotor o sala", "headline": "Encuentra quién está realmente disponible.", "body": "Explora sin registrarte. Crea tu cuenta cuando envíes la solicitud para recibir respuestas, negociar y confirmar la fecha."},
+      {"name": "Manager o agencia", "headline": "Tu roster sigue bajo tu control.", "body": "Registra la agencia, añade artistas y dirige cada consulta al responsable correcto con permisos, tarifas y calendarios privados."}
+    ]
+  },
+  "access": {
+    "index": "05 / ACCESO", "eyebrow": "UNA CUENTA CUANDO EMPIEZA A APORTAR VALOR", "title": "Así entra cada persona en CueBooker.",
+    "body": "La red nace con DJs y agencias que publican su perfil y controlan su disponibilidad. El promotor entra cuando quiere convertir una búsqueda o un enlace compartido en un booking real.",
+    "selectorLabel": "Selecciona un perfil", "demoTitle": "Prototipo en desarrollo.", "demoNote": " Esta pantalla demuestra el modelo de acceso. El registro, la autenticación y la persistencia compartida se conectarán en la siguiente fase.",
+    "roles": [
+      {"name": "DJ", "label": "ACCESO / ARTISTA", "account": "CUENTA DESDE EL INICIO", "headline": "Publica tu punto de entrada para cada booking.", "steps": ["Crea tu cuenta y perfil", "Configura disponibilidad y privacidad", "Comparte tu enlace", "Recibe y sigue solicitudes"], "cta": "Quiero entrar como DJ", "mailSubject": "CueBooker Early Access - DJ"},
+      {"name": "PROMOTOR", "label": "ACCESO / PROMOTOR", "account": "CUENTA AL ENVIAR", "headline": "Explora primero. Regístrate cuando exista una oportunidad.", "steps": ["Busca o abre el enlace del DJ", "Completa fecha, sala y oferta", "Crea tu cuenta al enviar", "Recibe respuestas y confirma"], "cta": "Quiero entrar como promotor", "mailSubject": "CueBooker Early Access - Promotor"},
+      {"name": "AGENCIA", "label": "ACCESO / MANAGER", "account": "CUENTA DESDE EL INICIO", "headline": "Organiza el roster sin perder el control.", "steps": ["Registra la agencia", "Añade artistas y responsables", "Define permisos y visibilidad", "Gestiona solicitudes y calendarios"], "cta": "Quiero entrar como agencia", "mailSubject": "CueBooker Early Access - Agencia"}
+    ]
+  },
+  "cta": {
+    "eyebrow": "ACCESO ANTICIPADO / BARCELONA", "title": "Estamos construyendo CueBooker con DJs y gente que cierra fechas de verdad.",
+    "body": "Buscamos DJs independientes, agencias y promotores para probar este recorrido antes de abrir los registros. Enséñanos cómo trabajas y participa en las decisiones del producto.",
+    "button": "Quiero probar el prototipo", "email": "contacto@carlesfar.com", "note": "Demo funcional en desarrollo. Los artistas, resultados y solicitudes actuales son simulados."
+  }
 }
