@@ -211,7 +211,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visibl
 .pilot-consent label > span:last-child { color: var(--cue-muted); font-size: 10px; line-height: 1.55; }
 .pilot-field .entry__error:empty { display: none; }
 .pilot-field .entry__error:not(:empty) { background: color-mix(in srgb, #ef7d8f 12%, var(--cue-surface)); border-left: 2px solid #ef7d8f; color: #ef7d8f; display: block; font-size: 10px; margin-top: 8px; padding: 9px; }
-.pilot-captcha { overflow: hidden; }
 .pilot-form .button { background: var(--cue-accent); color: var(--cue-accent-ink); margin-top: 0; width: 100%; }
 .pilot-form .button svg { fill: currentColor; height: 16px; margin-right: 10px; width: 16px; }
 .pilot-form .sib-hide-loader-icon { display: none; }

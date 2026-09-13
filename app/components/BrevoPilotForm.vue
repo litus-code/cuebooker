@@ -24,7 +24,6 @@ const props = defineProps<{
 }>()
 
 const formAction = 'https://d1ad8a2f.sibforms.com/serve/MUIFAGQE5N9rfp14tRWRFWV1_fcaEvwuZz6lMt4E1j4b76VXyRfYSUsLRpnEbQKAe27ksyb4Vxa6dFYuoXgZtAsVxi_J8P7FbcWLbN5wQlgAs7kCBJMOeMIwyD-NSlMNELOxYU3pg0eW0uqU-7Hdx0QlUunbogdTL6xo_58nA2Mc65hgSNpZRVibo6MZ-j59WqrFiEPbekKWZnVvsg=='
-const recaptchaSiteKey = '6LegybktAAAAAOjvgCOcxZPH8ZtG1JZTXeWoe5qE'
 
 useHead({
   link: [
@@ -56,9 +55,6 @@ function setBrevoGlobals() {
     }
   }
   browserWindow.AUTOHIDE = false
-  browserWindow.handleCaptchaResponse = () => {
-    document.getElementById('sib-captcha')?.dispatchEvent(new Event('captchaChange'))
-  }
 }
 
 function loadScript(id: string, src: string) {
@@ -74,17 +70,6 @@ onMounted(async () => {
   await nextTick()
   setBrevoGlobals()
   loadScript('cuebooker-brevo-script', 'https://sibforms.com/forms/end-form/build/main.js')
-
-  const recaptchaSrc = `https://www.google.com/recaptcha/api.js?hl=${props.locale}`
-  const existingRecaptcha = document.getElementById('cuebooker-recaptcha-script') as HTMLScriptElement | null
-  if (!existingRecaptcha) {
-    const script = document.createElement('script')
-    script.id = 'cuebooker-recaptcha-script'
-    script.src = recaptchaSrc
-    script.async = true
-    script.defer = true
-    document.body.appendChild(script)
-  }
 })
 
 watch(() => props.locale, () => setBrevoGlobals())
@@ -140,11 +125,6 @@ watch(() => props.locale, () => setBrevoGlobals())
           <span class="checkbox checkbox_tick_positive" />
           <span>{{ copy.consentText }}</span>
         </label>
-        <label class="entry__error entry__error--primary" />
-      </div>
-
-      <div class="sib-captcha sib-form-block form__entry entry_block pilot-captcha">
-        <div id="sib-captcha" class="g-recaptcha sib-visible-recaptcha" :data-sitekey="recaptchaSiteKey" data-callback="handleCaptchaResponse" />
         <label class="entry__error entry__error--primary" />
       </div>
 
