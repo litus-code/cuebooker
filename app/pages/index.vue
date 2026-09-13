@@ -12,6 +12,8 @@ const budget = ref(2400)
 const searchState = ref<'idle' | 'searching' | 'found'>('idle')
 const selectedArtist = ref(0)
 const activeRole = ref(0)
+const router = useRouter()
+const activeRoleData = computed(() => copy.value.access.roles[activeRole.value] ?? copy.value.access.roles[0]!)
 
 const artists = [
   { name: 'NARA VOSS', location: 'BERLIN', genres: 'TECHNO / HARDGROOVE', fee: '€€', match: '94%' },
@@ -78,7 +80,7 @@ useHead(() => ({
           <li v-for="proof in copy.hero.proofs" :key="proof"><i />{{ proof }}</li>
         </ul>
         <div class="hero__actions">
-          <button class="button button--primary" @click="scrollTo('#product')">{{ copy.hero.primaryCta }} <span>↗</span></button>
+          <button class="button button--primary" @click="router.push('/artist')">{{ copy.hero.primaryCta }} <span>↗</span></button>
           <button class="text-button" @click="scrollTo('#problem')">{{ copy.hero.secondaryCta }} ↓</button>
         </div>
       </div>
@@ -162,10 +164,10 @@ useHead(() => ({
           <button v-for="(role, index) in copy.access.roles" :key="role.name" :class="{ active: activeRole === index }" role="tab" :aria-selected="activeRole === index" @click="activeRole = index">{{ role.name }}</button>
         </div>
         <article class="access-card">
-          <div class="access-card__top"><span class="mono">{{ copy.access.roles[activeRole].label }}</span><strong>{{ copy.access.roles[activeRole].account }}</strong></div>
-          <h3>{{ copy.access.roles[activeRole].headline }}</h3>
-          <ol><li v-for="(step, index) in copy.access.roles[activeRole].steps" :key="step"><span>{{ String(index + 1).padStart(2, '0') }}</span>{{ step }}</li></ol>
-          <a class="button button--primary" :href="`mailto:${copy.cta.email}?subject=${encodeURIComponent(copy.access.roles[activeRole].mailSubject)}`">{{ copy.access.roles[activeRole].cta }} <span>↗</span></a>
+          <div class="access-card__top"><span class="mono">{{ activeRoleData.label }}</span><strong>{{ activeRoleData.account }}</strong></div>
+          <h3>{{ activeRoleData.headline }}</h3>
+          <ol><li v-for="(step, index) in activeRoleData.steps" :key="step"><span>{{ String(index + 1).padStart(2, '0') }}</span>{{ step }}</li></ol>
+          <a class="button button--primary" :href="`mailto:${copy.cta.email}?subject=${encodeURIComponent(activeRoleData.mailSubject)}`">{{ activeRoleData.cta }} <span>↗</span></a>
         </article>
         <aside><i /> <span><strong>{{ copy.access.demoTitle }}</strong>{{ copy.access.demoNote }}</span></aside>
       </div>

@@ -1,12 +1,12 @@
 {
-  "seo": {"title": "CueBooker | Booking for DJs, promoters and agencies", "description": "Centralise availability, requests and electronic music booking follow-up. A functional CueBooker prototype."},
+  "seo": {"title": "CueBooker | Booking management for DJs", "description": "Receive complete requests, reply to promoters by email and control availability, calendar and history inside one booking."},
   "prototype": "FUNCTIONAL PROTOTYPE / IN DEVELOPMENT",
   "nav": {"problem": "The problem", "product": "How it works", "roles": "For whom", "earlyAccess": "Early access", "workspace": "View workspace"},
   "hero": {
-    "eyebrow": "BOOKING FOR ELECTRONIC MUSIC", "titleTop": "WHO", "titleBottom": "PLAYS NEXT?",
-    "body": "Find artists available for your date, send a complete request and take the booking through to confirmation in one connected thread.",
-    "primaryCta": "Try the search", "secondaryCta": "See how it works", "networkIdle": "CUEBOOKER NETWORK", "networkSearching": "SEARCHING MATCHES", "networkFound": "3 AVAILABLE ARTISTS",
-    "proofs": ["Availability controlled by the artist", "Private fees and data", "Replies and follow-up in one booking"]
+    "eyebrow": "BOOKING FOR ELECTRONIC MUSIC DJS", "titleTop": "YOUR NEXT", "titleBottom": "BOOKING",
+    "body": "Share one link, receive the details you need and reply without losing the thread across Instagram, WhatsApp, email and calendar.",
+    "primaryCta": "Try the booking link", "secondaryCta": "See the problem", "networkIdle": "ONE LINK · ONE INBOX", "networkSearching": "STRUCTURING REQUEST", "networkFound": "BOOKING READY TO DECIDE",
+    "proofs": ["No app required for the promoter", "Replies continue by email", "Availability and data stay under your control"]
   },
   "problem": {
     "index": "01 / THE NOISE", "eyebrow": "HOW DATES GET BOOKED TODAY", "title": "Too many channels. No shared state.",
@@ -14,30 +14,30 @@
     "quoteOne": "Available on 24 October?", "quoteTwo": "Any update?", "file": "artist_dates_FINAL_v8.xlsx", "statement": "Every contact needs a next action."
   },
   "search": {
-    "index": "02 / DISCOVER", "eyebrow": "TRY THE PRODUCT", "title": "Make the date make sense.",
-    "body": "The demo crosses date, sound, city and budget. Each DJ or agency decides what availability they share and who receives the request.",
+    "index": "04 / LATER", "eyebrow": "FUTURE VISION · NOT THE INITIAL PROMISE", "title": "Discovery comes after a real network exists.",
+    "body": "Later, opt-in availability can help promoters find options by date, sound, city and budget. First we must prove that DJs use the link and close their own enquiries more effectively.",
     "where": "Where", "when": "When", "sound": "Sound", "budget": "Budget", "button": "Discover", "searching": "Searching", "resultCount": "3 available artists", "resultHint": "Demonstration result. Fictional artists.", "available": "Available", "request": "Open artist", "why": "Why it fits", "reasons": ["Available on your date", "Sound match", "Within budget"]
   },
   "flow": {
     "index": "03 / CONNECTED", "eyebrow": "FROM FIRST CONTACT TO CONFIRMED", "title": "One booking. One thread. One next action.",
-    "body": "The promoter can explore and prepare a request without an account. When sending it, they register to receive replies, negotiate and confirm. The DJ or agency works from their workspace and keeps control of the date.",
-    "steps": ["Discover", "Check", "Register", "Request", "Negotiate", "Confirm"]
+    "body": "The DJ shares a link. The promoter sends a request without creating an account. The reply arrives by email and both sides continue in the same booking until the date is closed.",
+    "steps": ["Share", "Request", "Reply", "Agree", "Confirm", "Calendar"]
   },
   "roles": {
     "index": "04 / WHO STARTS", "eyebrow": "THE DJ ACTIVATES THEIR BOOKING NETWORK", "title": "Start with artists. Connect everyone else.",
     "items": [
       {"name": "Independent DJ", "headline": "Your profile, availability and every enquiry.", "body": "Create your account, share your link on Instagram, Linktree or your website and turn scattered messages into trackable requests."},
-      {"name": "Promoter or venue", "headline": "Find who is actually available.", "body": "Explore without registering. Create an account when you send the request to receive replies, negotiate and confirm the date."},
+      {"name": "Promoter or venue", "headline": "Ask without installing another tool.", "body": "Open the DJ link, send the details and continue from email or a secure page. An account becomes optional after repeated use."},
       {"name": "Manager or agency", "headline": "Your roster stays under your control.", "body": "Register the agency, add artists and route each enquiry to the right person with private permissions, fees and calendars."}
     ]
   },
   "access": {
-    "index": "05 / ACCESS", "eyebrow": "AN ACCOUNT WHEN IT STARTS ADDING VALUE", "title": "How each person enters CueBooker.",
-    "body": "The network starts with DJs and agencies publishing profiles and controlling availability. The promoter enters when they turn a search or shared link into a real booking.",
+    "index": "05 / ACCESS", "eyebrow": "FRICTION ONLY WHEN IT ADDS VALUE", "title": "The DJ gets a workspace. The promoter only needs to reply.",
+    "body": "DJs and agencies create their workspace. A promoter can send the first request without an account and receives secure access to continue the booking.",
     "selectorLabel": "Choose a role", "demoTitle": "Prototype in development.", "demoNote": " This screen demonstrates the access model. Registration, authentication and shared persistence will be connected in the next phase.",
     "roles": [
       {"name": "DJ", "label": "ACCESS / ARTIST", "account": "ACCOUNT FROM THE START", "headline": "Publish the entry point for every booking.", "steps": ["Create your account and profile", "Set availability and privacy", "Share your link", "Receive and track requests"], "cta": "Join as a DJ", "mailSubject": "CueBooker Early Access - DJ"},
-      {"name": "PROMOTER", "label": "ACCESS / PROMOTER", "account": "ACCOUNT WHEN SENDING", "headline": "Explore first. Register when there is an opportunity.", "steps": ["Search or open the DJ link", "Add date, venue and offer", "Create an account when sending", "Receive replies and confirm"], "cta": "Join as a promoter", "mailSubject": "CueBooker Early Access - Promoter"},
+      {"name": "PROMOTER", "label": "ACCESS / PROMOTER", "account": "NO ACCOUNT FOR FIRST CONTACT", "headline": "Send the details and continue from email.", "steps": ["Open the DJ link", "Add date, venue and offer", "Verify your email", "Reply and confirm through a secure link"], "cta": "Test as a promoter", "mailSubject": "CueBooker Early Access - Promoter"},
       {"name": "AGENCY", "label": "ACCESS / MANAGER", "account": "ACCOUNT FROM THE START", "headline": "Organise the roster and keep control.", "steps": ["Register the agency", "Add artists and owners", "Set permissions and visibility", "Manage requests and calendars"], "cta": "Join as an agency", "mailSubject": "CueBooker Early Access - Agency"}
     ]
   },

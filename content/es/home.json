@@ -1,12 +1,12 @@
 {
-  "seo": {"title": "CueBooker | Booking para DJs, promotores y agencias", "description": "Centraliza la disponibilidad, las solicitudes y el seguimiento de bookings de música electrónica. Prototipo funcional de CueBooker."},
+  "seo": {"title": "CueBooker | Gestión de bookings para DJs", "description": "Recibe solicitudes completas, responde al promotor por email y controla disponibilidad, calendario e historial desde un solo booking."},
   "prototype": "PROTOTIPO FUNCIONAL / EN DESARROLLO",
   "nav": {"problem": "El problema", "product": "Cómo funciona", "roles": "Para quién", "earlyAccess": "Acceso anticipado", "workspace": "Ver workspace"},
   "hero": {
-    "eyebrow": "BOOKING PARA MÚSICA ELECTRÓNICA", "titleTop": "¿QUIÉN", "titleBottom": "PINCHA DESPUÉS?",
-    "body": "Encuentra artistas disponibles para tu fecha, envía una solicitud completa y lleva el booking hasta la confirmación desde un mismo hilo.",
-    "primaryCta": "Probar la búsqueda", "secondaryCta": "Ver cómo funciona", "networkIdle": "RED CUEBOOKER", "networkSearching": "BUSCANDO COINCIDENCIAS", "networkFound": "3 ARTISTAS DISPONIBLES",
-    "proofs": ["Disponibilidad controlada por el artista", "Tarifas y datos privados", "Respuestas y seguimiento en un mismo booking"]
+    "eyebrow": "BOOKING PARA DJS DE MÚSICA ELECTRÓNICA", "titleTop": "TU PRÓXIMO", "titleBottom": "BOOKING",
+    "body": "Comparte un enlace, recibe toda la información necesaria y responde sin perder el hilo entre Instagram, WhatsApp, correo y calendario.",
+    "primaryCta": "Probar enlace de booking", "secondaryCta": "Ver el problema", "networkIdle": "UN ENLACE · UNA BANDEJA", "networkSearching": "ORDENANDO SOLICITUD", "networkFound": "BOOKING LISTO PARA DECIDIR",
+    "proofs": ["El promotor no necesita instalar nada", "La respuesta continúa por email", "Disponibilidad y datos siempre bajo tu control"]
   },
   "problem": {
     "index": "01 / EL RUIDO", "eyebrow": "ASÍ SE CIERRAN FECHAS HOY", "title": "Demasiados canales. Ningún estado común.",
@@ -14,30 +14,30 @@
     "quoteOne": "¿Disponible el 24 de octubre?", "quoteTwo": "¿Alguna novedad?", "file": "fechas_artistas_FINAL_v8.xlsx", "statement": "Cada contacto necesita un siguiente paso."
   },
   "search": {
-    "index": "02 / DESCUBRE", "eyebrow": "PRUEBA EL PRODUCTO", "title": "Haz que la fecha tenga sentido.",
-    "body": "La demo cruza fecha, sonido, ciudad y presupuesto. Cada DJ o agencia decide qué disponibilidad comparte y quién recibe la solicitud.",
+    "index": "04 / DESPUÉS", "eyebrow": "VISIÓN FUTURA · NO ES LA PROMESA INICIAL", "title": "Discovery llegará cuando exista una red real.",
+    "body": "Más adelante, la disponibilidad voluntaria podrá ayudar a promotores a encontrar opciones por fecha, sonido, ciudad y presupuesto. Primero debemos demostrar que los DJs usan el enlace y cierran mejor sus propias consultas.",
     "where": "Dónde", "when": "Cuándo", "sound": "Sonido", "budget": "Presupuesto", "button": "Descubrir", "searching": "Buscando", "resultCount": "3 artistas disponibles", "resultHint": "Resultado de demostración. Artistas ficticios.", "available": "Disponible", "request": "Abrir artista", "why": "Por qué encaja", "reasons": ["Disponible en tu fecha", "Sonido compatible", "Dentro del presupuesto"]
   },
   "flow": {
     "index": "03 / CONECTADO", "eyebrow": "DEL PRIMER CONTACTO A LA FECHA CERRADA", "title": "Un booking. Un hilo. Un siguiente paso.",
-    "body": "El promotor puede explorar y preparar la solicitud sin crear una cuenta. Al enviarla se registra para recibir respuestas, negociar y confirmar. El DJ o la agencia trabaja desde su panel y mantiene el control de la fecha.",
-    "steps": ["Descubre", "Comprueba", "Regístrate", "Solicita", "Negocia", "Confirma"]
+    "body": "El DJ comparte su enlace. El promotor envía una solicitud sin crear una cuenta. La respuesta le llega por email y ambas partes continúan en el mismo booking hasta cerrar la fecha.",
+    "steps": ["Comparte", "Solicita", "Responde", "Acuerda", "Confirma", "Calendario"]
   },
   "roles": {
     "index": "04 / QUIÉN EMPIEZA", "eyebrow": "EL DJ ACTIVA SU RED DE BOOKING", "title": "Empieza con artistas. Conecta al resto.",
     "items": [
       {"name": "DJ independiente", "headline": "Tu perfil, tu disponibilidad y cada consulta.", "body": "Crea tu cuenta, comparte tu enlace en Instagram, Linktree o tu web y convierte mensajes dispersos en solicitudes que puedes seguir."},
-      {"name": "Promotor o sala", "headline": "Encuentra quién está realmente disponible.", "body": "Explora sin registrarte. Crea tu cuenta cuando envíes la solicitud para recibir respuestas, negociar y confirmar la fecha."},
+      {"name": "Promotor o sala", "headline": "Pregunta sin instalar otra herramienta.", "body": "Abre el enlace del DJ, envía los datos y continúa desde tu email o un acceso seguro. La cuenta será opcional cuando repitas uso."},
       {"name": "Manager o agencia", "headline": "Tu roster sigue bajo tu control.", "body": "Registra la agencia, añade artistas y dirige cada consulta al responsable correcto con permisos, tarifas y calendarios privados."}
     ]
   },
   "access": {
-    "index": "05 / ACCESO", "eyebrow": "UNA CUENTA CUANDO EMPIEZA A APORTAR VALOR", "title": "Así entra cada persona en CueBooker.",
-    "body": "La red nace con DJs y agencias que publican su perfil y controlan su disponibilidad. El promotor entra cuando quiere convertir una búsqueda o un enlace compartido en un booking real.",
+    "index": "05 / ACCESO", "eyebrow": "FRICCIÓN SOLO CUANDO APORTA VALOR", "title": "El DJ tiene panel. El promotor solo necesita responder.",
+    "body": "DJs y agencias crean su espacio de trabajo. El promotor puede enviar la primera consulta sin cuenta y recibe un acceso seguro para continuar el booking.",
     "selectorLabel": "Selecciona un perfil", "demoTitle": "Prototipo en desarrollo.", "demoNote": " Esta pantalla demuestra el modelo de acceso. El registro, la autenticación y la persistencia compartida se conectarán en la siguiente fase.",
     "roles": [
       {"name": "DJ", "label": "ACCESO / ARTISTA", "account": "CUENTA DESDE EL INICIO", "headline": "Publica tu punto de entrada para cada booking.", "steps": ["Crea tu cuenta y perfil", "Configura disponibilidad y privacidad", "Comparte tu enlace", "Recibe y sigue solicitudes"], "cta": "Quiero entrar como DJ", "mailSubject": "CueBooker Early Access - DJ"},
-      {"name": "PROMOTOR", "label": "ACCESO / PROMOTOR", "account": "CUENTA AL ENVIAR", "headline": "Explora primero. Regístrate cuando exista una oportunidad.", "steps": ["Busca o abre el enlace del DJ", "Completa fecha, sala y oferta", "Crea tu cuenta al enviar", "Recibe respuestas y confirma"], "cta": "Quiero entrar como promotor", "mailSubject": "CueBooker Early Access - Promotor"},
+      {"name": "PROMOTOR", "label": "ACCESO / PROMOTOR", "account": "SIN CUENTA EN EL PRIMER CONTACTO", "headline": "Envía los datos y sigue desde tu correo.", "steps": ["Abre el enlace del DJ", "Completa fecha, sala y oferta", "Verifica tu email", "Responde y confirma con enlace seguro"], "cta": "Quiero probar como promotor", "mailSubject": "CueBooker Early Access - Promotor"},
       {"name": "AGENCIA", "label": "ACCESO / MANAGER", "account": "CUENTA DESDE EL INICIO", "headline": "Organiza el roster sin perder el control.", "steps": ["Registra la agencia", "Añade artistas y responsables", "Define permisos y visibilidad", "Gestiona solicitudes y calendarios"], "cta": "Quiero entrar como agencia", "mailSubject": "CueBooker Early Access - Agencia"}
     ]
   },
