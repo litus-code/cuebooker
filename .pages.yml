@@ -1,0 +1,88 @@
+media:
+  input: public/media
+  output: /media
+
+content:
+  - name: spanish-home
+    label: Página principal, español
+    type: file
+    path: content/es/home.yml
+    format: yaml
+    fields:
+      - name: seo
+        label: SEO
+        type: object
+        fields:
+          - name: title
+            label: Título SEO
+            type: string
+          - name: description
+            label: Descripción SEO
+            type: text
+      - name: hero
+        label: Cabecera
+        type: object
+        fields:
+          - name: eyebrow
+            label: Texto superior
+            type: string
+          - name: title
+            label: Título
+            type: string
+          - name: body
+            label: Texto
+            type: rich-text
+      - name: contact
+        label: Contacto
+        type: object
+        fields:
+          - name: title
+            label: Título
+            type: string
+          - name: body
+            label: Texto
+            type: rich-text
+
+  - name: english-home
+    label: Home page, English
+    type: file
+    path: content/en/home.yml
+    format: yaml
+    fields:
+      - name: seo
+        label: SEO
+        type: object
+        fields:
+          - name: title
+            label: SEO title
+            type: string
+          - name: description
+            label: SEO description
+            type: text
+      - name: hero
+        label: Header
+        type: object
+        fields:
+          - name: eyebrow
+            label: Eyebrow
+            type: string
+          - name: title
+            label: Title
+            type: string
+          - name: body
+            label: Body
+            type: rich-text
+      - name: contact
+        label: Contact
+        type: object
+        fields:
+          - name: title
+            label: Title
+            type: string
+          - name: body
+            label: Body
+            type: rich-text
+
+settings:
+  content:
+    merge: true
