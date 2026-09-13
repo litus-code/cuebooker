@@ -8,6 +8,7 @@ const menuOpen = ref(false)
 const searchState = ref<'idle' | 'searching' | 'found'>('idle')
 const activeRole = ref(0)
 const pilotProfile = ref<number>()
+const discoveryVisible = ref(false)
 const router = useRouter()
 const activeRoleData = computed(() => copy.value.access.roles[activeRole.value] ?? copy.value.access.roles[0]!)
 
@@ -25,6 +26,15 @@ function scrollTo(id: string) {
 function openPilot(profile?: number) {
   pilotProfile.value = profile
   scrollTo('#early-access')
+}
+
+function discoverArtists() {
+  searchState.value = 'searching'
+  discoveryVisible.value = false
+  window.setTimeout(() => {
+    searchState.value = 'found'
+    discoveryVisible.value = true
+  }, 550)
 }
 
 useHead(() => ({
@@ -112,6 +122,37 @@ useHead(() => ({
       <div class="section-mark mono">{{ copy.roles.index }}</div>
       <div class="section-heading"><p class="eyebrow">{{ copy.roles.eyebrow }}</p><h2>{{ copy.roles.title }}</h2></div>
       <div class="role-grid"><article v-for="(item, index) in copy.roles.items" :key="item.name"><span class="mono">0{{ index + 1 }}</span><p class="eyebrow">{{ item.name }}</p><h3>{{ item.headline }}</h3><p>{{ item.body }}</p></article></div>
+    </section>
+
+    <section class="discovery section-pad">
+      <div class="section-mark mono">{{ copy.search.index }}</div>
+      <div class="section-heading discovery__heading">
+        <p class="eyebrow">{{ copy.search.eyebrow }}</p>
+        <h2>{{ copy.search.title }}</h2>
+        <p>{{ copy.search.body }}</p>
+      </div>
+      <form class="search-panel" @submit.prevent="discoverArtists">
+        <label>{{ copy.search.where }}<input type="text" value="Barcelona"></label>
+        <label>{{ copy.search.when }}<input type="text" value="24 OCT 2026"></label>
+        <label>{{ copy.search.sound }}<input type="text" value="Techno"></label>
+        <label class="range-field">{{ copy.search.budget }}<output>1.500 €</output><input type="range" min="300" max="3000" value="1500"></label>
+        <button class="button button--primary" type="submit">{{ searchState === 'searching' ? copy.search.searching : copy.search.button }} <span>↗</span></button>
+      </form>
+      <div class="results" :class="{ 'results--visible': discoveryVisible }" aria-live="polite">
+        <header><strong>{{ copy.search.resultCount }}</strong><span>{{ copy.search.visibility }}</span></header>
+        <p class="demo-note">{{ copy.search.resultHint }}</p>
+        <div class="artist-grid">
+          <article v-for="(artist, index) in copy.search.artists" :key="artist.name" class="artist-result" :class="{ active: index === 0 }">
+            <div class="artist-result__visual"><span>0{{ index + 1 }} / PROFILE</span><i /></div>
+            <p class="mono">{{ artist.city }}</p>
+            <h3>{{ artist.name }}</h3>
+            <p>{{ artist.sound }}</p>
+            <span class="availability"><i />{{ copy.search.available }}</span>
+            <details><summary>{{ copy.search.why }}</summary><ul><li v-for="reason in copy.search.reasons" :key="reason">{{ reason }}</li></ul></details>
+            <NuxtLink class="artist-link" to="/artist">{{ copy.search.request }} <span>↗</span></NuxtLink>
+          </article>
+        </div>
+      </div>
     </section>
 
     <section class="access-model section-pad">

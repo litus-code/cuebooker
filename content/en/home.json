@@ -14,12 +14,13 @@
     "quoteOne": "Available on 24 October?", "quoteTwo": "Any update?", "file": "artist_dates_FINAL_v8.xlsx", "statement": "Every contact needs a next action."
   },
   "search": {
-    "index": "04 / LATER", "eyebrow": "FUTURE VISION · NOT THE INITIAL PROMISE", "title": "Discovery comes after a real network exists.",
-    "body": "Later, opt-in availability can help promoters find options by date, sound, city and budget. First we must prove that DJs use the link and close their own enquiries more effectively.",
-    "where": "Where", "when": "When", "sound": "Sound", "budget": "Budget", "button": "Discover", "searching": "Searching", "resultCount": "3 available artists", "resultHint": "Demonstration result. Fictional artists.", "available": "Available", "request": "Open artist", "why": "Why it fits", "reasons": ["Available on your date", "Sound match", "Within budget"]
+    "index": "05 / DISCOVERY", "eyebrow": "FUTURE VISION · CONCEPT DEMO", "title": "Find DJs who are free when you need them.",
+    "body": "CueBooker will connect the availability each artist chooses to show with searches by date, city, sound and budget. Promoters will discover real options and DJs will gain visibility without publishing their private calendar.",
+    "where": "Where", "when": "When", "sound": "Sound", "budget": "Budget", "button": "Simulate search", "searching": "Finding available DJs", "resultCount": "3 available artists", "resultHint": "Concept demonstration. Artists and results are fictional; connected search is not active yet.", "visibility": "OPT-IN AVAILABILITY", "available": "Available for requests", "request": "View profile and request date", "why": "Why it fits", "reasons": ["Available on your date", "Sound match", "Within budget"],
+    "artists": [{"name": "NØRA", "city": "BARCELONA", "sound": "HYPNOTIC · TECHNO"}, {"name": "KAIRO", "city": "GIRONA", "sound": "DETROIT · GROOVE"}, {"name": "MARA V", "city": "BARCELONA", "sound": "INDUSTRIAL · LIVE"}]
   },
   "flow": {
-    "index": "03 / CONNECTED", "eyebrow": "FROM FIRST CONTACT TO CONFIRMED", "title": "One booking. One thread. One next action.",
+    "index": "02 / CONNECTED", "eyebrow": "FROM FIRST CONTACT TO CONFIRMED", "title": "One booking. One thread. One next action.",
     "body": "The DJ shares a link. The promoter sends a request without creating an account. The reply arrives by email and both sides continue in the same booking until the date is closed.",
     "steps": ["Share", "Request", "Reply", "Agree", "Confirm", "Calendar"]
   },
@@ -42,7 +43,7 @@
     ]
   },
   "access": {
-    "index": "05 / ACCESS", "eyebrow": "FRICTION ONLY WHEN IT ADDS VALUE", "title": "The DJ gets a workspace. The promoter only needs to reply.",
+    "index": "06 / ACCESS", "eyebrow": "FRICTION ONLY WHEN IT ADDS VALUE", "title": "The DJ gets a workspace. The promoter only needs to reply.",
     "body": "DJs and agencies create their workspace. A promoter can send the first request without an account and receives secure access to continue the booking.",
     "selectorLabel": "Choose a role", "demoTitle": "Prototype in development.", "demoNote": " This screen demonstrates the access model. Registration, authentication and shared persistence will be connected in the next phase.",
     "roles": [
@@ -52,10 +53,10 @@
     ]
   },
   "demo": {
-    "index": "06 / DEMO", "eyebrow": "WHAT YOU ARE TESTING", "title": "The experience is real. The connections are still simulated.",
+    "index": "07 / DEMO", "eyebrow": "WHAT YOU ARE TESTING", "title": "The experience is real. The connections are still simulated.",
     "body": "This demonstration lets you complete a request from the artist profile through to the DJ's history.",
     "currentTitle": "✓ Working in this demo", "current": ["Booking form", "Inbox and statuses", "Simulated conversation and attachments", "Calendar, alerts and history"],
-    "realTitle": "○ Planned for the product", "real": ["Accounts and permissions", "Shared database", "Emails and secure links", "Stored files and calendar synchronisation"],
+    "realTitle": "○ Planned for the product", "real": ["Accounts and permissions", "Shared database", "Emails and secure links", "Stored files and calendar synchronisation", "DJ search by availability", "Opt-in visibility without exposing private calendars"],
     "realNote": "These features belong to the connected product and are not active in the public prototype yet."
   },
   "cta": {

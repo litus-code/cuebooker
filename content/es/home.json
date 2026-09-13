@@ -14,12 +14,13 @@
     "quoteOne": "¿Disponible el 24 de octubre?", "quoteTwo": "¿Alguna novedad?", "file": "fechas_artistas_FINAL_v8.xlsx", "statement": "Cada contacto necesita un siguiente paso."
   },
   "search": {
-    "index": "04 / DESPUÉS", "eyebrow": "VISIÓN FUTURA · NO ES LA PROMESA INICIAL", "title": "Discovery llegará cuando exista una red real.",
-    "body": "Más adelante, la disponibilidad voluntaria podrá ayudar a promotores a encontrar opciones por fecha, sonido, ciudad y presupuesto. Primero debemos demostrar que los DJs usan el enlace y cierran mejor sus propias consultas.",
-    "where": "Dónde", "when": "Cuándo", "sound": "Sonido", "budget": "Presupuesto", "button": "Descubrir", "searching": "Buscando", "resultCount": "3 artistas disponibles", "resultHint": "Resultado de demostración. Artistas ficticios.", "available": "Disponible", "request": "Abrir artista", "why": "Por qué encaja", "reasons": ["Disponible en tu fecha", "Sonido compatible", "Dentro del presupuesto"]
+    "index": "05 / DISCOVERY", "eyebrow": "VISIÓN FUTURA · DEMO CONCEPTUAL", "title": "Encuentra DJs que estén libres cuando los necesitas.",
+    "body": "CueBooker conectará la disponibilidad que cada artista decida mostrar con búsquedas por fecha, ciudad, sonido y presupuesto. El promotor descubrirá opciones reales y el DJ ganará visibilidad sin publicar su agenda privada.",
+    "where": "Dónde", "when": "Cuándo", "sound": "Sonido", "budget": "Presupuesto", "button": "Simular búsqueda", "searching": "Buscando DJs disponibles", "resultCount": "3 artistas disponibles", "resultHint": "Demostración conceptual. Los artistas y resultados son ficticios; el buscador conectado todavía no está activo.", "visibility": "DISPONIBILIDAD VOLUNTARIA", "available": "Disponible para solicitudes", "request": "Ver perfil y solicitar fecha", "why": "Por qué encaja", "reasons": ["Disponible en tu fecha", "Sonido compatible", "Dentro del presupuesto"],
+    "artists": [{"name": "NØRA", "city": "BARCELONA", "sound": "HYPNOTIC · TECHNO"}, {"name": "KAIRO", "city": "GIRONA", "sound": "DETROIT · GROOVE"}, {"name": "MARA V", "city": "BARCELONA", "sound": "INDUSTRIAL · LIVE"}]
   },
   "flow": {
-    "index": "03 / CONECTADO", "eyebrow": "DEL PRIMER CONTACTO A LA FECHA CERRADA", "title": "Un booking. Un hilo. Un siguiente paso.",
+    "index": "02 / CONECTADO", "eyebrow": "DEL PRIMER CONTACTO A LA FECHA CERRADA", "title": "Un booking. Un hilo. Un siguiente paso.",
     "body": "El DJ comparte su enlace. El promotor envía una solicitud sin crear una cuenta. La respuesta le llega por email y ambas partes continúan en el mismo booking hasta cerrar la fecha.",
     "steps": ["Comparte", "Solicita", "Responde", "Acuerda", "Confirma", "Calendario"]
   },
@@ -42,7 +43,7 @@
     ]
   },
   "access": {
-    "index": "05 / ACCESO", "eyebrow": "FRICCIÓN SOLO CUANDO APORTA VALOR", "title": "El DJ tiene panel. El promotor solo necesita responder.",
+    "index": "06 / ACCESO", "eyebrow": "FRICCIÓN SOLO CUANDO APORTA VALOR", "title": "El DJ tiene panel. El promotor solo necesita responder.",
     "body": "DJs y agencias crean su espacio de trabajo. El promotor puede enviar la primera consulta sin cuenta y recibe un acceso seguro para continuar el booking.",
     "selectorLabel": "Selecciona un perfil", "demoTitle": "Prototipo en desarrollo.", "demoNote": " Esta pantalla demuestra el modelo de acceso. El registro, la autenticación y la persistencia compartida se conectarán en la siguiente fase.",
     "roles": [
@@ -52,10 +53,10 @@
     ]
   },
   "demo": {
-    "index": "06 / DEMO", "eyebrow": "QUÉ ESTÁS PROBANDO", "title": "La experiencia es real. Las conexiones aún son simuladas.",
+    "index": "07 / DEMO", "eyebrow": "QUÉ ESTÁS PROBANDO", "title": "La experiencia es real. Las conexiones aún son simuladas.",
     "body": "Esta demostración permite recorrer una solicitud completa desde el perfil del artista hasta el historial del DJ.",
     "currentTitle": "✓ Funcional en esta demo", "current": ["Formulario de booking", "Bandeja y estados", "Conversación y adjuntos simulados", "Calendario, alertas e historial"],
-    "realTitle": "○ Previsto para el producto", "real": ["Cuentas y permisos", "Base de datos compartida", "Emails y enlaces seguros", "Archivos almacenados y calendario sincronizado"],
+    "realTitle": "○ Previsto para el producto", "real": ["Cuentas y permisos", "Base de datos compartida", "Emails y enlaces seguros", "Archivos almacenados y calendario sincronizado", "Buscador de DJs por disponibilidad", "Visibilidad voluntaria sin exponer la agenda privada"],
     "realNote": "Estas funciones forman parte del producto conectado y todavía no están activas en el prototipo público."
   },
   "cta": {
