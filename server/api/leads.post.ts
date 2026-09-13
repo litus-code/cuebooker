@@ -1,1 +1,4 @@
-m«ëð¢¹,¥§þÇ+j×!ÿ×Z]^ïß_ë÷.yº(‘êç»±êïz¿Ú¦/åy§l¦‹-¶Ãh²ç!~)^¢·b­ç-¢¼
+export default defineEventHandler(() => ({
+  ok: true,
+  message: 'CueBooker demo API placeholder',
+}))
