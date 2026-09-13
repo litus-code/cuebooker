@@ -6,15 +6,23 @@ export default defineNuxtConfig({
   css: [resolve('./assets/css/main.css')],
   app: {
     head: {
-      htmlAttrs: { lang: 'es' },
-      link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
-    },
+      htmlAttrs: { lang: 'en' },
+      title: 'CueBooker · The booking experience electronic music has been waiting for',
+      meta: [
+        {
+          name: 'description',
+          content: 'Discover available electronic music artists, send booking requests and manage every date from one connected workspace.'
+        }
+      ]
+    }
   },
-  nitro: {
-    preset: 'cloudflare-pages',
-  },
-  runtimeConfig: {
-    resendApiKey: '',
-    contactEmail: 'contacto@carlesfar.com',
-  },
+  nitro: { preset: 'cloudflare-pages' },
+  i18n: {
+    defaultLocale: 'en',
+    strategy: 'prefix_except_default',
+    locales: [
+      { code: 'en', language: 'en-GB', name: 'English' },
+      { code: 'es', language: 'es-ES', name: 'Español' }
+    ]
+  }
 })
