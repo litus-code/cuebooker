@@ -1,5 +1,5 @@
 export type CueLocale = 'es' | 'en'
-export type CueTheme = 'dark' | 'light' | 'system'
+export type CueTheme = 'dark' | 'light'
 
 export function useCuePreferences() {
   const locale = useState<CueLocale>('cue-locale', () => 'es')
@@ -7,10 +7,7 @@ export function useCuePreferences() {
 
   const applyTheme = (value: CueTheme) => {
     if (!import.meta.client) return
-    const resolved = value === 'system'
-      ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
-      : value
-    document.documentElement.dataset.theme = resolved
+    document.documentElement.dataset.theme = value
     document.documentElement.dataset.themePreference = value
   }
 
@@ -29,10 +26,8 @@ export function useCuePreferences() {
     const storedLocale = localStorage.getItem('cuebooker-locale') as CueLocale | null
     const storedTheme = localStorage.getItem('cuebooker-theme') as CueTheme | null
     if (storedLocale === 'es' || storedLocale === 'en') locale.value = storedLocale
-    if (storedTheme === 'dark' || storedTheme === 'light' || storedTheme === 'system') theme.value = storedTheme
+    if (storedTheme === 'dark' || storedTheme === 'light') theme.value = storedTheme
     applyTheme(theme.value)
-    const media = window.matchMedia('(prefers-color-scheme: light)')
-    media.addEventListener('change', () => theme.value === 'system' && applyTheme('system'))
   })
 
   return { locale, theme, setLocale, setTheme }
