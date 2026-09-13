@@ -54,8 +54,9 @@
   "demo": {
     "index": "06 / DEMO", "eyebrow": "QUÉ ESTÁS PROBANDO", "title": "La experiencia es real. Las conexiones aún son simuladas.",
     "body": "Esta demostración permite recorrer una solicitud completa desde el perfil del artista hasta el historial del DJ.",
-    "currentTitle": "Disponible en la demo", "current": ["Formulario de booking", "Bandeja y estados", "Conversación y adjuntos simulados", "Calendario, alertas e historial"],
-    "realTitle": "Producto conectado", "real": ["Cuentas y permisos", "Base de datos compartida", "Emails y enlaces seguros", "Archivos almacenados y calendario sincronizado"]
+    "currentTitle": "✓ Funcional en esta demo", "current": ["Formulario de booking", "Bandeja y estados", "Conversación y adjuntos simulados", "Calendario, alertas e historial"],
+    "realTitle": "○ Previsto para el producto", "real": ["Cuentas y permisos", "Base de datos compartida", "Emails y enlaces seguros", "Archivos almacenados y calendario sincronizado"],
+    "realNote": "Estas funciones forman parte del producto conectado y todavía no están activas en el prototipo público."
   },
   "cta": {
     "eyebrow": "ACCESO ANTICIPADO / BARCELONA", "title": "Estamos construyendo CueBooker con DJs y gente que cierra fechas de verdad.",
