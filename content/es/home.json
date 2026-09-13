@@ -60,6 +60,16 @@
   "cta": {
     "eyebrow": "ACCESO ANTICIPADO / BARCELONA", "title": "Estamos construyendo CueBooker con DJs y gente que cierra fechas de verdad.",
     "body": "Buscamos DJs independientes, agencias y promotores para probar este recorrido antes de abrir los registros. Enséñanos cómo trabajas y participa en las decisiones del producto.",
-    "button": "Participar en el piloto", "demoButton": "Probar una solicitud", "email": "contacto@carlesfar.com", "note": "Demo funcional en desarrollo. Los artistas, resultados y solicitudes actuales son simulados."
+    "button": "Participar en el piloto", "demoButton": "Probar una solicitud", "email": "contacto@carlesfar.com", "note": "Demo funcional en desarrollo. Los artistas, resultados y solicitudes actuales son simulados.",
+    "form": {
+      "title": "Prueba CueBooker antes que nadie",
+      "body": "Déjanos tus datos para probar el prototipo y ayudarnos a construirlo desde tu forma real de trabajar.",
+      "nameLabel": "Nombre", "namePlaceholder": "¿Cómo te llamas?",
+      "emailLabel": "Correo electrónico", "emailPlaceholder": "tu@email.com", "emailHelp": "Usaremos tu correo para informarte sobre las pruebas de CueBooker.",
+      "profileLabel": "¿Cuál es tu perfil?", "profiles": ["DJ independiente", "Manager o agencia", "Promotor, sala o festival"],
+      "consentLabel": "Consentimiento", "consentText": "Acepto que CueBooker utilice mis datos para contactarme sobre las pruebas del prototipo y enviarme novedades relacionadas con el proyecto.",
+      "submit": "Quiero probar CueBooker", "success": "Hemos recibido tus datos. Ya formas parte de las primeras pruebas de CueBooker. Te contactaremos cuando abramos el acceso al prototipo.",
+      "invalid": "Los datos introducidos no son válidos. Revisa el correo electrónico y vuelve a intentarlo.", "required": "Este campo es obligatorio.", "loading": "Cargando formulario seguro…"
+    }
   }
 }

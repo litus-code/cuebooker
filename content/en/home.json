@@ -60,6 +60,16 @@
   "cta": {
     "eyebrow": "EARLY ACCESS / BARCELONA", "title": "We are building CueBooker with DJs and people who book real dates.",
     "body": "We are looking for independent DJs, agencies and promoters to test this flow before registration opens. Show us how you work and take part in product decisions.",
-    "button": "Join the pilot", "demoButton": "Try a booking request", "email": "contacto@carlesfar.com", "note": "Functional prototype in development. Current artists, results and requests are simulated."
+    "button": "Join the pilot", "demoButton": "Try a booking request", "email": "contacto@carlesfar.com", "note": "Functional prototype in development. Current artists, results and requests are simulated.",
+    "form": {
+      "title": "Try CueBooker before anyone else",
+      "body": "Leave your details to test the prototype and help us build it around the way you actually work.",
+      "nameLabel": "Name", "namePlaceholder": "What is your name?",
+      "emailLabel": "Email address", "emailPlaceholder": "you@email.com", "emailHelp": "We will use your email to contact you about CueBooker testing.",
+      "profileLabel": "What is your role?", "profiles": ["Independent DJ", "Manager or agency", "Promoter, venue or festival"],
+      "consentLabel": "Consent", "consentText": "I agree that CueBooker may use my data to contact me about prototype tests and send project-related updates.",
+      "submit": "I want to test CueBooker", "success": "We have received your details. You are now part of CueBooker's first test group. We will contact you when prototype access opens.",
+      "invalid": "The information is not valid. Check your email address and try again.", "required": "This field is required.", "loading": "Loading secure form…"
+    }
   }
 }

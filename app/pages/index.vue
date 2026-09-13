@@ -7,6 +7,7 @@ const copy = computed(() => locale.value === 'es' ? es : en)
 const menuOpen = ref(false)
 const searchState = ref<'idle' | 'searching' | 'found'>('idle')
 const activeRole = ref(0)
+const pilotProfile = ref<number>()
 const router = useRouter()
 const activeRoleData = computed(() => copy.value.access.roles[activeRole.value] ?? copy.value.access.roles[0]!)
 
@@ -19,6 +20,11 @@ const networkLabel = computed(() => {
 function scrollTo(id: string) {
   menuOpen.value = false
   document.querySelector(id)?.scrollIntoView({ behavior: 'smooth' })
+}
+
+function openPilot(profile?: number) {
+  pilotProfile.value = profile
+  scrollTo('#early-access')
 }
 
 useHead(() => ({
@@ -123,7 +129,7 @@ useHead(() => ({
           <div class="access-card__top"><span class="mono">{{ activeRoleData.label }}</span><strong>{{ activeRoleData.account }}</strong></div>
           <h3>{{ activeRoleData.headline }}</h3>
           <ol><li v-for="(step, index) in activeRoleData.steps" :key="step"><span>{{ String(index + 1).padStart(2, '0') }}</span>{{ step }}</li></ol>
-          <a class="button button--primary" :href="`mailto:${copy.cta.email}?subject=${encodeURIComponent(activeRoleData.mailSubject)}`">{{ activeRoleData.cta }} <span>↗</span></a>
+          <button class="button button--primary" @click="openPilot(activeRole + 1)">{{ activeRoleData.cta }} <span>↗</span></button>
         </article>
         <aside><i /> <span><strong>{{ copy.access.demoTitle }}</strong>{{ copy.access.demoNote }}</span></aside>
       </div>
@@ -136,11 +142,17 @@ useHead(() => ({
     </section>
 
     <section id="early-access" class="early-access section-pad">
-      <p class="eyebrow">{{ copy.cta.eyebrow }}</p>
-      <h2>{{ copy.cta.title }}</h2>
-      <p>{{ copy.cta.body }}</p>
-      <div class="early-access__actions"><NuxtLink class="button button--primary" to="/artist">{{ copy.cta.demoButton }} <span>↗</span></NuxtLink><a class="button button--ghost" :href="`mailto:${copy.cta.email}?subject=CueBooker%20Pilot`">{{ copy.cta.button }} <span>↗</span></a></div>
-      <small>{{ copy.cta.note }}</small>
+      <div class="early-access__copy">
+        <p class="eyebrow">{{ copy.cta.eyebrow }}</p>
+        <h2>{{ copy.cta.title }}</h2>
+        <p>{{ copy.cta.body }}</p>
+        <div class="early-access__actions"><NuxtLink class="button button--primary" to="/artist">{{ copy.cta.demoButton }} <span>↗</span></NuxtLink></div>
+        <small>{{ copy.cta.note }}</small>
+      </div>
+      <ClientOnly>
+        <BrevoPilotForm :copy="copy.cta.form" :locale="locale" :profile="pilotProfile" />
+        <template #fallback><div class="pilot-form pilot-form--loading">{{ copy.cta.form.loading }}</div></template>
+      </ClientOnly>
     </section>
 
     <footer class="site-footer"><span>CUEBOOKER / 2026</span><span>RAW · MECHANICAL · HUMAN</span><a :href="`mailto:${copy.cta.email}`">{{ copy.cta.email }}</a></footer>
