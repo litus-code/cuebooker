@@ -9,6 +9,8 @@ const searchState = ref<'idle' | 'searching' | 'found'>('idle')
 const activeRole = ref(0)
 const pilotProfile = ref<number>()
 const discoveryVisible = ref(false)
+const pilotCtaVisible = ref(true)
+const backToTopVisible = ref(false)
 const router = useRouter()
 const activeRoleData = computed(() => copy.value.access.roles[activeRole.value] ?? copy.value.access.roles[0]!)
 
@@ -22,6 +24,30 @@ function scrollTo(id: string) {
   menuOpen.value = false
   document.querySelector(id)?.scrollIntoView({ behavior: 'smooth' })
 }
+
+function updateBackToTop() {
+  backToTopVisible.value = window.scrollY > Math.max(520, window.innerHeight * 0.7)
+}
+
+let pilotObserver: IntersectionObserver | undefined
+
+onMounted(() => {
+  updateBackToTop()
+  window.addEventListener('scroll', updateBackToTop, { passive: true })
+
+  const earlyAccess = document.querySelector('#early-access')
+  if (earlyAccess) {
+    pilotObserver = new IntersectionObserver(([entry]) => {
+      pilotCtaVisible.value = !entry?.isIntersecting
+    }, { threshold: 0.08 })
+    pilotObserver.observe(earlyAccess)
+  }
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', updateBackToTop)
+  pilotObserver?.disconnect()
+})
 
 function openPilot(profile?: number) {
   pilotProfile.value = profile
@@ -195,6 +221,20 @@ useHead(() => ({
         <template #fallback><div class="pilot-form pilot-form--loading">{{ copy.cta.form.loading }}</div></template>
       </ClientOnly>
     </section>
+
+    <div class="floating-actions" aria-label="Accesos rápidos">
+      <Transition name="floating-control">
+        <button v-if="backToTopVisible" class="back-to-top" type="button" :aria-label="copy.cta.topButton" @click="scrollTo('#top')">
+          <span>↑</span>
+        </button>
+      </Transition>
+      <Transition name="floating-control">
+        <button v-if="pilotCtaVisible" class="pilot-float" type="button" @click="openPilot()">
+          <span><small>{{ copy.cta.floatLabel }}</small><strong>{{ copy.cta.floatButton }}</strong></span>
+          <i>↓</i>
+        </button>
+      </Transition>
+    </div>
 
     <footer class="site-footer"><span>CUEBOOKER / 2026</span><span>RAW · MECHANICAL · HUMAN</span><a :href="`mailto:${copy.cta.email}`">{{ copy.cta.email }}</a></footer>
   </main>

@@ -13,6 +13,7 @@ type PilotFormCopy = {
   consentText: string
   submit: string
   success: string
+  successCta: string
   invalid: string
   required: string
 }
@@ -82,6 +83,7 @@ watch(() => props.locale, () => setBrevoGlobals())
     </div>
     <div id="success-message" class="sib-form-message-panel pilot-form__message pilot-form__message--success" role="status" aria-live="polite">
       <span class="sib-form-message-panel__inner-text">{{ copy.success }}</span>
+      <NuxtLink class="pilot-form__success-link" to="/artist">{{ copy.successCta }} <span>↗</span></NuxtLink>
     </div>
 
     <form id="sib-form" class="pilot-form__body" method="POST" :action="formAction" data-type="subscription">

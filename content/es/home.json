@@ -60,17 +60,17 @@
     "realNote": "Estas funciones forman parte del producto conectado y todavía no están activas en el prototipo público."
   },
   "cta": {
-    "eyebrow": "ACCESO ANTICIPADO / BARCELONA", "title": "Estamos construyendo CueBooker con DJs y gente que cierra fechas de verdad.",
-    "body": "Buscamos DJs independientes, agencias y promotores para probar este recorrido antes de abrir los registros. Enséñanos cómo trabajas y participa en las decisiones del producto.",
-    "button": "Participar en el piloto", "demoButton": "Probar una solicitud", "email": "contacto@carlesfar.com", "note": "Demo funcional en desarrollo. Los artistas, resultados y solicitudes actuales son simulados.",
+    "eyebrow": "ACCESO ANTICIPADO / BARCELONA", "title": "La demo ya está abierta. La siguiente versión queremos probarla contigo.",
+    "body": "Puedes recorrer ahora una solicitud simulada sin registrarte. Si eres DJ, manager, agencia o promotor, déjanos tus datos para acceder a próximas pruebas y contarnos qué encaja o falla en tu forma real de trabajar.",
+    "button": "Participar en el piloto", "demoButton": "Probar la demo ahora", "floatLabel": "PARTICIPA EN EL PILOTO", "floatButton": "Quiero probarlo", "topButton": "Volver arriba", "email": "contacto@carlesfar.com", "note": "La demo pública no requiere registro. Los artistas, resultados y solicitudes actuales son simulados.",
     "form": {
-      "title": "Prueba CueBooker antes que nadie",
-      "body": "Déjanos tus datos para probar el prototipo y ayudarnos a construirlo desde tu forma real de trabajar.",
+      "title": "Prueba las próximas versiones de CueBooker",
+      "body": "La demo pública ya está disponible sin registro. Déjanos tus datos si quieres acceder a las siguientes pruebas y enviarnos feedback desde tu experiencia real.",
       "nameLabel": "Nombre", "namePlaceholder": "¿Cómo te llamas?",
       "emailLabel": "Correo electrónico", "emailPlaceholder": "tu@email.com", "emailHelp": "Usaremos tu correo para informarte sobre las pruebas de CueBooker.",
       "profileLabel": "¿Cuál es tu perfil?", "profiles": ["DJ independiente", "Manager o agencia", "Promotor, sala o festival"],
       "consentLabel": "Consentimiento", "consentText": "Acepto que CueBooker utilice mis datos para contactarme sobre las pruebas del prototipo y enviarme novedades relacionadas con el proyecto.",
-      "submit": "Quiero probar CueBooker", "success": "Hemos recibido tus datos. Ya formas parte de las primeras pruebas de CueBooker. Te contactaremos cuando abramos el acceso al prototipo.",
+      "submit": "Quiero probar CueBooker", "success": "Hemos recibido tus datos. Ya formas parte de las próximas pruebas de CueBooker. Mientras tanto, puedes recorrer la demo pública ahora mismo.", "successCta": "Abrir la demo",
       "invalid": "Los datos introducidos no son válidos. Revisa el correo electrónico y vuelve a intentarlo.", "required": "Este campo es obligatorio.", "loading": "Cargando formulario seguro…"
     }
   }
