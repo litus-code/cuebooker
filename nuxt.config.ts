@@ -5,6 +5,7 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   css: [resolve('./assets/css/main.css')],
   app: {
+    baseURL: process.env.NUXT_APP_BASE_URL || '/',
     head: {
       htmlAttrs: { lang: 'en' },
       title: 'CueBooker · The booking experience electronic music has been waiting for',
@@ -16,7 +17,7 @@ export default defineNuxtConfig({
       ]
     }
   },
-  nitro: { preset: 'cloudflare-pages' },
+  nitro: { preset: process.env.NITRO_PRESET || 'static' },
   i18n: {
     defaultLocale: 'en',
     strategy: 'prefix_except_default',
