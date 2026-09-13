@@ -76,7 +76,7 @@ watch(() => props.locale, () => setBrevoGlobals())
 </script>
 
 <template>
-  <div class="pilot-form" aria-labelledby="pilot-form-title">
+  <div id="sib-form-container" class="pilot-form" aria-labelledby="pilot-form-title">
     <div id="error-message" class="sib-form-message-panel pilot-form__message pilot-form__message--error" role="alert" aria-live="polite">
       <span class="sib-form-message-panel__inner-text">{{ copy.invalid }}</span>
     </div>
@@ -91,41 +91,49 @@ watch(() => props.locale, () => setBrevoGlobals())
         <p>{{ copy.body }}</p>
       </header>
 
-      <div class="sib-input sib-form-block form__entry entry_block pilot-field">
-        <label class="entry__label" for="FIRSTNAME" data-required="*">{{ copy.nameLabel }}</label>
-        <div class="entry__field">
-          <input id="FIRSTNAME" class="input" name="FIRSTNAME" type="text" maxlength="200" autocomplete="name" :placeholder="copy.namePlaceholder" data-required="true" required>
+      <div class="sib-input sib-form-block">
+        <div class="form__entry entry_block pilot-field">
+          <label class="entry__label" for="FIRSTNAME" data-required="*">{{ copy.nameLabel }}</label>
+          <div class="entry__field">
+            <input id="FIRSTNAME" class="input" name="FIRSTNAME" type="text" maxlength="200" autocomplete="name" :placeholder="copy.namePlaceholder" data-required="true" required>
+          </div>
+          <label class="entry__error entry__error--primary" />
         </div>
-        <label class="entry__error entry__error--primary" />
       </div>
 
-      <div class="sib-input sib-form-block form__entry entry_block pilot-field">
-        <label class="entry__label" for="EMAIL" data-required="*">{{ copy.emailLabel }}</label>
-        <div class="entry__field">
-          <input id="EMAIL" class="input" name="EMAIL" type="email" autocomplete="email" :placeholder="copy.emailPlaceholder" data-required="true" required>
+      <div class="sib-input sib-form-block">
+        <div class="form__entry entry_block pilot-field">
+          <label class="entry__label" for="EMAIL" data-required="*">{{ copy.emailLabel }}</label>
+          <div class="entry__field">
+            <input id="EMAIL" class="input" name="EMAIL" type="email" autocomplete="email" :placeholder="copy.emailPlaceholder" data-required="true" required>
+          </div>
+          <small>{{ copy.emailHelp }}</small>
+          <label class="entry__error entry__error--primary" />
         </div>
-        <small>{{ copy.emailHelp }}</small>
-        <label class="entry__error entry__error--primary" />
       </div>
 
-      <fieldset class="sib-radiobutton-group sib-form-block form__entry entry_mcq pilot-field pilot-profile" data-required="true">
-        <legend class="entry__label" data-required="*">{{ copy.profileLabel }}</legend>
-        <label v-for="(label, index) in copy.profiles" :key="label">
-          <input class="input_replaced" type="radio" name="PERFIL" :value="index + 1" :checked="profile === index + 1" required>
-          <span class="radio-button" />
-          <span>{{ label }}</span>
-        </label>
-        <label class="entry__error entry__error--primary" />
-      </fieldset>
+      <div class="sib-radiobutton-group sib-form-block" data-required="true">
+        <fieldset class="form__entry entry_mcq pilot-field pilot-profile">
+          <legend class="entry__label" data-required="*">{{ copy.profileLabel }}</legend>
+          <label v-for="(label, index) in copy.profiles" :key="label">
+            <input class="input_replaced" type="radio" name="PERFIL" :value="index + 1" :checked="profile === index + 1" required>
+            <span class="radio-button" />
+            <span>{{ label }}</span>
+          </label>
+          <label class="entry__error entry__error--primary" />
+        </fieldset>
+      </div>
 
-      <div class="sib-optin sib-form-block form__entry entry_mcq pilot-field pilot-consent" data-required="true">
-        <span class="entry__label">{{ copy.consentLabel }}</span>
-        <label>
-          <input id="OPT_IN" class="input_replaced" type="checkbox" name="OPT_IN" value="1" required>
-          <span class="checkbox checkbox_tick_positive" />
-          <span>{{ copy.consentText }}</span>
-        </label>
-        <label class="entry__error entry__error--primary" />
+      <div class="sib-optin sib-form-block" data-required="true">
+        <div class="form__entry entry_mcq pilot-field pilot-consent">
+          <span class="entry__label">{{ copy.consentLabel }}</span>
+          <label>
+            <input id="OPT_IN" class="input_replaced" type="checkbox" name="OPT_IN" value="1" required>
+            <span class="checkbox checkbox_tick_positive" />
+            <span>{{ copy.consentText }}</span>
+          </label>
+          <label class="entry__error entry__error--primary" />
+        </div>
       </div>
 
       <button class="sib-form-block__button sib-form-block__button-with-loader button button--primary" form="sib-form" type="submit">

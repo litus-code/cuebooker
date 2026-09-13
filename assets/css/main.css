@@ -217,6 +217,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visibl
 .pilot-form .input--hidden { display: none !important; }
 .pilot-form__message { border: 1px solid; font-size: 11px; line-height: 1.55; margin: 0 0 18px; max-width: none; padding: 14px; text-align: left; }
 .pilot-form .sib-form-message-panel { display: none; }
+.pilot-form .sib-form-message-panel--active { display: block; }
 .pilot-form__message--error { background: color-mix(in srgb, #ef7d8f 12%, var(--cue-surface)); border-color: #ef7d8f; color: #ef7d8f; }
 .pilot-form__message--success { background: color-mix(in srgb, #61dfae 12%, var(--cue-surface)); border-color: #61dfae; color: #61dfae; }
 .site-footer { background: var(--cue-bg); color: var(--cue-muted); display: flex; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; justify-content: space-between; letter-spacing: .1em; padding: 28px max(24px, 6vw); }
