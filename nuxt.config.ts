@@ -7,23 +7,15 @@ export default defineNuxtConfig({
   app: {
     baseURL: process.env.NUXT_APP_BASE_URL || '/',
     head: {
-      htmlAttrs: { lang: 'en' },
-      title: 'CueBooker · The booking experience electronic music has been waiting for',
+      htmlAttrs: { lang: 'es' },
+      title: 'CueBooker | Booking de DJs y música electrónica',
       meta: [
         {
           name: 'description',
-          content: 'Discover available electronic music artists, send booking requests and manage every date from one connected workspace.'
+          content: 'Descubre artistas disponibles, envía una solicitud y gestiona el booking de música electrónica desde un mismo lugar.'
         }
       ]
     }
   },
-  nitro: { preset: process.env.NITRO_PRESET || 'static' },
-  i18n: {
-    defaultLocale: 'en',
-    strategy: 'prefix_except_default',
-    locales: [
-      { code: 'en', language: 'en-GB', name: 'English' },
-      { code: 'es', language: 'es-ES', name: 'Español' }
-    ]
-  }
+  nitro: { preset: process.env.NITRO_PRESET || 'static' }
 })
