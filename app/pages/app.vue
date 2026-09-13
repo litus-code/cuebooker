@@ -15,7 +15,7 @@ const copy = computed(() => locale.value === 'es' ? {
   prototype: 'DEMO FUNCIONAL · DATOS EN ESTE NAVEGADOR', role: 'Vista', dj: 'DJ', manager: 'Manager',
   nav: { requests: 'Solicitudes', calendar: 'Calendario', history: 'Historial', settings: 'Ajustes' },
   title: 'Tu siguiente acción, sin buscarla.', subtitle: 'Cada solicitud conserva los datos, la conversación y quién debe responder ahora.',
-  all: 'Todas', empty: 'No hay solicitudes en este estado.', choose: 'Abre una solicitud para ver el hilo completo.', status: 'Estado', contact: 'Contacto', event: 'Datos del evento', conversation: 'Conversación', reply: 'Responder al promotor', replyPlaceholder: 'Escribe condiciones, una pregunta o una propuesta…', send: 'Enviar respuesta', emailNote: 'En producción, esta respuesta se enviará al email del promotor y su contestación volverá a este mismo hilo. En esta demo se refleja en la vista del promotor.', promoterView: 'Abrir vista del promotor', confirm: 'Confirmar fecha', archive: 'Cerrar y enviar al historial', restore: 'Devolver a solicitudes', attachment: 'Adjunto',
+  all: 'Todas', empty: 'No hay solicitudes en este estado.', choose: 'Abre una solicitud para ver el hilo completo.', status: 'Estado', contact: 'Contacto', event: 'Datos del evento', conversation: 'Conversación', reply: 'Responder al promotor', replyPlaceholder: 'Escribe condiciones, una pregunta o una propuesta…', send: 'Enviar respuesta', emailNote: 'En producción, esta respuesta se enviará al email del promotor y su contestación volverá a este mismo hilo. En esta demo se refleja en la vista del promotor.', promoterView: 'Abrir vista del promotor', openThread: 'Ver conversación completa', confirm: 'Confirmar fecha', archive: 'Cerrar y enviar al historial', restore: 'Devolver a solicitudes', attachment: 'Adjunto',
   calendarTitle: 'Fechas confirmadas', calendarBody: 'Solo aparecen cuando ambas partes confirman. La disponibilidad pública muestra el resultado, nunca tu agenda completa.', historyTitle: 'Historial', historyBody: 'Consultas cerradas que puedes volver a abrir si te equivocaste.', settingsTitle: 'Preferencias de la demo', settingsBody: 'Idioma y apariencia se conservan en este dispositivo.',
   guide: 'Ver recorrido guiado', next: 'Siguiente', finish: 'Terminar', close: 'Cerrar',
   facts: { date: 'Fecha', city: 'Ciudad', venue: 'Sala', capacity: 'Aforo', offer: 'Oferta', schedule: 'Horario', name: 'Nombre', email: 'Email', phone: 'Tel.', source: 'Origen', sourceValue: 'Enlace de booking', language: 'Idioma', appearance: 'Apariencia', calendar: 'CALENDARIO / PRIVADO', archiveLabel: 'ARCHIVO / REVERSIBLE', device: 'DISPOSITIVO / PREFERENCIAS' },
@@ -31,7 +31,7 @@ const copy = computed(() => locale.value === 'es' ? {
   prototype: 'FUNCTIONAL DEMO · DATA ON THIS DEVICE', role: 'View', dj: 'DJ', manager: 'Manager',
   nav: { requests: 'Requests', calendar: 'Calendar', history: 'History', settings: 'Settings' },
   title: 'Your next action, without searching.', subtitle: 'Every request keeps its details, conversation and the person who needs to respond next.',
-  all: 'All', empty: 'No requests in this state.', choose: 'Open a request to see the complete thread.', status: 'Status', contact: 'Contact', event: 'Event details', conversation: 'Conversation', reply: 'Reply to promoter', replyPlaceholder: 'Write conditions, a question or a proposal…', send: 'Send reply', emailNote: 'In production, this reply is sent to the promoter by email and their answer returns to this thread. The demo mirrors it in the promoter view.', promoterView: 'Open promoter view', confirm: 'Confirm date', archive: 'Close and move to history', restore: 'Return to requests', attachment: 'Attachment',
+  all: 'All', empty: 'No requests in this state.', choose: 'Open a request to see the complete thread.', status: 'Status', contact: 'Contact', event: 'Event details', conversation: 'Conversation', reply: 'Reply to promoter', replyPlaceholder: 'Write conditions, a question or a proposal…', send: 'Send reply', emailNote: 'In production, this reply is sent to the promoter by email and their answer returns to this thread. The demo mirrors it in the promoter view.', promoterView: 'Open promoter view', openThread: 'View full conversation', confirm: 'Confirm date', archive: 'Close and move to history', restore: 'Return to requests', attachment: 'Attachment',
   calendarTitle: 'Confirmed dates', calendarBody: 'They appear only when both sides confirm. Public availability shows the result, never your full calendar.', historyTitle: 'History', historyBody: 'Closed enquiries you can reopen if needed.', settingsTitle: 'Demo preferences', settingsBody: 'Language and appearance are stored on this device.',
   guide: 'Start guided tour', next: 'Next', finish: 'Finish', close: 'Close',
   facts: { date: 'Date', city: 'City', venue: 'Venue', capacity: 'Capacity', offer: 'Offer', schedule: 'Schedule', name: 'Name', email: 'Email', phone: 'Phone', source: 'Source', sourceValue: 'Booking link', language: 'Language', appearance: 'Appearance', calendar: 'CALENDAR / PRIVATE', archiveLabel: 'ARCHIVE / REVERSIBLE', device: 'DEVICE / PREFERENCES' },
@@ -98,6 +98,13 @@ function nextTour() {
   else tourStep.value += 1
 }
 
+async function archiveSelected() {
+  if (!selected.value || selected.value.status !== 'confirmed') return
+  await setArchived(selected.value.id, true)
+  selectedId.value = ''
+  activeView.value = 'history'
+}
+
 useHead(() => ({ title: locale.value === 'es' ? 'Bandeja de booking | CueBooker' : 'Booking inbox | CueBooker', htmlAttrs: { lang: locale.value } }))
 </script>
 
@@ -150,7 +157,7 @@ useHead(() => ({ title: locale.value === 'es' ? 'Bandeja de booking | CueBooker'
 
           <form id="workspace-reply" class="booking-reply" :class="{ 'tour-focus': tourStep === 3 }" @submit.prevent="sendReply"><label>{{ copy.reply }}<textarea v-model="reply" rows="5" :placeholder="copy.replyPlaceholder" /></label><p>{{ copy.emailNote }}</p><button class="button button--primary" :disabled="!reply.trim()">{{ copy.send }} <span>↗</span></button></form>
 
-          <footer id="workspace-actions" class="booking-actions" :class="{ 'tour-focus': tourStep === 4 }"><NuxtLink class="button button--ghost" :to="`/request?id=${selected.id}`">{{ copy.promoterView }} <span>↗</span></NuxtLink><button class="button button--primary" @click="setStatus(selected.id, 'confirmed')">{{ copy.confirm }} <span>✓</span></button><button class="archive-action" @click="setArchived(selected.id, true)">{{ copy.archive }}</button></footer>
+          <footer id="workspace-actions" class="booking-actions" :class="{ 'tour-focus': tourStep === 4 }"><NuxtLink class="button button--ghost" :to="`/request?id=${selected.id}`">{{ copy.promoterView }} <span>↗</span></NuxtLink><button v-if="selected.status !== 'confirmed'" class="button button--primary" @click="setStatus(selected.id, 'confirmed')">{{ copy.confirm }} <span>✓</span></button><button v-else class="archive-action" @click="archiveSelected">{{ copy.archive }}</button></footer>
         </article>
         <div v-else class="booking-placeholder"><span>↳</span><p>{{ copy.choose }}</p></div>
       </div>
@@ -158,7 +165,7 @@ useHead(() => ({ title: locale.value === 'es' ? 'Bandeja de booking | CueBooker'
 
     <section v-else-if="activeView === 'calendar'" class="workspace-panel"><p class="eyebrow">{{ copy.facts.calendar }}</p><h2>{{ copy.calendarTitle }}</h2><p>{{ copy.calendarBody }}</p><div class="calendar-list"><article v-for="booking in confirmedBookings" :key="booking.id"><time>{{ formatDate(booking.event.date) }}</time><strong>{{ booking.event.venue }}</strong><span>{{ booking.event.city }} · {{ booking.artistName }}</span></article></div></section>
 
-    <section v-else-if="activeView === 'history'" class="workspace-panel"><p class="eyebrow">{{ copy.facts.archiveLabel }}</p><h2>{{ copy.historyTitle }}</h2><p>{{ copy.historyBody }}</p><div class="history-list"><article v-for="booking in historyBookings" :key="booking.id"><div><strong>{{ booking.event.venue }}</strong><span>{{ formatDate(booking.event.date) }} · {{ booking.artistName }}</span></div><NuxtLink :to="`/request?id=${booking.id}`">{{ copy.promoterView }}</NuxtLink><button @click="setArchived(booking.id, false)">{{ copy.restore }}</button></article></div></section>
+    <section v-else-if="activeView === 'history'" class="workspace-panel"><p class="eyebrow">{{ copy.facts.archiveLabel }}</p><h2>{{ copy.historyTitle }}</h2><p>{{ copy.historyBody }}</p><div class="history-list"><article v-for="booking in historyBookings" :key="booking.id"><div><strong>{{ booking.event.venue }}</strong><span>{{ formatDate(booking.event.date) }} · {{ booking.artistName }}</span></div><NuxtLink :to="`/request?id=${booking.id}`">{{ copy.openThread }}</NuxtLink><button @click="setArchived(booking.id, false)">{{ copy.restore }}</button></article></div></section>
 
     <section v-else class="workspace-panel"><p class="eyebrow">{{ copy.facts.device }}</p><h2>{{ copy.settingsTitle }}</h2><p>{{ copy.settingsBody }}</p><div class="settings-row"><span>{{ copy.facts.language }}</span><div class="locale-control"><button :class="{ active: locale === 'es' }" @click="setLocale('es')">ES</button><button :class="{ active: locale === 'en' }" @click="setLocale('en')">EN</button></div></div><div class="settings-row"><span>{{ copy.facts.appearance }}</span><div class="theme-control"><button v-for="value in ['dark', 'light'] as const" :key="value" :class="{ active: theme === value }" @click="setTheme(value)">{{ value.toUpperCase() }}</button></div></div></section>
 

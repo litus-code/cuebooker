@@ -70,7 +70,7 @@ export function useBookingDemo() {
     const booking = await bookingRepository.get(id)
     if (!booking) return
     booking.archived = archived
-    if (archived) booking.status = 'closed'
+    booking.status = archived ? 'closed' : 'confirmed'
     return update(booking)
   }
 
