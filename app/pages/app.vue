@@ -10,13 +10,14 @@ const filter = ref<'all' | BookingStatus>('all')
 const selectedId = ref('')
 const reply = ref('')
 const tourStep = ref(-1)
+const monthCursor = ref('2026-10-01')
 
 const copy = computed(() => locale.value === 'es' ? {
   prototype: 'DEMO FUNCIONAL · DATOS EN ESTE NAVEGADOR', role: 'Vista', dj: 'DJ', manager: 'Manager',
   nav: { requests: 'Solicitudes', calendar: 'Calendario', history: 'Historial', settings: 'Ajustes' },
   title: 'Tu siguiente acción, sin buscarla.', subtitle: 'Cada solicitud conserva los datos, la conversación y quién debe responder ahora.',
   all: 'Todas', empty: 'No hay solicitudes en este estado.', choose: 'Abre una solicitud para ver el hilo completo.', status: 'Estado', contact: 'Contacto', event: 'Datos del evento', conversation: 'Conversación', reply: 'Responder al promotor', replyPlaceholder: 'Escribe condiciones, una pregunta o una propuesta…', send: 'Enviar respuesta', emailNote: 'En producción, esta respuesta se enviará al email del promotor y su contestación volverá a este mismo hilo. En esta demo se refleja en la vista del promotor.', promoterView: 'Abrir vista del promotor', openThread: 'Ver conversación completa', confirm: 'Confirmar fecha', archive: 'Cerrar y enviar al historial', restore: 'Devolver a solicitudes', attachment: 'Adjunto',
-  calendarTitle: 'Fechas confirmadas', calendarBody: 'Solo aparecen cuando ambas partes confirman. La disponibilidad pública muestra el resultado, nunca tu agenda completa.', historyTitle: 'Historial', historyBody: 'Consultas cerradas que puedes volver a abrir si te equivocaste.', settingsTitle: 'Preferencias de la demo', settingsBody: 'Idioma y apariencia se conservan en este dispositivo.',
+  calendarTitle: 'Tu agenda de booking', calendarBody: 'Consulta el mes completo, las horas y los compromisos provisionales antes de confirmar otra fecha.', calendarConflict: 'Posible solapamiento', calendarConflictBody: 'Revisa estos horarios antes de confirmar. CueBooker no bloquea una decisión sin avisarte.', calendarClear: 'Sin solapamientos detectados este mes.', manualBlock: 'Bloqueo manual', previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente', historyTitle: 'Historial', historyBody: 'Consultas cerradas que puedes volver a abrir si te equivocaste.', settingsTitle: 'Preferencias de la demo', settingsBody: 'Idioma y apariencia se conservan en este dispositivo.',
   guide: 'Ver recorrido guiado', next: 'Siguiente', finish: 'Terminar', close: 'Cerrar',
   facts: { date: 'Fecha', city: 'Ciudad', venue: 'Sala', capacity: 'Aforo', offer: 'Oferta', schedule: 'Horario', name: 'Nombre', email: 'Email', phone: 'Tel.', source: 'Origen', sourceValue: 'Enlace de booking', language: 'Idioma', appearance: 'Apariencia', calendar: 'CALENDARIO / PRIVADO', archiveLabel: 'ARCHIVO / REVERSIBLE', device: 'DISPOSITIVO / PREFERENCIAS' },
   tour: [
@@ -32,7 +33,7 @@ const copy = computed(() => locale.value === 'es' ? {
   nav: { requests: 'Requests', calendar: 'Calendar', history: 'History', settings: 'Settings' },
   title: 'Your next action, without searching.', subtitle: 'Every request keeps its details, conversation and the person who needs to respond next.',
   all: 'All', empty: 'No requests in this state.', choose: 'Open a request to see the complete thread.', status: 'Status', contact: 'Contact', event: 'Event details', conversation: 'Conversation', reply: 'Reply to promoter', replyPlaceholder: 'Write conditions, a question or a proposal…', send: 'Send reply', emailNote: 'In production, this reply is sent to the promoter by email and their answer returns to this thread. The demo mirrors it in the promoter view.', promoterView: 'Open promoter view', openThread: 'View full conversation', confirm: 'Confirm date', archive: 'Close and move to history', restore: 'Return to requests', attachment: 'Attachment',
-  calendarTitle: 'Confirmed dates', calendarBody: 'They appear only when both sides confirm. Public availability shows the result, never your full calendar.', historyTitle: 'History', historyBody: 'Closed enquiries you can reopen if needed.', settingsTitle: 'Demo preferences', settingsBody: 'Language and appearance are stored on this device.',
+  calendarTitle: 'Your booking schedule', calendarBody: 'See the full month, times and provisional commitments before confirming another date.', calendarConflict: 'Possible overlap', calendarConflictBody: 'Review these times before confirming. CueBooker warns you without blocking your decision.', calendarClear: 'No overlaps detected this month.', manualBlock: 'Manual block', previousMonth: 'Previous month', nextMonth: 'Next month', historyTitle: 'History', historyBody: 'Closed enquiries you can reopen if needed.', settingsTitle: 'Demo preferences', settingsBody: 'Language and appearance are stored on this device.',
   guide: 'Start guided tour', next: 'Next', finish: 'Finish', close: 'Close',
   facts: { date: 'Date', city: 'City', venue: 'Venue', capacity: 'Capacity', offer: 'Offer', schedule: 'Schedule', name: 'Name', email: 'Email', phone: 'Phone', source: 'Source', sourceValue: 'Booking link', language: 'Language', appearance: 'Appearance', calendar: 'CALENDAR / PRIVATE', archiveLabel: 'ARCHIVE / REVERSIBLE', device: 'DEVICE / PREFERENCES' },
   tour: [
@@ -52,6 +53,52 @@ const selected = computed(() => bookings.value.find(item => item.id === selected
 const confirmedBookings = computed(() => bookings.value.filter(item => item.status === 'confirmed' && !item.archived))
 const counts = computed(() => Object.fromEntries(bookingStatuses.map(status => [status, activeBookings.value.filter(item => item.status === status).length])))
 const currentTour = computed(() => tourStep.value >= 0 ? copy.value.tour[tourStep.value] : null)
+const weekdayLabels = computed(() => locale.value === 'es' ? ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'])
+
+type CalendarItem = { id: string, title: string, artist: string, date: string, start: string, end: string, status: BookingStatus | 'manual' }
+
+function scheduleParts(schedule: string) {
+  const matches = schedule.match(/(\d{1,2}):(\d{2})\s*[–—-]\s*(\d{1,2}):(\d{2})/)
+  if (!matches) return { start: '00:00', end: '23:59' }
+  return { start: `${(matches[1] ?? '0').padStart(2, '0')}:${matches[2] ?? '00'}`, end: `${(matches[3] ?? '23').padStart(2, '0')}:${matches[4] ?? '59'}` }
+}
+
+const calendarItems = computed<CalendarItem[]>(() => {
+  const bookingItems = activeBookings.value.map((booking) => {
+    const hours = scheduleParts(booking.event.schedule || '')
+    return { id: booking.id, title: booking.event.venue, artist: booking.artistName, date: booking.event.date, start: hours.start, end: hours.end, status: booking.status }
+  })
+  return [...bookingItems, { id: 'manual-studio', title: copy.value.manualBlock, artist: 'Nara Voss', date: '2026-10-22', start: '01:30', end: '03:30', status: 'manual' as const }]
+})
+
+const monthLabel = computed(() => new Intl.DateTimeFormat(locale.value === 'es' ? 'es-ES' : 'en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${monthCursor.value}T12:00:00Z`)))
+
+const monthCells = computed(() => {
+  const cursor = new Date(`${monthCursor.value}T12:00:00Z`)
+  const year = cursor.getUTCFullYear()
+  const month = cursor.getUTCMonth()
+  const first = new Date(Date.UTC(year, month, 1, 12))
+  const mondayOffset = (first.getUTCDay() + 6) % 7
+  const start = new Date(first)
+  start.setUTCDate(first.getUTCDate() - mondayOffset)
+  return Array.from({ length: 42 }, (_, index) => {
+    const day = new Date(start)
+    day.setUTCDate(start.getUTCDate() + index)
+    const date = day.toISOString().slice(0, 10)
+    return { date, number: day.getUTCDate(), current: day.getUTCMonth() === month, items: calendarItems.value.filter(item => item.date === date) }
+  })
+})
+
+const calendarConflicts = computed(() => {
+  const conflicts: Array<{ id: string, date: string, first: CalendarItem, second: CalendarItem }> = []
+  calendarItems.value.forEach((first, index) => {
+    calendarItems.value.slice(index + 1).forEach((second) => {
+      if (first.date !== second.date || first.status === 'closed' || second.status === 'closed') return
+      if (first.start < second.end && second.start < first.end) conflicts.push({ id: `${first.id}-${second.id}`, date: first.date, first, second })
+    })
+  })
+  return conflicts
+})
 
 watch(ready, value => {
   if (!value) return
@@ -96,6 +143,12 @@ function startTour() {
 function nextTour() {
   if (tourStep.value >= copy.value.tour.length - 1) tourStep.value = -1
   else tourStep.value += 1
+}
+
+function changeMonth(offset: number) {
+  const date = new Date(`${monthCursor.value}T12:00:00Z`)
+  date.setUTCMonth(date.getUTCMonth() + offset)
+  monthCursor.value = date.toISOString().slice(0, 7) + '-01'
 }
 
 async function archiveSelected() {
@@ -163,7 +216,17 @@ useHead(() => ({ title: locale.value === 'es' ? 'Bandeja de booking | CueBooker'
       </div>
     </section>
 
-    <section v-else-if="activeView === 'calendar'" class="workspace-panel"><p class="eyebrow">{{ copy.facts.calendar }}</p><h2>{{ copy.calendarTitle }}</h2><p>{{ copy.calendarBody }}</p><div class="calendar-list"><article v-for="booking in confirmedBookings" :key="booking.id"><time>{{ formatDate(booking.event.date) }}</time><strong>{{ booking.event.venue }}</strong><span>{{ booking.event.city }} · {{ booking.artistName }}</span></article></div></section>
+    <section v-else-if="activeView === 'calendar'" class="workspace-panel calendar-panel">
+      <p class="eyebrow">{{ copy.facts.calendar }}</p><h2>{{ copy.calendarTitle }}</h2><p>{{ copy.calendarBody }}</p>
+      <div v-if="calendarConflicts.length" class="calendar-alert" role="alert"><span>!</span><div><strong>{{ copy.calendarConflict }}</strong><p>{{ copy.calendarConflictBody }}</p><ul><li v-for="conflict in calendarConflicts" :key="conflict.id"><b>{{ formatDate(conflict.date) }}</b> · {{ conflict.first.start }}–{{ conflict.first.end }} {{ conflict.first.title }} / {{ conflict.second.start }}–{{ conflict.second.end }} {{ conflict.second.title }}</li></ul></div></div>
+      <p v-else class="calendar-clear">{{ copy.calendarClear }}</p>
+      <div class="month-calendar">
+        <header><button :aria-label="copy.previousMonth" @click="changeMonth(-1)">‹</button><strong>{{ monthLabel }}</strong><button :aria-label="copy.nextMonth" @click="changeMonth(1)">›</button></header>
+        <div class="month-calendar__weekdays"><span v-for="day in weekdayLabels" :key="day">{{ day }}</span></div>
+        <div class="month-calendar__grid"><article v-for="cell in monthCells" :key="cell.date" :class="{ muted: !cell.current, busy: cell.items.length }"><time :datetime="cell.date">{{ cell.number }}</time><div><button v-for="item in cell.items" :key="item.id" :class="`calendar-event calendar-event--${item.status}`" :title="`${item.start}–${item.end} · ${item.title}`" @click="item.status !== 'manual' && (selectedId = item.id, activeView = 'requests')"><span>{{ item.start }}</span><strong>{{ item.title }}</strong></button></div></article></div>
+      </div>
+      <div class="calendar-list"><article v-for="item in calendarItems" :key="item.id"><time>{{ formatDate(item.date) }}</time><strong>{{ item.title }}</strong><span>{{ item.start }}–{{ item.end }} · {{ item.artist }} · {{ item.status === 'manual' ? copy.manualBlock : copy.statuses[item.status] }}</span></article></div>
+    </section>
 
     <section v-else-if="activeView === 'history'" class="workspace-panel"><p class="eyebrow">{{ copy.facts.archiveLabel }}</p><h2>{{ copy.historyTitle }}</h2><p>{{ copy.historyBody }}</p><div class="history-list"><article v-for="booking in historyBookings" :key="booking.id"><div><strong>{{ booking.event.venue }}</strong><span>{{ formatDate(booking.event.date) }} · {{ booking.artistName }}</span></div><NuxtLink :to="`/request?id=${booking.id}`">{{ copy.openThread }}</NuxtLink><button @click="setArchived(booking.id, false)">{{ copy.restore }}</button></article></div></section>
 

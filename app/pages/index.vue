@@ -95,6 +95,13 @@ useHead(() => ({
       <ol class="flow-line"><li v-for="(step, index) in copy.flow.steps" :key="step"><span>{{ String(index + 1).padStart(2, '0') }}</span>{{ step }}</li></ol>
     </section>
 
+    <section class="integrations section-pad">
+      <div class="section-mark mono">{{ copy.integrations.index }}</div>
+      <div class="section-heading"><p class="eyebrow">{{ copy.integrations.eyebrow }}</p><h2>{{ copy.integrations.title }}</h2><p>{{ copy.integrations.body }}</p></div>
+      <div class="integration-grid"><article v-for="(item, index) in copy.integrations.items" :key="item.name"><span class="mono">0{{ index + 1 }} / {{ item.label }}</span><div class="integration-visual" :class="`integration-visual--${index + 1}`"><i /><i /><i /></div><h3>{{ item.name }}</h3><p>{{ item.body }}</p></article></div>
+      <p class="integration-note"><i />{{ copy.integrations.note }}</p>
+    </section>
+
     <section id="roles" class="roles section-pad">
       <div class="section-mark mono">{{ copy.roles.index }}</div>
       <div class="section-heading"><p class="eyebrow">{{ copy.roles.eyebrow }}</p><h2>{{ copy.roles.title }}</h2></div>
@@ -122,11 +129,17 @@ useHead(() => ({
       </div>
     </section>
 
+    <section class="demo-reality section-pad">
+      <div class="section-mark mono">{{ copy.demo.index }}</div>
+      <div class="section-heading"><p class="eyebrow">{{ copy.demo.eyebrow }}</p><h2>{{ copy.demo.title }}</h2><p>{{ copy.demo.body }}</p></div>
+      <div class="demo-reality__grid"><article><strong>{{ copy.demo.currentTitle }}</strong><ul><li v-for="item in copy.demo.current" :key="item"><span>✓</span>{{ item }}</li></ul></article><article><strong>{{ copy.demo.realTitle }}</strong><ul><li v-for="item in copy.demo.real" :key="item"><span>→</span>{{ item }}</li></ul></article></div>
+    </section>
+
     <section id="early-access" class="early-access section-pad">
       <p class="eyebrow">{{ copy.cta.eyebrow }}</p>
       <h2>{{ copy.cta.title }}</h2>
       <p>{{ copy.cta.body }}</p>
-      <a class="button button--primary" :href="`mailto:${copy.cta.email}?subject=CueBooker%20Early%20Access`">{{ copy.cta.button }} <span>↗</span></a>
+      <div class="early-access__actions"><NuxtLink class="button button--primary" to="/artist">{{ copy.cta.demoButton }} <span>↗</span></NuxtLink><a class="button button--ghost" :href="`mailto:${copy.cta.email}?subject=CueBooker%20Pilot`">{{ copy.cta.button }} <span>↗</span></a></div>
       <small>{{ copy.cta.note }}</small>
     </section>
 

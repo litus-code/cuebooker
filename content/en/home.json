@@ -23,6 +23,16 @@
     "body": "The DJ shares a link. The promoter sends a request without creating an account. The reply arrives by email and both sides continue in the same booking until the date is closed.",
     "steps": ["Share", "Request", "Reply", "Agree", "Confirm", "Calendar"]
   },
+  "integrations": {
+    "index": "03 / WHERE YOU ALREADY WORK", "eyebrow": "KEEP YOUR EXISTING CHANNELS", "title": "Your own link. A widget when you already have a website.",
+    "body": "CueBooker sits wherever people already find you. The promoter opens the form, sends the details and continues the conversation from email.",
+    "items": [
+      {"label": "NO WEBSITE", "name": "Instagram, Linktree and WhatsApp", "body": "Share a different URL for each channel. CueBooker identifies the source and brings every request into one inbox."},
+      {"label": "WITH A WEBSITE", "name": "Universal widget", "body": "Copy a small snippet into WordPress, WooCommerce, HTML, React, Angular or Vue. The form opens inside your website."},
+      {"label": "FOLLOW-UP", "name": "Connected email", "body": "The DJ replies from CueBooker. The promoter receives an email and returns to the same booking through a secure link."}
+    ],
+    "note": "The DJ configures the service from their workspace. The promoter installs nothing. An npm package would be a developer option, not the main product."
+  },
   "roles": {
     "index": "04 / WHO STARTS", "eyebrow": "THE DJ ACTIVATES THEIR BOOKING NETWORK", "title": "Start with artists. Connect everyone else.",
     "items": [
@@ -41,9 +51,15 @@
       {"name": "AGENCY", "label": "ACCESS / MANAGER", "account": "ACCOUNT FROM THE START", "headline": "Organise the roster and keep control.", "steps": ["Register the agency", "Add artists and owners", "Set permissions and visibility", "Manage requests and calendars"], "cta": "Join as an agency", "mailSubject": "CueBooker Early Access - Agency"}
     ]
   },
+  "demo": {
+    "index": "06 / DEMO", "eyebrow": "WHAT YOU ARE TESTING", "title": "The experience is real. The connections are still simulated.",
+    "body": "This demonstration lets you complete a request from the artist profile through to the DJ's history.",
+    "currentTitle": "Available in the demo", "current": ["Booking form", "Inbox and statuses", "Simulated conversation and attachments", "Calendar, alerts and history"],
+    "realTitle": "Connected product", "real": ["Accounts and permissions", "Shared database", "Emails and secure links", "Stored files and calendar synchronisation"]
+  },
   "cta": {
     "eyebrow": "EARLY ACCESS / BARCELONA", "title": "We are building CueBooker with DJs and people who book real dates.",
     "body": "We are looking for independent DJs, agencies and promoters to test this flow before registration opens. Show us how you work and take part in product decisions.",
-    "button": "I want to test the prototype", "email": "contacto@carlesfar.com", "note": "Functional prototype in development. Current artists, results and requests are simulated."
+    "button": "Join the pilot", "demoButton": "Try a booking request", "email": "contacto@carlesfar.com", "note": "Functional prototype in development. Current artists, results and requests are simulated."
   }
 }
