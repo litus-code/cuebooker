@@ -62,7 +62,7 @@ useHead(() => ({
           <button :class="{ active: locale === 'en' }" @click="setLocale('en')">EN</button>
         </div>
         <div class="theme-control" aria-label="Apariencia">
-          <button v-for="value in ['dark', 'light', 'system'] as const" :key="value" :class="{ active: theme === value }" :title="value" @click="setTheme(value)">{{ value.slice(0, 1).toUpperCase() }}</button>
+          <button v-for="value in ['dark', 'light', 'system'] as const" :key="value" :class="{ active: theme === value }" :title="value" @click="setTheme(value)">{{ value === 'system' ? 'AUTO' : value.toUpperCase() }}</button>
         </div>
       </div>
     </header>
@@ -71,7 +71,7 @@ useHead(() => ({
       <div class="hero__meta mono"><span>22:47:16</span><span>BARCELONA<br>41.3874° N</span></div>
       <div class="hero__copy">
         <p class="eyebrow">{{ copy.hero.eyebrow }}</p>
-        <h1>{{ copy.hero.titleTop }}<br><em>{{ copy.hero.titleBottom }}</em></h1>
+        <h1>{{ copy.hero.titleTop }}<br><em><span v-for="word in copy.hero.titleBottom.split(' ')" :key="word">{{ word }}</span></em></h1>
         <p class="lead">{{ copy.hero.body }}</p>
         <div class="hero__actions">
           <button class="button button--primary" @click="scrollTo('#product')">{{ copy.hero.primaryCta }} <span>↗</span></button>

@@ -55,7 +55,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visibl
 .site-nav a:hover { color: var(--cue-text); }
 .header-controls { align-items: center; display: flex; gap: 9px; }
 .locale-control, .theme-control { border: 1px solid var(--cue-border); display: flex; padding: 3px; }
-.locale-control button, .theme-control button { background: transparent; border: 0; color: var(--cue-muted); cursor: pointer; font-size: 9px; font-weight: 800; min-height: 30px; min-width: 31px; }
+.locale-control button, .theme-control button { background: transparent; border: 0; color: var(--cue-muted); cursor: pointer; font-size: 9px; font-weight: 800; min-height: 30px; min-width: 31px; padding: 0 9px; }
 .locale-control button.active, .theme-control button.active { background: var(--cue-text); color: var(--cue-bg); }
 .menu-trigger { background: transparent; border: 0; display: none; height: 42px; padding: 10px; width: 42px; }
 .menu-trigger span { background: var(--cue-text); display: block; height: 1px; margin: 7px 0; width: 21px; }
@@ -63,8 +63,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visibl
 .hero { display: grid; grid-template-columns: .3fr 1fr 1.25fr; min-height: calc(100svh - 72px); padding-bottom: 42px; padding-top: clamp(70px, 8vw, 125px); }
 .hero__meta { color: var(--cue-muted); display: flex; flex-direction: column; font-size: 9px; gap: 18px; letter-spacing: .1em; line-height: 1.6; }
 .hero__copy { position: relative; z-index: 2; }
-.hero h1 { font-size: clamp(5rem, 10.4vw, 11.8rem); letter-spacing: -.09em; line-height: .77; margin: 38px 0 36px; text-transform: uppercase; white-space: nowrap; }
+.hero h1 { font-size: clamp(5rem, 8.4vw, 9.5rem); letter-spacing: -.09em; line-height: .77; margin: 38px 0 36px; text-transform: uppercase; }
 .hero h1 em { color: var(--cue-accent); font-style: normal; }
+.hero h1 em span { display: block; }
 .lead { color: var(--cue-muted); font-size: clamp(1rem, 1.35vw, 1.25rem); line-height: 1.55; max-width: 510px; }
 .hero__actions { align-items: center; display: flex; gap: 26px; margin-top: 38px; }
 .button { align-items: center; border: 0; cursor: pointer; display: inline-flex; font-size: 11px; font-weight: 900; justify-content: space-between; letter-spacing: .09em; min-height: 56px; min-width: 220px; padding: 0 20px; text-decoration: none; text-transform: uppercase; }
