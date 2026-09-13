@@ -11,6 +11,7 @@ const sound = ref('Techno')
 const budget = ref(2400)
 const searchState = ref<'idle' | 'searching' | 'found'>('idle')
 const selectedArtist = ref(0)
+const activeRole = ref(0)
 
 const artists = [
   { name: 'NARA VOSS', location: 'BERLIN', genres: 'TECHNO / HARDGROOVE', fee: '€€', match: '94%' },
@@ -48,7 +49,7 @@ useHead(() => ({
   <main class="site-shell">
     <header class="site-header">
       <a class="brand" href="#top" @click.prevent="scrollTo('#top')">CUEBOOKER<span>/</span></a>
-      <p class="live-status"><i /> BCN / EARLY ACCESS</p>
+      <p class="live-status"><i /> {{ copy.prototype }}</p>
       <button class="menu-trigger" :aria-expanded="menuOpen" aria-label="Abrir menú" @click="menuOpen = !menuOpen"><span /><span /></button>
       <nav class="site-nav" :class="{ 'site-nav--open': menuOpen }">
         <a href="#problem" @click.prevent="scrollTo('#problem')">{{ copy.nav.problem }}</a>
@@ -62,7 +63,7 @@ useHead(() => ({
           <button :class="{ active: locale === 'en' }" @click="setLocale('en')">EN</button>
         </div>
         <div class="theme-control" aria-label="Apariencia">
-          <button v-for="value in ['dark', 'light', 'system'] as const" :key="value" :class="{ active: theme === value }" :title="value" @click="setTheme(value)">{{ value === 'system' ? 'AUTO' : value.toUpperCase() }}</button>
+          <button v-for="value in ['dark', 'light'] as const" :key="value" :class="{ active: theme === value }" :aria-pressed="theme === value" @click="setTheme(value)">{{ value.toUpperCase() }}</button>
         </div>
       </div>
     </header>
@@ -73,13 +74,16 @@ useHead(() => ({
         <p class="eyebrow">{{ copy.hero.eyebrow }}</p>
         <h1>{{ copy.hero.titleTop }}<br><em><span v-for="word in copy.hero.titleBottom.split(' ')" :key="word">{{ word }}</span></em></h1>
         <p class="lead">{{ copy.hero.body }}</p>
+        <ul class="hero__proofs">
+          <li v-for="proof in copy.hero.proofs" :key="proof"><i />{{ proof }}</li>
+        </ul>
         <div class="hero__actions">
           <button class="button button--primary" @click="scrollTo('#product')">{{ copy.hero.primaryCta }} <span>↗</span></button>
           <button class="text-button" @click="scrollTo('#problem')">{{ copy.hero.secondaryCta }} ↓</button>
         </div>
       </div>
       <CueNetwork :state="searchState" :label="networkLabel" />
-      <p class="hero__edge mono">DISCOVERY → BOOKING → MANAGEMENT</p>
+      <p class="hero__edge mono">ARTIST → AVAILABILITY → REQUEST → CONFIRMED</p>
     </section>
 
     <section id="problem" class="problem section-pad">
@@ -144,6 +148,27 @@ useHead(() => ({
       <div class="section-mark mono">{{ copy.roles.index }}</div>
       <div class="section-heading"><p class="eyebrow">{{ copy.roles.eyebrow }}</p><h2>{{ copy.roles.title }}</h2></div>
       <div class="role-grid"><article v-for="(item, index) in copy.roles.items" :key="item.name"><span class="mono">0{{ index + 1 }}</span><p class="eyebrow">{{ item.name }}</p><h3>{{ item.headline }}</h3><p>{{ item.body }}</p></article></div>
+    </section>
+
+    <section class="access-model section-pad">
+      <div class="section-mark mono">{{ copy.access.index }}</div>
+      <div class="section-heading">
+        <p class="eyebrow">{{ copy.access.eyebrow }}</p>
+        <h2>{{ copy.access.title }}</h2>
+        <p>{{ copy.access.body }}</p>
+      </div>
+      <div class="access-demo">
+        <div class="access-tabs" role="tablist" :aria-label="copy.access.selectorLabel">
+          <button v-for="(role, index) in copy.access.roles" :key="role.name" :class="{ active: activeRole === index }" role="tab" :aria-selected="activeRole === index" @click="activeRole = index">{{ role.name }}</button>
+        </div>
+        <article class="access-card">
+          <div class="access-card__top"><span class="mono">{{ copy.access.roles[activeRole].label }}</span><strong>{{ copy.access.roles[activeRole].account }}</strong></div>
+          <h3>{{ copy.access.roles[activeRole].headline }}</h3>
+          <ol><li v-for="(step, index) in copy.access.roles[activeRole].steps" :key="step"><span>{{ String(index + 1).padStart(2, '0') }}</span>{{ step }}</li></ol>
+          <a class="button button--primary" :href="`mailto:${copy.cta.email}?subject=${encodeURIComponent(copy.access.roles[activeRole].mailSubject)}`">{{ copy.access.roles[activeRole].cta }} <span>↗</span></a>
+        </article>
+        <aside><i /> <span><strong>{{ copy.access.demoTitle }}</strong>{{ copy.access.demoNote }}</span></aside>
+      </div>
     </section>
 
     <section id="early-access" class="early-access section-pad">
