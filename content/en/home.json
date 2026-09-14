@@ -1,11 +1,10 @@
 {
   "seo": {"title": "CueBooker | Booking management for DJs", "description": "Receive complete requests, reply to promoters by email and control availability, calendar and history inside one booking."},
-  "prototype": "FUNCTIONAL PROTOTYPE / IN DEVELOPMENT",
-  "nav": {"problem": "The problem", "product": "How it works", "roles": "For whom", "earlyAccess": "Early access", "workspace": "View workspace"},
+  "nav": {"problem": "The problem", "product": "How it works", "roles": "For whom", "tryProduct": "Try CueBooker", "login": "Sign in", "signup": "Create account"},
   "hero": {
     "eyebrow": "BOOKING MANAGEMENT FOR DJS AND AGENCIES", "titleTop": "BOOKINGS", "titleBottom": "UNDER CONTROL",
     "body": "Receive complete requests and manage conversations, terms, statuses and dates in one place, even when contact starts on Instagram, WhatsApp, email or a phone call.",
-    "primaryCta": "See how it works", "secondaryCta": "View demo workspace", "networkIdle": "ONE REQUEST · ONE STATUS", "networkSearching": "STRUCTURING BOOKING", "networkFound": "READY TO DECIDE",
+    "primaryCta": "Create account", "secondaryCta": "See how it works", "networkIdle": "ONE REQUEST · ONE STATUS", "networkSearching": "STRUCTURING BOOKING", "networkFound": "READY TO DECIDE",
     "proofs": ["Every request in one inbox", "Each booking keeps its conversation and status", "Calendar and availability without clashes"]
   },
   "problem": {
@@ -45,34 +44,36 @@
   "access": {
     "index": "05 / ACCESS", "eyebrow": "FRICTION ONLY WHEN IT ADDS VALUE", "title": "The DJ gets a workspace. The promoter only needs to reply.",
     "body": "DJs and agencies create their workspace. A promoter can send the first request without an account and receives secure access to continue the booking.",
-    "selectorLabel": "Choose a role", "demoTitle": "Prototype in development.", "demoNote": " This screen demonstrates the access model. Registration, authentication and shared persistence will be connected in the next phase.",
+    "selectorLabel": "Choose a role", "demoTitle": "Access available.", "demoNote": " DJs and agencies can now create an account, complete their initial profile and manage availability from a private workspace.",
     "roles": [
-      {"name": "DJ", "label": "ACCESS / ARTIST", "account": "ACCOUNT FROM THE START", "headline": "Publish the entry point for every booking.", "steps": ["Create your account and profile", "Set availability and privacy", "Share your link", "Receive and track requests"], "cta": "Join as a DJ", "mailSubject": "CueBooker Early Access - DJ"},
-      {"name": "PROMOTER", "label": "ACCESS / PROMOTER", "account": "NO ACCOUNT FOR FIRST CONTACT", "headline": "Send the details and continue from email.", "steps": ["Open the DJ link", "Add date, venue and offer", "Verify your email", "Reply and confirm through a secure link"], "cta": "Test as a promoter", "mailSubject": "CueBooker Early Access - Promoter"},
-      {"name": "AGENCY", "label": "ACCESS / MANAGER", "account": "ACCOUNT FROM THE START", "headline": "Organise the roster and keep control.", "steps": ["Register the agency", "Add artists and owners", "Set permissions and visibility", "Manage requests and calendars"], "cta": "Join as an agency", "mailSubject": "CueBooker Early Access - Agency"}
+      {"name": "DJ", "label": "ACCESS / ARTIST", "account": "ACCOUNT FROM THE START", "headline": "Publish the entry point for every booking.", "steps": ["Create your account and profile", "Set availability and privacy", "Share your link", "Receive and track requests"], "cta": "Create a DJ account", "route": "/access?mode=signup"},
+      {"name": "PROMOTER", "label": "ACCESS / PROMOTER", "account": "NO ACCOUNT FOR FIRST CONTACT", "headline": "Send the details and continue from email.", "steps": ["Open the DJ link", "Add date, venue and offer", "Verify your email", "Reply and confirm through a secure link"], "cta": "Try a request", "route": "/artist"},
+      {"name": "AGENCY", "label": "ACCESS / MANAGER", "account": "ACCOUNT FROM THE START", "headline": "Organise the roster and keep control.", "steps": ["Register the agency", "Add artists and owners", "Set permissions and visibility", "Manage requests and calendars"], "cta": "Create an agency account", "route": "/access?mode=signup"}
     ]
   },
   "demo": {
-    "index": "06 / DEMO", "eyebrow": "WHAT YOU ARE TESTING", "title": "The experience is real. The connections are still simulated.",
-    "body": "Open the DJ workspace directly to see requests, statuses, conversations and calendar. To understand where a booking comes from, you can also simulate the promoter journey through the artist's public link.",
-    "currentTitle": "✓ Working in this demo", "current": ["Booking form", "Inbox and statuses", "Simulated conversation and attachments", "Calendar, alerts and history"],
-    "realTitle": "○ Planned for the product", "real": ["Accounts and permissions", "Shared database", "Emails and secure links", "Stored files and calendar synchronisation", "DJ search by availability", "Opt-in visibility without exposing private calendars"],
-    "realNote": "These features belong to the connected product and are not active in the public prototype yet.",
-    "panelButton": "Open DJ workspace", "requestButton": "Simulate promoter request"
+    "index": "06 / TRY IT", "eyebrow": "USE IT NOW", "title": "Run through a complete booking before creating an account.",
+    "body": "The test workspace lets you use the inbox, change statuses, continue conversations and view the calendar. It includes fictional requests and profiles so you can explore the complete flow without changing real data.",
+    "currentTitle": "Available now", "current": ["Booking form", "Inbox and status changes", "Test conversations and attachments", "Calendar, alerts and history"],
+    "realTitle": "With an account", "real": ["Private DJ or agency profile", "Persistent calendar and availability", "Agency roster management", "Protected session and your own data"],
+    "realNote": "The test workspace uses fictional data stored in this browser. Accounts work in a connected private workspace.",
+    "panelButton": "Open test workspace", "requestButton": "Try as a promoter"
   },
-  "cta": {
-    "eyebrow": "EARLY ACCESS / BARCELONA", "title": "The demo is open. We want to test the next version with you.",
-    "body": "You can try a simulated booking request now without registering. If you are a DJ, manager, agency or promoter, leave your details to access upcoming tests and tell us what fits or fails in the way you actually work.",
-    "button": "Join the pilot", "demoButton": "Open demo workspace", "floatLabel": "JOIN THE PILOT", "floatButton": "I want to test it", "topButton": "Back to top", "email": "contacto@carlesfar.com", "note": "The public demo requires no registration. Current artists, results and requests are simulated.",
+  "entry": {"eyebrow": "YOUR WORKSPACE", "title": "Start managing your bookings.", "body": "Create an account as a DJ or agency and set up your first profile and private calendar."},
+  "feedback": {
+    "eyebrow": "TESTING AND FEEDBACK", "title": "Help us build CueBooker around real workflows.",
+    "body": "If you are a DJ, manager, agency, promoter or venue, leave your details to take part in testing and tell us how you manage bookings today.",
+    "note": "This form is for product testing and feedback. To use your private workspace, create an account.",
     "form": {
-      "title": "Test the next versions of CueBooker",
-      "body": "The public demo is already available without registration. Leave your details to access upcoming tests and send feedback based on your real experience.",
+      "title": "Take part in CueBooker testing",
+      "body": "Tell us about your role. We will contact you to test features and collect feedback on your real workflow.",
       "nameLabel": "Name", "namePlaceholder": "What is your name?",
       "emailLabel": "Email address", "emailPlaceholder": "you@email.com", "emailHelp": "We will use your email to contact you about CueBooker testing.",
       "profileLabel": "What is your role?", "profiles": ["Independent DJ", "Manager or agency", "Promoter, venue or festival"],
-      "consentLabel": "Consent", "consentText": "I agree that CueBooker may use my data to contact me about prototype tests and send project-related updates.",
-      "submit": "I want to test CueBooker", "success": "We have received your details. You are now part of CueBooker's upcoming tests. In the meantime, you can explore the public demo now.", "successCta": "Open demo workspace",
+      "consentLabel": "Consent", "consentText": "I agree that CueBooker may use my details to contact me about testing and send project-related updates.",
+      "submit": "I want to take part", "success": "We have received your details. We will contact you about upcoming tests and feedback sessions.", "successCta": "Open test workspace",
       "invalid": "The information is not valid. Check your email address and try again.", "required": "This field is required.", "loading": "Loading secure form…"
     }
-  }
+  },
+  "cta": {"topButton": "Back to top", "email": "contacto@carlesfar.com"}
 }
