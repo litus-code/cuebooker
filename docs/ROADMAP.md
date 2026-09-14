@@ -6,7 +6,7 @@ Updated: 14 September 2026
 
 Status: working prototype.
 
-Maintain the landing, direct workspace demo, promoter simulation and Brevo early-access form. Use the prototype to collect objections and observe whether users understand the entry channels and booking flow.
+Maintain the landing, authenticated sample workspace, promoter simulation and Brevo feedback form. Use the sample records and guided tour to observe whether users understand the entry channels and booking flow.
 
 ## Phase 1, identity and workspaces
 
@@ -19,7 +19,7 @@ Acceptance:
 - A new user confirms email and creates one initial workspace.
 - A returning user reaches the workspace without repeating onboarding.
 - One account cannot read another account's profile, artist or organisation.
-- The demo remains available without login.
+- Every new profile receives removable examples scoped to that browser and account.
 
 ## Phase 2, real booking vertical slice
 
@@ -85,6 +85,6 @@ Do not start this phase until the pilot has enough participating DJs and the boo
 4. Write the booking schema migration and RLS tests.
 5. Add server-owned transition commands.
 6. Introduce a booking repository interface.
-7. Keep `useBookingDemo` as the public demo adapter.
+7. Keep `useBookingDemo` as the temporary per-profile sample adapter.
 8. Add the Supabase adapter for authenticated workspaces.
 9. Connect transactional email last within the vertical slice, after persistence and token security work.
