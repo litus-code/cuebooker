@@ -33,90 +33,75 @@ The browser stores the current session under a Cuebooker-specific local-storage 
 
 ## Referral continuity
 
-`/access?ref=...` captures first touch locally if no earlier referral exists. After a successful authenticated session, Cuebooker checks whether the user already has `referral_attributions` and inserts the first touch only when absent.
-
-Existing attribution is never overwritten.
+`/access?ref=...` captures first touch locally if no earlier referral exists. After a successful authenticated session, Cuebooker checks whether the user already has `referral_attributions` and inserts the first touch only when absent. Existing attribution is never overwritten.
 
 ## Onboarding
 
 Migration `20260914200415_complete_account_onboarding.sql` adds `public.complete_onboarding(...)`.
 
-The function:
+The function is `SECURITY INVOKER`, requires `auth.uid()`, locks the caller profile, refuses repeated onboarding, creates either one DJ artist or one agency organisation, relies on the existing ownership triggers for membership creation, and marks the profile complete in the same transaction. It is executable by `authenticated`, not `anon`.
 
-- is `SECURITY INVOKER`;
-- requires `auth.uid()`;
-- locks the caller profile during completion;
-- refuses repeated onboarding;
-- creates either one DJ artist or one agency organisation;
-- relies on the existing ownership triggers for membership creation;
-- marks the profile complete in the same transaction;
-- is executable by `authenticated`, not `anon`.
+## Agency roster
 
-The migration version matches the migration applied to staging.
+Migration `20260914201639_add_agency_roster_artist.sql` adds the first explicit agency-to-artist relationship:
+
+- `organization_artists` links organizations and artists;
+- RLS allows organization members or artist members to read a roster link;
+- only organization managers who also manage the artist can create a link;
+- anonymous access is revoked;
+- `public.add_agency_artist(...)` is a `SECURITY INVOKER` RPC available only to authenticated users;
+- the RPC checks organization management, creates the artist, lets the existing artist-owner trigger establish ownership, and links the artist to the agency in one transaction.
+
+An agency with no artist now gets an `Añade el primer artista` state in `/workspace`. Creating it immediately reloads the managed-artist selector and opens that artist's calendar.
 
 ## Private availability
 
-Migration `20260914200444_add_private_availability_blocks.sql` adds:
-
-- `availability_block_status` (`unavailable`, `hold`, `confirmed`);
-- `availability_blocks`;
-- artist/time and booking-reference indexes;
-- timestamp validation;
-- private label/note fields;
-- RLS for artist members/managers;
-- no anonymous table privilege.
-
-RLS uses the current hardened `private.is_artist_member()` and `private.can_manage_artist()` helpers. Do not reintroduce the superseded public helper functions.
+Migration `20260914200444_add_private_availability_blocks.sql` adds `availability_block_status`, `availability_blocks`, timestamp validation, private label/note fields, indexes and RLS for artist members/managers. RLS uses the hardened `private.is_artist_member()` and `private.can_manage_artist()` helpers.
 
 Migration `20260914200718_index_availability_blocks_creator.sql` adds the covering index for the `created_by` foreign key requested by Supabase's performance advisor.
-
-All three migration versions match the migrations applied to staging.
 
 ## Workspace calendar
 
 `/workspace` currently provides:
 
 - managed-artist selector;
+- agency first-artist creation;
 - responsive monthly calendar;
 - clickable day selection;
 - 24-hour day schedule;
 - persistent private block creation;
+- persistent block editing (time, status and private label);
 - persistent block deletion;
 - status markers for unavailable / hold / confirmed;
 - explicit connected/private copy;
 - logout.
-
-The first agency account may legitimately show no direct artist membership until roster assignment is implemented. That state is handled explicitly.
 
 ## Verification completed
 
 On `cuebooker-staging` Supabase:
 
 - `complete_onboarding` exists and is `SECURITY INVOKER`;
-- `availability_blocks` exists;
-- RLS is enabled;
-- four availability policies exist (select/insert/update/delete);
-- `anon` cannot select `availability_blocks`;
-- `authenticated` has table access subject to RLS;
-- `anon` cannot execute `complete_onboarding`;
-- `authenticated` can execute `complete_onboarding`;
+- `availability_blocks` exists with RLS enabled;
+- `organization_artists` exists with RLS enabled;
+- `anon` has no select privilege on `organization_artists`;
+- `authenticated` has select privilege subject to RLS;
+- `add_agency_artist` is `SECURITY INVOKER`;
+- `anon` cannot execute `add_agency_artist`;
+- `authenticated` can execute `add_agency_artist`;
 - the Supabase Security Advisor reports no lints;
-- the performance advisor no longer reports an unindexed foreign key; remaining notices are unused-index informational notices expected on an empty/new staging dataset.
+- the performance advisor reports only unused-index informational notices expected on the new staging dataset.
 
-GitHub CI for PR #19 passes on the current implementation:
-
-- deterministic `npm ci` passes;
-- Nuxt production generation passes.
+GitHub CI has passed on the calendar/auth foundation before the agency-roster refinement. Every subsequent head must also pass before merge.
 
 ## Still required before merge
 
-- Configure `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` as environment secrets in GitHub staging/production if they are not already present.
+- Confirm CI passes on the final PR head.
+- Configure `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` in GitHub staging/production if they are not already present.
 - End-to-end browser test: signup, login, logout, session restore.
 - End-to-end DJ onboarding test.
-- End-to-end agency onboarding test.
+- End-to-end agency onboarding + first roster artist test.
 - Cross-user RLS test with two authenticated accounts.
 - Referral registration test with `?ref=`.
-- Calendar create/delete test from staging UI.
-- Decide whether update/edit of an existing availability block belongs in this foundation or the next calendar refinement.
+- Calendar create/edit/delete test from staging UI.
 
 Do not merge the draft PR until these checks are satisfied.
