@@ -23,6 +23,18 @@ type Artist = {
   slug: string
 }
 
+type OrganizationMembership = {
+  organization_id: string
+  role: 'owner' | 'admin' | 'member'
+}
+
+type Organization = {
+  id: string
+  name: string
+  slug: string
+  type: 'agency' | 'promoter'
+}
+
 export function useAvailability() {
   const config = useRuntimeConfig()
   const auth = useCueAuth()
@@ -60,6 +72,41 @@ export function useAvailability() {
       ...artist,
       role: memberships.find(item => item.artist_id === artist.id)?.role || 'editor'
     }))
+  }
+
+  async function listOrganizations() {
+    const userId = auth.session.value?.user.id
+    if (!userId) throw new Error('authentication_required')
+
+    const memberships = await $fetch<OrganizationMembership[]>(`${supabaseUrl.value}/rest/v1/organization_members`, {
+      headers: headers(),
+      query: { user_id: `eq.${userId}`, select: 'organization_id,role' }
+    })
+
+    if (!memberships.length) return [] as Array<Organization & { role: OrganizationMembership['role'] }>
+
+    const ids = memberships.map(item => item.organization_id)
+    const organizations = await $fetch<Organization[]>(`${supabaseUrl.value}/rest/v1/organizations`, {
+      headers: headers(),
+      query: { id: `in.(${ids.join(',')})`, select: 'id,name,slug,type', order: 'name.asc' }
+    })
+
+    return organizations.map(organization => ({
+      ...organization,
+      role: memberships.find(item => item.organization_id === organization.id)?.role || 'member'
+    }))
+  }
+
+  async function addAgencyArtist(input: { organizationId: string; artistName: string; artistSlug: string }) {
+    return $fetch<string>(`${supabaseUrl.value}/rest/v1/rpc/add_agency_artist`, {
+      method: 'POST',
+      headers: headers(),
+      body: {
+        target_organization_id: input.organizationId,
+        artist_name: input.artistName.trim(),
+        artist_slug: input.artistSlug
+      }
+    })
   }
 
   async function listBlocks(artistId: string, from: string, to: string) {
@@ -103,6 +150,30 @@ export function useAvailability() {
     return rows[0]
   }
 
+  async function updateBlock(id: string, input: {
+    startsAt: string
+    endsAt: string
+    status: AvailabilityStatus
+    label?: string
+    note?: string
+  }) {
+    const rows = await $fetch<AvailabilityBlock[]>(`${supabaseUrl.value}/rest/v1/availability_blocks`, {
+      method: 'PATCH',
+      headers: { ...headers(), Prefer: 'return=representation' },
+      query: { id: `eq.${id}` },
+      body: {
+        starts_at: input.startsAt,
+        ends_at: input.endsAt,
+        status: input.status,
+        label: input.label?.trim() || null,
+        note: input.note?.trim() || null
+      }
+    })
+
+    if (!rows.length) throw new Error('availability_block_not_found_or_forbidden')
+    return rows[0]
+  }
+
   async function deleteBlock(id: string) {
     await $fetch(`${supabaseUrl.value}/rest/v1/availability_blocks`, {
       method: 'DELETE',
@@ -111,5 +182,5 @@ export function useAvailability() {
     })
   }
 
-  return { listArtists, listBlocks, createBlock, deleteBlock }
+  return { listArtists, listOrganizations, addAgencyArtist, listBlocks, createBlock, updateBlock, deleteBlock }
 }
