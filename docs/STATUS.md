@@ -82,9 +82,9 @@ Analytics remains disabled while `NUXT_PUBLIC_GTM_ID` is empty. The next externa
 
 See `docs/ANALYTICS.md` for the event taxonomy and setup rules.
 
-## Prepared in local Work commit
+## Calendar and account foundation on main
 
-Commit `2a11323 Build calendar and account onboarding foundation` was created on local branch `feature/calendar-auth-foundation`. It still needs to be pushed when the Work development environment is available.
+The lost local commit was reconstructed on `feature/calendar-auth-foundation` and merged through PR #19. PR #20 then corrected the staging configuration and integrated account entry into the public home. `main` currently includes merge commit `c2d1766`.
 
 That commit contains:
 
@@ -109,7 +109,7 @@ Local verification completed before the Work environment became unavailable:
 - `npm audit --omit=dev --audit-level=high` reported zero vulnerabilities.
 - `git diff --check` passed.
 
-The older working tree at `cuebooker-publish` contains separate uncommitted user changes. Do not reset, overwrite or clean it. Continue from a clean worktree or reconcile changes file by file.
+The anonymous `/app` test workspace remains separate from the authenticated `/workspace`. This separation prevents fictional browser-local records from mixing with private account data.
 
 ## CI and lockfile status
 
@@ -124,27 +124,31 @@ Current repository automation uses deterministic npm installs with:
 
 Do not reintroduce multiple package-manager lockfiles.
 
-## Environment work still required
+## Environment configuration
 
-The pending Work branch currently expects:
+The browser application expects:
 
 - `NUXT_PUBLIC_SUPABASE_URL`
-- `NUXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NUXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 
-Before merging that integration, review whether to adopt Supabase's modern publishable key naming (`NUXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) instead of carrying the legacy anon-key naming forward.
+Staging uses the public publishable-key naming. Never place a secret or service-role key in frontend code or documentation.
 
 Apply every pending Supabase migration before testing onboarding. Confirm the Auth redirect allowlist for local, staging and production.
 
-## Integration order when Work publishes the branch
+## Remaining account and calendar verification
 
-1. Inspect the exact diff before rebasing or merging.
-2. Reconcile its migrations against the versions already applied in staging.
-3. Verify package and lockfile changes against the current deterministic-install baseline.
-4. Review Supabase client key naming and environment variables.
-5. Verify signup, login, logout, session restore and protected routes.
-6. Verify first-touch referral capture from `?ref=` through completed registration.
-7. Verify calendar persistence and ownership/RLS behaviour.
-8. Run typecheck, generate, audit and staging smoke tests before any production deployment.
+1. Verify signup, login, logout, session restore and protected routes.
+2. Verify DJ and agency onboarding, including the agency's first roster artist.
+3. Verify first-touch referral capture from `?ref=` through completed registration.
+4. Verify calendar create, edit and delete persistence.
+5. Verify ownership and RLS behaviour with two unrelated accounts.
+6. Run generation, audit and staging smoke tests before any production deployment.
+
+## Public product entry
+
+The home now presents Cuebooker as usable software rather than an early-access waiting list. Account creation and sign-in are first-class header and hero actions. The floating pilot action has been removed. The existing Brevo form remains at the end of the page for research participation and product feedback, clearly separated from account registration.
+
+The anonymous `/app` route remains available as a test workspace. Home copy must describe its records as fictional test data and distinguish it from each account's connected private workspace. Do not present the test workspace as a competing primary entry in the hero.
 
 ## Next product implementation block
 

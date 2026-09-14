@@ -1,11 +1,10 @@
 {
   "seo": {"title": "CueBooker | Gestión de bookings para DJs", "description": "Recibe solicitudes completas, responde al promotor por email y controla disponibilidad, calendario e historial desde un solo booking."},
-  "prototype": "PROTOTIPO FUNCIONAL / EN DESARROLLO",
-  "nav": {"problem": "El problema", "product": "Cómo funciona", "roles": "Para quién", "earlyAccess": "Acceso anticipado", "workspace": "Ver workspace"},
+  "nav": {"problem": "El problema", "product": "Cómo funciona", "roles": "Para quién", "tryProduct": "Probar CueBooker", "login": "Iniciar sesión", "signup": "Crear cuenta"},
   "hero": {
     "eyebrow": "GESTIÓN DE BOOKINGS PARA DJS Y AGENCIAS", "titleTop": "BOOKINGS", "titleBottom": "BAJO CONTROL",
     "body": "Recibe solicitudes completas y gestiona conversaciones, condiciones, estados y fechas desde un solo lugar, aunque el contacto empiece por Instagram, WhatsApp, correo o una llamada.",
-    "primaryCta": "Ver cómo funciona", "secondaryCta": "Ver panel demo", "networkIdle": "UNA SOLICITUD · UN ESTADO", "networkSearching": "ORDENANDO BOOKING", "networkFound": "LISTO PARA DECIDIR",
+    "primaryCta": "Crear cuenta", "secondaryCta": "Ver cómo funciona", "networkIdle": "UNA SOLICITUD · UN ESTADO", "networkSearching": "ORDENANDO BOOKING", "networkFound": "LISTO PARA DECIDIR",
     "proofs": ["Todas las solicitudes en una bandeja", "Cada booking conserva su conversación y estado", "Calendario y disponibilidad sin solapamientos"]
   },
   "problem": {
@@ -21,8 +20,15 @@
   },
   "flow": {
     "index": "02 / CONECTADO", "eyebrow": "DEL PRIMER CONTACTO A LA FECHA CERRADA", "title": "De la primera solicitud al calendario. Sin perder el hilo.",
-    "body": "El DJ comparte su enlace. El promotor envía una solicitud sin crear una cuenta. La respuesta le llega por email y ambas partes continúan en el mismo booking hasta cerrar la fecha.",
-    "steps": ["Comparte", "Solicita", "Responde", "Acuerda", "Confirma", "Calendario"]
+    "body": "Cada paso ocurre dentro del mismo booking. El promotor inicia la solicitud sin cuenta y el DJ conserva datos, conversación, estado y fecha hasta cerrarla.",
+    "steps": [
+      {"name": "Comparte", "detail": "El DJ publica su enlace en Instagram, WhatsApp o su web."},
+      {"name": "Solicita", "detail": "El promotor envía fecha, sala, horario y propuesta sin registrarse."},
+      {"name": "Recibe", "detail": "CueBooker crea el booking y lo coloca en la bandeja del DJ."},
+      {"name": "Responde", "detail": "La conversación y las condiciones permanecen en la misma ficha."},
+      {"name": "Acuerda", "detail": "Ambas partes revisan la propuesta y conocen el siguiente paso."},
+      {"name": "Confirma", "detail": "La fecha cambia de estado y se incorpora al calendario."}
+    ]
   },
   "integrations": {
     "index": "03 / DONDE YA TRABAJAS", "eyebrow": "SIN CAMBIAR TUS CANALES", "title": "Un enlace propio. Un widget si ya tienes web.",
@@ -45,34 +51,36 @@
   "access": {
     "index": "05 / ACCESO", "eyebrow": "FRICCIÓN SOLO CUANDO APORTA VALOR", "title": "El DJ tiene panel. El promotor solo necesita responder.",
     "body": "DJs y agencias crean su espacio de trabajo. El promotor puede enviar la primera consulta sin cuenta y recibe un acceso seguro para continuar el booking.",
-    "selectorLabel": "Selecciona un perfil", "demoTitle": "Prototipo en desarrollo.", "demoNote": " Esta pantalla demuestra el modelo de acceso. El registro, la autenticación y la persistencia compartida se conectarán en la siguiente fase.",
+    "selectorLabel": "Selecciona un perfil", "demoTitle": "Acceso disponible.", "demoNote": " DJs y agencias ya pueden crear su cuenta, completar el perfil inicial y gestionar disponibilidad desde su espacio privado.",
     "roles": [
-      {"name": "DJ", "label": "ACCESO / ARTISTA", "account": "CUENTA DESDE EL INICIO", "headline": "Publica tu punto de entrada para cada booking.", "steps": ["Crea tu cuenta y perfil", "Configura disponibilidad y privacidad", "Comparte tu enlace", "Recibe y sigue solicitudes"], "cta": "Quiero entrar como DJ", "mailSubject": "CueBooker Early Access - DJ"},
-      {"name": "PROMOTOR", "label": "ACCESO / PROMOTOR", "account": "SIN CUENTA EN EL PRIMER CONTACTO", "headline": "Envía los datos y sigue desde tu correo.", "steps": ["Abre el enlace del DJ", "Completa fecha, sala y oferta", "Verifica tu email", "Responde y confirma con enlace seguro"], "cta": "Quiero probar como promotor", "mailSubject": "CueBooker Early Access - Promotor"},
-      {"name": "AGENCIA", "label": "ACCESO / MANAGER", "account": "CUENTA DESDE EL INICIO", "headline": "Organiza el roster sin perder el control.", "steps": ["Registra la agencia", "Añade artistas y responsables", "Define permisos y visibilidad", "Gestiona solicitudes y calendarios"], "cta": "Quiero entrar como agencia", "mailSubject": "CueBooker Early Access - Agencia"}
+      {"name": "DJ", "label": "ACCESO / ARTISTA", "account": "CUENTA DESDE EL INICIO", "headline": "Publica tu punto de entrada para cada booking.", "steps": ["Crea tu cuenta y perfil", "Configura disponibilidad y privacidad", "Comparte tu enlace", "Recibe y sigue solicitudes"], "cta": "Crear cuenta como DJ", "route": "/access?mode=signup"},
+      {"name": "PROMOTOR", "label": "ACCESO / PROMOTOR", "account": "SIN CUENTA EN EL PRIMER CONTACTO", "headline": "Envía los datos y sigue desde tu correo.", "steps": ["Abre el enlace del DJ", "Completa fecha, sala y oferta", "Verifica tu email", "Responde y confirma con enlace seguro"], "cta": "Probar una solicitud", "route": "/artist"},
+      {"name": "AGENCIA", "label": "ACCESO / MANAGER", "account": "CUENTA DESDE EL INICIO", "headline": "Organiza el roster sin perder el control.", "steps": ["Registra la agencia", "Añade artistas y responsables", "Define permisos y visibilidad", "Gestiona solicitudes y calendarios"], "cta": "Crear cuenta como agencia", "route": "/access?mode=signup"}
     ]
   },
   "demo": {
-    "index": "06 / DEMO", "eyebrow": "QUÉ ESTÁS PROBANDO", "title": "La experiencia es real. Las conexiones aún son simuladas.",
-    "body": "Entra directamente al panel del DJ para ver solicitudes, estados, conversaciones y calendario. Si quieres entender de dónde llega un booking, también puedes simular el recorrido del promotor desde el enlace público del artista.",
-    "currentTitle": "✓ Funcional en esta demo", "current": ["Formulario de booking", "Bandeja y estados", "Conversación y adjuntos simulados", "Calendario, alertas e historial"],
-    "realTitle": "○ Previsto para el producto", "real": ["Cuentas y permisos", "Base de datos compartida", "Emails y enlaces seguros", "Archivos almacenados y calendario sincronizado", "Buscador de DJs por disponibilidad", "Visibilidad voluntaria sin exponer la agenda privada"],
-    "realNote": "Estas funciones forman parte del producto conectado y todavía no están activas en el prototipo público.",
-    "panelButton": "Abrir panel del DJ", "requestButton": "Simular solicitud del promotor"
+    "index": "06 / PRUEBA", "eyebrow": "UTILÍZALO AHORA", "title": "Recorre un booking completo antes de crear tu cuenta.",
+    "body": "El espacio de prueba permite utilizar la bandeja, cambiar estados, continuar conversaciones y consultar el calendario. Incluye solicitudes y perfiles ficticios para que puedas recorrer el flujo completo sin modificar datos reales.",
+    "currentTitle": "Disponible ahora", "current": ["Formulario de booking", "Bandeja y cambios de estado", "Conversación y adjuntos de prueba", "Calendario, alertas e historial"],
+    "realTitle": "Con una cuenta", "real": ["Perfil privado de DJ o agencia", "Calendario y disponibilidad persistentes", "Gestión del roster de una agencia", "Sesión protegida y datos propios"],
+    "realNote": "El espacio de prueba usa datos ficticios guardados en este navegador. Las cuentas trabajan en un espacio privado conectado.",
+    "panelButton": "Abrir espacio de prueba", "requestButton": "Probar como promotor"
   },
-  "cta": {
-    "eyebrow": "ACCESO ANTICIPADO / BARCELONA", "title": "La demo ya está abierta. La siguiente versión queremos probarla contigo.",
-    "body": "Puedes recorrer ahora una solicitud simulada sin registrarte. Si eres DJ, manager, agencia o promotor, déjanos tus datos para acceder a próximas pruebas y contarnos qué encaja o falla en tu forma real de trabajar.",
-    "button": "Participar en el piloto", "demoButton": "Abrir panel demo", "floatLabel": "PARTICIPA EN EL PILOTO", "floatButton": "Quiero probarlo", "topButton": "Volver arriba", "email": "contacto@carlesfar.com", "note": "La demo pública no requiere registro. Los artistas, resultados y solicitudes actuales son simulados.",
+  "entry": {"eyebrow": "TU ESPACIO DE TRABAJO", "title": "Empieza a gestionar tus bookings.", "body": "Crea tu cuenta como DJ o agencia y configura tu primer perfil y calendario privado."},
+  "feedback": {
+    "eyebrow": "PRUEBAS Y FEEDBACK", "title": "Ayúdanos a construir CueBooker con casos reales.",
+    "body": "Si eres DJ, manager, agencia, promotor o sala, déjanos tus datos para participar en pruebas y contarnos cómo gestionas tus bookings.",
+    "note": "Este formulario sirve para participar en pruebas y enviar feedback. Para utilizar tu espacio privado, crea una cuenta.",
     "form": {
-      "title": "Prueba las próximas versiones de CueBooker",
-      "body": "La demo pública ya está disponible sin registro. Déjanos tus datos si quieres acceder a las siguientes pruebas y enviarnos feedback desde tu experiencia real.",
+      "title": "Participa en las pruebas de CueBooker",
+      "body": "Cuéntanos qué perfil tienes. Te contactaremos para probar funciones y recoger feedback sobre tu forma real de trabajar.",
       "nameLabel": "Nombre", "namePlaceholder": "¿Cómo te llamas?",
-      "emailLabel": "Correo electrónico", "emailPlaceholder": "tu@email.com", "emailHelp": "Usaremos tu correo para informarte sobre las pruebas de CueBooker.",
+      "emailLabel": "Correo electrónico", "emailPlaceholder": "tu@email.com", "emailHelp": "Usaremos tu correo para contactarte sobre pruebas de CueBooker.",
       "profileLabel": "¿Cuál es tu perfil?", "profiles": ["DJ independiente", "Manager o agencia", "Promotor, sala o festival"],
-      "consentLabel": "Consentimiento", "consentText": "Acepto que CueBooker utilice mis datos para contactarme sobre las pruebas del prototipo y enviarme novedades relacionadas con el proyecto.",
-      "submit": "Quiero probar CueBooker", "success": "Hemos recibido tus datos. Ya formas parte de las próximas pruebas de CueBooker. Mientras tanto, puedes recorrer la demo pública ahora mismo.", "successCta": "Abrir panel demo",
+      "consentLabel": "Consentimiento", "consentText": "Acepto que CueBooker utilice mis datos para contactarme sobre pruebas y enviarme novedades relacionadas con el proyecto.",
+      "submit": "Quiero participar", "success": "Hemos recibido tus datos. Te contactaremos para próximas pruebas y sesiones de feedback.", "successCta": "Abrir espacio de prueba",
       "invalid": "Los datos introducidos no son válidos. Revisa el correo electrónico y vuelve a intentarlo.", "required": "Este campo es obligatorio.", "loading": "Cargando formulario seguro…"
     }
-  }
+  },
+  "cta": {"topButton": "Volver arriba", "email": "contacto@carlesfar.com"}
 }
