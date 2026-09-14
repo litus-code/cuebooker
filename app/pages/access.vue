@@ -92,7 +92,6 @@ useHead({ title: 'Acceso | CueBooker' })
         Este entorno todavía no tiene configurada la conexión pública con Supabase.
       </p>
 
-      <NuxtLink class="access-demo" to="/app">Abrir espacio de prueba</NuxtLink>
     </section>
   </main>
 </template>
@@ -116,6 +115,5 @@ input { min-height: 48px; padding: 0 14px; border: 1px solid #333; background: #
 .access-submit:disabled { opacity: .45; cursor: not-allowed; }
 .access-message { margin: 0; padding: 12px; border: 1px solid #3b3b3b; color: #ddd; font-size: .9rem; }
 .access-message--error { border-color: #8b3434; color: #ffadad; }
-.access-demo { display: inline-block; margin-top: 22px; color: #aaa; }
 @media (max-width: 620px) { .access-page { padding: 18px; } .access-panel { margin-top: 20px; padding: 22px; } }
 </style>
