@@ -11,7 +11,7 @@ This file records what was actually reconstructed after the lost local Work comm
 - `/app` remains the anonymous browser-local product demo.
 - `/access` handles email/password sign-in and registration.
 - `/onboarding` creates the first DJ artist or agency identity.
-- `/workspace` is the authenticated private calendar workspace.
+- `/workspace` is the authenticated private product workspace.
 - `/app?mode=account` is retained as an account-entry compatibility URL and routes authenticated/onboarded users to `/workspace`.
 
 Separating `/app` and `/workspace` is intentional. It prevents demo records and authenticated records from sharing the same state container while the real booking persistence layer is still being built.
@@ -60,20 +60,24 @@ Migration `20260914200444_add_private_availability_blocks.sql` adds `availabilit
 
 Migration `20260914200718_index_availability_blocks_creator.sql` adds the covering index for the `created_by` foreign key requested by Supabase's performance advisor.
 
-## Workspace calendar
+## Private workspace and calendar
 
 `/workspace` currently provides:
 
+- product navigation separated into Resumen, Bookings and Calendario;
+- an overview derived from real private availability data;
+- an honest prepared state for Bookings while shared booking persistence is pending;
 - managed-artist selector;
 - agency first-artist creation;
 - responsive monthly calendar;
 - clickable day selection;
-- 24-hour day schedule;
+- a scrollable 24-hour timeline with blocks positioned by start time and duration;
+- creation from an empty hour in the timeline;
 - persistent private block creation;
 - persistent block editing (time, status and private label);
-- persistent block deletion;
+- persistent block deletion with confirmation;
 - status markers for unavailable / hold / confirmed;
-- explicit connected/private copy;
+- explicit separation between connected availability and simulated bookings;
 - logout.
 
 ## Verification completed
