@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { bookingStatuses, statusTone, type BookingStatus } from '../domain/booking'
+
 const auth = useCueAuth()
 const availability = useAvailability()
+const demo = useBookingDemo()
 
 type WorkspaceView = 'overview' | 'bookings' | 'calendar'
 type ManagedArtist = { id: string; stage_name: string; slug: string; role: 'owner' | 'manager' | 'editor' }
@@ -25,6 +28,9 @@ const editingBlockId = ref<string | null>(null)
 const rosterArtistName = ref('')
 const rosterArtistSlug = ref('')
 const rosterSubmitting = ref(false)
+const bookingFilter = ref<'all' | BookingStatus>('all')
+const selectedDemoBookingId = ref('')
+const demoReply = ref('')
 
 const manageableAgency = computed(() => organizations.value.find(item => item.type === 'agency' && ['owner', 'admin'].includes(item.role)))
 const selectedArtist = computed(() => artists.value.find(item => item.id === selectedArtistId.value))
@@ -68,6 +74,10 @@ const holdCount = computed(() => blocks.value.filter(block => block.status === '
 const confirmedCount = computed(() => blocks.value.filter(block => block.status === 'confirmed').length)
 const occupiedDays = computed(() => new Set(blocks.value.map(block => block.starts_at.slice(0, 10))).size)
 const validTimeRange = computed(() => endTime.value > startTime.value)
+const demoActiveBookings = computed(() => demo.bookings.value.filter(item => !item.archived))
+const demoFilteredBookings = computed(() => demoActiveBookings.value.filter(item => bookingFilter.value === 'all' || item.status === bookingFilter.value))
+const selectedDemoBooking = computed(() => demo.bookings.value.find(item => item.id === selectedDemoBookingId.value))
+const demoCounts = computed(() => Object.fromEntries(bookingStatuses.map(status => [status, demoActiveBookings.value.filter(item => item.status === status).length])))
 const hours = Array.from({ length: 24 }, (_, index) => `${String(index).padStart(2, '0')}:00`)
 
 onMounted(async () => {
@@ -83,6 +93,12 @@ watch([selectedArtistId, monthCursor], async () => {
   if (selectedArtistId.value) await loadBlocks()
 })
 watch(rosterArtistName, value => { rosterArtistSlug.value = slugify(value) })
+watch(demo.ready, value => {
+  if (value && !selectedDemoBookingId.value) selectedDemoBookingId.value = demoActiveBookings.value[0]?.id || ''
+}, { immediate: true })
+watch(selectedDemoBookingId, async (id) => {
+  if (id) await demo.markOpened(id)
+})
 
 function slugify(value: string) {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
@@ -218,6 +234,24 @@ function shortDate(value: string) {
 }
 
 function time(value: string) { return value.slice(11, 16) }
+function formatDemoDate(value: string) { return new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(`${value}T12:00:00`)) }
+function formatDemoTime(value: string) { return new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(value)) }
+function demoStatusLabel(status: BookingStatus) {
+  return { new: 'Nueva', in_review: 'En revisión', waiting_promoter: 'Esperando al promotor', confirmed: 'Confirmada', rejected: 'Rechazada' }[status]
+}
+async function sendDemoReply() {
+  if (!selectedDemoBooking.value || !demoReply.value.trim()) return
+  await demo.addMessage(selectedDemoBooking.value.id, 'artist', demoReply.value)
+  demoReply.value = ''
+}
+async function confirmDemoBooking() {
+  if (selectedDemoBooking.value) await demo.setStatus(selectedDemoBooking.value.id, 'confirmed')
+}
+async function rejectDemoBooking() {
+  if (!selectedDemoBooking.value) return
+  await demo.setStatus(selectedDemoBooking.value.id, 'rejected')
+  selectedDemoBookingId.value = demoActiveBookings.value[0]?.id || ''
+}
 function statusLabel(status: AvailabilityStatus) { return status === 'confirmed' ? 'Confirmado' : status === 'hold' ? 'Hold' : 'No disponible' }
 async function logout() { await auth.signOut(); await navigateTo('/access') }
 useHead({ title: 'Workspace | CueBooker' })
@@ -270,7 +304,7 @@ useHead({ title: 'Workspace | CueBooker' })
         </div>
 
         <div class="summary-grid">
-          <article class="summary-card summary-card--pending"><span>Bookings nuevos</span><strong>—</strong><p>La bandeja conectada se incorpora en el siguiente bloque.</p></article>
+          <article class="summary-card summary-card--pending"><span>Bookings reales</span><strong>—</strong><p>Aún sin conectar. La bandeja completa está disponible en modo prueba.</p></article>
           <article class="summary-card"><span>Holds este mes</span><strong>{{ holdCount }}</strong><p>Fechas pendientes de decisión.</p></article>
           <article class="summary-card"><span>Confirmados</span><strong>{{ confirmedCount }}</strong><p>Horarios confirmados este mes.</p></article>
           <article class="summary-card"><span>Días ocupados</span><strong>{{ occupiedDays }}</strong><p>Con al menos un horario registrado.</p></article>
@@ -290,10 +324,10 @@ useHead({ title: 'Workspace | CueBooker' })
           </section>
 
           <aside class="panel next-panel">
-            <p class="eyebrow">PRODUCTO / SIGUIENTE BLOQUE</p>
-            <h2>La bandeja de bookings será el centro.</h2>
-            <p>Las solicitudes reales todavía no están conectadas a esta cuenta. Cuando lo estén, aquí aparecerán las conversaciones pendientes y sus siguientes acciones.</p>
-            <button type="button" @click="activeView = 'bookings'">Ver estado de Bookings</button>
+            <p class="eyebrow">BOOKINGS / MODO PRUEBA</p>
+            <h2>Prueba la bandeja completa.</h2>
+            <p>Las solicitudes reales todavía no están conectadas a esta cuenta. Puedes probar ahora los filtros, ofertas, conversaciones y cambios de estado con datos simulados.</p>
+            <button type="button" @click="activeView = 'bookings'">Abrir Bookings</button>
           </aside>
         </div>
       </section>
@@ -303,19 +337,44 @@ useHead({ title: 'Workspace | CueBooker' })
           <div><p class="eyebrow">BOOKINGS / BANDEJA</p><h1>Solicitudes y conversaciones.</h1><p>Este será el espacio principal para revisar contactos, responder y decidir cada fecha.</p></div>
           <label class="artist-select"><span>Artista</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
         </div>
-        <div class="bookings-shell">
-          <aside class="booking-filters" aria-label="Filtros de bookings">
-            <button class="active" type="button"><span>Nuevos</span><b>—</b></button>
-            <button type="button"><span>En revisión</span><b>—</b></button>
-            <button type="button"><span>Esperando</span><b>—</b></button>
-            <button type="button"><span>Confirmados</span><b>—</b></button>
-          </aside>
-          <section class="booking-empty">
-            <p class="eyebrow">ESTADO / PREPARADO</p>
-            <h2>La interfaz está lista. Los bookings reales aún no.</h2>
-            <p>Las solicitudes persistentes y sus conversaciones se conectarán en el siguiente bloque de producto. No mostramos registros ficticios dentro de tu cuenta privada.</p>
-            <div class="empty-actions"><NuxtLink to="/app">Ver flujo con datos de prueba</NuxtLink><button type="button" @click="activeView = 'calendar'">Gestionar calendario</button></div>
-          </section>
+        <aside class="demo-notice">
+          <div><span>MODO PRUEBA / DATOS SIMULADOS</span><strong>Prueba ahora la bandeja completa.</strong><p>Estos bookings se guardan únicamente en este navegador. No pertenecen a tu cuenta ni modifican el calendario privado.</p></div>
+          <button type="button" @click="activeView = 'calendar'">Ir al calendario real</button>
+        </aside>
+
+        <div class="status-filters" aria-label="Filtrar bookings de prueba">
+          <button :class="{ active: bookingFilter === 'all' }" type="button" @click="bookingFilter = 'all'">Todas <strong>{{ demoActiveBookings.length }}</strong></button>
+          <button v-for="status in bookingStatuses.filter(item => item !== 'rejected')" :key="status" type="button" :class="[{ active: bookingFilter === status }, `tone-${statusTone[status]}`]" @click="bookingFilter = status"><i />{{ demoStatusLabel(status) }} <strong>{{ demoCounts[status] }}</strong></button>
+        </div>
+
+        <div class="booking-workspace demo-booking-workspace">
+          <div class="booking-list">
+            <button v-for="booking in demoFilteredBookings" :key="booking.id" type="button" :class="{ active: selectedDemoBookingId === booking.id }" @click="selectedDemoBookingId = selectedDemoBookingId === booking.id ? '' : booking.id">
+              <span class="booking-list__date">{{ formatDemoDate(booking.event.date) }}</span>
+              <span><strong>{{ booking.event.venue }}</strong><small>{{ booking.artistName }} · {{ booking.event.city }}</small></span>
+              <span :class="`status-pill tone-${statusTone[booking.status]}`"><i />{{ demoStatusLabel(booking.status) }}</span>
+            </button>
+            <p v-if="!demoFilteredBookings.length" class="workspace-empty">No hay solicitudes de prueba en este estado.</p>
+          </div>
+
+          <article v-if="selectedDemoBooking" class="booking-detail">
+            <header>
+              <div><p class="eyebrow">BOOKING DE PRUEBA / {{ selectedDemoBooking.id.slice(-8).toUpperCase() }}</p><h2>{{ selectedDemoBooking.event.venue }}</h2><p>{{ selectedDemoBooking.event.name }} · {{ selectedDemoBooking.artistName }}</p></div>
+              <div class="booking-status-display" :class="`tone-${statusTone[selectedDemoBooking.status]}`"><span>Estado automático</span><strong><i />{{ demoStatusLabel(selectedDemoBooking.status) }}</strong></div>
+            </header>
+
+            <div class="booking-facts">
+              <section><h3>Datos del evento</h3><dl><div><dt>Fecha</dt><dd>{{ formatDemoDate(selectedDemoBooking.event.date) }}</dd></div><div><dt>Ciudad</dt><dd>{{ selectedDemoBooking.event.city }}</dd></div><div><dt>Sala</dt><dd>{{ selectedDemoBooking.event.venue }}</dd></div><div><dt>Aforo</dt><dd>{{ selectedDemoBooking.event.capacity }}</dd></div><div><dt>Oferta</dt><dd>{{ selectedDemoBooking.event.offer }}</dd></div><div><dt>Horario</dt><dd>{{ selectedDemoBooking.event.schedule || '—' }}</dd></div></dl></section>
+              <section><h3>Contacto</h3><dl><div><dt>Nombre</dt><dd>{{ selectedDemoBooking.promoter.name }}</dd></div><div><dt>Email</dt><dd>{{ selectedDemoBooking.promoter.email }}</dd></div><div v-if="selectedDemoBooking.promoter.phone"><dt>Tel.</dt><dd>{{ selectedDemoBooking.promoter.phone }}</dd></div><div><dt>Origen</dt><dd>Enlace de booking</dd></div></dl></section>
+            </div>
+
+            <section class="message-thread"><h3>Conversación</h3><article v-for="message in selectedDemoBooking.messages" :key="message.id" :class="`message message--${message.actor}`"><header><strong>{{ message.actor === 'artist' ? selectedDemoBooking.artistName : selectedDemoBooking.promoter.name }}</strong><time>{{ formatDemoTime(message.createdAt) }}</time></header><p>{{ message.body }}</p></article></section>
+
+            <form class="booking-reply" @submit.prevent="sendDemoReply"><label>Responder al promotor<textarea v-model="demoReply" rows="5" placeholder="Escribe condiciones, una pregunta o una propuesta…" /></label><p>Simulación local. El mensaje no se envía por email.</p><button class="primary-button demo-action" type="submit" :disabled="!demoReply.trim()">Enviar respuesta de prueba</button></form>
+
+            <footer class="booking-actions"><NuxtLink class="demo-secondary-action" :to="`/request?id=${selectedDemoBooking.id}`">Abrir vista del promotor</NuxtLink><button v-if="selectedDemoBooking.status !== 'confirmed'" class="primary-button demo-action" type="button" @click="confirmDemoBooking">Confirmar fecha</button><button v-if="selectedDemoBooking.status !== 'confirmed'" class="demo-danger-action" type="button" @click="rejectDemoBooking">Rechazar solicitud</button></footer>
+          </article>
+          <div v-else class="booking-placeholder"><span>→</span><p>Abre una solicitud para ver sus datos, la oferta y la conversación.</p></div>
         </div>
       </section>
 
@@ -415,6 +474,15 @@ select:focus, input:focus { border-color: #e8ff2f; }
 .next-panel button { margin-top: 28px; color: #090909; }
 .panel-empty { padding: 32px 22px; color: #8c8c8c; }
 .panel-empty button { padding: 0; color: #e8ff2f; }
+.demo-notice { display: flex; justify-content: space-between; align-items: center; gap: 28px; padding: 20px 22px; border: 1px solid #665f18; background: #17170d; }
+.demo-notice span { display: block; margin-bottom: 7px; color: #e8ff2f; font: 700 10px monospace; letter-spacing: .1em; }
+.demo-notice strong { font-size: 17px; }
+.demo-notice p { max-width: 720px; margin: 6px 0 0; color: #999; font-size: 13px; line-height: 1.5; }
+.demo-notice > button { flex: 0 0 auto; min-height: 42px; padding: 0 16px; border: 1px solid #777025; background: transparent; color: #e8ff2f; cursor: pointer; font-weight: 800; }
+.demo-booking-workspace { padding-bottom: 34px; }
+.demo-action { min-height: 46px; padding: 0 18px; }
+.demo-secondary-action, .demo-danger-action { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid #3a3a3a; background: transparent; color: #f2f0eb; cursor: pointer; font-size: 12px; font-weight: 800; text-decoration: none; }
+.demo-danger-action { border-color: #75404a; color: #ff9dab; }
 .bookings-shell { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 470px; border: 1px solid #292929; background: #0d0d0d; }
 .booking-filters { padding: 10px; border-right: 1px solid #292929; }
 .booking-filters button { display: flex; justify-content: space-between; width: 100%; min-height: 50px; padding: 0 14px; border: 0; background: transparent; color: #848484; cursor: pointer; text-align: left; }
@@ -499,6 +567,10 @@ select:focus, input:focus { border-color: #e8ff2f; }
   .bookings-shell { grid-template-columns: 1fr; }
   .booking-filters { display: grid; grid-template-columns: repeat(2, 1fr); border-right: 0; border-bottom: 1px solid #292929; }
   .booking-empty { padding: 34px 20px; }
+  .demo-notice { align-items: flex-start; flex-direction: column; }
+  .demo-notice > button { width: 100%; }
+  .demo-booking-workspace { display: block; }
+  .demo-booking-workspace .booking-list { margin-bottom: 14px; }
   .empty-actions { align-items: flex-start; flex-direction: column; }
   .calendar-toolbar { min-height: 60px; }
   .weekday { padding: 9px 2px; font-size: 8px; }
