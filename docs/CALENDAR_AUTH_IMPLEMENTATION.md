@@ -41,6 +41,8 @@ Migration `20260914200415_complete_account_onboarding.sql` adds `public.complete
 
 The function is `SECURITY INVOKER`, requires `auth.uid()`, locks the caller profile, refuses repeated onboarding, creates either one DJ artist or one agency organisation, relies on the existing ownership triggers for membership creation, and marks the profile complete in the same transaction. It is executable by `authenticated`, not `anon`.
 
+Migration `20260914223216_fix_complete_onboarding_parameter_ambiguity.sql` qualifies the function inputs without renaming its public RPC parameters. This fixes PostgreSQL resolving `display_name` as both the profile column and the function parameter during account creation.
+
 ## Agency roster
 
 Migration `20260914201639_add_agency_roster_artist.sql` adds the first explicit agency-to-artist relationship:
@@ -85,6 +87,7 @@ Migration `20260914200718_index_availability_blocks_creator.sql` adds the coveri
 On `cuebooker-staging` Supabase:
 
 - `complete_onboarding` exists and is `SECURITY INVOKER`;
+- `complete_onboarding` completes inside a rollback-only verification transaction without leaving an artist or profile change behind;
 - `availability_blocks` exists with RLS enabled;
 - `organization_artists` exists with RLS enabled;
 - `anon` has no select privilege on `organization_artists`;
