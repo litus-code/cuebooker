@@ -59,12 +59,12 @@
     ]
   },
   "demo": {
-    "index": "06 / PRUEBA", "eyebrow": "UTILÍZALO AHORA", "title": "Recorre un booking completo antes de crear tu cuenta.",
-    "body": "El espacio de prueba permite utilizar la bandeja, cambiar estados, continuar conversaciones y consultar el calendario. Incluye solicitudes y perfiles ficticios para que puedas recorrer el flujo completo sin modificar datos reales.",
-    "currentTitle": "Disponible ahora", "current": ["Formulario de booking", "Bandeja y cambios de estado", "Conversación y adjuntos de prueba", "Calendario, alertas e historial"],
-    "realTitle": "Con una cuenta", "real": ["Perfil privado de DJ o agencia", "Calendario y disponibilidad persistentes", "Gestión del roster de una agencia", "Sesión protegida y datos propios"],
-    "realNote": "El espacio de prueba usa datos ficticios guardados en este navegador. Las cuentas trabajan en un espacio privado conectado.",
-    "panelButton": "Abrir espacio de prueba", "requestButton": "Probar como promotor"
+    "index": "06 / EMPIEZA", "eyebrow": "UTILÍZALO AHORA", "title": "Crea tu cuenta y recorre un booking completo.",
+    "body": "Tu workspace empieza con solicitudes de ejemplo para que puedas utilizar la bandeja, probar los estados, responder y entender el calendario desde el primer acceso.",
+    "currentTitle": "Incluido al entrar", "current": ["Solicitudes iniciales de ejemplo", "Filtros y colores de estado", "Oferta, conversación y acciones", "Recorrido guiado paso a paso"],
+    "realTitle": "Datos conectados", "real": ["Perfil privado de DJ o agencia", "Calendario y disponibilidad persistentes", "Gestión del roster de una agencia", "Sesión protegida y datos propios"],
+    "realNote": "Las solicitudes de muestra quedan identificadas, separadas por perfil y pueden eliminarse desde el workspace.",
+    "panelButton": "Crear cuenta y entrar", "requestButton": "Ver cómo funciona"
   },
   "entry": {"eyebrow": "TU ESPACIO DE TRABAJO", "title": "Empieza a gestionar tus bookings.", "body": "Crea tu cuenta como DJ o agencia y configura tu primer perfil y calendario privado."},
   "feedback": {
@@ -78,7 +78,7 @@
       "emailLabel": "Correo electrónico", "emailPlaceholder": "tu@email.com", "emailHelp": "Usaremos tu correo para contactarte sobre pruebas de CueBooker.",
       "profileLabel": "¿Cuál es tu perfil?", "profiles": ["DJ independiente", "Manager o agencia", "Promotor, sala o festival"],
       "consentLabel": "Consentimiento", "consentText": "Acepto que CueBooker utilice mis datos para contactarme sobre pruebas y enviarme novedades relacionadas con el proyecto.",
-      "submit": "Quiero participar", "success": "Hemos recibido tus datos. Te contactaremos para próximas pruebas y sesiones de feedback.", "successCta": "Abrir espacio de prueba",
+      "submit": "Quiero participar", "success": "Hemos recibido tus datos. Te contactaremos para próximas pruebas y sesiones de feedback.", "successCta": "Crear mi workspace",
       "invalid": "Los datos introducidos no son válidos. Revisa el correo electrónico y vuelve a intentarlo.", "required": "Este campo es obligatorio.", "loading": "Cargando formulario seguro…"
     }
   },
