@@ -126,7 +126,13 @@ useHead(() => ({
         <h2>{{ copy.flow.title }}</h2>
         <p>{{ copy.flow.body }}</p>
       </div>
-      <ol class="flow-line"><li v-for="(step, index) in copy.flow.steps" :key="step"><span>{{ String(index + 1).padStart(2, '0') }}</span>{{ step }}</li></ol>
+      <ol class="flow-line">
+        <li v-for="(step, index) in copy.flow.steps" :key="step.name">
+          <span>{{ String(index + 1).padStart(2, '0') }}</span>
+          <strong>{{ step.name }}</strong>
+          <p>{{ step.detail }}</p>
+        </li>
+      </ol>
     </section>
 
     <section class="integrations section-pad">
