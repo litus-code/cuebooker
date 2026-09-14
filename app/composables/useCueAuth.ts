@@ -282,7 +282,7 @@ export function useCueAuth() {
   }
 
   function accountDestination() {
-    return profile.value?.onboarding_completed ? '/app?mode=account' : '/onboarding'
+    return profile.value?.onboarding_completed ? '/workspace' : '/onboarding'
   }
 
   return {
