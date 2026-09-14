@@ -14,4 +14,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (!auth.profile.value?.onboarding_completed) {
     return navigateTo('/onboarding')
   }
+
+  return navigateTo('/workspace')
 })
