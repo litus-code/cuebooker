@@ -215,7 +215,6 @@ useHead(() => ({
             <p class="mono">{{ artist.city }}</p>
             <h3>{{ artist.name }}</h3>
             <p>{{ artist.sound }}</p>
-            <strong class="artist-result__fee">{{ new Intl.NumberFormat(locale === 'es' ? 'es-ES' : 'en-GB', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(artist.fee) }}</strong>
             <span class="availability"><i />{{ copy.search.available }}</span>
             <details><summary>{{ copy.search.why }}</summary><ul><li v-for="reason in copy.search.reasons" :key="reason">{{ reason }}</li></ul></details>
             <NuxtLink class="artist-link" to="/artist">{{ copy.search.request }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>

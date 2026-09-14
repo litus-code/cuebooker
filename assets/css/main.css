@@ -153,7 +153,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visibl
 .artist-result > .mono { color: var(--cue-muted); font-size: 9px; letter-spacing: .1em; margin: 20px 0 12px; }
 .artist-result h3 { font-size: clamp(2.1rem, 3.4vw, 4rem); letter-spacing: -.07em; line-height: .85; margin: 0 0 13px; }
 .artist-result h3 + p { color: var(--cue-muted); font-size: 10px; letter-spacing: .06em; }
-.artist-result__fee { color: var(--cue-accent); display: block; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; margin: 16px 0 8px; }
 .discovery-empty { color: var(--cue-muted); font-size: 13px; grid-column: 1 / -1; margin: 0; padding: 35px; text-align: center; }
 .availability { color: var(--cue-accent); display: block; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; margin: 24px 0; text-transform: uppercase; }
 .availability i { background: var(--cue-accent); border-radius: 50%; display: inline-block; height: 6px; margin-right: 6px; width: 6px; }

@@ -16,7 +16,7 @@
   "search": {
     "index": "07 / DISCOVERY", "eyebrow": "LATER · NOT THE INITIAL PRODUCT", "title": "When a real network exists: discover available DJs.",
     "body": "As a future layer, CueBooker may connect the availability each artist chooses to show with searches by date, city, sound and budget. The core product will remain the management of requests DJs already receive.",
-    "where": "Where", "when": "When", "sound": "Sound", "budget": "Budget", "button": "Simulate search", "searching": "Finding available DJs", "resultCount": "3 available artists", "resultHint": "Concept demonstration. Artists and results are fictional; connected search is not active yet.", "visibility": "OPT-IN AVAILABILITY", "available": "Available for requests", "request": "View profile and request date", "why": "Why it fits", "reasons": ["Available on your date", "Sound match", "Within budget"],
+    "where": "Where", "when": "When", "sound": "Sound", "budget": "Budget", "button": "Simulate search", "searching": "Finding available DJs", "resultCount": "3 available artists", "resultHint": "Concept demonstration. Budget filters matches, but each DJ's fee remains private. Artists and results are fictional.", "visibility": "OPT-IN AVAILABILITY", "available": "Available for requests", "request": "View profile and request date", "why": "Why it fits", "reasons": ["Available on your date", "Sound match", "Within budget"],
     "artists": [{"name": "NØRA", "city": "BARCELONA", "sound": "HYPNOTIC · TECHNO"}, {"name": "KAIRO", "city": "GIRONA", "sound": "DETROIT · GROOVE"}, {"name": "MARA V", "city": "BARCELONA", "sound": "INDUSTRIAL · LIVE"}]
   },
   "flow": {
