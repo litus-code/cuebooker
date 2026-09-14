@@ -3,7 +3,6 @@ import { bookingStatuses, statusTone, type BookingStatus } from '../domain/booki
 
 const auth = useCueAuth()
 const availability = useAvailability()
-const demo = useBookingDemo()
 
 type WorkspaceView = 'overview' | 'bookings' | 'calendar'
 type ManagedArtist = { id: string; stage_name: string; slug: string; role: 'owner' | 'manager' | 'editor' }
@@ -31,9 +30,24 @@ const rosterSubmitting = ref(false)
 const bookingFilter = ref<'all' | BookingStatus>('all')
 const selectedDemoBookingId = ref('')
 const demoReply = ref('')
+const tourStep = ref(-1)
+
+const tourSteps = [
+  { view: 'bookings', target: 'sample-mode', title: 'Solicitudes de ejemplo', body: 'Cada cuenta empieza con solicitudes simuladas para que puedas entender el flujo antes de recibir la primera real.' },
+  { view: 'bookings', target: 'workspace-filters', title: 'Filtra por estado', body: 'Los colores separan solicitudes nuevas, revisiones, respuestas pendientes y fechas confirmadas.' },
+  { view: 'bookings', target: 'workspace-list', title: 'Abre un booking', body: 'La lista reúne la fecha, sala, artista, ciudad y estado. Selecciona una fila para abrir el detalle.' },
+  { view: 'bookings', target: 'workspace-status', title: 'Estado automático', body: 'Abrir una solicitud la mueve a revisión. Responder actualiza quién tiene la siguiente acción.' },
+  { view: 'bookings', target: 'workspace-details', title: 'Oferta y producción', body: 'Fecha, aforo, horario, oferta y contacto permanecen unidos al mismo booking.' },
+  { view: 'bookings', target: 'workspace-reply', title: 'Conversación continua', body: 'Las respuestas se añaden al hilo. En estos ejemplos permanecen dentro del navegador y no envían emails.' },
+  { view: 'bookings', target: 'workspace-actions', title: 'Decide el resultado', body: 'Confirmar o rechazar son decisiones manuales. Los demás cambios de estado siguen la actividad.' },
+  { view: 'calendar', target: 'workspace-calendar', title: 'Revisa el día completo', body: 'El calendario real de la cuenta muestra el mes y las 24 horas del día seleccionado para evitar solapamientos.' }
+] as const
 
 const manageableAgency = computed(() => organizations.value.find(item => item.type === 'agency' && ['owner', 'admin'].includes(item.role)))
 const selectedArtist = computed(() => artists.value.find(item => item.id === selectedArtistId.value))
+const sampleNamespace = computed(() => auth.session.value?.user.id && selectedArtistId.value ? `workspace-${auth.session.value.user.id}-${selectedArtistId.value}` : undefined)
+const sampleArtistName = computed(() => selectedArtist.value?.stage_name)
+const demo = useBookingDemo(sampleNamespace, sampleArtistName)
 const monthLabel = computed(() => new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${monthCursor.value}T12:00:00Z`)))
 const selectedDateLabel = computed(() => new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${selectedDate.value}T12:00:00Z`)))
 const monthRange = computed(() => {
@@ -78,6 +92,7 @@ const demoActiveBookings = computed(() => demo.bookings.value.filter(item => !it
 const demoFilteredBookings = computed(() => demoActiveBookings.value.filter(item => bookingFilter.value === 'all' || item.status === bookingFilter.value))
 const selectedDemoBooking = computed(() => demo.bookings.value.find(item => item.id === selectedDemoBookingId.value))
 const demoCounts = computed(() => Object.fromEntries(bookingStatuses.map(status => [status, demoActiveBookings.value.filter(item => item.status === status).length])))
+const currentTour = computed(() => tourStep.value >= 0 ? tourSteps[tourStep.value] : null)
 const hours = Array.from({ length: 24 }, (_, index) => `${String(index).padStart(2, '0')}:00`)
 
 onMounted(async () => {
@@ -93,11 +108,27 @@ watch([selectedArtistId, monthCursor], async () => {
   if (selectedArtistId.value) await loadBlocks()
 })
 watch(rosterArtistName, value => { rosterArtistSlug.value = slugify(value) })
-watch(demo.ready, value => {
-  if (value && !selectedDemoBookingId.value) selectedDemoBookingId.value = demoActiveBookings.value[0]?.id || ''
+watch(demo.ready, async (value) => {
+  if (!value) selectedDemoBookingId.value = ''
+  else if (!selectedDemoBookingId.value) {
+    selectedDemoBookingId.value = demoActiveBookings.value[0]?.id || ''
+    if (demoActiveBookings.value.length && import.meta.client && localStorage.getItem(`cuebooker.tour.seen.${sampleNamespace.value}`) !== 'true') {
+      await nextTick()
+      startTour()
+    }
+  }
 }, { immediate: true })
 watch(selectedDemoBookingId, async (id) => {
   if (id) await demo.markOpened(id)
+})
+watch(tourStep, async (step) => {
+  const item = tourSteps[step]
+  if (!item) return
+  activeView.value = item.view
+  await nextTick()
+  const target = document.getElementById(item.target)
+  if (!target) return
+  target.scrollIntoView({ behavior: 'smooth', block: 'center' })
 })
 
 function slugify(value: string) {
@@ -252,6 +283,26 @@ async function rejectDemoBooking() {
   await demo.setStatus(selectedDemoBooking.value.id, 'rejected')
   selectedDemoBookingId.value = demoActiveBookings.value[0]?.id || ''
 }
+function startTour() {
+  bookingFilter.value = 'all'
+  tourStep.value = 0
+}
+function nextTourStep() {
+  if (tourStep.value >= tourSteps.length - 1) closeTour()
+  else tourStep.value += 1
+}
+function closeTour() {
+  if (import.meta.client && sampleNamespace.value) localStorage.setItem(`cuebooker.tour.seen.${sampleNamespace.value}`, 'true')
+  tourStep.value = -1
+}
+async function clearSampleBookings() {
+  await demo.clearSamples()
+  selectedDemoBookingId.value = ''
+}
+async function restoreSampleBookings() {
+  await demo.restoreSamples()
+  selectedDemoBookingId.value = demoActiveBookings.value[0]?.id || ''
+}
 function statusLabel(status: AvailabilityStatus) { return status === 'confirmed' ? 'Confirmado' : status === 'hold' ? 'Hold' : 'No disponible' }
 async function logout() { await auth.signOut(); await navigateTo('/access') }
 useHead({ title: 'Workspace | CueBooker' })
@@ -337,18 +388,18 @@ useHead({ title: 'Workspace | CueBooker' })
           <div><p class="eyebrow">BOOKINGS / BANDEJA</p><h1>Solicitudes y conversaciones.</h1><p>Este será el espacio principal para revisar contactos, responder y decidir cada fecha.</p></div>
           <label class="artist-select"><span>Artista</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
         </div>
-        <aside class="demo-notice">
-          <div><span>MODO PRUEBA / DATOS SIMULADOS</span><strong>Prueba ahora la bandeja completa.</strong><p>Estos bookings se guardan únicamente en este navegador. No pertenecen a tu cuenta ni modifican el calendario privado.</p></div>
-          <button type="button" @click="activeView = 'calendar'">Ir al calendario real</button>
+        <aside id="sample-mode" class="demo-notice" :class="{ 'tour-focus': tourStep === 0 }">
+          <div><span>EJEMPLOS INICIALES / DATOS SIMULADOS</span><strong>{{ demoActiveBookings.length ? 'Tu workspace empieza con solicitudes de muestra.' : 'Has eliminado las solicitudes de muestra.' }}</strong><p>Los ejemplos pertenecen únicamente a este perfil y navegador. No modifican el calendario privado y puedes retirarlos cuando quieras.</p></div>
+          <div class="demo-notice__actions"><button class="guide-action" type="button" @click="startTour">Ver recorrido guiado</button><button v-if="demoActiveBookings.length" type="button" @click="clearSampleBookings">Eliminar ejemplos</button><button v-else type="button" @click="restoreSampleBookings">Restaurar ejemplos</button></div>
         </aside>
 
-        <div class="status-filters" aria-label="Filtrar bookings de prueba">
+        <div id="workspace-filters" class="status-filters" :class="{ 'tour-focus': tourStep === 1 }" aria-label="Filtrar bookings de prueba">
           <button :class="{ active: bookingFilter === 'all' }" type="button" @click="bookingFilter = 'all'">Todas <strong>{{ demoActiveBookings.length }}</strong></button>
           <button v-for="status in bookingStatuses.filter(item => item !== 'rejected')" :key="status" type="button" :class="[{ active: bookingFilter === status }, `tone-${statusTone[status]}`]" @click="bookingFilter = status"><i />{{ demoStatusLabel(status) }} <strong>{{ demoCounts[status] }}</strong></button>
         </div>
 
         <div class="booking-workspace demo-booking-workspace">
-          <div class="booking-list">
+          <div id="workspace-list" class="booking-list" :class="{ 'tour-focus': tourStep === 2 }">
             <button v-for="booking in demoFilteredBookings" :key="booking.id" type="button" :class="{ active: selectedDemoBookingId === booking.id }" @click="selectedDemoBookingId = selectedDemoBookingId === booking.id ? '' : booking.id">
               <span class="booking-list__date">{{ formatDemoDate(booking.event.date) }}</span>
               <span><strong>{{ booking.event.venue }}</strong><small>{{ booking.artistName }} · {{ booking.event.city }}</small></span>
@@ -360,19 +411,19 @@ useHead({ title: 'Workspace | CueBooker' })
           <article v-if="selectedDemoBooking" class="booking-detail">
             <header>
               <div><p class="eyebrow">BOOKING DE PRUEBA / {{ selectedDemoBooking.id.slice(-8).toUpperCase() }}</p><h2>{{ selectedDemoBooking.event.venue }}</h2><p>{{ selectedDemoBooking.event.name }} · {{ selectedDemoBooking.artistName }}</p></div>
-              <div class="booking-status-display" :class="`tone-${statusTone[selectedDemoBooking.status]}`"><span>Estado automático</span><strong><i />{{ demoStatusLabel(selectedDemoBooking.status) }}</strong></div>
+              <div id="workspace-status" class="booking-status-display" :class="[{ 'tour-focus': tourStep === 3 }, `tone-${statusTone[selectedDemoBooking.status]}`]"><span>Estado automático</span><strong><i />{{ demoStatusLabel(selectedDemoBooking.status) }}</strong></div>
             </header>
 
-            <div class="booking-facts">
+            <div id="workspace-details" class="booking-facts" :class="{ 'tour-focus': tourStep === 4 }">
               <section><h3>Datos del evento</h3><dl><div><dt>Fecha</dt><dd>{{ formatDemoDate(selectedDemoBooking.event.date) }}</dd></div><div><dt>Ciudad</dt><dd>{{ selectedDemoBooking.event.city }}</dd></div><div><dt>Sala</dt><dd>{{ selectedDemoBooking.event.venue }}</dd></div><div><dt>Aforo</dt><dd>{{ selectedDemoBooking.event.capacity }}</dd></div><div><dt>Oferta</dt><dd>{{ selectedDemoBooking.event.offer }}</dd></div><div><dt>Horario</dt><dd>{{ selectedDemoBooking.event.schedule || '—' }}</dd></div></dl></section>
               <section><h3>Contacto</h3><dl><div><dt>Nombre</dt><dd>{{ selectedDemoBooking.promoter.name }}</dd></div><div><dt>Email</dt><dd>{{ selectedDemoBooking.promoter.email }}</dd></div><div v-if="selectedDemoBooking.promoter.phone"><dt>Tel.</dt><dd>{{ selectedDemoBooking.promoter.phone }}</dd></div><div><dt>Origen</dt><dd>Enlace de booking</dd></div></dl></section>
             </div>
 
             <section class="message-thread"><h3>Conversación</h3><article v-for="message in selectedDemoBooking.messages" :key="message.id" :class="`message message--${message.actor}`"><header><strong>{{ message.actor === 'artist' ? selectedDemoBooking.artistName : selectedDemoBooking.promoter.name }}</strong><time>{{ formatDemoTime(message.createdAt) }}</time></header><p>{{ message.body }}</p></article></section>
 
-            <form class="booking-reply" @submit.prevent="sendDemoReply"><label>Responder al promotor<textarea v-model="demoReply" rows="5" placeholder="Escribe condiciones, una pregunta o una propuesta…" /></label><p>Simulación local. El mensaje no se envía por email.</p><button class="primary-button demo-action" type="submit" :disabled="!demoReply.trim()">Enviar respuesta de prueba</button></form>
+            <form id="workspace-reply" class="booking-reply" :class="{ 'tour-focus': tourStep === 5 }" @submit.prevent="sendDemoReply"><label>Responder al promotor<textarea v-model="demoReply" rows="5" placeholder="Escribe condiciones, una pregunta o una propuesta…" /></label><p>Ejemplo local. El mensaje no se envía por email.</p><button class="primary-button demo-action" type="submit" :disabled="!demoReply.trim()">Enviar respuesta de ejemplo</button></form>
 
-            <footer class="booking-actions"><NuxtLink class="demo-secondary-action" :to="`/request?id=${selectedDemoBooking.id}`">Abrir vista del promotor</NuxtLink><button v-if="selectedDemoBooking.status !== 'confirmed'" class="primary-button demo-action" type="button" @click="confirmDemoBooking">Confirmar fecha</button><button v-if="selectedDemoBooking.status !== 'confirmed'" class="demo-danger-action" type="button" @click="rejectDemoBooking">Rechazar solicitud</button></footer>
+            <footer id="workspace-actions" class="booking-actions" :class="{ 'tour-focus': tourStep === 6 }"><NuxtLink class="demo-secondary-action" :to="`/request?id=${selectedDemoBooking.id}`">Abrir vista del promotor</NuxtLink><button v-if="selectedDemoBooking.status !== 'confirmed'" class="primary-button demo-action" type="button" @click="confirmDemoBooking">Confirmar fecha</button><button v-if="selectedDemoBooking.status !== 'confirmed'" class="demo-danger-action" type="button" @click="rejectDemoBooking">Rechazar solicitud</button></footer>
           </article>
           <div v-else class="booking-placeholder"><span>→</span><p>Abre una solicitud para ver sus datos, la oferta y la conversación.</p></div>
         </div>
@@ -384,7 +435,7 @@ useHead({ title: 'Workspace | CueBooker' })
           <label class="artist-select"><span>Artista</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
         </div>
 
-        <div class="calendar-layout">
+        <div id="workspace-calendar" class="calendar-layout" :class="{ 'tour-focus': tourStep === 7 }">
           <section class="month-panel panel">
             <div class="calendar-toolbar"><button type="button" aria-label="Mes anterior" @click="changeMonth(-1)">←</button><h2>{{ monthLabel }}</h2><button type="button" aria-label="Mes siguiente" @click="changeMonth(1)">→</button></div>
             <div class="calendar-grid">
@@ -424,6 +475,14 @@ useHead({ title: 'Workspace | CueBooker' })
         </form>
       </aside>
     </div>
+
+    <aside v-if="currentTour" class="tour-card" role="dialog" aria-live="polite">
+      <button class="tour-card__close" type="button" aria-label="Cerrar recorrido" @click="closeTour">×</button>
+      <span>{{ String(tourStep + 1).padStart(2, '0') }} / {{ String(tourSteps.length).padStart(2, '0') }}</span>
+      <strong>{{ currentTour.title }}</strong>
+      <p>{{ currentTour.body }}</p>
+      <button class="primary-button" type="button" @click="nextTourStep">{{ tourStep === tourSteps.length - 1 ? 'Terminar' : 'Siguiente' }}</button>
+    </aside>
   </main>
 </template>
 
@@ -478,7 +537,9 @@ select:focus, input:focus { border-color: #e8ff2f; }
 .demo-notice span { display: block; margin-bottom: 7px; color: #e8ff2f; font: 700 10px monospace; letter-spacing: .1em; }
 .demo-notice strong { font-size: 17px; }
 .demo-notice p { max-width: 720px; margin: 6px 0 0; color: #999; font-size: 13px; line-height: 1.5; }
-.demo-notice > button { flex: 0 0 auto; min-height: 42px; padding: 0 16px; border: 1px solid #777025; background: transparent; color: #e8ff2f; cursor: pointer; font-weight: 800; }
+.demo-notice__actions { display: flex; flex: 0 0 auto; gap: 9px; }
+.demo-notice__actions button { min-height: 42px; padding: 0 16px; border: 1px solid #777025; background: transparent; color: #e8ff2f; cursor: pointer; font-weight: 800; }
+.demo-notice__actions .guide-action { background: #e8ff2f; color: #070707; }
 .demo-booking-workspace { padding-bottom: 34px; }
 .demo-action { min-height: 46px; padding: 0 18px; }
 .demo-secondary-action, .demo-danger-action { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid #3a3a3a; background: transparent; color: #f2f0eb; cursor: pointer; font-size: 12px; font-weight: 800; text-decoration: none; }
@@ -541,6 +602,14 @@ select:focus, input:focus { border-color: #e8ff2f; }
 .error-message, .loading-message { width: min(1440px, 100%); box-sizing: border-box; margin: 18px auto 0; padding: 13px 16px; }
 .error-message { border: 1px solid #8b3434; color: #ffadad; }
 .loading-message { color: #999; }
+.tour-focus { position: relative; z-index: 32; outline: 2px solid #e8ff2f; outline-offset: 5px; box-shadow: 0 0 18px rgba(232, 255, 47, .7), 0 0 55px rgba(232, 255, 47, .28); animation: tour-pulse 1.5s ease-in-out infinite alternate; }
+.tour-card { position: fixed; right: 24px; bottom: 24px; z-index: 60; width: min(390px, calc(100vw - 32px)); box-sizing: border-box; padding: 24px; border: 1px solid #e8ff2f; background: #111; color: #f2f0eb; box-shadow: 0 0 32px rgba(232, 255, 47, .25), 0 24px 80px #000; }
+.tour-card > span { color: #e8ff2f; font: 700 10px monospace; letter-spacing: .12em; }
+.tour-card > strong { display: block; margin: 17px 0 9px; font-size: 24px; text-transform: uppercase; }
+.tour-card > p { margin: 0 0 20px; color: #aaa; font-size: 14px; line-height: 1.55; }
+.tour-card .primary-button { width: 100%; }
+.tour-card__close { position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; border: 0; background: transparent; color: #999; cursor: pointer; font-size: 25px; }
+@keyframes tour-pulse { from { box-shadow: 0 0 12px rgba(232, 255, 47, .55), 0 0 35px rgba(232, 255, 47, .2); } to { box-shadow: 0 0 25px rgba(232, 255, 47, .9), 0 0 70px rgba(232, 255, 47, .36); } }
 
 @media (max-width: 1040px) {
   .workspace-header { grid-template-columns: 1fr auto; }
@@ -568,7 +637,8 @@ select:focus, input:focus { border-color: #e8ff2f; }
   .booking-filters { display: grid; grid-template-columns: repeat(2, 1fr); border-right: 0; border-bottom: 1px solid #292929; }
   .booking-empty { padding: 34px 20px; }
   .demo-notice { align-items: flex-start; flex-direction: column; }
-  .demo-notice > button { width: 100%; }
+  .demo-notice__actions { display: grid; width: 100%; }
+  .demo-notice__actions button { width: 100%; }
   .demo-booking-workspace { display: block; }
   .demo-booking-workspace .booking-list { margin-bottom: 14px; }
   .empty-actions { align-items: flex-start; flex-direction: column; }
@@ -583,5 +653,6 @@ select:focus, input:focus { border-color: #e8ff2f; }
   .timeline { height: 520px; }
   .editor-panel { border-left: 0; }
   .time-fields { grid-template-columns: 1fr; }
+  .tour-card { right: 16px; bottom: 86px; }
 }
 </style>
