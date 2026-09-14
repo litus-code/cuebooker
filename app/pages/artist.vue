@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { createId, type BookingAttachment } from '../domain/booking'
 
-const { locale, setLocale } = useCuePreferences()
+const { locale } = useCuePreferences()
 const { submit } = useBookingDemo()
 const requestOpen = ref(false)
 const sending = ref(false)
@@ -18,7 +18,7 @@ const text = computed(() => locale.value === 'es' ? {
   listen: 'Escuchar', live: 'Directo', dates: 'Fechas', epk: 'EPK', request: 'Solicitar fecha',
   title: 'Cuéntanos la fecha. Sin registrarte.', intro: 'Los datos llegan ordenados al DJ. Recibirás su respuesta en tu correo y podrás continuar desde un enlace seguro.',
   name: 'Tu nombre', email: 'Email de respuesta', phone: 'Teléfono opcional', event: 'Evento', venue: 'Sala', cityLabel: 'Ciudad', date: 'Fecha', capacity: 'Aforo', offer: 'Oferta', schedule: 'Horario propuesto', message: 'Mensaje para el DJ', files: 'Adjuntar rider, propuesta o información', send: 'Enviar solicitud', sending: 'Guardando solicitud',
-  privacy: 'Demo local: los datos se guardan únicamente en este navegador. En el producto real se enviarán de forma segura al artista.',
+  messagePlaceholder: 'Contexto, propuesta, producción y cualquier dato que ayude a decidir.', privacy: 'Demo local: los datos se guardan únicamente en este navegador. En el producto real se enviarán de forma segura al artista.',
   sent: 'Solicitud enviada', sentBody: 'Así de simple debería ser para el promotor. Ahora puedes comprobar cómo continúa el seguimiento desde su enlace.', promoterView: 'Ver seguimiento del promotor'
 } : {
   back: 'Back', demo: 'Fictional profile · functional flow', city: 'Berlin',
@@ -26,7 +26,7 @@ const text = computed(() => locale.value === 'es' ? {
   listen: 'Listen', live: 'Live', dates: 'Dates', epk: 'EPK', request: 'Request a date',
   title: 'Tell us about the date. No account required.', intro: 'The DJ receives structured details. Their reply reaches your email and you can continue through a secure link.',
   name: 'Your name', email: 'Reply email', phone: 'Optional phone', event: 'Event', venue: 'Venue', cityLabel: 'City', date: 'Date', capacity: 'Capacity', offer: 'Offer', schedule: 'Proposed schedule', message: 'Message for the DJ', files: 'Attach rider, proposal or information', send: 'Send request', sending: 'Saving request',
-  privacy: 'Local demo: data is stored only in this browser. The real product will send it securely to the artist.',
+  messagePlaceholder: 'Context, proposal, production and any detail that helps the artist decide.', privacy: 'Local demo: data is stored only in this browser. The real product will send it securely to the artist.',
   sent: 'Request sent', sentBody: 'This is how simple it should feel for the promoter. Now check how the follow-up continues through the secure link.', promoterView: 'View promoter follow-up'
 })
 
@@ -68,7 +68,7 @@ useHead(() => ({
     <header class="profile-nav">
       <NuxtLink to="/">CUEBOOKER<span>/</span></NuxtLink>
       <p>{{ text.demo }}</p>
-      <div class="locale-control"><button :class="{ active: locale === 'es' }" @click="setLocale('es')">ES</button><button :class="{ active: locale === 'en' }" @click="setLocale('en')">EN</button></div>
+      <CuePreferencesControl compact />
     </header>
 
     <section class="profile-hero">
@@ -99,7 +99,7 @@ useHead(() => ({
         <label>{{ text.capacity }}<input v-model="form.capacity" required inputmode="numeric" placeholder="1.200"></label>
         <label>{{ text.offer }}<input v-model="form.offer" required placeholder="2.400 €"></label>
         <label>{{ text.schedule }}<input v-model="form.schedule" placeholder="02:00–04:00"></label>
-        <label class="request-demo__message">{{ text.message }}<textarea v-model="form.message" required rows="5" placeholder="Contexto, propuesta, producción y cualquier dato que ayude a decidir."></textarea></label>
+        <label class="request-demo__message">{{ text.message }}<textarea v-model="form.message" required rows="5" :placeholder="text.messagePlaceholder"></textarea></label>
         <label class="file-field"><span>{{ text.files }}</span><input multiple type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip" @change="selectFiles"><small v-if="attachments.length">{{ attachments.map(file => file.name).join(' · ') }}</small></label>
         <p class="form-privacy">{{ text.privacy }}</p>
         <button class="button button--primary" :disabled="sending">{{ sending ? text.sending : text.send }} <span class="arrow arrow--ne" aria-hidden="true" /></button>

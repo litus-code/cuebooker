@@ -61,9 +61,9 @@
   "demo": {
     "index": "06 / EMPIEZA", "eyebrow": "UTILÍZALO AHORA", "title": "Crea tu cuenta y recorre un booking completo.",
     "body": "Tu workspace empieza con solicitudes de ejemplo para que puedas utilizar la bandeja, probar los estados, responder y entender el calendario desde el primer acceso.",
-    "currentTitle": "Incluido al entrar", "current": ["Solicitudes iniciales de ejemplo", "Filtros y colores de estado", "Oferta, conversación y acciones", "Recorrido guiado paso a paso"],
-    "realTitle": "Datos conectados", "real": ["Perfil privado de DJ o agencia", "Calendario y disponibilidad persistentes", "Gestión del roster de una agencia", "Sesión protegida y datos propios"],
-    "realNote": "Las solicitudes de muestra quedan identificadas, separadas por perfil y pueden eliminarse desde el workspace.",
+    "currentTitle": "Disponible ahora con una cuenta", "current": ["Workspace privado para DJ o agencia", "Calendario y disponibilidad persistentes", "Solicitudes de ejemplo con oferta y conversación", "Filtros, estados y recorrido guiado paso a paso"],
+    "realTitle": "Próximamente", "real": ["Entrada de solicitudes reales y avisos por email", "Discovery y buscador de artistas", "Disponibilidad pública elegida por cada DJ", "Más herramientas para roster y promotores"],
+    "realNote": "El roadmap indica la dirección del producto, no funciones disponibles hoy. Las solicitudes de muestra están identificadas y pueden eliminarse desde el workspace.",
     "panelButton": "Crear cuenta y entrar", "requestButton": "Ver cómo funciona"
   },
   "entry": {"eyebrow": "TU ESPACIO DE TRABAJO", "title": "Empieza a gestionar tus bookings.", "body": "Crea tu cuenta como DJ o agencia y configura tu primer perfil y calendario privado."},

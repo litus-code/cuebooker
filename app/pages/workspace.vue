@@ -42,49 +42,81 @@ const passwordMessage = ref('')
 const copy = computed(() => preferences.locale.value === 'es' ? {
   overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Historial',
   artist: 'Artista', role: 'DJ', settings: 'Ajustes', logout: 'Cerrar sesión',
+  loading: 'Cargando workspace…', rosterEyebrow: 'ROSTER / PRIMER ARTISTA', addFirstArtist: 'Añade el primer artista de',
+  rosterBody: 'Quedará asociado al roster y podrás empezar a gestionar su actividad.', artistName: 'Nombre artístico', identifier: 'Identificador', creating: 'Creando…', addArtist: 'Añadir artista',
+  noArtist: 'No hay un artista gestionable en esta cuenta.', noArtistBody: 'Tu cuenta todavía no tiene un artista o roster asignado.',
+  overviewEyebrow: 'WORKSPACE / RESUMEN', overviewTitle: 'QUÉ NECESITA TU ATENCIÓN.', overviewBody: 'Una entrada rápida a los bookings y fechas del artista, sin convertir el calendario en todo el producto.',
+  realBookings: 'Bookings reales', realBookingsBody: 'Aún sin conectar. La bandeja completa está disponible con ejemplos.', holdsMonth: 'Holds este mes', holdsBody: 'Fechas pendientes de decisión.', confirmed: 'Confirmados', confirmedStatus: 'Confirmado', confirmedBody: 'Horarios confirmados este mes.', occupiedDays: 'Días ocupados', occupiedBody: 'Con al menos un horario registrado.',
+  agendaEyebrow: 'AGENDA / ESTE MES', upcoming: 'Próximos horarios', viewCalendar: 'Ver calendario', privateSlot: 'Horario privado', noUpcoming: 'No hay horarios próximos registrados en este mes.', addSlot: 'Añadir horario',
+  sampleEyebrow: 'BOOKINGS / MODO PRUEBA', sampleTitle: 'PRUEBA LA BANDEJA COMPLETA.', sampleBody: 'Las solicitudes reales todavía no están conectadas a esta cuenta. Puedes probar ahora los filtros, ofertas, conversaciones y cambios de estado con datos simulados.', openBookings: 'Abrir Bookings',
   bookingsEyebrow: 'BOOKINGS / BANDEJA', bookingsTitle: 'TODOS TUS BOOKINGS. UN SOLO HILO.',
   bookingsBody: 'Revisa cada propuesta, responde al promotor y decide la fecha sin perder el contexto.',
+  samplesLabel: 'EJEMPLOS INICIALES / DATOS SIMULADOS', samplesActive: 'Tu workspace empieza con solicitudes de muestra.', samplesRemoved: 'Has eliminado las solicitudes de muestra.', samplesBody: 'Los ejemplos pertenecen únicamente a este perfil y navegador. No modifican el calendario privado y puedes retirarlos cuando quieras.', guidedTour: 'Ver recorrido guiado', removeSamples: 'Eliminar ejemplos', restoreSamples: 'Restaurar ejemplos', all: 'Todas', noSamples: 'No hay solicitudes de prueba en este estado.',
+  sampleBooking: 'BOOKING DE PRUEBA', automaticStatus: 'Estado automático', eventData: 'Datos del evento', date: 'Fecha', city: 'Ciudad', venue: 'Sala', capacity: 'Aforo', offer: 'Oferta', schedule: 'Horario', contact: 'Contacto', name: 'Nombre', phone: 'Tel.', source: 'Origen', bookingLink: 'Enlace de booking', conversation: 'Conversación', replyPromoter: 'Responder al promotor', replyPlaceholder: 'Escribe condiciones, una pregunta o una propuesta…', localMessage: 'Ejemplo local. El mensaje no se envía por email.', sendSampleReply: 'Enviar respuesta de ejemplo', openPromoter: 'Abrir vista del promotor', confirmDate: 'Confirmar fecha', rejectRequest: 'Rechazar solicitud', openRequest: 'Abre una solicitud para ver sus datos, la oferta y la conversación.',
+  calendarEyebrow: 'CALENDARIO / DISPONIBILIDAD', calendarTitle: 'FECHAS Y HORARIOS.', calendarBody: 'Abre un día para ver sus 24 horas. Pulsa una hora vacía para crear un horario o un bloque existente para editarlo.', weekdays: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], unavailable: 'No disponible', dayHours: 'DÍA / 24 HORAS', add: 'Añadir', selectedDaySchedule: 'Horario del día seleccionado', addAt: 'Añadir horario a las',
   historyEyebrow: 'WORKSPACE / HISTORIAL', historyTitle: 'TODO LO QUE HA PASADO.',
-  historyBody: 'Una cronología de solicitudes, mensajes y cambios para saber qué ocurrió y cuándo.',
-  historyEmpty: 'Todavía no hay actividad en este perfil.', historyStatus: 'Estado actualizado', historyMessage: 'Mensaje',
+  historyBody: 'Abre cualquier movimiento para volver a la oferta y revisar toda la conversación que originó esa acción.',
+  historyEmpty: 'Todavía no hay actividad en este perfil.', historyStatus: 'Estado actualizado', historyMessage: 'Mensaje', openTrace: 'Abrir oferta y ver traza', previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente', filterSamples: 'Filtrar bookings de ejemplo',
   settingsTitle: 'Ajustes de cuenta', appearance: 'Apariencia', dark: 'Oscuro', light: 'Claro',
   language: 'Idioma', password: 'Cambiar contraseña', currentPassword: 'Contraseña actual',
   newPassword: 'Nueva contraseña', confirmPassword: 'Repetir contraseña', savePassword: 'Guardar contraseña',
   passwordSaved: 'Contraseña actualizada.', passwordMismatch: 'Las contraseñas nuevas no coinciden.',
-  passwordLength: 'La nueva contraseña debe tener al menos 8 caracteres.', close: 'Cerrar'
+  passwordLength: 'La nueva contraseña debe tener al menos 8 caracteres.', close: 'Cerrar', accountPrivate: 'CUENTA / PRIVADO',
+  editSlot: 'EDITAR HORARIO', newSlot: 'NUEVO HORARIO', privateLabel: 'Etiqueta privada', privatePlaceholder: 'Estudio, desplazamiento, evento…', start: 'Inicio', end: 'Fin', invalidTime: 'La hora de fin debe ser posterior a la hora de inicio.', status: 'Estado', saving: 'Guardando…', saveChanges: 'Guardar cambios', createSlot: 'Crear horario', deleteSlot: 'Eliminar horario', finish: 'Terminar', next: 'Siguiente', closeTour: 'Cerrar recorrido'
 } : {
   overview: 'Overview', bookings: 'Bookings', calendar: 'Calendar', history: 'History',
   artist: 'Artist', role: 'DJ', settings: 'Settings', logout: 'Sign out',
+  loading: 'Loading workspace…', rosterEyebrow: 'ROSTER / FIRST ARTIST', addFirstArtist: 'Add the first artist for',
+  rosterBody: 'They will be linked to the roster so you can start managing their activity.', artistName: 'Artist name', identifier: 'Identifier', creating: 'Creating…', addArtist: 'Add artist',
+  noArtist: 'There is no manageable artist in this account.', noArtistBody: 'Your account does not have an assigned artist or roster yet.',
+  overviewEyebrow: 'WORKSPACE / OVERVIEW', overviewTitle: 'WHAT NEEDS YOUR ATTENTION.', overviewBody: 'A quick view of the artist’s bookings and dates without making the calendar the whole product.',
+  realBookings: 'Real bookings', realBookingsBody: 'Not connected yet. The complete inbox is available with examples.', holdsMonth: 'Holds this month', holdsBody: 'Dates waiting for a decision.', confirmed: 'Confirmed', confirmedStatus: 'Confirmed', confirmedBody: 'Confirmed slots this month.', occupiedDays: 'Occupied days', occupiedBody: 'With at least one registered slot.',
+  agendaEyebrow: 'AGENDA / THIS MONTH', upcoming: 'Upcoming slots', viewCalendar: 'View calendar', privateSlot: 'Private slot', noUpcoming: 'There are no upcoming slots registered this month.', addSlot: 'Add slot',
+  sampleEyebrow: 'BOOKINGS / SAMPLE MODE', sampleTitle: 'TRY THE COMPLETE INBOX.', sampleBody: 'Real requests are not connected to this account yet. You can try filters, offers, conversations and status changes with sample data.', openBookings: 'Open Bookings',
   bookingsEyebrow: 'BOOKINGS / INBOX', bookingsTitle: 'ALL YOUR BOOKINGS. ONE THREAD.',
   bookingsBody: 'Review every proposal, reply to the promoter and decide each date without losing context.',
+  samplesLabel: 'STARTER EXAMPLES / SAMPLE DATA', samplesActive: 'Your workspace starts with sample requests.', samplesRemoved: 'You removed the sample requests.', samplesBody: 'These examples belong only to this profile and browser. They do not change your private calendar and you can remove them whenever you want.', guidedTour: 'View guided tour', removeSamples: 'Remove examples', restoreSamples: 'Restore examples', all: 'All', noSamples: 'There are no sample requests with this status.',
+  sampleBooking: 'SAMPLE BOOKING', automaticStatus: 'Automatic status', eventData: 'Event details', date: 'Date', city: 'City', venue: 'Venue', capacity: 'Capacity', offer: 'Offer', schedule: 'Schedule', contact: 'Contact', name: 'Name', phone: 'Phone', source: 'Source', bookingLink: 'Booking link', conversation: 'Conversation', replyPromoter: 'Reply to promoter', replyPlaceholder: 'Write conditions, a question or a proposal…', localMessage: 'Local example. This message is not sent by email.', sendSampleReply: 'Send sample reply', openPromoter: 'Open promoter view', confirmDate: 'Confirm date', rejectRequest: 'Reject request', openRequest: 'Open a request to view its details, offer and conversation.',
+  calendarEyebrow: 'CALENDAR / AVAILABILITY', calendarTitle: 'DATES AND TIMES.', calendarBody: 'Open a day to see all 24 hours. Select an empty hour to create a slot or an existing block to edit it.', weekdays: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], unavailable: 'Unavailable', dayHours: 'DAY / 24 HOURS', add: 'Add', selectedDaySchedule: 'Selected day schedule', addAt: 'Add slot at',
   historyEyebrow: 'WORKSPACE / HISTORY', historyTitle: 'EVERYTHING THAT HAPPENED.',
-  historyBody: 'A timeline of requests, messages and changes so you always know what happened and when.',
-  historyEmpty: 'There is no activity for this profile yet.', historyStatus: 'Status updated', historyMessage: 'Message',
+  historyBody: 'Open any activity to return to its offer and review the full conversation that caused it.',
+  historyEmpty: 'There is no activity for this profile yet.', historyStatus: 'Status updated', historyMessage: 'Message', openTrace: 'Open offer and view trace', previousMonth: 'Previous month', nextMonth: 'Next month', filterSamples: 'Filter sample bookings',
   settingsTitle: 'Account settings', appearance: 'Appearance', dark: 'Dark', light: 'Light',
   language: 'Language', password: 'Change password', currentPassword: 'Current password',
   newPassword: 'New password', confirmPassword: 'Repeat password', savePassword: 'Save password',
   passwordSaved: 'Password updated.', passwordMismatch: 'The new passwords do not match.',
-  passwordLength: 'The new password must contain at least 8 characters.', close: 'Close'
+  passwordLength: 'The new password must contain at least 8 characters.', close: 'Close', accountPrivate: 'ACCOUNT / PRIVATE',
+  editSlot: 'EDIT SLOT', newSlot: 'NEW SLOT', privateLabel: 'Private label', privatePlaceholder: 'Studio, travel, event…', start: 'Start', end: 'End', invalidTime: 'The end time must be later than the start time.', status: 'Status', saving: 'Saving…', saveChanges: 'Save changes', createSlot: 'Create slot', deleteSlot: 'Delete slot', finish: 'Finish', next: 'Next', closeTour: 'Close tour'
 })
 
-const tourSteps = [
-  { view: 'bookings', target: 'sample-mode', title: 'Solicitudes de ejemplo', body: 'Cada cuenta empieza con solicitudes simuladas para que puedas entender el flujo antes de recibir la primera real.' },
-  { view: 'bookings', target: 'workspace-filters', title: 'Filtra por estado', body: 'Los colores separan solicitudes nuevas, revisiones, respuestas pendientes y fechas confirmadas.' },
-  { view: 'bookings', target: 'workspace-list', title: 'Abre un booking', body: 'La lista reúne la fecha, sala, artista, ciudad y estado. Selecciona una fila para abrir el detalle.' },
-  { view: 'bookings', target: 'workspace-status', title: 'Estado automático', body: 'Abrir una solicitud la mueve a revisión. Responder actualiza quién tiene la siguiente acción.' },
-  { view: 'bookings', target: 'workspace-details', title: 'Oferta y producción', body: 'Fecha, aforo, horario, oferta y contacto permanecen unidos al mismo booking.' },
-  { view: 'bookings', target: 'workspace-reply', title: 'Conversación continua', body: 'Las respuestas se añaden al hilo. En estos ejemplos permanecen dentro del navegador y no envían emails.' },
-  { view: 'bookings', target: 'workspace-actions', title: 'Decide el resultado', body: 'Confirmar o rechazar son decisiones manuales. Los demás cambios de estado siguen la actividad.' },
-  { view: 'calendar', target: 'workspace-calendar', title: 'Revisa el día completo', body: 'El calendario real de la cuenta muestra el mes y las 24 horas del día seleccionado para evitar solapamientos.' }
-] as const
+const tourSteps = computed(() => preferences.locale.value === 'es' ? [
+  { view: 'bookings' as const, target: 'sample-mode', title: 'Solicitudes de ejemplo', body: 'Cada cuenta empieza con solicitudes simuladas para que puedas entender el flujo antes de recibir la primera real.' },
+  { view: 'bookings' as const, target: 'workspace-filters', title: 'Filtra por estado', body: 'Los colores separan solicitudes nuevas, revisiones, respuestas pendientes y fechas confirmadas.' },
+  { view: 'bookings' as const, target: 'workspace-list', title: 'Abre un booking', body: 'La lista reúne la fecha, sala, artista, ciudad y estado. Selecciona una fila para abrir el detalle.' },
+  { view: 'bookings' as const, target: 'workspace-status', title: 'Estado automático', body: 'Abrir una solicitud la mueve a revisión. Responder actualiza quién tiene la siguiente acción.' },
+  { view: 'bookings' as const, target: 'workspace-details', title: 'Oferta y producción', body: 'Fecha, aforo, horario, oferta y contacto permanecen unidos al mismo booking.' },
+  { view: 'bookings' as const, target: 'workspace-reply', title: 'Conversación continua', body: 'Las respuestas se añaden al hilo. En estos ejemplos permanecen dentro del navegador y no envían emails.' },
+  { view: 'bookings' as const, target: 'workspace-actions', title: 'Decide el resultado', body: 'Confirmar o rechazar son decisiones manuales. Los demás cambios de estado siguen la actividad.' },
+  { view: 'calendar' as const, target: 'workspace-calendar', title: 'Revisa el día completo', body: 'El calendario real de la cuenta muestra el mes y las 24 horas del día seleccionado para evitar solapamientos.' }
+] : [
+  { view: 'bookings' as const, target: 'sample-mode', title: 'Sample requests', body: 'Every account starts with sample requests so you can understand the flow before the first real one arrives.' },
+  { view: 'bookings' as const, target: 'workspace-filters', title: 'Filter by status', body: 'Colours separate new requests, reviews, pending replies and confirmed dates.' },
+  { view: 'bookings' as const, target: 'workspace-list', title: 'Open a booking', body: 'The list brings together date, venue, artist, city and status. Select a row to open its details.' },
+  { view: 'bookings' as const, target: 'workspace-status', title: 'Automatic status', body: 'Opening a request moves it to review. Replying updates who needs to act next.' },
+  { view: 'bookings' as const, target: 'workspace-details', title: 'Offer and production', body: 'Date, capacity, schedule, offer and contact stay attached to the same booking.' },
+  { view: 'bookings' as const, target: 'workspace-reply', title: 'Continuous conversation', body: 'Replies are added to the thread. These examples remain in the browser and do not send email.' },
+  { view: 'bookings' as const, target: 'workspace-actions', title: 'Decide the outcome', body: 'Confirming or rejecting are manual decisions. Other status changes follow activity.' },
+  { view: 'calendar' as const, target: 'workspace-calendar', title: 'Review the full day', body: 'The real account calendar shows the month and all 24 hours of the selected day to prevent overlaps.' }
+])
 
 const manageableAgency = computed(() => organizations.value.find(item => item.type === 'agency' && ['owner', 'admin'].includes(item.role)))
 const selectedArtist = computed(() => artists.value.find(item => item.id === selectedArtistId.value))
 const sampleNamespace = computed(() => auth.session.value?.user.id && selectedArtistId.value ? `workspace-${auth.session.value.user.id}-${selectedArtistId.value}` : undefined)
 const sampleArtistName = computed(() => selectedArtist.value?.stage_name)
 const demo = useBookingDemo(sampleNamespace, sampleArtistName)
-const monthLabel = computed(() => new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${monthCursor.value}T12:00:00Z`)))
-const selectedDateLabel = computed(() => new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${selectedDate.value}T12:00:00Z`)))
+const dateLocale = computed(() => preferences.locale.value === 'es' ? 'es-ES' : 'en-GB')
+const monthLabel = computed(() => new Intl.DateTimeFormat(dateLocale.value, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${monthCursor.value}T12:00:00Z`)))
+const selectedDateLabel = computed(() => new Intl.DateTimeFormat(dateLocale.value, { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${selectedDate.value}T12:00:00Z`)))
 const monthRange = computed(() => {
   const start = new Date(`${monthCursor.value}T00:00:00Z`)
   const end = new Date(start)
@@ -127,7 +159,7 @@ const demoActiveBookings = computed(() => demo.bookings.value.filter(item => !it
 const demoFilteredBookings = computed(() => demoActiveBookings.value.filter(item => bookingFilter.value === 'all' || item.status === bookingFilter.value))
 const selectedDemoBooking = computed(() => demo.bookings.value.find(item => item.id === selectedDemoBookingId.value))
 const demoCounts = computed(() => Object.fromEntries(bookingStatuses.map(status => [status, demoActiveBookings.value.filter(item => item.status === status).length])))
-const currentTour = computed(() => tourStep.value >= 0 ? tourSteps[tourStep.value] : null)
+const currentTour = computed(() => tourStep.value >= 0 ? tourSteps.value[tourStep.value] : null)
 const hasArtistSelector = computed(() => artists.value.length > 1)
 const historyItems = computed(() => demo.bookings.value.flatMap(booking => [
   ...booking.messages.map(message => ({
@@ -176,7 +208,7 @@ watch(selectedDemoBookingId, async (id) => {
   if (id) await demo.markOpened(id)
 })
 watch(tourStep, async (step) => {
-  const item = tourSteps[step]
+  const item = tourSteps.value[step]
   if (!item) return
   activeView.value = item.view
   await nextTick()
@@ -197,7 +229,7 @@ async function loadWorkspaceIdentity() {
     if (!selectedArtistId.value || !artists.value.some(item => item.id === selectedArtistId.value)) selectedArtistId.value = artists.value[0]?.id || ''
     if (selectedArtistId.value) await loadBlocks()
   } catch (error: any) {
-    errorMessage.value = error?.message || 'No se pudo cargar el workspace.'
+    errorMessage.value = error?.message || (preferences.locale.value === 'es' ? 'No se pudo cargar el workspace.' : 'The workspace could not be loaded.')
   }
 }
 
@@ -212,7 +244,7 @@ async function addFirstRosterArtist() {
     await loadWorkspaceIdentity()
     selectedArtistId.value = artistId
   } catch (error: any) {
-    errorMessage.value = error?.data?.message || error?.message || 'No se pudo añadir el artista.'
+    errorMessage.value = error?.data?.message || error?.message || (preferences.locale.value === 'es' ? 'No se pudo añadir el artista.' : 'The artist could not be added.')
   } finally {
     rosterSubmitting.value = false
   }
@@ -223,7 +255,7 @@ async function loadBlocks() {
   try {
     blocks.value = await availability.listBlocks(selectedArtistId.value, monthRange.value.from, monthRange.value.to)
   } catch (error: any) {
-    errorMessage.value = error?.data?.message || error?.message || 'No se pudo cargar la disponibilidad.'
+    errorMessage.value = error?.data?.message || error?.message || (preferences.locale.value === 'es' ? 'No se pudo cargar la disponibilidad.' : 'Availability could not be loaded.')
   }
 }
 
@@ -297,21 +329,22 @@ async function saveBlock() {
     closeEditor()
     await loadBlocks()
   } catch (error: any) {
-    errorMessage.value = error?.data?.message || error?.message || 'No se pudo guardar el horario.'
+    errorMessage.value = error?.data?.message || error?.message || (preferences.locale.value === 'es' ? 'No se pudo guardar el horario.' : 'The slot could not be saved.')
   } finally {
     saving.value = false
   }
 }
 
 async function removeBlock() {
-  if (!editingBlockId.value || !window.confirm('¿Eliminar este horario? Esta acción no se puede deshacer.')) return
+  const confirmation = preferences.locale.value === 'es' ? '¿Eliminar este horario? Esta acción no se puede deshacer.' : 'Delete this slot? This action cannot be undone.'
+  if (!editingBlockId.value || !window.confirm(confirmation)) return
   saving.value = true
   try {
     await availability.deleteBlock(editingBlockId.value)
     closeEditor()
     await loadBlocks()
   } catch (error: any) {
-    errorMessage.value = error?.data?.message || error?.message || 'No se pudo eliminar el horario.'
+    errorMessage.value = error?.data?.message || error?.message || (preferences.locale.value === 'es' ? 'No se pudo eliminar el horario.' : 'The slot could not be deleted.')
   } finally {
     saving.value = false
   }
@@ -340,14 +373,16 @@ async function openCalendarBlock(block: AvailabilityBlock) {
 }
 
 function shortDate(value: string) {
-  return new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short', timeZone: 'UTC' }).format(new Date(value))
+  return new Intl.DateTimeFormat(dateLocale.value, { day: '2-digit', month: 'short', timeZone: 'UTC' }).format(new Date(value))
 }
 
 function time(value: string) { return value.slice(11, 16) }
-function formatDemoDate(value: string) { return new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(`${value}T12:00:00`)) }
-function formatDemoTime(value: string) { return new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(value)) }
+function formatDemoDate(value: string) { return new Intl.DateTimeFormat(dateLocale.value, { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(`${value}T12:00:00`)) }
+function formatDemoTime(value: string) { return new Intl.DateTimeFormat(dateLocale.value, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(value)) }
 function demoStatusLabel(status: BookingStatus) {
-  return { new: 'Nueva', in_review: 'En revisión', waiting_promoter: 'Esperando al promotor', confirmed: 'Confirmada', rejected: 'Rechazada' }[status]
+  return preferences.locale.value === 'es'
+    ? { new: 'Nueva', in_review: 'En revisión', waiting_promoter: 'Esperando al promotor', confirmed: 'Confirmada', rejected: 'Rechazada' }[status]
+    : { new: 'New', in_review: 'In review', waiting_promoter: 'Waiting for promoter', confirmed: 'Confirmed', rejected: 'Rejected' }[status]
 }
 async function sendDemoReply() {
   if (!selectedDemoBooking.value || !demoReply.value.trim()) return
@@ -367,7 +402,7 @@ function startTour() {
   tourStep.value = 0
 }
 function nextTourStep() {
-  if (tourStep.value >= tourSteps.length - 1) closeTour()
+  if (tourStep.value >= tourSteps.value.length - 1) closeTour()
   else tourStep.value += 1
 }
 function closeTour() {
@@ -382,7 +417,15 @@ async function restoreSampleBookings() {
   await demo.restoreSamples()
   selectedDemoBookingId.value = demoActiveBookings.value[0]?.id || ''
 }
-function statusLabel(status: AvailabilityStatus) { return status === 'confirmed' ? 'Confirmado' : status === 'hold' ? 'Hold' : 'No disponible' }
+function statusLabel(status: AvailabilityStatus) { return status === 'confirmed' ? copy.value.confirmedStatus : status === 'hold' ? 'Hold' : copy.value.unavailable }
+async function openHistoryItem(bookingId: string) {
+  const booking = demo.bookings.value.find(item => item.id === bookingId)
+  if (!booking) return
+  selectedDemoBookingId.value = booking.id
+  activeView.value = 'bookings'
+  await nextTick()
+  document.getElementById(`booking-thread-${booking.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
 async function logout() { await auth.signOut(); await navigateTo('/access') }
 async function savePassword() {
   passwordMessage.value = ''
@@ -396,7 +439,7 @@ async function savePassword() {
     passwordConfirm.value = ''
     passwordMessage.value = copy.value.passwordSaved
   } catch (error: any) {
-    passwordMessage.value = error?.data?.msg || error?.data?.message || error?.message || 'No se pudo actualizar la contraseña.'
+    passwordMessage.value = error?.data?.msg || error?.data?.message || error?.message || (preferences.locale.value === 'es' ? 'No se pudo actualizar la contraseña.' : 'The password could not be updated.')
   } finally {
     passwordSaving.value = false
   }
@@ -415,30 +458,29 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <button :class="{ active: activeView === 'history' }" type="button" @click="activeView = 'history'">{{ copy.history }}</button>
       </nav>
       <div class="account-actions">
-        <div class="locale-control" :aria-label="copy.language"><button :class="{ active: preferences.locale.value === 'es' }" type="button" @click="preferences.setLocale('es')">ES</button><button :class="{ active: preferences.locale.value === 'en' }" type="button" @click="preferences.setLocale('en')">EN</button></div>
-        <button class="header-icon-button appearance-toggle" type="button" :aria-label="copy.appearance" :title="copy.appearance" @click="preferences.setTheme(preferences.theme.value === 'dark' ? 'light' : 'dark')"><span /></button>
+        <CuePreferencesControl compact />
         <button class="header-icon-button" type="button" :aria-label="copy.settings" :title="copy.settings" @click="settingsOpen = true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5v.2h-4v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5v-.2h4v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg></button>
         <button class="header-icon-button" type="button" :aria-label="copy.logout" :title="copy.logout" @click="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/></svg></button>
       </div>
     </header>
 
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-    <p v-if="loading" class="loading-message">Cargando workspace…</p>
+    <p v-if="loading" class="loading-message">{{ copy.loading }}</p>
 
     <section v-else-if="!artists.length" class="empty-card">
-      <p class="eyebrow">ROSTER / PRIMER ARTISTA</p>
+      <p class="eyebrow">{{ copy.rosterEyebrow }}</p>
       <template v-if="manageableAgency">
-        <h1>Añade el primer artista de {{ manageableAgency.name }}.</h1>
-        <p>Quedará asociado al roster y podrás empezar a gestionar su actividad.</p>
+        <h1>{{ copy.addFirstArtist }} {{ manageableAgency.name }}.</h1>
+        <p>{{ copy.rosterBody }}</p>
         <form class="roster-form" @submit.prevent="addFirstRosterArtist">
-          <label><span>Nombre artístico</span><input v-model="rosterArtistName" minlength="1" required></label>
-          <label><span>Identificador</span><input v-model="rosterArtistSlug" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required></label>
-          <button class="primary-button" type="submit" :disabled="rosterSubmitting">{{ rosterSubmitting ? 'Creando…' : 'Añadir artista' }}</button>
+          <label><span>{{ copy.artistName }}</span><input v-model="rosterArtistName" minlength="1" required></label>
+          <label><span>{{ copy.identifier }}</span><input v-model="rosterArtistSlug" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required></label>
+          <button class="primary-button" type="submit" :disabled="rosterSubmitting">{{ rosterSubmitting ? copy.creating : copy.addArtist }}</button>
         </form>
       </template>
       <template v-else>
-        <h1>No hay un artista gestionable en esta cuenta.</h1>
-        <p>Tu cuenta todavía no tiene un artista o roster asignado.</p>
+        <h1>{{ copy.noArtist }}</h1>
+        <p>{{ copy.noArtistBody }}</p>
       </template>
     </section>
 
@@ -446,39 +488,39 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       <section v-if="activeView === 'overview'" class="view overview-view">
         <div class="view-heading">
           <div>
-            <p class="eyebrow">WORKSPACE / RESUMEN</p>
-            <h1>Qué necesita tu atención.</h1>
-            <p>Una entrada rápida a los bookings y fechas del artista, sin convertir el calendario en todo el producto.</p>
+            <p class="eyebrow">{{ copy.overviewEyebrow }}</p>
+            <h1>{{ copy.overviewTitle }}</h1>
+            <p>{{ copy.overviewBody }}</p>
           </div>
           <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
           <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
 
         <div class="summary-grid">
-          <article class="summary-card summary-card--pending"><span>Bookings reales</span><strong>—</strong><p>Aún sin conectar. La bandeja completa está disponible en modo prueba.</p></article>
-          <article class="summary-card"><span>Holds este mes</span><strong>{{ holdCount }}</strong><p>Fechas pendientes de decisión.</p></article>
-          <article class="summary-card"><span>Confirmados</span><strong>{{ confirmedCount }}</strong><p>Horarios confirmados este mes.</p></article>
-          <article class="summary-card"><span>Días ocupados</span><strong>{{ occupiedDays }}</strong><p>Con al menos un horario registrado.</p></article>
+          <article class="summary-card summary-card--pending"><span>{{ copy.realBookings }}</span><strong>—</strong><p>{{ copy.realBookingsBody }}</p></article>
+          <article class="summary-card"><span>{{ copy.holdsMonth }}</span><strong>{{ holdCount }}</strong><p>{{ copy.holdsBody }}</p></article>
+          <article class="summary-card"><span>{{ copy.confirmed }}</span><strong>{{ confirmedCount }}</strong><p>{{ copy.confirmedBody }}</p></article>
+          <article class="summary-card"><span>{{ copy.occupiedDays }}</span><strong>{{ occupiedDays }}</strong><p>{{ copy.occupiedBody }}</p></article>
         </div>
 
         <div class="overview-grid">
           <section class="panel agenda-panel">
-            <div class="panel-heading"><div><p class="eyebrow">AGENDA / ESTE MES</p><h2>Próximos horarios</h2></div><button type="button" @click="activeView = 'calendar'">Ver calendario</button></div>
+            <div class="panel-heading"><div><p class="eyebrow">{{ copy.agendaEyebrow }}</p><h2>{{ copy.upcoming }}</h2></div><button type="button" @click="activeView = 'calendar'">{{ copy.viewCalendar }}</button></div>
             <div v-if="upcomingBlocks.length" class="agenda-list">
               <button v-for="block in upcomingBlocks" :key="block.id" type="button" @click="openUpcoming(block)">
                 <time>{{ shortDate(block.starts_at) }}</time>
-                <span><strong>{{ block.label || 'Horario privado' }}</strong><small>{{ time(block.starts_at) }}–{{ time(block.ends_at) }}</small></span>
+                <span><strong>{{ block.label || copy.privateSlot }}</strong><small>{{ time(block.starts_at) }}–{{ time(block.ends_at) }}</small></span>
                 <i :class="`status-dot status-dot--${block.status}`" />
               </button>
             </div>
-            <div v-else class="panel-empty"><p>No hay horarios próximos registrados en este mes.</p><button type="button" @click="activeView = 'calendar'; openCreate()">Añadir horario</button></div>
+            <div v-else class="panel-empty"><p>{{ copy.noUpcoming }}</p><button type="button" @click="activeView = 'calendar'; openCreate()">{{ copy.addSlot }}</button></div>
           </section>
 
           <aside class="panel next-panel">
-            <p class="eyebrow">BOOKINGS / MODO PRUEBA</p>
-            <h2>Prueba la bandeja completa.</h2>
-            <p>Las solicitudes reales todavía no están conectadas a esta cuenta. Puedes probar ahora los filtros, ofertas, conversaciones y cambios de estado con datos simulados.</p>
-            <button type="button" @click="activeView = 'bookings'">Abrir Bookings</button>
+            <p class="eyebrow">{{ copy.sampleEyebrow }}</p>
+            <h2>{{ copy.sampleTitle }}</h2>
+            <p>{{ copy.sampleBody }}</p>
+            <button type="button" @click="activeView = 'bookings'">{{ copy.openBookings }}</button>
           </aside>
         </div>
       </section>
@@ -490,12 +532,12 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
         <aside id="sample-mode" class="demo-notice" :class="{ 'tour-focus': tourStep === 0 }">
-          <div><span>EJEMPLOS INICIALES / DATOS SIMULADOS</span><strong>{{ demoActiveBookings.length ? 'Tu workspace empieza con solicitudes de muestra.' : 'Has eliminado las solicitudes de muestra.' }}</strong><p>Los ejemplos pertenecen únicamente a este perfil y navegador. No modifican el calendario privado y puedes retirarlos cuando quieras.</p></div>
-          <div class="demo-notice__actions"><button class="guide-action" type="button" @click="startTour">Ver recorrido guiado</button><button v-if="demoActiveBookings.length" type="button" @click="clearSampleBookings">Eliminar ejemplos</button><button v-else type="button" @click="restoreSampleBookings">Restaurar ejemplos</button></div>
+          <div><span>{{ copy.samplesLabel }}</span><strong>{{ demoActiveBookings.length ? copy.samplesActive : copy.samplesRemoved }}</strong><p>{{ copy.samplesBody }}</p></div>
+          <div class="demo-notice__actions"><button class="guide-action" type="button" @click="startTour">{{ copy.guidedTour }}</button><button v-if="demoActiveBookings.length" type="button" @click="clearSampleBookings">{{ copy.removeSamples }}</button><button v-else type="button" @click="restoreSampleBookings">{{ copy.restoreSamples }}</button></div>
         </aside>
 
-        <div id="workspace-filters" class="status-filters" :class="{ 'tour-focus': tourStep === 1 }" aria-label="Filtrar bookings de prueba">
-          <button :class="{ active: bookingFilter === 'all' }" type="button" @click="bookingFilter = 'all'">Todas <strong>{{ demoActiveBookings.length }}</strong></button>
+        <div id="workspace-filters" class="status-filters" :class="{ 'tour-focus': tourStep === 1 }" :aria-label="copy.filterSamples">
+          <button :class="{ active: bookingFilter === 'all' }" type="button" @click="bookingFilter = 'all'">{{ copy.all }} <strong>{{ demoActiveBookings.length }}</strong></button>
           <button v-for="status in bookingStatuses.filter(item => item !== 'rejected')" :key="status" type="button" :class="[{ active: bookingFilter === status }, `tone-${statusTone[status]}`]" @click="bookingFilter = status"><i />{{ demoStatusLabel(status) }} <strong>{{ demoCounts[status] }}</strong></button>
         </div>
 
@@ -506,55 +548,55 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               <span><strong>{{ booking.event.venue }}</strong><small>{{ booking.artistName }} · {{ booking.event.city }}</small></span>
               <span :class="`status-pill tone-${statusTone[booking.status]}`"><i />{{ demoStatusLabel(booking.status) }}</span>
             </button>
-            <p v-if="!demoFilteredBookings.length" class="workspace-empty">No hay solicitudes de prueba en este estado.</p>
+            <p v-if="!demoFilteredBookings.length" class="workspace-empty">{{ copy.noSamples }}</p>
           </div>
 
           <article v-if="selectedDemoBooking" :id="`booking-thread-${selectedDemoBooking.id}`" class="booking-detail">
             <header>
-              <div><p class="eyebrow">BOOKING DE PRUEBA / {{ selectedDemoBooking.id.slice(-8).toUpperCase() }}</p><h2>{{ selectedDemoBooking.event.venue }}</h2><p>{{ selectedDemoBooking.event.name }} · {{ selectedDemoBooking.artistName }}</p></div>
-              <div id="workspace-status" class="booking-status-display" :class="[{ 'tour-focus': tourStep === 3 }, `tone-${statusTone[selectedDemoBooking.status]}`]"><span>Estado automático</span><strong><i />{{ demoStatusLabel(selectedDemoBooking.status) }}</strong></div>
+              <div><p class="eyebrow">{{ copy.sampleBooking }} / {{ selectedDemoBooking.id.slice(-8).toUpperCase() }}</p><h2>{{ selectedDemoBooking.event.venue }}</h2><p>{{ selectedDemoBooking.event.name }} · {{ selectedDemoBooking.artistName }}</p></div>
+              <div id="workspace-status" class="booking-status-display" :class="[{ 'tour-focus': tourStep === 3 }, `tone-${statusTone[selectedDemoBooking.status]}`]"><span>{{ copy.automaticStatus }}</span><strong><i />{{ demoStatusLabel(selectedDemoBooking.status) }}</strong></div>
             </header>
 
             <div id="workspace-details" class="booking-facts" :class="{ 'tour-focus': tourStep === 4 }">
-              <section><h3>Datos del evento</h3><dl><div><dt>Fecha</dt><dd>{{ formatDemoDate(selectedDemoBooking.event.date) }}</dd></div><div><dt>Ciudad</dt><dd>{{ selectedDemoBooking.event.city }}</dd></div><div><dt>Sala</dt><dd>{{ selectedDemoBooking.event.venue }}</dd></div><div><dt>Aforo</dt><dd>{{ selectedDemoBooking.event.capacity }}</dd></div><div><dt>Oferta</dt><dd>{{ selectedDemoBooking.event.offer }}</dd></div><div><dt>Horario</dt><dd>{{ selectedDemoBooking.event.schedule || '—' }}</dd></div></dl></section>
-              <section><h3>Contacto</h3><dl><div><dt>Nombre</dt><dd>{{ selectedDemoBooking.promoter.name }}</dd></div><div><dt>Email</dt><dd>{{ selectedDemoBooking.promoter.email }}</dd></div><div v-if="selectedDemoBooking.promoter.phone"><dt>Tel.</dt><dd>{{ selectedDemoBooking.promoter.phone }}</dd></div><div><dt>Origen</dt><dd>Enlace de booking</dd></div></dl></section>
+              <section><h3>{{ copy.eventData }}</h3><dl><div><dt>{{ copy.date }}</dt><dd>{{ formatDemoDate(selectedDemoBooking.event.date) }}</dd></div><div><dt>{{ copy.city }}</dt><dd>{{ selectedDemoBooking.event.city }}</dd></div><div><dt>{{ copy.venue }}</dt><dd>{{ selectedDemoBooking.event.venue }}</dd></div><div><dt>{{ copy.capacity }}</dt><dd>{{ selectedDemoBooking.event.capacity }}</dd></div><div><dt>{{ copy.offer }}</dt><dd>{{ selectedDemoBooking.event.offer }}</dd></div><div><dt>{{ copy.schedule }}</dt><dd>{{ selectedDemoBooking.event.schedule || '—' }}</dd></div></dl></section>
+              <section><h3>{{ copy.contact }}</h3><dl><div><dt>{{ copy.name }}</dt><dd>{{ selectedDemoBooking.promoter.name }}</dd></div><div><dt>Email</dt><dd>{{ selectedDemoBooking.promoter.email }}</dd></div><div v-if="selectedDemoBooking.promoter.phone"><dt>{{ copy.phone }}</dt><dd>{{ selectedDemoBooking.promoter.phone }}</dd></div><div><dt>{{ copy.source }}</dt><dd>{{ copy.bookingLink }}</dd></div></dl></section>
             </div>
 
-            <section class="message-thread"><h3>Conversación</h3><article v-for="message in selectedDemoBooking.messages" :key="message.id" :class="`message message--${message.actor}`"><header><strong>{{ message.actor === 'artist' ? selectedDemoBooking.artistName : selectedDemoBooking.promoter.name }}</strong><time>{{ formatDemoTime(message.createdAt) }}</time></header><p>{{ message.body }}</p></article></section>
+            <section class="message-thread"><h3>{{ copy.conversation }}</h3><article v-for="message in selectedDemoBooking.messages" :key="message.id" :class="`message message--${message.actor}`"><header><strong>{{ message.actor === 'artist' ? selectedDemoBooking.artistName : selectedDemoBooking.promoter.name }}</strong><time>{{ formatDemoTime(message.createdAt) }}</time></header><p>{{ message.body }}</p></article></section>
 
-            <form id="workspace-reply" class="booking-reply" :class="{ 'tour-focus': tourStep === 5 }" @submit.prevent="sendDemoReply"><label>Responder al promotor<textarea v-model="demoReply" rows="5" placeholder="Escribe condiciones, una pregunta o una propuesta…" /></label><p>Ejemplo local. El mensaje no se envía por email.</p><button class="primary-button demo-action" type="submit" :disabled="!demoReply.trim()">Enviar respuesta de ejemplo</button></form>
+            <form id="workspace-reply" class="booking-reply" :class="{ 'tour-focus': tourStep === 5 }" @submit.prevent="sendDemoReply"><label>{{ copy.replyPromoter }}<textarea v-model="demoReply" rows="5" :placeholder="copy.replyPlaceholder" /></label><p>{{ copy.localMessage }}</p><button class="primary-button demo-action" type="submit" :disabled="!demoReply.trim()">{{ copy.sendSampleReply }}</button></form>
 
-            <footer id="workspace-actions" class="booking-actions" :class="{ 'tour-focus': tourStep === 6 }"><NuxtLink class="demo-secondary-action" :to="`/request?id=${selectedDemoBooking.id}`">Abrir vista del promotor</NuxtLink><button v-if="selectedDemoBooking.status !== 'confirmed'" class="primary-button demo-action" type="button" @click="confirmDemoBooking">Confirmar fecha</button><button v-if="selectedDemoBooking.status !== 'confirmed'" class="demo-danger-action" type="button" @click="rejectDemoBooking">Rechazar solicitud</button></footer>
+            <footer id="workspace-actions" class="booking-actions" :class="{ 'tour-focus': tourStep === 6 }"><NuxtLink class="demo-secondary-action" :to="`/request?id=${selectedDemoBooking.id}`">{{ copy.openPromoter }}</NuxtLink><button v-if="selectedDemoBooking.status !== 'confirmed'" class="primary-button demo-action" type="button" @click="confirmDemoBooking">{{ copy.confirmDate }}</button><button v-if="selectedDemoBooking.status !== 'confirmed'" class="demo-danger-action" type="button" @click="rejectDemoBooking">{{ copy.rejectRequest }}</button></footer>
           </article>
-          <div v-else class="booking-placeholder"><span>→</span><p>Abre una solicitud para ver sus datos, la oferta y la conversación.</p></div>
+          <div v-else class="booking-placeholder"><span>→</span><p>{{ copy.openRequest }}</p></div>
         </div>
       </section>
 
       <section v-else-if="activeView === 'calendar'" class="view calendar-view">
         <div class="view-heading calendar-heading">
-          <div><p class="eyebrow">CALENDARIO / DISPONIBILIDAD</p><h1>Fechas y horarios.</h1><p>Abre un día para ver sus 24 horas. Pulsa una hora vacía para crear un horario o un bloque existente para editarlo.</p></div>
+          <div><p class="eyebrow">{{ copy.calendarEyebrow }}</p><h1>{{ copy.calendarTitle }}</h1><p>{{ copy.calendarBody }}</p></div>
           <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
           <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
 
         <div id="workspace-calendar" class="calendar-layout" :class="{ 'tour-focus': tourStep === 7 }">
           <section class="month-panel panel">
-            <div class="calendar-toolbar"><button type="button" aria-label="Mes anterior" @click="changeMonth(-1)">←</button><h2>{{ monthLabel }}</h2><button type="button" aria-label="Mes siguiente" @click="changeMonth(1)">→</button></div>
+            <div class="calendar-toolbar"><button type="button" :aria-label="copy.previousMonth" @click="changeMonth(-1)">←</button><h2>{{ monthLabel }}</h2><button type="button" :aria-label="copy.nextMonth" @click="changeMonth(1)">→</button></div>
             <div class="calendar-grid">
-              <div v-for="label in ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']" :key="label" class="weekday">{{ label }}</div>
+              <div v-for="label in copy.weekdays" :key="label" class="weekday">{{ label }}</div>
               <button v-for="cell in monthCells" :key="cell.date" type="button" class="day" :class="{ muted: !cell.current, selected: selectedDate === cell.date }" @click="selectDay(cell.date)">
                 <span>{{ cell.number }}</span>
                 <small v-if="cell.blocks.length">{{ cell.blocks.length }}</small>
                 <span v-if="cell.blocks.length" class="day-statuses"><i v-for="block in cell.blocks.slice(0, 3)" :key="block.id" :class="`status-dot status-dot--${block.status}`" /></span>
               </button>
             </div>
-            <div class="legend"><span><i class="status-dot status-dot--hold" />Hold</span><span><i class="status-dot status-dot--confirmed" />Confirmado</span><span><i class="status-dot status-dot--unavailable" />No disponible</span></div>
+            <div class="legend"><span><i class="status-dot status-dot--hold" />Hold</span><span><i class="status-dot status-dot--confirmed" />{{ copy.confirmedStatus }}</span><span><i class="status-dot status-dot--unavailable" />{{ copy.unavailable }}</span></div>
           </section>
 
           <section class="day-panel panel">
-            <div class="day-heading"><div><p class="eyebrow">DÍA / 24 HORAS</p><h2>{{ selectedDateLabel }}</h2></div><button class="add-button" type="button" @click="openCreate()">Añadir</button></div>
-            <div class="timeline" aria-label="Horario del día seleccionado">
-              <button v-for="hour in hours" :key="hour" class="hour-row" type="button" :aria-label="`Añadir horario a las ${hour}`" @click="openCreate(hour)"><span>{{ hour }}</span></button>
+            <div class="day-heading"><div><p class="eyebrow">{{ copy.dayHours }}</p><h2>{{ selectedDateLabel }}</h2></div><button class="add-button" type="button" @click="openCreate()">{{ copy.add }}</button></div>
+            <div class="timeline" :aria-label="copy.selectedDaySchedule">
+              <button v-for="hour in hours" :key="hour" class="hour-row" type="button" :aria-label="`${copy.addAt} ${hour}`" @click="openCreate(hour)"><span>{{ hour }}</span></button>
               <button v-for="block in dayBlocks" :key="block.id" class="timeline-block" :class="`timeline-block--${block.status}`" :style="blockStyle(block)" type="button" @click.stop="openCalendarBlock(block)">
                 <strong>{{ block.label || statusLabel(block.status) }}</strong><span>{{ time(block.starts_at) }}–{{ time(block.ends_at) }}</span>
               </button>
@@ -570,7 +612,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
         <div v-if="historyItems.length" class="history-list">
-          <article v-for="item in historyItems" :id="item.id === `status-${item.bookingId}` ? `history-booking-${item.bookingId}` : undefined" :key="item.id"><time>{{ formatDemoTime(item.at) }}</time><i /><div><span>{{ item.kind }}</span><strong>{{ item.title }}</strong><p>{{ item.detail }}</p></div></article>
+          <button v-for="item in historyItems" :id="item.id === `status-${item.bookingId}` ? `history-booking-${item.bookingId}` : undefined" :key="item.id" type="button" :aria-label="`${copy.openTrace}: ${item.title}`" @click="openHistoryItem(item.bookingId)"><time>{{ formatDemoTime(item.at) }}</time><i /><div><span>{{ item.kind }}</span><strong>{{ item.title }}</strong><p>{{ item.detail }}</p><small>{{ copy.openTrace }} →</small></div></button>
         </div>
         <p v-else class="workspace-empty">{{ copy.historyEmpty }}</p>
       </section>
@@ -578,7 +620,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <div v-if="settingsOpen" class="editor-backdrop" @click.self="settingsOpen = false">
       <aside class="editor-panel settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-        <div class="editor-heading"><div><p class="eyebrow">ACCOUNT / PRIVATE</p><h2 id="settings-title">{{ copy.settingsTitle }}</h2></div><button type="button" :aria-label="copy.close" @click="settingsOpen = false">×</button></div>
+        <div class="editor-heading"><div><p class="eyebrow">{{ copy.accountPrivate }}</p><h2 id="settings-title">{{ copy.settingsTitle }}</h2></div><button type="button" :aria-label="copy.close" @click="settingsOpen = false">×</button></div>
         <section class="settings-group"><span>{{ copy.language }}</span><div class="settings-options"><button :class="{ active: preferences.locale.value === 'es' }" type="button" @click="preferences.setLocale('es')">ES</button><button :class="{ active: preferences.locale.value === 'en' }" type="button" @click="preferences.setLocale('en')">EN</button></div></section>
         <section class="settings-group"><span>{{ copy.appearance }}</span><div class="settings-options"><button :class="{ active: preferences.theme.value === 'dark' }" type="button" @click="preferences.setTheme('dark')">{{ copy.dark }}</button><button :class="{ active: preferences.theme.value === 'light' }" type="button" @click="preferences.setTheme('light')">{{ copy.light }}</button></div></section>
         <form class="password-form" @submit.prevent="savePassword">
@@ -594,24 +636,24 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <div v-if="editorOpen" class="editor-backdrop" @click.self="closeEditor">
       <aside class="editor-panel" role="dialog" aria-modal="true" :aria-labelledby="editingBlockId ? 'editor-title-edit' : 'editor-title-new'">
-        <div class="editor-heading"><div><p class="eyebrow">{{ editingBlockId ? 'EDITAR HORARIO' : 'NUEVO HORARIO' }}</p><h2 :id="editingBlockId ? 'editor-title-edit' : 'editor-title-new'">{{ selectedDateLabel }}</h2></div><button type="button" aria-label="Cerrar" @click="closeEditor">×</button></div>
+        <div class="editor-heading"><div><p class="eyebrow">{{ editingBlockId ? copy.editSlot : copy.newSlot }}</p><h2 :id="editingBlockId ? 'editor-title-edit' : 'editor-title-new'">{{ selectedDateLabel }}</h2></div><button type="button" :aria-label="copy.close" @click="closeEditor">×</button></div>
         <form @submit.prevent="saveBlock">
-          <label><span>Etiqueta privada</span><input v-model="blockLabel" maxlength="160" placeholder="Estudio, viaje, evento…"></label>
-          <div class="time-fields"><label><span>Inicio</span><input v-model="startTime" type="time" required></label><label><span>Fin</span><input v-model="endTime" type="time" required></label></div>
-          <p v-if="!validTimeRange" class="form-hint form-hint--error">La hora de fin debe ser posterior a la hora de inicio.</p>
-          <label><span>Estado</span><select v-model="blockStatus"><option value="unavailable">No disponible</option><option value="hold">Hold</option><option value="confirmed">Confirmado</option></select></label>
-          <button class="primary-button" type="submit" :disabled="saving || !validTimeRange">{{ saving ? 'Guardando…' : editingBlockId ? 'Guardar cambios' : 'Crear horario' }}</button>
-          <button v-if="editingBlockId" class="delete-button" type="button" :disabled="saving" @click="removeBlock">Eliminar horario</button>
+          <label><span>{{ copy.privateLabel }}</span><input v-model="blockLabel" maxlength="160" :placeholder="copy.privatePlaceholder"></label>
+          <div class="time-fields"><label><span>{{ copy.start }}</span><input v-model="startTime" type="time" required></label><label><span>{{ copy.end }}</span><input v-model="endTime" type="time" required></label></div>
+          <p v-if="!validTimeRange" class="form-hint form-hint--error">{{ copy.invalidTime }}</p>
+          <label><span>{{ copy.status }}</span><select v-model="blockStatus"><option value="unavailable">{{ copy.unavailable }}</option><option value="hold">Hold</option><option value="confirmed">{{ copy.confirmedStatus }}</option></select></label>
+          <button class="primary-button" type="submit" :disabled="saving || !validTimeRange">{{ saving ? copy.saving : editingBlockId ? copy.saveChanges : copy.createSlot }}</button>
+          <button v-if="editingBlockId" class="delete-button" type="button" :disabled="saving" @click="removeBlock">{{ copy.deleteSlot }}</button>
         </form>
       </aside>
     </div>
 
     <aside v-if="currentTour" class="tour-card" role="dialog" aria-live="polite">
-      <button class="tour-card__close" type="button" aria-label="Cerrar recorrido" @click="closeTour">×</button>
+      <button class="tour-card__close" type="button" :aria-label="copy.closeTour" @click="closeTour">×</button>
       <span>{{ String(tourStep + 1).padStart(2, '0') }} / {{ String(tourSteps.length).padStart(2, '0') }}</span>
       <strong>{{ currentTour.title }}</strong>
       <p>{{ currentTour.body }}</p>
-      <button class="primary-button" type="button" @click="nextTourStep">{{ tourStep === tourSteps.length - 1 ? 'Terminar' : 'Siguiente' }}</button>
+      <button class="primary-button" type="button" @click="nextTourStep">{{ tourStep === tourSteps.length - 1 ? copy.finish : copy.next }}</button>
     </aside>
   </main>
 </template>
@@ -623,27 +665,25 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .workspace { min-height: 100vh; padding: 0 28px 64px; background: var(--cue-bg); color: var(--cue-text); font-family: Arial, Helvetica, sans-serif; }
 .workspace-header { position: sticky; z-index: 20; top: 0; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 64px; border-bottom: 1px solid var(--cue-border); background: color-mix(in srgb, var(--cue-bg) 94%, transparent); backdrop-filter: blur(12px); }
 .brand { color: inherit; text-decoration: none; font-weight: 900; letter-spacing: .08em; }
-.brand span, .eyebrow { color: #e8ff2f; }
+.brand span { color: var(--cue-toggle); }
+.eyebrow { color: var(--cue-accent); }
 .workspace-header nav { display: flex; gap: 3px; padding: 3px; border: 1px solid var(--cue-border); border-radius: 999px; background: var(--cue-surface); }
 .workspace-header nav button { min-height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--cue-muted); cursor: pointer; font-size: 12px; font-weight: 700; }
-.workspace-header nav button.active { background: var(--cue-accent); color: var(--cue-accent-ink); }
+.workspace-header nav button.active { background: var(--cue-toggle); color: #070707; box-shadow: 0 0 18px color-mix(in srgb, var(--cue-toggle) 28%, transparent); }
 .account-actions { display: flex; justify-content: flex-end; align-items: center; gap: 7px; color: var(--cue-muted); font-size: 12px; }
-.account-actions button, .panel-heading button, .next-panel button, .panel-empty button, .empty-actions button, .empty-actions a { border: 0; background: transparent; color: #f2f0eb; cursor: pointer; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+.account-actions button, .panel-heading button, .next-panel button, .panel-empty button, .empty-actions button, .empty-actions a { border: 0; background: transparent; color: var(--cue-text); cursor: pointer; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
 .account-actions .header-icon-button { display: grid; place-items: center; width: 36px; height: 36px; padding: 8px; border: 1px solid var(--cue-border); border-radius: 50%; color: var(--cue-muted); text-decoration: none; }
 .header-icon-button:hover { border-color: var(--cue-accent); color: var(--cue-text); }
 .header-icon-button svg, .artist-identity svg { width: 100%; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.account-actions .appearance-toggle { width: 36px; height: 36px; padding: 8px; }
-.account-actions .locale-control button { color: var(--cue-muted); text-decoration: none; }
-.account-actions .locale-control button.active { color: var(--cue-toggle-ink); }
 .view { width: min(1440px, 100%); margin: 0 auto; }
 .view-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; padding: 24px 0 24px; }
 .view-heading > div { max-width: 880px; }
 .eyebrow { margin: 0; font: 700 10px/1.25 monospace; letter-spacing: .12em; text-transform: uppercase; }
 h1 { max-width: 900px; margin: 10px 0 14px; font-size: clamp(3rem, 7vw, 7.2rem); line-height: .84; letter-spacing: -.065em; text-transform: uppercase; }
-.view-heading > div > p:last-child, .empty-card > p, .next-panel > p, .booking-empty > p { max-width: 680px; margin: 0; color: #9b9b9b; font-size: 16px; line-height: 1.55; }
+.view-heading > div > p:last-child, .empty-card > p, .next-panel > p, .booking-empty > p { max-width: 680px; margin: 0; color: var(--cue-muted); font-size: 16px; line-height: 1.55; }
 .artist-select, .roster-form label, .editor-panel label { display: grid; gap: 8px; }
 .artist-select span, .roster-form label span, .editor-panel label span { color: #858585; font: 700 10px/1.2 monospace; letter-spacing: .08em; text-transform: uppercase; }
-select, input { min-height: 46px; box-sizing: border-box; padding: 0 13px; border: 1px solid #383838; border-radius: 0; outline: none; background: #101010; color: #fff; }
+select, input { min-height: 46px; box-sizing: border-box; padding: 0 13px; border: 1px solid var(--cue-border); border-radius: 0; outline: none; background: var(--cue-surface); color: var(--cue-text); }
 select:focus, input:focus { border-color: #e8ff2f; }
 .artist-select select { min-width: 220px; }
 .artist-identity { display: grid; min-width: 220px; padding: 12px 0 3px; border-top: 1px solid var(--cue-border); }
@@ -651,33 +691,33 @@ select:focus, input:focus { border-color: #e8ff2f; }
 .artist-identity > small { margin-top: 4px; color: var(--cue-accent); }
 .artist-identity strong { display: flex; align-items: center; gap: 9px; margin-top: 8px; font-size: 16px; }
 .artist-identity svg { width: 20px; height: 20px; color: var(--cue-accent); }
-.summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid #292929; border-left: 1px solid #292929; }
-.summary-card { min-height: 170px; padding: 22px; border-right: 1px solid #292929; border-bottom: 1px solid #292929; background: #0d0d0d; }
-.summary-card > span { color: #8b8b8b; font: 700 10px monospace; letter-spacing: .09em; text-transform: uppercase; }
+.summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--cue-border); border-left: 1px solid var(--cue-border); }
+.summary-card { min-height: 170px; padding: 22px; border-right: 1px solid var(--cue-border); border-bottom: 1px solid var(--cue-border); background: var(--cue-surface); color: var(--cue-text); }
+.summary-card > span { color: var(--cue-muted); font: 700 10px monospace; letter-spacing: .09em; text-transform: uppercase; }
 .summary-card strong { display: block; margin: 16px 0 8px; font-size: 54px; line-height: 1; }
-.summary-card p { max-width: 220px; margin: 0; color: #777; font-size: 13px; line-height: 1.45; }
-.summary-card--pending { background: #151515; }
-.summary-card--pending strong { color: #686868; }
+.summary-card p { max-width: 220px; margin: 0; color: var(--cue-muted); font-size: 13px; line-height: 1.45; }
+.summary-card--pending { background: var(--cue-raised); }
+.summary-card--pending strong { color: var(--cue-dim); }
 .overview-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(300px, .75fr); gap: 20px; margin-top: 20px; }
-.panel, .empty-card { border: 1px solid #292929; background: #0d0d0d; }
+.panel, .empty-card { border: 1px solid var(--cue-border); background: var(--cue-surface); color: var(--cue-text); }
 .panel-heading, .day-heading, .editor-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
-.panel-heading { padding: 22px; border-bottom: 1px solid #292929; }
+.panel-heading { padding: 22px; border-bottom: 1px solid var(--cue-border); }
 .panel h2, .empty-card h1, .editor-panel h2 { margin: 7px 0 0; }
-.agenda-list > button { display: grid; grid-template-columns: 78px 1fr auto; align-items: center; width: 100%; min-height: 82px; padding: 14px 22px; border: 0; border-bottom: 1px solid #242424; background: transparent; color: #f2f0eb; text-align: left; cursor: pointer; }
-.agenda-list > button:hover { background: #141414; }
+.agenda-list > button { display: grid; grid-template-columns: 78px 1fr auto; align-items: center; width: 100%; min-height: 82px; padding: 14px 22px; border: 0; border-bottom: 1px solid var(--cue-border); background: transparent; color: var(--cue-text); text-align: left; cursor: pointer; }
+.agenda-list > button:hover { background: var(--cue-raised); }
 .agenda-list time { color: #e8ff2f; font: 700 12px monospace; text-transform: uppercase; }
 .agenda-list strong, .agenda-list small { display: block; }
-.agenda-list small { margin-top: 5px; color: #7d7d7d; font-size: 12px; }
+.agenda-list small { margin-top: 5px; color: var(--cue-muted); font-size: 12px; }
 .next-panel { padding: 24px; background: #e8ff2f; color: #090909; }
 .next-panel .eyebrow, .next-panel > p { color: #222; }
 .next-panel h2 { max-width: 360px; margin: 18px 0; font-size: clamp(1.8rem, 3vw, 3.2rem); line-height: .95; text-transform: uppercase; }
 .next-panel button { margin-top: 28px; color: #090909; }
-.panel-empty { padding: 32px 22px; color: #8c8c8c; }
+.panel-empty { padding: 32px 22px; color: var(--cue-muted); }
 .panel-empty button { padding: 0; color: #e8ff2f; }
 .demo-notice { display: flex; justify-content: space-between; align-items: center; gap: 28px; padding: 20px 22px; border: 1px solid #665f18; background: #17170d; }
 .demo-notice span { display: block; margin-bottom: 7px; color: #e8ff2f; font: 700 10px monospace; letter-spacing: .1em; }
 .demo-notice strong { font-size: 17px; }
-.demo-notice p { max-width: 720px; margin: 6px 0 0; color: #999; font-size: 13px; line-height: 1.5; }
+.demo-notice p { max-width: 720px; margin: 6px 0 0; color: var(--cue-muted); font-size: 13px; line-height: 1.5; }
 .demo-notice__actions { display: flex; flex: 0 0 auto; gap: 9px; }
 .demo-notice__actions button { min-height: 42px; padding: 0 16px; border: 1px solid #777025; background: transparent; color: #e8ff2f; cursor: pointer; font-weight: 800; }
 .demo-notice__actions .guide-action { background: #e8ff2f; color: #070707; }
@@ -696,32 +736,32 @@ select:focus, input:focus { border-color: #e8ff2f; }
 .calendar-heading { padding-bottom: 26px; }
 .calendar-layout { display: grid; grid-template-columns: minmax(580px, 1.35fr) minmax(390px, .65fr); gap: 20px; align-items: start; }
 .month-panel { overflow: hidden; }
-.calendar-toolbar { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 12px; min-height: 70px; padding: 0 14px; border-bottom: 1px solid #292929; }
+.calendar-toolbar { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 12px; min-height: 70px; padding: 0 14px; border-bottom: 1px solid var(--cue-border); }
 .calendar-toolbar h2 { margin: 0; text-align: center; font-size: 18px; text-transform: capitalize; }
-.calendar-toolbar button, .editor-heading > button { min-width: 42px; min-height: 42px; border: 1px solid #333; background: #131313; color: #fff; cursor: pointer; }
-.calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-left: 1px solid #292929; }
-.weekday { padding: 11px 8px; border-right: 1px solid #292929; border-bottom: 1px solid #292929; color: #707070; font: 700 10px monospace; text-align: center; }
-.day { position: relative; min-height: 82px; padding: 9px; border: 0; border-right: 1px solid #292929; border-bottom: 1px solid #292929; background: #0d0d0d; color: #fff; text-align: left; cursor: pointer; }
-.day:hover { background: #151515; }
-.day.muted { color: #505050; }
-.day.selected { box-shadow: inset 0 0 0 1px #e8ff2f; background: #171717; }
+.calendar-toolbar button, .editor-heading > button { min-width: 42px; min-height: 42px; border: 1px solid var(--cue-border); background: var(--cue-raised); color: var(--cue-text); cursor: pointer; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-left: 1px solid var(--cue-border); }
+.weekday { padding: 11px 8px; border-right: 1px solid var(--cue-border); border-bottom: 1px solid var(--cue-border); color: var(--cue-muted); font: 700 10px monospace; text-align: center; }
+.day { position: relative; min-height: 82px; padding: 9px; border: 0; border-right: 1px solid var(--cue-border); border-bottom: 1px solid var(--cue-border); background: var(--cue-surface); color: var(--cue-text); text-align: left; cursor: pointer; }
+.day:hover { background: var(--cue-raised); }
+.day.muted { color: var(--cue-dim); }
+.day.selected { box-shadow: inset 0 0 0 1px var(--cue-toggle); background: var(--cue-raised); }
 .day small { position: absolute; top: 8px; right: 8px; color: #777; font: 9px monospace; }
 .day-statuses { position: absolute; right: 9px; bottom: 10px; left: 9px; display: flex; gap: 6px; align-items: center; }
 .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #777; }
 .agenda-list .status-dot, .legend .status-dot { margin: 0; }
 .status-dot--hold { background: #e8ff2f; }
-.status-dot--confirmed { background: #8ce99a; }
+.status-dot--confirmed { background: var(--cue-mint); }
 .status-dot--unavailable { background: #ff8585; }
-.legend { display: flex; flex-wrap: wrap; gap: 16px; padding: 16px; color: #777; font-size: 11px; }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; padding: 16px; color: var(--cue-muted); font-size: 11px; }
 .legend span { display: flex; align-items: center; gap: 7px; }
 .day-panel { position: sticky; top: 92px; overflow: hidden; }
-.day-heading { align-items: center; padding: 18px; border-bottom: 1px solid #292929; }
+.day-heading { align-items: center; padding: 18px; border-bottom: 1px solid var(--cue-border); }
 .day-heading h2 { font-size: 20px; text-transform: capitalize; }
 .add-button { min-height: 40px; padding: 0 16px; border: 0; background: #e8ff2f; color: #070707; cursor: pointer; font-weight: 800; }
 .timeline { position: relative; height: 590px; overflow-y: auto; }
-.hour-row { display: block; width: 100%; height: 48px; padding: 0 12px; border: 0; border-bottom: 1px solid #222; background: transparent; color: #666; text-align: left; cursor: crosshair; }
-.hour-row:hover { background: #121212; color: #e8ff2f; }
-.hour-row span { position: relative; top: -17px; padding-right: 7px; background: #0d0d0d; font: 10px monospace; }
+.hour-row { display: block; width: 100%; height: 48px; padding: 0 12px; border: 0; border-bottom: 1px solid var(--cue-border); background: transparent; color: var(--cue-muted); text-align: left; cursor: crosshair; }
+.hour-row:hover { background: var(--cue-raised); color: var(--cue-accent); }
+.hour-row span { position: relative; top: -17px; padding-right: 7px; background: var(--cue-surface); font: 10px monospace; }
 .timeline-block { position: absolute; right: 12px; left: 58px; z-index: 2; overflow: hidden; min-height: 42px; padding: 8px 10px; border: 1px solid #666; background: #202020; color: #fff; text-align: left; cursor: pointer; }
 .timeline-block strong, .timeline-block span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .timeline-block strong { font-size: 12px; }
@@ -730,7 +770,7 @@ select:focus, input:focus { border-color: #e8ff2f; }
 .timeline-block--confirmed { border-color: #8ce99a; background: #15281a; }
 .timeline-block--unavailable { border-color: #ff8585; background: #291818; }
 .editor-backdrop { position: fixed; z-index: 40; inset: 0; display: flex; justify-content: flex-end; background: rgba(0, 0, 0, .66); }
-.editor-panel { width: min(460px, 100%); box-sizing: border-box; padding: 26px; overflow-y: auto; border-left: 1px solid #333; background: #101010; color: #f2f0eb; box-shadow: -30px 0 80px rgba(0, 0, 0, .45); }
+.editor-panel { width: min(460px, 100%); box-sizing: border-box; padding: 26px; overflow-y: auto; border-left: 1px solid var(--cue-border); background: var(--cue-surface); color: var(--cue-text); box-shadow: -30px 0 80px rgba(0, 0, 0, .45); }
 .editor-heading { padding-bottom: 28px; }
 .editor-panel form, .roster-form { display: grid; gap: 18px; }
 .form-hint { margin: -8px 0 0; color: #888; font-size: 12px; }
@@ -746,43 +786,26 @@ select:focus, input:focus { border-color: #e8ff2f; }
 .error-message { border: 1px solid #8b3434; color: #ffadad; }
 .loading-message { color: #999; }
 .history-list { max-width: 1040px; padding-bottom: 64px; }
-.history-list article { display: grid; grid-template-columns: 145px 12px minmax(0, 1fr); gap: 20px; min-height: 104px; }
+.history-list > button { display: grid; grid-template-columns: 145px 12px minmax(0, 1fr); gap: 20px; width: 100%; min-height: 104px; padding: 0; border: 0; background: transparent; color: var(--cue-text); text-align: left; cursor: pointer; }
 .history-list time { padding-top: 4px; color: var(--cue-muted); font: 700 10px/1.4 monospace; text-transform: uppercase; }
-.history-list article > i { position: relative; width: 9px; height: 9px; margin-top: 5px; border-radius: 50%; background: var(--cue-accent); box-shadow: 0 0 14px color-mix(in srgb, var(--cue-accent) 65%, transparent); }
-.history-list article > i::after { position: absolute; top: 15px; bottom: -86px; left: 4px; width: 1px; background: var(--cue-border); content: ''; }
-.history-list article:last-child > i::after { display: none; }
-.history-list article > div { padding: 0 0 28px; border-bottom: 1px solid var(--cue-border); }
-.history-list article span { display: block; margin-bottom: 7px; color: var(--cue-accent); font: 700 9px/1.3 monospace; letter-spacing: .1em; text-transform: uppercase; }
-.history-list article strong { font-size: 17px; }
-.history-list article p { max-width: 720px; margin: 7px 0 0; color: var(--cue-muted); font-size: 13px; line-height: 1.5; }
+.history-list > button > i { position: relative; width: 9px; height: 9px; margin-top: 5px; border-radius: 50%; background: var(--cue-accent); box-shadow: 0 0 14px color-mix(in srgb, var(--cue-accent) 65%, transparent); }
+.history-list > button > i::after { position: absolute; top: 15px; bottom: -86px; left: 4px; width: 1px; background: var(--cue-border); content: ''; }
+.history-list > button:last-child > i::after { display: none; }
+.history-list > button > div { padding: 0 0 28px; border-bottom: 1px solid var(--cue-border); }
+.history-list > button span { display: block; margin-bottom: 7px; color: var(--cue-accent); font: 700 9px/1.3 monospace; letter-spacing: .1em; text-transform: uppercase; }
+.history-list > button strong { font-size: 17px; }
+.history-list > button p { max-width: 720px; margin: 7px 0 0; color: var(--cue-muted); font-size: 13px; line-height: 1.5; }
+.history-list > button small { display: block; margin-top: 10px; color: var(--cue-accent); font: 700 10px/1.3 monospace; text-transform: uppercase; letter-spacing: .08em; }
+.history-list > button:hover > div { border-color: var(--cue-accent); }
 .settings-panel { display: block; }
 .settings-group { display: grid; gap: 10px; padding: 18px 0; border-top: 1px solid var(--cue-border); }
 .settings-group > span { color: var(--cue-muted); font: 700 10px monospace; letter-spacing: .1em; text-transform: uppercase; }
 .settings-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .settings-options button { min-height: 44px; border: 1px solid var(--cue-border); background: transparent; color: var(--cue-muted); cursor: pointer; font-weight: 800; }
-.settings-options button.active { border-color: var(--cue-accent); background: var(--cue-accent); color: var(--cue-accent-ink); }
+.settings-options button.active { border-color: var(--cue-toggle); background: var(--cue-toggle); color: #070707; }
 .password-form { display: grid; gap: 16px; margin-top: 14px; padding-top: 24px; border-top: 1px solid var(--cue-border); }
 
-:global(:root[data-theme='light']) .workspace-header,
-:global(:root[data-theme='light']) .panel,
-:global(:root[data-theme='light']) .summary-card,
-:global(:root[data-theme='light']) .booking-detail,
-:global(:root[data-theme='light']) .booking-list,
-:global(:root[data-theme='light']) .booking-placeholder,
-:global(:root[data-theme='light']) .editor-panel,
-:global(:root[data-theme='light']) .day { background: var(--cue-surface); color: var(--cue-text); }
-:global(:root[data-theme='light']) .day:hover,
-:global(:root[data-theme='light']) .day.selected,
-:global(:root[data-theme='light']) .agenda-list > button:hover { background: var(--cue-raised); }
-:global(:root[data-theme='light']) select,
-:global(:root[data-theme='light']) input,
-:global(:root[data-theme='light']) textarea,
-:global(:root[data-theme='light']) .calendar-toolbar button,
-:global(:root[data-theme='light']) .editor-heading > button { background: var(--cue-raised); color: var(--cue-text); }
-:global(:root[data-theme='light']) .agenda-list > button,
-:global(:root[data-theme='light']) .demo-secondary-action { color: var(--cue-text); }
 :global(:root[data-theme='light']) .demo-notice { background: #eeefcf; }
-:global(:root[data-theme='light']) .hour-row span { background: var(--cue-surface); }
 .tour-focus { position: relative; z-index: 32; outline: 2px solid #e8ff2f; outline-offset: 5px; box-shadow: 0 0 18px rgba(232, 255, 47, .7), 0 0 55px rgba(232, 255, 47, .28); animation: tour-pulse 1.5s ease-in-out infinite alternate; }
 .tour-card { position: fixed; right: 24px; bottom: 24px; z-index: 60; width: min(390px, calc(100vw - 32px)); box-sizing: border-box; padding: 24px; border: 1px solid #e8ff2f; background: #111; color: #f2f0eb; box-shadow: 0 0 32px rgba(232, 255, 47, .25), 0 24px 80px #000; }
 .tour-card > span { color: #e8ff2f; font: 700 10px monospace; letter-spacing: .12em; }
@@ -796,7 +819,6 @@ select:focus, input:focus { border-color: #e8ff2f; }
   .workspace-header { grid-template-columns: 1fr auto; }
   .workspace-header nav { position: fixed; right: 16px; bottom: 16px; left: 16px; z-index: 30; justify-content: stretch; box-shadow: 0 14px 40px #000; }
   .workspace-header nav button { flex: 1; }
-  .account-actions .locale-control { display: none; }
   .summary-grid { grid-template-columns: repeat(2, 1fr); }
   .overview-grid, .calendar-layout { grid-template-columns: 1fr; }
   .day-panel { position: static; }
@@ -837,8 +859,8 @@ select:focus, input:focus { border-color: #e8ff2f; }
   .editor-panel { border-left: 0; }
   .time-fields { grid-template-columns: 1fr; }
   .tour-card { right: 16px; bottom: 86px; }
-  .history-list article { grid-template-columns: 1fr; gap: 7px; padding: 16px 0; border-bottom: 1px solid var(--cue-border); }
-  .history-list article > i { display: none; }
-  .history-list article > div { padding: 0; border: 0; }
+  .history-list > button { grid-template-columns: 1fr; gap: 7px; padding: 16px 0; border-bottom: 1px solid var(--cue-border); }
+  .history-list > button > i { display: none; }
+  .history-list > button > div { padding: 0; border: 0; }
 }
 </style>

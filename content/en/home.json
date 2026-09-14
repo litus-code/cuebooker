@@ -61,9 +61,9 @@
   "demo": {
     "index": "06 / START", "eyebrow": "USE IT NOW", "title": "Create your account and run through a complete booking.",
     "body": "Your workspace starts with sample requests so you can use the inbox, test status changes, reply and understand the calendar from your first visit.",
-    "currentTitle": "Included on entry", "current": ["Initial sample requests", "Status filters and colours", "Offer, conversation and actions", "Step-by-step guided tour"],
-    "realTitle": "Connected data", "real": ["Private DJ or agency profile", "Persistent calendar and availability", "Agency roster management", "Protected session and your own data"],
-    "realNote": "Sample requests are identified, separated by profile and can be removed from the workspace.",
+    "currentTitle": "Available now with an account", "current": ["Private workspace for a DJ or agency", "Persistent calendar and availability", "Sample requests with offer and conversation", "Filters, statuses and a step-by-step guided tour"],
+    "realTitle": "Coming next", "real": ["Real request intake and email notifications", "Artist discovery and search", "Availability shared by each DJ by choice", "More roster and promoter tools"],
+    "realNote": "The roadmap shows the product direction, not features available today. Sample requests are identified and can be removed from the workspace.",
     "panelButton": "Create account and enter", "requestButton": "See how it works"
   },
   "entry": {"eyebrow": "YOUR WORKSPACE", "title": "Start managing your bookings.", "body": "Create an account as a DJ or agency and set up your first profile and private calendar."},

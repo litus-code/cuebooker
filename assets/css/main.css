@@ -12,6 +12,7 @@
   --cue-toggle-ink: #11120d;
   --cue-violet: #8e7dff;
   --cue-orange: #efa45e;
+  --cue-mint: #61dfae;
   --cue-shadow: rgba(0, 0, 0, .45);
 }
 
@@ -27,6 +28,7 @@
   --cue-accent-ink: #fff;
   --cue-violet: #6f47ff;
   --cue-orange: #b85d1f;
+  --cue-mint: #167b5c;
   --cue-shadow: rgba(31, 30, 27, .16);
 }
 
@@ -429,7 +431,7 @@ textarea:focus-visible, select:focus-visible { outline: 2px solid var(--cue-acce
 .status-filters button.active { border-color: var(--cue-text); color: var(--cue-text); }
 .status-filters i, .status-pill i { background: currentColor; border-radius: 50%; height: 7px; width: 7px; }
 .status-filters strong { color: inherit; }
-.tone-lime { color: var(--cue-accent) !important; }.tone-violet { color: var(--cue-violet) !important; }.tone-orange { color: var(--cue-orange) !important; }.tone-mint { color: #61dfae !important; }.tone-muted { color: var(--cue-muted) !important; }
+.tone-lime { color: var(--cue-accent) !important; }.tone-violet { color: var(--cue-violet) !important; }.tone-orange { color: var(--cue-orange) !important; }.tone-mint { color: var(--cue-mint) !important; }.tone-muted { color: var(--cue-muted) !important; }
 .booking-workspace { align-items: start; display: grid; gap: 14px; grid-template-columns: minmax(280px, .72fr) minmax(0, 1.8fr); }
 .booking-list { border: 1px solid var(--cue-border); scroll-margin-top: 90px; }
 .booking-list > button { align-items: center; background: var(--cue-surface); border: 0; border-bottom: 1px solid var(--cue-border); color: var(--cue-text); cursor: pointer; display: grid; gap: 14px; grid-template-columns: 82px minmax(0, 1fr); min-height: 104px; padding: 16px; text-align: left; width: 100%; }
@@ -443,7 +445,7 @@ textarea:focus-visible, select:focus-visible { outline: 2px solid var(--cue-acce
 .workspace-empty, .booking-placeholder { color: var(--cue-muted); line-height: 1.6; padding: 30px; }
 .booking-placeholder { align-items: center; border: 1px dashed var(--cue-border); display: flex; gap: 15px; min-height: 250px; }
 .booking-placeholder span { color: var(--cue-accent); font-size: 28px; }
-.booking-detail { background: var(--cue-surface); border: 1px solid var(--cue-border); min-width: 0; padding: clamp(22px, 3.5vw, 52px); }
+.booking-detail { background: var(--cue-surface); border: 1px solid var(--cue-border); min-width: 0; padding: clamp(22px, 3.5vw, 52px); scroll-margin-top: 82px; }
 .booking-detail > header { align-items: start; border-bottom: 1px solid var(--cue-border); display: flex; gap: 30px; justify-content: space-between; padding-bottom: 34px; }
 .booking-detail h2 { font-size: clamp(3rem, 5vw, 6rem); letter-spacing: -.07em; line-height: .9; margin: 18px 0 10px; }
 .booking-detail header p:last-child { color: var(--cue-muted); }
@@ -494,7 +496,7 @@ textarea:focus-visible, select:focus-visible { outline: 2px solid var(--cue-acce
 .month-calendar__grid article > time { color: var(--cue-muted); display: block; font: 800 9px ui-monospace, SFMono-Regular, Menlo, monospace; margin-bottom: 8px; text-align: right; }
 .month-calendar__grid article > div { display: grid; gap: 5px; }
 .calendar-event { background: var(--cue-raised); border: 1px solid var(--cue-border); color: var(--cue-text); cursor: pointer; min-width: 0; padding: 7px; text-align: left; width: 100%; }.calendar-event span { color: var(--cue-muted); display: block; font: 8px ui-monospace, SFMono-Regular, Menlo, monospace; }.calendar-event strong { display: block; font-size: 9px; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.calendar-event--confirmed { border-color: #61dfae; box-shadow: inset 2px 0 #61dfae; }.calendar-event--manual { border-color: var(--cue-orange); box-shadow: inset 2px 0 var(--cue-orange); }.calendar-event--new, .calendar-event--in_review, .calendar-event--waiting_promoter { border-style: dashed; }
+.calendar-event--confirmed { border-color: var(--cue-mint); box-shadow: inset 2px 0 var(--cue-mint); }.calendar-event--manual { border-color: var(--cue-orange); box-shadow: inset 2px 0 var(--cue-orange); }.calendar-event--new, .calendar-event--in_review, .calendar-event--waiting_promoter { border-style: dashed; }
 .integrations { background: var(--cue-surface); border-bottom: 1px solid var(--cue-border); border-top: 1px solid var(--cue-border); }
 .integration-grid { display: grid; gap: 1px; grid-template-columns: repeat(3, 1fr); margin-top: 60px; background: var(--cue-border); border: 1px solid var(--cue-border); }
 .integration-grid article { background: var(--cue-bg); min-width: 0; padding: clamp(24px, 3.5vw, 54px); }
