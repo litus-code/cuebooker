@@ -103,8 +103,8 @@ useHead(() => ({
           <li v-for="proof in copy.hero.proofs" :key="proof"><i />{{ proof }}</li>
         </ul>
         <div class="hero__actions">
-          <button class="button button--primary" @click="router.push('/artist')">{{ copy.hero.primaryCta }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
-          <button class="text-button" @click="scrollTo('#problem')">{{ copy.hero.secondaryCta }} <span class="arrow arrow--down" aria-hidden="true" /></button>
+          <button class="button button--primary" @click="scrollTo('#product')">{{ copy.hero.primaryCta }} <span class="arrow arrow--down" aria-hidden="true" /></button>
+          <button class="text-button" @click="router.push('/artist')">{{ copy.hero.secondaryCta }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
         </div>
       </div>
       <CueNetwork :state="searchState" :label="networkLabel" />
@@ -150,6 +150,33 @@ useHead(() => ({
       <div class="role-grid"><article v-for="(item, index) in copy.roles.items" :key="item.name"><span class="mono">0{{ index + 1 }}</span><p class="eyebrow">{{ item.name }}</p><h3>{{ item.headline }}</h3><p>{{ item.body }}</p></article></div>
     </section>
 
+    <section class="access-model section-pad">
+      <div class="section-mark mono">{{ copy.access.index }}</div>
+      <div class="section-heading">
+        <p class="eyebrow">{{ copy.access.eyebrow }}</p>
+        <h2>{{ copy.access.title }}</h2>
+        <p>{{ copy.access.body }}</p>
+      </div>
+      <div class="access-demo">
+        <div class="access-tabs" role="tablist" :aria-label="copy.access.selectorLabel">
+          <button v-for="(role, index) in copy.access.roles" :key="role.name" :class="{ active: activeRole === index }" role="tab" :aria-selected="activeRole === index" @click="activeRole = index">{{ role.name }}</button>
+        </div>
+        <article class="access-card">
+          <div class="access-card__top"><span class="mono">{{ activeRoleData.label }}</span><strong>{{ activeRoleData.account }}</strong></div>
+          <h3>{{ activeRoleData.headline }}</h3>
+          <ol><li v-for="(step, index) in activeRoleData.steps" :key="step"><span>{{ String(index + 1).padStart(2, '0') }}</span>{{ step }}</li></ol>
+          <button class="button button--primary" @click="openPilot(activeRole + 1)">{{ activeRoleData.cta }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
+        </article>
+        <aside><i /> <span><strong>{{ copy.access.demoTitle }}</strong>{{ copy.access.demoNote }}</span></aside>
+      </div>
+    </section>
+
+    <section class="demo-reality section-pad">
+      <div class="section-mark mono">{{ copy.demo.index }}</div>
+      <div class="section-heading"><p class="eyebrow">{{ copy.demo.eyebrow }}</p><h2>{{ copy.demo.title }}</h2><p>{{ copy.demo.body }}</p></div>
+      <div class="demo-reality__grid"><article><strong>{{ copy.demo.currentTitle }}</strong><ul><li v-for="item in copy.demo.current" :key="item"><span>✓</span>{{ item }}</li></ul></article><article><strong>{{ copy.demo.realTitle }}</strong><ul><li v-for="item in copy.demo.real" :key="item"><span>○</span>{{ item }}</li></ul><p class="demo-reality__note">{{ copy.demo.realNote }}</p></article></div>
+    </section>
+
     <section class="discovery section-pad">
       <div class="section-mark mono">{{ copy.search.index }}</div>
       <div class="section-heading discovery__heading">
@@ -179,33 +206,6 @@ useHead(() => ({
           </article>
         </div>
       </div>
-    </section>
-
-    <section class="access-model section-pad">
-      <div class="section-mark mono">{{ copy.access.index }}</div>
-      <div class="section-heading">
-        <p class="eyebrow">{{ copy.access.eyebrow }}</p>
-        <h2>{{ copy.access.title }}</h2>
-        <p>{{ copy.access.body }}</p>
-      </div>
-      <div class="access-demo">
-        <div class="access-tabs" role="tablist" :aria-label="copy.access.selectorLabel">
-          <button v-for="(role, index) in copy.access.roles" :key="role.name" :class="{ active: activeRole === index }" role="tab" :aria-selected="activeRole === index" @click="activeRole = index">{{ role.name }}</button>
-        </div>
-        <article class="access-card">
-          <div class="access-card__top"><span class="mono">{{ activeRoleData.label }}</span><strong>{{ activeRoleData.account }}</strong></div>
-          <h3>{{ activeRoleData.headline }}</h3>
-          <ol><li v-for="(step, index) in activeRoleData.steps" :key="step"><span>{{ String(index + 1).padStart(2, '0') }}</span>{{ step }}</li></ol>
-          <button class="button button--primary" @click="openPilot(activeRole + 1)">{{ activeRoleData.cta }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
-        </article>
-        <aside><i /> <span><strong>{{ copy.access.demoTitle }}</strong>{{ copy.access.demoNote }}</span></aside>
-      </div>
-    </section>
-
-    <section class="demo-reality section-pad">
-      <div class="section-mark mono">{{ copy.demo.index }}</div>
-      <div class="section-heading"><p class="eyebrow">{{ copy.demo.eyebrow }}</p><h2>{{ copy.demo.title }}</h2><p>{{ copy.demo.body }}</p></div>
-      <div class="demo-reality__grid"><article><strong>{{ copy.demo.currentTitle }}</strong><ul><li v-for="item in copy.demo.current" :key="item"><span>✓</span>{{ item }}</li></ul></article><article><strong>{{ copy.demo.realTitle }}</strong><ul><li v-for="item in copy.demo.real" :key="item"><span>○</span>{{ item }}</li></ul><p class="demo-reality__note">{{ copy.demo.realNote }}</p></article></div>
     </section>
 
     <section id="early-access" class="early-access section-pad">

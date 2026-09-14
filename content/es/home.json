@@ -3,24 +3,24 @@
   "prototype": "PROTOTIPO FUNCIONAL / EN DESARROLLO",
   "nav": {"problem": "El problema", "product": "Cómo funciona", "roles": "Para quién", "earlyAccess": "Acceso anticipado", "workspace": "Ver workspace"},
   "hero": {
-    "eyebrow": "BOOKING PARA DJS DE MÚSICA ELECTRÓNICA", "titleTop": "TU PRÓXIMO", "titleBottom": "BOOKING",
-    "body": "Comparte un enlace, recibe toda la información necesaria y responde sin perder el hilo entre Instagram, WhatsApp, correo y calendario.",
-    "primaryCta": "Probar enlace de booking", "secondaryCta": "Ver el problema", "networkIdle": "UN ENLACE · UNA BANDEJA", "networkSearching": "ORDENANDO SOLICITUD", "networkFound": "BOOKING LISTO PARA DECIDIR",
-    "proofs": ["El promotor no necesita instalar nada", "La respuesta continúa por email", "Disponibilidad y datos siempre bajo tu control"]
+    "eyebrow": "GESTIÓN DE BOOKINGS PARA DJS Y AGENCIAS", "titleTop": "BOOKINGS", "titleBottom": "BAJO CONTROL",
+    "body": "Recibe solicitudes completas y gestiona conversaciones, condiciones, estados y fechas desde un solo lugar, aunque el contacto empiece por Instagram, WhatsApp, correo o una llamada.",
+    "primaryCta": "Ver cómo funciona", "secondaryCta": "Probar la demo", "networkIdle": "UNA SOLICITUD · UN ESTADO", "networkSearching": "ORDENANDO BOOKING", "networkFound": "LISTO PARA DECIDIR",
+    "proofs": ["Todas las solicitudes en una bandeja", "Cada booking conserva su conversación y estado", "Calendario y disponibilidad sin solapamientos"]
   },
   "problem": {
     "index": "01 / EL RUIDO", "eyebrow": "ASÍ SE CIERRAN FECHAS HOY", "title": "Demasiados canales. Ningún estado común.",
-    "body": "El contacto puede empezar en Instagram, WhatsApp, email o una web. CueBooker convierte esa primera conversación en una solicitud ordenada para que el DJ sepa qué responder, qué sigue pendiente y qué fecha ya está cerrada.",
+    "body": "El contacto puede empezar en Instagram, WhatsApp, email, una llamada o una web. CueBooker no sustituye tus contactos ni promete conseguirte bolos: organiza lo que ocurre desde que alguien quiere contratarte para que sepas qué responder, qué sigue pendiente y qué fecha ya está cerrada.",
     "quoteOne": "¿Disponible el 24 de octubre?", "quoteTwo": "¿Alguna novedad?", "file": "fechas_artistas_FINAL_v8.xlsx", "statement": "Cada contacto necesita un siguiente paso."
   },
   "search": {
-    "index": "05 / DISCOVERY", "eyebrow": "VISIÓN FUTURA · DEMO CONCEPTUAL", "title": "Encuentra DJs que estén libres cuando los necesitas.",
-    "body": "CueBooker conectará la disponibilidad que cada artista decida mostrar con búsquedas por fecha, ciudad, sonido y presupuesto. El promotor descubrirá opciones reales y el DJ ganará visibilidad sin publicar su agenda privada.",
+    "index": "07 / DISCOVERY", "eyebrow": "MÁS ADELANTE · NO ES EL PRODUCTO INICIAL", "title": "Cuando exista una red real: descubre DJs disponibles.",
+    "body": "Como capa futura, CueBooker podrá conectar la disponibilidad que cada artista decida mostrar con búsquedas por fecha, ciudad, sonido y presupuesto. El núcleo del producto seguirá siendo gestionar las solicitudes que el DJ ya recibe.",
     "where": "Dónde", "when": "Cuándo", "sound": "Sonido", "budget": "Presupuesto", "button": "Simular búsqueda", "searching": "Buscando DJs disponibles", "resultCount": "3 artistas disponibles", "resultHint": "Demostración conceptual. Los artistas y resultados son ficticios; el buscador conectado todavía no está activo.", "visibility": "DISPONIBILIDAD VOLUNTARIA", "available": "Disponible para solicitudes", "request": "Ver perfil y solicitar fecha", "why": "Por qué encaja", "reasons": ["Disponible en tu fecha", "Sonido compatible", "Dentro del presupuesto"],
     "artists": [{"name": "NØRA", "city": "BARCELONA", "sound": "HYPNOTIC · TECHNO"}, {"name": "KAIRO", "city": "GIRONA", "sound": "DETROIT · GROOVE"}, {"name": "MARA V", "city": "BARCELONA", "sound": "INDUSTRIAL · LIVE"}]
   },
   "flow": {
-    "index": "02 / CONECTADO", "eyebrow": "DEL PRIMER CONTACTO A LA FECHA CERRADA", "title": "Un booking. Un hilo. Un siguiente paso.",
+    "index": "02 / CONECTADO", "eyebrow": "DEL PRIMER CONTACTO A LA FECHA CERRADA", "title": "De la primera solicitud al calendario. Sin perder el hilo.",
     "body": "El DJ comparte su enlace. El promotor envía una solicitud sin crear una cuenta. La respuesta le llega por email y ambas partes continúan en el mismo booking hasta cerrar la fecha.",
     "steps": ["Comparte", "Solicita", "Responde", "Acuerda", "Confirma", "Calendario"]
   },
@@ -35,15 +35,15 @@
     "note": "El DJ configura el servicio desde su panel. El promotor no instala nada. Un paquete npm sería una opción técnica para desarrolladores, no el producto principal."
   },
   "roles": {
-    "index": "04 / QUIÉN EMPIEZA", "eyebrow": "EL DJ ACTIVA SU RED DE BOOKING", "title": "Empieza con artistas. Conecta al resto.",
+    "index": "04 / PARA QUIÉN", "eyebrow": "RECIBE, GESTIONA Y CIERRA FECHAS", "title": "Útil cuando empiezas. Más útil cuando el trabajo crece.",
     "items": [
-      {"name": "DJ independiente", "headline": "Tu perfil, tu disponibilidad y cada consulta.", "body": "Crea tu cuenta, comparte tu enlace en Instagram, Linktree o tu web y convierte mensajes dispersos en solicitudes que puedes seguir."},
+      {"name": "DJ independiente", "headline": "Tu perfil, tu disponibilidad y cada consulta.", "body": "Recibas tres solicitudes o treinta, comparte tu enlace y convierte mensajes, llamadas y correos dispersos en bookings que puedes seguir sin perder ninguno."},
       {"name": "Promotor o sala", "headline": "Pregunta sin instalar otra herramienta.", "body": "Abre el enlace del DJ, envía los datos y continúa desde tu email o un acceso seguro. La cuenta será opcional cuando repitas uso."},
       {"name": "Manager o agencia", "headline": "Tu roster sigue bajo tu control.", "body": "Registra la agencia, añade artistas y dirige cada consulta al responsable correcto con permisos, tarifas y calendarios privados."}
     ]
   },
   "access": {
-    "index": "06 / ACCESO", "eyebrow": "FRICCIÓN SOLO CUANDO APORTA VALOR", "title": "El DJ tiene panel. El promotor solo necesita responder.",
+    "index": "05 / ACCESO", "eyebrow": "FRICCIÓN SOLO CUANDO APORTA VALOR", "title": "El DJ tiene panel. El promotor solo necesita responder.",
     "body": "DJs y agencias crean su espacio de trabajo. El promotor puede enviar la primera consulta sin cuenta y recibe un acceso seguro para continuar el booking.",
     "selectorLabel": "Selecciona un perfil", "demoTitle": "Prototipo en desarrollo.", "demoNote": " Esta pantalla demuestra el modelo de acceso. El registro, la autenticación y la persistencia compartida se conectarán en la siguiente fase.",
     "roles": [
@@ -53,7 +53,7 @@
     ]
   },
   "demo": {
-    "index": "07 / DEMO", "eyebrow": "QUÉ ESTÁS PROBANDO", "title": "La experiencia es real. Las conexiones aún son simuladas.",
+    "index": "06 / DEMO", "eyebrow": "QUÉ ESTÁS PROBANDO", "title": "La experiencia es real. Las conexiones aún son simuladas.",
     "body": "Esta demostración permite recorrer una solicitud completa desde el perfil del artista hasta el historial del DJ.",
     "currentTitle": "✓ Funcional en esta demo", "current": ["Formulario de booking", "Bandeja y estados", "Conversación y adjuntos simulados", "Calendario, alertas e historial"],
     "realTitle": "○ Previsto para el producto", "real": ["Cuentas y permisos", "Base de datos compartida", "Emails y enlaces seguros", "Archivos almacenados y calendario sincronizado", "Buscador de DJs por disponibilidad", "Visibilidad voluntaria sin exponer la agenda privada"],

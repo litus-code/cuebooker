@@ -3,24 +3,24 @@
   "prototype": "FUNCTIONAL PROTOTYPE / IN DEVELOPMENT",
   "nav": {"problem": "The problem", "product": "How it works", "roles": "For whom", "earlyAccess": "Early access", "workspace": "View workspace"},
   "hero": {
-    "eyebrow": "BOOKING FOR ELECTRONIC MUSIC DJS", "titleTop": "YOUR NEXT", "titleBottom": "BOOKING",
-    "body": "Share one link, receive the details you need and reply without losing the thread across Instagram, WhatsApp, email and calendar.",
-    "primaryCta": "Try the booking link", "secondaryCta": "See the problem", "networkIdle": "ONE LINK · ONE INBOX", "networkSearching": "STRUCTURING REQUEST", "networkFound": "BOOKING READY TO DECIDE",
-    "proofs": ["No app required for the promoter", "Replies continue by email", "Availability and data stay under your control"]
+    "eyebrow": "BOOKING MANAGEMENT FOR DJS AND AGENCIES", "titleTop": "BOOKINGS", "titleBottom": "UNDER CONTROL",
+    "body": "Receive complete requests and manage conversations, terms, statuses and dates in one place, even when contact starts on Instagram, WhatsApp, email or a phone call.",
+    "primaryCta": "See how it works", "secondaryCta": "Try the demo", "networkIdle": "ONE REQUEST · ONE STATUS", "networkSearching": "STRUCTURING BOOKING", "networkFound": "READY TO DECIDE",
+    "proofs": ["Every request in one inbox", "Each booking keeps its conversation and status", "Calendar and availability without clashes"]
   },
   "problem": {
     "index": "01 / THE NOISE", "eyebrow": "HOW DATES GET BOOKED TODAY", "title": "Too many channels. No shared state.",
-    "body": "A contact may start on Instagram, WhatsApp, email or a website. CueBooker turns that first conversation into a structured request so the DJ knows what to answer, what is pending and which date is confirmed.",
+    "body": "A contact may start on Instagram, WhatsApp, email, a phone call or a website. CueBooker does not replace your contacts or promise to get you gigs: it organises what happens once someone wants to book you, so you know what to answer, what is pending and which date is confirmed.",
     "quoteOne": "Available on 24 October?", "quoteTwo": "Any update?", "file": "artist_dates_FINAL_v8.xlsx", "statement": "Every contact needs a next action."
   },
   "search": {
-    "index": "05 / DISCOVERY", "eyebrow": "FUTURE VISION · CONCEPT DEMO", "title": "Find DJs who are free when you need them.",
-    "body": "CueBooker will connect the availability each artist chooses to show with searches by date, city, sound and budget. Promoters will discover real options and DJs will gain visibility without publishing their private calendar.",
+    "index": "07 / DISCOVERY", "eyebrow": "LATER · NOT THE INITIAL PRODUCT", "title": "When a real network exists: discover available DJs.",
+    "body": "As a future layer, CueBooker may connect the availability each artist chooses to show with searches by date, city, sound and budget. The core product will remain the management of requests DJs already receive.",
     "where": "Where", "when": "When", "sound": "Sound", "budget": "Budget", "button": "Simulate search", "searching": "Finding available DJs", "resultCount": "3 available artists", "resultHint": "Concept demonstration. Artists and results are fictional; connected search is not active yet.", "visibility": "OPT-IN AVAILABILITY", "available": "Available for requests", "request": "View profile and request date", "why": "Why it fits", "reasons": ["Available on your date", "Sound match", "Within budget"],
     "artists": [{"name": "NØRA", "city": "BARCELONA", "sound": "HYPNOTIC · TECHNO"}, {"name": "KAIRO", "city": "GIRONA", "sound": "DETROIT · GROOVE"}, {"name": "MARA V", "city": "BARCELONA", "sound": "INDUSTRIAL · LIVE"}]
   },
   "flow": {
-    "index": "02 / CONNECTED", "eyebrow": "FROM FIRST CONTACT TO CONFIRMED", "title": "One booking. One thread. One next action.",
+    "index": "02 / CONNECTED", "eyebrow": "FROM FIRST CONTACT TO CONFIRMED", "title": "From the first request to the calendar. Without losing the thread.",
     "body": "The DJ shares a link. The promoter sends a request without creating an account. The reply arrives by email and both sides continue in the same booking until the date is closed.",
     "steps": ["Share", "Request", "Reply", "Agree", "Confirm", "Calendar"]
   },
@@ -35,15 +35,15 @@
     "note": "The DJ configures the service from their workspace. The promoter installs nothing. An npm package would be a developer option, not the main product."
   },
   "roles": {
-    "index": "04 / WHO STARTS", "eyebrow": "THE DJ ACTIVATES THEIR BOOKING NETWORK", "title": "Start with artists. Connect everyone else.",
+    "index": "04 / FOR WHOM", "eyebrow": "RECEIVE, MANAGE AND CLOSE DATES", "title": "Useful when you start. More useful as the work grows.",
     "items": [
-      {"name": "Independent DJ", "headline": "Your profile, availability and every enquiry.", "body": "Create your account, share your link on Instagram, Linktree or your website and turn scattered messages into trackable requests."},
+      {"name": "Independent DJ", "headline": "Your profile, availability and every enquiry.", "body": "Whether you receive three requests or thirty, share your link and turn scattered messages, calls and emails into bookings you can track without losing any."},
       {"name": "Promoter or venue", "headline": "Ask without installing another tool.", "body": "Open the DJ link, send the details and continue from email or a secure page. An account becomes optional after repeated use."},
       {"name": "Manager or agency", "headline": "Your roster stays under your control.", "body": "Register the agency, add artists and route each enquiry to the right person with private permissions, fees and calendars."}
     ]
   },
   "access": {
-    "index": "06 / ACCESS", "eyebrow": "FRICTION ONLY WHEN IT ADDS VALUE", "title": "The DJ gets a workspace. The promoter only needs to reply.",
+    "index": "05 / ACCESS", "eyebrow": "FRICTION ONLY WHEN IT ADDS VALUE", "title": "The DJ gets a workspace. The promoter only needs to reply.",
     "body": "DJs and agencies create their workspace. A promoter can send the first request without an account and receives secure access to continue the booking.",
     "selectorLabel": "Choose a role", "demoTitle": "Prototype in development.", "demoNote": " This screen demonstrates the access model. Registration, authentication and shared persistence will be connected in the next phase.",
     "roles": [
@@ -53,7 +53,7 @@
     ]
   },
   "demo": {
-    "index": "07 / DEMO", "eyebrow": "WHAT YOU ARE TESTING", "title": "The experience is real. The connections are still simulated.",
+    "index": "06 / DEMO", "eyebrow": "WHAT YOU ARE TESTING", "title": "The experience is real. The connections are still simulated.",
     "body": "This demonstration lets you complete a request from the artist profile through to the DJ's history.",
     "currentTitle": "✓ Working in this demo", "current": ["Booking form", "Inbox and statuses", "Simulated conversation and attachments", "Calendar, alerts and history"],
     "realTitle": "○ Planned for the product", "real": ["Accounts and permissions", "Shared database", "Emails and secure links", "Stored files and calendar synchronisation", "DJ search by availability", "Opt-in visibility without exposing private calendars"],
