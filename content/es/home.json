@@ -20,8 +20,15 @@
   },
   "flow": {
     "index": "02 / CONECTADO", "eyebrow": "DEL PRIMER CONTACTO A LA FECHA CERRADA", "title": "De la primera solicitud al calendario. Sin perder el hilo.",
-    "body": "El DJ comparte su enlace. El promotor envía una solicitud sin crear una cuenta. La respuesta le llega por email y ambas partes continúan en el mismo booking hasta cerrar la fecha.",
-    "steps": ["Comparte", "Solicita", "Responde", "Acuerda", "Confirma", "Calendario"]
+    "body": "Cada paso ocurre dentro del mismo booking. El promotor inicia la solicitud sin cuenta y el DJ conserva datos, conversación, estado y fecha hasta cerrarla.",
+    "steps": [
+      {"name": "Comparte", "detail": "El DJ publica su enlace en Instagram, WhatsApp o su web."},
+      {"name": "Solicita", "detail": "El promotor envía fecha, sala, horario y propuesta sin registrarse."},
+      {"name": "Recibe", "detail": "CueBooker crea el booking y lo coloca en la bandeja del DJ."},
+      {"name": "Responde", "detail": "La conversación y las condiciones permanecen en la misma ficha."},
+      {"name": "Acuerda", "detail": "Ambas partes revisan la propuesta y conocen el siguiente paso."},
+      {"name": "Confirma", "detail": "La fecha cambia de estado y se incorpora al calendario."}
+    ]
   },
   "integrations": {
     "index": "03 / DONDE YA TRABAJAS", "eyebrow": "SIN CAMBIAR TUS CANALES", "title": "Un enlace propio. Un widget si ya tienes web.",
