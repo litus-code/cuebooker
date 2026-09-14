@@ -24,13 +24,13 @@ jobs:
     steps:
       - name: Checkout pull request head
         if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.head_ref }}
 
       - name: Checkout
         if: ${{ github.event_name != 'pull_request' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
