@@ -9,7 +9,7 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -22,7 +22,14 @@ jobs:
     timeout-minutes: 15
 
     steps:
+      - name: Checkout pull request head
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Checkout
+        if: ${{ github.event_name != 'pull_request' }}
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -31,8 +38,29 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Use repository npm version
+        run: npm install --global npm@10.9.3
+
+      - name: Rebuild lockfile for this recovery PR
+        if: ${{ github.event_name == 'pull_request' && github.head_ref == 'chore/deterministic-ci-installs' }}
+        shell: bash
+        run: |
+          echo "Rebuilding package-lock.json from package.json with npm $(npm --version)"
+          rm -f package-lock.json
+          npm install --package-lock-only --ignore-scripts
+          node -e "const fs=require('fs'); const lock=JSON.parse(fs.readFileSync('package-lock.json','utf8')); console.log({lockfileVersion: lock.lockfileVersion, rootPackage: lock.packages?.['']?.name})"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          if git diff --cached --quiet; then
+            echo "No lockfile changes to commit"
+          else
+            git commit -m "Regenerate package lockfile with npm 10.9.3"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
+
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Generate production build
         env:
