@@ -1,7 +1,11 @@
 name: Deploy Staging
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
     branches:
       - main
   workflow_dispatch:
@@ -16,6 +20,7 @@ concurrency:
 jobs:
   deploy:
     name: Deploy to staging.cuebooker.com
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment:
@@ -23,8 +28,20 @@ jobs:
       url: https://staging.cuebooker.com
 
     steps:
-      - name: Checkout
+      - name: Resolve deployment revision
+        id: revision
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            echo "sha=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "sha=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout validated revision
         uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.revision.outputs.sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -46,9 +63,9 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy .output/public --project-name=cuebooker-staging --branch=main --commit-hash=${{ github.sha }} --commit-message="${{ github.event.head_commit.message }}"
+          command: pages deploy .output/public --project-name=cuebooker-staging --branch=main --commit-hash=${{ steps.revision.outputs.sha }}
 
       - name: Record deployed revision
         run: |
-          echo "Staging revision: $GITHUB_SHA"
+          echo "Staging revision: ${{ steps.revision.outputs.sha }}"
           echo "Review: https://staging.cuebooker.com"
