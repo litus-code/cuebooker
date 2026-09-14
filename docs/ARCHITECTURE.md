@@ -6,7 +6,7 @@ Updated: 14 September 2026
 
 CueBooker uses Nuxt 4, Vue 3 and TypeScript. Nitro generates a static application for Cloudflare Pages. The interface keeps Spanish and English content in parallel JSON files and uses a shared CSS visual system.
 
-The public demo currently uses a browser-local repository. Treat it as a presentation adapter. Do not extend that storage model into production features.
+Authenticated profiles currently receive browser-local sample bookings from a repository scoped by user ID. These examples support onboarding and remain separate from Supabase data. Users can remove or restore them from the workspace. Do not extend that storage model into production features.
 
 ## Target data flow
 
