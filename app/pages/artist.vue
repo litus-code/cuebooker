@@ -19,7 +19,7 @@ const text = computed(() => locale.value === 'es' ? {
   title: 'Cuéntanos la fecha. Sin registrarte.', intro: 'Los datos llegan ordenados al DJ. Recibirás su respuesta en tu correo y podrás continuar desde un enlace seguro.',
   name: 'Tu nombre', email: 'Email de respuesta', phone: 'Teléfono opcional', event: 'Evento', venue: 'Sala', cityLabel: 'Ciudad', date: 'Fecha', capacity: 'Aforo', offer: 'Oferta', schedule: 'Horario propuesto', message: 'Mensaje para el DJ', files: 'Adjuntar rider, propuesta o información', send: 'Enviar solicitud', sending: 'Guardando solicitud',
   privacy: 'Demo local: los datos se guardan únicamente en este navegador. En el producto real se enviarán de forma segura al artista.',
-  sent: 'Solicitud enviada', sentBody: 'Así de simple debería ser para el promotor. Ahora puedes comprobar cómo llega al panel del DJ y cómo continúa la respuesta.', promoterView: 'Ver seguimiento del promotor', djView: 'Abrir bandeja del DJ'
+  sent: 'Solicitud enviada', sentBody: 'Así de simple debería ser para el promotor. Ahora puedes comprobar cómo continúa el seguimiento desde su enlace.', promoterView: 'Ver seguimiento del promotor'
 } : {
   back: 'Back', demo: 'Fictional profile · functional flow', city: 'Berlin',
   available: 'Available · 24 OCT 2026', about: 'Physical techno, mechanical tension and Detroit rhythms. Nara Voss builds long sets for dark rooms and close dancefloors.',
@@ -27,7 +27,7 @@ const text = computed(() => locale.value === 'es' ? {
   title: 'Tell us about the date. No account required.', intro: 'The DJ receives structured details. Their reply reaches your email and you can continue through a secure link.',
   name: 'Your name', email: 'Reply email', phone: 'Optional phone', event: 'Event', venue: 'Venue', cityLabel: 'City', date: 'Date', capacity: 'Capacity', offer: 'Offer', schedule: 'Proposed schedule', message: 'Message for the DJ', files: 'Attach rider, proposal or information', send: 'Send request', sending: 'Saving request',
   privacy: 'Local demo: data is stored only in this browser. The real product will send it securely to the artist.',
-  sent: 'Request sent', sentBody: 'This is how simple it should feel for the promoter. Now check how it reaches the DJ and how the reply continues.', promoterView: 'View promoter follow-up', djView: 'Open DJ inbox'
+  sent: 'Request sent', sentBody: 'This is how simple it should feel for the promoter. Now check how the follow-up continues through the secure link.', promoterView: 'View promoter follow-up'
 })
 
 function selectFiles(event: Event) {
@@ -107,7 +107,7 @@ useHead(() => ({
 
       <div v-else class="request-success">
         <span class="success-signal">✓</span><strong>{{ text.sent }}</strong><p>{{ text.sentBody }}</p>
-        <div><NuxtLink class="button button--primary" :to="`/request?id=${sentBookingId}`">{{ text.promoterView }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink><NuxtLink class="button button--ghost" :to="`/app?booking=${sentBookingId}`">{{ text.djView }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink></div>
+        <div><NuxtLink class="button button--primary" :to="`/request?id=${sentBookingId}`">{{ text.promoterView }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink></div>
       </div>
     </section>
 
