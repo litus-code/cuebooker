@@ -109,7 +109,7 @@ Local verification completed before the Work environment became unavailable:
 - `npm audit --omit=dev --audit-level=high` reported zero vulnerabilities.
 - `git diff --check` passed.
 
-The anonymous `/app` test workspace remains separate from the authenticated `/workspace`. This separation prevents fictional browser-local records from mixing with private account data.
+The anonymous `/app` entry has been retired. It now routes visitors to registration and returning users to `/workspace`.
 
 ## CI and lockfile status
 
@@ -150,11 +150,11 @@ The staging onboarding RPC parameter ambiguity reported on 14 September has been
 
 The home now presents Cuebooker as usable software rather than an early-access waiting list. Account creation and sign-in are first-class header and hero actions. The floating pilot action has been removed. The existing Brevo form remains at the end of the page for research participation and product feedback, clearly separated from account registration.
 
-The anonymous `/app` route remains available as a test workspace. Home copy must describe its records as fictional test data and distinguish it from each account's connected private workspace. Do not present the test workspace as a competing primary entry in the hero.
+The home now drives DJs and agencies through account creation. Do not reintroduce a competing direct workspace entry. The public promoter simulation remains explicit until its request endpoint is connected.
 
 ## Next product implementation block
 
-After the Work auth/calendar foundation is integrated and validated, build shared booking persistence. Start with the schema and server-owned transition functions, then connect the current workspace through a repository interface. Keep the browser-local demo adapter available so visitors can still test the product without registering.
+After the Work auth/calendar foundation is integrated and validated, build shared booking persistence. Start with the schema and server-owned transition functions, then replace the current per-profile sample adapter without migrating sample records into Supabase.
 
 The first vertical slice should support:
 
@@ -172,9 +172,9 @@ The first vertical slice should support:
 The authenticated workspace no longer presents the calendar as the complete product. Its interface is now divided into:
 
 - `Resumen`, with real availability totals and upcoming private schedules;
-- `Bookings`, with the complete browser-local test inbox and an explicit simulated-data notice;
+- `Bookings`, with removable examples scoped to the authenticated profile and browser;
 - `Calendario`, as a separate operational tool.
 
 The calendar day view now uses a real 24-hour timeline. Existing blocks appear at their start time and reflect their duration. Clicking an empty hour starts creation; clicking an existing block opens editing and confirmed deletion.
 
-The authenticated Bookings area reuses the browser-local demo records so the user can test filters, offers, conversations and status changes without leaving the workspace. A persistent notice identifies this mode and explains that its records do not belong to the account or modify the connected private calendar.
+The authenticated Bookings area includes sample records so the user can test filters, offers, conversations and status changes without leaving the workspace. A guided tour moves through the interface with scroll positioning and neon focus. The records use a browser database namespace derived from the authenticated user and artist IDs, can be removed or restored, and never modify the connected private calendar.
