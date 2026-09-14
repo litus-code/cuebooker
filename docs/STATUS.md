@@ -172,9 +172,9 @@ The first vertical slice should support:
 The authenticated workspace no longer presents the calendar as the complete product. Its interface is now divided into:
 
 - `Resumen`, with real availability totals and upcoming private schedules;
-- `Bookings`, as the future main inbox with an explicit not-yet-connected state;
+- `Bookings`, with the complete browser-local test inbox and an explicit simulated-data notice;
 - `Calendario`, as a separate operational tool.
 
 The calendar day view now uses a real 24-hour timeline. Existing blocks appear at their start time and reflect their duration. Clicking an empty hour starts creation; clicking an existing block opens editing and confirmed deletion.
 
-This interface does not invent private requests. Until shared booking persistence is implemented, the authenticated Bookings area points to the separate browser-local test flow when a user wants to inspect the intended behaviour.
+The authenticated Bookings area reuses the browser-local demo records so the user can test filters, offers, conversations and status changes without leaving the workspace. A persistent notice identifies this mode and explains that its records do not belong to the account or modify the connected private calendar.
