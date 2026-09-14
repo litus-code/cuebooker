@@ -1,4 +1,4 @@
-export type BookingStatus = 'new' | 'your_reply' | 'waiting_promoter' | 'confirmed' | 'closed'
+export type BookingStatus = 'new' | 'in_review' | 'waiting_promoter' | 'confirmed' | 'rejected'
 export type BookingActor = 'promoter' | 'artist'
 
 export interface BookingAttachment {
@@ -57,18 +57,18 @@ export interface NewBookingInput {
 
 export const bookingStatuses: BookingStatus[] = [
   'new',
-  'your_reply',
+  'in_review',
   'waiting_promoter',
   'confirmed',
-  'closed'
+  'rejected'
 ]
 
 export const statusTone: Record<BookingStatus, string> = {
   new: 'lime',
-  your_reply: 'violet',
+  in_review: 'violet',
   waiting_promoter: 'orange',
   confirmed: 'mint',
-  closed: 'muted'
+  rejected: 'muted'
 }
 
 export function createId(prefix: string) {

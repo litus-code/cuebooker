@@ -2,14 +2,15 @@ import { createBooking, createId, type Booking, type BookingActor, type BookingA
 import { bookingRepository } from '../repositories/bookingRepository.client'
 
 function demoBookings(): Booking[] {
+  // Fictional records used only to demonstrate the local prototype.
   const now = new Date()
   const make = (days: number, status: BookingStatus, artistName: string, venue: string, city: string): Booking => {
     const createdAt = new Date(now.getTime() - days * 86400000).toISOString()
     return {
       id: createId('booking'), artistId: artistName.toLowerCase().replaceAll(' ', '-'), artistName,
-      promoter: { name: 'Alex Romero', email: 'booking@bravaevents.com' },
+      promoter: { name: 'Promotor Demo', email: 'booking@cuebooker.test' },
       event: { name: `${venue} Night`, venue, city, date: `2026-10-${String(18 + days).padStart(2, '0')}`, capacity: '1.200', offer: '2.400 €', schedule: '02:00–04:00' },
-      status, archived: status === 'closed', source: 'booking_link', createdAt, updatedAt: createdAt,
+      status, archived: status === 'rejected', source: 'booking_link', createdAt, updatedAt: createdAt,
       messages: [{ id: createId('message'), actor: 'promoter', body: `Hola, queremos contar con ${artistName} para nuestra fecha en ${venue}. ¿Podemos revisar disponibilidad y condiciones?`, createdAt, attachments: [] }]
     }
   }
@@ -17,7 +18,7 @@ function demoBookings(): Booking[] {
     make(0, 'new', 'Nara Voss', 'Nitsa Club', 'Barcelona'),
     make(2, 'waiting_promoter', 'Nara Voss', 'Mondo Disko', 'Madrid'),
     make(4, 'confirmed', 'Nulla', 'Pulse Festival', 'Girona'),
-    make(8, 'closed', 'Mila Rho', 'Razzmatazz', 'Barcelona')
+    make(8, 'rejected', 'Mila Rho', 'Razzmatazz', 'Barcelona')
   ]
 }
 
@@ -31,6 +32,21 @@ export function useBookingDemo() {
     if (!records.length) {
       records = demoBookings()
       await Promise.all(records.map(bookingRepository.save))
+    } else {
+      let migrated = false
+      records = records.map((record) => {
+        const legacyStatus = record.status as string
+        if (legacyStatus === 'your_reply') {
+          migrated = true
+          return { ...record, status: 'in_review' as const }
+        }
+        if (legacyStatus === 'closed') {
+          migrated = true
+          return { ...record, status: 'rejected' as const, archived: true }
+        }
+        return record
+      })
+      if (migrated) await Promise.all(records.map(bookingRepository.save))
     }
     bookings.value = records
     ready.value = true
@@ -55,6 +71,14 @@ export function useBookingDemo() {
     if (!booking) return
     booking.status = status
     if (status === 'confirmed') booking.archived = false
+    if (status === 'rejected') booking.archived = true
+    return update(booking)
+  }
+
+  async function markOpened(id: string) {
+    const booking = await bookingRepository.get(id)
+    if (!booking || booking.status !== 'new') return
+    booking.status = 'in_review'
     return update(booking)
   }
 
@@ -62,7 +86,7 @@ export function useBookingDemo() {
     const booking = await bookingRepository.get(id)
     if (!booking || !body.trim()) return
     booking.messages.push({ id: createId('message'), actor, body: body.trim(), createdAt: new Date().toISOString(), attachments })
-    booking.status = actor === 'artist' ? 'waiting_promoter' : 'your_reply'
+    booking.status = actor === 'artist' ? 'waiting_promoter' : 'in_review'
     return update(booking)
   }
 
@@ -70,11 +94,11 @@ export function useBookingDemo() {
     const booking = await bookingRepository.get(id)
     if (!booking) return
     booking.archived = archived
-    booking.status = archived ? 'closed' : 'confirmed'
+    if (!archived && booking.status === 'rejected') booking.status = 'in_review'
     return update(booking)
   }
 
   onMounted(refresh)
 
-  return { bookings, ready, refresh, submit, setStatus, addMessage, setArchived }
+  return { bookings, ready, refresh, submit, setStatus, markOpened, addMessage, setArchived }
 }

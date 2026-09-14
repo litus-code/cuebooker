@@ -3,7 +3,7 @@ import { bookingStatuses, statusTone, type BookingStatus } from '../domain/booki
 
 const route = useRoute()
 const { locale, theme, setLocale, setTheme } = useCuePreferences()
-const { bookings, ready, setStatus, addMessage, setArchived } = useBookingDemo()
+const { bookings, ready, setStatus, markOpened, addMessage, setArchived } = useBookingDemo()
 const activeView = ref<'requests' | 'calendar' | 'history' | 'settings'>('requests')
 const role = ref<'dj' | 'manager'>('dj')
 const filter = ref<'all' | BookingStatus>('all')
@@ -17,35 +17,35 @@ const copy = computed(() => locale.value === 'es' ? {
   nav: { requests: 'Solicitudes', calendar: 'Calendario', history: 'Historial', settings: 'Ajustes' },
   title: 'Tu siguiente acción, sin buscarla.', subtitle: 'Cada solicitud conserva los datos, la conversación y quién debe responder ahora.',
   originLabel: 'DEMO / SOLICITUD RECIBIDA', originTitle: 'Así llega un booking al panel del DJ.', originBody: 'Esta solicitud de ejemplo llegó desde el enlace público o widget del artista. El promotor completa los datos una vez y el DJ los recibe aquí con su estado, conversación y fecha.', originLink: 'Ver el enlace que la generó',
-  all: 'Todas', empty: 'No hay solicitudes en este estado.', choose: 'Abre una solicitud para ver el hilo completo.', status: 'Estado', contact: 'Contacto', event: 'Datos del evento', conversation: 'Conversación', reply: 'Responder al promotor', replyPlaceholder: 'Escribe condiciones, una pregunta o una propuesta…', send: 'Enviar respuesta', emailNote: 'En producción, esta respuesta se enviará al email del promotor y su contestación volverá a este mismo hilo. En esta demo se refleja en la vista del promotor.', promoterView: 'Abrir vista del promotor', openThread: 'Ver conversación completa', confirm: 'Confirmar fecha', archive: 'Cerrar y enviar al historial', restore: 'Devolver a solicitudes', attachment: 'Adjunto',
+  all: 'Todas', empty: 'No hay solicitudes en este estado.', choose: 'Abre una solicitud para ver el hilo completo.', status: 'Estado automático', contact: 'Contacto', event: 'Datos del evento', conversation: 'Conversación', reply: 'Responder al promotor', replyPlaceholder: 'Escribe condiciones, una pregunta o una propuesta…', send: 'Enviar respuesta', emailNote: 'El estado solo cambiará a “Esperando al promotor” cuando envíes esta respuesta.', promoterView: 'Abrir vista del promotor', openThread: 'Ver conversación completa', confirm: 'Confirmar fecha', reject: 'Rechazar solicitud', archive: 'Archivar booking', restore: 'Devolver a solicitudes', attachment: 'Adjunto',
   calendarTitle: 'Tu agenda de booking', calendarBody: 'Consulta el mes completo, las horas y los compromisos provisionales antes de confirmar otra fecha.', calendarConflict: 'Posible solapamiento', calendarConflictBody: 'Revisa estos horarios antes de confirmar. CueBooker no bloquea una decisión sin avisarte.', calendarClear: 'Sin solapamientos detectados este mes.', manualBlock: 'Bloqueo manual', previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente', historyTitle: 'Historial', historyBody: 'Consultas cerradas que puedes volver a abrir si te equivocaste.', settingsTitle: 'Preferencias de la demo', settingsBody: 'Idioma y apariencia se conservan en este dispositivo.',
   guide: 'Ver recorrido guiado', next: 'Siguiente', finish: 'Terminar', close: 'Cerrar',
   facts: { date: 'Fecha', city: 'Ciudad', venue: 'Sala', capacity: 'Aforo', offer: 'Oferta', schedule: 'Horario', name: 'Nombre', email: 'Email', phone: 'Tel.', source: 'Origen', sourceValue: 'Enlace de booking', language: 'Idioma', appearance: 'Apariencia', calendar: 'CALENDARIO / PRIVADO', archiveLabel: 'ARCHIVO / REVERSIBLE', device: 'DISPOSITIVO / PREFERENCIAS' },
   tour: [
     ['Una bandeja accionable', 'Empieza viendo únicamente las solicitudes activas y cuántas requieren atención.', 'workspace-filters'],
     ['Abre una solicitud', 'Al seleccionar una fila aparecen los datos y el mensaje original del promotor.', 'workspace-list'],
-    ['El estado explica quién actúa', 'No necesitas “Revisando” o “Necesita información”: el estado indica el siguiente responsable.', 'workspace-status'],
-    ['Responde desde el booking', 'El promotor recibiría el mensaje por email y puede volver al hilo mediante un enlace seguro.', 'workspace-reply'],
-    ['Confirma o archiva', 'La confirmación bloquea la fecha. El archivo es opcional y siempre reversible.', 'workspace-actions']
+    ['Los estados se actualizan solos', 'Al abrir pasa a En revisión. Solo cambia a Esperando al promotor cuando envías una respuesta.', 'workspace-status'],
+    ['Responde desde el booking', 'Al enviar, el promotor recibiría el mensaje por email y el estado se actualizaría automáticamente.', 'workspace-reply'],
+    ['Tú solo decides el resultado', 'Confirmar y rechazar son las únicas decisiones manuales del flujo.', 'workspace-actions']
   ],
-  statuses: { new: 'Nueva', your_reply: 'Tu respuesta', waiting_promoter: 'Esperando al promotor', confirmed: 'Confirmada', closed: 'Cerrada' }
+  statuses: { new: 'Nueva', in_review: 'En revisión', waiting_promoter: 'Esperando al promotor', confirmed: 'Confirmada', rejected: 'Rechazada' }
 } : {
   prototype: 'FUNCTIONAL DEMO · DATA ON THIS DEVICE', role: 'View', dj: 'DJ', manager: 'Manager',
   nav: { requests: 'Requests', calendar: 'Calendar', history: 'History', settings: 'Settings' },
   title: 'Your next action, without searching.', subtitle: 'Every request keeps its details, conversation and the person who needs to respond next.',
   originLabel: 'DEMO / REQUEST RECEIVED', originTitle: 'This is how a booking reaches the DJ workspace.', originBody: 'This sample request came from the artist’s public link or widget. The promoter enters the details once and the DJ receives them here with the status, conversation and date.', originLink: 'View the link that generated it',
-  all: 'All', empty: 'No requests in this state.', choose: 'Open a request to see the complete thread.', status: 'Status', contact: 'Contact', event: 'Event details', conversation: 'Conversation', reply: 'Reply to promoter', replyPlaceholder: 'Write conditions, a question or a proposal…', send: 'Send reply', emailNote: 'In production, this reply is sent to the promoter by email and their answer returns to this thread. The demo mirrors it in the promoter view.', promoterView: 'Open promoter view', openThread: 'View full conversation', confirm: 'Confirm date', archive: 'Close and move to history', restore: 'Return to requests', attachment: 'Attachment',
+  all: 'All', empty: 'No requests in this state.', choose: 'Open a request to see the complete thread.', status: 'Automatic status', contact: 'Contact', event: 'Event details', conversation: 'Conversation', reply: 'Reply to promoter', replyPlaceholder: 'Write conditions, a question or a proposal…', send: 'Send reply', emailNote: 'The status changes to “Waiting for promoter” only after you send this reply.', promoterView: 'Open promoter view', openThread: 'View full conversation', confirm: 'Confirm date', reject: 'Reject request', archive: 'Archive booking', restore: 'Return to requests', attachment: 'Attachment',
   calendarTitle: 'Your booking schedule', calendarBody: 'See the full month, times and provisional commitments before confirming another date.', calendarConflict: 'Possible overlap', calendarConflictBody: 'Review these times before confirming. CueBooker warns you without blocking your decision.', calendarClear: 'No overlaps detected this month.', manualBlock: 'Manual block', previousMonth: 'Previous month', nextMonth: 'Next month', historyTitle: 'History', historyBody: 'Closed enquiries you can reopen if needed.', settingsTitle: 'Demo preferences', settingsBody: 'Language and appearance are stored on this device.',
   guide: 'Start guided tour', next: 'Next', finish: 'Finish', close: 'Close',
   facts: { date: 'Date', city: 'City', venue: 'Venue', capacity: 'Capacity', offer: 'Offer', schedule: 'Schedule', name: 'Name', email: 'Email', phone: 'Phone', source: 'Source', sourceValue: 'Booking link', language: 'Language', appearance: 'Appearance', calendar: 'CALENDAR / PRIVATE', archiveLabel: 'ARCHIVE / REVERSIBLE', device: 'DEVICE / PREFERENCES' },
   tour: [
     ['An actionable inbox', 'Start with active requests and a clear count of what needs attention.', 'workspace-filters'],
     ['Open a request', 'Selecting a row reveals the promoter’s original details and message.', 'workspace-list'],
-    ['Status names the next actor', 'You do not need Reviewing or Need more info: the status shows who acts next.', 'workspace-status'],
-    ['Reply inside the booking', 'The promoter would receive an email and return through a secure link.', 'workspace-reply'],
-    ['Confirm or archive', 'Confirmation blocks the date. Archiving is optional and reversible.', 'workspace-actions']
+    ['Statuses update automatically', 'Opening moves it to In review. It changes to Waiting for promoter only after you send a reply.', 'workspace-status'],
+    ['Reply inside the booking', 'On send, the promoter would receive an email and the status would update automatically.', 'workspace-reply'],
+    ['You only decide the outcome', 'Confirm and reject are the only manual decisions in the flow.', 'workspace-actions']
   ],
-  statuses: { new: 'New', your_reply: 'Your reply', waiting_promoter: 'Waiting for promoter', confirmed: 'Confirmed', closed: 'Closed' }
+  statuses: { new: 'New', in_review: 'In review', waiting_promoter: 'Waiting for promoter', confirmed: 'Confirmed', rejected: 'Rejected' }
 })
 
 const activeBookings = computed(() => bookings.value.filter(item => !item.archived))
@@ -95,7 +95,7 @@ const calendarConflicts = computed(() => {
   const conflicts: Array<{ id: string, date: string, first: CalendarItem, second: CalendarItem }> = []
   calendarItems.value.forEach((first, index) => {
     calendarItems.value.slice(index + 1).forEach((second) => {
-      if (first.date !== second.date || first.status === 'closed' || second.status === 'closed') return
+      if (first.date !== second.date || first.status === 'rejected' || second.status === 'rejected') return
       if (first.start < second.end && second.start < first.end) conflicts.push({ id: `${first.id}-${second.id}`, date: first.date, first, second })
     })
   })
@@ -107,6 +107,11 @@ watch(ready, value => {
   const requested = typeof route.query.booking === 'string' ? route.query.booking : ''
   selectedId.value = bookings.value.some(item => item.id === requested) ? requested : (activeBookings.value[0]?.id || '')
 }, { immediate: true })
+
+watch(selectedId, async (id) => {
+  if (!id) return
+  await markOpened(id)
+})
 
 watch(tourStep, async step => {
   if (step < 0) return
@@ -141,11 +146,6 @@ async function sendReply() {
   reply.value = ''
 }
 
-async function changeStatus(event: Event) {
-  if (!selected.value) return
-  await setStatus(selected.value.id, (event.target as HTMLSelectElement).value as BookingStatus)
-}
-
 function startTour() {
   activeView.value = 'requests'
   filter.value = 'all'
@@ -168,6 +168,12 @@ async function archiveSelected() {
   await setArchived(selected.value.id, true)
   selectedId.value = ''
   activeView.value = 'history'
+}
+
+async function rejectSelected() {
+  if (!selected.value) return
+  await setStatus(selected.value.id, 'rejected')
+  selectedId.value = activeBookings.value[0]?.id || ''
 }
 
 useHead(() => ({ title: locale.value === 'es' ? 'Bandeja de booking | CueBooker' : 'Booking inbox | CueBooker', htmlAttrs: { lang: locale.value } }))
@@ -203,7 +209,7 @@ useHead(() => ({ title: locale.value === 'es' ? 'Bandeja de booking | CueBooker'
     <section v-if="activeView === 'requests'" class="workspace-content">
       <div id="workspace-filters" class="status-filters" :class="{ 'tour-focus': tourStep === 0 }">
         <button :class="{ active: filter === 'all' }" @click="filter = 'all'">{{ copy.all }} <strong>{{ activeBookings.length }}</strong></button>
-        <button v-for="status in bookingStatuses.filter(item => item !== 'closed')" :key="status" :class="[{ active: filter === status }, `tone-${statusTone[status]}`]" @click="filter = status"><i />{{ copy.statuses[status] }} <strong>{{ counts[status] }}</strong></button>
+        <button v-for="status in bookingStatuses.filter(item => item !== 'rejected')" :key="status" :class="[{ active: filter === status }, `tone-${statusTone[status]}`]" @click="filter = status"><i />{{ copy.statuses[status] }} <strong>{{ counts[status] }}</strong></button>
       </div>
 
       <div class="booking-workspace">
@@ -219,7 +225,7 @@ useHead(() => ({ title: locale.value === 'es' ? 'Bandeja de booking | CueBooker'
         <article v-if="selected" class="booking-detail">
           <header>
             <div><p class="eyebrow">BOOKING / {{ selected.id.slice(-8).toUpperCase() }}</p><h2>{{ selected.event.venue }}</h2><p>{{ selected.event.name }} · {{ selected.artistName }}</p></div>
-            <label id="workspace-status" :class="{ 'tour-focus': tourStep === 2 }"><span>{{ copy.status }}</span><select :value="selected.status" @change="changeStatus"><option v-for="status in bookingStatuses" :key="status" :value="status">{{ copy.statuses[status] }}</option></select></label>
+            <div id="workspace-status" class="booking-status-display" :class="[{ 'tour-focus': tourStep === 2 }, `tone-${statusTone[selected.status]}`]"><span>{{ copy.status }}</span><strong><i />{{ copy.statuses[selected.status] }}</strong></div>
           </header>
 
           <div class="booking-facts">
@@ -231,7 +237,7 @@ useHead(() => ({ title: locale.value === 'es' ? 'Bandeja de booking | CueBooker'
 
           <form id="workspace-reply" class="booking-reply" :class="{ 'tour-focus': tourStep === 3 }" @submit.prevent="sendReply"><label>{{ copy.reply }}<textarea v-model="reply" rows="5" :placeholder="copy.replyPlaceholder" /></label><p>{{ copy.emailNote }}</p><button class="button button--primary" :disabled="!reply.trim()">{{ copy.send }} <span class="arrow arrow--ne" aria-hidden="true" /></button></form>
 
-          <footer id="workspace-actions" class="booking-actions" :class="{ 'tour-focus': tourStep === 4 }"><NuxtLink class="button button--ghost" :to="`/request?id=${selected.id}`">{{ copy.promoterView }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink><button v-if="selected.status !== 'confirmed'" class="button button--primary" @click="setStatus(selected.id, 'confirmed')">{{ copy.confirm }} <span>✓</span></button><button v-else class="archive-action" @click="archiveSelected">{{ copy.archive }}</button></footer>
+          <footer id="workspace-actions" class="booking-actions" :class="{ 'tour-focus': tourStep === 4 }"><NuxtLink class="button button--ghost" :to="`/request?id=${selected.id}`">{{ copy.promoterView }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink><button v-if="selected.status !== 'confirmed'" class="button button--primary" @click="setStatus(selected.id, 'confirmed')">{{ copy.confirm }} <span>✓</span></button><button v-if="selected.status !== 'confirmed'" class="button button--danger" @click="rejectSelected">{{ copy.reject }}</button><button v-else class="archive-action" @click="archiveSelected">{{ copy.archive }}</button></footer>
         </article>
         <div v-else class="booking-placeholder"><span><i class="arrow arrow--right" aria-hidden="true" /></span><p>{{ copy.choose }}</p></div>
       </div>
