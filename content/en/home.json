@@ -20,8 +20,15 @@
   },
   "flow": {
     "index": "02 / CONNECTED", "eyebrow": "FROM FIRST CONTACT TO CONFIRMED", "title": "From the first request to the calendar. Without losing the thread.",
-    "body": "The DJ shares a link. The promoter sends a request without creating an account. The reply arrives by email and both sides continue in the same booking until the date is closed.",
-    "steps": ["Share", "Request", "Reply", "Agree", "Confirm", "Calendar"]
+    "body": "Every step stays inside the same booking. The promoter starts without an account, while the DJ keeps the details, conversation, status and date together until confirmation.",
+    "steps": [
+      {"name": "Share", "detail": "The DJ publishes a link on Instagram, WhatsApp or their website."},
+      {"name": "Request", "detail": "The promoter sends the date, venue, schedule and offer without signing up."},
+      {"name": "Receive", "detail": "CueBooker creates the booking and adds it to the DJ's inbox."},
+      {"name": "Reply", "detail": "The conversation and terms stay attached to the same record."},
+      {"name": "Agree", "detail": "Both sides review the offer and always know the next action."},
+      {"name": "Confirm", "detail": "The date changes status and is added to the calendar."}
+    ]
   },
   "integrations": {
     "index": "03 / WHERE YOU ALREADY WORK", "eyebrow": "KEEP YOUR EXISTING CHANNELS", "title": "Your own link. A widget when you already have a website.",
