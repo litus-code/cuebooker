@@ -173,8 +173,13 @@ The authenticated workspace no longer presents the calendar as the complete prod
 
 - `Resumen`, with real availability totals and upcoming private schedules;
 - `Bookings`, with removable examples scoped to the authenticated profile and browser;
-- `Calendario`, as a separate operational tool.
+- `Calendario`, as a separate operational tool;
+- `Historial`, with a chronological view of sample request activity and status changes.
 
 The calendar day view now uses a real 24-hour timeline. Existing blocks appear at their start time and reflect their duration. Clicking an empty hour starts creation; clicking an existing block opens editing and confirmed deletion.
 
+Saving a confirmed block now warns when its time range overlaps another block for the same artist and day, while allowing the user to continue deliberately. Blocks carrying a matching `booking_reference` jump to the beginning of the active booking thread or its archived History entry; unlinked availability blocks remain editable in place.
+
 The authenticated Bookings area includes sample records so the user can test filters, offers, conversations and status changes without leaving the workspace. A guided tour moves through the interface with scroll positioning and neon focus. The records use a browser database namespace derived from the authenticated user and artist IDs, can be removed or restored, and never modify the connected private calendar.
+
+The private header now mirrors the public experience with visible language and appearance controls, icon-only settings and sign-out actions, and a denser vertical rhythm. Single-artist accounts show the DJ identity directly instead of an unnecessary selector; agencies retain artist switching. Account settings include an authenticated password update form.

@@ -3,8 +3,9 @@ import { bookingStatuses, statusTone, type BookingStatus } from '../domain/booki
 
 const auth = useCueAuth()
 const availability = useAvailability()
+const preferences = useCuePreferences()
 
-type WorkspaceView = 'overview' | 'bookings' | 'calendar'
+type WorkspaceView = 'overview' | 'bookings' | 'calendar' | 'history'
 type ManagedArtist = { id: string; stage_name: string; slug: string; role: 'owner' | 'manager' | 'editor' }
 type ManagedOrganization = { id: string; name: string; slug: string; type: 'agency' | 'promoter'; role: 'owner' | 'admin' | 'member' }
 
@@ -31,6 +32,40 @@ const bookingFilter = ref<'all' | BookingStatus>('all')
 const selectedDemoBookingId = ref('')
 const demoReply = ref('')
 const tourStep = ref(-1)
+const settingsOpen = ref(false)
+const passwordCurrent = ref('')
+const passwordNew = ref('')
+const passwordConfirm = ref('')
+const passwordSaving = ref(false)
+const passwordMessage = ref('')
+
+const copy = computed(() => preferences.locale.value === 'es' ? {
+  overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Historial',
+  artist: 'Artista', role: 'DJ', settings: 'Ajustes', logout: 'Cerrar sesión',
+  bookingsEyebrow: 'BOOKINGS / BANDEJA', bookingsTitle: 'TODOS TUS BOOKINGS. UN SOLO HILO.',
+  bookingsBody: 'Revisa cada propuesta, responde al promotor y decide la fecha sin perder el contexto.',
+  historyEyebrow: 'WORKSPACE / HISTORIAL', historyTitle: 'TODO LO QUE HA PASADO.',
+  historyBody: 'Una cronología de solicitudes, mensajes y cambios para saber qué ocurrió y cuándo.',
+  historyEmpty: 'Todavía no hay actividad en este perfil.', historyStatus: 'Estado actualizado', historyMessage: 'Mensaje',
+  settingsTitle: 'Ajustes de cuenta', appearance: 'Apariencia', dark: 'Oscuro', light: 'Claro',
+  language: 'Idioma', password: 'Cambiar contraseña', currentPassword: 'Contraseña actual',
+  newPassword: 'Nueva contraseña', confirmPassword: 'Repetir contraseña', savePassword: 'Guardar contraseña',
+  passwordSaved: 'Contraseña actualizada.', passwordMismatch: 'Las contraseñas nuevas no coinciden.',
+  passwordLength: 'La nueva contraseña debe tener al menos 8 caracteres.', close: 'Cerrar'
+} : {
+  overview: 'Overview', bookings: 'Bookings', calendar: 'Calendar', history: 'History',
+  artist: 'Artist', role: 'DJ', settings: 'Settings', logout: 'Sign out',
+  bookingsEyebrow: 'BOOKINGS / INBOX', bookingsTitle: 'ALL YOUR BOOKINGS. ONE THREAD.',
+  bookingsBody: 'Review every proposal, reply to the promoter and decide each date without losing context.',
+  historyEyebrow: 'WORKSPACE / HISTORY', historyTitle: 'EVERYTHING THAT HAPPENED.',
+  historyBody: 'A timeline of requests, messages and changes so you always know what happened and when.',
+  historyEmpty: 'There is no activity for this profile yet.', historyStatus: 'Status updated', historyMessage: 'Message',
+  settingsTitle: 'Account settings', appearance: 'Appearance', dark: 'Dark', light: 'Light',
+  language: 'Language', password: 'Change password', currentPassword: 'Current password',
+  newPassword: 'New password', confirmPassword: 'Repeat password', savePassword: 'Save password',
+  passwordSaved: 'Password updated.', passwordMismatch: 'The new passwords do not match.',
+  passwordLength: 'The new password must contain at least 8 characters.', close: 'Close'
+})
 
 const tourSteps = [
   { view: 'bookings', target: 'sample-mode', title: 'Solicitudes de ejemplo', body: 'Cada cuenta empieza con solicitudes simuladas para que puedas entender el flujo antes de recibir la primera real.' },
@@ -93,6 +128,25 @@ const demoFilteredBookings = computed(() => demoActiveBookings.value.filter(item
 const selectedDemoBooking = computed(() => demo.bookings.value.find(item => item.id === selectedDemoBookingId.value))
 const demoCounts = computed(() => Object.fromEntries(bookingStatuses.map(status => [status, demoActiveBookings.value.filter(item => item.status === status).length])))
 const currentTour = computed(() => tourStep.value >= 0 ? tourSteps[tourStep.value] : null)
+const hasArtistSelector = computed(() => artists.value.length > 1)
+const historyItems = computed(() => demo.bookings.value.flatMap(booking => [
+  ...booking.messages.map(message => ({
+    id: message.id,
+    bookingId: booking.id,
+    at: message.createdAt,
+    kind: copy.value.historyMessage,
+    title: `${message.actor === 'artist' ? booking.artistName : booking.promoter.name} · ${booking.event.venue}`,
+    detail: message.body
+  })),
+  {
+    id: `status-${booking.id}`,
+    bookingId: booking.id,
+    at: booking.updatedAt,
+    kind: copy.value.historyStatus,
+    title: `${booking.event.venue} · ${demoStatusLabel(booking.status)}`,
+    detail: `${booking.event.city} · ${formatDemoDate(booking.event.date)}`
+  }
+]).sort((a, b) => b.at.localeCompare(a.at)))
 const hours = Array.from({ length: 24 }, (_, index) => `${String(index).padStart(2, '0')}:00`)
 
 onMounted(async () => {
@@ -223,6 +277,20 @@ async function saveBlock() {
     status: blockStatus.value,
     label: blockLabel.value
   }
+  const toMinutes = (value: string) => Number(value.slice(0, 2)) * 60 + Number(value.slice(3, 5))
+  const proposedStart = toMinutes(startTime.value)
+  const proposedEnd = toMinutes(endTime.value)
+  const overlap = blocks.value.find(block => block.id !== editingBlockId.value
+    && block.starts_at.slice(0, 10) === selectedDate.value
+    && toMinutes(time(block.starts_at)) < proposedEnd
+    && toMinutes(time(block.ends_at)) > proposedStart)
+  if (blockStatus.value === 'confirmed' && overlap) {
+    const overlapName = overlap.label || statusLabel(overlap.status)
+    const warning = preferences.locale.value === 'es'
+      ? `Esta franja se solapa con “${overlapName}” (${time(overlap.starts_at)}–${time(overlap.ends_at)}). ¿Quieres guardarla igualmente?`
+      : `This slot overlaps “${overlapName}” (${time(overlap.starts_at)}–${time(overlap.ends_at)}). Save it anyway?`
+    if (!window.confirm(warning)) { saving.value = false; return }
+  }
   try {
     if (editingBlockId.value) await availability.updateBlock(editingBlockId.value, input)
     else await availability.createBlock({ artistId: selectedArtistId.value, ...input })
@@ -258,6 +326,17 @@ function blockStyle(block: AvailabilityBlock) {
 function openUpcoming(block: AvailabilityBlock) {
   activeView.value = 'calendar'
   startEdit(block)
+}
+
+async function openCalendarBlock(block: AvailabilityBlock) {
+  if (!block.booking_reference) { startEdit(block); return }
+  const booking = demo.bookings.value.find(item => item.id === block.booking_reference)
+  if (!booking) { startEdit(block); return }
+
+  selectedDemoBookingId.value = booking.id
+  activeView.value = booking.archived ? 'history' : 'bookings'
+  await nextTick()
+  document.getElementById(booking.archived ? `history-booking-${booking.id}` : `booking-thread-${booking.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 function shortDate(value: string) {
@@ -305,7 +384,24 @@ async function restoreSampleBookings() {
 }
 function statusLabel(status: AvailabilityStatus) { return status === 'confirmed' ? 'Confirmado' : status === 'hold' ? 'Hold' : 'No disponible' }
 async function logout() { await auth.signOut(); await navigateTo('/access') }
-useHead({ title: 'Workspace | CueBooker' })
+async function savePassword() {
+  passwordMessage.value = ''
+  if (passwordNew.value.length < 8) { passwordMessage.value = copy.value.passwordLength; return }
+  if (passwordNew.value !== passwordConfirm.value) { passwordMessage.value = copy.value.passwordMismatch; return }
+  passwordSaving.value = true
+  try {
+    await auth.updatePassword(passwordCurrent.value, passwordNew.value)
+    passwordCurrent.value = ''
+    passwordNew.value = ''
+    passwordConfirm.value = ''
+    passwordMessage.value = copy.value.passwordSaved
+  } catch (error: any) {
+    passwordMessage.value = error?.data?.msg || error?.data?.message || error?.message || 'No se pudo actualizar la contraseña.'
+  } finally {
+    passwordSaving.value = false
+  }
+}
+useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.locale.value } }))
 </script>
 
 <template>
@@ -313,13 +409,16 @@ useHead({ title: 'Workspace | CueBooker' })
     <header class="workspace-header">
       <NuxtLink class="brand" to="/">CUEBOOKER<span>/</span></NuxtLink>
       <nav aria-label="Workspace">
-        <button :class="{ active: activeView === 'overview' }" type="button" @click="activeView = 'overview'">Resumen</button>
-        <button :class="{ active: activeView === 'bookings' }" type="button" @click="activeView = 'bookings'">Bookings</button>
-        <button :class="{ active: activeView === 'calendar' }" type="button" @click="activeView = 'calendar'">Calendario</button>
+        <button :class="{ active: activeView === 'overview' }" type="button" @click="activeView = 'overview'">{{ copy.overview }}</button>
+        <button :class="{ active: activeView === 'bookings' }" type="button" @click="activeView = 'bookings'">{{ copy.bookings }}</button>
+        <button :class="{ active: activeView === 'calendar' }" type="button" @click="activeView = 'calendar'">{{ copy.calendar }}</button>
+        <button :class="{ active: activeView === 'history' }" type="button" @click="activeView = 'history'">{{ copy.history }}</button>
       </nav>
       <div class="account-actions">
-        <span>{{ selectedArtist?.stage_name || 'Workspace privado' }}</span>
-        <button type="button" @click="logout">Salir</button>
+        <div class="locale-control" :aria-label="copy.language"><button :class="{ active: preferences.locale.value === 'es' }" type="button" @click="preferences.setLocale('es')">ES</button><button :class="{ active: preferences.locale.value === 'en' }" type="button" @click="preferences.setLocale('en')">EN</button></div>
+        <button class="header-icon-button appearance-toggle" type="button" :aria-label="copy.appearance" :title="copy.appearance" @click="preferences.setTheme(preferences.theme.value === 'dark' ? 'light' : 'dark')"><span /></button>
+        <button class="header-icon-button" type="button" :aria-label="copy.settings" :title="copy.settings" @click="settingsOpen = true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5v.2h-4v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5v-.2h4v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg></button>
+        <button class="header-icon-button" type="button" :aria-label="copy.logout" :title="copy.logout" @click="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/></svg></button>
       </div>
     </header>
 
@@ -351,7 +450,8 @@ useHead({ title: 'Workspace | CueBooker' })
             <h1>Qué necesita tu atención.</h1>
             <p>Una entrada rápida a los bookings y fechas del artista, sin convertir el calendario en todo el producto.</p>
           </div>
-          <label class="artist-select"><span>Artista</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
+          <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
+          <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
 
         <div class="summary-grid">
@@ -385,8 +485,9 @@ useHead({ title: 'Workspace | CueBooker' })
 
       <section v-else-if="activeView === 'bookings'" class="view bookings-view">
         <div class="view-heading">
-          <div><p class="eyebrow">BOOKINGS / BANDEJA</p><h1>Solicitudes y conversaciones.</h1><p>Este será el espacio principal para revisar contactos, responder y decidir cada fecha.</p></div>
-          <label class="artist-select"><span>Artista</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
+          <div><p class="eyebrow">{{ copy.bookingsEyebrow }}</p><h1>{{ copy.bookingsTitle }}</h1><p>{{ copy.bookingsBody }}</p></div>
+          <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
+          <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
         <aside id="sample-mode" class="demo-notice" :class="{ 'tour-focus': tourStep === 0 }">
           <div><span>EJEMPLOS INICIALES / DATOS SIMULADOS</span><strong>{{ demoActiveBookings.length ? 'Tu workspace empieza con solicitudes de muestra.' : 'Has eliminado las solicitudes de muestra.' }}</strong><p>Los ejemplos pertenecen únicamente a este perfil y navegador. No modifican el calendario privado y puedes retirarlos cuando quieras.</p></div>
@@ -408,7 +509,7 @@ useHead({ title: 'Workspace | CueBooker' })
             <p v-if="!demoFilteredBookings.length" class="workspace-empty">No hay solicitudes de prueba en este estado.</p>
           </div>
 
-          <article v-if="selectedDemoBooking" class="booking-detail">
+          <article v-if="selectedDemoBooking" :id="`booking-thread-${selectedDemoBooking.id}`" class="booking-detail">
             <header>
               <div><p class="eyebrow">BOOKING DE PRUEBA / {{ selectedDemoBooking.id.slice(-8).toUpperCase() }}</p><h2>{{ selectedDemoBooking.event.venue }}</h2><p>{{ selectedDemoBooking.event.name }} · {{ selectedDemoBooking.artistName }}</p></div>
               <div id="workspace-status" class="booking-status-display" :class="[{ 'tour-focus': tourStep === 3 }, `tone-${statusTone[selectedDemoBooking.status]}`]"><span>Estado automático</span><strong><i />{{ demoStatusLabel(selectedDemoBooking.status) }}</strong></div>
@@ -429,10 +530,11 @@ useHead({ title: 'Workspace | CueBooker' })
         </div>
       </section>
 
-      <section v-else class="view calendar-view">
+      <section v-else-if="activeView === 'calendar'" class="view calendar-view">
         <div class="view-heading calendar-heading">
           <div><p class="eyebrow">CALENDARIO / DISPONIBILIDAD</p><h1>Fechas y horarios.</h1><p>Abre un día para ver sus 24 horas. Pulsa una hora vacía para crear un horario o un bloque existente para editarlo.</p></div>
-          <label class="artist-select"><span>Artista</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
+          <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
+          <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
 
         <div id="workspace-calendar" class="calendar-layout" :class="{ 'tour-focus': tourStep === 7 }">
@@ -443,7 +545,7 @@ useHead({ title: 'Workspace | CueBooker' })
               <button v-for="cell in monthCells" :key="cell.date" type="button" class="day" :class="{ muted: !cell.current, selected: selectedDate === cell.date }" @click="selectDay(cell.date)">
                 <span>{{ cell.number }}</span>
                 <small v-if="cell.blocks.length">{{ cell.blocks.length }}</small>
-                <i v-for="block in cell.blocks.slice(0, 3)" :key="block.id" :class="`status-dot status-dot--${block.status}`" />
+                <span v-if="cell.blocks.length" class="day-statuses"><i v-for="block in cell.blocks.slice(0, 3)" :key="block.id" :class="`status-dot status-dot--${block.status}`" /></span>
               </button>
             </div>
             <div class="legend"><span><i class="status-dot status-dot--hold" />Hold</span><span><i class="status-dot status-dot--confirmed" />Confirmado</span><span><i class="status-dot status-dot--unavailable" />No disponible</span></div>
@@ -453,14 +555,42 @@ useHead({ title: 'Workspace | CueBooker' })
             <div class="day-heading"><div><p class="eyebrow">DÍA / 24 HORAS</p><h2>{{ selectedDateLabel }}</h2></div><button class="add-button" type="button" @click="openCreate()">Añadir</button></div>
             <div class="timeline" aria-label="Horario del día seleccionado">
               <button v-for="hour in hours" :key="hour" class="hour-row" type="button" :aria-label="`Añadir horario a las ${hour}`" @click="openCreate(hour)"><span>{{ hour }}</span></button>
-              <button v-for="block in dayBlocks" :key="block.id" class="timeline-block" :class="`timeline-block--${block.status}`" :style="blockStyle(block)" type="button" @click.stop="startEdit(block)">
+              <button v-for="block in dayBlocks" :key="block.id" class="timeline-block" :class="`timeline-block--${block.status}`" :style="blockStyle(block)" type="button" @click.stop="openCalendarBlock(block)">
                 <strong>{{ block.label || statusLabel(block.status) }}</strong><span>{{ time(block.starts_at) }}–{{ time(block.ends_at) }}</span>
               </button>
             </div>
           </section>
         </div>
       </section>
+
+      <section v-else class="view history-view">
+        <div class="view-heading">
+          <div><p class="eyebrow">{{ copy.historyEyebrow }}</p><h1>{{ copy.historyTitle }}</h1><p>{{ copy.historyBody }}</p></div>
+          <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
+          <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
+        </div>
+        <div v-if="historyItems.length" class="history-list">
+          <article v-for="item in historyItems" :id="item.id === `status-${item.bookingId}` ? `history-booking-${item.bookingId}` : undefined" :key="item.id"><time>{{ formatDemoTime(item.at) }}</time><i /><div><span>{{ item.kind }}</span><strong>{{ item.title }}</strong><p>{{ item.detail }}</p></div></article>
+        </div>
+        <p v-else class="workspace-empty">{{ copy.historyEmpty }}</p>
+      </section>
     </template>
+
+    <div v-if="settingsOpen" class="editor-backdrop" @click.self="settingsOpen = false">
+      <aside class="editor-panel settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <div class="editor-heading"><div><p class="eyebrow">ACCOUNT / PRIVATE</p><h2 id="settings-title">{{ copy.settingsTitle }}</h2></div><button type="button" :aria-label="copy.close" @click="settingsOpen = false">×</button></div>
+        <section class="settings-group"><span>{{ copy.language }}</span><div class="settings-options"><button :class="{ active: preferences.locale.value === 'es' }" type="button" @click="preferences.setLocale('es')">ES</button><button :class="{ active: preferences.locale.value === 'en' }" type="button" @click="preferences.setLocale('en')">EN</button></div></section>
+        <section class="settings-group"><span>{{ copy.appearance }}</span><div class="settings-options"><button :class="{ active: preferences.theme.value === 'dark' }" type="button" @click="preferences.setTheme('dark')">{{ copy.dark }}</button><button :class="{ active: preferences.theme.value === 'light' }" type="button" @click="preferences.setTheme('light')">{{ copy.light }}</button></div></section>
+        <form class="password-form" @submit.prevent="savePassword">
+          <p class="eyebrow">{{ copy.password }}</p>
+          <label><span>{{ copy.currentPassword }}</span><input v-model="passwordCurrent" type="password" autocomplete="current-password" required></label>
+          <label><span>{{ copy.newPassword }}</span><input v-model="passwordNew" type="password" minlength="8" autocomplete="new-password" required></label>
+          <label><span>{{ copy.confirmPassword }}</span><input v-model="passwordConfirm" type="password" minlength="8" autocomplete="new-password" required></label>
+          <p v-if="passwordMessage" class="form-hint" :class="{ 'form-hint--success': passwordMessage === copy.passwordSaved, 'form-hint--error': passwordMessage !== copy.passwordSaved }">{{ passwordMessage }}</p>
+          <button class="primary-button" type="submit" :disabled="passwordSaving">{{ passwordSaving ? '…' : copy.savePassword }}</button>
+        </form>
+      </aside>
+    </div>
 
     <div v-if="editorOpen" class="editor-backdrop" @click.self="closeEditor">
       <aside class="editor-panel" role="dialog" aria-modal="true" :aria-labelledby="editingBlockId ? 'editor-title-edit' : 'editor-title-new'">
@@ -487,20 +617,26 @@ useHead({ title: 'Workspace | CueBooker' })
 </template>
 
 <style scoped>
-:global(body) { margin: 0; background: #070707; }
+:global(body) { margin: 0; background: var(--cue-bg); }
 button, select, input { font: inherit; }
 button, a, select { -webkit-tap-highlight-color: transparent; }
-.workspace { min-height: 100vh; padding: 0 28px 64px; background: #070707; color: #f2f0eb; font-family: Arial, Helvetica, sans-serif; }
-.workspace-header { position: sticky; z-index: 20; top: 0; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 72px; border-bottom: 1px solid #292929; background: rgba(7, 7, 7, .94); backdrop-filter: blur(12px); }
+.workspace { min-height: 100vh; padding: 0 28px 64px; background: var(--cue-bg); color: var(--cue-text); font-family: Arial, Helvetica, sans-serif; }
+.workspace-header { position: sticky; z-index: 20; top: 0; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 64px; border-bottom: 1px solid var(--cue-border); background: color-mix(in srgb, var(--cue-bg) 94%, transparent); backdrop-filter: blur(12px); }
 .brand { color: inherit; text-decoration: none; font-weight: 900; letter-spacing: .08em; }
 .brand span, .eyebrow { color: #e8ff2f; }
-.workspace-header nav { display: flex; gap: 4px; padding: 4px; border: 1px solid #292929; border-radius: 999px; background: #101010; }
-.workspace-header nav button { min-height: 38px; padding: 0 18px; border: 0; border-radius: 999px; background: transparent; color: #8b8b8b; cursor: pointer; font-size: 13px; font-weight: 700; }
-.workspace-header nav button.active { background: #e8ff2f; color: #070707; }
-.account-actions { display: flex; justify-content: flex-end; align-items: center; gap: 16px; color: #8f8f8f; font-size: 12px; }
+.workspace-header nav { display: flex; gap: 3px; padding: 3px; border: 1px solid var(--cue-border); border-radius: 999px; background: var(--cue-surface); }
+.workspace-header nav button { min-height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--cue-muted); cursor: pointer; font-size: 12px; font-weight: 700; }
+.workspace-header nav button.active { background: var(--cue-accent); color: var(--cue-accent-ink); }
+.account-actions { display: flex; justify-content: flex-end; align-items: center; gap: 7px; color: var(--cue-muted); font-size: 12px; }
 .account-actions button, .panel-heading button, .next-panel button, .panel-empty button, .empty-actions button, .empty-actions a { border: 0; background: transparent; color: #f2f0eb; cursor: pointer; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+.account-actions .header-icon-button { display: grid; place-items: center; width: 36px; height: 36px; padding: 8px; border: 1px solid var(--cue-border); border-radius: 50%; color: var(--cue-muted); text-decoration: none; }
+.header-icon-button:hover { border-color: var(--cue-accent); color: var(--cue-text); }
+.header-icon-button svg, .artist-identity svg { width: 100%; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.account-actions .appearance-toggle { width: 36px; height: 36px; padding: 8px; }
+.account-actions .locale-control button { color: var(--cue-muted); text-decoration: none; }
+.account-actions .locale-control button.active { color: var(--cue-toggle-ink); }
 .view { width: min(1440px, 100%); margin: 0 auto; }
-.view-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; padding: clamp(46px, 7vw, 92px) 0 30px; }
+.view-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; padding: 24px 0 24px; }
 .view-heading > div { max-width: 880px; }
 .eyebrow { margin: 0; font: 700 10px/1.25 monospace; letter-spacing: .12em; text-transform: uppercase; }
 h1 { max-width: 900px; margin: 10px 0 14px; font-size: clamp(3rem, 7vw, 7.2rem); line-height: .84; letter-spacing: -.065em; text-transform: uppercase; }
@@ -510,6 +646,11 @@ h1 { max-width: 900px; margin: 10px 0 14px; font-size: clamp(3rem, 7vw, 7.2rem);
 select, input { min-height: 46px; box-sizing: border-box; padding: 0 13px; border: 1px solid #383838; border-radius: 0; outline: none; background: #101010; color: #fff; }
 select:focus, input:focus { border-color: #e8ff2f; }
 .artist-select select { min-width: 220px; }
+.artist-identity { display: grid; min-width: 220px; padding: 12px 0 3px; border-top: 1px solid var(--cue-border); }
+.artist-identity > span, .artist-identity > small { color: var(--cue-muted); font: 700 9px/1.3 monospace; letter-spacing: .12em; text-transform: uppercase; }
+.artist-identity > small { margin-top: 4px; color: var(--cue-accent); }
+.artist-identity strong { display: flex; align-items: center; gap: 9px; margin-top: 8px; font-size: 16px; }
+.artist-identity svg { width: 20px; height: 20px; color: var(--cue-accent); }
 .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid #292929; border-left: 1px solid #292929; }
 .summary-card { min-height: 170px; padding: 22px; border-right: 1px solid #292929; border-bottom: 1px solid #292929; background: #0d0d0d; }
 .summary-card > span { color: #8b8b8b; font: 700 10px monospace; letter-spacing: .09em; text-transform: uppercase; }
@@ -565,7 +706,8 @@ select:focus, input:focus { border-color: #e8ff2f; }
 .day.muted { color: #505050; }
 .day.selected { box-shadow: inset 0 0 0 1px #e8ff2f; background: #171717; }
 .day small { position: absolute; top: 8px; right: 8px; color: #777; font: 9px monospace; }
-.status-dot { display: inline-block; width: 7px; height: 7px; margin: 25px 4px 0 0; border-radius: 50%; background: #777; }
+.day-statuses { position: absolute; right: 9px; bottom: 10px; left: 9px; display: flex; gap: 6px; align-items: center; }
+.status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #777; }
 .agenda-list .status-dot, .legend .status-dot { margin: 0; }
 .status-dot--hold { background: #e8ff2f; }
 .status-dot--confirmed { background: #8ce99a; }
@@ -593,6 +735,7 @@ select:focus, input:focus { border-color: #e8ff2f; }
 .editor-panel form, .roster-form { display: grid; gap: 18px; }
 .form-hint { margin: -8px 0 0; color: #888; font-size: 12px; }
 .form-hint--error { color: #ff9b9b; }
+.form-hint--success { color: #8ce99a; }
 .time-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .primary-button { min-height: 50px; border: 0; background: #e8ff2f; color: #070707; cursor: pointer; font-weight: 900; }
 .delete-button { min-height: 46px; border: 1px solid #693737; background: transparent; color: #ff9b9b; cursor: pointer; }
@@ -602,6 +745,44 @@ select:focus, input:focus { border-color: #e8ff2f; }
 .error-message, .loading-message { width: min(1440px, 100%); box-sizing: border-box; margin: 18px auto 0; padding: 13px 16px; }
 .error-message { border: 1px solid #8b3434; color: #ffadad; }
 .loading-message { color: #999; }
+.history-list { max-width: 1040px; padding-bottom: 64px; }
+.history-list article { display: grid; grid-template-columns: 145px 12px minmax(0, 1fr); gap: 20px; min-height: 104px; }
+.history-list time { padding-top: 4px; color: var(--cue-muted); font: 700 10px/1.4 monospace; text-transform: uppercase; }
+.history-list article > i { position: relative; width: 9px; height: 9px; margin-top: 5px; border-radius: 50%; background: var(--cue-accent); box-shadow: 0 0 14px color-mix(in srgb, var(--cue-accent) 65%, transparent); }
+.history-list article > i::after { position: absolute; top: 15px; bottom: -86px; left: 4px; width: 1px; background: var(--cue-border); content: ''; }
+.history-list article:last-child > i::after { display: none; }
+.history-list article > div { padding: 0 0 28px; border-bottom: 1px solid var(--cue-border); }
+.history-list article span { display: block; margin-bottom: 7px; color: var(--cue-accent); font: 700 9px/1.3 monospace; letter-spacing: .1em; text-transform: uppercase; }
+.history-list article strong { font-size: 17px; }
+.history-list article p { max-width: 720px; margin: 7px 0 0; color: var(--cue-muted); font-size: 13px; line-height: 1.5; }
+.settings-panel { display: block; }
+.settings-group { display: grid; gap: 10px; padding: 18px 0; border-top: 1px solid var(--cue-border); }
+.settings-group > span { color: var(--cue-muted); font: 700 10px monospace; letter-spacing: .1em; text-transform: uppercase; }
+.settings-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.settings-options button { min-height: 44px; border: 1px solid var(--cue-border); background: transparent; color: var(--cue-muted); cursor: pointer; font-weight: 800; }
+.settings-options button.active { border-color: var(--cue-accent); background: var(--cue-accent); color: var(--cue-accent-ink); }
+.password-form { display: grid; gap: 16px; margin-top: 14px; padding-top: 24px; border-top: 1px solid var(--cue-border); }
+
+:global(:root[data-theme='light']) .workspace-header,
+:global(:root[data-theme='light']) .panel,
+:global(:root[data-theme='light']) .summary-card,
+:global(:root[data-theme='light']) .booking-detail,
+:global(:root[data-theme='light']) .booking-list,
+:global(:root[data-theme='light']) .booking-placeholder,
+:global(:root[data-theme='light']) .editor-panel,
+:global(:root[data-theme='light']) .day { background: var(--cue-surface); color: var(--cue-text); }
+:global(:root[data-theme='light']) .day:hover,
+:global(:root[data-theme='light']) .day.selected,
+:global(:root[data-theme='light']) .agenda-list > button:hover { background: var(--cue-raised); }
+:global(:root[data-theme='light']) select,
+:global(:root[data-theme='light']) input,
+:global(:root[data-theme='light']) textarea,
+:global(:root[data-theme='light']) .calendar-toolbar button,
+:global(:root[data-theme='light']) .editor-heading > button { background: var(--cue-raised); color: var(--cue-text); }
+:global(:root[data-theme='light']) .agenda-list > button,
+:global(:root[data-theme='light']) .demo-secondary-action { color: var(--cue-text); }
+:global(:root[data-theme='light']) .demo-notice { background: #eeefcf; }
+:global(:root[data-theme='light']) .hour-row span { background: var(--cue-surface); }
 .tour-focus { position: relative; z-index: 32; outline: 2px solid #e8ff2f; outline-offset: 5px; box-shadow: 0 0 18px rgba(232, 255, 47, .7), 0 0 55px rgba(232, 255, 47, .28); animation: tour-pulse 1.5s ease-in-out infinite alternate; }
 .tour-card { position: fixed; right: 24px; bottom: 24px; z-index: 60; width: min(390px, calc(100vw - 32px)); box-sizing: border-box; padding: 24px; border: 1px solid #e8ff2f; background: #111; color: #f2f0eb; box-shadow: 0 0 32px rgba(232, 255, 47, .25), 0 24px 80px #000; }
 .tour-card > span { color: #e8ff2f; font: 700 10px monospace; letter-spacing: .12em; }
@@ -615,7 +796,7 @@ select:focus, input:focus { border-color: #e8ff2f; }
   .workspace-header { grid-template-columns: 1fr auto; }
   .workspace-header nav { position: fixed; right: 16px; bottom: 16px; left: 16px; z-index: 30; justify-content: stretch; box-shadow: 0 14px 40px #000; }
   .workspace-header nav button { flex: 1; }
-  .account-actions span { display: none; }
+  .account-actions .locale-control { display: none; }
   .summary-grid { grid-template-columns: repeat(2, 1fr); }
   .overview-grid, .calendar-layout { grid-template-columns: 1fr; }
   .day-panel { position: static; }
@@ -625,11 +806,12 @@ select:focus, input:focus { border-color: #e8ff2f; }
   .workspace { padding: 0 14px 100px; }
   .workspace-header { min-height: 62px; }
   .account-actions { gap: 8px; }
-  .view-heading { display: block; padding: 38px 0 22px; }
+  .view-heading { display: block; padding: 20px 0 20px; }
   h1 { font-size: clamp(2.7rem, 16vw, 4.8rem); }
   .view-heading > div > p:last-child { font-size: 15px; }
   .artist-select { margin-top: 22px; }
   .artist-select select { width: 100%; min-width: 0; }
+  .artist-identity { min-width: 0; margin-top: 18px; }
   .summary-grid { grid-template-columns: 1fr; }
   .summary-card { min-height: 132px; }
   .overview-grid { gap: 14px; }
@@ -646,7 +828,8 @@ select:focus, input:focus { border-color: #e8ff2f; }
   .weekday { padding: 9px 2px; font-size: 8px; }
   .day { min-height: 58px; padding: 6px; }
   .day small { display: none; }
-  .status-dot { width: 5px; height: 5px; margin: 18px 2px 0 0; }
+  .day-statuses { right: 6px; bottom: 7px; left: 6px; gap: 4px; }
+  .status-dot { width: 5px; height: 5px; }
   .legend .status-dot { width: 7px; height: 7px; margin: 0; }
   .day-heading { align-items: flex-start; }
   .day-heading h2 { max-width: 210px; font-size: 17px; }
@@ -654,5 +837,8 @@ select:focus, input:focus { border-color: #e8ff2f; }
   .editor-panel { border-left: 0; }
   .time-fields { grid-template-columns: 1fr; }
   .tour-card { right: 16px; bottom: 86px; }
+  .history-list article { grid-template-columns: 1fr; gap: 7px; padding: 16px 0; border-bottom: 1px solid var(--cue-border); }
+  .history-list article > i { display: none; }
+  .history-list article > div { padding: 0; border: 0; }
 }
 </style>

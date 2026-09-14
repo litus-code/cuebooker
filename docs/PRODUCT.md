@@ -46,6 +46,8 @@ Confirmation adds the event to the calendar. Rejection closes it but keeps the r
 
 The calendar shows a full month, status colours and a selected-day schedule with all 24 hours. It warns about overlapping provisional and confirmed events before confirmation. A warning informs the user and does not silently make the commercial decision.
 
+Calendar items linked through `booking_reference` open the matching booking thread at its beginning. Closed records open at the corresponding History entry. Manual availability blocks without a booking reference continue to open the schedule editor.
+
 Private details stay inside the workspace. Public discovery can expose an availability signal only when the artist opts in.
 
 ## Pricing and discovery
@@ -64,6 +66,10 @@ The workspace requires a DJ or agency account. A new profile receives a small se
 - The user can remove or restore all examples.
 - The guided tour explains which data is simulated and which availability data is connected.
 - The promoter journey remains a separate public simulation until shared booking persistence is connected.
+
+## Private workspace navigation
+
+The private workspace separates operational work into Summary, Bookings, Calendar and History. Language and appearance remain account-level controls in the header. A DJ with one artist profile sees their identity directly; only accounts with multiple managed artists receive a selector. Password changes live in account settings and require an authenticated session.
 
 ## Validation strategy
 
