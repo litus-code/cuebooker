@@ -85,9 +85,6 @@ jobs:
     if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    environment:
-      name: staging
-      url: https://pr-${{ github.event.pull_request.number }}.cuebooker-staging.pages.dev
 
     steps:
       - name: Checkout pull request head
@@ -103,6 +100,23 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Verify preview secrets
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          missing=0
+          for key in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID SUPABASE_URL SUPABASE_PUBLISHABLE_KEY; do
+            if [ -z "${!key}" ]; then
+              echo "Missing required repository secret: $key"
+              missing=1
+            fi
+          done
+          exit "$missing"
 
       - name: Generate preview build
         env:
