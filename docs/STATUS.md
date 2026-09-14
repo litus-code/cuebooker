@@ -4,13 +4,23 @@ Updated: 14 September 2026
 
 ## On GitHub main
 
-The remote main branch already contains the current landing and demo flows, Brevo early-access integration, Cloudflare CI/CD foundation and the Supabase identity foundation.
+The remote `main` branch contains the current landing and demo flows, Brevo early-access integration, Cloudflare CI/CD foundation and the Supabase identity foundation.
 
-Supabase migrations currently define profiles, organisations, organisation membership, artists, artist membership, ownership triggers, RLS and restricted helper functions.
+The Supabase schema now includes:
 
-## Prepared in local commit
+- profiles, organisations, organisation membership, artists and artist membership
+- ownership triggers, RLS and restricted helper functions
+- referral sources and immutable first-touch referral attribution
+- seeded referral codes for the initial academy, collective and label outreach
+- last-owner protection for both organisations and artists
 
-Commit `2a11323 Build calendar and account onboarding foundation` was created on local branch `feature/calendar-auth-foundation`. It still needs to be pushed when the development environment is available.
+The staging Supabase Security Advisor is clean after the latest schema changes.
+
+Repository maintenance now also includes weekly Dependabot checks for npm dependencies and GitHub Actions.
+
+## Prepared in local Work commit
+
+Commit `2a11323 Build calendar and account onboarding foundation` was created on local branch `feature/calendar-auth-foundation`. It still needs to be pushed when the Work development environment is available.
 
 That commit contains:
 
@@ -27,7 +37,7 @@ That commit contains:
 - Supabase variables in staging and production workflows.
 - Dependency alignment with the Nuxt router version.
 
-Local verification completed before the environment became unavailable:
+Local verification completed before the Work environment became unavailable:
 
 - `npm run typecheck` passed.
 - `npm run generate` passed.
@@ -37,18 +47,39 @@ Local verification completed before the environment became unavailable:
 
 The older working tree at `cuebooker-publish` contains separate uncommitted user changes. Do not reset, overwrite or clean it. Continue from a clean worktree or reconcile changes file by file.
 
+## CI and lockfile status
+
+Current `main` still uses `npm install` in CI and deployment workflows.
+
+A hardening attempt to switch automated installs to `npm ci` exposed that the committed `package-lock.json` is truncated and is not valid JSON. CI confirmed the file ends mid-object around line 2001, which is why `npm ci` reports that no usable lockfile exists.
+
+Do not merge an `npm ci` workflow change until the lockfile has been regenerated and validated. A recovery PR is being used to regenerate the lockfile in GitHub Actions and verify that `npm ci` succeeds against the repaired file.
+
 ## Environment work still required
 
-The access UI remains disabled in any deployment missing:
+The pending Work branch currently expects:
 
 - `NUXT_PUBLIC_SUPABASE_URL`
 - `NUXT_PUBLIC_SUPABASE_ANON_KEY`
 
+Before merging that integration, review whether to adopt Supabase's modern publishable key naming (`NUXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) instead of carrying the legacy anon-key naming forward.
+
 Apply every pending Supabase migration before testing onboarding. Confirm the Auth redirect allowlist for local, staging and production.
 
-## Next implementation block
+## Integration order when Work publishes the branch
 
-Build shared booking persistence. Start with the schema and server-owned transition functions, then connect the current workspace through a repository interface. Keep the browser-local demo adapter available so visitors can still test the product without registering.
+1. Inspect the exact diff before rebasing or merging.
+2. Reconcile its migrations against the versions already applied in staging.
+3. Verify package and lockfile changes before resolving the `npm ci` issue.
+4. Review Supabase client key naming and environment variables.
+5. Verify signup, login, logout, session restore and protected routes.
+6. Verify first-touch referral capture from `?ref=` through completed registration.
+7. Verify calendar persistence and ownership/RLS behaviour.
+8. Run typecheck, generate, audit and staging smoke tests before any production deployment.
+
+## Next product implementation block
+
+After the Work auth/calendar foundation is integrated and validated, build shared booking persistence. Start with the schema and server-owned transition functions, then connect the current workspace through a repository interface. Keep the browser-local demo adapter available so visitors can still test the product without registering.
 
 The first vertical slice should support:
 
