@@ -54,15 +54,16 @@ An artist or agency stores private fees for matching and internal decisions. Pub
 
 The future directory depends on a useful supply of opted-in DJs. It supports date, city, sound and budget. This is a later layer because a directory without enough artists would weaken the product.
 
-## Demo contract
+## Initial sample contract
 
-The public demo must state what users are seeing:
+The workspace requires a DJ or agency account. A new profile receives a small set of browser-local sample requests so the user can inspect filters, offers, messages, actions and the calendar relationship immediately.
 
-- The visitor can open the DJ workspace directly.
-- The visitor may optionally simulate the promoter journey.
-- Current artists, enquiries, messages and search results are fictional.
-- Browser-local interactions demonstrate behaviour and do not represent shared persistence.
-- Account access may be enabled per environment when Supabase variables and migrations are configured.
+- Sample requests are visibly identified inside the workspace.
+- Storage is separated by authenticated user ID and browser.
+- Samples never enter Supabase booking or calendar data.
+- The user can remove or restore all examples.
+- The guided tour explains which data is simulated and which availability data is connected.
+- The promoter journey remains a separate public simulation until shared booking persistence is connected.
 
 ## Validation strategy
 
