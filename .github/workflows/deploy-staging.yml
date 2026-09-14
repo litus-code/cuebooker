@@ -56,6 +56,7 @@ jobs:
         env:
           NUXT_APP_BASE_URL: /
           NUXT_PUBLIC_APP_ENV: staging
+          NUXT_PUBLIC_GTM_ID: GTM-MHP8MGS3
         run: npm run generate
 
       - name: Deploy to Cloudflare Pages

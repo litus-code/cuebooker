@@ -4,6 +4,11 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-09-13',
   devtools: { enabled: false },
   css: [resolve('./assets/css/main.css')],
+  runtimeConfig: {
+    public: {
+      gtmId: process.env.NUXT_PUBLIC_GTM_ID || ''
+    }
+  },
   app: {
     baseURL: process.env.NUXT_APP_BASE_URL || '/',
     head: {

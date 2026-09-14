@@ -60,6 +60,28 @@ Keep this as a performance follow-up rather than a launch blocker:
 4. Recheck CrUX field data once Cuebooker has enough real-world traffic.
 5. Treat Search Console Core Web Vitals as the production source of truth once data becomes available.
 
+## Analytics foundation in progress
+
+Branch `feature/analytics-consent-foundation` introduces the first analytics layer without coupling product code directly to Google.
+
+The intended architecture is:
+
+`Nuxt event -> dataLayer -> GTM -> GA4`
+
+This block adds:
+
+- environment-driven `NUXT_PUBLIC_GTM_ID`
+- consent-aware analytics composable
+- GTM lazy loading only after explicit analytics consent
+- persistent local accept/reject preference
+- global analytics consent banner
+- application-owned `page_view` tracking
+- documented event contract for referral, signup, onboarding, artist views and booking requests
+
+Analytics remains disabled while `NUXT_PUBLIC_GTM_ID` is empty. The next external setup is to create/configure the GTM container and GA4 destination, verify the flow in staging, and only then set the production GTM ID.
+
+See `docs/ANALYTICS.md` for the event taxonomy and setup rules.
+
 ## Prepared in local Work commit
 
 Commit `2a11323 Build calendar and account onboarding foundation` was created on local branch `feature/calendar-auth-foundation`. It still needs to be pushed when the Work development environment is available.
