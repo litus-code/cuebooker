@@ -114,7 +114,17 @@ watch(tourStep, async step => {
   const targetId = copy.value.tour[step]?.[2]
   if (!targetId) return
   const target = document.getElementById(targetId)
-  target?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  if (!target) return
+
+  await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+  const isMobile = window.matchMedia('(max-width: 860px)').matches
+  if (!isMobile) {
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    return
+  }
+
+  const targetTop = window.scrollY + target.getBoundingClientRect().top
+  window.scrollTo({ top: Math.max(0, targetTop - 84), behavior: 'smooth' })
 })
 
 function formatDate(value: string) {
