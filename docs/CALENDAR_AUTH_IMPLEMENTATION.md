@@ -8,13 +8,13 @@ This file records what was actually reconstructed after the lost local Work comm
 
 ## Routes
 
-- `/app` remains the anonymous browser-local product demo.
+- `/app` is a legacy compatibility route and redirects to account creation or the authenticated workspace.
 - `/access` handles email/password sign-in and registration.
 - `/onboarding` creates the first DJ artist or agency identity.
 - `/workspace` is the authenticated private product workspace.
-- `/app?mode=account` is retained as an account-entry compatibility URL and routes authenticated/onboarded users to `/workspace`.
+- `/app?mode=account` follows the same compatibility redirect.
 
-Separating `/app` and `/workspace` is intentional. It prevents demo records and authenticated records from sharing the same state container while the real booking persistence layer is still being built.
+`/workspace` keeps connected account availability separate from sample bookings. The temporary browser repository uses a database namespace derived from the authenticated user and artist IDs, and every sample remains removable.
 
 ## Browser auth
 
@@ -29,7 +29,7 @@ Public configuration:
 
 The frontend never uses a secret/service-role key.
 
-The browser stores the current session under a Cuebooker-specific local-storage key and refreshes an expiring access token before private API calls. Logout removes only authenticated account state; the existing `/app` demo storage is untouched.
+The browser stores the current session under a Cuebooker-specific local-storage key and refreshes an expiring access token before private API calls. Logout removes authenticated account state without merging sample records across profiles.
 
 ## Referral continuity
 
@@ -68,7 +68,8 @@ Migration `20260914200718_index_availability_blocks_creator.sql` adds the coveri
 
 - product navigation separated into Resumen, Bookings and Calendario;
 - an overview derived from real private availability data;
-- the complete browser-local Bookings interface in an explicit test mode while shared persistence is pending;
+- the complete browser-local Bookings interface with per-profile removable examples while shared persistence is pending;
+- a guided tour with scroll positioning and neon focus across filters, details, conversation, actions and calendar;
 - managed-artist selector;
 - agency first-artist creation;
 - responsive monthly calendar;
