@@ -8,9 +8,7 @@ const menuOpen = ref(false)
 const searchState = ref<'idle' | 'searching' | 'found'>('idle')
 const discoveryBudget = ref(1500)
 const activeRole = ref(0)
-const pilotProfile = ref<number>()
 const discoveryVisible = ref(false)
-const pilotCtaVisible = ref(true)
 const backToTopVisible = ref(false)
 const router = useRouter()
 const activeRoleData = computed(() => copy.value.access.roles[activeRole.value] ?? copy.value.access.roles[0]!)
@@ -40,30 +38,14 @@ function updateBackToTop() {
   backToTopVisible.value = window.scrollY > Math.max(520, window.innerHeight * 0.7)
 }
 
-let pilotObserver: IntersectionObserver | undefined
-
 onMounted(() => {
   updateBackToTop()
   window.addEventListener('scroll', updateBackToTop, { passive: true })
-
-  const earlyAccess = document.querySelector('#early-access')
-  if (earlyAccess) {
-    pilotObserver = new IntersectionObserver(([entry]) => {
-      pilotCtaVisible.value = !entry?.isIntersecting
-    }, { threshold: 0.08 })
-    pilotObserver.observe(earlyAccess)
-  }
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', updateBackToTop)
-  pilotObserver?.disconnect()
 })
-
-function openPilot(profile?: number) {
-  pilotProfile.value = profile
-  scrollTo('#early-access')
-}
 
 function discoverArtists() {
   searchState.value = 'searching'
@@ -85,22 +67,21 @@ useHead(() => ({
   <main class="site-shell">
     <header class="site-header">
       <a class="brand" href="#top" @click.prevent="scrollTo('#top')">CUEBOOKER<span>/</span></a>
-      <p class="live-status"><i /> {{ copy.prototype }}</p>
       <button class="menu-trigger" :aria-expanded="menuOpen" aria-label="Abrir menú" @click="menuOpen = !menuOpen"><span /><span /></button>
       <nav class="site-nav" :class="{ 'site-nav--open': menuOpen }">
         <a href="#problem" @click.prevent="scrollTo('#problem')">{{ copy.nav.problem }}</a>
         <a href="#product" @click.prevent="scrollTo('#product')">{{ copy.nav.product }}</a>
         <a href="#roles" @click.prevent="scrollTo('#roles')">{{ copy.nav.roles }}</a>
-        <a href="#early-access" @click.prevent="scrollTo('#early-access')">{{ copy.nav.earlyAccess }}</a>
+        <a href="#try" @click.prevent="scrollTo('#try')">{{ copy.nav.tryProduct }}</a>
       </nav>
       <div class="header-controls">
         <div class="locale-control" aria-label="Idioma">
           <button :class="{ active: locale === 'es' }" @click="setLocale('es')">ES</button>
           <button :class="{ active: locale === 'en' }" @click="setLocale('en')">EN</button>
         </div>
-        <div class="theme-control" aria-label="Apariencia">
-          <button v-for="value in ['dark', 'light'] as const" :key="value" :class="{ active: theme === value }" :aria-pressed="theme === value" @click="setTheme(value)">{{ value.toUpperCase() }}</button>
-        </div>
+        <button class="appearance-toggle" :aria-label="locale === 'es' ? 'Cambiar apariencia' : 'Change appearance'" :title="locale === 'es' ? 'Cambiar apariencia' : 'Change appearance'" @click="setTheme(theme === 'dark' ? 'light' : 'dark')"><span /></button>
+        <NuxtLink class="header-login" to="/access">{{ copy.nav.login }}</NuxtLink>
+        <NuxtLink class="header-signup" to="/access?mode=signup">{{ copy.nav.signup }}</NuxtLink>
       </div>
     </header>
 
@@ -114,8 +95,8 @@ useHead(() => ({
           <li v-for="proof in copy.hero.proofs" :key="proof"><i />{{ proof }}</li>
         </ul>
         <div class="hero__actions">
-          <button class="button button--primary" @click="scrollTo('#product')">{{ copy.hero.primaryCta }} <span class="arrow arrow--down" aria-hidden="true" /></button>
-          <button class="text-button" @click="router.push('/app')">{{ copy.hero.secondaryCta }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
+          <button class="button button--primary" @click="router.push('/access?mode=signup')">{{ copy.hero.primaryCta }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
+          <button class="text-button" @click="scrollTo('#product')">{{ copy.hero.secondaryCta }} <span class="arrow arrow--down" aria-hidden="true" /></button>
         </div>
       </div>
       <CueNetwork :state="searchState" :label="networkLabel" />
@@ -176,13 +157,13 @@ useHead(() => ({
           <div class="access-card__top"><span class="mono">{{ activeRoleData.label }}</span><strong>{{ activeRoleData.account }}</strong></div>
           <h3>{{ activeRoleData.headline }}</h3>
           <ol><li v-for="(step, index) in activeRoleData.steps" :key="step"><span>{{ String(index + 1).padStart(2, '0') }}</span>{{ step }}</li></ol>
-          <button class="button button--primary" @click="openPilot(activeRole + 1)">{{ activeRoleData.cta }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
+          <NuxtLink class="button button--primary" :to="activeRoleData.route">{{ activeRoleData.cta }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
         </article>
         <aside><i /> <span><strong>{{ copy.access.demoTitle }}</strong>{{ copy.access.demoNote }}</span></aside>
       </div>
     </section>
 
-    <section class="demo-reality section-pad">
+    <section id="try" class="demo-reality section-pad">
       <div class="section-mark mono">{{ copy.demo.index }}</div>
       <div class="section-heading"><p class="eyebrow">{{ copy.demo.eyebrow }}</p><h2>{{ copy.demo.title }}</h2><p>{{ copy.demo.body }}</p></div>
       <div class="demo-reality__grid"><article><strong>{{ copy.demo.currentTitle }}</strong><ul><li v-for="item in copy.demo.current" :key="item"><span>✓</span>{{ item }}</li></ul></article><article><strong>{{ copy.demo.realTitle }}</strong><ul><li v-for="item in copy.demo.real" :key="item"><span>○</span>{{ item }}</li></ul><p class="demo-reality__note">{{ copy.demo.realNote }}</p></article></div>
@@ -224,17 +205,26 @@ useHead(() => ({
       </div>
     </section>
 
-    <section id="early-access" class="early-access section-pad">
+    <section class="product-entry section-pad">
+      <p class="eyebrow">{{ copy.entry.eyebrow }}</p>
+      <h2>{{ copy.entry.title }}</h2>
+      <p>{{ copy.entry.body }}</p>
+      <div class="product-entry__actions">
+        <NuxtLink class="button button--primary" to="/access?mode=signup">{{ copy.nav.signup }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
+        <NuxtLink class="text-button" to="/access">{{ copy.nav.login }}</NuxtLink>
+      </div>
+    </section>
+
+    <section id="feedback" class="early-access section-pad">
       <div class="early-access__copy">
-        <p class="eyebrow">{{ copy.cta.eyebrow }}</p>
-        <h2>{{ copy.cta.title }}</h2>
-        <p>{{ copy.cta.body }}</p>
-        <div class="early-access__actions"><NuxtLink class="button button--primary" to="/app">{{ copy.cta.demoButton }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink></div>
-        <small>{{ copy.cta.note }}</small>
+        <p class="eyebrow">{{ copy.feedback.eyebrow }}</p>
+        <h2>{{ copy.feedback.title }}</h2>
+        <p>{{ copy.feedback.body }}</p>
+        <small>{{ copy.feedback.note }}</small>
       </div>
       <ClientOnly>
-        <BrevoPilotForm :copy="copy.cta.form" :locale="locale" :profile="pilotProfile" />
-        <template #fallback><div class="pilot-form pilot-form--loading">{{ copy.cta.form.loading }}</div></template>
+        <BrevoPilotForm :copy="copy.feedback.form" :locale="locale" />
+        <template #fallback><div class="pilot-form pilot-form--loading">{{ copy.feedback.form.loading }}</div></template>
       </ClientOnly>
     </section>
 
@@ -242,12 +232,6 @@ useHead(() => ({
       <Transition name="floating-control">
         <button v-if="backToTopVisible" class="back-to-top" type="button" :aria-label="copy.cta.topButton" @click="scrollTo('#top')">
           <span class="floating-arrow"><i class="arrow arrow--up" aria-hidden="true" /></span>
-        </button>
-      </Transition>
-      <Transition name="floating-control">
-        <button v-if="pilotCtaVisible" class="pilot-float" type="button" @click="openPilot()">
-          <span><small>{{ copy.cta.floatLabel }}</small><strong>{{ copy.cta.floatButton }}</strong></span>
-          <i class="floating-arrow"><span class="arrow arrow--down" aria-hidden="true" /></i>
         </button>
       </Transition>
     </div>
