@@ -30,7 +30,7 @@ onMounted(async () => {
 
   if (!auth.profile.value) await auth.fetchProfile()
   if (auth.profile.value?.onboarding_completed) {
-    await navigateTo('/app?mode=account')
+    await navigateTo('/workspace')
     return
   }
 
@@ -48,7 +48,7 @@ async function submit() {
       entityName: entityName.value,
       entitySlug: entitySlug.value
     })
-    await navigateTo('/app?mode=account')
+    await navigateTo('/workspace')
   } catch (error: any) {
     errorMessage.value = error?.data?.message || error?.message || 'No se pudo completar la configuración.'
   } finally {
@@ -107,7 +107,7 @@ useHead({ title: 'Configura tu cuenta | CueBooker' })
 .onboarding-page { min-height: 100vh; padding: 28px; background: #070707; color: #f2f0eb; }
 .onboarding-brand { color: inherit; text-decoration: none; font-weight: 900; letter-spacing: .08em; }
 .onboarding-brand span { color: #e8ff2f; }
-.onboarding-panel { width: min(760px, 100%); margin: 7vh auto 0; }
+.onboarding-panel { width: min(760px, 100%); margin: 24px auto 0; }
 .onboarding-kicker { margin: 0 0 18px; color: #e8ff2f; font: 700 12px/1.2 monospace; letter-spacing: .12em; }
 h1 { margin: 0; font-size: clamp(2.6rem, 8vw, 5.5rem); line-height: .9; text-transform: uppercase; }
 .onboarding-copy { max-width: 600px; color: #aaa; line-height: 1.55; }
@@ -122,5 +122,5 @@ label span { color: #aaa; font: 700 11px/1.2 monospace; text-transform: uppercas
 input { min-height: 48px; padding: 0 14px; border: 1px solid #333; background: #070707; color: #fff; font: inherit; }
 .onboarding-submit { min-height: 50px; border: 0; background: #e8ff2f; color: #070707; font-weight: 800; cursor: pointer; }
 .onboarding-error { margin: 0; padding: 12px; border: 1px solid #8b3434; color: #ffadad; }
-@media (max-width: 700px) { .onboarding-page { padding: 20px; } .type-grid { grid-template-columns: 1fr; } .onboarding-form { padding: 20px; } }
+@media (max-width: 700px) { .onboarding-page { padding: 18px; } .onboarding-panel { margin-top: 18px; } .type-grid { grid-template-columns: 1fr; } .onboarding-form { padding: 20px; } }
 </style>
