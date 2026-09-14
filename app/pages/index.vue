@@ -104,7 +104,7 @@ useHead(() => ({
         </ul>
         <div class="hero__actions">
           <button class="button button--primary" @click="scrollTo('#product')">{{ copy.hero.primaryCta }} <span class="arrow arrow--down" aria-hidden="true" /></button>
-          <button class="text-button" @click="router.push('/artist')">{{ copy.hero.secondaryCta }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
+          <button class="text-button" @click="router.push('/app')">{{ copy.hero.secondaryCta }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
         </div>
       </div>
       <CueNetwork :state="searchState" :label="networkLabel" />
@@ -175,6 +175,10 @@ useHead(() => ({
       <div class="section-mark mono">{{ copy.demo.index }}</div>
       <div class="section-heading"><p class="eyebrow">{{ copy.demo.eyebrow }}</p><h2>{{ copy.demo.title }}</h2><p>{{ copy.demo.body }}</p></div>
       <div class="demo-reality__grid"><article><strong>{{ copy.demo.currentTitle }}</strong><ul><li v-for="item in copy.demo.current" :key="item"><span>✓</span>{{ item }}</li></ul></article><article><strong>{{ copy.demo.realTitle }}</strong><ul><li v-for="item in copy.demo.real" :key="item"><span>○</span>{{ item }}</li></ul><p class="demo-reality__note">{{ copy.demo.realNote }}</p></article></div>
+      <div class="demo-reality__actions">
+        <NuxtLink class="button button--primary" to="/app">{{ copy.demo.panelButton }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
+        <NuxtLink class="button button--ghost" to="/artist">{{ copy.demo.requestButton }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
+      </div>
     </section>
 
     <section class="discovery section-pad">
@@ -213,7 +217,7 @@ useHead(() => ({
         <p class="eyebrow">{{ copy.cta.eyebrow }}</p>
         <h2>{{ copy.cta.title }}</h2>
         <p>{{ copy.cta.body }}</p>
-        <div class="early-access__actions"><NuxtLink class="button button--primary" to="/artist">{{ copy.cta.demoButton }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink></div>
+        <div class="early-access__actions"><NuxtLink class="button button--primary" to="/app">{{ copy.cta.demoButton }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink></div>
         <small>{{ copy.cta.note }}</small>
       </div>
       <ClientOnly>

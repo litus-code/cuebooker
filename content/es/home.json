@@ -5,7 +5,7 @@
   "hero": {
     "eyebrow": "GESTIÓN DE BOOKINGS PARA DJS Y AGENCIAS", "titleTop": "BOOKINGS", "titleBottom": "BAJO CONTROL",
     "body": "Recibe solicitudes completas y gestiona conversaciones, condiciones, estados y fechas desde un solo lugar, aunque el contacto empiece por Instagram, WhatsApp, correo o una llamada.",
-    "primaryCta": "Ver cómo funciona", "secondaryCta": "Probar la demo", "networkIdle": "UNA SOLICITUD · UN ESTADO", "networkSearching": "ORDENANDO BOOKING", "networkFound": "LISTO PARA DECIDIR",
+    "primaryCta": "Ver cómo funciona", "secondaryCta": "Ver panel demo", "networkIdle": "UNA SOLICITUD · UN ESTADO", "networkSearching": "ORDENANDO BOOKING", "networkFound": "LISTO PARA DECIDIR",
     "proofs": ["Todas las solicitudes en una bandeja", "Cada booking conserva su conversación y estado", "Calendario y disponibilidad sin solapamientos"]
   },
   "problem": {
@@ -54,15 +54,16 @@
   },
   "demo": {
     "index": "06 / DEMO", "eyebrow": "QUÉ ESTÁS PROBANDO", "title": "La experiencia es real. Las conexiones aún son simuladas.",
-    "body": "Esta demostración permite recorrer una solicitud completa desde el perfil del artista hasta el historial del DJ.",
+    "body": "Entra directamente al panel del DJ para ver solicitudes, estados, conversaciones y calendario. Si quieres entender de dónde llega un booking, también puedes simular el recorrido del promotor desde el enlace público del artista.",
     "currentTitle": "✓ Funcional en esta demo", "current": ["Formulario de booking", "Bandeja y estados", "Conversación y adjuntos simulados", "Calendario, alertas e historial"],
     "realTitle": "○ Previsto para el producto", "real": ["Cuentas y permisos", "Base de datos compartida", "Emails y enlaces seguros", "Archivos almacenados y calendario sincronizado", "Buscador de DJs por disponibilidad", "Visibilidad voluntaria sin exponer la agenda privada"],
-    "realNote": "Estas funciones forman parte del producto conectado y todavía no están activas en el prototipo público."
+    "realNote": "Estas funciones forman parte del producto conectado y todavía no están activas en el prototipo público.",
+    "panelButton": "Abrir panel del DJ", "requestButton": "Simular solicitud del promotor"
   },
   "cta": {
     "eyebrow": "ACCESO ANTICIPADO / BARCELONA", "title": "La demo ya está abierta. La siguiente versión queremos probarla contigo.",
     "body": "Puedes recorrer ahora una solicitud simulada sin registrarte. Si eres DJ, manager, agencia o promotor, déjanos tus datos para acceder a próximas pruebas y contarnos qué encaja o falla en tu forma real de trabajar.",
-    "button": "Participar en el piloto", "demoButton": "Probar la demo ahora", "floatLabel": "PARTICIPA EN EL PILOTO", "floatButton": "Quiero probarlo", "topButton": "Volver arriba", "email": "contacto@carlesfar.com", "note": "La demo pública no requiere registro. Los artistas, resultados y solicitudes actuales son simulados.",
+    "button": "Participar en el piloto", "demoButton": "Abrir panel demo", "floatLabel": "PARTICIPA EN EL PILOTO", "floatButton": "Quiero probarlo", "topButton": "Volver arriba", "email": "contacto@carlesfar.com", "note": "La demo pública no requiere registro. Los artistas, resultados y solicitudes actuales son simulados.",
     "form": {
       "title": "Prueba las próximas versiones de CueBooker",
       "body": "La demo pública ya está disponible sin registro. Déjanos tus datos si quieres acceder a las siguientes pruebas y enviarnos feedback desde tu experiencia real.",
@@ -70,7 +71,7 @@
       "emailLabel": "Correo electrónico", "emailPlaceholder": "tu@email.com", "emailHelp": "Usaremos tu correo para informarte sobre las pruebas de CueBooker.",
       "profileLabel": "¿Cuál es tu perfil?", "profiles": ["DJ independiente", "Manager o agencia", "Promotor, sala o festival"],
       "consentLabel": "Consentimiento", "consentText": "Acepto que CueBooker utilice mis datos para contactarme sobre las pruebas del prototipo y enviarme novedades relacionadas con el proyecto.",
-      "submit": "Quiero probar CueBooker", "success": "Hemos recibido tus datos. Ya formas parte de las próximas pruebas de CueBooker. Mientras tanto, puedes recorrer la demo pública ahora mismo.", "successCta": "Abrir la demo",
+      "submit": "Quiero probar CueBooker", "success": "Hemos recibido tus datos. Ya formas parte de las próximas pruebas de CueBooker. Mientras tanto, puedes recorrer la demo pública ahora mismo.", "successCta": "Abrir panel demo",
       "invalid": "Los datos introducidos no son válidos. Revisa el correo electrónico y vuelve a intentarlo.", "required": "Este campo es obligatorio.", "loading": "Cargando formulario seguro…"
     }
   }

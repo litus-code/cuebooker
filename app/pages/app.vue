@@ -16,6 +16,7 @@ const copy = computed(() => locale.value === 'es' ? {
   prototype: 'DEMO FUNCIONAL · DATOS EN ESTE NAVEGADOR', role: 'Vista', dj: 'DJ', manager: 'Manager',
   nav: { requests: 'Solicitudes', calendar: 'Calendario', history: 'Historial', settings: 'Ajustes' },
   title: 'Tu siguiente acción, sin buscarla.', subtitle: 'Cada solicitud conserva los datos, la conversación y quién debe responder ahora.',
+  originLabel: 'DEMO / SOLICITUD RECIBIDA', originTitle: 'Así llega un booking al panel del DJ.', originBody: 'Esta solicitud de ejemplo llegó desde el enlace público o widget del artista. El promotor completa los datos una vez y el DJ los recibe aquí con su estado, conversación y fecha.', originLink: 'Ver el enlace que la generó',
   all: 'Todas', empty: 'No hay solicitudes en este estado.', choose: 'Abre una solicitud para ver el hilo completo.', status: 'Estado', contact: 'Contacto', event: 'Datos del evento', conversation: 'Conversación', reply: 'Responder al promotor', replyPlaceholder: 'Escribe condiciones, una pregunta o una propuesta…', send: 'Enviar respuesta', emailNote: 'En producción, esta respuesta se enviará al email del promotor y su contestación volverá a este mismo hilo. En esta demo se refleja en la vista del promotor.', promoterView: 'Abrir vista del promotor', openThread: 'Ver conversación completa', confirm: 'Confirmar fecha', archive: 'Cerrar y enviar al historial', restore: 'Devolver a solicitudes', attachment: 'Adjunto',
   calendarTitle: 'Tu agenda de booking', calendarBody: 'Consulta el mes completo, las horas y los compromisos provisionales antes de confirmar otra fecha.', calendarConflict: 'Posible solapamiento', calendarConflictBody: 'Revisa estos horarios antes de confirmar. CueBooker no bloquea una decisión sin avisarte.', calendarClear: 'Sin solapamientos detectados este mes.', manualBlock: 'Bloqueo manual', previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente', historyTitle: 'Historial', historyBody: 'Consultas cerradas que puedes volver a abrir si te equivocaste.', settingsTitle: 'Preferencias de la demo', settingsBody: 'Idioma y apariencia se conservan en este dispositivo.',
   guide: 'Ver recorrido guiado', next: 'Siguiente', finish: 'Terminar', close: 'Cerrar',
@@ -32,6 +33,7 @@ const copy = computed(() => locale.value === 'es' ? {
   prototype: 'FUNCTIONAL DEMO · DATA ON THIS DEVICE', role: 'View', dj: 'DJ', manager: 'Manager',
   nav: { requests: 'Requests', calendar: 'Calendar', history: 'History', settings: 'Settings' },
   title: 'Your next action, without searching.', subtitle: 'Every request keeps its details, conversation and the person who needs to respond next.',
+  originLabel: 'DEMO / REQUEST RECEIVED', originTitle: 'This is how a booking reaches the DJ workspace.', originBody: 'This sample request came from the artist’s public link or widget. The promoter enters the details once and the DJ receives them here with the status, conversation and date.', originLink: 'View the link that generated it',
   all: 'All', empty: 'No requests in this state.', choose: 'Open a request to see the complete thread.', status: 'Status', contact: 'Contact', event: 'Event details', conversation: 'Conversation', reply: 'Reply to promoter', replyPlaceholder: 'Write conditions, a question or a proposal…', send: 'Send reply', emailNote: 'In production, this reply is sent to the promoter by email and their answer returns to this thread. The demo mirrors it in the promoter view.', promoterView: 'Open promoter view', openThread: 'View full conversation', confirm: 'Confirm date', archive: 'Close and move to history', restore: 'Return to requests', attachment: 'Attachment',
   calendarTitle: 'Your booking schedule', calendarBody: 'See the full month, times and provisional commitments before confirming another date.', calendarConflict: 'Possible overlap', calendarConflictBody: 'Review these times before confirming. CueBooker warns you without blocking your decision.', calendarClear: 'No overlaps detected this month.', manualBlock: 'Manual block', previousMonth: 'Previous month', nextMonth: 'Next month', historyTitle: 'History', historyBody: 'Closed enquiries you can reopen if needed.', settingsTitle: 'Demo preferences', settingsBody: 'Language and appearance are stored on this device.',
   guide: 'Start guided tour', next: 'Next', finish: 'Finish', close: 'Close',
@@ -174,6 +176,15 @@ useHead(() => ({ title: locale.value === 'es' ? 'Bandeja de booking | CueBooker'
       <div><p class="eyebrow">{{ role === 'dj' ? 'NARA VOSS / BOOKING' : 'VOID AGENCY / 3 ARTISTS' }}</p><h1>{{ copy.title }}</h1><p>{{ copy.subtitle }}</p></div>
       <button class="button button--ghost guide-button" @click="startTour">{{ copy.guide }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
     </section>
+
+    <aside class="workspace-origin">
+      <div>
+        <span class="mono">{{ copy.originLabel }}</span>
+        <strong>{{ copy.originTitle }}</strong>
+        <p>{{ copy.originBody }}</p>
+      </div>
+      <NuxtLink class="workspace-origin__link" to="/artist">{{ copy.originLink }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
+    </aside>
 
     <nav class="workspace-nav" aria-label="Workspace">
       <button v-for="view in ['requests', 'calendar', 'history', 'settings'] as const" :key="view" :class="{ active: activeView === view }" @click="activeView = view">{{ copy.nav[view] }}<span v-if="view === 'requests'">{{ activeBookings.length }}</span><span v-if="view === 'history'">{{ historyBookings.length }}</span></button>
