@@ -144,6 +144,8 @@ Apply every pending Supabase migration before testing onboarding. Confirm the Au
 5. Verify ownership and RLS behaviour with two unrelated accounts.
 6. Run generation, audit and staging smoke tests before any production deployment.
 
+The staging onboarding RPC parameter ambiguity reported on 14 September has been corrected through migration `20260914223216_fix_complete_onboarding_parameter_ambiguity.sql`. A rollback-only database test completed the DJ onboarding operation and confirmed that the verification left no artist or profile mutation behind.
+
 ## Public product entry
 
 The home now presents Cuebooker as usable software rather than an early-access waiting list. Account creation and sign-in are first-class header and hero actions. The floating pilot action has been removed. The existing Brevo form remains at the end of the page for research participation and product feedback, clearly separated from account registration.
