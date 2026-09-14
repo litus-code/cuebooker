@@ -6,7 +6,9 @@ export default defineNuxtConfig({
   css: [resolve('./assets/css/main.css')],
   runtimeConfig: {
     public: {
-      gtmId: process.env.NUXT_PUBLIC_GTM_ID || ''
+      gtmId: process.env.NUXT_PUBLIC_GTM_ID || '',
+      supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || '',
+      supabasePublishableKey: process.env.NUXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || ''
     }
   },
   app: {
