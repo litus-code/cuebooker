@@ -2,12 +2,16 @@
 const route = useRoute()
 const auth = useCueAuth()
 
-const mode = ref<'signin' | 'signup'>(route.query.mode === 'signup' ? 'signup' : 'signin')
+const mode = ref<'signin' | 'signup'>('signin')
 const email = ref('')
 const password = ref('')
 const displayName = ref('')
 const message = ref('')
 const errorMessage = ref('')
+
+watch(() => route.query.mode, (requestedMode) => {
+  mode.value = requestedMode === 'signup' ? 'signup' : 'signin'
+}, { immediate: true })
 
 onMounted(async () => {
   const refCode = typeof route.query.ref === 'string' ? route.query.ref : ''
@@ -88,7 +92,7 @@ useHead({ title: 'Acceso | CueBooker' })
         Este entorno todavía no tiene configurada la conexión pública con Supabase.
       </p>
 
-      <NuxtLink class="access-demo" to="/app">Abrir demo sin cuenta</NuxtLink>
+      <NuxtLink class="access-demo" to="/app">Abrir espacio de prueba</NuxtLink>
     </section>
   </main>
 </template>
@@ -97,7 +101,7 @@ useHead({ title: 'Acceso | CueBooker' })
 .access-page { min-height: 100vh; padding: 28px; background: #070707; color: #f2f0eb; }
 .access-brand { color: inherit; text-decoration: none; font-weight: 900; letter-spacing: .08em; }
 .access-brand span { color: #e8ff2f; }
-.access-panel { width: min(560px, 100%); margin: 9vh auto 0; padding: 32px; border: 1px solid #292929; background: #101010; }
+.access-panel { width: min(560px, 100%); margin: 24px auto 0; padding: 32px; border: 1px solid #292929; background: #101010; }
 .access-kicker { margin: 0 0 18px; color: #e8ff2f; font: 700 12px/1.2 monospace; letter-spacing: .12em; }
 h1 { margin: 0; font-size: clamp(2.3rem, 7vw, 4.8rem); line-height: .92; text-transform: uppercase; }
 .access-copy { color: #aaa; line-height: 1.55; }
@@ -113,5 +117,5 @@ input { min-height: 48px; padding: 0 14px; border: 1px solid #333; background: #
 .access-message { margin: 0; padding: 12px; border: 1px solid #3b3b3b; color: #ddd; font-size: .9rem; }
 .access-message--error { border-color: #8b3434; color: #ffadad; }
 .access-demo { display: inline-block; margin-top: 22px; color: #aaa; }
-@media (max-width: 620px) { .access-page { padding: 20px; } .access-panel { margin-top: 7vh; padding: 22px; } }
+@media (max-width: 620px) { .access-page { padding: 18px; } .access-panel { margin-top: 20px; padding: 22px; } }
 </style>
