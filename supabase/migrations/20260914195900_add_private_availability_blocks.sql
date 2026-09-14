@@ -38,26 +38,26 @@ alter table public.availability_blocks enable row level security;
 create policy availability_blocks_select_artist_members
 on public.availability_blocks for select
 to authenticated
-using (public.is_artist_member(artist_id));
+using (private.is_artist_member(artist_id));
 
 create policy availability_blocks_insert_artist_managers
 on public.availability_blocks for insert
 to authenticated
 with check (
   created_by = (select auth.uid())
-  and public.can_manage_artist(artist_id)
+  and private.can_manage_artist(artist_id)
 );
 
 create policy availability_blocks_update_artist_managers
 on public.availability_blocks for update
 to authenticated
-using (public.can_manage_artist(artist_id))
-with check (public.can_manage_artist(artist_id));
+using (private.can_manage_artist(artist_id))
+with check (private.can_manage_artist(artist_id));
 
 create policy availability_blocks_delete_artist_managers
 on public.availability_blocks for delete
 to authenticated
-using (public.can_manage_artist(artist_id));
+using (private.can_manage_artist(artist_id));
 
 revoke all on public.availability_blocks from anon, authenticated;
 grant select, insert, update, delete on public.availability_blocks to authenticated;
