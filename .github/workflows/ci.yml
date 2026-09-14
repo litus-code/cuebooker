@@ -38,11 +38,14 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Use repository npm version
+        run: npm install --global npm@10.9.3
+
       - name: Rebuild lockfile for this recovery PR
         if: ${{ github.event_name == 'pull_request' && github.head_ref == 'chore/deterministic-ci-installs' }}
         shell: bash
         run: |
-          echo "Rebuilding package-lock.json from package.json"
+          echo "Rebuilding package-lock.json from package.json with npm $(npm --version)"
           rm -f package-lock.json
           npm install --package-lock-only --ignore-scripts
           node -e "const fs=require('fs'); const lock=JSON.parse(fs.readFileSync('package-lock.json','utf8')); console.log({lockfileVersion: lock.lockfileVersion, rootPackage: lock.packages?.['']?.name})"
@@ -52,7 +55,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No lockfile changes to commit"
           else
-            git commit -m "Regenerate package lockfile"
+            git commit -m "Regenerate package lockfile with npm 10.9.3"
             git push origin HEAD:${{ github.head_ref }}
           fi
 
