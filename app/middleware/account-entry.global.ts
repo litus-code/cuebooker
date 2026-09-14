@@ -1,12 +1,12 @@
 export default defineNuxtRouteMiddleware(async (to) => {
   if (import.meta.server) return
-  if (to.path !== '/app' || to.query.mode !== 'account') return
+  if (to.path !== '/app') return
 
   const auth = useCueAuth()
   await auth.initialize()
 
   if (!auth.signedIn.value) {
-    return navigateTo({ path: '/access', query: { next: '/app?mode=account' } })
+    return navigateTo({ path: '/access', query: { mode: 'signup' } })
   }
 
   if (!auth.profile.value) await auth.fetchProfile()

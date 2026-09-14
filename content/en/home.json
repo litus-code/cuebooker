@@ -59,12 +59,12 @@
     ]
   },
   "demo": {
-    "index": "06 / TRY IT", "eyebrow": "USE IT NOW", "title": "Run through a complete booking before creating an account.",
-    "body": "The test workspace lets you use the inbox, change statuses, continue conversations and view the calendar. It includes fictional requests and profiles so you can explore the complete flow without changing real data.",
-    "currentTitle": "Available now", "current": ["Booking form", "Inbox and status changes", "Test conversations and attachments", "Calendar, alerts and history"],
-    "realTitle": "With an account", "real": ["Private DJ or agency profile", "Persistent calendar and availability", "Agency roster management", "Protected session and your own data"],
-    "realNote": "The test workspace uses fictional data stored in this browser. Accounts work in a connected private workspace.",
-    "panelButton": "Open test workspace", "requestButton": "Try as a promoter"
+    "index": "06 / START", "eyebrow": "USE IT NOW", "title": "Create your account and run through a complete booking.",
+    "body": "Your workspace starts with sample requests so you can use the inbox, test status changes, reply and understand the calendar from your first visit.",
+    "currentTitle": "Available now with an account", "current": ["Private workspace for a DJ or agency", "Persistent calendar and availability", "Sample requests with offer and conversation", "Filters, statuses and a step-by-step guided tour"],
+    "realTitle": "Coming next", "real": ["Real request intake and email notifications", "Artist discovery and search", "Availability shared by each DJ by choice", "More roster and promoter tools"],
+    "realNote": "The roadmap shows the product direction, not features available today. Sample requests are identified and can be removed from the workspace.",
+    "panelButton": "Create account and enter", "requestButton": "See how it works"
   },
   "entry": {"eyebrow": "YOUR WORKSPACE", "title": "Start managing your bookings.", "body": "Create an account as a DJ or agency and set up your first profile and private calendar."},
   "feedback": {
@@ -78,7 +78,7 @@
       "emailLabel": "Email address", "emailPlaceholder": "you@email.com", "emailHelp": "We will use your email to contact you about CueBooker testing.",
       "profileLabel": "What is your role?", "profiles": ["Independent DJ", "Manager or agency", "Promoter, venue or festival"],
       "consentLabel": "Consent", "consentText": "I agree that CueBooker may use my details to contact me about testing and send project-related updates.",
-      "submit": "I want to take part", "success": "We have received your details. We will contact you about upcoming tests and feedback sessions.", "successCta": "Open test workspace",
+      "submit": "I want to take part", "success": "We have received your details. We will contact you about upcoming tests and feedback sessions.", "successCta": "Create my workspace",
       "invalid": "The information is not valid. Check your email address and try again.", "required": "This field is required.", "loading": "Loading secure form…"
     }
   },

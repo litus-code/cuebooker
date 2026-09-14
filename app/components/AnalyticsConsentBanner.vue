@@ -1,25 +1,32 @@
 <script setup lang="ts">
 const analytics = useAnalytics()
+const { locale } = useCuePreferences()
 
 const visible = computed(() => analytics.enabled.value && analytics.consent.value === 'unknown')
+const copy = computed(() => locale.value === 'es' ? {
+  label: 'Preferencias de analítica', title: 'Analítica opcional',
+  body: 'Nos ayuda a entender cómo se usa CueBooker y mejorar el producto. No cargaremos Google Tag Manager hasta que aceptes.',
+  deny: 'Rechazar', accept: 'Aceptar analítica'
+} : {
+  label: 'Analytics preferences', title: 'Optional analytics',
+  body: 'This helps us understand how CueBooker is used and improve the product. Google Tag Manager will not load until you accept.',
+  deny: 'Decline', accept: 'Accept analytics'
+})
 </script>
 
 <template>
-  <aside v-if="visible" class="analytics-consent" aria-label="Preferencias de analítica">
+  <aside v-if="visible" class="analytics-consent" :aria-label="copy.label">
     <div class="analytics-consent__copy">
-      <strong>Analítica opcional</strong>
-      <p>
-        Nos ayuda a entender cómo se usa CueBooker y mejorar el producto. No cargaremos Google Tag
-        Manager hasta que aceptes.
-      </p>
+      <strong>{{ copy.title }}</strong>
+      <p>{{ copy.body }}</p>
     </div>
 
     <div class="analytics-consent__actions">
       <button class="analytics-consent__button analytics-consent__button--secondary" type="button" @click="analytics.deny">
-        Rechazar
+        {{ copy.deny }}
       </button>
       <button class="analytics-consent__button" type="button" @click="analytics.accept">
-        Aceptar analítica
+        {{ copy.accept }}
       </button>
     </div>
   </aside>

@@ -83,7 +83,7 @@ watch(() => props.locale, () => setBrevoGlobals())
     </div>
     <div id="success-message" class="sib-form-message-panel pilot-form__message pilot-form__message--success" role="status" aria-live="polite">
       <span class="sib-form-message-panel__inner-text">{{ copy.success }}</span>
-      <NuxtLink class="pilot-form__success-link" to="/app">{{ copy.successCta }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
+      <NuxtLink class="pilot-form__success-link" to="/access?mode=signup">{{ copy.successCta }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
     </div>
 
     <form id="sib-form" class="pilot-form__body" method="POST" :action="formAction" data-type="subscription">

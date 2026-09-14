@@ -1,11 +1,21 @@
 <script setup lang="ts">
 const auth = useCueAuth()
+const { locale } = useCuePreferences()
 const accountType = ref<'dj' | 'agency'>('dj')
 const displayName = ref('')
 const entityName = ref('')
 const entitySlug = ref('')
 const errorMessage = ref('')
 const submitting = ref(false)
+const copy = computed(() => locale.value === 'es' ? {
+  kicker: 'CONFIGURACIÓN DE CUENTA / 01', title: '¿Cómo trabajas?', body: 'Esto define la identidad privada que administrará calendario y bookings.',
+  dj: 'DJ / ARTISTA', djBody: 'Gestiono mi propio proyecto y calendario.', agency: 'AGENCIA', agencyBody: 'Gestiono un roster y su operativa de booking.',
+  yourName: 'Tu nombre', artistName: 'Nombre artístico', agencyName: 'Nombre de la agencia', slug: 'Identificador', saving: 'Guardando…', create: 'Crear workspace', error: 'No se pudo completar la configuración.'
+} : {
+  kicker: 'ACCOUNT SETUP / 01', title: 'How do you work?', body: 'This defines the private identity that will manage calendars and bookings.',
+  dj: 'DJ / ARTIST', djBody: 'I manage my own project and calendar.', agency: 'AGENCY', agencyBody: 'I manage a roster and its booking operations.',
+  yourName: 'Your name', artistName: 'Artist name', agencyName: 'Agency name', slug: 'Identifier', saving: 'Saving…', create: 'Create workspace', error: 'Setup could not be completed.'
+})
 
 function slugify(value: string) {
   return value
@@ -30,7 +40,7 @@ onMounted(async () => {
 
   if (!auth.profile.value) await auth.fetchProfile()
   if (auth.profile.value?.onboarding_completed) {
-    await navigateTo('/app?mode=account')
+    await navigateTo('/workspace')
     return
   }
 
@@ -48,55 +58,55 @@ async function submit() {
       entityName: entityName.value,
       entitySlug: entitySlug.value
     })
-    await navigateTo('/app?mode=account')
+    await navigateTo('/workspace')
   } catch (error: any) {
-    errorMessage.value = error?.data?.message || error?.message || 'No se pudo completar la configuración.'
+    errorMessage.value = error?.data?.message || error?.message || copy.value.error
   } finally {
     submitting.value = false
   }
 }
 
-useHead({ title: 'Configura tu cuenta | CueBooker' })
+useHead(() => ({ title: locale.value === 'es' ? 'Configura tu cuenta | CueBooker' : 'Set up your account | CueBooker', htmlAttrs: { lang: locale.value } }))
 </script>
 
 <template>
   <main class="onboarding-page">
-    <NuxtLink class="onboarding-brand" to="/">CUEBOOKER<span>/</span></NuxtLink>
+    <header class="onboarding-header"><NuxtLink class="onboarding-brand" to="/">CUEBOOKER<span>/</span></NuxtLink><CuePreferencesControl compact /></header>
 
     <section class="onboarding-panel">
-      <p class="onboarding-kicker">ACCOUNT SETUP / 01</p>
-      <h1>¿Cómo trabajas?</h1>
-      <p class="onboarding-copy">Esto define la identidad privada que administrará calendario y bookings.</p>
+      <p class="onboarding-kicker">{{ copy.kicker }}</p>
+      <h1>{{ copy.title }}</h1>
+      <p class="onboarding-copy">{{ copy.body }}</p>
 
       <div class="type-grid">
         <button type="button" :class="{ active: accountType === 'dj' }" @click="accountType = 'dj'">
-          <strong>DJ / ARTISTA</strong>
-          <span>Gestiono mi propio proyecto y calendario.</span>
+          <strong>{{ copy.dj }}</strong>
+          <span>{{ copy.djBody }}</span>
         </button>
         <button type="button" :class="{ active: accountType === 'agency' }" @click="accountType = 'agency'">
-          <strong>AGENCIA</strong>
-          <span>Gestiono un roster y su operativa de booking.</span>
+          <strong>{{ copy.agency }}</strong>
+          <span>{{ copy.agencyBody }}</span>
         </button>
       </div>
 
       <form class="onboarding-form" @submit.prevent="submit">
         <label>
-          <span>Tu nombre</span>
+          <span>{{ copy.yourName }}</span>
           <input v-model="displayName" minlength="2" autocomplete="name" required />
         </label>
         <label>
-          <span>{{ accountType === 'dj' ? 'Nombre artístico' : 'Nombre de la agencia' }}</span>
+          <span>{{ accountType === 'dj' ? copy.artistName : copy.agencyName }}</span>
           <input v-model="entityName" minlength="2" required />
         </label>
         <label>
-          <span>Identificador</span>
+          <span>{{ copy.slug }}</span>
           <input v-model="entitySlug" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required />
         </label>
 
         <p v-if="errorMessage" class="onboarding-error">{{ errorMessage }}</p>
 
         <button class="onboarding-submit" type="submit" :disabled="submitting">
-          {{ submitting ? 'Guardando…' : 'Crear workspace' }}
+          {{ submitting ? copy.saving : copy.create }}
         </button>
       </form>
     </section>
@@ -104,23 +114,24 @@ useHead({ title: 'Configura tu cuenta | CueBooker' })
 </template>
 
 <style scoped>
-.onboarding-page { min-height: 100vh; padding: 28px; background: #070707; color: #f2f0eb; }
+.onboarding-page { min-height: 100vh; padding: 28px; background: var(--cue-bg); color: var(--cue-text); }
+.onboarding-header { display: flex; align-items: center; justify-content: space-between; }
 .onboarding-brand { color: inherit; text-decoration: none; font-weight: 900; letter-spacing: .08em; }
-.onboarding-brand span { color: #e8ff2f; }
-.onboarding-panel { width: min(760px, 100%); margin: 7vh auto 0; }
-.onboarding-kicker { margin: 0 0 18px; color: #e8ff2f; font: 700 12px/1.2 monospace; letter-spacing: .12em; }
+.onboarding-brand span { color: var(--cue-toggle); }
+.onboarding-panel { width: min(760px, 100%); margin: 24px auto 0; }
+.onboarding-kicker { margin: 0 0 18px; color: var(--cue-accent); font: 700 12px/1.2 monospace; letter-spacing: .12em; }
 h1 { margin: 0; font-size: clamp(2.6rem, 8vw, 5.5rem); line-height: .9; text-transform: uppercase; }
-.onboarding-copy { max-width: 600px; color: #aaa; line-height: 1.55; }
+.onboarding-copy { max-width: 600px; color: var(--cue-muted); line-height: 1.55; }
 .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 30px 0; }
-.type-grid button { min-height: 140px; padding: 20px; border: 1px solid #292929; background: #101010; color: #f2f0eb; text-align: left; cursor: pointer; }
-.type-grid button.active { border-color: #e8ff2f; box-shadow: inset 0 0 0 1px #e8ff2f; }
-.type-grid strong { display: block; margin-bottom: 10px; color: #e8ff2f; font: 800 13px/1.2 monospace; }
-.type-grid span { color: #aaa; line-height: 1.45; }
-.onboarding-form { display: grid; gap: 16px; padding: 26px; border: 1px solid #292929; background: #101010; }
+.type-grid button { min-height: 140px; padding: 20px; border: 1px solid var(--cue-border); background: var(--cue-surface); color: var(--cue-text); text-align: left; cursor: pointer; }
+.type-grid button.active { border-color: var(--cue-toggle); box-shadow: inset 0 0 0 1px var(--cue-toggle); }
+.type-grid strong { display: block; margin-bottom: 10px; color: var(--cue-accent); font: 800 13px/1.2 monospace; }
+.type-grid span { color: var(--cue-muted); line-height: 1.45; }
+.onboarding-form { display: grid; gap: 16px; padding: 26px; border: 1px solid var(--cue-border); background: var(--cue-surface); }
 label { display: grid; gap: 7px; }
-label span { color: #aaa; font: 700 11px/1.2 monospace; text-transform: uppercase; letter-spacing: .1em; }
-input { min-height: 48px; padding: 0 14px; border: 1px solid #333; background: #070707; color: #fff; font: inherit; }
-.onboarding-submit { min-height: 50px; border: 0; background: #e8ff2f; color: #070707; font-weight: 800; cursor: pointer; }
+label span { color: var(--cue-muted); font: 700 11px/1.2 monospace; text-transform: uppercase; letter-spacing: .1em; }
+input { min-height: 48px; padding: 0 14px; border: 1px solid var(--cue-border); background: var(--cue-bg); color: var(--cue-text); font: inherit; }
+.onboarding-submit { min-height: 50px; border: 0; background: var(--cue-toggle); color: #070707; font-weight: 800; cursor: pointer; }
 .onboarding-error { margin: 0; padding: 12px; border: 1px solid #8b3434; color: #ffadad; }
-@media (max-width: 700px) { .onboarding-page { padding: 20px; } .type-grid { grid-template-columns: 1fr; } .onboarding-form { padding: 20px; } }
+@media (max-width: 700px) { .onboarding-page { padding: 18px; } .onboarding-panel { margin-top: 18px; } .type-grid { grid-template-columns: 1fr; } .onboarding-form { padding: 20px; } }
 </style>

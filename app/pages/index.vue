@@ -2,7 +2,7 @@
 import es from '../../content/es/home.json'
 import en from '../../content/en/home.json'
 
-const { locale, theme, setLocale, setTheme } = useCuePreferences()
+const { locale } = useCuePreferences()
 const copy = computed(() => locale.value === 'es' ? es : en)
 const menuOpen = ref(false)
 const searchState = ref<'idle' | 'searching' | 'found'>('idle')
@@ -22,6 +22,8 @@ const discoveryCount = computed(() => locale.value === 'es'
 const noDiscoveryResults = computed(() => locale.value === 'es'
   ? 'No hay artistas de esta demo dentro del presupuesto seleccionado.'
   : 'No demo artists match the selected budget.')
+const menuLabel = computed(() => locale.value === 'es' ? 'Abrir menú' : 'Open menu')
+const quickActionsLabel = computed(() => locale.value === 'es' ? 'Accesos rápidos' : 'Quick actions')
 
 const networkLabel = computed(() => {
   if (searchState.value === 'searching') return copy.value.hero.networkSearching
@@ -67,7 +69,7 @@ useHead(() => ({
   <main class="site-shell">
     <header class="site-header">
       <a class="brand" href="#top" @click.prevent="scrollTo('#top')">CUEBOOKER<span>/</span></a>
-      <button class="menu-trigger" :aria-expanded="menuOpen" aria-label="Abrir menú" @click="menuOpen = !menuOpen"><span /><span /></button>
+      <button class="menu-trigger" :aria-expanded="menuOpen" :aria-label="menuLabel" @click="menuOpen = !menuOpen"><span /><span /></button>
       <nav class="site-nav" :class="{ 'site-nav--open': menuOpen }">
         <a href="#problem" @click.prevent="scrollTo('#problem')">{{ copy.nav.problem }}</a>
         <a href="#product" @click.prevent="scrollTo('#product')">{{ copy.nav.product }}</a>
@@ -75,11 +77,7 @@ useHead(() => ({
         <a href="#try" @click.prevent="scrollTo('#try')">{{ copy.nav.tryProduct }}</a>
       </nav>
       <div class="header-controls">
-        <div class="locale-control" aria-label="Idioma">
-          <button :class="{ active: locale === 'es' }" @click="setLocale('es')">ES</button>
-          <button :class="{ active: locale === 'en' }" @click="setLocale('en')">EN</button>
-        </div>
-        <button class="appearance-toggle" :aria-label="locale === 'es' ? 'Cambiar apariencia' : 'Change appearance'" :title="locale === 'es' ? 'Cambiar apariencia' : 'Change appearance'" @click="setTheme(theme === 'dark' ? 'light' : 'dark')"><span /></button>
+        <CuePreferencesControl compact />
         <NuxtLink class="header-login" to="/access">{{ copy.nav.login }}</NuxtLink>
         <NuxtLink class="header-signup" to="/access?mode=signup">{{ copy.nav.signup }}</NuxtLink>
       </div>
@@ -174,8 +172,7 @@ useHead(() => ({
       <div class="section-heading"><p class="eyebrow">{{ copy.demo.eyebrow }}</p><h2>{{ copy.demo.title }}</h2><p>{{ copy.demo.body }}</p></div>
       <div class="demo-reality__grid"><article><strong>{{ copy.demo.currentTitle }}</strong><ul><li v-for="item in copy.demo.current" :key="item"><span>✓</span>{{ item }}</li></ul></article><article><strong>{{ copy.demo.realTitle }}</strong><ul><li v-for="item in copy.demo.real" :key="item"><span>○</span>{{ item }}</li></ul><p class="demo-reality__note">{{ copy.demo.realNote }}</p></article></div>
       <div class="demo-reality__actions">
-        <NuxtLink class="button button--primary" to="/app">{{ copy.demo.panelButton }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
-        <NuxtLink class="button button--ghost" to="/artist">{{ copy.demo.requestButton }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
+        <NuxtLink class="button button--primary" to="/access?mode=signup">{{ copy.demo.panelButton }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
       </div>
     </section>
 
@@ -234,7 +231,7 @@ useHead(() => ({
       </ClientOnly>
     </section>
 
-    <div class="floating-actions" aria-label="Accesos rápidos">
+    <div class="floating-actions" :aria-label="quickActionsLabel">
       <Transition name="floating-control">
         <button v-if="backToTopVisible" class="back-to-top" type="button" :aria-label="copy.cta.topButton" @click="scrollTo('#top')">
           <span class="floating-arrow"><i class="arrow arrow--up" aria-hidden="true" /></span>

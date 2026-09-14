@@ -8,13 +8,13 @@ This file records what was actually reconstructed after the lost local Work comm
 
 ## Routes
 
-- `/app` remains the anonymous browser-local product demo.
+- `/app` is a legacy compatibility route and redirects to account creation or the authenticated workspace.
 - `/access` handles email/password sign-in and registration.
 - `/onboarding` creates the first DJ artist or agency identity.
-- `/workspace` is the authenticated private calendar workspace.
-- `/app?mode=account` is retained as an account-entry compatibility URL and routes authenticated/onboarded users to `/workspace`.
+- `/workspace` is the authenticated private product workspace.
+- `/app?mode=account` follows the same compatibility redirect.
 
-Separating `/app` and `/workspace` is intentional. It prevents demo records and authenticated records from sharing the same state container while the real booking persistence layer is still being built.
+`/workspace` keeps connected account availability separate from sample bookings. The temporary browser repository uses a database namespace derived from the authenticated user and artist IDs, and every sample remains removable.
 
 ## Browser auth
 
@@ -29,7 +29,7 @@ Public configuration:
 
 The frontend never uses a secret/service-role key.
 
-The browser stores the current session under a Cuebooker-specific local-storage key and refreshes an expiring access token before private API calls. Logout removes only authenticated account state; the existing `/app` demo storage is untouched.
+The browser stores the current session under a Cuebooker-specific local-storage key and refreshes an expiring access token before private API calls. Logout removes authenticated account state without merging sample records across profiles.
 
 ## Referral continuity
 
@@ -40,6 +40,8 @@ The browser stores the current session under a Cuebooker-specific local-storage 
 Migration `20260914200415_complete_account_onboarding.sql` adds `public.complete_onboarding(...)`.
 
 The function is `SECURITY INVOKER`, requires `auth.uid()`, locks the caller profile, refuses repeated onboarding, creates either one DJ artist or one agency organisation, relies on the existing ownership triggers for membership creation, and marks the profile complete in the same transaction. It is executable by `authenticated`, not `anon`.
+
+Migration `20260914223216_fix_complete_onboarding_parameter_ambiguity.sql` qualifies the function inputs without renaming its public RPC parameters. This fixes PostgreSQL resolving `display_name` as both the profile column and the function parameter during account creation.
 
 ## Agency roster
 
@@ -60,20 +62,25 @@ Migration `20260914200444_add_private_availability_blocks.sql` adds `availabilit
 
 Migration `20260914200718_index_availability_blocks_creator.sql` adds the covering index for the `created_by` foreign key requested by Supabase's performance advisor.
 
-## Workspace calendar
+## Private workspace and calendar
 
 `/workspace` currently provides:
 
+- product navigation separated into Resumen, Bookings and Calendario;
+- an overview derived from real private availability data;
+- the complete browser-local Bookings interface with per-profile removable examples while shared persistence is pending;
+- a guided tour with scroll positioning and neon focus across filters, details, conversation, actions and calendar;
 - managed-artist selector;
 - agency first-artist creation;
 - responsive monthly calendar;
 - clickable day selection;
-- 24-hour day schedule;
+- a scrollable 24-hour timeline with blocks positioned by start time and duration;
+- creation from an empty hour in the timeline;
 - persistent private block creation;
 - persistent block editing (time, status and private label);
-- persistent block deletion;
+- persistent block deletion with confirmation;
 - status markers for unavailable / hold / confirmed;
-- explicit connected/private copy;
+- a persistent visual notice separating connected availability from simulated bookings;
 - logout.
 
 ## Verification completed
@@ -81,6 +88,7 @@ Migration `20260914200718_index_availability_blocks_creator.sql` adds the coveri
 On `cuebooker-staging` Supabase:
 
 - `complete_onboarding` exists and is `SECURITY INVOKER`;
+- `complete_onboarding` completes inside a rollback-only verification transaction without leaving an artist or profile change behind;
 - `availability_blocks` exists with RLS enabled;
 - `organization_artists` exists with RLS enabled;
 - `anon` has no select privilege on `organization_artists`;

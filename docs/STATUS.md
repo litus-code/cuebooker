@@ -109,7 +109,7 @@ Local verification completed before the Work environment became unavailable:
 - `npm audit --omit=dev --audit-level=high` reported zero vulnerabilities.
 - `git diff --check` passed.
 
-The anonymous `/app` test workspace remains separate from the authenticated `/workspace`. This separation prevents fictional browser-local records from mixing with private account data.
+The anonymous `/app` entry has been retired. It now routes visitors to registration and returning users to `/workspace`.
 
 ## CI and lockfile status
 
@@ -144,15 +144,17 @@ Apply every pending Supabase migration before testing onboarding. Confirm the Au
 5. Verify ownership and RLS behaviour with two unrelated accounts.
 6. Run generation, audit and staging smoke tests before any production deployment.
 
+The staging onboarding RPC parameter ambiguity reported on 14 September has been corrected through migration `20260914223216_fix_complete_onboarding_parameter_ambiguity.sql`. A rollback-only database test completed the DJ onboarding operation and confirmed that the verification left no artist or profile mutation behind.
+
 ## Public product entry
 
 The home now presents Cuebooker as usable software rather than an early-access waiting list. Account creation and sign-in are first-class header and hero actions. The floating pilot action has been removed. The existing Brevo form remains at the end of the page for research participation and product feedback, clearly separated from account registration.
 
-The anonymous `/app` route remains available as a test workspace. Home copy must describe its records as fictional test data and distinguish it from each account's connected private workspace. Do not present the test workspace as a competing primary entry in the hero.
+The home now drives DJs and agencies through account creation. Do not reintroduce a competing direct workspace entry. The public promoter simulation remains explicit until its request endpoint is connected.
 
 ## Next product implementation block
 
-After the Work auth/calendar foundation is integrated and validated, build shared booking persistence. Start with the schema and server-owned transition functions, then connect the current workspace through a repository interface. Keep the browser-local demo adapter available so visitors can still test the product without registering.
+After the Work auth/calendar foundation is integrated and validated, build shared booking persistence. Start with the schema and server-owned transition functions, then replace the current per-profile sample adapter without migrating sample records into Supabase.
 
 The first vertical slice should support:
 
@@ -164,3 +166,26 @@ The first vertical slice should support:
 6. Real reply persisted and delivered.
 7. Automatic waiting-for-promoter transition after successful send.
 8. Manual confirmation and calendar entry.
+
+## Workspace information architecture prepared
+
+The authenticated workspace no longer presents the calendar as the complete product. Its interface is now divided into:
+
+- `Resumen`, with real availability totals and upcoming private schedules;
+- `Bookings`, with removable examples scoped to the authenticated profile and browser;
+- `Calendario`, as a separate operational tool;
+- `Historial`, with a chronological view of sample request activity and status changes.
+
+The calendar day view now uses a real 24-hour timeline. Existing blocks appear at their start time and reflect their duration. Clicking an empty hour starts creation; clicking an existing block opens editing and confirmed deletion.
+
+Saving a confirmed block now warns when its time range overlaps another block for the same artist and day, while allowing the user to continue deliberately. Blocks carrying a matching `booking_reference` jump to the beginning of the active booking thread or its archived History entry; unlinked availability blocks remain editable in place.
+
+The authenticated Bookings area includes sample records so the user can test filters, offers, conversations and status changes without leaving the workspace. A guided tour moves through the interface with scroll positioning and neon focus. The records use a browser database namespace derived from the authenticated user and artist IDs, can be removed or restored, and never modify the connected private calendar.
+
+The private header now mirrors the public experience with visible language and appearance controls, icon-only settings and sign-out actions, and a denser vertical rhythm. Single-artist accounts show the DJ identity directly instead of an unnecessary selector; agencies retain artist switching. Account settings include an authenticated password update form.
+
+Language and appearance now use one shared control across the public home, account access, onboarding, artist profile, promoter request view and private workspace. The selected option is fluorescent yellow with dark text, while inactive options remain dark and grey. Light-theme state colours use darker equivalents where needed to preserve contrast. Workspace interface copy, calendar labels, account settings, onboarding, access and analytics consent are available in Spanish and English.
+
+History entries are actionable. Selecting a message or status movement opens its related offer in Bookings and scrolls to the beginning of that booking, where the complete data and conversation trace remain visible, including archived sample records.
+
+The public “use it now” section now separates “Available now with an account” from “Coming next”. Discovery, artist search, opt-in public availability and future promoter or roster tools appear only as roadmap items; the current column describes the authenticated workspace, persistent calendar and clearly identified sample requests. The final testing and feedback form remains unchanged.
