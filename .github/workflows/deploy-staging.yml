@@ -101,16 +101,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Verify preview secrets
+      - name: Verify Cloudflare preview secrets
         shell: bash
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
         run: |
           missing=0
-          for key in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID SUPABASE_URL SUPABASE_PUBLISHABLE_KEY; do
+          for key in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID; do
             if [ -z "${!key}" ]; then
               echo "Missing required repository secret: $key"
               missing=1
@@ -123,8 +121,8 @@ jobs:
           NUXT_APP_BASE_URL: /
           NUXT_PUBLIC_APP_ENV: staging
           NUXT_PUBLIC_GTM_ID: GTM-MHP8MGS3
-          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          NUXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          NUXT_PUBLIC_SUPABASE_URL: https://lycprjeuuynfzwskycwv.supabase.co
+          NUXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_EB86PM_vk7lZlJH7hadGlg_YMt-c2d9
         run: npm run generate
 
       - name: Deploy PR preview to Cloudflare Pages
