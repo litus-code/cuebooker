@@ -2,7 +2,7 @@
 const route = useRoute()
 const auth = useCueAuth()
 
-const mode = ref<'signin' | 'signup'>('signin')
+const mode = ref<'signin' | 'signup'>(route.query.mode === 'signup' ? 'signup' : 'signin')
 const email = ref('')
 const password = ref('')
 const displayName = ref('')
