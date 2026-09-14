@@ -68,7 +68,9 @@ Migration `20260914200444_add_private_availability_blocks.sql` adds:
 
 RLS uses the current hardened `private.is_artist_member()` and `private.can_manage_artist()` helpers. Do not reintroduce the superseded public helper functions.
 
-The migration version matches the migration applied to staging.
+Migration `20260914200718_index_availability_blocks_creator.sql` adds the covering index for the `created_by` foreign key requested by Supabase's performance advisor.
+
+All three migration versions match the migrations applied to staging.
 
 ## Workspace calendar
 
@@ -86,7 +88,7 @@ The migration version matches the migration applied to staging.
 
 The first agency account may legitimately show no direct artist membership until roster assignment is implemented. That state is handled explicitly.
 
-## Staging verification completed
+## Verification completed
 
 On `cuebooker-staging` Supabase:
 
@@ -98,11 +100,16 @@ On `cuebooker-staging` Supabase:
 - `authenticated` has table access subject to RLS;
 - `anon` cannot execute `complete_onboarding`;
 - `authenticated` can execute `complete_onboarding`;
-- the Supabase Security Advisor reports no lints after these migrations.
+- the Supabase Security Advisor reports no lints;
+- the performance advisor no longer reports an unindexed foreign key; remaining notices are unused-index informational notices expected on an empty/new staging dataset.
+
+GitHub CI for PR #19 passes on the current implementation:
+
+- deterministic `npm ci` passes;
+- Nuxt production generation passes.
 
 ## Still required before merge
 
-- GitHub CI must pass for PR #19.
 - Configure `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` as environment secrets in GitHub staging/production if they are not already present.
 - End-to-end browser test: signup, login, logout, session restore.
 - End-to-end DJ onboarding test.
