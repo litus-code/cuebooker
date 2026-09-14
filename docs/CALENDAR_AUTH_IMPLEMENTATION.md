@@ -68,7 +68,7 @@ Migration `20260914200718_index_availability_blocks_creator.sql` adds the coveri
 
 - product navigation separated into Resumen, Bookings and Calendario;
 - an overview derived from real private availability data;
-- an honest prepared state for Bookings while shared booking persistence is pending;
+- the complete browser-local Bookings interface in an explicit test mode while shared persistence is pending;
 - managed-artist selector;
 - agency first-artist creation;
 - responsive monthly calendar;
@@ -79,7 +79,7 @@ Migration `20260914200718_index_availability_blocks_creator.sql` adds the coveri
 - persistent block editing (time, status and private label);
 - persistent block deletion with confirmation;
 - status markers for unavailable / hold / confirmed;
-- explicit separation between connected availability and simulated bookings;
+- a persistent visual notice separating connected availability from simulated bookings;
 - logout.
 
 ## Verification completed
