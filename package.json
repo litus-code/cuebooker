@@ -2,6 +2,10 @@
   "name": "cuebooker",
   "private": true,
   "type": "module",
+  "packageManager": "npm@10.9.3",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "nuxt dev",
     "build": "nuxt build",
