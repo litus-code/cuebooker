@@ -16,9 +16,9 @@ A public DJ directory and availability search may become a later network layer. 
 
 ## Current public experience
 
-The landing page explains the problem, the workflow, integrations, user roles, access model, demo boundaries, future discovery and early access.
+The landing page explains the problem, workflow, integrations, user roles, account access, future discovery and feedback programme.
 
-The public demo opens the DJ workspace directly without registration. A separate promoter simulation explains how a request reaches that workspace. Demo records are fictional and remain local to the browser until the persistence block is connected.
+DJ and agency workspaces require registration. Each profile starts with removable browser-local sample requests, visibly identified inside the authenticated workspace. The legacy `/app` route redirects to account access. A separate promoter simulation still explains the intended public request flow until shared booking persistence is connected.
 
 ## Working rules
 
@@ -37,7 +37,7 @@ The public demo opens the DJ workspace directly without registration. A separate
 ## Repository map
 
 - `app/pages/index.vue`: landing page and product explanation.
-- `app/pages/app.vue`: DJ and manager workspace demo.
+- `app/pages/app.vue`: minimal legacy redirect to account access or `/workspace`.
 - `app/pages/artist.vue`: public artist entry point.
 - `app/pages/request.vue`: promoter-side request flow.
 - `app/composables/useBookingDemo.ts`: current browser-local demo state.
