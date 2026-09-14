@@ -4,6 +4,8 @@ Updated: 14 September 2026
 Branch: `feature/calendar-auth-foundation`
 Base: `5d98d1a81735a9335bdbbc74ded9cc831795a07f`
 
+Historical note: this file describes the original foundation scope. The later workspace product decision retires anonymous `/app` access in favour of per-profile removable samples inside `/workspace`. Current routing truth lives in `docs/CALENDAR_AUTH_IMPLEMENTATION.md`.
+
 ## Why this branch exists
 
 A previous ChatGPT Work environment created a local commit (`2a11323 Build calendar and account onboarding foundation`) but that commit was never pushed to GitHub before the Work environment became unavailable. This branch reconstructs that block from the documented behaviour and the current remote source of truth.
@@ -60,7 +62,7 @@ Reconstruct the previously documented first block:
 9. Booking navigation from calendar items.
 10. Persistent private availability blocks with ownership/RLS.
 11. Environment-aware UI copy: real connected account vs browser-only demo data.
-12. Preserve the existing local demo adapter so anonymous visitors can still explore the product.
+12. Preserve the local sample adapter while the presentation entry is evaluated.
 
 ## API-key decision
 
@@ -81,15 +83,16 @@ Expected routes:
 
 - `/access` - sign up/sign in
 - `/onboarding` - authenticated account setup
-- `/app` - private workspace when a real session is present, while retaining explicit demo access for anonymous product exploration
+- `/workspace` - authenticated private workspace
+- `/app` - legacy route redirected to account access or `/workspace`
 
 Routing rules:
 
 - no session + explicit account/workspace entry -> `/access`;
 - signed in + onboarding incomplete -> `/onboarding`;
-- signed in + onboarding complete -> `/app`;
+- signed in + onboarding complete -> `/workspace`;
 - restored sessions must follow the same rules after refresh;
-- logout must clear the authenticated workspace state without deleting the browser demo state.
+- logout must clear the authenticated workspace state without mixing sample namespaces between profiles.
 
 Authorization decisions must rely on database membership/RLS, not user-editable `user_metadata`.
 
@@ -134,13 +137,13 @@ RLS requirements:
 
 Do not duplicate real booking persistence in this foundation. The next vertical slice will connect confirmed bookings to calendar persistence through the booking domain/repository layer.
 
-## Existing demo calendar
+## Sample booking adapter
 
-`app/pages/app.vue` currently derives calendar items from the local booking demo and one manual sample block. Preserve this anonymous demo behaviour while introducing a repository/data-source boundary for authenticated users.
+The original `/app` page derived calendar items from a local booking demo. It is now a minimal compatibility redirect. The current product workspace reuses the temporary adapter only for removable per-profile sample bookings.
 
 Do not rewrite the full workspace solely to add persistence. Separate calendar/auth data access from presentation so the same UI can be driven by:
 
-- browser demo adapter for anonymous exploration;
+- browser sample adapter scoped to the authenticated profile;
 - Supabase-backed adapter for authenticated workspaces.
 
 ## Referral integration
@@ -192,7 +195,7 @@ Before merge:
 - agency onboarding creates exactly one owned organisation and completes atomically;
 - first-touch referral survives registration/onboarding;
 - private workspace routes are protected for account entry;
-- anonymous product demo remains usable;
+- every new profile receives removable samples without changing Supabase data;
 - authenticated calendar reads only owned/member artist data;
 - availability create/update/delete honours role permissions;
 - another user's calendar rows cannot be read or mutated;
