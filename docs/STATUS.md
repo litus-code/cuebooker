@@ -164,3 +164,15 @@ The first vertical slice should support:
 6. Real reply persisted and delivered.
 7. Automatic waiting-for-promoter transition after successful send.
 8. Manual confirmation and calendar entry.
+
+## Workspace information architecture prepared
+
+The authenticated workspace no longer presents the calendar as the complete product. Its interface is now divided into:
+
+- `Resumen`, with real availability totals and upcoming private schedules;
+- `Bookings`, as the future main inbox with an explicit not-yet-connected state;
+- `Calendario`, as a separate operational tool.
+
+The calendar day view now uses a real 24-hour timeline. Existing blocks appear at their start time and reflect their duration. Clicking an empty hour starts creation; clicking an existing block opens editing and confirmed deletion.
+
+This interface does not invent private requests. Until shared booking persistence is implemented, the authenticated Bookings area points to the separate browser-local test flow when a user wants to inspect the intended behaviour.
