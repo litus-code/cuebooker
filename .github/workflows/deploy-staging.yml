@@ -8,13 +8,20 @@ on:
       - completed
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: deploy-staging
+  group: deploy-staging-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main' }}
   cancel-in-progress: true
 
 jobs:
@@ -72,3 +79,48 @@ jobs:
         run: |
           echo "Staging revision: ${{ steps.revision.outputs.sha }}"
           echo "Review: https://staging.cuebooker.com"
+
+  preview:
+    name: Deploy PR preview
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: staging
+      url: https://pr-${{ github.event.pull_request.number }}.cuebooker-staging.pages.dev
+
+    steps:
+      - name: Checkout pull request head
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate preview build
+        env:
+          NUXT_APP_BASE_URL: /
+          NUXT_PUBLIC_APP_ENV: staging
+          NUXT_PUBLIC_GTM_ID: GTM-MHP8MGS3
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: npm run generate
+
+      - name: Deploy PR preview to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy .output/public --project-name=cuebooker-staging --branch=pr-${{ github.event.pull_request.number }} --commit-hash=${{ github.event.pull_request.head.sha }}
+
+      - name: Record preview URL
+        run: |
+          echo "Preview revision: ${{ github.event.pull_request.head.sha }}"
+          echo "Preview: https://pr-${{ github.event.pull_request.number }}.cuebooker-staging.pages.dev"
