@@ -1,0 +1,20 @@
+html[data-theme='light'] .hero h1 {
+  color: var(--cue-text) !important;
+}
+
+html[data-theme='light'] .hero h1 em {
+  color: var(--cue-accent) !important;
+}
+
+html[data-theme='light'] .section-heading h2,
+html[data-theme='light'] .product-entry h2,
+html[data-theme='light'] .early-access h2 {
+  color: var(--cue-text) !important;
+}
+
+html[data-theme='light'] .section-heading > .eyebrow,
+html[data-theme='light'] .product-entry > .eyebrow,
+html[data-theme='light'] .early-access > .eyebrow,
+html[data-theme='light'] .section-mark {
+  color: var(--cue-accent) !important;
+}
