@@ -206,6 +206,20 @@ export function useCueAuth() {
     }
   }
 
+  async function updatePassword(currentPassword: string, newPassword: string) {
+    const current = await ensureFreshSession()
+    if (!current) throw new Error('authentication_required')
+
+    await $fetch(`${supabaseUrl.value}/auth/v1/user`, {
+      method: 'PUT',
+      headers: baseHeaders(true),
+      body: {
+        current_password: currentPassword,
+        password: newPassword
+      }
+    })
+  }
+
   function captureReferral(code: string | null | undefined, landingPath: string) {
     if (!import.meta.client || !code) return
     if (localStorage.getItem(REFERRAL_KEY)) return
@@ -282,7 +296,7 @@ export function useCueAuth() {
   }
 
   function accountDestination() {
-    return profile.value?.onboarding_completed ? '/app?mode=account' : '/onboarding'
+    return profile.value?.onboarding_completed ? '/workspace' : '/onboarding'
   }
 
   return {
@@ -297,6 +311,7 @@ export function useCueAuth() {
     signIn,
     signUp,
     signOut,
+    updatePassword,
     captureReferral,
     persistReferralAttribution,
     completeOnboarding,
