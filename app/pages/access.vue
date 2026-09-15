@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const route = useRoute()
 const auth = useCueAuth()
+const { locale } = useCuePreferences()
 
 const mode = ref<'signin' | 'signup'>('signin')
 const email = ref('')
@@ -8,6 +9,31 @@ const password = ref('')
 const displayName = ref('')
 const message = ref('')
 const errorMessage = ref('')
+
+const copy = computed(() => locale.value === 'es'
+  ? {
+      kicker: 'CUENTA / WORKSPACE PRIVADO',
+      signinTitle: 'Vuelve a tu booking.',
+      signupTitle: 'Crea tu espacio de trabajo.',
+      signinBody: 'Accede a tu calendario, solicitudes y configuración privada.',
+      signupBody: 'Elige después si gestionas tu propio proyecto como DJ o trabajas como agencia.',
+      signinTab: 'Entrar', signupTab: 'Crear cuenta', name: 'Nombre', email: 'Email', password: 'Contraseña',
+      processing: 'Procesando…', signinSubmit: 'Entrar al workspace', signupSubmit: 'Crear cuenta',
+      confirmation: 'Cuenta creada. Revisa tu correo para confirmar el acceso antes de continuar.',
+      configError: 'Este entorno todavía no tiene configurada la conexión pública con Supabase.',
+      genericError: 'No se pudo completar el acceso.', title: 'Acceso | Cuebooker'
+    }
+  : {
+      kicker: 'ACCOUNT / PRIVATE WORKSPACE',
+      signinTitle: 'Back to your bookings.', signupTitle: 'Create your workspace.',
+      signinBody: 'Access your calendar, requests and private settings.',
+      signupBody: 'Next, choose whether you manage your own DJ project or work as an agency.',
+      signinTab: 'Sign in', signupTab: 'Create account', name: 'Name', email: 'Email', password: 'Password',
+      processing: 'Processing…', signinSubmit: 'Open workspace', signupSubmit: 'Create account',
+      confirmation: 'Account created. Check your email to confirm access before continuing.',
+      configError: 'This environment does not have the public Supabase connection configured yet.',
+      genericError: 'Access could not be completed.', title: 'Access | Cuebooker'
+    })
 
 watch(() => route.query.mode, (requestedMode) => {
   mode.value = requestedMode === 'signup' ? 'signup' : 'signin'
@@ -34,57 +60,57 @@ async function submit() {
     }
     const result = await auth.signUp(email.value, password.value, displayName.value)
     if (result.emailConfirmationRequired) {
-      message.value = 'Cuenta creada. Revisa tu correo para confirmar el acceso antes de continuar.'
+      message.value = copy.value.confirmation
       return
     }
     await navigateTo('/onboarding')
   } catch (error: any) {
-    errorMessage.value = error?.data?.msg || error?.data?.message || error?.message || 'No se pudo completar el acceso.'
+    errorMessage.value = error?.data?.msg || error?.data?.message || error?.message || copy.value.genericError
   }
 }
 
-useHead({ title: 'Acceso | CueBooker' })
+useHead(() => ({ title: copy.value.title, htmlAttrs: { lang: locale.value } }))
 </script>
 
 <template>
   <main class="access-page">
     <section class="access-panel">
-      <p class="access-kicker">ACCOUNT / PRIVATE WORKSPACE</p>
-      <h1>{{ mode === 'signin' ? 'Vuelve a tu booking.' : 'Crea tu espacio de trabajo.' }}</h1>
-      <p class="access-copy">{{ mode === 'signin' ? 'Accede a tu calendario, solicitudes y configuración privada.' : 'Elige después si gestionas tu propio proyecto como DJ o trabajas como agencia.' }}</p>
-      <div class="access-tabs" role="tablist" aria-label="Tipo de acceso">
-        <button :class="{ active: mode === 'signin' }" type="button" @click="mode = 'signin'">Entrar</button>
-        <button :class="{ active: mode === 'signup' }" type="button" @click="mode = 'signup'">Crear cuenta</button>
+      <p class="access-kicker">{{ copy.kicker }}</p>
+      <h1>{{ mode === 'signin' ? copy.signinTitle : copy.signupTitle }}</h1>
+      <p class="access-copy">{{ mode === 'signin' ? copy.signinBody : copy.signupBody }}</p>
+      <div class="access-tabs" role="tablist" :aria-label="locale === 'es' ? 'Tipo de acceso' : 'Access type'">
+        <button :class="{ active: mode === 'signin' }" type="button" @click="mode = 'signin'">{{ copy.signinTab }}</button>
+        <button :class="{ active: mode === 'signup' }" type="button" @click="mode = 'signup'">{{ copy.signupTab }}</button>
       </div>
       <form class="access-form" @submit.prevent="submit">
-        <label v-if="mode === 'signup'"><span>Nombre</span><input v-model="displayName" autocomplete="name" minlength="2" required /></label>
-        <label><span>Email</span><input v-model="email" type="email" autocomplete="email" required /></label>
-        <label><span>Contraseña</span><input v-model="password" type="password" :autocomplete="mode === 'signin' ? 'current-password' : 'new-password'" minlength="8" required /></label>
+        <label v-if="mode === 'signup'"><span>{{ copy.name }}</span><input v-model="displayName" autocomplete="name" minlength="2" required /></label>
+        <label><span>{{ copy.email }}</span><input v-model="email" type="email" autocomplete="email" required /></label>
+        <label><span>{{ copy.password }}</span><input v-model="password" type="password" :autocomplete="mode === 'signin' ? 'current-password' : 'new-password'" minlength="8" required /></label>
         <p v-if="errorMessage" class="access-message access-message--error">{{ errorMessage }}</p>
         <p v-if="message" class="access-message">{{ message }}</p>
-        <button class="access-submit" type="submit" :disabled="auth.loading.value || !auth.configured.value">{{ auth.loading.value ? 'Procesando…' : mode === 'signin' ? 'Entrar al workspace' : 'Crear cuenta' }}</button>
+        <button class="access-submit" type="submit" :disabled="auth.loading.value || !auth.configured.value">{{ auth.loading.value ? copy.processing : mode === 'signin' ? copy.signinSubmit : copy.signupSubmit }}</button>
       </form>
-      <p v-if="!auth.configured.value" class="access-message access-message--error">Este entorno todavía no tiene configurada la conexión pública con Supabase.</p>
+      <p v-if="!auth.configured.value" class="access-message access-message--error">{{ copy.configError }}</p>
     </section>
   </main>
 </template>
 
 <style scoped>
-.access-page { min-height: calc(100vh - 64px); padding: 20px 28px 28px; background: #070707; color: #f2f0eb; }
-.access-panel { width: min(560px, 100%); margin: 8px auto 0; padding: 32px; border: 1px solid #292929; background: #101010; }
-.access-kicker { margin: 0 0 18px; color: #E8FF2F; font: 700 12px/1.2 monospace; letter-spacing: .12em; }
-h1 { margin: 0; font-size: clamp(2.3rem, 7vw, 4.8rem); line-height: .92; text-transform: uppercase; }
-.access-copy { color: #aaa; line-height: 1.55; }
-.access-tabs { display: grid; grid-template-columns: 1fr 1fr; margin: 28px 0 20px; border: 1px solid #292929; }
-.access-tabs button { padding: 12px; border: 0; background: transparent; color: #aaa; cursor: pointer; }
-.access-tabs button.active { background: #E8FF2F; color: #070707; font-weight: 800; }
-.access-form { display: grid; gap: 16px; }
-label { display: grid; gap: 7px; }
-label span { color: #aaa; font: 700 11px/1.2 monospace; text-transform: uppercase; letter-spacing: .1em; }
-input { min-height: 48px; padding: 0 14px; border: 1px solid #333; background: #070707; color: #fff; font: inherit; }
-.access-submit { min-height: 50px; border: 0; background: #E8FF2F; color: #070707; font: 800 14px/1 sans-serif; cursor: pointer; }
-.access-submit:disabled { opacity: .45; cursor: not-allowed; }
-.access-message { margin: 0; padding: 12px; border: 1px solid #3b3b3b; color: #ddd; font-size: .9rem; }
-.access-message--error { border-color: #8b3434; color: #ffadad; }
-@media (max-width: 620px) { .access-page { padding: 12px 18px 18px; } .access-panel { margin-top: 8px; padding: 22px; } }
+.access-page { min-height:calc(100vh - 64px); padding:20px 28px 28px; background:var(--cue-bg); color:var(--cue-text); }
+.access-panel { width:min(560px,100%); margin:8px auto 0; padding:32px; border:1px solid var(--cue-border); background:var(--cue-surface); box-shadow:0 24px 80px var(--cue-shadow); }
+.access-kicker { margin:0 0 18px; color:var(--cue-accent); font:700 12px/1.2 monospace; letter-spacing:.12em; }
+h1 { margin:0; font-size:clamp(2.3rem,7vw,4.8rem); line-height:.92; text-transform:uppercase; }
+.access-copy { color:var(--cue-muted); line-height:1.55; }
+.access-tabs { display:grid; grid-template-columns:1fr 1fr; margin:28px 0 20px; border:1px solid var(--cue-border); background:var(--cue-bg); }
+.access-tabs button { padding:12px; border:0; background:transparent; color:var(--cue-muted); cursor:pointer; }
+.access-tabs button.active { background:var(--cue-toggle); color:var(--cue-toggle-ink); font-weight:800; }
+.access-form { display:grid; gap:16px; }
+label { display:grid; gap:7px; }
+label span { color:var(--cue-muted); font:700 11px/1.2 monospace; text-transform:uppercase; letter-spacing:.1em; }
+input { min-height:48px; padding:0 14px; border:1px solid var(--cue-border); background:var(--cue-bg); color:var(--cue-text); font:inherit; }
+.access-submit { min-height:50px; border:0; background:var(--cue-toggle); color:var(--cue-toggle-ink); font:800 14px/1 sans-serif; cursor:pointer; }
+.access-submit:disabled { opacity:.45; cursor:not-allowed; }
+.access-message { margin:0; padding:12px; border:1px solid var(--cue-border); color:var(--cue-text); font-size:.9rem; }
+.access-message--error { border-color:#8b3434; color:#d65757; }
+@media (max-width:620px) { .access-page { padding:12px 18px 18px; } .access-panel { margin-top:8px; padding:22px; } }
 </style>
