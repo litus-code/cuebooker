@@ -17,41 +17,30 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: 'es' },
       title: 'CueBooker | Booking de DJs y música electrónica',
       meta: [
-        {
-          name: 'description',
-          content: 'Descubre artistas disponibles, envía una solicitud y gestiona el booking de música electrónica desde un mismo lugar.'
-        },
+        { name: 'description', content: 'Descubre artistas disponibles, envía una solicitud y gestiona el booking de música electrónica desde un mismo lugar.' },
         { property: 'og:type', content: 'website' },
         { property: 'og:url', content: 'https://cuebooker.com/' },
         { property: 'og:title', content: 'CueBooker | Booking de DJs y música electrónica' },
-        {
-          property: 'og:description',
-          content: 'Descubre artistas disponibles, envía una solicitud y gestiona el booking de música electrónica desde un mismo lugar.'
-        },
+        { property: 'og:description', content: 'Descubre artistas disponibles, envía una solicitud y gestiona el booking de música electrónica desde un mismo lugar.' },
         { name: 'twitter:card', content: 'summary' },
         { name: 'twitter:title', content: 'CueBooker | Booking de DJs y música electrónica' },
-        {
-          name: 'twitter:description',
-          content: 'Descubre artistas disponibles, envía una solicitud y gestiona el booking de música electrónica desde un mismo lugar.'
-        }
+        { name: 'twitter:description', content: 'Descubre artistas disponibles, envía una solicitud y gestiona el booking de música electrónica desde un mismo lugar.' }
       ],
       link: [
         { rel: 'canonical', href: 'https://cuebooker.com/' },
-        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }
+        { rel: 'icon', type: 'image/png', href: '/cuebooker-favicon.png' },
+        { rel: 'apple-touch-icon', href: '/cuebooker-favicon.png' }
       ],
-      script: [
-        {
-          type: 'application/ld+json',
-          innerHTML: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'WebSite',
-            name: 'CueBooker',
-            url: 'https://cuebooker.com/',
-            description:
-              'Descubre artistas disponibles, envía una solicitud y gestiona el booking de música electrónica desde un mismo lugar.'
-          })
-        }
-      ]
+      script: [{
+        type: 'application/ld+json',
+        innerHTML: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'CueBooker',
+          url: 'https://cuebooker.com/',
+          description: 'Descubre artistas disponibles, envía una solicitud y gestiona el booking de música electrónica desde un mismo lugar.'
+        })
+      }]
     }
   },
   nitro: { preset: process.env.NITRO_PRESET || 'static' }
