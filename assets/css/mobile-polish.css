@@ -3,7 +3,7 @@
 .brand { gap: 8px; }
 .brand::before,
 .workspace-header > a::before { background: url('/cuebooker-mark.svg') center / contain no-repeat; content: ''; display: block; flex: 0 0 auto; height: 36px; width: 36px; }
-.demo-reality__actions > .button--primary { display: none; }
+.network__core img { display: block; height: 58px; width: 58px; }
 
 @media (max-width: 720px) {
   .site-header { grid-template-columns: 1fr auto; min-height: 58px; padding: 0 14px; }
@@ -24,6 +24,7 @@
   .site-header:has(.site-nav--open) .header-login,
   .site-header:has(.site-nav--open) .header-signup { font-size: 8px; min-height: 32px; padding: 0 9px; }
   .hero { padding-top: 28px; }
+  .network__core img { height: 48px; width: 48px; }
 }
 
 @media (max-width: 860px) {
