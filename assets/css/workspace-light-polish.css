@@ -1,0 +1,94 @@
+:root[data-theme='light'] {
+  --cue-light-accent: #6f47ff;
+  --cue-light-accent-dark: #5127c7;
+  --cue-light-accent-soft: #ece7ff;
+}
+
+/* Workspace light-mode consistency */
+:root[data-theme='light'] .tour-card > span {
+  color: var(--cue-light-accent) !important;
+}
+
+:root[data-theme='light'] .demo-notice span {
+  color: var(--cue-light-accent) !important;
+}
+
+:root[data-theme='light'] .demo-notice__actions button {
+  border-color: color-mix(in srgb, var(--cue-light-accent) 48%, var(--cue-border)) !important;
+  background: transparent !important;
+  color: var(--cue-light-accent) !important;
+}
+
+:root[data-theme='light'] .demo-notice__actions .guide-action,
+:root[data-theme='light'] .add-button {
+  border-color: var(--cue-light-accent) !important;
+  background: var(--cue-light-accent) !important;
+  color: #fff !important;
+}
+
+/* New stays purple, but darker than In review so both states remain distinct. */
+:root[data-theme='light'] .tone-lime {
+  color: var(--cue-light-accent-dark) !important;
+}
+:root[data-theme='light'] .tone-lime i,
+:root[data-theme='light'] .status-pill.tone-lime i,
+:root[data-theme='light'] .booking-status-display.tone-lime i {
+  background: var(--cue-light-accent-dark) !important;
+}
+:root[data-theme='light'] .status-pill.tone-lime {
+  border-color: color-mix(in srgb, var(--cue-light-accent-dark) 42%, var(--cue-border)) !important;
+  background: color-mix(in srgb, var(--cue-light-accent-dark) 9%, transparent) !important;
+}
+:root[data-theme='light'] .tone-violet {
+  color: var(--cue-light-accent) !important;
+}
+:root[data-theme='light'] .tone-violet i,
+:root[data-theme='light'] .status-pill.tone-violet i,
+:root[data-theme='light'] .booking-status-display.tone-violet i {
+  background: var(--cue-light-accent) !important;
+}
+
+/* Guided-tour neon treatment becomes violet in light mode. */
+:root[data-theme='light'] .tour-focus {
+  outline-color: var(--cue-light-accent) !important;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--cue-light-accent) 62%, transparent), 0 0 55px color-mix(in srgb, var(--cue-light-accent) 25%, transparent) !important;
+}
+:root[data-theme='light'] .tour-card {
+  border-color: var(--cue-light-accent) !important;
+  box-shadow: 0 0 32px color-mix(in srgb, var(--cue-light-accent) 22%, transparent), 0 24px 80px var(--cue-shadow) !important;
+}
+
+/* Make the dark and light header marks render at exactly the same box size. */
+.site-header .brand,
+.workspace-header .brand {
+  box-sizing: border-box;
+  width: 198px !important;
+  min-width: 198px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  background-position: left center !important;
+  background-repeat: no-repeat !important;
+  background-size: contain !important;
+}
+
+:root:not([data-theme='light']) .site-header .brand,
+:root:not([data-theme='light']) .workspace-header .brand {
+  background-image: url('/cuebooker-header.png') !important;
+  color: transparent !important;
+  font-size: 0 !important;
+}
+
+:root[data-theme='light'] .site-header .brand,
+:root[data-theme='light'] .workspace-header .brand {
+  background-image: url('/cuebooker-header-light.png') !important;
+}
+
+@media (max-width: 720px) {
+  .site-header .brand,
+  .workspace-header .brand {
+    width: 158px !important;
+    min-width: 158px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+  }
+}
