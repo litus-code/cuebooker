@@ -29,7 +29,7 @@ useHead(() => ({ title: locale.value === 'es' ? 'Seguimiento de solicitud | CueB
 
 <template>
   <main class="promoter-page">
-    <header class="profile-nav"><NuxtLink to="/">CUEBOOKER<span>/</span></NuxtLink><p>{{ text.demo }}</p><div class="locale-control"><button :class="{ active: locale === 'es' }" @click="setLocale('es')">ES</button><button :class="{ active: locale === 'en' }" @click="setLocale('en')">EN</button></div></header>
+    <header class="profile-nav"><NuxtLink to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink><p>{{ text.demo }}</p><div class="locale-control"><button :class="{ active: locale === 'es' }" @click="setLocale('es')">ES</button><button :class="{ active: locale === 'en' }" @click="setLocale('en')">EN</button></div></header>
     <section v-if="!ready" class="promoter-state">{{ text.waiting }}</section>
     <section v-else-if="!booking" class="promoter-state"><p>{{ text.missing }}</p><NuxtLink class="button button--primary" to="/artist">{{ text.back }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink></section>
     <template v-else>

@@ -182,7 +182,7 @@ useHead(() => ({ title: locale.value === 'es' ? 'Bandeja de booking | CueBooker'
 <template>
   <main class="workspace-page">
     <header class="workspace-header">
-      <NuxtLink to="/">CUEBOOKER<span>/</span></NuxtLink>
+      <NuxtLink class="brand" to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink>
       <p><i /> {{ copy.prototype }}</p>
       <div class="workspace-role"><span>{{ copy.role }}</span><button :class="{ active: role === 'dj' }" @click="role = 'dj'">{{ copy.dj }}</button><button :class="{ active: role === 'manager' }" @click="role = 'manager'">{{ copy.manager }}</button></div>
       <div class="locale-control"><button :class="{ active: locale === 'es' }" @click="setLocale('es')">ES</button><button :class="{ active: locale === 'en' }" @click="setLocale('en')">EN</button></div>

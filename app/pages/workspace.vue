@@ -450,7 +450,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 <template>
   <main class="workspace">
     <header class="workspace-header">
-      <NuxtLink class="brand" to="/">CUEBOOKER<span>/</span></NuxtLink>
+      <NuxtLink class="brand" to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink>
       <nav aria-label="Workspace">
         <button :class="{ active: activeView === 'overview' }" type="button" @click="activeView = 'overview'">{{ copy.overview }}</button>
         <button :class="{ active: activeView === 'bookings' }" type="button" @click="activeView = 'bookings'">{{ copy.bookings }}</button>

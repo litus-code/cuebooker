@@ -1,8 +1,8 @@
 :root {
-  --cue-accent:#8e7dff;
-  --cue-accent-ink:#fff;
-  --cue-toggle:#8e7dff;
-  --cue-toggle-ink:#fff;
+  --cue-accent:#d8f56b;
+  --cue-accent-ink:#11120d;
+  --cue-toggle:#d8f56b;
+  --cue-toggle-ink:#11120d;
 }
 :root[data-theme='light'] {
   --cue-accent:#6f47ff;
@@ -13,26 +13,12 @@
 
 .brand,
 .workspace-header > a { align-items:center; display:inline-flex; }
-.brand { width:190px; min-height:44px; font-size:0 !important; letter-spacing:0 !important; background:url('/cuebooker-header.png') left center / contain no-repeat; }
-.brand::before,
-.brand::after,
-.brand > span,
-.workspace-header > a::before { display:none !important; }
-.network__core img { display:block; height:58px; width:58px; }
+.brand { width:190px; min-height:44px; }
+.profile-nav > a { align-items:center; display:inline-flex; width:190px; }
+.network__core .cue-brand { height:58px; width:58px; }
 
 .workspace .tour-card { background:var(--cue-surface) !important; color:var(--cue-text) !important; border-color:var(--cue-toggle) !important; box-shadow:0 24px 80px var(--cue-shadow),0 0 28px color-mix(in srgb,var(--cue-toggle) 18%,transparent) !important; }
 .workspace .tour-card > p { color:var(--cue-muted) !important; }
-
-/* Theme-aware branding. In light mode the wordmark is rendered as text so it never loses contrast. */
-:root[data-theme='light'] .brand { background:none; color:#111; font-size:28px !important; font-weight:800; letter-spacing:-.05em !important; text-transform:lowercase; width:auto; min-width:190px; padding-left:50px; position:relative; }
-:root[data-theme='light'] .brand::before { content:''; display:block !important; position:absolute; left:0; width:44px; height:44px; background:url('/cuebooker-icon.png') center/contain no-repeat; filter:grayscale(1) sepia(1) saturate(8) hue-rotate(215deg) brightness(.92); }
-:root[data-theme='light'] .brand > span { display:none !important; }
-:root[data-theme='light'] .network__core img { filter:grayscale(1) sepia(1) saturate(8) hue-rotate(215deg) brightness(.92); }
-
-:root[data-theme='light'] .global-brand-preferences__brand img { display:none !important; }
-:root[data-theme='light'] .global-brand-preferences__brand { color:#111; min-height:44px; min-width:190px; padding-left:50px; position:relative; }
-:root[data-theme='light'] .global-brand-preferences__brand::before { content:''; position:absolute; left:0; width:44px; height:44px; background:url('/cuebooker-icon.png') center/contain no-repeat; filter:grayscale(1) sepia(1) saturate(8) hue-rotate(215deg) brightness(.92); }
-:root[data-theme='light'] .global-brand-preferences__brand::after { content:'cuebooker'; color:#111; font-size:28px; font-weight:800; letter-spacing:-.05em; line-height:1; }
 
 :root[data-theme='light'] .workspace,
 :root[data-theme='light'] .workspace .view,
@@ -107,11 +93,7 @@
 @media (max-width:720px) {
   .site-header { grid-template-columns:minmax(0,1fr) auto auto; min-height:58px; padding:0 14px; gap:8px; }
   .brand { width:142px; min-height:38px; }
-  :root[data-theme='light'] .brand { min-width:142px; font-size:21px !important; padding-left:39px; }
-  :root[data-theme='light'] .brand::before { width:34px; height:34px; }
-  :root[data-theme='light'] .global-brand-preferences__brand { min-width:142px; min-height:38px; padding-left:39px; }
-  :root[data-theme='light'] .global-brand-preferences__brand::before { width:34px; height:34px; }
-  :root[data-theme='light'] .global-brand-preferences__brand::after { font-size:21px; }
+  .profile-nav > a { width:142px; }
   .menu-trigger { grid-column:3; grid-row:1; height:40px; padding:9px; width:40px; }
   .menu-trigger span { margin-left:auto; width:20px; }
 
@@ -155,34 +137,8 @@
   .header-controls .locale-control button { border:0; border-radius:999px; min-width:27px; min-height:26px; padding:0 6px; font-size:8px; }
   .header-controls .appearance-toggle { align-items:center; justify-content:center; border:1px solid var(--cue-border); border-radius:50%; height:32px; width:32px; padding:7px; }
 
-  /* Keep auth actions visually inside the open menu. Avoid fixed positioning because iOS browser chrome can move fixed children. */
-  .site-nav--open + .header-controls .header-login,
-  .site-nav--open + .header-controls .header-signup {
-    display:flex !important;
-    font-size:11px;
-    font-weight:800;
-    justify-content:center;
-    left:20px;
-    min-height:48px;
-    padding:0 16px;
-    position:absolute;
-    right:20px;
-    width:auto;
-    z-index:70;
-  }
-  .site-nav--open + .header-controls .header-login {
-    top:342px;
-    border:1px solid var(--cue-border);
-    background:var(--cue-surface);
-  }
-  .site-nav--open + .header-controls .header-signup {
-    top:400px;
-    background:var(--cue-accent);
-    color:var(--cue-accent-ink);
-  }
-
   .hero { padding-top:28px; }
-  .network__core img { height:48px; width:48px; }
+  .network__core .cue-brand { height:48px; width:48px; }
 }
 
 @media (max-width:860px) {

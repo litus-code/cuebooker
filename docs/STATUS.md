@@ -164,3 +164,14 @@ The first vertical slice should support:
 6. Real reply persisted and delivered.
 7. Automatic waiting-for-promoter transition after successful send.
 8. Manual confirmation and calendar entry.
+
+## Theme-aware brand assets
+
+The application uses separate raster assets for each appearance rather than recolouring logos with CSS filters:
+
+- dark mode keeps the approved lime and black Cuebooker mark with its red needle;
+- light mode uses the dedicated violet, grey, black and white wordmark, icon and app icon PNGs;
+- headers, mobile navigation, the home network centre and the favicon select the matching asset;
+- the mobile menu keeps account actions in normal document flow and locks background scrolling while open.
+
+Production deployment remains manual and is not part of theme or staging pull requests.
