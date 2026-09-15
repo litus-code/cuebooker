@@ -53,9 +53,9 @@
     "body": "DJs and agencies create their workspace. A promoter can send the first request without an account and receives secure access to continue the booking.",
     "selectorLabel": "Choose a role", "demoTitle": "Access available.", "demoNote": " DJs and agencies can now create an account and complete the initial profile before entering their private workspace.",
     "roles": [
-      {"name": "DJ", "label": "ACCESS / ARTIST", "account": "ACCOUNT FROM THE START", "headline": "Publish the entry point for every booking.", "steps": ["Create your account and profile", "Set availability and privacy", "Share your link", "Receive and track requests"], "cta": "Create a DJ account", "route": "/access?mode=signup"},
-      {"name": "PROMOTER", "label": "ACCESS / PROMOTER", "account": "NO ACCOUNT FOR FIRST CONTACT", "headline": "Send the details and continue from email.", "steps": ["Open the DJ link", "Add date, venue and offer", "Verify your email", "Reply and confirm through a secure link"], "cta": "Send a request", "route": "/artist"},
-      {"name": "AGENCY", "label": "ACCESS / MANAGER", "account": "ACCOUNT FROM THE START", "headline": "Organise the roster and keep control.", "steps": ["Register the agency", "Add artists and owners", "Set permissions and visibility", "Manage requests and calendars"], "cta": "Create an agency account", "route": "/access?mode=signup"}
+      {"name": "DJ", "label": "ACCESS / ARTIST", "account": "ACCOUNT FROM THE START", "headline": "Publish the entry point for every booking.", "steps": ["Create your account and profile", "Set up your initial space", "Explore the workspace", "Manage the available flows"], "cta": "Create a DJ account", "route": "/access?mode=signup"},
+      {"name": "PROMOTER", "label": "ACCESS / PROMOTER", "account": "NO ACCOUNT FOR FIRST CONTACT", "headline": "Send the details of a request.", "steps": ["Open the DJ link", "Add date, venue and offer", "Send the request", "Connected follow-up will arrive in later phases"], "cta": "Send a request", "route": "/artist"},
+      {"name": "AGENCY", "label": "ACCESS / MANAGER", "account": "ACCOUNT FROM THE START", "headline": "Prepare your agency workspace.", "steps": ["Register the agency", "Complete the initial profile", "Explore the workspace", "Advanced roster tools will arrive in later phases"], "cta": "Create an agency account", "route": "/access?mode=signup"}
     ]
   },
   "demo": {
