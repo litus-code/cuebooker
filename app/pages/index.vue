@@ -67,12 +67,16 @@ useHead(() => ({
   <main class="site-shell">
     <header class="site-header">
       <a class="brand" href="#top" @click.prevent="scrollTo('#top')">CUEBOOKER<span>/</span></a>
-      <button class="menu-trigger" :aria-expanded="menuOpen" aria-label="Abrir menú" @click="menuOpen = !menuOpen"><span /><span /></button>
+      <button class="menu-trigger" :aria-expanded="menuOpen" :aria-label="menuOpen ? (locale === 'es' ? 'Cerrar menú' : 'Close menu') : (locale === 'es' ? 'Abrir menú' : 'Open menu')" @click="menuOpen = !menuOpen"><span /><span /></button>
       <nav class="site-nav" :class="{ 'site-nav--open': menuOpen }">
         <a href="#problem" @click.prevent="scrollTo('#problem')">{{ copy.nav.problem }}</a>
         <a href="#product" @click.prevent="scrollTo('#product')">{{ copy.nav.product }}</a>
         <a href="#roles" @click.prevent="scrollTo('#roles')">{{ copy.nav.roles }}</a>
         <a href="#try" @click.prevent="scrollTo('#try')">{{ copy.nav.tryProduct }}</a>
+        <div class="mobile-menu-auth">
+          <NuxtLink class="mobile-menu-login" to="/access" @click="menuOpen = false">{{ copy.nav.login }}</NuxtLink>
+          <NuxtLink class="mobile-menu-signup" to="/access?mode=signup" @click="menuOpen = false">{{ copy.nav.signup }}</NuxtLink>
+        </div>
       </nav>
       <div class="header-controls">
         <div class="locale-control" aria-label="Idioma">
