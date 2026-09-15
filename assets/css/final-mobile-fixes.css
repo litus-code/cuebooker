@@ -12,7 +12,7 @@
   --cue-toggle-ink:#fff;
 }
 
-/* Dark keeps the original brand and lime/black controls. */
+/* Dark stays exactly on the original lime/black system. */
 :root:not([data-theme='light']) .button--primary,
 :root:not([data-theme='light']) .header-signup,
 :root:not([data-theme='light']) .primary-button,
@@ -25,7 +25,7 @@
   color:#11120d !important;
 }
 
-/* Light uses the dedicated PNG assets. No CSS colour filters. */
+/* Light uses dedicated PNGs, never CSS colour filters. */
 :root[data-theme='light'] .brand {
   background:url('/cuebooker-header-light.png') left center / contain no-repeat !important;
   color:transparent !important;
@@ -43,9 +43,13 @@
   filter:none !important;
 }
 :root[data-theme='light'] .global-brand-preferences__brand img {
-  content:url('/cuebooker-icon-light.png');
+  content:url('/cuebooker-header-light.png');
   display:block !important;
   filter:none !important;
+  height:42px;
+  max-width:220px;
+  object-fit:contain;
+  width:auto;
 }
 :root[data-theme='light'] .global-brand-preferences__brand {
   color:#151515 !important;
@@ -72,6 +76,10 @@
   :root[data-theme='light'] .brand {
     min-width:142px;
     width:142px;
+  }
+  :root[data-theme='light'] .global-brand-preferences__brand img {
+    height:34px;
+    max-width:175px;
   }
 
   .menu-trigger span {
