@@ -1,0 +1,84 @@
+html[data-theme='light'] .workspace .tour-card > span,
+html[data-theme='light'] .workspace-page .tour-card > span {
+  color: var(--cue-accent) !important;
+}
+
+html[data-theme='light'] .workspace .demo-notice span,
+html[data-theme='light'] .workspace-page .demo-notice span {
+  color: var(--cue-accent) !important;
+}
+
+html[data-theme='light'] .workspace .demo-notice,
+html[data-theme='light'] .workspace-page .demo-notice {
+  border-color: color-mix(in srgb, var(--cue-accent) 38%, var(--cue-border)) !important;
+  background: var(--cue-surface) !important;
+}
+
+html[data-theme='light'] .workspace .demo-notice__actions button,
+html[data-theme='light'] .workspace-page .demo-notice__actions button {
+  border-color: color-mix(in srgb, var(--cue-accent) 55%, var(--cue-border)) !important;
+  background: transparent !important;
+  color: var(--cue-accent) !important;
+}
+
+html[data-theme='light'] .workspace .demo-notice__actions .guide-action,
+html[data-theme='light'] .workspace-page .demo-notice__actions .guide-action,
+html[data-theme='light'] .workspace .add-button,
+html[data-theme='light'] .workspace-page .add-button {
+  border-color: var(--cue-accent) !important;
+  background: var(--cue-accent) !important;
+  color: var(--cue-accent-ink) !important;
+}
+
+html[data-theme='light'] .workspace .tone-lime,
+html[data-theme='light'] .workspace-page .tone-lime {
+  color: #4d2db8 !important;
+}
+
+html[data-theme='light'] .workspace .tone-lime i,
+html[data-theme='light'] .workspace-page .tone-lime i {
+  background: #4d2db8 !important;
+  box-shadow: 0 0 14px color-mix(in srgb, #4d2db8 42%, transparent) !important;
+}
+
+html[data-theme='light'] .workspace .tone-violet,
+html[data-theme='light'] .workspace-page .tone-violet {
+  color: var(--cue-accent) !important;
+}
+
+html[data-theme='light'] .workspace .tone-violet i,
+html[data-theme='light'] .workspace-page .tone-violet i {
+  background: var(--cue-accent) !important;
+  box-shadow: 0 0 14px color-mix(in srgb, var(--cue-accent) 35%, transparent) !important;
+}
+
+html[data-theme='light'] .workspace .tour-focus,
+html[data-theme='light'] .workspace-page .tour-focus {
+  outline-color: var(--cue-accent) !important;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--cue-accent) 62%, transparent), 0 0 55px color-mix(in srgb, var(--cue-accent) 25%, transparent) !important;
+}
+
+html[data-theme='light'] .workspace .tour-card,
+html[data-theme='light'] .workspace-page .tour-card {
+  border-color: var(--cue-accent) !important;
+  background: var(--cue-surface) !important;
+  color: var(--cue-text) !important;
+  box-shadow: 0 0 32px color-mix(in srgb, var(--cue-accent) 22%, transparent), 0 24px 80px var(--cue-shadow) !important;
+}
+
+html[data-theme='light'] .workspace .tour-card > p,
+html[data-theme='light'] .workspace-page .tour-card > p {
+  color: var(--cue-muted) !important;
+}
+
+html[data-theme='light'] .workspace .tour-card .primary-button,
+html[data-theme='light'] .workspace-page .tour-card .primary-button {
+  background: var(--cue-accent) !important;
+  color: var(--cue-accent-ink) !important;
+  border-color: var(--cue-accent) !important;
+}
+
+html[data-theme='light'] .workspace .panel-empty button,
+html[data-theme='light'] .workspace-page .panel-empty button {
+  color: var(--cue-accent) !important;
+}
