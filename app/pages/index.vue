@@ -41,10 +41,21 @@ function updateBackToTop() {
 onMounted(() => {
   updateBackToTop()
   window.addEventListener('scroll', updateBackToTop, { passive: true })
+  window.addEventListener('keydown', closeMenuOnEscape)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', updateBackToTop)
+  window.removeEventListener('keydown', closeMenuOnEscape)
+  document.documentElement.classList.remove('mobile-menu-open')
+})
+
+function closeMenuOnEscape(event: KeyboardEvent) {
+  if (event.key === 'Escape') menuOpen.value = false
+}
+
+watch(menuOpen, open => {
+  if (import.meta.client) document.documentElement.classList.toggle('mobile-menu-open', open)
 })
 
 function discoverArtists() {
@@ -66,9 +77,9 @@ useHead(() => ({
 <template>
   <main class="site-shell">
     <header class="site-header">
-      <a class="brand" href="#top" @click.prevent="scrollTo('#top')">CUEBOOKER<span>/</span></a>
-      <button class="menu-trigger" :aria-expanded="menuOpen" :aria-label="menuOpen ? (locale === 'es' ? 'Cerrar menú' : 'Close menu') : (locale === 'es' ? 'Abrir menú' : 'Open menu')" @click="menuOpen = !menuOpen"><span /><span /></button>
-      <nav class="site-nav" :class="{ 'site-nav--open': menuOpen }">
+      <a class="brand" href="#top" aria-label="Cuebooker" @click.prevent="scrollTo('#top')"><CueBrand /></a>
+      <button class="menu-trigger" aria-controls="site-navigation" :aria-expanded="menuOpen" :aria-label="menuOpen ? (locale === 'es' ? 'Cerrar menú' : 'Close menu') : (locale === 'es' ? 'Abrir menú' : 'Open menu')" @click="menuOpen = !menuOpen"><span /><span /></button>
+      <nav id="site-navigation" class="site-nav" :class="{ 'site-nav--open': menuOpen }">
         <a href="#problem" @click.prevent="scrollTo('#problem')">{{ copy.nav.problem }}</a>
         <a href="#product" @click.prevent="scrollTo('#product')">{{ copy.nav.product }}</a>
         <a href="#roles" @click.prevent="scrollTo('#roles')">{{ copy.nav.roles }}</a>

@@ -25,39 +25,6 @@
   color:#11120d !important;
 }
 
-/* Light uses dedicated PNGs, never CSS colour filters. */
-:root[data-theme='light'] .brand {
-  background:url('/cuebooker-header-light.png') left center / contain no-repeat !important;
-  color:transparent !important;
-  font-size:0 !important;
-  letter-spacing:0 !important;
-  min-width:190px;
-  padding-left:0 !important;
-  width:190px;
-}
-:root[data-theme='light'] .brand::before,
-:root[data-theme='light'] .brand::after,
-:root[data-theme='light'] .brand > span { display:none !important; }
-:root[data-theme='light'] .network__core img {
-  content:url('/cuebooker-icon-light.png');
-  filter:none !important;
-}
-:root[data-theme='light'] .global-brand-preferences__brand img {
-  content:url('/cuebooker-header-light.png');
-  display:block !important;
-  filter:none !important;
-  height:42px;
-  max-width:220px;
-  object-fit:contain;
-  width:auto;
-}
-:root[data-theme='light'] .global-brand-preferences__brand {
-  color:#151515 !important;
-  padding-left:0 !important;
-}
-:root[data-theme='light'] .global-brand-preferences__brand::before,
-:root[data-theme='light'] .global-brand-preferences__brand::after { display:none !important; }
-
 :root[data-theme='light'] .button--primary,
 :root[data-theme='light'] .header-signup,
 :root[data-theme='light'] .primary-button,
@@ -73,14 +40,8 @@
 .mobile-menu-auth { display:none; }
 
 @media (max-width:720px) {
-  :root[data-theme='light'] .brand {
-    min-width:142px;
-    width:142px;
-  }
-  :root[data-theme='light'] .global-brand-preferences__brand img {
-    height:34px;
-    max-width:175px;
-  }
+  html.mobile-menu-open,
+  html.mobile-menu-open body { overflow:hidden; }
 
   .menu-trigger span {
     transform-origin:center;
@@ -91,6 +52,8 @@
 
   .site-nav--open {
     align-items:stretch;
+    background:var(--cue-bg);
+    border-top:1px solid var(--cue-border);
     display:flex !important;
     flex-direction:column;
     max-height:calc(100dvh - 57px);

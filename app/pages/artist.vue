@@ -66,7 +66,7 @@ useHead(() => ({
 <template>
   <main class="profile-page">
     <header class="profile-nav">
-      <NuxtLink to="/">CUEBOOKER<span>/</span></NuxtLink>
+      <NuxtLink to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink>
       <p>{{ text.demo }}</p>
       <div class="locale-control"><button :class="{ active: locale === 'es' }" @click="setLocale('es')">ES</button><button :class="{ active: locale === 'en' }" @click="setLocale('en')">EN</button></div>
     </header>

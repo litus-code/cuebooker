@@ -77,7 +77,7 @@ useHead(() => ({ title: copy.value.pageTitle, htmlAttrs: { lang: locale.value } 
 
 <template>
   <main class="onboarding-page">
-    <NuxtLink class="onboarding-brand" to="/">CUEBOOKER<span>/</span></NuxtLink>
+    <NuxtLink class="onboarding-brand" to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink>
 
     <section class="onboarding-panel">
       <p class="onboarding-kicker">{{ copy.kicker }}</p>
