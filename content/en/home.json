@@ -1,86 +1,15 @@
 {
   "seo": {"title": "CueBooker | Booking management for DJs", "description": "Receive complete requests, reply to promoters by email and control availability, calendar and history inside one booking."},
   "nav": {"problem": "The problem", "product": "How it works", "roles": "For whom", "tryProduct": "Available now", "login": "Sign in", "signup": "Create account"},
-  "hero": {
-    "eyebrow": "BOOKING MANAGEMENT FOR DJS AND AGENCIES", "titleTop": "BOOKINGS", "titleBottom": "UNDER CONTROL",
-    "body": "Receive complete requests and manage conversations, terms, statuses and dates in one place, even when contact starts on Instagram, WhatsApp, email or a phone call.",
-    "primaryCta": "Create account", "secondaryCta": "See how it works", "networkIdle": "ONE REQUEST · ONE STATUS", "networkSearching": "STRUCTURING BOOKING", "networkFound": "READY TO DECIDE",
-    "proofs": ["Every request in one inbox", "Each booking keeps its conversation and status", "Calendar and availability without clashes"]
-  },
-  "problem": {
-    "index": "01 / THE NOISE", "eyebrow": "HOW DATES GET BOOKED TODAY", "title": "Too many channels. No shared state.",
-    "body": "A contact may start on Instagram, WhatsApp, email, a phone call or a website. CueBooker does not replace your contacts or promise to get you gigs: it organises what happens once someone wants to book you, so you know what to answer, what is pending and which date is confirmed.",
-    "quoteOne": "Available on 24 October?", "quoteTwo": "Any update?", "file": "artist_dates_FINAL_v8.xlsx", "statement": "Every contact needs a next action."
-  },
-  "search": {
-    "index": "07 / DISCOVERY", "eyebrow": "LATER · NOT THE INITIAL PRODUCT", "title": "When a real network exists: discover available DJs.",
-    "body": "As a future layer, CueBooker may connect the availability each artist chooses to show with searches by date, city, sound and budget. The core product will remain the management of requests DJs already receive.",
-    "where": "Where", "when": "When", "sound": "Sound", "budget": "Budget", "button": "Simulate search", "searching": "Finding available DJs", "resultCount": "3 available artists", "resultHint": "Concept view of a future feature. Budget filters matches, but each DJ's fee remains private. Artists and results are fictional.", "visibility": "OPT-IN AVAILABILITY", "available": "Available for requests", "request": "View profile and request date", "why": "Why it fits", "reasons": ["Available on your date", "Sound match", "Within budget"],
-    "artists": [{"name": "NØRA", "city": "BARCELONA", "sound": "HYPNOTIC · TECHNO"}, {"name": "KAIRO", "city": "GIRONA", "sound": "DETROIT · GROOVE"}, {"name": "MARA V", "city": "BARCELONA", "sound": "INDUSTRIAL · LIVE"}]
-  },
-  "flow": {
-    "index": "02 / CONNECTED", "eyebrow": "FROM FIRST CONTACT TO CONFIRMED", "title": "From the first request to the calendar. Without losing the thread.",
-    "body": "Every step stays inside the same booking. The promoter starts without an account, while the DJ keeps the details, conversation, status and date together until confirmation.",
-    "steps": [
-      {"name": "Share", "detail": "The DJ publishes a link on Instagram, WhatsApp or their website."},
-      {"name": "Request", "detail": "The promoter sends the date, venue, schedule and offer without signing up."},
-      {"name": "Receive", "detail": "CueBooker creates the booking and adds it to the DJ's inbox."},
-      {"name": "Reply", "detail": "The conversation and terms stay attached to the same record."},
-      {"name": "Agree", "detail": "Both sides review the offer and always know the next action."},
-      {"name": "Confirm", "detail": "The date changes status and is added to the calendar."}
-    ]
-  },
-  "integrations": {
-    "index": "03 / WHERE YOU ALREADY WORK", "eyebrow": "KEEP YOUR EXISTING CHANNELS", "title": "Your own link. A widget when you already have a website.",
-    "body": "CueBooker sits wherever people already find you. The promoter opens the form, sends the details and continues the conversation from email.",
-    "items": [
-      {"label": "NO WEBSITE", "name": "Instagram, Linktree and WhatsApp", "body": "Share a different URL for each channel. CueBooker identifies the source and brings every request into one inbox."},
-      {"label": "WITH A WEBSITE", "name": "Universal widget", "body": "Copy a small snippet into WordPress, WooCommerce, HTML, React, Angular or Vue. The form opens inside your website."},
-      {"label": "FOLLOW-UP", "name": "Connected email", "body": "The DJ replies from CueBooker. The promoter receives an email and returns to the same booking through a secure link."}
-    ],
-    "note": "The DJ configures the service from their workspace. The promoter installs nothing. An npm package would be a developer option, not the main product."
-  },
-  "roles": {
-    "index": "04 / FOR WHOM", "eyebrow": "RECEIVE, MANAGE AND CLOSE DATES", "title": "Useful when you start. More useful as the work grows.",
-    "items": [
-      {"name": "Independent DJ", "headline": "Your profile, availability and every enquiry.", "body": "Whether you receive three requests or thirty, share your link and turn scattered messages, calls and emails into bookings you can track without losing any."},
-      {"name": "Promoter or venue", "headline": "Ask without installing another tool.", "body": "Open the DJ link, send the details and continue from email or a secure page. An account becomes optional after repeated use."},
-      {"name": "Manager or agency", "headline": "Your roster stays under your control.", "body": "Register the agency, add artists and route each enquiry to the right person with private permissions, fees and calendars."}
-    ]
-  },
-  "access": {
-    "index": "05 / ACCESS", "eyebrow": "FRICTION ONLY WHEN IT ADDS VALUE", "title": "The DJ gets a workspace. The promoter only needs to reply.",
-    "body": "DJs and agencies create their workspace. A promoter can send the first request without an account and receives secure access to continue the booking.",
-    "selectorLabel": "Choose a role", "demoTitle": "Access available.", "demoNote": " DJs and agencies can now create an account and complete the initial profile before entering their private workspace.",
-    "roles": [
-      {"name": "DJ", "label": "ACCESS / ARTIST", "account": "ACCOUNT FROM THE START", "headline": "Publish the entry point for every booking.", "steps": ["Create your account and profile", "Set up your initial space", "Explore the workspace", "Manage the available flows"], "cta": "Create a DJ account", "route": "/access?mode=signup"},
-      {"name": "PROMOTER", "label": "ACCESS / PROMOTER", "account": "NO ACCOUNT FOR FIRST CONTACT", "headline": "Send the details of a request.", "steps": ["Open the DJ link", "Add date, venue and offer", "Send the request", "Connected follow-up will arrive in later phases"], "cta": "Send a request", "route": "/artist"},
-      {"name": "AGENCY", "label": "ACCESS / MANAGER", "account": "ACCOUNT FROM THE START", "headline": "Prepare your agency workspace.", "steps": ["Register the agency", "Complete the initial profile", "Explore the workspace", "Advanced roster tools will arrive in later phases"], "cta": "Create an agency account", "route": "/access?mode=signup"}
-    ]
-  },
-  "demo": {
-    "index": "06 / PRODUCT", "eyebrow": "PRODUCT STATUS", "title": "What you can manage today. And what comes next.",
-    "body": "Create your account and enter your workspace to explore CueBooker's current flows. We include some sample data so you can understand the product from the first moment instead of starting with an empty inbox.",
-    "currentTitle": "Available now", "current": ["Booking form", "Inbox and status changes", "Conversations and attachments", "Calendar, alerts and history"],
-    "realTitle": "Coming soon", "real": ["Public DJ profiles and discovery", "Search by date, city, sound and budget", "Email integration for conversation follow-up", "Automations and advanced agency management"],
-    "realNote": "Your workspace includes some sample data so you can explore CueBooker's flows from the first moment.",
-    "panelButton": "Create account", "requestButton": "Send a request"
-  },
+  "hero": {"eyebrow": "BOOKING MANAGEMENT FOR DJS AND AGENCIES", "titleTop": "BOOKINGS", "titleBottom": "UNDER CONTROL", "body": "Receive complete requests and manage conversations, terms, statuses and dates in one place, even when contact starts on Instagram, WhatsApp, email or a phone call.", "primaryCta": "Create account", "secondaryCta": "See how it works", "networkIdle": "ONE REQUEST · ONE STATUS", "networkSearching": "STRUCTURING BOOKING", "networkFound": "READY TO DECIDE", "proofs": ["Every request in one inbox", "Each booking keeps its conversation and status", "Calendar and availability without clashes"]},
+  "problem": {"index": "01 / THE NOISE", "eyebrow": "HOW DATES GET BOOKED TODAY", "title": "Too many channels. No shared state.", "body": "A contact may start on Instagram, WhatsApp, email, a phone call or a website. CueBooker does not replace your contacts or promise to get you gigs: it organises what happens once someone wants to book you, so you know what to answer, what is pending and which date is confirmed.", "quoteOne": "Available on 24 October?", "quoteTwo": "Any update?", "file": "artist_dates_FINAL_v8.xlsx", "statement": "Every contact needs a next action."},
+  "search": {"index": "07 / DISCOVERY", "eyebrow": "LATER · NOT THE INITIAL PRODUCT", "title": "When a real network exists: discover available DJs.", "body": "As a future layer, CueBooker may connect the availability each artist chooses to show with searches by date, city, sound and budget. The core product will remain the management of requests DJs already receive.", "where": "Where", "when": "When", "sound": "Sound", "budget": "Budget", "button": "Simulate search", "searching": "Finding available DJs", "resultCount": "3 available artists", "resultHint": "Concept view of a future feature. Budget filters matches, but each DJ's fee remains private. Artists and results are fictional.", "visibility": "OPT-IN AVAILABILITY", "available": "Available for requests", "request": "View profile and request date", "why": "Why it fits", "reasons": ["Available on your date", "Sound match", "Within budget"], "artists": [{"name": "NØRA", "city": "BARCELONA", "sound": "HYPNOTIC · TECHNO"}, {"name": "KAIRO", "city": "GIRONA", "sound": "DETROIT · GROOVE"}, {"name": "MARA V", "city": "BARCELONA", "sound": "INDUSTRIAL · LIVE"}]},
+  "flow": {"index": "02 / CONNECTED", "eyebrow": "FROM FIRST CONTACT TO CONFIRMED", "title": "From the first request to the calendar. Without losing the thread.", "body": "Every step stays inside the same booking. The promoter starts without an account, while the DJ keeps the details, conversation, status and date together until confirmation.", "steps": [{"name": "Share", "detail": "The DJ publishes a link on Instagram, WhatsApp or their website."}, {"name": "Request", "detail": "The promoter sends the date, venue, schedule and offer without signing up."}, {"name": "Receive", "detail": "CueBooker creates the booking and adds it to the DJ's inbox."}, {"name": "Reply", "detail": "The conversation and terms stay attached to the same record."}, {"name": "Agree", "detail": "Both sides review the offer and always know the next action."}, {"name": "Confirm", "detail": "The date changes status and is added to the calendar."}]},
+  "integrations": {"index": "03 / WHERE YOU ALREADY WORK", "eyebrow": "KEEP YOUR EXISTING CHANNELS", "title": "Your own link. A widget when you already have a website.", "body": "CueBooker sits wherever people already find you. The promoter opens the form, sends the details and continues the conversation from email.", "items": [{"label": "NO WEBSITE", "name": "Instagram, Linktree and WhatsApp", "body": "Share a different URL for each channel. CueBooker identifies the source and brings every request into one inbox."}, {"label": "WITH A WEBSITE", "name": "Universal widget", "body": "Copy a small snippet into WordPress, WooCommerce, HTML, React, Angular or Vue. The form opens inside your website."}, {"label": "FOLLOW-UP", "name": "Connected email", "body": "The DJ replies from CueBooker. The promoter receives an email and returns to the same booking through a secure link."}], "note": "The DJ configures the service from their workspace. The promoter installs nothing. An npm package would be a developer option, not the main product."},
+  "roles": {"index": "04 / FOR WHOM", "eyebrow": "RECEIVE, MANAGE AND CLOSE DATES", "title": "Useful when you start. More useful as the work grows.", "items": [{"name": "Independent DJ", "headline": "Your profile, availability and every enquiry.", "body": "Whether you receive three requests or thirty, share your link and turn scattered messages, calls and emails into bookings you can track without losing any."}, {"name": "Promoter or venue", "headline": "Ask without installing another tool.", "body": "Open the DJ link, send the details and continue from email or a secure page. An account becomes optional after repeated use."}, {"name": "Manager or agency", "headline": "Your roster stays under your control.", "body": "Register the agency, add artists and route each enquiry to the right person with private permissions, fees and calendars."}]},
+  "access": {"index": "05 / ACCESS", "eyebrow": "FRICTION ONLY WHEN IT ADDS VALUE", "title": "The DJ gets a workspace. The promoter only needs to reply.", "body": "DJs and agencies create their workspace. A promoter can send the first request without an account and receives secure access to continue the booking.", "selectorLabel": "Choose a role", "demoTitle": "Access available.", "demoNote": " DJs and agencies can now create an account and complete the initial profile before entering their private workspace.", "roles": [{"name": "DJ", "label": "ACCESS / ARTIST", "account": "ACCOUNT FROM THE START", "headline": "Publish the entry point for every booking.", "steps": ["Create your account and profile", "Set up your initial space", "Explore the workspace", "Manage the available flows"], "cta": "Create a DJ account", "route": "/access?mode=signup"}, {"name": "PROMOTER", "label": "ACCESS / PROMOTER", "account": "NO ACCOUNT FOR FIRST CONTACT", "headline": "Send the details of a request.", "steps": ["Open the DJ link", "Add date, venue and offer", "Send the request", "Connected follow-up will arrive in later phases"], "cta": "Send a request", "route": "/artist"}, {"name": "AGENCY", "label": "ACCESS / MANAGER", "account": "ACCOUNT FROM THE START", "headline": "Prepare your agency workspace.", "steps": ["Register the agency", "Complete the initial profile", "Explore the workspace", "Advanced roster tools will arrive in later phases"], "cta": "Create an agency account", "route": "/access?mode=signup"}]},
+  "demo": {"index": "06 / PRODUCT", "eyebrow": "PRODUCT STATUS", "title": "What you can manage today. And what comes next.", "body": "Create your account and enter your workspace to explore CueBooker's current flows. We include some sample data so you can understand the product from the first moment instead of starting with an empty inbox.", "currentTitle": "Available now", "current": ["User account and sign in", "DJ and agency onboarding", "Booking form", "Inbox and status changes", "Conversations and attachments", "Calendar, alerts and history"], "realTitle": "Coming soon", "real": ["Public DJ profiles and discovery", "Search by date, city, sound and budget", "Email integration for conversation follow-up", "Automations and advanced agency management"], "realNote": "Your workspace includes some sample data so you can explore CueBooker's flows from the first moment.", "panelButton": "Create account", "requestButton": "Send a request"},
   "entry": {"eyebrow": "YOUR WORKSPACE", "title": "Start managing your bookings.", "body": "Create an account as a DJ or agency and set up your first profile and private calendar."},
-  "feedback": {
-    "eyebrow": "TESTING AND FEEDBACK", "title": "Help us build CueBooker around real workflows.",
-    "body": "If you are a DJ, manager, agency, promoter or venue, leave your details to take part in testing and tell us how you manage bookings today.",
-    "note": "This form is for product testing and feedback. To use your private workspace, create an account.",
-    "form": {
-      "title": "Take part in CueBooker testing",
-      "body": "Tell us about your role. We will contact you to test features and collect feedback on your real workflow.",
-      "nameLabel": "Name", "namePlaceholder": "What is your name?",
-      "emailLabel": "Email address", "emailPlaceholder": "you@email.com", "emailHelp": "We will use your email to contact you about CueBooker testing.",
-      "profileLabel": "What is your role?", "profiles": ["Independent DJ", "Manager or agency", "Promoter, venue or festival"],
-      "consentLabel": "Consent", "consentText": "I agree that CueBooker may use my details to contact me about testing and send project-related updates.",
-      "submit": "I want to take part", "success": "We have received your details. We will contact you about upcoming tests and feedback sessions.", "successCta": "Create account",
-      "invalid": "The information is not valid. Check your email address and try again.", "required": "This field is required.", "loading": "Loading secure form…"
-    }
-  },
+  "feedback": {"eyebrow": "TESTING AND FEEDBACK", "title": "Help us build CueBooker around real workflows.", "body": "If you are a DJ, manager, agency, promoter or venue, leave your details to take part in testing and tell us how you manage bookings today.", "note": "This form is for product testing and feedback. To use your private workspace, create an account.", "form": {"title": "Take part in CueBooker testing", "body": "Tell us about your role. We will contact you to test features and collect feedback on your real workflow.", "nameLabel": "Name", "namePlaceholder": "What is your name?", "emailLabel": "Email address", "emailPlaceholder": "you@email.com", "emailHelp": "We will use your email to contact you about CueBooker testing.", "profileLabel": "What is your role?", "profiles": ["Independent DJ", "Manager or agency", "Promoter, venue or festival"], "consentLabel": "Consent", "consentText": "I agree that CueBooker may use my details to contact me about testing and send project-related updates.", "submit": "I want to take part", "success": "We have received your details. We will contact you about upcoming tests and feedback sessions.", "successCta": "Create account", "invalid": "The information is not valid. Check your email address and try again.", "required": "This field is required.", "loading": "Loading secure form…"}},
   "cta": {"topButton": "Back to top", "email": "contacto@carlesfar.com"}
 }
