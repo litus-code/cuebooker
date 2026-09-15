@@ -1,225 +1,50 @@
 .brand,
-.workspace-header > a {
-  align-items: center;
-  display: inline-flex;
-}
-
-.brand {
-  gap: 8px;
-}
-
+.workspace-header > a { align-items: center; display: inline-flex; }
+.brand { gap: 8px; }
 .brand::before,
-.workspace-header > a::before {
-  background: url('/cuebooker-mark.svg') center / contain no-repeat;
-  content: '';
-  display: block;
-  flex: 0 0 auto;
-  height: 36px;
-  width: 36px;
-}
+.workspace-header > a::before { background: url('/cuebooker-mark.svg') center / contain no-repeat; content: ''; display: block; flex: 0 0 auto; height: 36px; width: 36px; }
+.demo-reality__actions > .button--primary { display: none; }
 
 @media (max-width: 720px) {
-  .site-header {
-    grid-template-columns: 1fr auto;
-    min-height: 58px;
-    padding: 0 14px;
-  }
-
-  .brand {
-    font-size: 12px;
-    letter-spacing: .08em;
-  }
-
-  .brand::before {
-    height: 34px;
-    width: 34px;
-  }
-
-  .menu-trigger {
-    grid-column: 2;
-    height: 40px;
-    padding: 9px;
-    width: 40px;
-  }
-
-  .menu-trigger span {
-    margin-left: auto;
-    width: 20px;
-  }
-
-  .site-nav--open {
-    border-bottom: 0;
-    box-shadow: 0 24px 48px var(--cue-shadow);
-    padding: 8px 18px 78px;
-    top: 57px;
-  }
-
-  .site-nav--open a {
-    font-size: 10px;
-    min-height: 44px;
-    padding: 14px 0;
-  }
-
-  .header-controls {
-    display: none;
-  }
-
-  .site-header:has(.site-nav--open) .header-controls {
-    align-items: center;
-    bottom: 12px;
-    display: flex;
-    gap: 7px;
-    left: 18px;
-    position: absolute;
-    right: 18px;
-    z-index: 2;
-  }
-
+  .site-header { grid-template-columns: 1fr auto; min-height: 58px; padding: 0 14px; }
+  .brand { font-size: 12px; letter-spacing: .08em; }
+  .brand::before { height: 34px; width: 34px; }
+  .menu-trigger { grid-column: 2; height: 40px; padding: 9px; width: 40px; }
+  .menu-trigger span { margin-left: auto; width: 20px; }
+  .site-nav--open { border-bottom: 0; box-shadow: 0 24px 48px var(--cue-shadow); padding: 8px 18px 82px; top: 57px; }
+  .site-nav--open a { font-size: 10px; min-height: 44px; padding: 14px 0; }
+  .header-controls { display: none !important; }
+  .site-header:has(.site-nav--open) .header-controls { align-items: center; bottom: 12px; display: flex !important; gap: 7px; left: 18px; position: absolute; right: 18px; z-index: 5; }
+  .site-header:has(.site-nav--open) .locale-control,
   .site-header:has(.site-nav--open) .appearance-toggle,
   .site-header:has(.site-nav--open) .header-login,
-  .site-header:has(.site-nav--open) .header-signup {
-    display: inline-flex;
-  }
-
-  .site-header:has(.site-nav--open) .locale-control {
-    margin-right: auto;
-  }
-
-  .site-header:has(.site-nav--open) .appearance-toggle {
-    align-items: center;
-    justify-content: center;
-  }
-
+  .site-header:has(.site-nav--open) .header-signup { display: inline-flex !important; }
+  .site-header:has(.site-nav--open) .locale-control { margin-right: auto; }
+  .site-header:has(.site-nav--open) .appearance-toggle { align-items: center; justify-content: center; }
   .site-header:has(.site-nav--open) .header-login,
-  .site-header:has(.site-nav--open) .header-signup {
-    font-size: 8px;
-    min-height: 32px;
-    padding: 0 9px;
-  }
-
-  .hero {
-    padding-top: 28px;
-  }
+  .site-header:has(.site-nav--open) .header-signup { font-size: 8px; min-height: 32px; padding: 0 9px; }
+  .hero { padding-top: 28px; }
 }
 
 @media (max-width: 860px) {
-  .workspace-header {
-    gap: 8px;
-    grid-template-columns: 1fr auto auto;
-    min-height: 58px;
-    padding: 8px 12px;
-  }
-
-  .workspace-header > a {
-    font-size: 10px;
-    gap: 7px;
-    letter-spacing: .06em;
-  }
-
-  .workspace-header > a::before {
-    height: 34px;
-    width: 34px;
-  }
-
-  .workspace-header > .locale-control {
-    grid-column: 3;
-    grid-row: 1;
-  }
-
-  .workspace-role {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
-  }
-
+  .workspace-header { gap: 8px; grid-template-columns: 1fr auto auto; min-height: 58px; padding: 8px 12px; }
+  .workspace-header > a { font-size: 10px; gap: 7px; letter-spacing: .06em; }
+  .workspace-header > a::before { height: 34px; width: 34px; }
+  .workspace-header > .locale-control { grid-column: 3; grid-row: 1; }
+  .workspace-role { grid-column: 2; grid-row: 1; justify-self: end; }
   .workspace-role > span { display: none; }
-
-  .workspace-role button {
-    min-height: 28px;
-    padding: 0 9px;
-  }
-
-  .workspace-intro {
-    gap: 18px;
-    padding: 34px 16px 26px;
-  }
-
-  .workspace-intro h1 {
-    margin: 15px 0;
-  }
-
-  .guide-button {
-    align-self: flex-start;
-    font-size: 9px;
-    min-height: 42px;
-    min-width: 0;
-    padding: 0 14px;
-    width: auto;
-  }
-
-  .workspace-nav {
-    border-radius: 12px;
-    bottom: max(8px, env(safe-area-inset-bottom));
-    box-shadow: 0 16px 44px var(--cue-shadow);
-    margin: 0 8px;
-    overflow: hidden;
-    width: calc(100% - 16px);
-  }
-
-  .workspace-nav button {
-    font-size: clamp(6.5px, 2.15vw, 8px);
-    letter-spacing: .035em;
-    min-height: 50px;
-    padding: 0 2px;
-    white-space: nowrap;
-  }
-
-  .tour-layer {
-    bottom: calc(66px + env(safe-area-inset-bottom));
-    left: 10px;
-    max-height: none;
-    overflow: visible;
-    padding: 12px 14px;
-    right: 10px;
-  }
-
-  .tour-layer > span {
-    display: inline-block;
-    margin: 0 8px 0 0;
-    vertical-align: middle;
-  }
-
-  .tour-layer > strong {
-    display: inline;
-    font-size: 15px;
-    line-height: 1.15;
-    padding-right: 22px;
-  }
-
-  .tour-layer > p {
-    display: -webkit-box;
-    font-size: 10px;
-    line-height: 1.35;
-    margin: 7px 0 9px;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-  }
-
-  .tour-layer .button {
-    font-size: 8px;
-    margin-top: 0;
-    min-height: 34px;
-    min-width: 0;
-    padding: 0 12px;
-    width: auto;
-  }
-
-  .tour-close {
-    font-size: 20px;
-    right: 8px;
-    top: 4px;
-  }
+  .workspace-role button { min-height: 28px; padding: 0 9px; }
+  .workspace-intro { gap: 18px; padding: 34px 16px 26px; }
+  .workspace-intro h1 { margin: 15px 0; }
+  .guide-button { align-self: flex-start; font-size: 9px; min-height: 42px; min-width: 0; padding: 0 14px; width: auto; }
+  .workspace-nav { border-radius: 12px; bottom: max(8px, env(safe-area-inset-bottom)); box-shadow: 0 16px 44px var(--cue-shadow); margin: 0 8px; overflow: hidden; width: calc(100% - 16px); }
+  .workspace-nav button { font-size: clamp(6.5px, 2.15vw, 8px); letter-spacing: .035em; min-height: 50px; padding: 0 2px; white-space: nowrap; }
+  .tour-layer { bottom: calc(66px + env(safe-area-inset-bottom)); left: 10px; max-height: none; overflow: visible; padding: 12px 14px; right: 10px; }
+  .tour-layer > span { display: inline-block; margin: 0 8px 0 0; vertical-align: middle; }
+  .tour-layer > strong { display: inline; font-size: 15px; line-height: 1.15; padding-right: 22px; }
+  .tour-layer > p { display: -webkit-box; font-size: 10px; line-height: 1.35; margin: 7px 0 9px; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  .tour-layer .button { font-size: 8px; margin-top: 0; min-height: 34px; min-width: 0; padding: 0 12px; width: auto; }
+  .tour-close { font-size: 20px; right: 8px; top: 4px; }
 }
 
 @media (max-width: 560px) {
