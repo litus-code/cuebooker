@@ -7,7 +7,7 @@ const props = withDefaults(defineProps<{
   decorative: false
 })
 
-const darkSrc = computed(() => props.variant === 'icon' ? '/cuebooker-icon.png' : '/cuebooker-header-dark-approved.png')
+const darkSrc = computed(() => props.variant === 'icon' ? '/cuebooker-icon.png' : '/cuebooker-header-dark-final.png')
 const lightSrc = computed(() => props.variant === 'icon' ? '/cuebooker-icon-light-approved.png' : '/cuebooker-header-light-approved.png')
 const alt = computed(() => props.decorative ? '' : 'Cuebooker')
 </script>
@@ -20,23 +20,11 @@ const alt = computed(() => props.decorative ? '' : 'Cuebooker')
 </template>
 
 <style>
-.cue-brand { display: inline-flex; line-height: 0; overflow: visible; }
+.cue-brand { display: inline-flex; line-height: 0; }
 .cue-brand img { display: block; height: auto; max-height: 100%; object-fit: contain; width: 100%; }
 .cue-brand__light { display: none !important; }
 :root[data-theme='light'] .cue-brand__dark { display: none !important; }
 :root[data-theme='light'] .cue-brand__light { display: block !important; }
 .cue-brand--wordmark { aspect-ratio: 430 / 148; width: 100%; }
 .cue-brand--icon { aspect-ratio: 1; width: 100%; }
-
-/* The dark PNG has a little more internal breathing room than the light one.
-   Compensate only at render time so both themes keep the same visual presence. */
-.cue-brand--wordmark .cue-brand__dark {
-  transform: scale(1.055);
-  transform-origin: left center;
-}
-
-.cue-brand--icon .cue-brand__dark {
-  transform: scale(1.025);
-  transform-origin: center;
-}
 </style>
