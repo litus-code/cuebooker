@@ -10,6 +10,39 @@
 .workspace .tour-card { background:var(--cue-surface) !important; color:var(--cue-text) !important; border-color:var(--cue-toggle) !important; box-shadow:0 24px 80px var(--cue-shadow),0 0 28px color-mix(in srgb,var(--cue-toggle) 18%,transparent) !important; }
 .workspace .tour-card > p { color:var(--cue-muted) !important; }
 
+@media (hover:hover) and (pointer:fine) {
+  button:not(:disabled),
+  .button,
+  .header-login,
+  .header-signup,
+  .site-nav a,
+  .artist-link,
+  .text-button,
+  .demo-secondary-action { transition:transform .18s ease,filter .18s ease,color .18s ease,border-color .18s ease,background-color .18s ease,box-shadow .18s ease,opacity .18s ease; }
+
+  button:not(:disabled):hover { filter:brightness(1.08); }
+  .button:hover,
+  .header-signup:hover,
+  .primary-button:hover,
+  .access-submit:hover,
+  .onboarding-submit:hover { transform:translateY(-2px); box-shadow:0 10px 28px color-mix(in srgb,var(--cue-accent) 16%,transparent); }
+  .header-login:hover,
+  .site-nav a:hover,
+  .artist-link:hover,
+  .text-button:hover,
+  .demo-secondary-action:hover { color:var(--cue-accent); opacity:1; }
+  .workspace-header nav button:hover,
+  .settings-options button:hover,
+  .status-filters button:hover,
+  .demo-notice__actions button:hover { border-color:var(--cue-accent) !important; }
+  .cue-theme-toggle:hover,
+  .appearance-toggle:hover { transform:rotate(8deg) scale(1.04); border-color:var(--cue-accent); }
+  .cue-segmented button:hover,
+  .locale-control button:hover { color:var(--cue-text); background:var(--cue-raised); }
+  .cue-segmented button.active:hover,
+  .locale-control button.active:hover { color:var(--cue-toggle-ink); background:var(--cue-toggle); }
+}
+
 @media (max-width:720px) {
   .site-header { grid-template-columns:1fr auto; min-height:58px; padding:0 14px; }
   .brand { width:158px; min-height:38px; }
