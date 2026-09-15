@@ -62,7 +62,7 @@
     "index": "06 / PRODUCTO", "eyebrow": "ESTADO DEL PRODUCTO", "title": "Lo que ya puedes gestionar. Y lo que viene después.",
     "body": "Crea tu cuenta y entra en tu workspace para recorrer los flujos actuales de CueBooker. Incluimos algunos datos de ejemplo para que puedas entender el producto desde el primer momento sin empezar con una bandeja vacía.",
     "currentTitle": "Disponible ahora", "current": ["Formulario de booking", "Bandeja y cambios de estado", "Conversación y adjuntos", "Calendario, alertas e historial"],
-    "realTitle": "Próximamente", "real": ["Discovery de DJs por fecha, ciudad y sonido", "Disponibilidad pública configurable", "Gestión avanzada de roster y permisos", "Integraciones de correo y automatizaciones"],
+    "realTitle": "Próximamente", "real": ["Perfil público y discovery de DJs", "Búsqueda por fecha, ciudad, sonido y presupuesto", "Integración de correo para seguir conversaciones", "Automatizaciones y gestión avanzada de agencia"],
     "realNote": "Tu workspace incluye algunos datos de ejemplo para que puedas explorar los flujos de CueBooker desde el primer momento.",
     "panelButton": "Crear cuenta", "requestButton": "Enviar una solicitud"
   },
