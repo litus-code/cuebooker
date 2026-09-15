@@ -5,35 +5,38 @@
 .brand::after,
 .brand > span,
 .workspace-header > a::before { display:none !important; }
-.network__core img { display: block; height: 58px; width: 58px; }
+.network__core img { display:block; height:58px; width:58px; }
 
-@media (max-width: 720px) {
-  .site-header { grid-template-columns: 1fr auto; min-height: 58px; padding: 0 14px; }
+.workspace .tour-card { background:var(--cue-surface) !important; color:var(--cue-text) !important; border-color:var(--cue-toggle) !important; box-shadow:0 24px 80px var(--cue-shadow),0 0 28px color-mix(in srgb,var(--cue-toggle) 18%,transparent) !important; }
+.workspace .tour-card > p { color:var(--cue-muted) !important; }
+
+@media (max-width:720px) {
+  .site-header { grid-template-columns:1fr auto; min-height:58px; padding:0 14px; }
   .brand { width:158px; min-height:38px; }
-  .menu-trigger { grid-column: 2; height: 40px; padding: 9px; width: 40px; }
-  .menu-trigger span { margin-left: auto; width: 20px; }
-  .site-nav--open { border-bottom: 0; box-shadow: 0 24px 48px var(--cue-shadow); padding: 8px 18px 82px; top: 57px; }
-  .site-nav--open a { font-size: 10px; min-height: 44px; padding: 14px 0; }
-  .header-controls { display: none !important; }
-  .site-header:has(.site-nav--open) .header-controls { align-items: center; bottom: 12px; display: flex !important; gap: 7px; left: 18px; position: absolute; right: 18px; z-index: 5; }
-  .site-header:has(.site-nav--open) .locale-control,
-  .site-header:has(.site-nav--open) .appearance-toggle,
-  .site-header:has(.site-nav--open) .header-login,
-  .site-header:has(.site-nav--open) .header-signup { display: inline-flex !important; }
-  .site-header:has(.site-nav--open) .locale-control { margin-right: auto; border:1px solid var(--cue-border); border-radius:999px; padding:3px; gap:2px; }
-  .site-header:has(.site-nav--open) .locale-control button { border:0; border-radius:999px; min-width:30px; min-height:28px; }
-  .site-header:has(.site-nav--open) .appearance-toggle { align-items: center; justify-content: center; border:1px solid var(--cue-border); border-radius:50%; height:36px; width:36px; }
-  .site-header:has(.site-nav--open) .header-login,
-  .site-header:has(.site-nav--open) .header-signup { font-size: 8px; min-height: 32px; padding: 0 9px; }
-  .hero { padding-top: 28px; }
-  .network__core img { height: 48px; width: 48px; }
+  .menu-trigger { grid-column:2; height:40px; padding:9px; width:40px; }
+  .menu-trigger span { margin-left:auto; width:20px; }
+  .site-nav--open { border-bottom:0; box-shadow:0 24px 48px var(--cue-shadow); padding:8px 18px 94px; top:57px; }
+  .site-nav--open a { font-size:10px; min-height:44px; padding:14px 0; }
+  .header-controls { display:none !important; }
+  .site-nav--open + .header-controls { align-items:center; bottom:12px; display:flex !important; gap:7px; left:18px; position:absolute; right:18px; z-index:6; }
+  .site-nav--open + .header-controls .locale-control,
+  .site-nav--open + .header-controls .appearance-toggle,
+  .site-nav--open + .header-controls .header-login,
+  .site-nav--open + .header-controls .header-signup { display:inline-flex !important; }
+  .site-nav--open + .header-controls .locale-control { margin-right:auto; border:1px solid var(--cue-border); border-radius:999px; padding:3px; gap:2px; }
+  .site-nav--open + .header-controls .locale-control button { border:0; border-radius:999px; min-width:30px; min-height:28px; }
+  .site-nav--open + .header-controls .appearance-toggle { align-items:center; justify-content:center; border:1px solid var(--cue-border); border-radius:50%; height:36px; width:36px; }
+  .site-nav--open + .header-controls .header-login,
+  .site-nav--open + .header-controls .header-signup { font-size:8px; min-height:32px; padding:0 9px; }
+  .hero { padding-top:28px; }
+  .network__core img { height:48px; width:48px; }
 }
 
-@media (max-width: 860px) {
+@media (max-width:860px) {
   .workspace-header { display:grid; gap:8px; grid-template-columns:1fr auto; grid-template-rows:auto auto; min-height:58px; padding:8px 12px; }
   .workspace-header > a { grid-column:1; grid-row:1; }
   .workspace-header .account-actions { display:flex !important; grid-column:2; grid-row:1; justify-self:end; align-items:center; gap:6px; }
-  .workspace-header .account-actions .cue-preferences-control { display:none !important; }
+  .workspace-header .account-actions .cue-preferences-control { display:flex !important; }
   .workspace-header nav { grid-column:1 / -1; grid-row:2; display:grid !important; grid-template-columns:repeat(4,minmax(0,1fr)); width:100%; overflow:hidden; }
   .workspace-header nav button { min-width:0; padding:0 3px; white-space:nowrap; font-size:clamp(7px,2.2vw,9px); }
   .workspace-intro { gap:18px; padding:26px 16px 22px; }
