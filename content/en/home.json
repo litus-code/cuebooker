@@ -51,7 +51,7 @@
   "access": {
     "index": "05 / ACCESS", "eyebrow": "FRICTION ONLY WHEN IT ADDS VALUE", "title": "The DJ gets a workspace. The promoter only needs to reply.",
     "body": "DJs and agencies create their workspace. A promoter can send the first request without an account and receives secure access to continue the booking.",
-    "selectorLabel": "Choose a role", "demoTitle": "Access available.", "demoNote": " DJs and agencies can now create an account, complete their initial profile and manage availability from a private workspace.",
+    "selectorLabel": "Choose a role", "demoTitle": "Access available.", "demoNote": " DJs and agencies can now create an account and complete the initial profile before entering their private workspace.",
     "roles": [
       {"name": "DJ", "label": "ACCESS / ARTIST", "account": "ACCOUNT FROM THE START", "headline": "Publish the entry point for every booking.", "steps": ["Create your account and profile", "Set availability and privacy", "Share your link", "Receive and track requests"], "cta": "Create a DJ account", "route": "/access?mode=signup"},
       {"name": "PROMOTER", "label": "ACCESS / PROMOTER", "account": "NO ACCOUNT FOR FIRST CONTACT", "headline": "Send the details and continue from email.", "steps": ["Open the DJ link", "Add date, venue and offer", "Verify your email", "Reply and confirm through a secure link"], "cta": "Send a request", "route": "/artist"},
