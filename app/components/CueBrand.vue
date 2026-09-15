@@ -7,8 +7,8 @@ const props = withDefaults(defineProps<{
   decorative: false
 })
 
-const darkSrc = computed(() => props.variant === 'icon' ? '/cuebooker-icon.png' : '/cuebooker-header-dark-final.png')
-const lightSrc = computed(() => props.variant === 'icon' ? '/cuebooker-icon-light-approved.png' : '/cuebooker-header-light-approved.png')
+const darkSrc = computed(() => props.variant === 'icon' ? '/cuebooker-icon-dark.png' : '/cuebooker-header-dark.png')
+const lightSrc = computed(() => props.variant === 'icon' ? '/cuebooker-icon-light.png' : '/cuebooker-header-light.png')
 const alt = computed(() => props.decorative ? '' : 'Cuebooker')
 </script>
 
@@ -25,6 +25,6 @@ const alt = computed(() => props.decorative ? '' : 'Cuebooker')
 .cue-brand__light { display: none !important; }
 :root[data-theme='light'] .cue-brand__dark { display: none !important; }
 :root[data-theme='light'] .cue-brand__light { display: block !important; }
-.cue-brand--wordmark { aspect-ratio: 430 / 148; width: 100%; }
+.cue-brand--wordmark { aspect-ratio: 3 / 1; width: 100%; }
 .cue-brand--icon { aspect-ratio: 1; width: 100%; }
 </style>
