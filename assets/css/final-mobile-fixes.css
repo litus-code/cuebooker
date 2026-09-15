@@ -46,6 +46,7 @@
   .site-header {
     position:sticky;
     top:0;
+    transform:none;
     transition:transform .24s ease,box-shadow .24s ease;
     will-change:transform;
   }
@@ -80,8 +81,9 @@
     padding:20px 20px max(24px,env(safe-area-inset-bottom));
     position:fixed !important;
     right:0;
-    top:58px !important;
+    top:66px !important;
     width:100%;
+    z-index:39;
   }
   .site-nav--open > a {
     align-items:center;
