@@ -1,88 +1,152 @@
-:root[data-theme='light'] .brand::before,
-:root[data-theme='light'] .global-brand-preferences__brand::before,
-:root[data-theme='light'] .network__core img {
-  filter: hue-rotate(200deg) saturate(1.08) !important;
+:root {
+  --cue-accent:#d8f56b;
+  --cue-accent-ink:#11120d;
+  --cue-toggle:#d8f56b;
+  --cue-toggle-ink:#11120d;
 }
 
-.mobile-menu-auth { display: none; }
+:root[data-theme='light'] {
+  --cue-accent:#6f47ff;
+  --cue-accent-ink:#fff;
+  --cue-toggle:#6f47ff;
+  --cue-toggle-ink:#fff;
+}
 
-@media (max-width: 720px) {
-  .menu-trigger span {
-    transform-origin: center;
-    transition: transform .2s ease, opacity .2s ease;
+/* Dark keeps the original brand and lime/black controls. */
+:root:not([data-theme='light']) .button--primary,
+:root:not([data-theme='light']) .header-signup,
+:root:not([data-theme='light']) .primary-button,
+:root:not([data-theme='light']) .mobile-menu-signup,
+:root:not([data-theme='light']) .locale-control button.active,
+:root:not([data-theme='light']) .cue-segmented button.active,
+:root:not([data-theme='light']) .workspace-header nav button.active {
+  background:#d8f56b !important;
+  border-color:#d8f56b !important;
+  color:#11120d !important;
+}
+
+/* Light uses the dedicated PNG assets. No CSS colour filters. */
+:root[data-theme='light'] .brand {
+  background:url('/cuebooker-header-light.png') left center / contain no-repeat !important;
+  color:transparent !important;
+  font-size:0 !important;
+  letter-spacing:0 !important;
+  min-width:190px;
+  padding-left:0 !important;
+  width:190px;
+}
+:root[data-theme='light'] .brand::before,
+:root[data-theme='light'] .brand::after,
+:root[data-theme='light'] .brand > span { display:none !important; }
+:root[data-theme='light'] .network__core img {
+  content:url('/cuebooker-icon-light.png');
+  filter:none !important;
+}
+:root[data-theme='light'] .global-brand-preferences__brand img {
+  content:url('/cuebooker-icon-light.png');
+  display:block !important;
+  filter:none !important;
+}
+:root[data-theme='light'] .global-brand-preferences__brand {
+  color:#151515 !important;
+  padding-left:0 !important;
+}
+:root[data-theme='light'] .global-brand-preferences__brand::before,
+:root[data-theme='light'] .global-brand-preferences__brand::after { display:none !important; }
+
+:root[data-theme='light'] .button--primary,
+:root[data-theme='light'] .header-signup,
+:root[data-theme='light'] .primary-button,
+:root[data-theme='light'] .mobile-menu-signup,
+:root[data-theme='light'] .locale-control button.active,
+:root[data-theme='light'] .cue-segmented button.active,
+:root[data-theme='light'] .workspace-header nav button.active {
+  background:#6f47ff !important;
+  border-color:#6f47ff !important;
+  color:#fff !important;
+}
+
+.mobile-menu-auth { display:none; }
+
+@media (max-width:720px) {
+  :root[data-theme='light'] .brand {
+    min-width:142px;
+    width:142px;
   }
-  .menu-trigger[aria-expanded='true'] span:first-child { transform: translateY(4px) rotate(45deg); }
-  .menu-trigger[aria-expanded='true'] span:last-child { transform: translateY(-4px) rotate(-45deg); }
+
+  .menu-trigger span {
+    transform-origin:center;
+    transition:transform .2s ease,opacity .2s ease;
+  }
+  .menu-trigger[aria-expanded='true'] span:first-child { transform:translateY(4px) rotate(45deg); }
+  .menu-trigger[aria-expanded='true'] span:last-child { transform:translateY(-4px) rotate(-45deg); }
 
   .site-nav--open {
-    display: flex !important;
-    flex-direction: column;
-    align-items: stretch;
-    min-height: calc(100svh - 57px);
-    max-height: calc(100dvh - 57px);
-    overflow-y: auto;
-    padding: 20px 20px max(24px, env(safe-area-inset-bottom));
+    align-items:stretch;
+    display:flex !important;
+    flex-direction:column;
+    max-height:calc(100dvh - 57px);
+    min-height:calc(100svh - 57px);
+    overflow-y:auto;
+    padding:20px 20px max(24px,env(safe-area-inset-bottom));
   }
-
   .site-nav--open > a {
-    align-items: center;
-    border-bottom: 1px solid var(--cue-border);
-    display: flex;
-    flex: 0 0 auto;
-    font-size: 15px;
-    font-weight: 700;
-    justify-content: space-between;
-    letter-spacing: -.01em;
-    min-height: 62px;
-    padding: 0 4px;
-    text-align: left;
-    text-transform: none;
-    width: 100%;
+    align-items:center;
+    border-bottom:1px solid var(--cue-border);
+    display:flex;
+    flex:0 0 auto;
+    font-size:15px;
+    font-weight:700;
+    justify-content:space-between;
+    letter-spacing:-.01em;
+    min-height:62px;
+    padding:0 4px;
+    text-align:left;
+    text-transform:none;
+    width:100%;
   }
-  .site-nav--open > a:first-child { border-top: 1px solid var(--cue-border); }
+  .site-nav--open > a:first-child { border-top:1px solid var(--cue-border); }
   .site-nav--open > a::after {
-    color: var(--cue-dim);
-    content: '›';
-    font-size: 26px;
-    font-weight: 300;
-    line-height: 1;
+    color:var(--cue-dim);
+    content:'›';
+    font-size:26px;
+    font-weight:300;
+    line-height:1;
   }
-
   .site-nav--open .mobile-menu-auth {
-    border-top: 1px solid var(--cue-border);
-    display: grid;
-    gap: 10px;
-    margin-top: auto;
-    padding-top: 24px;
-    width: 100%;
+    border-top:1px solid var(--cue-border);
+    display:grid;
+    gap:10px;
+    margin-top:auto;
+    padding-top:24px;
+    width:100%;
   }
   .mobile-menu-auth a {
-    align-items: center;
-    display: flex;
-    font-size: 11px;
-    font-weight: 800;
-    justify-content: center;
-    letter-spacing: .06em;
-    min-height: 50px;
-    padding: 0 16px;
-    text-decoration: none;
-    text-transform: uppercase;
-    width: 100%;
+    align-items:center;
+    display:flex;
+    font-size:11px;
+    font-weight:800;
+    justify-content:center;
+    letter-spacing:.06em;
+    min-height:50px;
+    padding:0 16px;
+    text-decoration:none;
+    text-transform:uppercase;
+    width:100%;
   }
   .mobile-menu-login {
-    background: var(--cue-surface);
-    border: 1px solid var(--cue-border);
-    color: var(--cue-text);
+    background:var(--cue-surface);
+    border:1px solid var(--cue-border);
+    color:var(--cue-text);
   }
   .mobile-menu-signup {
-    background: var(--cue-accent);
-    border: 1px solid var(--cue-accent);
-    color: var(--cue-accent-ink);
+    background:var(--cue-accent);
+    border:1px solid var(--cue-accent);
+    color:var(--cue-accent-ink);
   }
-
   .site-nav--open + .header-controls .header-login,
   .site-nav--open + .header-controls .header-signup {
-    display: none !important;
-    position: static !important;
+    display:none !important;
+    position:static !important;
   }
 }
