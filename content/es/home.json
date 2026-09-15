@@ -51,7 +51,7 @@
   "access": {
     "index": "05 / ACCESO", "eyebrow": "FRICCIÓN SOLO CUANDO APORTA VALOR", "title": "El DJ tiene panel. El promotor solo necesita responder.",
     "body": "DJs y agencias crean su espacio de trabajo. El promotor puede enviar la primera consulta sin cuenta y recibe un acceso seguro para continuar el booking.",
-    "selectorLabel": "Selecciona un perfil", "demoTitle": "Acceso disponible.", "demoNote": " DJs y agencias ya pueden crear su cuenta, completar el perfil inicial y gestionar disponibilidad desde su espacio privado.",
+    "selectorLabel": "Selecciona un perfil", "demoTitle": "Acceso disponible.", "demoNote": " DJs y agencias ya pueden crear su cuenta y completar el perfil inicial para entrar en su workspace privado.",
     "roles": [
       {"name": "DJ", "label": "ACCESO / ARTISTA", "account": "CUENTA DESDE EL INICIO", "headline": "Publica tu punto de entrada para cada booking.", "steps": ["Crea tu cuenta y perfil", "Configura disponibilidad y privacidad", "Comparte tu enlace", "Recibe y sigue solicitudes"], "cta": "Crear cuenta como DJ", "route": "/access?mode=signup"},
       {"name": "PROMOTOR", "label": "ACCESO / PROMOTOR", "account": "SIN CUENTA EN EL PRIMER CONTACTO", "headline": "Envía los datos y sigue desde tu correo.", "steps": ["Abre el enlace del DJ", "Completa fecha, sala y oferta", "Verifica tu email", "Responde y confirma con enlace seguro"], "cta": "Enviar una solicitud", "route": "/artist"},
