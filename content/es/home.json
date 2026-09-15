@@ -53,9 +53,9 @@
     "body": "DJs y agencias crean su espacio de trabajo. El promotor puede enviar la primera consulta sin cuenta y recibe un acceso seguro para continuar el booking.",
     "selectorLabel": "Selecciona un perfil", "demoTitle": "Acceso disponible.", "demoNote": " DJs y agencias ya pueden crear su cuenta y completar el perfil inicial para entrar en su workspace privado.",
     "roles": [
-      {"name": "DJ", "label": "ACCESO / ARTISTA", "account": "CUENTA DESDE EL INICIO", "headline": "Publica tu punto de entrada para cada booking.", "steps": ["Crea tu cuenta y perfil", "Configura disponibilidad y privacidad", "Comparte tu enlace", "Recibe y sigue solicitudes"], "cta": "Crear cuenta como DJ", "route": "/access?mode=signup"},
-      {"name": "PROMOTOR", "label": "ACCESO / PROMOTOR", "account": "SIN CUENTA EN EL PRIMER CONTACTO", "headline": "Envía los datos y sigue desde tu correo.", "steps": ["Abre el enlace del DJ", "Completa fecha, sala y oferta", "Verifica tu email", "Responde y confirma con enlace seguro"], "cta": "Enviar una solicitud", "route": "/artist"},
-      {"name": "AGENCIA", "label": "ACCESO / MANAGER", "account": "CUENTA DESDE EL INICIO", "headline": "Organiza el roster sin perder el control.", "steps": ["Registra la agencia", "Añade artistas y responsables", "Define permisos y visibilidad", "Gestiona solicitudes y calendarios"], "cta": "Crear cuenta como agencia", "route": "/access?mode=signup"}
+      {"name": "DJ", "label": "ACCESO / ARTISTA", "account": "CUENTA DESDE EL INICIO", "headline": "Publica tu punto de entrada para cada booking.", "steps": ["Crea tu cuenta y perfil", "Configura tu espacio inicial", "Explora el workspace", "Gestiona los flujos disponibles"], "cta": "Crear cuenta como DJ", "route": "/access?mode=signup"},
+      {"name": "PROMOTOR", "label": "ACCESO / PROMOTOR", "account": "SIN CUENTA EN EL PRIMER CONTACTO", "headline": "Envía los datos de una solicitud.", "steps": ["Abre el enlace del DJ", "Completa fecha, sala y oferta", "Envía la solicitud", "El seguimiento conectado llegará en próximas fases"], "cta": "Enviar una solicitud", "route": "/artist"},
+      {"name": "AGENCIA", "label": "ACCESO / MANAGER", "account": "CUENTA DESDE EL INICIO", "headline": "Prepara tu espacio de trabajo de agencia.", "steps": ["Registra la agencia", "Completa el perfil inicial", "Explora el workspace", "El roster avanzado llegará en próximas fases"], "cta": "Crear cuenta como agencia", "route": "/access?mode=signup"}
     ]
   },
   "demo": {
