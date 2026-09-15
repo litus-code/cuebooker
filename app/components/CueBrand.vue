@@ -8,18 +8,24 @@ const props = withDefaults(defineProps<{
 })
 
 const { theme } = useCuePreferences()
+const alt = computed(() => props.decorative ? '' : 'Cuebooker')
 
 const src = computed(() => {
-  const suffix = props.variant === 'icon' ? 'icon' : 'header'
-  return `/cuebooker-${suffix}-${theme.value}.png`
-})
+  if (props.variant === 'icon') {
+    return theme.value === 'light'
+      ? '/cuebooker-icon-light-v2.png'
+      : '/cuebooker-icon-dark-v2.png'
+  }
 
-const alt = computed(() => props.decorative ? '' : 'Cuebooker')
+  return theme.value === 'light'
+    ? '/cuebooker-header-light-v2.png'
+    : '/cuebooker-header-dark-v2.png'
+})
 </script>
 
 <template>
   <span class="cue-brand" :class="`cue-brand--${variant}`" :aria-hidden="decorative || undefined">
-    <img :src="src" :alt="alt">
+    <img :key="src" :src="src" :alt="alt" width="384" height="128">
   </span>
 </template>
 
@@ -27,22 +33,43 @@ const alt = computed(() => props.decorative ? '' : 'Cuebooker')
 .cue-brand {
   display: inline-flex;
   line-height: 0;
+  overflow: visible;
 }
 
 .cue-brand img {
   display: block;
-  height: auto;
+  height: 100%;
+  max-height: 100%;
+  max-width: 100%;
   object-fit: contain;
   width: 100%;
 }
 
 .cue-brand--wordmark {
-  aspect-ratio: 3 / 1;
-  width: 100%;
+  height: 64px;
+  width: 192px;
 }
 
 .cue-brand--icon {
-  aspect-ratio: 1;
-  width: 100%;
+  height: 58px;
+  width: 58px;
+}
+
+.cue-brand--icon img {
+  height: 58px;
+  width: 58px;
+}
+
+@media (max-width: 720px) {
+  .cue-brand--wordmark {
+    height: 48px;
+    width: 144px;
+  }
+
+  .cue-brand--icon,
+  .cue-brand--icon img {
+    height: 48px;
+    width: 48px;
+  }
 }
 </style>
