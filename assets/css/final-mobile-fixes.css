@@ -39,6 +39,22 @@
 
 .mobile-menu-auth { display:none; }
 
+/* Keep the profile/access block visually balanced against the interactive card. */
+@media (min-width:961px) {
+  .access-model {
+    align-items:center;
+    gap:clamp(48px,5vw,88px);
+    grid-template-columns:minmax(90px,.22fr) minmax(420px,.9fr) minmax(560px,1.22fr);
+    padding-bottom:clamp(58px,5vw,78px);
+    padding-top:clamp(58px,5vw,78px);
+  }
+  .access-model > .section-mark { align-self:start; padding-top:8px; }
+  .access-model .section-heading { align-self:center; margin:0; max-width:700px; }
+  .access-model .section-heading h2 { margin-bottom:24px; }
+  .access-demo { align-self:center; justify-self:end; max-width:760px; width:100%; }
+  .access-card { min-height:450px; }
+}
+
 @media (max-width:720px) {
   html.mobile-menu-open,
   html.mobile-menu-open body { overflow:hidden; }
@@ -50,16 +66,24 @@
   .menu-trigger[aria-expanded='true'] span:first-child { transform:translateY(4px) rotate(45deg); }
   .menu-trigger[aria-expanded='true'] span:last-child { transform:translateY(-4px) rotate(-45deg); }
 
+  /* Anchor the open menu to the viewport, not to the document position of the header. */
   .site-nav--open {
     align-items:stretch;
     background:var(--cue-bg);
     border-top:1px solid var(--cue-border);
+    bottom:0;
     display:flex !important;
     flex-direction:column;
-    max-height:calc(100dvh - 57px);
-    min-height:calc(100svh - 57px);
+    left:0 !important;
+    max-height:none;
+    min-height:0;
     overflow-y:auto;
     padding:20px 20px max(24px,env(safe-area-inset-bottom));
+    position:fixed !important;
+    right:0 !important;
+    top:58px !important;
+    width:100%;
+    z-index:39;
   }
   .site-nav--open > a {
     align-items:center;
