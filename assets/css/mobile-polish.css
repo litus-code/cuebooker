@@ -10,6 +10,47 @@
 .workspace .tour-card { background:var(--cue-surface) !important; color:var(--cue-text) !important; border-color:var(--cue-toggle) !important; box-shadow:0 24px 80px var(--cue-shadow),0 0 28px color-mix(in srgb,var(--cue-toggle) 18%,transparent) !important; }
 .workspace .tour-card > p { color:var(--cue-muted) !important; }
 
+:root[data-theme='light'] .brand { background:none; color:#111; font-size:28px !important; font-weight:800; letter-spacing:-.05em !important; text-transform:lowercase; width:auto; min-width:190px; padding-left:50px; position:relative; }
+:root[data-theme='light'] .brand::before { content:''; display:block !important; position:absolute; left:0; width:44px; height:44px; background:url('/cuebooker-icon.png') center/contain no-repeat; filter:hue-rotate(210deg) saturate(1.15); }
+:root[data-theme='light'] .brand > span { display:none !important; }
+
+:root[data-theme='light'] .workspace,
+:root[data-theme='light'] .workspace .view,
+:root[data-theme='light'] .workspace .booking-workspace,
+:root[data-theme='light'] .workspace .booking-detail,
+:root[data-theme='light'] .workspace .booking-list,
+:root[data-theme='light'] .workspace .booking-placeholder,
+:root[data-theme='light'] .workspace .booking-facts section,
+:root[data-theme='light'] .workspace .message-thread,
+:root[data-theme='light'] .workspace .booking-reply,
+:root[data-theme='light'] .workspace .panel,
+:root[data-theme='light'] .workspace .summary-card,
+:root[data-theme='light'] .workspace .demo-notice,
+:root[data-theme='light'] .workspace .status-filters,
+:root[data-theme='light'] .workspace .settings-panel,
+:root[data-theme='light'] .workspace .editor-panel { background:var(--cue-surface) !important; color:var(--cue-text) !important; }
+:root[data-theme='light'] .workspace .booking-list > button,
+:root[data-theme='light'] .workspace .message,
+:root[data-theme='light'] .workspace .booking-status-display,
+:root[data-theme='light'] .workspace .settings-group,
+:root[data-theme='light'] .workspace .settings-options button,
+:root[data-theme='light'] .workspace input,
+:root[data-theme='light'] .workspace textarea,
+:root[data-theme='light'] .workspace select { background:var(--cue-bg) !important; color:var(--cue-text) !important; border-color:var(--cue-border) !important; }
+:root[data-theme='light'] .workspace .booking-list > button.active,
+:root[data-theme='light'] .workspace .status-filters button.active,
+:root[data-theme='light'] .workspace .settings-options button.active { background:var(--cue-raised) !important; color:var(--cue-text) !important; border-color:var(--cue-accent) !important; }
+:root[data-theme='light'] .workspace .demo-notice,
+:root[data-theme='light'] .workspace .booking-detail,
+:root[data-theme='light'] .workspace .booking-facts section,
+:root[data-theme='light'] .workspace .summary-card,
+:root[data-theme='light'] .workspace .panel { border-color:var(--cue-border) !important; box-shadow:none !important; }
+:root[data-theme='light'] .workspace .demo-notice p,
+:root[data-theme='light'] .workspace .booking-detail p,
+:root[data-theme='light'] .workspace .booking-list small,
+:root[data-theme='light'] .workspace .message time,
+:root[data-theme='light'] .workspace .settings-group > span { color:var(--cue-muted) !important; }
+
 @media (hover:hover) and (pointer:fine) {
   button:not(:disabled),
   .button,
@@ -46,6 +87,8 @@
 @media (max-width:720px) {
   .site-header { grid-template-columns:minmax(0,1fr) auto auto; min-height:58px; padding:0 14px; gap:8px; }
   .brand { width:142px; min-height:38px; }
+  :root[data-theme='light'] .brand { min-width:142px; font-size:21px !important; padding-left:39px; }
+  :root[data-theme='light'] .brand::before { width:34px; height:34px; }
   .menu-trigger { grid-column:3; grid-row:1; height:40px; padding:9px; width:40px; }
   .menu-trigger span { margin-left:auto; width:20px; }
 
@@ -125,6 +168,23 @@
   .tour-card > p { display:-webkit-box; font-size:10px; line-height:1.35; margin:8px 0 10px; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
   .tour-card .primary-button { font-size:8px; margin-top:0; min-height:34px; min-width:0; padding:0 12px; width:auto; }
   .tour-card__close { font-size:20px; right:8px; top:4px; }
+
+  .editor-backdrop:has(.settings-panel) {
+    align-items:flex-start !important;
+    background:color-mix(in srgb,var(--cue-bg) 72%,transparent) !important;
+    inset:104px 0 0 !important;
+    padding:0 !important;
+    z-index:110 !important;
+  }
+  .editor-backdrop:has(.settings-panel) .settings-panel {
+    border-radius:0 0 20px 20px !important;
+    border-top:1px solid var(--cue-border) !important;
+    height:auto !important;
+    max-height:calc(100dvh - 104px) !important;
+    max-width:none !important;
+    overflow:auto !important;
+    width:100% !important;
+  }
 }
 
 @media (max-width:560px) {
