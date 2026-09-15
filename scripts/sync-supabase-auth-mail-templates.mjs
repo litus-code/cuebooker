@@ -50,10 +50,16 @@ const requestAuthConfig = async (projectRef, options = {}) => {
   return response.json();
 };
 
+const derivedMailTemplateSettings = new Set([
+  "mailer_subjects_custom_contents",
+  "mailer_templates_custom_contents",
+]);
+
 const isMailTemplateSetting = (name) =>
-  name.startsWith("mailer_subjects_") ||
-  name.startsWith("mailer_templates_") ||
-  name.startsWith("mailer_notifications_");
+  !derivedMailTemplateSettings.has(name) &&
+  (name.startsWith("mailer_subjects_") ||
+    name.startsWith("mailer_templates_") ||
+    name.startsWith("mailer_notifications_"));
 
 const sourceConfig = await requestAuthConfig(sourceProjectRef);
 const templateConfig = Object.fromEntries(
