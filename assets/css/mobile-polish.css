@@ -3,7 +3,6 @@
 .brand { gap: 8px; }
 .brand::before,
 .workspace-header > a::before { background: url('/cuebooker-mark.svg') center / contain no-repeat; content: ''; display: block; flex: 0 0 auto; height: 36px; width: 36px; }
-.demo-reality__actions > .button--primary { display: none; }
 .network__core img { display: block; height: 58px; width: 58px; }
 
 @media (max-width: 720px) {
