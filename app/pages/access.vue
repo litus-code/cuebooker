@@ -17,7 +17,7 @@ onMounted(async () => {
   const refCode = typeof route.query.ref === 'string' ? route.query.ref : ''
   auth.captureReferral(refCode, route.fullPath)
   await auth.initialize()
-  if (auth.signedIn.value) {
+  if (auth.signedIn.value && mode.value === 'signin') {
     if (!auth.profile.value) await auth.fetchProfile()
     await navigateTo(auth.accountDestination())
   }

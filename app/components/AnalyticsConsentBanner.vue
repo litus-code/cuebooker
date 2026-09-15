@@ -2,6 +2,8 @@
 const analytics = useAnalytics()
 const { locale } = useCuePreferences()
 
+onMounted(() => analytics.init())
+
 const visible = computed(() => analytics.consent.value === 'unknown')
 const copy = computed(() => locale.value === 'es'
   ? {
@@ -34,7 +36,7 @@ const copy = computed(() => locale.value === 'es'
 </template>
 
 <style scoped>
-.analytics-consent { position:fixed; z-index:1200; right:20px; bottom:max(20px,env(safe-area-inset-bottom)); left:20px; display:flex; max-width:820px; margin:0 auto; padding:18px 20px; gap:22px; align-items:center; justify-content:space-between; border:1px solid var(--cue-toggle,#e8ff2f); border-radius:16px; background:rgba(10,10,10,.97); color:var(--cue-text,#f2f0eb); box-shadow:0 18px 60px rgba(0,0,0,.55),0 0 24px color-mix(in srgb,var(--cue-toggle,#e8ff2f) 12%,transparent); backdrop-filter:blur(18px); }
+.analytics-consent { position:fixed; z-index:1400; right:20px; bottom:max(20px,env(safe-area-inset-bottom)); left:20px; display:flex; max-width:820px; margin:0 auto; padding:18px 20px; gap:22px; align-items:center; justify-content:space-between; border:1px solid var(--cue-toggle,#e8ff2f); border-radius:16px; background:rgba(10,10,10,.97); color:var(--cue-text,#f2f0eb); box-shadow:0 18px 60px rgba(0,0,0,.55),0 0 24px color-mix(in srgb,var(--cue-toggle,#e8ff2f) 12%,transparent); backdrop-filter:blur(18px); }
 .analytics-consent__copy { min-width:0; }
 .analytics-consent__copy strong { display:block; margin-bottom:6px; font-size:15px; }
 .analytics-consent__copy p { margin:0; max-width:560px; color:var(--cue-muted,#aaa); font-size:13px; line-height:1.45; }
