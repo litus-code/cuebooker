@@ -48,8 +48,31 @@
   .brand { width:142px; min-height:38px; }
   .menu-trigger { grid-column:3; grid-row:1; height:40px; padding:9px; width:40px; }
   .menu-trigger span { margin-left:auto; width:20px; }
-  .site-nav--open { border-bottom:0; box-shadow:0 24px 48px var(--cue-shadow); padding:8px 18px 94px; top:57px; }
-  .site-nav--open a { font-size:10px; min-height:44px; padding:14px 0; }
+
+  .site-nav--open {
+    align-items:stretch;
+    border-bottom:0;
+    box-shadow:0 24px 48px var(--cue-shadow);
+    gap:0;
+    left:0;
+    min-height:calc(100svh - 57px);
+    padding:34px 24px 112px;
+    right:0;
+    top:57px;
+    width:100%;
+  }
+  .site-nav--open a {
+    align-items:center;
+    border-bottom:1px solid var(--cue-border);
+    display:flex;
+    font-size:11px;
+    justify-content:center;
+    min-height:64px;
+    padding:18px 8px;
+    text-align:center;
+    width:100%;
+  }
+  .site-nav--open a:first-child { border-top:1px solid var(--cue-border); }
 
   .header-controls { align-items:center; display:flex !important; gap:6px; grid-column:2; grid-row:1; justify-self:end; position:static; }
   .header-controls .locale-control,
@@ -60,10 +83,27 @@
   .header-controls .locale-control button { border:0; border-radius:999px; min-width:27px; min-height:26px; padding:0 6px; font-size:8px; }
   .header-controls .appearance-toggle { align-items:center; justify-content:center; border:1px solid var(--cue-border); border-radius:50%; height:32px; width:32px; padding:7px; }
 
-  .site-nav--open + .header-controls { align-items:center; bottom:12px; display:flex !important; gap:7px; left:18px; position:absolute; right:18px; z-index:6; }
-  .site-nav--open + .header-controls .locale-control { margin-right:auto; }
+  .site-nav--open + .header-controls { position:static; }
   .site-nav--open + .header-controls .header-login,
-  .site-nav--open + .header-controls .header-signup { display:inline-flex !important; font-size:8px; min-height:32px; padding:0 9px; }
+  .site-nav--open + .header-controls .header-signup {
+    bottom:max(24px,env(safe-area-inset-bottom));
+    display:inline-flex !important;
+    font-size:10px;
+    min-height:44px;
+    padding:0 18px;
+    position:fixed;
+    z-index:70;
+  }
+  .site-nav--open + .header-controls .header-login {
+    left:24px;
+    border:1px solid var(--cue-border);
+    background:var(--cue-surface);
+  }
+  .site-nav--open + .header-controls .header-signup {
+    right:24px;
+    background:var(--cue-accent);
+    color:var(--cue-accent-ink);
+  }
 
   .hero { padding-top:28px; }
   .network__core img { height:48px; width:48px; }
