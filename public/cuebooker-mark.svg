@@ -5,7 +5,7 @@
     <g stroke-width="4">
       <path d="M42 22l-5-11"/><path d="M50 19l-3-12"/><path d="M58 18l-1-13"/><path d="M34 26l-7-10"/><path d="M27 31l-9-8"/><path d="M22 38l-11-6"/><path d="M18 46L6 42"/><path d="M16 55L3 53"/><path d="M15 64H2"/><path d="M16 73L3 75"/><path d="M18 82L6 86"/><path d="M22 90l-11 6"/><path d="M27 97l-9 8"/><path d="M34 102l-7 10"/><path d="M42 106l-5 11"/><path d="M50 109l-3 12"/><path d="M58 110l-1 13"/>
     </g>
-    <path d="M72 64h43" stroke-width="5"/>
   </g>
   <circle cx="68" cy="64" r="8" fill="#F2F51A"/>
+  <path d="M76 64h39" fill="none" stroke="#FF3B30" stroke-width="5" stroke-linecap="round"/>
 </svg>
