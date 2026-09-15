@@ -13,6 +13,7 @@ type CueSession = {
   access_token: string
   refresh_token: string
   expires_at: number
+  started_at: number
   user: CueUser
 }
 
@@ -29,16 +30,18 @@ type ReferralSnapshot = {
   firstSeenAt: string
 }
 
-const SESSION_KEY = 'cuebooker.auth.session.v1'
+const SESSION_KEY = 'cuebooker.auth.session.v2'
+const SESSION_MAX_AGE_MS = 12 * 60 * 60 * 1000
 const REFERRAL_KEY = 'cuebooker.referral.first-touch.v1'
 
-function normalizeSession(payload: AuthResponse): CueSession | null {
+function normalizeSession(payload: AuthResponse, startedAt = Date.now()): CueSession | null {
   if (!payload.access_token || !payload.refresh_token || !payload.user) return null
 
   return {
     access_token: payload.access_token,
     refresh_token: payload.refresh_token,
     expires_at: Math.floor(Date.now() / 1000) + (payload.expires_in || 3600),
+    started_at: startedAt,
     user: payload.user
   }
 }
@@ -76,20 +79,26 @@ export function useCueAuth() {
     else localStorage.removeItem(SESSION_KEY)
   }
 
+  function sessionExpired(current: CueSession | null) {
+    if (!current?.started_at) return true
+    return Date.now() - current.started_at >= SESSION_MAX_AGE_MS
+  }
+
   async function refreshSession() {
-    if (!configured.value || !session.value?.refresh_token) {
+    if (!configured.value || !session.value?.refresh_token || sessionExpired(session.value)) {
       saveSession(null)
       profile.value = null
       return null
     }
 
     try {
+      const startedAt = session.value.started_at
       const payload = await $fetch<AuthResponse>(`${supabaseUrl.value}/auth/v1/token?grant_type=refresh_token`, {
         method: 'POST',
         headers: baseHeaders(),
         body: { refresh_token: session.value.refresh_token }
       })
-      const next = normalizeSession(payload)
+      const next = normalizeSession(payload, startedAt)
       saveSession(next)
       return next
     } catch {
@@ -101,6 +110,11 @@ export function useCueAuth() {
 
   async function ensureFreshSession() {
     if (!session.value) return null
+    if (sessionExpired(session.value)) {
+      saveSession(null)
+      profile.value = null
+      return null
+    }
     const refreshThreshold = Math.floor(Date.now() / 1000) + 60
     if (session.value.expires_at <= refreshThreshold) return refreshSession()
     return session.value
@@ -132,6 +146,7 @@ export function useCueAuth() {
 
     if (!configured.value) return
 
+    localStorage.removeItem('cuebooker.auth.session.v1')
     const stored = localStorage.getItem(SESSION_KEY)
     if (!stored) return
 
