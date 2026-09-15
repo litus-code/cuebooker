@@ -4,6 +4,20 @@
   display: inline-flex;
 }
 
+.brand {
+  gap: 8px;
+}
+
+.brand::before,
+.workspace-header > a::before {
+  background: url('/cuebooker-mark.svg') center / contain no-repeat;
+  content: '';
+  display: block;
+  flex: 0 0 auto;
+  height: 36px;
+  width: 36px;
+}
+
 @media (max-width: 720px) {
   .site-header {
     grid-template-columns: 1fr auto;
@@ -12,13 +26,14 @@
   }
 
   .brand {
-    background: url('/cuebooker-mark.svg') center / contain no-repeat;
-    font-size: 0;
-    height: 38px;
-    width: 38px;
+    font-size: 12px;
+    letter-spacing: .08em;
   }
 
-  .brand span { display: none; }
+  .brand::before {
+    height: 34px;
+    width: 34px;
+  }
 
   .menu-trigger {
     grid-column: 2;
@@ -96,13 +111,15 @@
   }
 
   .workspace-header > a {
-    background: url('/cuebooker-mark.svg') center / contain no-repeat;
-    font-size: 0;
-    height: 38px;
-    width: 38px;
+    font-size: 10px;
+    gap: 7px;
+    letter-spacing: .06em;
   }
 
-  .workspace-header > a span { display: none; }
+  .workspace-header > a::before {
+    height: 34px;
+    width: 34px;
+  }
 
   .workspace-header > .locale-control {
     grid-column: 3;
