@@ -62,7 +62,7 @@
     "index": "06 / PRODUCT", "eyebrow": "PRODUCT STATUS", "title": "What you can manage today. And what comes next.",
     "body": "Create your account and enter your workspace to explore CueBooker's current flows. We include some sample data so you can understand the product from the first moment instead of starting with an empty inbox.",
     "currentTitle": "Available now", "current": ["Booking form", "Inbox and status changes", "Conversations and attachments", "Calendar, alerts and history"],
-    "realTitle": "Coming soon", "real": ["DJ discovery by date, city and sound", "Configurable public availability", "Advanced roster and permission management", "Email integrations and automations"],
+    "realTitle": "Coming soon", "real": ["Public DJ profiles and discovery", "Search by date, city, sound and budget", "Email integration for conversation follow-up", "Automations and advanced agency management"],
     "realNote": "Your workspace includes some sample data so you can explore CueBooker's flows from the first moment.",
     "panelButton": "Create account", "requestButton": "Send a request"
   },
