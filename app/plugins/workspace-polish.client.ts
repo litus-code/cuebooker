@@ -15,15 +15,26 @@ export default defineNuxtPlugin(() => {
     tourOpenedForEntry = true
 
     let attempts = 0
+    let bookingsOpened = false
     const tryOpen = () => {
       if (document.querySelector('.workspace .tour-card')) return
+
       const trigger = document.querySelector<HTMLButtonElement>('.workspace .guide-action')
       if (trigger) {
         trigger.click()
         return
       }
+
+      if (!bookingsOpened && attempts >= 3) {
+        const bookingsTab = document.querySelector<HTMLButtonElement>('.workspace-header nav button:nth-child(2)')
+        if (bookingsTab) {
+          bookingsOpened = true
+          bookingsTab.click()
+        }
+      }
+
       attempts += 1
-      if (attempts < 24) window.setTimeout(tryOpen, 250)
+      if (attempts < 28) window.setTimeout(tryOpen, 250)
     }
 
     window.setTimeout(tryOpen, 250)
