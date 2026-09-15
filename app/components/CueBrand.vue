@@ -7,7 +7,7 @@ const props = withDefaults(defineProps<{
   decorative: false
 })
 
-const darkSrc = computed(() => props.variant === 'icon' ? '/cuebooker-icon.png' : '/cuebooker-header.png')
+const darkSrc = computed(() => props.variant === 'icon' ? '/cuebooker-icon.png' : '/cuebooker-header-dark-approved.png')
 const lightSrc = computed(() => props.variant === 'icon' ? '/cuebooker-icon-light-approved.png' : '/cuebooker-header-light-approved.png')
 const alt = computed(() => props.decorative ? '' : 'Cuebooker')
 </script>
