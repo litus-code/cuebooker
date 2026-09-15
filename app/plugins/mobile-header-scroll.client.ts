@@ -1,7 +1,9 @@
 export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.hook('app:mounted', () => {
     let lastScrollY = window.scrollY
+    let lockedScrollY = 0
     let ticking = false
+    let menuLocked = false
 
     const updateHeader = () => {
       const header = document.querySelector<HTMLElement>('.site-header')
@@ -28,16 +30,52 @@ export default defineNuxtPlugin((nuxtApp) => {
     }
 
     const onScroll = () => {
-      if (ticking) return
+      if (menuLocked || ticking) return
       ticking = true
       window.requestAnimationFrame(updateHeader)
     }
 
-    const menuObserver = new MutationObserver(() => {
-      if (document.documentElement.classList.contains('mobile-menu-open')) {
+    const lockPageScroll = () => {
+      if (menuLocked) return
+
+      lockedScrollY = window.scrollY
+      menuLocked = true
+
+      document.body.style.position = 'fixed'
+      document.body.style.top = `-${lockedScrollY}px`
+      document.body.style.left = '0'
+      document.body.style.right = '0'
+      document.body.style.width = '100%'
+      document.body.style.overflow = 'hidden'
+    }
+
+    const unlockPageScroll = () => {
+      if (!menuLocked) return
+
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.left = ''
+      document.body.style.right = ''
+      document.body.style.width = ''
+      document.body.style.overflow = ''
+
+      menuLocked = false
+      window.scrollTo(0, lockedScrollY)
+      lastScrollY = lockedScrollY
+    }
+
+    const syncMenuState = () => {
+      const menuOpen = document.documentElement.classList.contains('mobile-menu-open')
+
+      if (menuOpen) {
         document.querySelector<HTMLElement>('.site-header')?.classList.remove('site-header--hidden')
+        lockPageScroll()
+      } else {
+        unlockPageScroll()
       }
-    })
+    }
+
+    const menuObserver = new MutationObserver(syncMenuState)
 
     menuObserver.observe(document.documentElement, {
       attributes: true,
