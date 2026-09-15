@@ -12,14 +12,10 @@ const alt = computed(() => props.decorative ? '' : 'Cuebooker')
 
 const src = computed(() => {
   if (props.variant === 'icon') {
-    return theme.value === 'light'
-      ? '/cuebooker-icon-light-v3.png'
-      : '/cuebooker-icon-dark-v3.png'
+    return theme.value === 'light' ? '/logo-light.png' : '/logo-dark.png'
   }
 
-  return theme.value === 'light'
-    ? '/cuebooker-header-light-v3.png'
-    : '/cuebooker-header-dark-v3.png'
+  return theme.value === 'light' ? '/logo-full-light.png' : '/logo-full-dark.png'
 })
 </script>
 
@@ -29,8 +25,8 @@ const src = computed(() => {
       :key="src"
       :src="src"
       :alt="alt"
-      :width="variant === 'icon' ? 128 : 384"
-      height="128"
+      :width="variant === 'icon' ? 64 : 192"
+      height="64"
     >
   </span>
 </template>
@@ -51,11 +47,13 @@ const src = computed(() => {
 }
 
 .cue-brand--wordmark {
+  aspect-ratio: 3 / 1;
   height: 64px;
   width: 192px;
 }
 
 .cue-brand--icon {
+  aspect-ratio: 1;
   height: 58px;
   width: 58px;
 }
