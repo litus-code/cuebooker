@@ -3,6 +3,11 @@ export default defineNuxtPlugin((nuxtApp) => {
     let lastScrollY = window.scrollY
     let ticking = false
 
+    const syncHeaderHeight = (header: HTMLElement | null) => {
+      if (!header) return
+      document.documentElement.style.setProperty('--mobile-header-height', `${header.offsetHeight}px`)
+    }
+
     const updateHeader = () => {
       const header = document.querySelector<HTMLElement>('.site-header')
 
@@ -11,6 +16,8 @@ export default defineNuxtPlugin((nuxtApp) => {
         ticking = false
         return
       }
+
+      syncHeaderHeight(header)
 
       const scrollY = window.scrollY
       const isMobile = window.matchMedia('(max-width: 720px)').matches
@@ -44,6 +51,8 @@ export default defineNuxtPlugin((nuxtApp) => {
     const syncMenuState = () => {
       const menuOpen = document.documentElement.classList.contains('mobile-menu-open')
       const header = document.querySelector<HTMLElement>('.site-header')
+
+      syncHeaderHeight(header)
 
       if (menuOpen) {
         header?.classList.remove('site-header--hidden')
