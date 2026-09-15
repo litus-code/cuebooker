@@ -28,8 +28,8 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'canonical', href: 'https://cuebooker.com/' },
-        { rel: 'icon', type: 'image/png', href: '/cuebooker-icon.png' },
-        { rel: 'apple-touch-icon', href: '/cuebooker-icon.png' }
+        { rel: 'icon', type: 'image/png', href: '/cuebooker-favicon.png' },
+        { rel: 'apple-touch-icon', href: '/cuebooker-favicon.png' }
       ],
       script: [{
         type: 'application/ld+json',
