@@ -55,7 +55,13 @@
   }
 
   html.mobile-menu-open .site-header {
+    left:0;
+    position:fixed;
+    right:0;
+    top:0;
     transform:none !important;
+    width:100%;
+    z-index:10000;
   }
 
   .menu-trigger span {
