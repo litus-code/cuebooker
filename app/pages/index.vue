@@ -174,7 +174,7 @@ useHead(() => ({
       <div class="section-heading"><p class="eyebrow">{{ copy.demo.eyebrow }}</p><h2>{{ copy.demo.title }}</h2><p>{{ copy.demo.body }}</p></div>
       <div class="demo-reality__grid"><article><strong>{{ copy.demo.currentTitle }}</strong><ul><li v-for="item in copy.demo.current" :key="item"><span>✓</span>{{ item }}</li></ul></article><article><strong>{{ copy.demo.realTitle }}</strong><ul><li v-for="item in copy.demo.real" :key="item"><span>○</span>{{ item }}</li></ul><p class="demo-reality__note">{{ copy.demo.realNote }}</p></article></div>
       <div class="demo-reality__actions">
-        <NuxtLink class="button button--primary" to="/app">{{ copy.demo.panelButton }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
+        <NuxtLink class="button button--primary" to="/access?mode=signup">{{ copy.demo.panelButton }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
         <NuxtLink class="button button--ghost" to="/artist">{{ copy.demo.requestButton }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
       </div>
     </section>
