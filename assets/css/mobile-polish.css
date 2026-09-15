@@ -1,17 +1,15 @@
 .brand,
 .workspace-header > a { align-items: center; display: inline-flex; }
-.brand { gap: 8px; }
+.brand { width:190px; min-height:44px; font-size:0 !important; letter-spacing:0 !important; background:url('/cuebooker-header.png') left center / contain no-repeat; }
 .brand::before,
-.workspace-header > a::before { background: url('/cuebooker-icon.png') center / contain no-repeat; content: ''; display: block; flex: 0 0 auto; height: 36px; width: 36px; }
-.brand { font-size:0 !important; letter-spacing:0 !important; }
-.brand::after { content:'cuebooker'; color:var(--cue-text,#f2f0eb); font:900 15px/1 Arial,Helvetica,sans-serif; letter-spacing:.01em; text-transform:lowercase; }
-.brand > span { display:none !important; }
+.brand::after,
+.brand > span,
+.workspace-header > a::before { display:none !important; }
 .network__core img { display: block; height: 58px; width: 58px; }
 
 @media (max-width: 720px) {
   .site-header { grid-template-columns: 1fr auto; min-height: 58px; padding: 0 14px; }
-  .brand::before { height: 34px; width: 34px; }
-  .brand::after { font-size:13px; }
+  .brand { width:158px; min-height:38px; }
   .menu-trigger { grid-column: 2; height: 40px; padding: 9px; width: 40px; }
   .menu-trigger span { margin-left: auto; width: 20px; }
   .site-nav--open { border-bottom: 0; box-shadow: 0 24px 48px var(--cue-shadow); padding: 8px 18px 82px; top: 57px; }
@@ -33,8 +31,7 @@
 
 @media (max-width: 860px) {
   .workspace-header { display:grid; gap:8px; grid-template-columns:1fr auto; grid-template-rows:auto auto; min-height:58px; padding:8px 12px; }
-  .workspace-header > a { grid-column:1; grid-row:1; font-size:10px; gap:7px; letter-spacing:.06em; }
-  .workspace-header > a::before { height:34px; width:34px; }
+  .workspace-header > a { grid-column:1; grid-row:1; }
   .workspace-header .account-actions { display:flex !important; grid-column:2; grid-row:1; justify-self:end; align-items:center; gap:6px; }
   .workspace-header .account-actions .cue-preferences-control { display:none !important; }
   .workspace-header nav { grid-column:1 / -1; grid-row:2; display:grid !important; grid-template-columns:repeat(4,minmax(0,1fr)); width:100%; overflow:hidden; }
