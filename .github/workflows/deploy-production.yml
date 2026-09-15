@@ -49,6 +49,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify production public configuration
+        shell: bash
+        env:
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          missing=0
+          for key in NUXT_PUBLIC_SUPABASE_URL NUXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY; do
+            if [ -z "${!key}" ]; then
+              echo "Missing required production variable: $key"
+              missing=1
+            fi
+          done
+          exit "$missing"
+
       - name: Generate production build
         env:
           NUXT_APP_BASE_URL: /
