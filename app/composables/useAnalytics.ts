@@ -5,7 +5,7 @@ type AnalyticsWindow = Window & {
   dataLayer?: Array<Record<string, unknown>>
 }
 
-const CONSENT_STORAGE_KEY = 'cuebooker:analytics-consent'
+const CONSENT_STORAGE_KEY = 'cuebooker:analytics-consent:v2'
 const GTM_SCRIPT_ID = 'cuebooker-gtm'
 
 export const useAnalytics = () => {
@@ -43,21 +43,16 @@ export const useAnalytics = () => {
     if (!import.meta.client || initialized.value) return
     initialized.value = true
 
-    if (!enabled.value) return
-
     const storedConsent = localStorage.getItem(CONSENT_STORAGE_KEY)
     if (storedConsent === 'granted' || storedConsent === 'denied') {
       consent.value = storedConsent
     }
 
-    if (consent.value === 'granted') {
-      loadGtm()
-    }
+    if (consent.value === 'granted') loadGtm()
   }
 
   const accept = () => {
     if (!import.meta.client) return
-
     consent.value = 'granted'
     localStorage.setItem(CONSENT_STORAGE_KEY, 'granted')
     loadGtm()
@@ -65,7 +60,6 @@ export const useAnalytics = () => {
 
   const deny = () => {
     if (!import.meta.client) return
-
     consent.value = 'denied'
     localStorage.setItem(CONSENT_STORAGE_KEY, 'denied')
   }
