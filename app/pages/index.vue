@@ -20,8 +20,8 @@ const discoveryCount = computed(() => locale.value === 'es'
   ? `${discoveryArtists.value.length} ${discoveryArtists.value.length === 1 ? 'artista disponible' : 'artistas disponibles'}`
   : `${discoveryArtists.value.length} available ${discoveryArtists.value.length === 1 ? 'artist' : 'artists'}`)
 const noDiscoveryResults = computed(() => locale.value === 'es'
-  ? 'No hay artistas de esta demo dentro del presupuesto seleccionado.'
-  : 'No demo artists match the selected budget.')
+  ? 'No hay artistas ficticios dentro del presupuesto seleccionado.'
+  : 'No fictional artists match the selected budget.')
 
 const networkLabel = computed(() => {
   if (searchState.value === 'searching') return copy.value.hero.networkSearching
