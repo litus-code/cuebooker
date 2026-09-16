@@ -1,0 +1,238 @@
+/* Final responsive refinements for the current workspace visual-system branch.
+   Keep this file small: it only resolves cross-component mobile composition. */
+
+@media (max-width: 960px) {
+  /* History: readable timeline instead of a compressed desktop row. */
+  .workspace .history-list {
+    max-width: none !important;
+    margin-top: 12px !important;
+    padding-bottom: 24px !important;
+  }
+
+  .workspace .history-list > button {
+    display: grid !important;
+    grid-template-columns: 12px minmax(0, 1fr) !important;
+    grid-template-areas:
+      'dot time'
+      'dot content' !important;
+    column-gap: 11px !important;
+    row-gap: 7px !important;
+    min-height: 0 !important;
+    padding: 14px 0 0 !important;
+  }
+
+  .workspace .history-list > button > time {
+    grid-area: time !important;
+    padding: 0 !important;
+    color: var(--cue-muted) !important;
+    font-size: 9px !important;
+    line-height: 1.25 !important;
+  }
+
+  .workspace .history-list > button > i {
+    grid-area: dot !important;
+    width: 8px !important;
+    height: 8px !important;
+    margin: 2px 0 0 2px !important;
+  }
+
+  .workspace .history-list > button > i::after {
+    top: 13px !important;
+    bottom: -100% !important;
+    left: 3px !important;
+  }
+
+  .workspace .history-list > button > div {
+    grid-area: content !important;
+    min-width: 0 !important;
+    padding: 0 0 17px !important;
+  }
+
+  .workspace .history-list > button span {
+    margin-bottom: 5px !important;
+    font-size: 8px !important;
+  }
+
+  .workspace .history-list > button strong {
+    display: block !important;
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .workspace .history-list > button p {
+    margin-top: 5px !important;
+    font-size: 12px !important;
+    line-height: 1.45 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .workspace .history-list > button small {
+    margin-top: 8px !important;
+    font-size: 8px !important;
+  }
+
+  /* Artist visual editor: keep the composition visible while editing controls below. */
+  .workspace .profile-cover-field {
+    margin-inline: 0 !important;
+    overflow: visible !important;
+  }
+
+  .workspace .profile-cover-field .cover-uploader__stage {
+    position: sticky !important;
+    z-index: 14 !important;
+    top: calc(var(--workspace-mobile-safe-header, 108px) + 8px) !important;
+    min-height: 300px !important;
+    height: min(44dvh, 360px) !important;
+    max-height: 360px !important;
+    border-bottom: 1px solid rgba(255,255,255,.14) !important;
+    box-shadow: 0 14px 34px rgba(0,0,0,.32) !important;
+  }
+
+  .workspace .profile-cover-field .cover-uploader__intro {
+    position: absolute !important;
+    z-index: 4 !important;
+    inset: 0 0 auto 0 !important;
+    display: grid !important;
+    align-content: start !important;
+    min-height: 0 !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+    padding: 14px !important;
+    background: linear-gradient(180deg, rgba(0,0,0,.9) 0%, rgba(0,0,0,.64) 58%, transparent 100%) !important;
+    pointer-events: none;
+  }
+
+  .workspace .profile-cover-field .cover-uploader__intro > * {
+    pointer-events: auto;
+  }
+
+  .workspace .profile-cover-field .cover-uploader__intro > span {
+    font-size: 8px !important;
+  }
+
+  .workspace .profile-cover-field .cover-uploader__intro h3 {
+    max-width: 72% !important;
+    margin: 7px 0 5px !important;
+    font-size: clamp(1.3rem, 7vw, 1.8rem) !important;
+    line-height: .92 !important;
+  }
+
+  .workspace .profile-cover-field .cover-uploader__intro p {
+    max-width: 76% !important;
+    margin: 0 0 9px !important;
+    font-size: 10px !important;
+    line-height: 1.35 !important;
+  }
+
+  .workspace .profile-cover-field .cover-uploader__intro button {
+    min-height: 36px !important;
+    padding: 0 11px !important;
+    font-size: 10px !important;
+  }
+
+  .workspace .profile-cover-field .cover-uploader__intro button i {
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 15px !important;
+  }
+
+  .workspace .profile-cover-field .cover-uploader__artist-image {
+    max-width: 72vw !important;
+    max-height: 86% !important;
+  }
+
+  .workspace .profile-cover-field .artist-layer {
+    padding: 16px !important;
+  }
+
+  .workspace .profile-cover-field .artist-layer__heading {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .workspace .profile-cover-field .artist-layer__heading button {
+    width: 100% !important;
+    min-height: 40px !important;
+  }
+
+  .workspace .profile-cover-field .artist-layer__styles {
+    flex-wrap: nowrap !important;
+    width: calc(100% + 16px) !important;
+    margin-right: -16px !important;
+    padding: 0 16px 7px 0 !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+  }
+
+  .workspace .profile-cover-field .artist-layer__styles::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .workspace .profile-cover-field .artist-layer__styles > span,
+  .workspace .profile-cover-field .artist-layer__styles button {
+    flex: 0 0 auto !important;
+  }
+
+  .workspace .profile-cover-field .artist-layer__sliders {
+    grid-template-columns: 1fr !important;
+    gap: 13px !important;
+    margin-top: 13px !important;
+  }
+
+  .workspace .profile-cover-field .artist-layer__sliders label {
+    padding: 10px 0 !important;
+    border-top: 1px solid rgba(255,255,255,.1) !important;
+  }
+
+  .workspace .profile-cover-field .artist-layer__sliders input {
+    min-height: 28px !important;
+  }
+
+  .workspace .profile-cover-field .artist-layer__footer {
+    flex-wrap: wrap !important;
+    gap: 10px 14px !important;
+  }
+
+  .workspace .profile-cover-field .cover-uploader__controls {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    padding: 14px 16px !important;
+  }
+
+  .workspace .profile-cover-field .cover-uploader__controls button {
+    width: 100% !important;
+  }
+
+  /* Keep mobile tour compact enough to leave a meaningful target area visible. */
+  .workspace .tour-card {
+    max-height: min(190px, 32dvh) !important;
+    padding: 12px 14px !important;
+  }
+
+  .workspace .tour-card > strong {
+    font-size: 15px !important;
+  }
+
+  .workspace .tour-card > p {
+    font-size: 10.5px !important;
+    line-height: 1.38 !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .workspace .profile-cover-field .cover-uploader__stage {
+    min-height: 280px !important;
+    height: min(42dvh, 330px) !important;
+  }
+
+  .workspace .profile-cover-field .cover-uploader__intro h3 {
+    max-width: 82% !important;
+  }
+
+  .workspace .profile-cover-field .cover-uploader__intro p {
+    display: none !important;
+  }
+}
