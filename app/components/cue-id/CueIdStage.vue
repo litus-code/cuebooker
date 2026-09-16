@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { defineAsyncComponent } from 'vue'
+import CueIdFallback from './CueIdFallback.vue'
 
 type CueIdMaterial = 'matte' | 'chrome' | 'glass'
 type CueIdAccent = 'lime' | 'red' | 'violet'
