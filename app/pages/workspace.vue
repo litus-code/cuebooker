@@ -74,6 +74,9 @@ const rosterArtistSlug = ref('')
 const rosterSubmitting = ref(false)
 const bookingFilter = ref<'all' | BookingStatus>('all')
 const bookingSearch = ref('')
+const historySearch = ref('')
+const historyPage = ref(1)
+const historyPageSize = 10
 const sidebarCollapsed = ref(false)
 const selectedDemoBookingId = ref('')
 const demoReply = ref('')
@@ -108,7 +111,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   sampleEyebrow: 'BOOKINGS / MODO PRUEBA', sampleTitle: 'PRUEBA LA BANDEJA COMPLETA.', sampleBody: 'Las solicitudes reales todavía no están conectadas a esta cuenta. Puedes probar ahora los filtros, ofertas, conversaciones y cambios de estado con datos simulados.', openBookings: 'Abrir Bookings',
   bookingsEyebrow: 'BOOKINGS / BANDEJA', bookingsTitle: 'TODOS TUS BOOKINGS. UN SOLO HILO.',
   bookingsBody: 'Revisa cada propuesta, responde al promotor y decide la fecha sin perder el contexto.',
-  samplesLabel: 'EJEMPLOS INICIALES / DATOS SIMULADOS', samplesActive: 'Tu workspace empieza con solicitudes de muestra.', samplesRemoved: 'Has eliminado las solicitudes de muestra.', samplesBody: 'Los ejemplos pertenecen únicamente a este perfil y navegador. No modifican el calendario privado y puedes retirarlos cuando quieras.', guidedTour: 'Ver recorrido guiado', searchBookings: 'Buscar solicitudes', searchBookingsPlaceholder: 'Sala, promotor, ciudad, evento o ID…', searchResults: 'resultados', collapseSidebar: 'Comprimir menú', expandSidebar: 'Expandir menú', removeSamples: 'Eliminar ejemplos', restoreSamples: 'Restaurar ejemplos', all: 'Todas', noSamples: 'No hay solicitudes de prueba en este estado.',
+  samplesLabel: 'EJEMPLOS INICIALES / DATOS SIMULADOS', samplesActive: 'Tu workspace empieza con solicitudes de muestra.', samplesRemoved: 'Has eliminado las solicitudes de muestra.', samplesBody: 'Los ejemplos pertenecen únicamente a este perfil y navegador. No modifican el calendario privado y puedes retirarlos cuando quieras.', guidedTour: 'Ver recorrido guiado', searchBookings: 'Buscar solicitudes', searchBookingsPlaceholder: 'Sala, promotor, ciudad, evento o ID…', searchResults: 'resultados', searchHistory: 'Buscar en historial', searchHistoryPlaceholder: 'Sala, ciudad, mensaje o estado…', previousPage: 'Anterior', nextPage: 'Siguiente', page: 'Página', collapseSidebar: 'Comprimir menú', expandSidebar: 'Expandir menú', removeSamples: 'Eliminar ejemplos', restoreSamples: 'Restaurar ejemplos', all: 'Todas', noSamples: 'No hay solicitudes de prueba en este estado.',
   sampleBooking: 'BOOKING DE PRUEBA', automaticStatus: 'Estado automático', eventData: 'Datos del evento', date: 'Fecha', city: 'Ciudad', venue: 'Sala', capacity: 'Aforo', offer: 'Oferta', schedule: 'Horario', contact: 'Contacto', name: 'Nombre', phone: 'Tel.', source: 'Origen', bookingLink: 'Enlace de booking', conversation: 'Conversación', replyPromoter: 'Responder al promotor', replyPlaceholder: 'Escribe condiciones, una pregunta o una propuesta…', localMessage: 'Ejemplo local. El mensaje no se envía por email.', sendSampleReply: 'Enviar respuesta de ejemplo', openPromoter: 'Abrir vista del promotor', confirmDate: 'Confirmar fecha', rejectRequest: 'Rechazar solicitud', openRequest: 'Abre una solicitud para ver sus datos, la oferta y la conversación.',
   calendarEyebrow: 'CALENDARIO / DISPONIBILIDAD', calendarTitle: 'FECHAS Y HORARIOS.', calendarBody: 'Abre un día para ver sus 24 horas. Pulsa una hora vacía para crear un horario o un bloque existente para editarlo.', weekdays: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], unavailable: 'No disponible', dayHours: 'DÍA / 24 HORAS', add: 'Añadir', selectedDaySchedule: 'Horario del día seleccionado', addAt: 'Añadir horario a las',
   historyEyebrow: 'WORKSPACE / HISTORIAL', historyTitle: 'TODO LO QUE HA PASADO.',
@@ -142,7 +145,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   sampleEyebrow: 'BOOKINGS / SAMPLE MODE', sampleTitle: 'TRY THE COMPLETE INBOX.', sampleBody: 'Real requests are not connected to this account yet. You can try filters, offers, conversations and status changes with sample data.', openBookings: 'Open Bookings',
   bookingsEyebrow: 'BOOKINGS / INBOX', bookingsTitle: 'ALL YOUR BOOKINGS. ONE THREAD.',
   bookingsBody: 'Review every proposal, reply to the promoter and decide each date without losing context.',
-  samplesLabel: 'STARTER EXAMPLES / SAMPLE DATA', samplesActive: 'Your workspace starts with sample requests.', samplesRemoved: 'You removed the sample requests.', samplesBody: 'These examples belong only to this profile and browser. They do not change your private calendar and you can remove them whenever you want.', guidedTour: 'View guided tour', searchBookings: 'Search requests', searchBookingsPlaceholder: 'Venue, promoter, city, event or ID…', searchResults: 'results', collapseSidebar: 'Collapse menu', expandSidebar: 'Expand menu', removeSamples: 'Remove examples', restoreSamples: 'Restore examples', all: 'All', noSamples: 'There are no sample requests with this status.',
+  samplesLabel: 'STARTER EXAMPLES / SAMPLE DATA', samplesActive: 'Your workspace starts with sample requests.', samplesRemoved: 'You removed the sample requests.', samplesBody: 'These examples belong only to this profile and browser. They do not change your private calendar and you can remove them whenever you want.', guidedTour: 'View guided tour', searchBookings: 'Search requests', searchBookingsPlaceholder: 'Venue, promoter, city, event or ID…', searchResults: 'results', searchHistory: 'Search history', searchHistoryPlaceholder: 'Venue, city, message or status…', previousPage: 'Previous', nextPage: 'Next', page: 'Page', collapseSidebar: 'Collapse menu', expandSidebar: 'Expand menu', removeSamples: 'Remove examples', restoreSamples: 'Restore examples', all: 'All', noSamples: 'There are no sample requests with this status.',
   sampleBooking: 'SAMPLE BOOKING', automaticStatus: 'Automatic status', eventData: 'Event details', date: 'Date', city: 'City', venue: 'Venue', capacity: 'Capacity', offer: 'Offer', schedule: 'Schedule', contact: 'Contact', name: 'Name', phone: 'Phone', source: 'Source', bookingLink: 'Booking link', conversation: 'Conversation', replyPromoter: 'Reply to promoter', replyPlaceholder: 'Write conditions, a question or a proposal…', localMessage: 'Local example. This message is not sent by email.', sendSampleReply: 'Send sample reply', openPromoter: 'Open promoter view', confirmDate: 'Confirm date', rejectRequest: 'Reject request', openRequest: 'Open a request to view its details, offer and conversation.',
   calendarEyebrow: 'CALENDAR / AVAILABILITY', calendarTitle: 'DATES AND TIMES.', calendarBody: 'Open a day to see all 24 hours. Select an empty hour to create a slot or an existing block to edit it.', weekdays: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], unavailable: 'Unavailable', dayHours: 'DAY / 24 HOURS', add: 'Add', selectedDaySchedule: 'Selected day schedule', addAt: 'Add slot at',
   historyEyebrow: 'WORKSPACE / HISTORY', historyTitle: 'EVERYTHING THAT HAPPENED.',
@@ -307,6 +310,16 @@ const historyItems = computed(() => demo.bookings.value.flatMap(booking => [
     detail: `${booking.event.city} · ${formatDemoDate(booking.event.date)}`
   }
 ]).sort((a, b) => b.at.localeCompare(a.at)))
+const filteredHistoryItems = computed(() => {
+  const query = historySearch.value.trim().toLocaleLowerCase(preferences.locale.value === 'es' ? 'es' : 'en')
+  if (!query) return historyItems.value
+  return historyItems.value.filter(item => [item.kind, item.title, item.detail].join(' ').toLocaleLowerCase(preferences.locale.value === 'es' ? 'es' : 'en').includes(query))
+})
+const historyPageCount = computed(() => Math.max(1, Math.ceil(filteredHistoryItems.value.length / historyPageSize)))
+const paginatedHistoryItems = computed(() => {
+  const start = (historyPage.value - 1) * historyPageSize
+  return filteredHistoryItems.value.slice(start, start + historyPageSize)
+})
 const hours = Array.from({ length: 24 }, (_, index) => `${String(index).padStart(2, '0')}:00`)
 
 onMounted(async () => {
@@ -337,6 +350,9 @@ watch(activeView, async (view) => {
   nav.scrollTo({ left: tab.offsetLeft - (nav.clientWidth - tab.clientWidth) / 2, behavior: 'smooth' })
 })
 watch(rosterArtistName, value => { rosterArtistSlug.value = slugify(value) })
+watch(historySearch, () => { historyPage.value = 1 })
+watch(historyPageCount, count => { if (historyPage.value > count) historyPage.value = count })
+watch(activeView, view => { if (view !== 'profile') profilePreviewOpen.value = false })
 watch(demo.ready, async (value) => {
   if (!value) selectedDemoBookingId.value = ''
   else if (!selectedDemoBookingId.value) {
@@ -708,10 +724,19 @@ function changeMonth(offset: number) {
   closeEditor()
 }
 
-function selectDay(date: string) {
+async function selectDay(date: string) {
   selectedDate.value = date
   if (date.slice(0, 7) !== monthCursor.value.slice(0, 7)) monthCursor.value = `${date.slice(0, 7)}-01`
   closeEditor()
+  if (!import.meta.client || window.innerWidth > 960) return
+  await nextTick()
+  await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+  const panel = document.getElementById('workspace-day-panel')
+  const header = document.getElementById('workspace-header')
+  if (!panel) return
+  const offset = (header?.getBoundingClientRect().height || 0) + 8
+  const top = panel.getBoundingClientRect().top + window.scrollY - offset
+  window.scrollTo({ top: Math.max(0, top), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
 }
 
 function openCreate(start = '18:00') {
@@ -823,8 +848,9 @@ async function selectDemoBooking(bookingId: string) {
   const detail = document.getElementById(`booking-thread-${nextId}`)
   if (!detail) return
   const header = document.getElementById('workspace-header')
-  const headerOffset = header ? Math.ceil(header.getBoundingClientRect().height) + 8 : 16
-  const top = detail.getBoundingClientRect().top + window.scrollY - headerOffset
+  const headerOffset = header ? Math.ceil(header.getBoundingClientRect().height) + 12 : 16
+  const detailHeader = detail.querySelector<HTMLElement>(':scope > header') || detail
+  const top = detailHeader.getBoundingClientRect().top + window.scrollY - headerOffset
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   window.scrollTo({ top: Math.max(0, top), behavior: reducedMotion ? 'auto' : 'smooth' })
   detail.focus({ preventScroll: true })
@@ -1071,7 +1097,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             <div class="legend"><span><i class="status-dot status-dot--hold" />Hold</span><span><i class="status-dot status-dot--confirmed" />{{ copy.confirmedStatus }}</span><span><i class="status-dot status-dot--unavailable" />{{ copy.unavailable }}</span></div>
           </section>
 
-          <section class="day-panel panel">
+          <section id="workspace-day-panel" class="day-panel panel">
             <div class="day-heading"><div><p class="eyebrow">{{ copy.dayHours }}</p><h2>{{ selectedDateLabel }}</h2></div><button class="add-button" type="button" @click="openCreate()">{{ copy.add }}</button></div>
             <div class="timeline" :aria-label="copy.selectedDaySchedule">
               <button v-for="hour in hours" :key="hour" class="hour-row" type="button" :aria-label="`${copy.addAt} ${hour}`" @click="openCreate(hour)"><span>{{ hour }}</span></button>
@@ -1089,10 +1115,23 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
           <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
-        <div v-if="historyItems.length" class="history-list">
-          <button v-for="item in historyItems" :id="item.id === `status-${item.bookingId}` ? `history-booking-${item.bookingId}` : undefined" :key="item.id" type="button" :aria-label="`${copy.openTrace}: ${item.title}`" @click="openHistoryItem(item.bookingId)"><time>{{ formatDemoTime(item.at) }}</time><i /><div><span>{{ item.kind }}</span><strong>{{ item.title }}</strong><p>{{ item.detail }}</p><small>{{ copy.openTrace }} →</small></div></button>
+        <div v-if="historyItems.length" class="history-tools">
+          <label class="booking-search history-search">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
+            <span class="sr-only">{{ copy.searchHistory }}</span>
+            <input v-model="historySearch" type="search" :placeholder="copy.searchHistoryPlaceholder" :aria-label="copy.searchHistory">
+          </label>
+          <span>{{ filteredHistoryItems.length }} / {{ historyItems.length }}</span>
         </div>
-        <p v-else class="workspace-empty">{{ copy.historyEmpty }}</p>
+        <div v-if="paginatedHistoryItems.length" class="history-list">
+          <button v-for="item in paginatedHistoryItems" :id="item.id === `status-${item.bookingId}` ? `history-booking-${item.bookingId}` : undefined" :key="item.id" type="button" :aria-label="`${copy.openTrace}: ${item.title}`" @click="openHistoryItem(item.bookingId)"><time>{{ formatDemoTime(item.at) }}</time><i /><div><span>{{ item.kind }}</span><strong>{{ item.title }}</strong><p>{{ item.detail }}</p><small>{{ copy.openTrace }} <svg class="inline-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 7l5 5-5 5"/></svg></small></div></button>
+        </div>
+        <div v-if="filteredHistoryItems.length > historyPageSize" class="history-pagination" aria-label="Pagination">
+          <button type="button" :disabled="historyPage <= 1" @click="historyPage -= 1">{{ copy.previousPage }}</button>
+          <span>{{ copy.page }} {{ historyPage }} / {{ historyPageCount }}</span>
+          <button type="button" :disabled="historyPage >= historyPageCount" @click="historyPage += 1">{{ copy.nextPage }}</button>
+        </div>
+        <p v-if="!paginatedHistoryItems.length" class="workspace-empty">{{ copy.historyEmpty }}</p>
       </section>
 
       <section v-else class="view profile-view">
@@ -1101,7 +1140,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <div class="profile-heading-actions">
             <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
             <div v-else class="profile-progress"><span>{{ copy.profileCompletion }}</span><strong>{{ profileCompletion }}%</strong><i><b :style="{ width: `${profileCompletion}%` }" /></i></div>
-            <button class="profile-preview-button" type="button" @click="profilePreviewOpen = true">{{ copy.previewProfile }} ↗</button>
+            <button class="profile-preview-button" type="button" @click="profilePreviewOpen = true"><span>{{ copy.previewProfile }}</span><svg class="external-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></button>
           </div>
         </div>
 
@@ -1210,7 +1249,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <section class="profile-preview-body">
           <p class="profile-preview-bio">{{ profileForm.bio || copy.previewBioEmpty }}</p>
           <div v-if="profilePreviewFormats.length" class="profile-preview-block"><span>{{ copy.previewFormats }}</span><strong>{{ profilePreviewFormats.join(' · ') }}</strong></div>
-          <div v-if="profilePreviewLinks.length" class="profile-preview-block"><span>{{ copy.previewLinks }}</span><nav><a v-for="link in profilePreviewLinks" :key="link.label" :href="link.url" target="_blank" rel="noopener noreferrer">{{ link.label }} ↗</a></nav></div>
+          <div v-if="profilePreviewLinks.length" class="profile-preview-block"><span>{{ copy.previewLinks }}</span><nav><a v-for="link in profilePreviewLinks" :key="link.label" :href="link.url" target="_blank" rel="noopener noreferrer"><span>{{ link.label }}</span><svg class="external-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></a></nav></div>
         </section>
       </article>
     </div>

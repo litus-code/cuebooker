@@ -1,3 +1,13 @@
+
+/* Mobile UX pass: predictable scrolling, compact sticky actions, scalable history and profile preview. */
+.external-link-icon,.inline-arrow-icon{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.profile-preview-button,.profile-preview-block a,.history-list small{display:inline-flex;align-items:center;gap:7px}
+.history-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0 10px}
+.history-tools>span{color:var(--cue-muted);font:700 9px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em}
+.history-pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 0 6px;border-top:1px solid var(--workspace-line,var(--cue-border))}
+.history-pagination button{min-height:38px;padding:0 14px;border:1px solid var(--workspace-line,var(--cue-border));background:var(--workspace-panel,var(--cue-surface));color:var(--cue-text)}
+.history-pagination button:disabled{opacity:.35}
+.history-pagination span{color:var(--cue-muted);font:700 9px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em}
 /* Final responsive refinements for the current workspace visual-system branch. */
 
 .sr-only {
@@ -219,6 +229,20 @@
 }
 
 @media (max-width: 960px) {
+  .workspace .profile-cover-field .cover-uploader__intro button{margin-top:12px!important}
+  .workspace .profile-savebar{position:sticky!important;z-index:56!important;bottom:env(safe-area-inset-bottom)!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important;margin:0!important;padding:10px 12px!important;border-top:1px solid var(--workspace-line,var(--cue-border))!important;background:color-mix(in srgb,var(--cue-bg) 96%,transparent)!important;box-shadow:0 -10px 28px rgba(0,0,0,.32)!important;backdrop-filter:blur(16px)!important}
+  .workspace .profile-savebar>div{display:flex!important;align-items:baseline!important;gap:9px!important;min-width:0!important}
+  .workspace .profile-savebar>div span{font-size:8px!important}.workspace .profile-savebar>div strong{font-size:22px!important}
+  .workspace .profile-savebar>button{width:auto!important;min-width:116px!important;min-height:44px!important;padding-inline:16px!important}
+  .workspace .profile-savebar>p{grid-column:1/-1!important;grid-row:2!important;margin:0!important}
+  .workspace .history-tools{display:grid!important;grid-template-columns:1fr auto!important;margin-top:12px!important}.workspace .history-search{max-width:none!important}.workspace .history-search input{min-height:44px!important}.workspace .history-pagination button{min-height:44px!important}
+  .workspace .booking-detail,.workspace #workspace-day-panel{scroll-margin-top:calc(var(--workspace-mobile-safe-header,108px) + 12px)!important}
+  .workspace .profile-preview-backdrop{position:fixed!important;z-index:80!important;inset:var(--workspace-mobile-safe-header,108px) 0 0!important;display:grid!important;align-items:start!important;padding:0!important;overflow-y:auto!important;background:var(--cue-bg)!important}
+  .workspace .profile-preview-backdrop>.profile-preview{width:100%!important;max-width:none!important;min-height:0!important;max-height:none!important;margin:0!important;border:0!important;background:var(--cue-bg)!important}
+  .workspace .profile-preview>header{position:sticky!important;z-index:4!important;top:0!important;min-height:48px!important;padding:0 14px!important;background:color-mix(in srgb,var(--cue-bg) 96%,transparent)!important;backdrop-filter:blur(14px)!important}
+  .workspace .profile-preview>.profile-preview-hero{display:grid!important;align-content:end!important;width:calc(100% - 24px)!important;min-height:360px!important;height:52dvh!important;max-height:500px!important;margin:12px!important;padding:24px!important;box-sizing:border-box!important;overflow:hidden!important}
+  .workspace .profile-preview-hero>img{inset:0!important;width:100%!important;height:100%!important;object-fit:cover!important}.workspace .profile-preview-hero h2{max-width:82%!important;font-size:clamp(2.8rem,15vw,4.8rem)!important;line-height:.9!important}.workspace .profile-preview>.profile-preview-body{width:100%!important;box-sizing:border-box!important;padding:20px 18px max(28px,env(safe-area-inset-bottom))!important}
+
   .workspace-brand-row {
     display: contents !important;
   }
