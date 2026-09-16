@@ -570,3 +570,29 @@ The first consolidation pass is now implemented on `feature/app-visual-system`:
 Static generation and `git diff --check` pass after this consolidation. `nuxi typecheck` cannot run in the current checkout because no type-checker package is installed; the production Nuxt build still compiles both client and server successfully.
 
 Do not begin the real CUE ID vertical slice until this commit has deployed to staging and the Dark/Light × ES/EN desktop/mobile smoke matrix has been completed there.
+
+## ACTIVE PRIORITY OVERRIDE · Booking Core
+
+Product priority changed on 16 September 2026 after validating that a large part of real DJ booking negotiation can begin or continue outside Cuebooker (phone, WhatsApp, email, Instagram, in-person, manager/agent).
+
+Before continuing product work, read `docs/BOOKING_CORE_PRODUCT_VISION.md` in full. It is now a required companion to this handoff.
+
+Current product-development focus is:
+
+```text
+CUE -> Booking -> Activity -> Next Move -> Calendar
+```
+
+This is an evolutionary change, not a rebuild. Preserve Overview, Bookings, filters/search, Booking Detail, Conversation as migration input for Activity, Calendar + 24h view, History, Guided Tour, Artist Profile, Dark/Light, ES/EN and the current visual system.
+
+Immediate implementation order:
+
+1. CUE / very fast manual booking creation.
+2. Activity as the unified booking history across email, phone, WhatsApp, notes and system events.
+3. Next Move + Hold, linked to Calendar.
+4. Overview driven by real attention states.
+
+Temporarily defer production CUE ID 3D, Passport expansion, constellation visualisation and deep external integrations until this operational loop is strong. Identity work remains valid and should not be deleted.
+
+Primary UX constraint: capturing something that just happened should feel like “remember this for me”, not “administer a CRM”. Mobile capture should be exceptionally fast.
+
