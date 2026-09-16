@@ -58,11 +58,12 @@
   :root {
     --workspace-mobile-inline: 14px;
     --workspace-mobile-header: 108px;
+    --workspace-mobile-safe-header: calc(var(--workspace-mobile-header) + env(safe-area-inset-top));
   }
 
   .workspace {
     min-width: 0 !important;
-    padding: 0 var(--workspace-mobile-inline) 96px !important;
+    padding: 0 var(--workspace-mobile-inline) max(48px, env(safe-area-inset-bottom)) !important;
     overflow-x: clip !important;
   }
 
@@ -77,10 +78,10 @@
     grid-template-areas: 'brand actions' 'nav nav' !important;
     align-items: center !important;
     width: calc(100% + (var(--workspace-mobile-inline) * 2)) !important;
-    min-height: var(--workspace-mobile-header) !important;
+    min-height: var(--workspace-mobile-safe-header) !important;
     box-sizing: border-box !important;
     margin: 0 calc(var(--workspace-mobile-inline) * -1) !important;
-    padding: 0 var(--workspace-mobile-inline) 6px !important;
+    padding: env(safe-area-inset-top) var(--workspace-mobile-inline) 6px !important;
     gap: 0 8px !important;
     border-bottom: 1px solid var(--workspace-line, var(--cue-border)) !important;
     background: color-mix(in srgb, var(--cue-bg) 97%, transparent) !important;
@@ -124,7 +125,7 @@
     border: 0 !important;
   }
 
-  /* Language/theme live inside Settings. Keep only Settings + Sign out as compact utilities. */
+  /* Language/theme live inside Settings. Keep only the session action in the compact header. */
   .workspace-header .account-actions > .cue-preferences-control {
     display: none !important;
   }
@@ -265,6 +266,16 @@
     width: 100% !important;
     max-width: none !important;
     margin-inline: 0 !important;
+  }
+
+  .workspace .view,
+  .workspace .booking-detail,
+  .workspace .tour-focus {
+    scroll-margin-top: calc(var(--workspace-mobile-safe-header) + 14px) !important;
+  }
+
+  .workspace .tour-focus {
+    scroll-margin-bottom: min(240px, 36dvh) !important;
   }
 
   .workspace .view-heading,
@@ -509,18 +520,18 @@
   .workspace .profile-cover-message { margin-inline: 16px !important; }
 
   .workspace .profile-savebar {
-    position: sticky !important;
-    z-index: 22 !important;
-    bottom: 0 !important;
+    position: static !important;
+    z-index: auto !important;
+    bottom: auto !important;
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) auto !important;
     gap: 10px !important;
     width: 100% !important;
     min-height: 0 !important;
-    margin-top: 16px !important;
-    padding: 12px 12px max(12px, env(safe-area-inset-bottom)) !important;
-    box-shadow: 0 12px 30px color-mix(in srgb, var(--cue-shadow) 45%, transparent) !important;
-    backdrop-filter: blur(14px) !important;
+    margin: 16px 0 8px !important;
+    padding: 12px !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
   }
 
   .workspace .profile-savebar > p { grid-column: 1 / -1 !important; grid-row: 2 !important; }
@@ -530,7 +541,7 @@
   .workspace > .editor-backdrop:has(.settings-panel) {
     position: fixed !important;
     z-index: 70 !important;
-    inset: var(--workspace-mobile-header) 0 0 !important;
+    inset: var(--workspace-mobile-safe-header) 0 0 !important;
     display: block !important;
     padding: 0 var(--workspace-mobile-inline) max(28px, env(safe-area-inset-bottom)) !important;
     overflow-y: auto !important;
