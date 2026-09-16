@@ -1,0 +1,33 @@
+name: TEMP refine collapsed sidebar
+
+on:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - .github/workflows/temp-refine-collapsed-sidebar.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feature/app-visual-system
+          fetch-depth: 0
+      - name: Apply patch
+        run: python scripts/temp_refine_collapsed_sidebar.py
+      - name: Validate build
+        run: |
+          npm ci
+          npm run generate
+      - name: Commit patch
+        run: |
+          git config user.name "cuebooker-workspace-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add assets/css/workspace-responsive-final.css
+          git commit -m "Refine collapsed desktop sidebar rail"
+          git push origin HEAD:feature/app-visual-system
