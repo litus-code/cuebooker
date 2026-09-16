@@ -102,6 +102,22 @@ Treat these as initial engineering targets, not promises to users. Revisit them 
 
 Budgets can be relaxed only after measurement shows a visible benefit that justifies the cost.
 
+## First 3D slice baseline
+
+The first implementation uses Three.js core directly, without TresJS and without GLB or texture assets. The figure is procedural so the only meaningful 3D network cost is the deferred renderer chunk.
+
+Current production-build measurement on 16 September 2026:
+
+- CUE ID renderer chunk: about 541.6 kB minified, 135.6 kB gzip;
+- the renderer remains a dynamic chunk and is not part of the initial Artist Profile payload;
+- the chunk is requested only when `CueIdStage` approaches the viewport;
+- no GLB, texture or environment payload is loaded in this slice;
+- `npm ci` and `nuxt generate` pass with 0 reported npm vulnerabilities.
+
+Named imports from Three.js do not materially reduce the renderer chunk because the WebGL renderer and its core dependencies remain required. Do not couple CueBooker to `three/src` internals solely to suppress a bundler size warning. Reassess the cost when real GLB assets, textures or post-processing are introduced.
+
+For the private workspace this deferred network cost is acceptable for the current prototype. Public artist profiles should use the static representation by default and activate live 3D only through explicit interaction or a similarly deferred strategy.
+
 ## Measurement
 
 Before merging the first real 3D implementation, record a baseline without 3D and compare the same Artist Profile with CUE ID enabled.

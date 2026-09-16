@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ArtistImageStyle } from '../composables/useArtistProfile'
+import CueIdStage from './cue-id/CueIdStage.vue'
 
 const props = withDefaults(defineProps<{
   imageUrl?: string
@@ -468,6 +469,13 @@ onBeforeUnmount(() => {
 
       <small v-if="artistMessage">{{ artistMessage }}</small>
     </aside>
+
+    <CueIdStage
+      :artist-name="activeArtist?.stage_name || ''"
+      :disabled="disabled"
+      compact
+      embedded
+    />
 
     <div v-if="imageUrl" class="cover-uploader__controls">
       <label>
