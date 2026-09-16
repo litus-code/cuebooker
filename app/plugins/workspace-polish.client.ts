@@ -1,3 +1,5 @@
+import '~/assets/css/workspace-v7-mobile-system.css'
+
 export default defineNuxtPlugin(() => {
   const route = useRoute()
   let tourOpenedForEntry = false
