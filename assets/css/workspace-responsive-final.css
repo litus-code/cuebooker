@@ -1877,3 +1877,11 @@
     white-space: nowrap !important;
   }
 }
+
+
+/* Desktop booking toolbar breathing: separate search from filters without loosening the chips. */
+@media (min-width: 961px) {
+  .workspace .booking-toolbar-row .status-filters {
+    margin-left: 18px !important;
+  }
+}
