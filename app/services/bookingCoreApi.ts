@@ -18,6 +18,17 @@ type BookingCoreApiOptions = {
   userId: () => string | null | undefined
 }
 
+export type WorkspaceArtist = {
+  workspace_id: string
+  artist_id: string
+  created_by: string
+  created_at: string
+}
+
+export type EnsureBookingWorkspaceInput =
+  | { organizationId: string; artistId?: never }
+  | { organizationId?: never; artistId: string }
+
 function normalizedText(value: string | null | undefined) {
   const trimmed = value?.trim()
   return trimmed ? trimmed : null
@@ -55,6 +66,23 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     return userId
   }
 
+  async function ensureBookingWorkspace(input: EnsureBookingWorkspaceInput) {
+    const organizationId = 'organizationId' in input ? input.organizationId : null
+    const artistId = 'artistId' in input ? input.artistId : null
+    if ((!organizationId && !artistId) || (organizationId && artistId)) {
+      throw new Error('exactly_one_legacy_identity_required')
+    }
+
+    return $fetch<string>(`${baseUrl}/rest/v1/rpc/ensure_booking_workspace`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: {
+        target_organization_id: organizationId,
+        target_artist_id: artistId
+      }
+    })
+  }
+
   async function listWorkspaceMemberships() {
     const userId = currentUserId()
     return $fetch<WorkspaceMembership[]>(`${baseUrl}/rest/v1/workspace_members`, {
@@ -85,6 +113,17 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
       ...workspace,
       role: memberships.find(item => item.workspace_id === workspace.id)?.role || 'viewer'
     }))
+  }
+
+  async function listWorkspaceArtists(workspaceId: string) {
+    return $fetch<WorkspaceArtist[]>(`${baseUrl}/rest/v1/workspace_artists`, {
+      headers: authHeaders(),
+      query: {
+        workspace_id: `eq.${workspaceId}`,
+        select: 'workspace_id,artist_id,created_by,created_at',
+        order: 'created_at.asc'
+      }
+    })
   }
 
   async function listContacts(workspaceId: string) {
@@ -231,8 +270,10 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
   }
 
   return {
+    ensureBookingWorkspace,
     listWorkspaceMemberships,
     listWorkspaces,
+    listWorkspaceArtists,
     listContacts,
     createContact,
     listCounterparties,
