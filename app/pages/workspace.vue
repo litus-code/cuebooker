@@ -862,7 +862,7 @@ async function selectDemoBooking(bookingId: string) {
   const header = document.getElementById('workspace-header')
   const headerOffset = header ? Math.ceil(header.getBoundingClientRect().height) + 12 : 16
   const detailTitle = detail.querySelector<HTMLElement>(':scope > header h2') || detail
-  const contextReveal = window.innerWidth <= 960 ? 22 : 0
+  const contextReveal = window.innerWidth <= 960 ? 82 : 0
   const top = detailTitle.getBoundingClientRect().top + window.scrollY - headerOffset - contextReveal
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   window.scrollTo({ top: Math.max(0, top), behavior: reducedMotion ? 'auto' : 'smooth' })

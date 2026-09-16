@@ -1204,3 +1204,21 @@
     text-align: center !important;
   }
 }
+
+
+/* Final cover density tuning: editorial strip, not a hero. */
+@media (min-width: 961px) {
+  .workspace .profile-cover-field .cover-uploader__stage {
+    min-height: 260px !important;
+    height: clamp(260px, 26vw, 360px) !important;
+    max-height: 360px !important;
+  }
+}
+
+@media (max-width: 960px) {
+  .workspace .profile-cover-field .cover-uploader__stage {
+    min-height: 200px !important;
+    height: min(28dvh, 240px) !important;
+    max-height: 240px !important;
+  }
+}

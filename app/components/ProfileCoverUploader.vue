@@ -488,7 +488,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .cover-uploader { overflow: hidden; border: 1px solid var(--cue-border); background: #090909; color: #f4f2ed; }
-.cover-uploader__stage { position: relative; min-height: clamp(300px, 32vw, 420px); overflow: hidden; isolation: isolate; }
+.cover-uploader__stage { position: relative; min-height: clamp(260px, 26vw, 360px); overflow: hidden; isolation: isolate; }
 .cover-uploader__background { position: absolute; z-index: -3; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease, filter .35s ease; }
 .cover-uploader__shade { position: absolute; z-index: -2; inset: 0; background: linear-gradient(90deg,rgba(0,0,0,.9) 0%,rgba(0,0,0,.5) 42%,rgba(0,0,0,.16) 100%),linear-gradient(0deg,rgba(0,0,0,.64),transparent 55%); }
 .cover-uploader__artist-image { position: absolute; z-index: -1; width: clamp(190px, 30vw, 390px); max-height: 90%; object-fit: contain; object-position: center bottom; pointer-events: none; transform-origin: center; transition: left .12s ease, top .12s ease, transform .12s ease, filter .12s ease; }
