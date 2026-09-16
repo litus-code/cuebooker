@@ -66,6 +66,25 @@ The authenticated workspace includes an optional artist profile that can be comp
 
 The first three groups prepare future opt-in discovery without publishing them today. Commercial terms remain private and must never appear in a public directory without a separate product decision and explicit artist control.
 
+## Artist identity and trajectory
+
+CueBooker will extend the professional profile through an optional identity and trajectory layer. The working product language is:
+
+- **CUE ID**, the artist-controlled visual identity;
+- **CUE SIGNAL**, progression derived from meaningful professional activity inside CueBooker;
+- **CUE PASSPORT**, the structured history the artist can keep private or selectively share;
+- **CUE CASE**, a more expressive visual history based on real milestones, cities, venues and years.
+
+This layer must respect club culture and electronic-music history. It does not rank artistic quality, authenticity or popularity. Follower counts, likes and daily app usage do not increase progression.
+
+Music data must separate broad styles, substyles and sound descriptors so that scene terminology is not reduced to vague or invented labels. Taxonomy remains editorially reviewed and extensible.
+
+CUE ID appears during DJ onboarding as an optional invitation. Skipping it never blocks account creation or booking operations. The first implementation uses a lightweight visual prototype; the real 3D renderer is a later, lazy-loaded layer after the profile flow is stable.
+
+Sharing is part of the planned product surface. The artist will eventually be able to create privacy-aware outputs for Instagram, LinkedIn and direct image export without exposing private fees, negotiations, contacts or notes.
+
+See `docs/CUE_ID_PRODUCT_VISION.md` for cultural guardrails, taxonomy direction, 3D architecture, delivery phases and success criteria.
+
 ## Demo contract
 
 The public demo must state what users are seeing:
@@ -79,3 +98,5 @@ The public demo must state what users are seeing:
 ## Validation strategy
 
 The early-access form collects name, email, role and explicit consent. Leads go to the dedicated Brevo list. Interviews and pilot use should test whether users receive enough enquiries to need the workflow, which channels create the most loss, how they decide availability and what must remain private.
+
+The identity layer adds a second research track: whether DJs across different generations and electronic-music scenes consider CUE ID credible, whether experienced artists feel represented rather than gamified, whether artists complete more of their professional profile, and whether share artifacts create qualified profile visits.
