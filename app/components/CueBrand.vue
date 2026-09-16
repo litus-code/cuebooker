@@ -17,6 +17,13 @@ const src = computed(() => {
 
   return theme.value === 'light' ? '/logo-full-light.png' : '/logo-full-dark.png'
 })
+
+const srcset = computed(() => {
+  if (props.variant === 'icon') return undefined
+  return theme.value === 'light'
+    ? '/logo-full-light.png 1x, /logo-full-light@3x.png 3x'
+    : '/logo-full-dark.png 1x, /logo-full-dark@3x.png 3x'
+})
 </script>
 
 <template>
@@ -24,6 +31,7 @@ const src = computed(() => {
     <img
       :key="src"
       :src="src"
+      :srcset="srcset"
       :alt="alt"
       :width="variant === 'icon' ? 64 : 192"
       height="64"
