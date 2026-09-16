@@ -1252,3 +1252,33 @@
     object-position: center !important;
   }
 }
+
+
+/* Final collapsed-brand axis: center the visual mark on the exact navigation-icon axis. */
+@media (min-width: 961px) {
+  .workspace--sidebar-collapsed .workspace-brand-row {
+    position: relative !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  .workspace--sidebar-collapsed .workspace-header .brand {
+    position: absolute !important;
+    top: 0 !important;
+    left: 50% !important;
+    width: 52px !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    margin: 0 !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .workspace--sidebar-collapsed .workspace-brand-icon {
+    display: block !important;
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    margin: 0 auto !important;
+  }
+}
