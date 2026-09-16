@@ -42,8 +42,8 @@ jobs:
       - name: Use repository npm version
         run: npm install --global npm@10.9.3
 
-      - name: Rebuild lockfile for this recovery PR
-        if: ${{ github.event_name == 'pull_request' && github.head_ref == 'chore/deterministic-ci-installs' }}
+      - name: Rebuild lockfile for dependency refresh
+        if: ${{ github.event_name == 'pull_request' && (github.head_ref == 'chore/deterministic-ci-installs' || github.head_ref == 'feature/cue-id-3d') }}
         shell: bash
         run: |
           echo "Rebuilding package-lock.json from package.json with npm $(npm --version)"
