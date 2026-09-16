@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 export default defineNuxtConfig({
   compatibilityDate: '2026-09-13',
   devtools: { enabled: false },
-  css: [resolve('./assets/css/main.css'), resolve('./assets/css/mobile-polish.css'), resolve('./assets/css/final-mobile-fixes.css'), resolve('./assets/css/workspace-light-final.css'), resolve('./assets/css/light-headline-polish.css'), resolve('./assets/css/profile-preview-fix.css')],
+  css: [resolve('./assets/css/main.css'), resolve('./assets/css/mobile-polish.css'), resolve('./assets/css/final-mobile-fixes.css'), resolve('./assets/css/workspace-light-final.css'), resolve('./assets/css/light-headline-polish.css'), resolve('./assets/css/profile-preview-fix.css'), resolve('./assets/css/workspace-v2.css')],
   runtimeConfig: {
     public: {
       gtmId: process.env.NUXT_PUBLIC_GTM_ID || '',
