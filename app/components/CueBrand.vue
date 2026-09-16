@@ -12,10 +12,10 @@ const alt = computed(() => props.decorative ? '' : 'Cuebooker')
 
 const src = computed(() => {
   if (props.variant === 'icon') {
-    return theme.value === 'light' ? '/cuebooker-icon-light-approved.png' : '/cuebooker-icon-dark.png'
+    return theme.value === 'light' ? '/logo-light.png' : '/logo-dark.png'
   }
 
-  return theme.value === 'light' ? '/cuebooker-header-light-approved.png' : '/cuebooker-header-dark-approved.png'
+  return theme.value === 'light' ? '/logo-full-light.png' : '/logo-full-dark.png'
 })
 </script>
 
