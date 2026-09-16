@@ -1885,3 +1885,11 @@
     margin-left: 18px !important;
   }
 }
+
+
+/* Desktop toolbar breathing room between search and status filters. */
+@media (min-width: 961px) {
+  .workspace .booking-toolbar-row .status-filters {
+    margin-left: 32px !important;
+  }
+}
