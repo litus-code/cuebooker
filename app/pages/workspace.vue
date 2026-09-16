@@ -85,6 +85,7 @@ const profileLoading = ref(false)
 const profileSaving = ref(false)
 const profileMessage = ref('')
 const profileWelcome = ref(false)
+const profilePreviewOpen = ref(false)
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
   overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Historial', profile: 'Perfil',
@@ -105,7 +106,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   historyBody: 'Abre cualquier movimiento para volver a la oferta y revisar toda la conversación que originó esa acción.',
   historyEmpty: 'Todavía no hay actividad en este perfil.', historyStatus: 'Estado actualizado', historyMessage: 'Mensaje', openTrace: 'Abrir oferta y ver traza', previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente', filterSamples: 'Filtrar bookings de ejemplo',
   profileEyebrow: 'ARTISTA / FICHA PROFESIONAL', profileTitle: 'TU INFORMACIÓN DE BOOKING.', profileBody: 'Completa esta ficha a tu ritmo. Hoy es privada y servirá para organizar mejor tus solicitudes y preparar futuras opciones de descubrimiento.',
-  profileOptional: 'Ficha opcional', profileOptionalBody: 'Tu workspace ya está creado. Puedes completar estos datos ahora o volver desde Perfil cuando quieras.', later: 'Ahora no',
+  profileOptional: 'Ficha opcional', profileOptionalBody: 'Tu workspace ya está creado. Puedes completar estos datos ahora o volver desde Perfil cuando quieras.', later: 'Ahora no', previewProfile: 'Vista previa', previewPrivate: 'VISTA PRIVADA / NO PUBLICADA', previewClose: 'Cerrar vista previa', previewBioEmpty: 'Tu biografía aparecerá aquí cuando la completes.', previewGenresEmpty: 'Añade géneros para verlos en la ficha.', previewFormats: 'Formatos', previewLinks: 'Escuchar y seguir',
   profilePublicSection: 'Identidad y ubicación', profilePublicHint: 'Información profesional preparada para una futura ficha pública. Todavía no se publica.',
   profileSoundSection: 'Sonido y formatos', profileBookingSection: 'Condiciones de booking', profileBookingHint: 'Solo tú y las personas autorizadas de tu equipo pueden ver estos datos.', profileLinksSection: 'Enlaces y material',
   stageName: 'Nombre artístico', bio: 'Biografía', bioPlaceholder: 'Describe el proyecto, su sonido y el tipo de directo.', baseCity: 'Ciudad base', countryCode: 'País', timezone: 'Zona horaria', languages: 'Idiomas', commaHint: 'Separa los valores con comas.',
@@ -138,7 +139,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   historyBody: 'Open any activity to return to its offer and review the full conversation that caused it.',
   historyEmpty: 'There is no activity for this profile yet.', historyStatus: 'Status updated', historyMessage: 'Message', openTrace: 'Open offer and view trace', previousMonth: 'Previous month', nextMonth: 'Next month', filterSamples: 'Filter sample bookings',
   profileEyebrow: 'ARTIST / PROFESSIONAL PROFILE', profileTitle: 'YOUR BOOKING INFORMATION.', profileBody: 'Complete this profile at your own pace. It is private today and will help organise requests and prepare future discovery options.',
-  profileOptional: 'Optional profile', profileOptionalBody: 'Your workspace is ready. Complete these details now or return from Profile whenever you want.', later: 'Not now',
+  profileOptional: 'Optional profile', profileOptionalBody: 'Your workspace is ready. Complete these details now or return from Profile whenever you want.', later: 'Not now', previewProfile: 'Preview', previewPrivate: 'PRIVATE PREVIEW / NOT PUBLISHED', previewClose: 'Close preview', previewBioEmpty: 'Your biography will appear here once completed.', previewGenresEmpty: 'Add genres to see them on the profile.', previewFormats: 'Formats', previewLinks: 'Listen and follow',
   profilePublicSection: 'Identity and location', profilePublicHint: 'Professional information prepared for a future public profile. It is not published yet.',
   profileSoundSection: 'Sound and formats', profileBookingSection: 'Booking terms', profileBookingHint: 'Only you and authorised team members can see these details.', profileLinksSection: 'Links and material',
   stageName: 'Artist name', bio: 'Biography', bioPlaceholder: 'Describe the project, its sound and performance style.', baseCity: 'Base city', countryCode: 'Country', timezone: 'Time zone', languages: 'Languages', commaHint: 'Separate values with commas.',
@@ -243,6 +244,22 @@ const profileCompletion = computed(() => {
   ]
   return Math.round(fields.filter(value => String(value || '').trim()).length / fields.length * 100)
 })
+const profilePreviewGenres = computed(() => [
+  ...splitList(profileForm.value.primaryGenres, 3),
+  ...splitList(profileForm.value.secondaryGenres, 8)
+].slice(0, 8))
+const profilePreviewFormats = computed(() => splitList(profileForm.value.performanceFormats, 6))
+const profilePreviewLocation = computed(() => [profileForm.value.city.trim(), profileForm.value.countryCode.trim().toUpperCase()].filter(Boolean).join(', '))
+const profilePreviewLinks = computed(() => [
+  { label: copy.value.website, url: profileForm.value.websiteUrl },
+  { label: copy.value.instagram, url: profileForm.value.instagramUrl },
+  { label: copy.value.soundcloud, url: profileForm.value.soundcloudUrl },
+  { label: copy.value.mixcloud, url: profileForm.value.mixcloudUrl },
+  { label: copy.value.youtube, url: profileForm.value.youtubeUrl },
+  { label: copy.value.spotify, url: profileForm.value.spotifyUrl }
+]
+  .map(link => ({ ...link, url: link.url.trim() }))
+  .filter(link => /^https?:\/\//i.test(link.url)))
 const historyItems = computed(() => demo.bookings.value.flatMap(booking => [
   ...booking.messages.map(message => ({
     id: message.id,
@@ -300,6 +317,15 @@ watch(demo.ready, async (value) => {
     }
   }
 }, { immediate: true })
+
+watch(profilePreviewOpen, (open) => {
+  if (!import.meta.client) return
+  document.body.style.overflow = open ? 'hidden' : ''
+})
+
+onBeforeUnmount(() => {
+  if (import.meta.client) document.body.style.overflow = ''
+})
 watch(selectedDemoBookingId, async (id) => {
   if (id) await demo.markOpened(id)
 })
@@ -852,8 +878,11 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       <section v-else class="view profile-view">
         <div class="view-heading">
           <div><p class="eyebrow">{{ copy.profileEyebrow }}</p><h1>{{ copy.profileTitle }}</h1><p>{{ copy.profileBody }}</p></div>
-          <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
-          <div v-else class="profile-progress"><span>{{ copy.profileCompletion }}</span><strong>{{ profileCompletion }}%</strong><i><b :style="{ width: `${profileCompletion}%` }" /></i></div>
+          <div class="profile-heading-actions">
+            <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
+            <div v-else class="profile-progress"><span>{{ copy.profileCompletion }}</span><strong>{{ profileCompletion }}%</strong><i><b :style="{ width: `${profileCompletion}%` }" /></i></div>
+            <button class="profile-preview-button" type="button" @click="profilePreviewOpen = true">{{ copy.previewProfile }} ↗</button>
+          </div>
         </div>
 
         <aside v-if="profileWelcome" class="profile-welcome">
@@ -925,6 +954,26 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         </form>
       </section>
     </template>
+
+    <div v-if="profilePreviewOpen" class="profile-preview-backdrop" @click.self="profilePreviewOpen = false">
+      <article class="profile-preview" role="dialog" aria-modal="true" aria-labelledby="profile-preview-title">
+        <header>
+          <p>{{ copy.previewPrivate }}</p>
+          <button type="button" :aria-label="copy.previewClose" @click="profilePreviewOpen = false">×</button>
+        </header>
+        <section class="profile-preview-hero">
+          <p v-if="profilePreviewLocation">{{ profilePreviewLocation }}</p>
+          <h2 id="profile-preview-title">{{ profileForm.stageName || selectedArtist?.stage_name }}</h2>
+          <div v-if="profilePreviewGenres.length" class="profile-preview-chips"><span v-for="genre in profilePreviewGenres" :key="genre">{{ genre }}</span></div>
+          <p v-else class="profile-preview-empty">{{ copy.previewGenresEmpty }}</p>
+        </section>
+        <section class="profile-preview-body">
+          <p class="profile-preview-bio">{{ profileForm.bio || copy.previewBioEmpty }}</p>
+          <div v-if="profilePreviewFormats.length" class="profile-preview-block"><span>{{ copy.previewFormats }}</span><strong>{{ profilePreviewFormats.join(' · ') }}</strong></div>
+          <div v-if="profilePreviewLinks.length" class="profile-preview-block"><span>{{ copy.previewLinks }}</span><nav><a v-for="link in profilePreviewLinks" :key="link.label" :href="link.url" target="_blank" rel="noopener noreferrer">{{ link.label }} ↗</a></nav></div>
+        </section>
+      </article>
+    </div>
 
     <div v-if="settingsOpen" class="editor-backdrop" @click.self="settingsOpen = false">
       <aside class="editor-panel settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
@@ -1118,6 +1167,9 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-progress > strong { font-size: 28px; }
 .profile-progress > i { display: block; overflow: hidden; height: 5px; background: var(--cue-border); }
 .profile-progress > i > b { display: block; height: 100%; background: var(--cue-toggle); transition: width .25s ease; }
+.profile-heading-actions { display: grid; justify-items: stretch; min-width: 220px; gap: 12px; }
+.profile-preview-button { min-height: 42px; padding: 0 16px; border: 1px solid var(--cue-border); background: transparent; color: var(--cue-text); cursor: pointer; font-weight: 800; }
+.profile-preview-button:hover, .profile-preview-button:focus-visible { border-color: var(--cue-toggle); outline: none; }
 .profile-welcome { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 18px; padding: 20px 22px; border: 1px solid color-mix(in srgb, var(--cue-toggle) 55%, var(--cue-border)); background: color-mix(in srgb, var(--cue-toggle) 8%, var(--cue-surface)); }
 .profile-welcome span { display: block; margin-bottom: 7px; color: var(--cue-accent); font: 700 10px/1.2 monospace; letter-spacing: .1em; text-transform: uppercase; }
 .profile-welcome strong { max-width: 820px; font-size: 15px; line-height: 1.5; }
@@ -1148,6 +1200,25 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-savebar > p { margin: 0; color: #ff9b9b; font-size: 12px; }
 .profile-savebar > p.success { color: #8ce99a; }
 .profile-savebar .primary-button { min-width: 180px; padding: 0 18px; }
+.profile-preview-backdrop { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 24px; overflow-y: auto; background: rgba(0,0,0,.82); backdrop-filter: blur(9px); }
+.profile-preview { width: min(980px, 100%); max-height: calc(100dvh - 48px); overflow-y: auto; border: 1px solid #343434; background: #0b0b0b; color: #f4f2ed; box-shadow: 0 30px 100px #000; }
+.profile-preview > header { position: sticky; z-index: 2; top: 0; display: flex; justify-content: space-between; align-items: center; min-height: 58px; padding: 0 22px; border-bottom: 1px solid #343434; background: rgba(11,11,11,.95); }
+.profile-preview > header p { margin: 0; color: #cfff57; font: 700 10px/1.3 monospace; letter-spacing: .12em; }
+.profile-preview > header button { width: 38px; height: 38px; border: 1px solid #343434; border-radius: 50%; background: transparent; color: #f4f2ed; cursor: pointer; font-size: 25px; }
+.profile-preview-hero { min-height: 360px; padding: clamp(40px,7vw,84px); border-bottom: 1px solid #343434; background: radial-gradient(circle at 82% 16%,rgba(207,255,87,.15),transparent 32%),#0b0b0b; }
+.profile-preview-hero > p:first-child { margin: 0 0 18px; color: #a5a5a5; font: 700 11px/1.3 monospace; letter-spacing: .12em; text-transform: uppercase; }
+.profile-preview-hero h2 { max-width: 820px; margin: 0 0 30px; font-size: clamp(4rem,11vw,9rem); line-height: .78; letter-spacing: -.075em; text-transform: uppercase; overflow-wrap: anywhere; }
+.profile-preview-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.profile-preview-chips span { padding: 9px 12px; border: 1px solid #4a4a4a; color: #d9d9d9; font-size: 12px; font-weight: 800; }
+.profile-preview-empty { color: #777; }
+.profile-preview-body { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(240px,.6fr); gap: 50px; padding: clamp(30px,6vw,70px); }
+.profile-preview-bio { margin: 0; font-size: clamp(1.2rem,2.4vw,1.8rem); line-height: 1.55; white-space: pre-wrap; }
+.profile-preview-block { display: grid; align-content: start; gap: 10px; }
+.profile-preview-block + .profile-preview-block { margin-top: 28px; }
+.profile-preview-block > span { color: #777; font: 700 10px/1.3 monospace; letter-spacing: .12em; text-transform: uppercase; }
+.profile-preview-block strong { line-height: 1.5; }
+.profile-preview-block nav { display: flex; flex-wrap: wrap; gap: 8px; }
+.profile-preview-block a { padding: 9px 11px; border: 1px solid #343434; color: #f4f2ed; font-size: 11px; font-weight: 800; text-decoration: none; }
 .settings-panel { display: block; }
 .settings-group { display: grid; gap: 10px; padding: 18px 0; border-top: 1px solid var(--cue-border); }
 .settings-group > span { color: var(--cue-muted); font: 700 10px monospace; letter-spacing: .1em; text-transform: uppercase; }
@@ -1225,6 +1296,7 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .history-list > button > div { padding: 0; border: 0; }
   .booking-detail { scroll-margin-top: 74px; }
   .profile-progress { min-width: 0; margin-top: 20px; }
+  .profile-heading-actions { min-width: 0; margin-top: 20px; }
   .profile-welcome, .profile-section > header { align-items: stretch; flex-direction: column; }
   .profile-welcome button { width: 100%; }
   .profile-fields { grid-template-columns: 1fr; padding: 18px; }
@@ -1232,5 +1304,10 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .profile-savebar { bottom: 0; grid-template-columns: 1fr auto; gap: 10px; margin-inline: -1px; }
   .profile-savebar > p { grid-column: 1 / -1; grid-row: 2; }
   .profile-savebar .primary-button { min-width: 0; }
+  .profile-preview-backdrop { align-items: stretch; padding: 0; }
+  .profile-preview { width: 100%; max-height: 100dvh; border: 0; }
+  .profile-preview-hero { min-height: 280px; padding: 42px 22px; }
+  .profile-preview-hero h2 { font-size: clamp(3.6rem,19vw,6rem); }
+  .profile-preview-body { grid-template-columns: 1fr; gap: 34px; padding: 30px 22px 46px; }
 }
 </style>
