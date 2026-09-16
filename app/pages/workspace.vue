@@ -1053,18 +1053,21 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <div class="demo-notice__actions"><button class="guide-action" type="button" @click="startTour">{{ copy.guidedTour }}</button><button v-if="demoActiveBookings.length" type="button" @click="clearSampleBookings">{{ copy.removeSamples }}</button><button v-else type="button" @click="restoreSampleBookings">{{ copy.restoreSamples }}</button></div>
         </aside>
 
-        <div class="booking-tools">
-          <label class="booking-search">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
-            <span class="sr-only">{{ copy.searchBookings }}</span>
-            <input v-model="bookingSearch" type="search" :placeholder="copy.searchBookingsPlaceholder" :aria-label="copy.searchBookings">
-          </label>
-          <span class="booking-search-count">{{ demoFilteredBookings.length }} / {{ demoActiveBookings.length }} {{ copy.searchResults }}</span>
-        </div>
+        <div class="booking-toolbar-row">
+          <div class="booking-tools">
+            <label class="booking-search">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
+              <span class="sr-only">{{ copy.searchBookings }}</span>
+              <input v-model="bookingSearch" type="search" :placeholder="copy.searchBookingsPlaceholder" :aria-label="copy.searchBookings">
+            </label>
+          </div>
 
-        <div id="workspace-filters" class="status-filters" :class="{ 'tour-focus': tourStep === 1 }" :aria-label="copy.filterSamples">
-          <button :class="{ active: bookingFilter === 'all' }" type="button" @click="bookingFilter = 'all'">{{ copy.all }} <strong>{{ demoActiveBookings.length }}</strong></button>
-          <button v-for="status in bookingStatuses.filter(item => item !== 'rejected')" :key="status" type="button" :class="[{ active: bookingFilter === status }, `tone-${statusTone[status]}`]" @click="bookingFilter = status"><i />{{ demoStatusLabel(status) }} <strong>{{ demoCounts[status] }}</strong></button>
+          <div id="workspace-filters" class="status-filters" :class="{ 'tour-focus': tourStep === 1 }" :aria-label="copy.filterSamples">
+            <button :class="{ active: bookingFilter === 'all' }" type="button" @click="bookingFilter = 'all'">{{ copy.all }} <strong>{{ demoActiveBookings.length }}</strong></button>
+            <button v-for="status in bookingStatuses.filter(item => item !== 'rejected')" :key="status" type="button" :class="[{ active: bookingFilter === status }, `tone-${statusTone[status]}`]" @click="bookingFilter = status"><i />{{ demoStatusLabel(status) }} <strong>{{ demoCounts[status] }}</strong></button>
+          </div>
+
+          <span class="booking-search-count">{{ demoFilteredBookings.length }} / {{ demoActiveBookings.length }} {{ copy.searchResults }}</span>
         </div>
 
         <div class="booking-workspace demo-booking-workspace">
