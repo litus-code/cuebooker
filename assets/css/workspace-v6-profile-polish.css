@@ -1,0 +1,285 @@
+/* Workspace v6: spacing, brand proportion, profile savebar and public preview */
+
+@media (min-width: 961px) {
+  /* Give the sample notice room before the filters. */
+  .workspace .demo-notice {
+    margin-bottom: 22px !important;
+  }
+
+  .workspace .status-filters {
+    margin-top: 0 !important;
+    padding-bottom: 14px !important;
+  }
+
+  /* Keep the approved wordmark proportion intact and reduce its visual height. */
+  .workspace-header .brand {
+    min-height: 42px !important;
+    padding: 0 7px !important;
+  }
+
+  .workspace-header .brand .cue-brand--wordmark {
+    display: flex !important;
+    align-items: center !important;
+    width: 150px !important;
+    height: 42px !important;
+    aspect-ratio: auto !important;
+  }
+
+  .workspace-header .brand .cue-brand--wordmark img {
+    width: auto !important;
+    height: auto !important;
+    max-width: 150px !important;
+    max-height: 38px !important;
+    object-fit: contain !important;
+  }
+
+  /* Profile savebar: completion is context, save is an action, neither should dominate. */
+  .workspace .profile-savebar {
+    position: sticky !important;
+    bottom: 14px !important;
+    z-index: 22 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 22px !important;
+    width: 100% !important;
+    min-height: 68px !important;
+    margin-top: 24px !important;
+    padding: 12px 14px 12px 18px !important;
+    border: 1px solid var(--workspace-line) !important;
+    background: color-mix(in srgb, var(--workspace-panel) 94%, transparent) !important;
+    box-shadow: 0 14px 42px color-mix(in srgb, var(--cue-shadow) 50%, transparent) !important;
+    backdrop-filter: blur(16px);
+  }
+
+  .workspace .profile-savebar > div,
+  .workspace .profile-savebar > span {
+    min-width: 0 !important;
+  }
+
+  .workspace .profile-savebar strong {
+    font-size: 20px !important;
+    line-height: 1 !important;
+  }
+
+  .workspace .profile-savebar .primary-button,
+  .workspace .profile-savebar > button {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 150px !important;
+    min-height: 42px !important;
+    padding: 0 18px !important;
+    font-size: 11px !important;
+  }
+
+  .workspace .profile-savebar progress,
+  .workspace .profile-savebar [role='progressbar'] {
+    max-width: 180px !important;
+  }
+}
+
+/* Public-profile preview. It must read as a finished profile, not as a tall editor modal. */
+.profile-preview-backdrop {
+  display: grid !important;
+  place-items: center !important;
+  padding: 24px !important;
+}
+
+.profile-preview-backdrop > .profile-preview {
+  display: grid !important;
+  grid-template-rows: auto auto auto !important;
+  align-content: start !important;
+  width: min(1180px, calc(100vw - 48px)) !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: calc(100dvh - 48px) !important;
+  margin: 0 !important;
+  overflow-y: auto !important;
+  border: 1px solid #2f2f2f !important;
+  background: #090909 !important;
+  box-shadow: 0 28px 90px rgba(0,0,0,.52) !important;
+}
+
+.profile-preview > header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 8 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  min-height: 52px !important;
+  padding: 0 16px !important;
+  border-bottom: 1px solid #2f2f2f !important;
+  background: rgba(9,9,9,.96) !important;
+  backdrop-filter: blur(14px);
+}
+
+.profile-preview > .profile-preview-hero {
+  position: relative !important;
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 380px !important;
+  height: clamp(380px, 38vw, 500px) !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+  border-bottom: 1px solid #2f2f2f !important;
+  background: #070707 !important;
+}
+
+.profile-preview > .profile-preview-hero > img {
+  position: absolute !important;
+  z-index: -3 !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: cover !important;
+}
+
+.profile-preview > .profile-preview-hero > .profile-preview-hero-shade {
+  position: absolute !important;
+  z-index: -2 !important;
+  inset: 0 !important;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.88) 0%, rgba(0,0,0,.56) 36%, rgba(0,0,0,.14) 68%, rgba(0,0,0,.26) 100%),
+    linear-gradient(0deg, rgba(0,0,0,.84) 0%, rgba(0,0,0,.08) 60%, rgba(0,0,0,.14) 100%) !important;
+}
+
+/* Anchor the artist to the stage instead of letting the cutout drift/crop out of the hero. */
+.profile-preview > .profile-preview-hero::after {
+  left: clamp(42%, var(--cue-profile-artist-x, 50%), 64%) !important;
+  top: clamp(46%, var(--cue-profile-artist-y, 50%), 56%) !important;
+  width: clamp(250px, 31%, 410px) !important;
+  height: 92% !important;
+  background-position: center bottom !important;
+  transform: translate(-50%, -50%) scale(var(--cue-profile-artist-scale, 1)) !important;
+  transform-origin: center bottom !important;
+}
+
+.profile-preview > .profile-preview-hero > h2 {
+  left: clamp(28px, 4.5vw, 58px) !important;
+  bottom: 78px !important;
+  max-width: 48% !important;
+  font-size: clamp(3.2rem, 6.6vw, 6.4rem) !important;
+  line-height: .84 !important;
+}
+
+.profile-preview > .profile-preview-hero > p:not(.profile-preview-empty) {
+  top: 30px !important;
+  left: clamp(28px, 4.5vw, 58px) !important;
+}
+
+.profile-preview > .profile-preview-hero > .profile-preview-chips,
+.profile-preview > .profile-preview-hero > .profile-preview-empty {
+  left: clamp(28px, 4.5vw, 58px) !important;
+  bottom: 30px !important;
+  max-width: 50% !important;
+}
+
+/* This section must size to its content. No artificial black void below the hero. */
+.profile-preview > .profile-preview-body {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.25fr) minmax(240px, .75fr) !important;
+  align-items: start !important;
+  align-content: start !important;
+  justify-content: stretch !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  gap: 34px !important;
+  margin: 0 !important;
+  padding: 26px 32px 30px !important;
+  border: 0 !important;
+  background: #0c0c0c !important;
+}
+
+.profile-preview > .profile-preview-body > * {
+  align-self: start !important;
+  min-height: 0 !important;
+  height: auto !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.profile-preview .profile-preview-bio,
+.profile-preview .profile-preview-empty {
+  max-width: 680px !important;
+  margin: 0 !important;
+  font-size: 15px !important;
+  line-height: 1.55 !important;
+}
+
+.profile-preview .profile-preview-body section,
+.profile-preview .profile-preview-body aside {
+  padding: 0 !important;
+}
+
+@media (max-width: 960px) {
+  .workspace .demo-notice {
+    margin-bottom: 18px !important;
+  }
+
+  .workspace .profile-savebar {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    gap: 12px !important;
+    padding: 12px !important;
+  }
+
+  .workspace .profile-savebar .primary-button,
+  .workspace .profile-savebar > button {
+    min-width: 124px !important;
+    width: auto !important;
+  }
+
+  .profile-preview-backdrop {
+    padding: 0 !important;
+  }
+
+  .profile-preview-backdrop > .profile-preview {
+    width: 100% !important;
+    max-height: 100dvh !important;
+    border: 0 !important;
+  }
+
+  .profile-preview > .profile-preview-hero {
+    min-height: 410px !important;
+    height: 60svh !important;
+    max-height: 560px !important;
+  }
+
+  .profile-preview > .profile-preview-hero::after {
+    left: clamp(42%, var(--cue-profile-artist-x, 50%), 60%) !important;
+    top: clamp(48%, var(--cue-profile-artist-y, 50%), 55%) !important;
+    width: min(68vw, 320px) !important;
+    height: 88% !important;
+  }
+
+  .profile-preview > .profile-preview-hero > h2 {
+    left: 22px !important;
+    right: 22px !important;
+    bottom: 78px !important;
+    max-width: none !important;
+    font-size: clamp(3rem, 16vw, 5rem) !important;
+  }
+
+  .profile-preview > .profile-preview-hero > .profile-preview-chips,
+  .profile-preview > .profile-preview-hero > .profile-preview-empty {
+    left: 22px !important;
+    right: 22px !important;
+    bottom: 25px !important;
+    max-width: none !important;
+  }
+
+  .profile-preview > .profile-preview-body {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+    padding: 24px 22px 32px !important;
+  }
+}
