@@ -1,4 +1,4 @@
-name: TEMP fix mobile scroll controls
+name: TEMP fix mobile scroll controls v2
 
 on:
   push:
@@ -29,5 +29,5 @@ jobs:
           git config user.name "cuebooker-workspace-bot"
           git config user.email "actions@users.noreply.github.com"
           git add app/pages/workspace.vue assets/css/workspace-responsive-final.css
-          git commit -m "Fix exact mobile booking scroll and compact profile controls"
+          git commit -m "Pin mobile booking scroll and shrink profile controls"
           git push origin HEAD:feature/app-visual-system
