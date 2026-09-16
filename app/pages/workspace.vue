@@ -4,6 +4,7 @@ import type { FeeBasis } from '../composables/useArtistProfile'
 
 const auth = useCueAuth()
 const availability = useAvailability()
+const bookingCore = useBookingCore()
 const artistProfiles = useArtistProfile()
 const preferences = useCuePreferences()
 const route = useRoute()
@@ -79,6 +80,11 @@ const historyPage = ref(1)
 const historyPageSize = 10
 const sidebarCollapsed = ref(false)
 const selectedDemoBookingId = ref('')
+const bookingCoreWorkspaceId = ref('')
+const realBookings = ref<any[]>([])
+const cueOpen = ref(false)
+const cueCoreLoading = ref(false)
+const cueMessage = ref('')
 const demoReply = ref('')
 const tourStep = ref(-1)
 const settingsOpen = ref(false)
@@ -190,6 +196,7 @@ const tourSteps = computed(() => preferences.locale.value === 'es' ? [
 ])
 
 const manageableAgency = computed(() => organizations.value.find(item => item.type === 'agency' && ['owner', 'admin'].includes(item.role)))
+const ownerAgency = computed(() => organizations.value.find(item => item.type === 'agency' && item.role === 'owner'))
 const selectedArtist = computed(() => artists.value.find(item => item.id === selectedArtistId.value))
 const canEditSelectedArtist = computed(() => ['owner', 'manager'].includes(selectedArtist.value?.role || ''))
 const sampleNamespace = computed(() => auth.session.value?.user.id && selectedArtistId.value ? `workspace-${auth.session.value.user.id}-${selectedArtistId.value}` : undefined)
@@ -509,13 +516,76 @@ function slugify(value: string) {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
 }
 
+const cueEntryCopy = computed(() => preferences.locale.value === 'es' ? {
+  eyebrow: 'CUE / CAPTURA RÁPIDA',
+  title: 'REGISTRA LO QUE ACABA DE PASAR.',
+  body: 'Una llamada, un WhatsApp o una conversación. Guárdalo ahora y completa el booking cuando avance.',
+  saved: 'CUE guardado. El booking ya forma parte de tu workspace.'
+} : {
+  eyebrow: 'CUE / QUICK CAPTURE',
+  title: 'SAVE WHAT JUST HAPPENED.',
+  body: 'A call, WhatsApp or conversation. Capture it now and complete the booking as it moves forward.',
+  saved: 'CUE saved. The booking is now part of your workspace.'
+})
+
+async function loadRealBookings() {
+  if (!bookingCoreWorkspaceId.value) { realBookings.value = []; return }
+  realBookings.value = await bookingCore.listBookings(bookingCoreWorkspaceId.value)
+}
+
+async function ensureBookingCoreWorkspace() {
+  if (!selectedArtistId.value) return
+  cueCoreLoading.value = true
+  try {
+    const workspaces = await bookingCore.listWorkspaces()
+    let resolvedWorkspaceId = ''
+
+    for (const workspace of workspaces) {
+      const workspaceArtists = await bookingCore.listWorkspaceArtists(workspace.id)
+      if (workspaceArtists.some(item => item.artist_id === selectedArtistId.value)) {
+        resolvedWorkspaceId = workspace.id
+        break
+      }
+    }
+
+    if (!resolvedWorkspaceId) {
+      if (ownerAgency.value) {
+        resolvedWorkspaceId = await bookingCore.ensureBookingWorkspace({ organizationId: ownerAgency.value.id })
+      } else if (selectedArtist.value?.role === 'owner') {
+        resolvedWorkspaceId = await bookingCore.ensureBookingWorkspace({ artistId: selectedArtistId.value })
+      }
+    }
+
+    bookingCoreWorkspaceId.value = resolvedWorkspaceId
+    await loadRealBookings()
+  } catch (error: any) {
+    // Legacy manager/admin accounts may need the owner to bootstrap once.
+    // Do not block the existing workspace while that transition is incomplete.
+    bookingCoreWorkspaceId.value = ''
+    realBookings.value = []
+    console.warn('[booking-core] workspace bootstrap unavailable', error?.message || error)
+  } finally {
+    cueCoreLoading.value = false
+  }
+}
+
+async function handleCueCreated() {
+  cueOpen.value = false
+  cueMessage.value = cueEntryCopy.value.saved
+  await loadRealBookings()
+  window.setTimeout(() => { cueMessage.value = '' }, 4500)
+}
+
 async function loadWorkspaceIdentity() {
   try {
     const [artistRows, organizationRows] = await Promise.all([availability.listArtists(), availability.listOrganizations()])
     artists.value = artistRows
     organizations.value = organizationRows
     if (!selectedArtistId.value || !artists.value.some(item => item.id === selectedArtistId.value)) selectedArtistId.value = artists.value[0]?.id || ''
-    if (selectedArtistId.value) await Promise.all([loadBlocks(), loadArtistProfile()])
+    if (selectedArtistId.value) {
+      await Promise.all([loadBlocks(), loadArtistProfile()])
+      await ensureBookingCoreWorkspace()
+    }
   } catch (error: any) {
     errorMessage.value = error?.message || (preferences.locale.value === 'es' ? 'No se pudo cargar el workspace.' : 'The workspace could not be loaded.')
   }
@@ -1013,7 +1083,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         </div>
 
         <div class="summary-grid">
-          <article class="summary-card summary-card--pending"><span>{{ copy.realBookings }}</span><strong>—</strong><p>{{ copy.realBookingsBody }}</p></article>
+          <article class="summary-card summary-card--pending"><span>{{ copy.realBookings }}</span><strong>{{ cueCoreLoading ? '…' : realBookings.length }}</strong><p>{{ bookingCoreWorkspaceId ? (preferences.locale.value === 'es' ? 'Bookings guardados en tu workspace.' : 'Bookings saved in your workspace.') : copy.realBookingsBody }}</p></article>
           <article class="summary-card"><span>{{ copy.holdsMonth }}</span><strong>{{ holdCount }}</strong><p>{{ copy.holdsBody }}</p></article>
           <article class="summary-card"><span>{{ copy.confirmed }}</span><strong>{{ confirmedCount }}</strong><p>{{ copy.confirmedBody }}</p></article>
           <article class="summary-card"><span>{{ copy.occupiedDays }}</span><strong>{{ occupiedDays }}</strong><p>{{ copy.occupiedBody }}</p></article>
@@ -1048,6 +1118,17 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
           <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
+
+        <section v-if="bookingCoreWorkspaceId" class="cue-entry-bar">
+          <div>
+            <span>{{ cueEntryCopy.eyebrow }}</span>
+            <strong>{{ cueEntryCopy.title }}</strong>
+            <p>{{ cueEntryCopy.body }}</p>
+          </div>
+          <button type="button" @click="cueOpen = true">+ CUE</button>
+        </section>
+        <p v-if="cueMessage" class="cue-entry-message">{{ cueMessage }}</p>
+
         <aside id="sample-mode" class="demo-notice" :class="{ 'tour-focus': tourStep === 0 }">
           <div><span>{{ copy.samplesLabel }}</span><strong>{{ demoActiveBookings.length ? copy.samplesActive : copy.samplesRemoved }}</strong><p>{{ copy.samplesBody }}</p></div>
           <div class="demo-notice__actions"><button class="guide-action" type="button" @click="startTour">{{ copy.guidedTour }}</button><button v-if="demoActiveBookings.length" type="button" @click="clearSampleBookings">{{ copy.removeSamples }}</button><button v-else type="button" @click="restoreSampleBookings">{{ copy.restoreSamples }}</button></div>
@@ -1316,6 +1397,15 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       <p>{{ currentTour.body }}</p>
       <button class="primary-button" type="button" @click="nextTourStep">{{ tourStep === tourSteps.length - 1 ? copy.finish : copy.next }}</button>
     </aside>
+    <CueCapturePanel
+      :open="cueOpen"
+      :workspace-id="bookingCoreWorkspaceId"
+      :artist-id="selectedArtistId"
+      :locale="preferences.locale.value"
+      @close="cueOpen = false"
+      @created="handleCueCreated"
+    />
+
   </main>
 </template>
 
@@ -1620,5 +1710,20 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .profile-preview-hero { min-height: 280px; padding: 42px 22px; }
   .profile-preview-hero h2 { font-size: clamp(3.6rem,19vw,6rem); }
   .profile-preview-body { grid-template-columns: 1fr; gap: 34px; padding: 30px 22px 46px; }
+}
+
+.cue-entry-bar { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 14px; padding: 16px 18px; border: 1px solid color-mix(in srgb, var(--cue-accent) 48%, var(--cue-border)); background: color-mix(in srgb, var(--cue-accent) 5%, var(--cue-surface)); }
+.cue-entry-bar > div { min-width: 0; }
+.cue-entry-bar span { display: block; margin-bottom: 5px; color: var(--cue-accent); font: 700 9px/1.2 monospace; letter-spacing: .12em; }
+.cue-entry-bar strong { display: block; font-size: 15px; }
+.cue-entry-bar p { margin: 4px 0 0; max-width: 760px; color: var(--cue-muted); font-size: 12px; line-height: 1.4; }
+.cue-entry-bar > button { min-width: 104px; min-height: 44px; padding: 0 18px; border: 0; background: var(--cue-accent); color: #090909; cursor: pointer; font-weight: 900; letter-spacing: .04em; }
+.cue-entry-message { margin: -2px 0 14px; padding: 9px 12px; border-left: 2px solid var(--cue-mint); color: var(--cue-muted); font-size: 11px; }
+@media (max-width: 760px) {
+  .cue-entry-bar { align-items: stretch; gap: 10px; margin-bottom: 10px; padding: 11px 12px; }
+  .cue-entry-bar span { font-size: 8px; }
+  .cue-entry-bar strong { font-size: 12px; }
+  .cue-entry-bar p { display: none; }
+  .cue-entry-bar > button { min-width: 82px; min-height: 38px; padding: 0 12px; }
 }
 </style>
