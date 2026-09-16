@@ -11,26 +11,28 @@
     padding-bottom: 14px !important;
   }
 
-  /* Keep the approved wordmark proportion intact and reduce its visual height. */
+  /* Use the approved website wordmark without reshaping it. */
   .workspace-header .brand {
-    min-height: 42px !important;
-    padding: 0 7px !important;
+    min-height: 46px !important;
+    padding: 0 4px !important;
   }
 
   .workspace-header .brand .cue-brand--wordmark {
     display: flex !important;
     align-items: center !important;
-    width: 150px !important;
-    height: 42px !important;
+    width: 168px !important;
+    height: auto !important;
     aspect-ratio: auto !important;
   }
 
   .workspace-header .brand .cue-brand--wordmark img {
-    width: auto !important;
+    display: block !important;
+    width: 168px !important;
     height: auto !important;
-    max-width: 150px !important;
-    max-height: 38px !important;
+    max-width: 100% !important;
+    max-height: none !important;
     object-fit: contain !important;
+    image-rendering: auto !important;
   }
 
   /* Profile savebar: completion is context, save is an action, neither should dominate. */
