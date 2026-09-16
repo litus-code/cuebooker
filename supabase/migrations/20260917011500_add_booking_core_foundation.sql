@@ -179,6 +179,49 @@ create index activities_booking_occurred_idx on public.activities(workspace_id, 
 create index activities_workspace_occurred_idx on public.activities(workspace_id, occurred_at desc);
 create index activities_contact_idx on public.activities(workspace_id, contact_id, occurred_at desc) where contact_id is not null;
 
+create or replace function private.preserve_workspace_record_identity()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if new.workspace_id <> old.workspace_id then
+    raise exception 'workspace_id_is_immutable';
+  end if;
+  new.created_by := old.created_by;
+  new.created_at := old.created_at;
+  return new;
+end;
+$$;
+
+create or replace function private.preserve_workspace_identity()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  new.created_by := old.created_by;
+  new.created_at := old.created_at;
+  return new;
+end;
+$$;
+
+create trigger workspaces_preserve_identity
+before update on public.workspaces
+for each row execute function private.preserve_workspace_identity();
+
+create trigger contacts_preserve_identity
+before update on public.contacts
+for each row execute function private.preserve_workspace_record_identity();
+
+create trigger counterparties_preserve_identity
+before update on public.counterparties
+for each row execute function private.preserve_workspace_record_identity();
+
+create trigger bookings_preserve_identity
+before update on public.bookings
+for each row execute function private.preserve_workspace_record_identity();
+
 create trigger workspaces_set_updated_at
 before update on public.workspaces
 for each row execute function public.set_updated_at();
@@ -285,7 +328,8 @@ declare
   remaining_owners integer;
 begin
   if old.role <> 'owner' then
-    return coalesce(new, old);
+    if tg_op = 'DELETE' then return old; end if;
+    return new;
   end if;
 
   if tg_op = 'UPDATE' and new.role = 'owner' then
@@ -302,7 +346,8 @@ begin
     raise exception 'workspace_requires_owner';
   end if;
 
-  return coalesce(new, old);
+  if tg_op = 'DELETE' then return old; end if;
+  return new;
 end;
 $$;
 
@@ -349,18 +394,30 @@ using (private.is_workspace_member(workspace_id));
 create policy workspace_members_insert_managers
 on public.workspace_members for insert
 to authenticated
-with check (private.can_manage_workspace(workspace_id));
+with check (
+  (role = 'owner' and private.is_workspace_owner(workspace_id))
+  or (role <> 'owner' and private.can_manage_workspace(workspace_id))
+);
 
 create policy workspace_members_update_managers
 on public.workspace_members for update
 to authenticated
-using (private.can_manage_workspace(workspace_id))
-with check (private.can_manage_workspace(workspace_id));
+using (
+  (role = 'owner' and private.is_workspace_owner(workspace_id))
+  or (role <> 'owner' and private.can_manage_workspace(workspace_id))
+)
+with check (
+  (role = 'owner' and private.is_workspace_owner(workspace_id))
+  or (role <> 'owner' and private.can_manage_workspace(workspace_id))
+);
 
 create policy workspace_members_delete_managers
 on public.workspace_members for delete
 to authenticated
-using (private.can_manage_workspace(workspace_id));
+using (
+  (role = 'owner' and private.is_workspace_owner(workspace_id))
+  or (role <> 'owner' and private.can_manage_workspace(workspace_id))
+);
 
 create policy workspace_artists_select_member
 on public.workspace_artists for select
@@ -518,6 +575,8 @@ revoke all on function private.is_workspace_member(uuid) from public, anon;
 revoke all on function private.can_edit_workspace(uuid) from public, anon;
 revoke all on function private.can_manage_workspace(uuid) from public, anon;
 revoke all on function private.is_workspace_owner(uuid) from public, anon;
+revoke all on function private.preserve_workspace_record_identity() from public, anon, authenticated;
+revoke all on function private.preserve_workspace_identity() from public, anon, authenticated;
 revoke all on function public.add_workspace_owner() from public, anon, authenticated;
 revoke all on function public.protect_workspace_last_owner() from public, anon, authenticated;
 
