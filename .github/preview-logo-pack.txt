@@ -1,1 +1,0 @@
-Validate normalized dark/light logo pack before mobile workspace pass.
