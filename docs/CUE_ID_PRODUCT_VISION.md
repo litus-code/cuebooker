@@ -100,6 +100,18 @@ Technical direction:
 
 Temporary art-direction families for exploration can include Void, Chrome, Translucent and Signal. These are visual families, not music categories.
 
+### Performance contract
+
+Performance is part of the CUE ID product definition, not a later optimisation task.
+
+The interactive 3D renderer will live behind a client-only boundary and lazy hydration. Artist Profile renders its content and a lightweight static CUE ID fallback first. Three.js/TresJS and the base model load only when the 3D stage approaches the viewport. Optional accessories and visual treatments load on demand.
+
+The scene must pause or reduce work when it is outside the viewport or the document is hidden. Device pixel ratio, effects, animation, shadows and asset quality can adapt to device capability. Low-power devices and WebGL failures fall back to a static representation without affecting Profile, Booking or Passport.
+
+The first real 3D implementation requires before/after measurement of JavaScript transfer, model and texture payload, LCP, CLS, interaction responsiveness, main-thread work and representative mobile behaviour. A visual feature that does not justify its runtime cost should not ship.
+
+The detailed architecture, budgets, degradation path and failure contract live in `docs/CUE_ID_PERFORMANCE.md`.
+
 ## CUE SIGNAL
 
 CUE SIGNAL is a discreet indication of meaningful CueBooker activity. It is secondary to Artist Profile and booking operations.
@@ -250,11 +262,12 @@ Do not migrate every future field now. Add persistence as each vertical slice be
 
 ### Phase 2, first 3D identity
 
-- introduce lazy-loaded TresJS/Three.js;
+- introduce client-only, lazy-hydrated TresJS/Three.js;
 - ship one art-directed modular family;
 - allow photography, artwork or CUE ID as presentation modes;
 - create static fallback output;
-- validate desktop and mobile performance;
+- load optional assets only on demand;
+- validate desktop and mobile performance against the documented performance contract;
 - test with artists from different generations and electronic scenes.
 
 ### Phase 3, SIGNAL and first PASSPORT
