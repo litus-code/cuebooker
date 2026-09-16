@@ -7,7 +7,7 @@ type RawImageLike = {
   toBlob: (type?: string, quality?: number) => Promise<Blob>
 }
 
-type BackgroundRemovalPipeline = (input: Blob) => Promise<RawImageLike[]>
+type BackgroundRemovalPipeline = (input: string) => Promise<RawImageLike[]>
 
 const TRANSFORMERS_MODULE = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.1'
 const MODEL_ID = 'Xenova/modnet'
@@ -57,14 +57,24 @@ export function useArtistBackgroundRemoval() {
   }
 
   async function removeBackground(source: Blob) {
+    if (!import.meta.client) throw new Error('background_removal_client_only')
+
     processing.value = true
+    progress.value = 0
+    const sourceUrl = URL.createObjectURL(source)
+
     try {
       const segmenter = await getPipeline()
-      const output = await segmenter(source)
+      const output = await segmenter(sourceUrl)
       const image = output[0]
       if (!image) throw new Error('background_removal_empty_output')
-      return await image.toBlob('image/png')
+
+      const cutout = await image.toBlob('image/png')
+      if (!cutout.size) throw new Error('background_removal_empty_blob')
+      progress.value = 100
+      return cutout
     } finally {
+      URL.revokeObjectURL(sourceUrl)
       processing.value = false
     }
   }
