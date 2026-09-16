@@ -140,6 +140,20 @@ function formatTime(value: string) {
   return new Intl.DateTimeFormat(locale.value === 'es' ? 'es-ES' : 'en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(value))
 }
 
+async function selectBooking(bookingId: string) {
+  const nextId = selectedId.value === bookingId ? '' : bookingId
+  selectedId.value = nextId
+  if (!nextId) return
+
+  await nextTick()
+  await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+  const detail = document.getElementById(`booking-detail-${nextId}`)
+  if (!detail) return
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  detail.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' })
+  detail.focus({ preventScroll: true })
+}
+
 async function sendReply() {
   if (!selected.value || !reply.value.trim()) return
   await addMessage(selected.value.id, 'artist', reply.value)
@@ -214,7 +228,7 @@ useHead(() => ({ title: locale.value === 'es' ? 'Bandeja de booking | CueBooker'
 
       <div class="booking-workspace">
         <div id="workspace-list" class="booking-list" :class="{ 'tour-focus': tourStep === 1 }">
-          <button v-for="booking in filteredBookings" :key="booking.id" :class="{ active: selectedId === booking.id }" @click="selectedId = selectedId === booking.id ? '' : booking.id">
+          <button v-for="booking in filteredBookings" :key="booking.id" :class="{ active: selectedId === booking.id }" @click="selectBooking(booking.id)">
             <span class="booking-list__date">{{ formatDate(booking.event.date) }}</span>
             <span><strong>{{ booking.event.venue }}</strong><small>{{ booking.artistName }} · {{ booking.event.city }}</small></span>
             <span :class="`status-pill tone-${statusTone[booking.status]}`"><i />{{ copy.statuses[booking.status] }}</span>
@@ -222,7 +236,7 @@ useHead(() => ({ title: locale.value === 'es' ? 'Bandeja de booking | CueBooker'
           <p v-if="!filteredBookings.length" class="workspace-empty">{{ copy.empty }}</p>
         </div>
 
-        <article v-if="selected" class="booking-detail">
+        <article v-if="selected" :id="`booking-detail-${selected.id}`" class="booking-detail" tabindex="-1">
           <header>
             <div><p class="eyebrow">BOOKING / {{ selected.id.slice(-8).toUpperCase() }}</p><h2>{{ selected.event.venue }}</h2><p>{{ selected.event.name }} · {{ selected.artistName }}</p></div>
             <div id="workspace-status" class="booking-status-display" :class="[{ 'tour-focus': tourStep === 2 }, `tone-${statusTone[selected.status]}`]"><span>{{ copy.status }}</span><strong><i />{{ copy.statuses[selected.status] }}</strong></div>

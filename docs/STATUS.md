@@ -1,6 +1,19 @@
 # Project status
 
-Updated: 14 September 2026
+Updated: 16 September 2026
+
+## Professional artist profile and request navigation on staging
+
+Branch `feature/artist-profile-onboarding` adds an optional professional profile to the authenticated workspace and improves request navigation:
+
+- selecting a request scrolls its detail to the top on mobile and desktop, while respecting reduced-motion preferences;
+- onboarding explains that the professional profile is optional and can be completed later;
+- the workspace profile stores identity, location, genres, formats, event types, media links and private booking conditions;
+- exact fees, travel preferences, equipment notes and riders remain private to authorised artist members;
+- agency users can switch between roster artists, while editor memberships remain read-only;
+- the profile data is protected by RLS and the existing owner/manager permission helpers.
+
+Migration `20260916000127_add_artist_professional_profile.sql` is applied to `cuebooker-staging`. Production has not been changed.
 
 ## On GitHub main
 
@@ -14,7 +27,7 @@ The Supabase schema now includes:
 - seeded referral codes for the initial academy, collective and label outreach
 - last-owner protection for both organisations and artists
 
-The staging Supabase Security Advisor is clean after the latest schema changes.
+The staging Supabase Security Advisor reports no table or RLS issue introduced by the profile schema. Its remaining warning is the project-level leaked-password protection setting.
 
 Repository maintenance now also includes weekly Dependabot checks for npm dependencies and GitHub Actions.
 

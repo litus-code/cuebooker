@@ -1,6 +1,6 @@
 # Product definition
 
-Updated: 14 September 2026
+Updated: 16 September 2026
 
 ## Problem
 
@@ -53,6 +53,17 @@ Private details stay inside the workspace. Public discovery can expose an availa
 An artist or agency stores private fees for matching and internal decisions. Public search can filter by budget without showing the exact fee.
 
 The future directory depends on a useful supply of opted-in DJs. It supports date, city, sound and budget. This is a later layer because a directory without enough artists would weaken the product.
+
+## Professional artist profile
+
+The authenticated workspace includes an optional artist profile that can be completed after onboarding. It records:
+
+- artist identity, biography, city, country, time zone and working languages;
+- primary and secondary genres, performance formats and suitable event types;
+- media, social, technical rider and hospitality rider links;
+- private fee range, fee basis, usual set duration, travel regions and equipment notes.
+
+The first three groups prepare future opt-in discovery without publishing them today. Commercial terms remain private and must never appear in a public directory without a separate product decision and explicit artist control.
 
 ## Demo contract
 

@@ -443,7 +443,8 @@ textarea:focus-visible, select:focus-visible { outline: 2px solid var(--cue-acce
 .workspace-empty, .booking-placeholder { color: var(--cue-muted); line-height: 1.6; padding: 30px; }
 .booking-placeholder { align-items: center; border: 1px dashed var(--cue-border); display: flex; gap: 15px; min-height: 250px; }
 .booking-placeholder span { color: var(--cue-accent); font-size: 28px; }
-.booking-detail { background: var(--cue-surface); border: 1px solid var(--cue-border); min-width: 0; padding: clamp(22px, 3.5vw, 52px); }
+.booking-detail { background: var(--cue-surface); border: 1px solid var(--cue-border); min-width: 0; padding: clamp(22px, 3.5vw, 52px); scroll-margin-top: 84px; }
+.booking-detail:focus { outline: none; }
 .booking-detail > header { align-items: start; border-bottom: 1px solid var(--cue-border); display: flex; gap: 30px; justify-content: space-between; padding-bottom: 34px; }
 .booking-detail h2 { font-size: clamp(3rem, 5vw, 6rem); letter-spacing: -.07em; line-height: .9; margin: 18px 0 10px; }
 .booking-detail header p:last-child { color: var(--cue-muted); }

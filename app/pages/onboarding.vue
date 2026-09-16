@@ -15,6 +15,7 @@ const copy = computed(() => locale.value === 'es'
       dj: 'DJ / ARTISTA', djBody: 'Gestiono mi propio proyecto y calendario.',
       agency: 'AGENCIA', agencyBody: 'Gestiono un roster y su operativa de booking.',
       yourName: 'Tu nombre', artistName: 'Nombre artístico', agencyName: 'Nombre de la agencia', slug: 'Identificador',
+      profileNote: 'Después podrás completar una ficha profesional opcional con estilos, ubicación, caché privado y enlaces. También podrás hacerlo más tarde desde tu panel.',
       saving: 'Guardando…', submit: 'Crear workspace', genericError: 'No se pudo completar la configuración.',
       pageTitle: 'Configura tu cuenta | Cuebooker'
     }
@@ -24,6 +25,7 @@ const copy = computed(() => locale.value === 'es'
       dj: 'DJ / ARTIST', djBody: 'I manage my own project and calendar.',
       agency: 'AGENCY', agencyBody: 'I manage a roster and its booking operations.',
       yourName: 'Your name', artistName: 'Artist name', agencyName: 'Agency name', slug: 'Identifier',
+      profileNote: 'Afterwards you can complete an optional professional profile with styles, location, private fees and links. You can also do it later from your workspace.',
       saving: 'Saving…', submit: 'Create workspace', genericError: 'Setup could not be completed.',
       pageTitle: 'Set up your account | Cuebooker'
     })
@@ -48,7 +50,7 @@ onMounted(async () => {
   }
   if (!auth.profile.value) await auth.fetchProfile()
   if (auth.profile.value?.onboarding_completed) {
-    await navigateTo('/app?mode=account')
+    await navigateTo('/workspace')
     return
   }
   displayName.value = auth.profile.value?.display_name || ''
@@ -64,7 +66,7 @@ async function submit() {
       entityName: entityName.value,
       entitySlug: entitySlug.value
     })
-    await navigateTo('/app?mode=account')
+    await navigateTo('/workspace?setup=profile')
   } catch (error: any) {
     errorMessage.value = error?.data?.message || error?.message || copy.value.genericError
   } finally {
@@ -99,6 +101,7 @@ useHead(() => ({ title: copy.value.pageTitle, htmlAttrs: { lang: locale.value } 
         <label><span>{{ copy.yourName }}</span><input v-model="displayName" minlength="2" autocomplete="name" required /></label>
         <label><span>{{ accountType === 'dj' ? copy.artistName : copy.agencyName }}</span><input v-model="entityName" minlength="2" required /></label>
         <label><span>{{ copy.slug }}</span><input v-model="entitySlug" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required /></label>
+        <p class="profile-note">{{ copy.profileNote }}</p>
         <p v-if="errorMessage" class="onboarding-error">{{ errorMessage }}</p>
         <button class="onboarding-submit" type="submit" :disabled="submitting">{{ submitting ? copy.saving : copy.submit }}</button>
       </form>
@@ -125,5 +128,6 @@ label span { color:var(--cue-muted); font:700 11px/1.2 monospace; text-transform
 input { min-height:48px; padding:0 14px; border:1px solid var(--cue-border); background:var(--cue-bg); color:var(--cue-text); font:inherit; }
 .onboarding-submit { min-height:50px; border:0; background:var(--cue-toggle); color:var(--cue-toggle-ink); font-weight:800; cursor:pointer; }
 .onboarding-error { margin:0; padding:12px; border:1px solid #8b3434; color:#d65757; }
+.profile-note { margin:0; padding:14px; border-left:2px solid var(--cue-toggle); background:color-mix(in srgb,var(--cue-toggle) 7%,var(--cue-bg)); color:var(--cue-muted); font-size:13px; line-height:1.5; }
 @media (max-width:700px) { .onboarding-page { padding:20px; } .type-grid { grid-template-columns:1fr; } .onboarding-form { padding:20px; } .onboarding-panel { margin-top:4vh; } }
 </style>

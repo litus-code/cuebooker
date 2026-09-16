@@ -1,13 +1,55 @@
 <script setup lang="ts">
 import { bookingStatuses, statusTone, type BookingStatus } from '../domain/booking'
+import type { FeeBasis } from '../composables/useArtistProfile'
 
 const auth = useCueAuth()
 const availability = useAvailability()
+const artistProfiles = useArtistProfile()
 const preferences = useCuePreferences()
+const route = useRoute()
+const router = useRouter()
 
-type WorkspaceView = 'overview' | 'bookings' | 'calendar' | 'history'
+type WorkspaceView = 'overview' | 'bookings' | 'calendar' | 'history' | 'profile'
 type ManagedArtist = { id: string; stage_name: string; slug: string; role: 'owner' | 'manager' | 'editor' }
 type ManagedOrganization = { id: string; name: string; slug: string; type: 'agency' | 'promoter'; role: 'owner' | 'admin' | 'member' }
+
+type ArtistProfileForm = {
+  stageName: string
+  bio: string
+  city: string
+  countryCode: string
+  timezone: string
+  languages: string
+  primaryGenres: string
+  secondaryGenres: string
+  performanceFormats: string
+  eventTypes: string
+  yearsActive: string
+  websiteUrl: string
+  instagramUrl: string
+  soundcloudUrl: string
+  mixcloudUrl: string
+  youtubeUrl: string
+  spotifyUrl: string
+  feeBasis: '' | FeeBasis
+  feeMin: string
+  feeTypical: string
+  currency: string
+  setDurationMinutes: string
+  acceptsTravel: boolean
+  travelRegions: string
+  equipmentNotes: string
+  technicalRiderUrl: string
+  hospitalityRiderUrl: string
+}
+
+function emptyProfileForm(): ArtistProfileForm {
+  return {
+    stageName: '', bio: '', city: '', countryCode: '', timezone: '', languages: '', primaryGenres: '', secondaryGenres: '',
+    performanceFormats: '', eventTypes: '', yearsActive: '', websiteUrl: '', instagramUrl: '', soundcloudUrl: '', mixcloudUrl: '', youtubeUrl: '', spotifyUrl: '',
+    feeBasis: '', feeMin: '', feeTypical: '', currency: 'EUR', setDurationMinutes: '', acceptsTravel: false, travelRegions: '', equipmentNotes: '', technicalRiderUrl: '', hospitalityRiderUrl: ''
+  }
+}
 
 const activeView = ref<WorkspaceView>('overview')
 const artists = ref<ManagedArtist[]>([])
@@ -38,9 +80,14 @@ const passwordNew = ref('')
 const passwordConfirm = ref('')
 const passwordSaving = ref(false)
 const passwordMessage = ref('')
+const profileForm = ref<ArtistProfileForm>(emptyProfileForm())
+const profileLoading = ref(false)
+const profileSaving = ref(false)
+const profileMessage = ref('')
+const profileWelcome = ref(false)
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
-  overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Historial',
+  overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Historial', profile: 'Perfil',
   artist: 'Artista', role: 'DJ', settings: 'Ajustes', logout: 'Cerrar sesión',
   loading: 'Cargando workspace…', rosterEyebrow: 'ROSTER / PRIMER ARTISTA', addFirstArtist: 'Añade el primer artista de',
   rosterBody: 'Quedará asociado al roster y podrás empezar a gestionar su actividad.', artistName: 'Nombre artístico', identifier: 'Identificador', creating: 'Creando…', addArtist: 'Añadir artista',
@@ -57,6 +104,15 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   historyEyebrow: 'WORKSPACE / HISTORIAL', historyTitle: 'TODO LO QUE HA PASADO.',
   historyBody: 'Abre cualquier movimiento para volver a la oferta y revisar toda la conversación que originó esa acción.',
   historyEmpty: 'Todavía no hay actividad en este perfil.', historyStatus: 'Estado actualizado', historyMessage: 'Mensaje', openTrace: 'Abrir oferta y ver traza', previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente', filterSamples: 'Filtrar bookings de ejemplo',
+  profileEyebrow: 'ARTISTA / FICHA PROFESIONAL', profileTitle: 'TU INFORMACIÓN DE BOOKING.', profileBody: 'Completa esta ficha a tu ritmo. Hoy es privada y servirá para organizar mejor tus solicitudes y preparar futuras opciones de descubrimiento.',
+  profileOptional: 'Ficha opcional', profileOptionalBody: 'Tu workspace ya está creado. Puedes completar estos datos ahora o volver desde Perfil cuando quieras.', later: 'Ahora no',
+  profilePublicSection: 'Identidad y ubicación', profilePublicHint: 'Información profesional preparada para una futura ficha pública. Todavía no se publica.',
+  profileSoundSection: 'Sonido y formatos', profileBookingSection: 'Condiciones de booking', profileBookingHint: 'Solo tú y las personas autorizadas de tu equipo pueden ver estos datos.', profileLinksSection: 'Enlaces y material',
+  stageName: 'Nombre artístico', bio: 'Biografía', bioPlaceholder: 'Describe el proyecto, su sonido y el tipo de directo.', baseCity: 'Ciudad base', countryCode: 'País', timezone: 'Zona horaria', languages: 'Idiomas', commaHint: 'Separa los valores con comas.',
+  primaryGenres: 'Géneros principales', primaryGenresHint: 'Máximo 3.', secondaryGenres: 'Géneros secundarios', performanceFormats: 'Formatos', eventTypes: 'Tipos de evento', yearsActive: 'Años en activo',
+  feeBasis: 'Tipo de caché', feeEvent: 'Por actuación', feeSet: 'Por set', feeHour: 'Por hora', feeMin: 'Caché mínimo', feeTypical: 'Caché habitual', currency: 'Moneda', setDuration: 'Duración habitual del set', acceptsTravel: 'Acepto desplazamientos', travelRegions: 'Zonas donde trabajo', equipmentNotes: 'Equipo y necesidades técnicas',
+  website: 'Web', instagram: 'Instagram', soundcloud: 'SoundCloud', mixcloud: 'Mixcloud', youtube: 'YouTube', spotify: 'Spotify', technicalRider: 'Rider técnico', hospitalityRider: 'Rider de hospitalidad',
+  saveProfile: 'Guardar ficha', profileSaved: 'Ficha guardada.', profileSaveError: 'No se pudo guardar la ficha.', profileCompletion: 'Perfil completado', profileReadOnly: 'Puedes consultar esta ficha, pero solo propietarios y managers pueden editarla.', minutes: 'minutos',
   settingsTitle: 'Ajustes de cuenta', appearance: 'Apariencia', dark: 'Oscuro', light: 'Claro',
   language: 'Idioma', password: 'Cambiar contraseña', currentPassword: 'Contraseña actual',
   newPassword: 'Nueva contraseña', confirmPassword: 'Repetir contraseña', savePassword: 'Guardar contraseña',
@@ -64,7 +120,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   passwordLength: 'La nueva contraseña debe tener al menos 8 caracteres.', close: 'Cerrar', accountPrivate: 'CUENTA / PRIVADO',
   editSlot: 'EDITAR HORARIO', newSlot: 'NUEVO HORARIO', privateLabel: 'Etiqueta privada', privatePlaceholder: 'Estudio, desplazamiento, evento…', start: 'Inicio', end: 'Fin', invalidTime: 'La hora de fin debe ser posterior a la hora de inicio.', status: 'Estado', saving: 'Guardando…', saveChanges: 'Guardar cambios', createSlot: 'Crear horario', deleteSlot: 'Eliminar horario', finish: 'Terminar', next: 'Siguiente', closeTour: 'Cerrar recorrido'
 } : {
-  overview: 'Overview', bookings: 'Bookings', calendar: 'Calendar', history: 'History',
+  overview: 'Overview', bookings: 'Bookings', calendar: 'Calendar', history: 'History', profile: 'Profile',
   artist: 'Artist', role: 'DJ', settings: 'Settings', logout: 'Sign out',
   loading: 'Loading workspace…', rosterEyebrow: 'ROSTER / FIRST ARTIST', addFirstArtist: 'Add the first artist for',
   rosterBody: 'They will be linked to the roster so you can start managing their activity.', artistName: 'Artist name', identifier: 'Identifier', creating: 'Creating…', addArtist: 'Add artist',
@@ -81,6 +137,15 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   historyEyebrow: 'WORKSPACE / HISTORY', historyTitle: 'EVERYTHING THAT HAPPENED.',
   historyBody: 'Open any activity to return to its offer and review the full conversation that caused it.',
   historyEmpty: 'There is no activity for this profile yet.', historyStatus: 'Status updated', historyMessage: 'Message', openTrace: 'Open offer and view trace', previousMonth: 'Previous month', nextMonth: 'Next month', filterSamples: 'Filter sample bookings',
+  profileEyebrow: 'ARTIST / PROFESSIONAL PROFILE', profileTitle: 'YOUR BOOKING INFORMATION.', profileBody: 'Complete this profile at your own pace. It is private today and will help organise requests and prepare future discovery options.',
+  profileOptional: 'Optional profile', profileOptionalBody: 'Your workspace is ready. Complete these details now or return from Profile whenever you want.', later: 'Not now',
+  profilePublicSection: 'Identity and location', profilePublicHint: 'Professional information prepared for a future public profile. It is not published yet.',
+  profileSoundSection: 'Sound and formats', profileBookingSection: 'Booking terms', profileBookingHint: 'Only you and authorised team members can see these details.', profileLinksSection: 'Links and material',
+  stageName: 'Artist name', bio: 'Biography', bioPlaceholder: 'Describe the project, its sound and performance style.', baseCity: 'Base city', countryCode: 'Country', timezone: 'Time zone', languages: 'Languages', commaHint: 'Separate values with commas.',
+  primaryGenres: 'Primary genres', primaryGenresHint: 'Maximum 3.', secondaryGenres: 'Secondary genres', performanceFormats: 'Formats', eventTypes: 'Event types', yearsActive: 'Years active',
+  feeBasis: 'Fee basis', feeEvent: 'Per event', feeSet: 'Per set', feeHour: 'Per hour', feeMin: 'Minimum fee', feeTypical: 'Typical fee', currency: 'Currency', setDuration: 'Typical set duration', acceptsTravel: 'I accept travel bookings', travelRegions: 'Regions where I work', equipmentNotes: 'Equipment and technical requirements',
+  website: 'Website', instagram: 'Instagram', soundcloud: 'SoundCloud', mixcloud: 'Mixcloud', youtube: 'YouTube', spotify: 'Spotify', technicalRider: 'Technical rider', hospitalityRider: 'Hospitality rider',
+  saveProfile: 'Save profile', profileSaved: 'Profile saved.', profileSaveError: 'The profile could not be saved.', profileCompletion: 'Profile completed', profileReadOnly: 'You can view this profile, but only owners and managers can edit it.', minutes: 'minutes',
   settingsTitle: 'Account settings', appearance: 'Appearance', dark: 'Dark', light: 'Light',
   language: 'Language', password: 'Change password', currentPassword: 'Current password',
   newPassword: 'New password', confirmPassword: 'Repeat password', savePassword: 'Save password',
@@ -111,6 +176,7 @@ const tourSteps = computed(() => preferences.locale.value === 'es' ? [
 
 const manageableAgency = computed(() => organizations.value.find(item => item.type === 'agency' && ['owner', 'admin'].includes(item.role)))
 const selectedArtist = computed(() => artists.value.find(item => item.id === selectedArtistId.value))
+const canEditSelectedArtist = computed(() => ['owner', 'manager'].includes(selectedArtist.value?.role || ''))
 const sampleNamespace = computed(() => auth.session.value?.user.id && selectedArtistId.value ? `workspace-${auth.session.value.user.id}-${selectedArtistId.value}` : undefined)
 const sampleArtistName = computed(() => selectedArtist.value?.stage_name)
 const demo = useBookingDemo(sampleNamespace, sampleArtistName)
@@ -161,6 +227,22 @@ const selectedDemoBooking = computed(() => demo.bookings.value.find(item => item
 const demoCounts = computed(() => Object.fromEntries(bookingStatuses.map(status => [status, demoActiveBookings.value.filter(item => item.status === status).length])))
 const currentTour = computed(() => tourStep.value >= 0 ? tourSteps.value[tourStep.value] : null)
 const hasArtistSelector = computed(() => artists.value.length > 1)
+const profileCompletion = computed(() => {
+  const fields = [
+    profileForm.value.stageName,
+    profileForm.value.bio,
+    profileForm.value.city,
+    profileForm.value.countryCode,
+    profileForm.value.primaryGenres,
+    profileForm.value.performanceFormats,
+    profileForm.value.eventTypes,
+    profileForm.value.feeBasis,
+    profileForm.value.feeTypical,
+    profileForm.value.setDurationMinutes,
+    profileForm.value.soundcloudUrl || profileForm.value.mixcloudUrl || profileForm.value.youtubeUrl
+  ]
+  return Math.round(fields.filter(value => String(value || '').trim()).length / fields.length * 100)
+})
 const historyItems = computed(() => demo.bookings.value.flatMap(booking => [
   ...booking.messages.map(message => ({
     id: message.id,
@@ -187,11 +269,18 @@ onMounted(async () => {
   if (!auth.profile.value) await auth.fetchProfile()
   if (!auth.profile.value?.onboarding_completed) return navigateTo('/onboarding')
   await loadWorkspaceIdentity()
+  if (route.query.setup === 'profile') {
+    activeView.value = 'profile'
+    profileWelcome.value = true
+  }
   loading.value = false
 })
 
 watch([selectedArtistId, monthCursor], async () => {
   if (selectedArtistId.value) await loadBlocks()
+})
+watch(selectedArtistId, async (artistId) => {
+  if (artistId) await loadArtistProfile()
 })
 watch(rosterArtistName, value => { rosterArtistSlug.value = slugify(value) })
 watch(demo.ready, async (value) => {
@@ -227,10 +316,127 @@ async function loadWorkspaceIdentity() {
     artists.value = artistRows
     organizations.value = organizationRows
     if (!selectedArtistId.value || !artists.value.some(item => item.id === selectedArtistId.value)) selectedArtistId.value = artists.value[0]?.id || ''
-    if (selectedArtistId.value) await loadBlocks()
+    if (selectedArtistId.value) await Promise.all([loadBlocks(), loadArtistProfile()])
   } catch (error: any) {
     errorMessage.value = error?.message || (preferences.locale.value === 'es' ? 'No se pudo cargar el workspace.' : 'The workspace could not be loaded.')
   }
+}
+
+function splitList(value: string, limit: number) {
+  return Array.from(new Set(value.split(',').map(item => item.trim()).filter(Boolean))).slice(0, limit)
+}
+
+function joinList(value: string[] | null | undefined) {
+  return (value || []).join(', ')
+}
+
+function nullableText(value: string) {
+  return value.trim() || null
+}
+
+function nullableNumber(value: string) {
+  const trimmed = value.trim()
+  return trimmed ? Number(trimmed) : null
+}
+
+async function loadArtistProfile() {
+  if (!selectedArtistId.value) return
+  profileLoading.value = true
+  profileMessage.value = ''
+  try {
+    const record = await artistProfiles.getProfile(selectedArtistId.value)
+    const booking = record.booking
+    profileForm.value = {
+      stageName: record.artist.stage_name,
+      bio: record.artist.bio || '',
+      city: record.artist.city || '',
+      countryCode: record.artist.country_code || '',
+      timezone: record.artist.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+      languages: joinList(record.artist.languages),
+      primaryGenres: joinList(record.artist.primary_genres),
+      secondaryGenres: joinList(record.artist.secondary_genres),
+      performanceFormats: joinList(record.artist.performance_formats),
+      eventTypes: joinList(record.artist.event_types),
+      yearsActive: record.artist.years_active === null ? '' : String(record.artist.years_active),
+      websiteUrl: record.artist.website_url || '',
+      instagramUrl: record.artist.instagram_url || '',
+      soundcloudUrl: record.artist.soundcloud_url || '',
+      mixcloudUrl: record.artist.mixcloud_url || '',
+      youtubeUrl: record.artist.youtube_url || '',
+      spotifyUrl: record.artist.spotify_url || '',
+      feeBasis: booking?.fee_basis || '',
+      feeMin: booking?.fee_min === null || booking?.fee_min === undefined ? '' : String(booking.fee_min),
+      feeTypical: booking?.fee_typical === null || booking?.fee_typical === undefined ? '' : String(booking.fee_typical),
+      currency: booking?.currency || 'EUR',
+      setDurationMinutes: booking?.set_duration_minutes === null || booking?.set_duration_minutes === undefined ? '' : String(booking.set_duration_minutes),
+      acceptsTravel: booking?.accepts_travel || false,
+      travelRegions: joinList(booking?.travel_regions),
+      equipmentNotes: booking?.equipment_notes || '',
+      technicalRiderUrl: booking?.technical_rider_url || '',
+      hospitalityRiderUrl: booking?.hospitality_rider_url || ''
+    }
+  } catch (error: any) {
+    errorMessage.value = error?.data?.message || error?.message || copy.value.profileSaveError
+  } finally {
+    profileLoading.value = false
+  }
+}
+
+async function saveArtistProfile() {
+  if (!selectedArtistId.value || !canEditSelectedArtist.value) return
+  profileSaving.value = true
+  profileMessage.value = ''
+  const form = profileForm.value
+  try {
+    await artistProfiles.saveProfile(selectedArtistId.value, {
+      artist: {
+        stage_name: form.stageName.trim(),
+        bio: nullableText(form.bio),
+        city: nullableText(form.city),
+        country_code: nullableText(form.countryCode)?.toUpperCase() || null,
+        timezone: nullableText(form.timezone),
+        languages: splitList(form.languages, 8),
+        primary_genres: splitList(form.primaryGenres, 3),
+        secondary_genres: splitList(form.secondaryGenres, 8),
+        performance_formats: splitList(form.performanceFormats, 6),
+        event_types: splitList(form.eventTypes, 10),
+        years_active: nullableNumber(form.yearsActive),
+        website_url: nullableText(form.websiteUrl),
+        instagram_url: nullableText(form.instagramUrl),
+        soundcloud_url: nullableText(form.soundcloudUrl),
+        mixcloud_url: nullableText(form.mixcloudUrl),
+        youtube_url: nullableText(form.youtubeUrl),
+        spotify_url: nullableText(form.spotifyUrl)
+      },
+      booking: {
+        fee_basis: form.feeBasis || null,
+        fee_min: nullableNumber(form.feeMin),
+        fee_typical: nullableNumber(form.feeTypical),
+        currency: form.currency.trim().toUpperCase(),
+        set_duration_minutes: nullableNumber(form.setDurationMinutes),
+        accepts_travel: form.acceptsTravel,
+        travel_regions: splitList(form.travelRegions, 20),
+        equipment_notes: nullableText(form.equipmentNotes),
+        technical_rider_url: nullableText(form.technicalRiderUrl),
+        hospitality_rider_url: nullableText(form.hospitalityRiderUrl)
+      }
+    })
+    const artist = artists.value.find(item => item.id === selectedArtistId.value)
+    if (artist) artist.stage_name = form.stageName.trim()
+    profileMessage.value = copy.value.profileSaved
+    profileWelcome.value = false
+    await router.replace({ query: { ...route.query, setup: undefined } })
+  } catch (error: any) {
+    profileMessage.value = error?.data?.message || error?.message || copy.value.profileSaveError
+  } finally {
+    profileSaving.value = false
+  }
+}
+
+async function dismissProfileWelcome() {
+  profileWelcome.value = false
+  activeView.value = 'overview'
+  await router.replace({ query: { ...route.query, setup: undefined } })
 }
 
 async function addFirstRosterArtist() {
@@ -372,6 +578,20 @@ async function openCalendarBlock(block: AvailabilityBlock) {
   document.getElementById(booking.archived ? `history-booking-${booking.id}` : `booking-thread-${booking.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
+async function selectDemoBooking(bookingId: string) {
+  const nextId = selectedDemoBookingId.value === bookingId ? '' : bookingId
+  selectedDemoBookingId.value = nextId
+  if (!nextId) return
+
+  await nextTick()
+  await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+  const detail = document.getElementById(`booking-thread-${nextId}`)
+  if (!detail) return
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  detail.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' })
+  detail.focus({ preventScroll: true })
+}
+
 function shortDate(value: string) {
   return new Intl.DateTimeFormat(dateLocale.value, { day: '2-digit', month: 'short', timeZone: 'UTC' }).format(new Date(value))
 }
@@ -456,6 +676,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <button :class="{ active: activeView === 'bookings' }" type="button" @click="activeView = 'bookings'">{{ copy.bookings }}</button>
         <button :class="{ active: activeView === 'calendar' }" type="button" @click="activeView = 'calendar'">{{ copy.calendar }}</button>
         <button :class="{ active: activeView === 'history' }" type="button" @click="activeView = 'history'">{{ copy.history }}</button>
+        <button :class="{ active: activeView === 'profile' }" type="button" @click="activeView = 'profile'">{{ copy.profile }}</button>
       </nav>
       <div class="account-actions">
         <CuePreferencesControl compact />
@@ -543,7 +764,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
         <div class="booking-workspace demo-booking-workspace">
           <div id="workspace-list" class="booking-list" :class="{ 'tour-focus': tourStep === 2 }">
-            <button v-for="booking in demoFilteredBookings" :key="booking.id" type="button" :class="{ active: selectedDemoBookingId === booking.id }" @click="selectedDemoBookingId = selectedDemoBookingId === booking.id ? '' : booking.id">
+            <button v-for="booking in demoFilteredBookings" :key="booking.id" type="button" :class="{ active: selectedDemoBookingId === booking.id }" @click="selectDemoBooking(booking.id)">
               <span class="booking-list__date">{{ formatDemoDate(booking.event.date) }}</span>
               <span><strong>{{ booking.event.venue }}</strong><small>{{ booking.artistName }} · {{ booking.event.city }}</small></span>
               <span :class="`status-pill tone-${statusTone[booking.status]}`"><i />{{ demoStatusLabel(booking.status) }}</span>
@@ -551,7 +772,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             <p v-if="!demoFilteredBookings.length" class="workspace-empty">{{ copy.noSamples }}</p>
           </div>
 
-          <article v-if="selectedDemoBooking" :id="`booking-thread-${selectedDemoBooking.id}`" class="booking-detail">
+          <article v-if="selectedDemoBooking" :id="`booking-thread-${selectedDemoBooking.id}`" class="booking-detail" tabindex="-1">
             <header>
               <div><p class="eyebrow">{{ copy.sampleBooking }} / {{ selectedDemoBooking.id.slice(-8).toUpperCase() }}</p><h2>{{ selectedDemoBooking.event.venue }}</h2><p>{{ selectedDemoBooking.event.name }} · {{ selectedDemoBooking.artistName }}</p></div>
               <div id="workspace-status" class="booking-status-display" :class="[{ 'tour-focus': tourStep === 3 }, `tone-${statusTone[selectedDemoBooking.status]}`]"><span>{{ copy.automaticStatus }}</span><strong><i />{{ demoStatusLabel(selectedDemoBooking.status) }}</strong></div>
@@ -605,7 +826,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         </div>
       </section>
 
-      <section v-else class="view history-view">
+      <section v-else-if="activeView === 'history'" class="view history-view">
         <div class="view-heading">
           <div><p class="eyebrow">{{ copy.historyEyebrow }}</p><h1>{{ copy.historyTitle }}</h1><p>{{ copy.historyBody }}</p></div>
           <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
@@ -615,6 +836,82 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <button v-for="item in historyItems" :id="item.id === `status-${item.bookingId}` ? `history-booking-${item.bookingId}` : undefined" :key="item.id" type="button" :aria-label="`${copy.openTrace}: ${item.title}`" @click="openHistoryItem(item.bookingId)"><time>{{ formatDemoTime(item.at) }}</time><i /><div><span>{{ item.kind }}</span><strong>{{ item.title }}</strong><p>{{ item.detail }}</p><small>{{ copy.openTrace }} →</small></div></button>
         </div>
         <p v-else class="workspace-empty">{{ copy.historyEmpty }}</p>
+      </section>
+
+      <section v-else class="view profile-view">
+        <div class="view-heading">
+          <div><p class="eyebrow">{{ copy.profileEyebrow }}</p><h1>{{ copy.profileTitle }}</h1><p>{{ copy.profileBody }}</p></div>
+          <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
+          <div v-else class="profile-progress"><span>{{ copy.profileCompletion }}</span><strong>{{ profileCompletion }}%</strong><i><b :style="{ width: `${profileCompletion}%` }" /></i></div>
+        </div>
+
+        <aside v-if="profileWelcome" class="profile-welcome">
+          <div><span>{{ copy.profileOptional }}</span><strong>{{ copy.profileOptionalBody }}</strong></div>
+          <button type="button" @click="dismissProfileWelcome">{{ copy.later }}</button>
+        </aside>
+
+        <p v-if="profileLoading" class="loading-message">{{ copy.loading }}</p>
+        <form v-else class="profile-form" @submit.prevent="saveArtistProfile">
+          <p v-if="!canEditSelectedArtist" class="profile-readonly">{{ copy.profileReadOnly }}</p>
+          <fieldset class="profile-fieldset" :disabled="!canEditSelectedArtist">
+          <section class="profile-section">
+            <header><div><p class="eyebrow">01</p><h2>{{ copy.profilePublicSection }}</h2></div><p>{{ copy.profilePublicHint }}</p></header>
+            <div class="profile-fields">
+              <label class="field-wide"><span>{{ copy.stageName }}</span><input v-model="profileForm.stageName" maxlength="120" required></label>
+              <label class="field-wide"><span>{{ copy.bio }}</span><textarea v-model="profileForm.bio" rows="5" maxlength="2000" :placeholder="copy.bioPlaceholder" /></label>
+              <label><span>{{ copy.baseCity }}</span><input v-model="profileForm.city" maxlength="120" autocomplete="address-level2"></label>
+              <label><span>{{ copy.countryCode }}</span><input v-model="profileForm.countryCode" maxlength="2" pattern="[A-Za-z]{2}" placeholder="ES" autocomplete="country"></label>
+              <label><span>{{ copy.timezone }}</span><input v-model="profileForm.timezone" maxlength="80" placeholder="Europe/Madrid"></label>
+              <label><span>{{ copy.languages }}</span><input v-model="profileForm.languages" placeholder="Español, Català, English"><small>{{ copy.commaHint }}</small></label>
+              <label><span>{{ copy.yearsActive }}</span><input v-model="profileForm.yearsActive" type="number" min="0" max="80"></label>
+            </div>
+          </section>
+
+          <section class="profile-section">
+            <header><div><p class="eyebrow">02</p><h2>{{ copy.profileSoundSection }}</h2></div></header>
+            <div class="profile-fields">
+              <label><span>{{ copy.primaryGenres }}</span><input v-model="profileForm.primaryGenres" placeholder="Techno, House, Electro"><small>{{ copy.primaryGenresHint }} {{ copy.commaHint }}</small></label>
+              <label><span>{{ copy.secondaryGenres }}</span><input v-model="profileForm.secondaryGenres" placeholder="Trance, Breaks"><small>{{ copy.commaHint }}</small></label>
+              <label><span>{{ copy.performanceFormats }}</span><input v-model="profileForm.performanceFormats" placeholder="DJ set, Live, Hybrid"><small>{{ copy.commaHint }}</small></label>
+              <label><span>{{ copy.eventTypes }}</span><input v-model="profileForm.eventTypes" placeholder="Club, Festival, Private event"><small>{{ copy.commaHint }}</small></label>
+            </div>
+          </section>
+
+          <section class="profile-section profile-section--private">
+            <header><div><p class="eyebrow">03 / PRIVADO</p><h2>{{ copy.profileBookingSection }}</h2></div><p>{{ copy.profileBookingHint }}</p></header>
+            <div class="profile-fields">
+              <label><span>{{ copy.feeBasis }}</span><select v-model="profileForm.feeBasis"><option value="">—</option><option value="event">{{ copy.feeEvent }}</option><option value="set">{{ copy.feeSet }}</option><option value="hour">{{ copy.feeHour }}</option></select></label>
+              <label><span>{{ copy.feeMin }}</span><input v-model="profileForm.feeMin" type="number" min="0" step="0.01"></label>
+              <label><span>{{ copy.feeTypical }}</span><input v-model="profileForm.feeTypical" type="number" min="0" step="0.01"></label>
+              <label><span>{{ copy.currency }}</span><input v-model="profileForm.currency" maxlength="3" pattern="[A-Za-z]{3}" placeholder="EUR"></label>
+              <label><span>{{ copy.setDuration }}</span><div class="input-suffix"><input v-model="profileForm.setDurationMinutes" type="number" min="15" max="1440" step="15"><small>{{ copy.minutes }}</small></div></label>
+              <label class="checkbox-field"><input v-model="profileForm.acceptsTravel" type="checkbox"><span>{{ copy.acceptsTravel }}</span></label>
+              <label class="field-wide"><span>{{ copy.travelRegions }}</span><input v-model="profileForm.travelRegions" placeholder="Catalunya, España, Europa"><small>{{ copy.commaHint }}</small></label>
+              <label class="field-wide"><span>{{ copy.equipmentNotes }}</span><textarea v-model="profileForm.equipmentNotes" rows="4" maxlength="2000" /></label>
+            </div>
+          </section>
+
+          <section class="profile-section">
+            <header><div><p class="eyebrow">04</p><h2>{{ copy.profileLinksSection }}</h2></div></header>
+            <div class="profile-fields">
+              <label><span>{{ copy.website }}</span><input v-model="profileForm.websiteUrl" type="url" placeholder="https://"></label>
+              <label><span>{{ copy.instagram }}</span><input v-model="profileForm.instagramUrl" type="url" placeholder="https://instagram.com/"></label>
+              <label><span>{{ copy.soundcloud }}</span><input v-model="profileForm.soundcloudUrl" type="url" placeholder="https://soundcloud.com/"></label>
+              <label><span>{{ copy.mixcloud }}</span><input v-model="profileForm.mixcloudUrl" type="url" placeholder="https://mixcloud.com/"></label>
+              <label><span>{{ copy.youtube }}</span><input v-model="profileForm.youtubeUrl" type="url" placeholder="https://youtube.com/"></label>
+              <label><span>{{ copy.spotify }}</span><input v-model="profileForm.spotifyUrl" type="url" placeholder="https://open.spotify.com/"></label>
+              <label><span>{{ copy.technicalRider }}</span><input v-model="profileForm.technicalRiderUrl" type="url" placeholder="https://"></label>
+              <label><span>{{ copy.hospitalityRider }}</span><input v-model="profileForm.hospitalityRiderUrl" type="url" placeholder="https://"></label>
+            </div>
+          </section>
+          </fieldset>
+
+          <footer class="profile-savebar">
+            <div><span>{{ copy.profileCompletion }}</span><strong>{{ profileCompletion }}%</strong></div>
+            <p v-if="profileMessage" :class="{ success: profileMessage === copy.profileSaved }">{{ profileMessage }}</p>
+            <button class="primary-button" type="submit" :disabled="profileSaving || !canEditSelectedArtist">{{ profileSaving ? copy.saving : copy.saveProfile }}</button>
+          </footer>
+        </form>
       </section>
     </template>
 
@@ -660,7 +957,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
 <style scoped>
 :global(body) { margin: 0; background: var(--cue-bg); }
-button, select, input { font: inherit; }
+button, select, input, textarea { font: inherit; }
 button, a, select { -webkit-tap-highlight-color: transparent; }
 .workspace { min-height: 100vh; padding: 0 28px 64px; background: var(--cue-bg); color: var(--cue-text); font-family: Arial, Helvetica, sans-serif; }
 .workspace-header { position: sticky; z-index: 20; top: 0; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 64px; margin-inline: -28px; padding-inline: 28px; border-bottom: 1px solid var(--cue-border); background: color-mix(in srgb, var(--cue-bg) 94%, transparent); backdrop-filter: blur(12px); }
@@ -684,7 +981,8 @@ h1 { max-width: 900px; margin: 10px 0 14px; font-size: clamp(3rem, 7vw, 7.2rem);
 .artist-select, .roster-form label, .editor-panel label { display: grid; gap: 8px; }
 .artist-select span, .roster-form label span, .editor-panel label span { color: #858585; font: 700 10px/1.2 monospace; letter-spacing: .08em; text-transform: uppercase; }
 select, input { min-height: 46px; box-sizing: border-box; padding: 0 13px; border: 1px solid var(--cue-border); border-radius: 0; outline: none; background: var(--cue-surface); color: var(--cue-text); }
-select:focus, input:focus { border-color: #e8ff2f; }
+textarea { box-sizing: border-box; width: 100%; padding: 13px; resize: vertical; border: 1px solid var(--cue-border); border-radius: 0; outline: none; background: var(--cue-surface); color: var(--cue-text); }
+select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .artist-select select { min-width: 220px; }
 .artist-identity { display: grid; min-width: 220px; padding: 12px 0 3px; border-top: 1px solid var(--cue-border); }
 .artist-identity > span, .artist-identity > small { color: var(--cue-muted); font: 700 9px/1.3 monospace; letter-spacing: .12em; text-transform: uppercase; }
@@ -797,6 +1095,44 @@ select:focus, input:focus { border-color: #e8ff2f; }
 .history-list > button p { max-width: 720px; margin: 7px 0 0; color: var(--cue-muted); font-size: 13px; line-height: 1.5; }
 .history-list > button small { display: block; margin-top: 10px; color: var(--cue-accent); font: 700 10px/1.3 monospace; text-transform: uppercase; letter-spacing: .08em; }
 .history-list > button:hover > div { border-color: var(--cue-accent); }
+.booking-detail { scroll-margin-top: 84px; }
+.booking-detail:focus { outline: none; }
+.profile-view { padding-bottom: 90px; }
+.profile-progress { display: grid; min-width: 220px; gap: 7px; }
+.profile-progress > span, .profile-savebar span { color: var(--cue-muted); font: 700 10px/1.3 monospace; letter-spacing: .1em; text-transform: uppercase; }
+.profile-progress > strong { font-size: 28px; }
+.profile-progress > i { display: block; overflow: hidden; height: 5px; background: var(--cue-border); }
+.profile-progress > i > b { display: block; height: 100%; background: var(--cue-toggle); transition: width .25s ease; }
+.profile-welcome { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 18px; padding: 20px 22px; border: 1px solid color-mix(in srgb, var(--cue-toggle) 55%, var(--cue-border)); background: color-mix(in srgb, var(--cue-toggle) 8%, var(--cue-surface)); }
+.profile-welcome span { display: block; margin-bottom: 7px; color: var(--cue-accent); font: 700 10px/1.2 monospace; letter-spacing: .1em; text-transform: uppercase; }
+.profile-welcome strong { max-width: 820px; font-size: 15px; line-height: 1.5; }
+.profile-welcome button { flex: 0 0 auto; min-height: 42px; padding: 0 16px; border: 1px solid var(--cue-border); background: transparent; color: var(--cue-text); cursor: pointer; font-weight: 800; }
+.profile-form { display: grid; gap: 18px; }
+.profile-fieldset { display: grid; gap: 18px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.profile-fieldset:disabled { opacity: .72; }
+.profile-readonly { margin: 0; padding: 12px 14px; border: 1px solid var(--cue-border); color: var(--cue-muted); background: var(--cue-surface); }
+.profile-section { border: 1px solid var(--cue-border); background: var(--cue-surface); }
+.profile-section--private { border-color: color-mix(in srgb, var(--cue-accent) 44%, var(--cue-border)); }
+.profile-section > header { display: flex; justify-content: space-between; align-items: flex-start; gap: 30px; padding: 22px; border-bottom: 1px solid var(--cue-border); }
+.profile-section > header h2 { margin: 7px 0 0; font-size: clamp(1.4rem, 3vw, 2.3rem); text-transform: uppercase; }
+.profile-section > header > p { max-width: 500px; margin: 0; color: var(--cue-muted); font-size: 13px; line-height: 1.5; }
+.profile-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; padding: 22px; }
+.profile-fields label { display: grid; align-content: start; gap: 8px; }
+.profile-fields label > span { color: var(--cue-muted); font: 700 10px/1.2 monospace; letter-spacing: .09em; text-transform: uppercase; }
+.profile-fields label > small { margin-top: -3px; color: var(--cue-dim); font-size: 11px; }
+.profile-fields .field-wide { grid-column: 1 / -1; }
+.profile-fields .checkbox-field { display: flex; align-items: center; align-self: end; min-height: 46px; padding: 0 13px; border: 1px solid var(--cue-border); }
+.profile-fields .checkbox-field input { width: 18px; min-height: 18px; margin: 0 10px 0 0; accent-color: var(--cue-toggle); }
+.profile-fields .checkbox-field span { color: var(--cue-text); }
+.input-suffix { display: grid; grid-template-columns: 1fr auto; align-items: center; border: 1px solid var(--cue-border); }
+.input-suffix input { border: 0; }
+.input-suffix small { padding-right: 13px; color: var(--cue-muted); font-size: 11px; }
+.profile-savebar { position: sticky; z-index: 10; bottom: 18px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 20px; padding: 15px 18px; border: 1px solid var(--cue-border); background: color-mix(in srgb, var(--cue-bg) 95%, transparent); box-shadow: 0 18px 50px var(--cue-shadow); backdrop-filter: blur(14px); }
+.profile-savebar > div { display: flex; align-items: baseline; gap: 10px; }
+.profile-savebar > div strong { font-size: 22px; }
+.profile-savebar > p { margin: 0; color: #ff9b9b; font-size: 12px; }
+.profile-savebar > p.success { color: #8ce99a; }
+.profile-savebar .primary-button { min-width: 180px; padding: 0 18px; }
 .settings-panel { display: block; }
 .settings-group { display: grid; gap: 10px; padding: 18px 0; border-top: 1px solid var(--cue-border); }
 .settings-group > span { color: var(--cue-muted); font: 700 10px monospace; letter-spacing: .1em; text-transform: uppercase; }
@@ -828,7 +1164,8 @@ select:focus, input:focus { border-color: #e8ff2f; }
 @media (max-width: 1040px) {
   .workspace-header { grid-template-columns: 1fr auto; }
   .workspace-header nav { position: fixed; right: 16px; bottom: 16px; left: 16px; z-index: 30; justify-content: stretch; box-shadow: 0 14px 40px #000; }
-  .workspace-header nav button { flex: 1; }
+  .workspace-header nav { overflow-x: auto; }
+  .workspace-header nav button { flex: 1 0 auto; padding-inline: 12px; }
   .summary-grid { grid-template-columns: repeat(2, 1fr); }
   .overview-grid, .calendar-layout { grid-template-columns: 1fr; }
   .day-panel { position: static; }
@@ -872,5 +1209,14 @@ select:focus, input:focus { border-color: #e8ff2f; }
   .history-list > button { grid-template-columns: 1fr; gap: 7px; padding: 16px 0; border-bottom: 1px solid var(--cue-border); }
   .history-list > button > i { display: none; }
   .history-list > button > div { padding: 0; border: 0; }
+  .booking-detail { scroll-margin-top: 74px; }
+  .profile-progress { min-width: 0; margin-top: 20px; }
+  .profile-welcome, .profile-section > header { align-items: stretch; flex-direction: column; }
+  .profile-welcome button { width: 100%; }
+  .profile-fields { grid-template-columns: 1fr; padding: 18px; }
+  .profile-fields .field-wide { grid-column: auto; }
+  .profile-savebar { bottom: 82px; grid-template-columns: 1fr auto; gap: 10px; }
+  .profile-savebar > p { grid-column: 1 / -1; grid-row: 2; }
+  .profile-savebar .primary-button { min-width: 0; }
 }
 </style>
