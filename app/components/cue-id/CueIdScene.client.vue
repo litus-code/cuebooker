@@ -1,5 +1,26 @@
 <script setup>
-import * as THREE from 'three'
+import {
+  ACESFilmicToneMapping,
+  BoxGeometry,
+  CircleGeometry,
+  Color,
+  CylinderGeometry,
+  DirectionalLight,
+  FogExp2,
+  Group,
+  HemisphereLight,
+  IcosahedronGeometry,
+  Mesh,
+  MeshBasicMaterial,
+  MeshPhysicalMaterial,
+  MeshStandardMaterial,
+  PerspectiveCamera,
+  PointLight,
+  Scene,
+  SRGBColorSpace,
+  TorusGeometry,
+  WebGLRenderer
+} from 'three'
 
 const props = defineProps({
   material: { type: String, default: 'matte' },
@@ -39,10 +60,10 @@ function currentAccent() {
 
 function makeBodyMaterial() {
   if (props.material === 'chrome') {
-    return new THREE.MeshStandardMaterial({ color: 0x747a70, metalness: 0.96, roughness: 0.16 })
+    return new MeshStandardMaterial({ color: 0x747a70, metalness: 0.96, roughness: 0.16 })
   }
   if (props.material === 'glass') {
-    return new THREE.MeshPhysicalMaterial({
+    return new MeshPhysicalMaterial({
       color: 0x242923,
       metalness: 0.15,
       roughness: 0.12,
@@ -52,11 +73,11 @@ function makeBodyMaterial() {
       thickness: 0.8
     })
   }
-  return new THREE.MeshStandardMaterial({ color: 0x171a16, metalness: 0.42, roughness: 0.48 })
+  return new MeshStandardMaterial({ color: 0x171a16, metalness: 0.42, roughness: 0.48 })
 }
 
 function addMesh(group, geometry, material, position, rotation = [0, 0, 0], scale = [1, 1, 1]) {
-  const mesh = new THREE.Mesh(geometry, material)
+  const mesh = new Mesh(geometry, material)
   mesh.position.set(...position)
   mesh.rotation.set(...rotation)
   mesh.scale.set(...scale)
@@ -65,48 +86,48 @@ function addMesh(group, geometry, material, position, rotation = [0, 0, 0], scal
 }
 
 function buildFigure() {
-  figure = new THREE.Group()
+  figure = new Group()
   figure.position.y = -0.1
   bodyMaterial = makeBodyMaterial()
-  accentMaterial = new THREE.MeshBasicMaterial({ color: currentAccent(), toneMapped: false })
+  accentMaterial = new MeshBasicMaterial({ color: currentAccent(), toneMapped: false })
 
-  addMesh(figure, new THREE.IcosahedronGeometry(0.49, 2), bodyMaterial, [0, 1.18, 0])
-  addMesh(figure, new THREE.BoxGeometry(0.78, 0.1, 0.57), accentMaterial, [0, 1.18, 0.39])
+  addMesh(figure, new IcosahedronGeometry(0.49, 2), bodyMaterial, [0, 1.18, 0])
+  addMesh(figure, new BoxGeometry(0.78, 0.1, 0.57), accentMaterial, [0, 1.18, 0.39])
 
   const torso = addMesh(
     figure,
-    new THREE.CylinderGeometry(0.63, 0.45, 1.55, 6, 1, false),
+    new CylinderGeometry(0.63, 0.45, 1.55, 6, 1, false),
     bodyMaterial,
     [0, 0.08, 0],
     [0, 0.06, 0]
   )
   torso.scale.z = 0.72
 
-  addMesh(figure, new THREE.CylinderGeometry(0.18, 0.14, 1.3, 6), bodyMaterial, [-0.69, 0.02, 0], [0, 0, -0.09])
-  addMesh(figure, new THREE.CylinderGeometry(0.18, 0.14, 1.3, 6), bodyMaterial, [0.69, 0.02, 0], [0, 0, 0.09])
-  addMesh(figure, new THREE.CylinderGeometry(0.1, 0.1, 1.0, 6), accentMaterial, [0, 0.08, 0.52])
+  addMesh(figure, new CylinderGeometry(0.18, 0.14, 1.3, 6), bodyMaterial, [-0.69, 0.02, 0], [0, 0, -0.09])
+  addMesh(figure, new CylinderGeometry(0.18, 0.14, 1.3, 6), bodyMaterial, [0.69, 0.02, 0], [0, 0, 0.09])
+  addMesh(figure, new CylinderGeometry(0.1, 0.1, 1.0, 6), accentMaterial, [0, 0.08, 0.52])
 
-  const neckRing = addMesh(figure, new THREE.TorusGeometry(0.39, 0.018, 8, 64), accentMaterial, [0, 0.86, 0], [Math.PI / 2, 0, 0])
+  const neckRing = addMesh(figure, new TorusGeometry(0.39, 0.018, 8, 64), accentMaterial, [0, 0.86, 0], [Math.PI / 2, 0, 0])
   neckRing.scale.z = 0.75
 
   scene.add(figure)
 }
 
 function buildEnvironment() {
-  const floorMaterial = new THREE.MeshBasicMaterial({ color: 0x262a24, transparent: true, opacity: 0.52 })
+  const floorMaterial = new MeshBasicMaterial({ color: 0x262a24, transparent: true, opacity: 0.52 })
   const accent = accentMaterial
 
   for (const [radius, opacity] of [[1.45, 0.72], [2.05, 0.32]]) {
     const ringMaterial = accent.clone()
     ringMaterial.transparent = true
     ringMaterial.opacity = opacity
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.012, 6, 96), ringMaterial)
+    const ring = new Mesh(new TorusGeometry(radius, 0.012, 6, 96), ringMaterial)
     ring.rotation.x = Math.PI / 2
     ring.position.y = -0.95
     scene.add(ring)
   }
 
-  const floor = new THREE.Mesh(new THREE.CircleGeometry(2.25, 48), floorMaterial)
+  const floor = new Mesh(new CircleGeometry(2.25, 48), floorMaterial)
   floor.rotation.x = -Math.PI / 2
   floor.position.y = -1.04
   scene.add(floor)
@@ -212,37 +233,37 @@ onMounted(() => {
     if (!host.value) return
     reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    scene = new THREE.Scene()
-    scene.background = new THREE.Color(0x060706)
-    scene.fog = new THREE.FogExp2(0x060706, 0.075)
+    scene = new Scene()
+    scene.background = new Color(0x060706)
+    scene.fog = new FogExp2(0x060706, 0.075)
 
-    camera = new THREE.PerspectiveCamera(34, 1, 0.1, 30)
+    camera = new PerspectiveCamera(34, 1, 0.1, 30)
     camera.position.set(0, 0.25, 5.15)
 
     const mobile = window.matchMedia('(max-width: 760px)').matches
-    renderer = new THREE.WebGLRenderer({
+    renderer = new WebGLRenderer({
       alpha: false,
       antialias: !mobile,
       powerPreference: 'high-performance'
     })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 1.15 : 1.5))
-    renderer.outputColorSpace = THREE.SRGBColorSpace
-    renderer.toneMapping = THREE.ACESFilmicToneMapping
+    renderer.outputColorSpace = SRGBColorSpace
+    renderer.toneMapping = ACESFilmicToneMapping
     renderer.toneMappingExposure = 1.05
     host.value.appendChild(renderer.domElement)
 
-    const hemisphere = new THREE.HemisphereLight(0xdfe7d8, 0x050605, 1.45)
+    const hemisphere = new HemisphereLight(0xdfe7d8, 0x050605, 1.45)
     scene.add(hemisphere)
 
-    const key = new THREE.DirectionalLight(0xffffff, 2.1)
+    const key = new DirectionalLight(0xffffff, 2.1)
     key.position.set(-2.4, 3.1, 3.2)
     scene.add(key)
 
-    const rim = new THREE.DirectionalLight(0x7f8879, 1.25)
+    const rim = new DirectionalLight(0x7f8879, 1.25)
     rim.position.set(2.7, 1.2, -2.4)
     scene.add(rim)
 
-    accentLight = new THREE.PointLight(currentAccent(), 3.3, 7, 2)
+    accentLight = new PointLight(currentAccent(), 3.3, 7, 2)
     accentLight.position.set(1.35, 0.55, 2.4)
     scene.add(accentLight)
 
