@@ -54,34 +54,54 @@ An artist or agency stores private fees for matching and internal decisions. Pub
 
 The future directory depends on a useful supply of opted-in DJs. It supports date, city, sound and budget. This is a later layer because a directory without enough artists would weaken the product.
 
-## Professional artist profile
+## Artist Profile
 
-The authenticated workspace includes an optional artist profile that can be completed after onboarding. It records:
+CueBooker has one artist profile. It is the single source of truth for the artist identity, professional presentation and booking context. CUE ID and CUE PASSPORT are parts of this profile, not separate profiles or parallel products.
+
+The profile can be started during onboarding and completed later. It records:
 
 - artist identity, biography, city, country, time zone and working languages;
 - an optional artist cover with a CueBooker-designed fallback when no image is uploaded;
-- primary and secondary genres, performance formats and suitable event types;
+- music identity, with reviewed styles, substyles and sound descriptors;
+- performance formats and suitable event types;
 - media, social, technical rider and hospitality rider links;
-- private fee range, fee basis, usual set duration, travel regions and equipment notes.
+- private fee range, fee basis, usual set duration, travel regions and equipment notes;
+- CUE ID visual representation when the artist chooses to use it;
+- CUE PASSPORT trajectory derived from artist-controlled history and real CueBooker activity.
 
-The first three groups prepare future opt-in discovery without publishing them today. Commercial terms remain private and must never appear in a public directory without a separate product decision and explicit artist control.
+The artist should never need to enter the same identity information twice. CUE ID reads from Artist Profile data and adds visual choices. CUE PASSPORT reads from Artist Profile and booking history and adds trajectory presentation. Commercial terms remain private and must never appear in a public profile without a separate product decision and explicit artist control.
 
-## Artist identity and trajectory
+### CUE ID
 
-CueBooker will extend the professional profile through an optional identity and trajectory layer. The working product language is:
+CUE ID is the visual layer of Artist Profile. It can coexist with photography and artwork instead of replacing them. The long-term presentation modes are expected to include photo, artwork and CUE ID.
 
-- **CUE ID**, the artist-controlled visual identity;
-- **CUE SIGNAL**, progression derived from meaningful professional activity inside CueBooker;
-- **CUE PASSPORT**, the structured history the artist can keep private or selectively share;
-- **CUE CASE**, a more expressive visual history based on real milestones, cities, venues and years.
+The artist can postpone CUE ID indefinitely. A new or established artist must be able to use CueBooker professionally without adopting a 3D avatar.
 
-This layer must respect club culture and electronic-music history. It does not rank artistic quality, authenticity or popularity. Follower counts, likes and daily app usage do not increase progression.
+### CUE SIGNAL
+
+CUE SIGNAL is a discreet contextual indicator derived from meaningful activity. It does not define artistic quality, status in the scene or popularity. It should remain secondary to the profile and booking workflow.
+
+Follower counts, likes, reach, daily logins and repeated app usage do not increase SIGNAL.
+
+### CUE PASSPORT
+
+CUE PASSPORT is a section of Artist Profile that documents trajectory. It can include selected years, residencies, cities, venues, booking milestones and recurring professional relationships. CueBooker should generate as much of this history as possible from real records while allowing the artist to add relevant previous history.
+
+### Share
+
+Sharing is an action from Profile Preview or Passport, not a separate product section. Planned outputs include Instagram Story, artist card, LinkedIn presentation and direct image export. Every output must obey the artist's visibility settings.
+
+### Deferred concepts
+
+CUE CASE remains an exploration for a later visual history treatment. It should not appear as a first-class product area until CUE ID and PASSPORT have demonstrated real value.
+
+## Cultural direction
+
+The Artist Profile must respect club culture and electronic-music history. It does not rank artistic quality, authenticity or popularity. The product should feel credible to an artist starting today and to someone with decades of club history.
 
 Music data must separate broad styles, substyles and sound descriptors so that scene terminology is not reduced to vague or invented labels. Taxonomy remains editorially reviewed and extensible.
 
-CUE ID appears during DJ onboarding as an optional invitation. Skipping it never blocks account creation or booking operations. The first implementation uses a lightweight visual prototype; the real 3D renderer is a later, lazy-loaded layer after the profile flow is stable.
-
-Sharing is part of the planned product surface. The artist will eventually be able to create privacy-aware outputs for Instagram, LinkedIn and direct image export without exposing private fees, negotiations, contacts or notes.
+CUE ID appears during DJ onboarding as an optional invitation. Skipping it never blocks account creation or booking operations. The current `/cue-id` route is an internal visual laboratory, not a second destination in the final product navigation. The real experience belongs inside Artist Profile.
 
 See `docs/CUE_ID_PRODUCT_VISION.md` for cultural guardrails, taxonomy direction, 3D architecture, delivery phases and success criteria.
 
@@ -99,4 +119,4 @@ The public demo must state what users are seeing:
 
 The early-access form collects name, email, role and explicit consent. Leads go to the dedicated Brevo list. Interviews and pilot use should test whether users receive enough enquiries to need the workflow, which channels create the most loss, how they decide availability and what must remain private.
 
-The identity layer adds a second research track: whether DJs across different generations and electronic-music scenes consider CUE ID credible, whether experienced artists feel represented rather than gamified, whether artists complete more of their professional profile, and whether share artifacts create qualified profile visits.
+Artist Profile adds a second research track: whether DJs across different generations and electronic-music scenes consider the identity system credible, whether experienced artists feel represented rather than gamified, whether artists complete more of their professional profile, and whether shared profile artifacts create qualified visits.
