@@ -61,5 +61,3 @@ Apply these migrations before testing this branch against a Supabase environment
 - `20260916100500_add_artist_cutout_path.sql`
 
 Both schema changes are already applied to `cuebooker-staging`. Production remains unchanged.
-
-<!-- validation-head -->
