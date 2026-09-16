@@ -8,10 +8,12 @@ const props = withDefaults(defineProps<{
   artistName?: string
   disabled?: boolean
   compact?: boolean
+  embedded?: boolean
 }>(), {
   artistName: '',
   disabled: false,
-  compact: false
+  compact: false,
+  embedded: false
 })
 
 const preferences = useCuePreferences()
@@ -95,7 +97,14 @@ onBeforeUnmount(() => observer?.disconnect())
 </script>
 
 <template>
-  <section ref="root" class="cue-id-stage" :class="{ 'cue-id-stage--compact': compact }">
+  <section
+    ref="root"
+    class="cue-id-stage"
+    :class="{
+      'cue-id-stage--compact': compact,
+      'cue-id-stage--embedded': embedded
+    }"
+  >
     <header class="cue-id-stage__heading">
       <div>
         <span>{{ copy.eyebrow }}</span>
@@ -157,6 +166,7 @@ onBeforeUnmount(() => observer?.disconnect())
   background: #080908;
   color: #f4f2ed;
 }
+.cue-id-stage--embedded { border-right: 0; border-left: 0; border-bottom: 0; }
 .cue-id-stage__heading {
   display: flex;
   justify-content: space-between;
