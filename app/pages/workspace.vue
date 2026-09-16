@@ -73,6 +73,8 @@ const rosterArtistName = ref('')
 const rosterArtistSlug = ref('')
 const rosterSubmitting = ref(false)
 const bookingFilter = ref<'all' | BookingStatus>('all')
+const bookingSearch = ref('')
+const sidebarCollapsed = ref(false)
 const selectedDemoBookingId = ref('')
 const demoReply = ref('')
 const tourStep = ref(-1)
@@ -106,7 +108,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   sampleEyebrow: 'BOOKINGS / MODO PRUEBA', sampleTitle: 'PRUEBA LA BANDEJA COMPLETA.', sampleBody: 'Las solicitudes reales todavía no están conectadas a esta cuenta. Puedes probar ahora los filtros, ofertas, conversaciones y cambios de estado con datos simulados.', openBookings: 'Abrir Bookings',
   bookingsEyebrow: 'BOOKINGS / BANDEJA', bookingsTitle: 'TODOS TUS BOOKINGS. UN SOLO HILO.',
   bookingsBody: 'Revisa cada propuesta, responde al promotor y decide la fecha sin perder el contexto.',
-  samplesLabel: 'EJEMPLOS INICIALES / DATOS SIMULADOS', samplesActive: 'Tu workspace empieza con solicitudes de muestra.', samplesRemoved: 'Has eliminado las solicitudes de muestra.', samplesBody: 'Los ejemplos pertenecen únicamente a este perfil y navegador. No modifican el calendario privado y puedes retirarlos cuando quieras.', guidedTour: 'Ver recorrido guiado', removeSamples: 'Eliminar ejemplos', restoreSamples: 'Restaurar ejemplos', all: 'Todas', noSamples: 'No hay solicitudes de prueba en este estado.',
+  samplesLabel: 'EJEMPLOS INICIALES / DATOS SIMULADOS', samplesActive: 'Tu workspace empieza con solicitudes de muestra.', samplesRemoved: 'Has eliminado las solicitudes de muestra.', samplesBody: 'Los ejemplos pertenecen únicamente a este perfil y navegador. No modifican el calendario privado y puedes retirarlos cuando quieras.', guidedTour: 'Ver recorrido guiado', searchBookings: 'Buscar solicitudes', searchBookingsPlaceholder: 'Sala, promotor, ciudad, evento o ID…', searchResults: 'resultados', collapseSidebar: 'Comprimir menú', expandSidebar: 'Expandir menú', removeSamples: 'Eliminar ejemplos', restoreSamples: 'Restaurar ejemplos', all: 'Todas', noSamples: 'No hay solicitudes de prueba en este estado.',
   sampleBooking: 'BOOKING DE PRUEBA', automaticStatus: 'Estado automático', eventData: 'Datos del evento', date: 'Fecha', city: 'Ciudad', venue: 'Sala', capacity: 'Aforo', offer: 'Oferta', schedule: 'Horario', contact: 'Contacto', name: 'Nombre', phone: 'Tel.', source: 'Origen', bookingLink: 'Enlace de booking', conversation: 'Conversación', replyPromoter: 'Responder al promotor', replyPlaceholder: 'Escribe condiciones, una pregunta o una propuesta…', localMessage: 'Ejemplo local. El mensaje no se envía por email.', sendSampleReply: 'Enviar respuesta de ejemplo', openPromoter: 'Abrir vista del promotor', confirmDate: 'Confirmar fecha', rejectRequest: 'Rechazar solicitud', openRequest: 'Abre una solicitud para ver sus datos, la oferta y la conversación.',
   calendarEyebrow: 'CALENDARIO / DISPONIBILIDAD', calendarTitle: 'FECHAS Y HORARIOS.', calendarBody: 'Abre un día para ver sus 24 horas. Pulsa una hora vacía para crear un horario o un bloque existente para editarlo.', weekdays: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], unavailable: 'No disponible', dayHours: 'DÍA / 24 HORAS', add: 'Añadir', selectedDaySchedule: 'Horario del día seleccionado', addAt: 'Añadir horario a las',
   historyEyebrow: 'WORKSPACE / HISTORIAL', historyTitle: 'TODO LO QUE HA PASADO.',
@@ -140,7 +142,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   sampleEyebrow: 'BOOKINGS / SAMPLE MODE', sampleTitle: 'TRY THE COMPLETE INBOX.', sampleBody: 'Real requests are not connected to this account yet. You can try filters, offers, conversations and status changes with sample data.', openBookings: 'Open Bookings',
   bookingsEyebrow: 'BOOKINGS / INBOX', bookingsTitle: 'ALL YOUR BOOKINGS. ONE THREAD.',
   bookingsBody: 'Review every proposal, reply to the promoter and decide each date without losing context.',
-  samplesLabel: 'STARTER EXAMPLES / SAMPLE DATA', samplesActive: 'Your workspace starts with sample requests.', samplesRemoved: 'You removed the sample requests.', samplesBody: 'These examples belong only to this profile and browser. They do not change your private calendar and you can remove them whenever you want.', guidedTour: 'View guided tour', removeSamples: 'Remove examples', restoreSamples: 'Restore examples', all: 'All', noSamples: 'There are no sample requests with this status.',
+  samplesLabel: 'STARTER EXAMPLES / SAMPLE DATA', samplesActive: 'Your workspace starts with sample requests.', samplesRemoved: 'You removed the sample requests.', samplesBody: 'These examples belong only to this profile and browser. They do not change your private calendar and you can remove them whenever you want.', guidedTour: 'View guided tour', searchBookings: 'Search requests', searchBookingsPlaceholder: 'Venue, promoter, city, event or ID…', searchResults: 'results', collapseSidebar: 'Collapse menu', expandSidebar: 'Expand menu', removeSamples: 'Remove examples', restoreSamples: 'Restore examples', all: 'All', noSamples: 'There are no sample requests with this status.',
   sampleBooking: 'SAMPLE BOOKING', automaticStatus: 'Automatic status', eventData: 'Event details', date: 'Date', city: 'City', venue: 'Venue', capacity: 'Capacity', offer: 'Offer', schedule: 'Schedule', contact: 'Contact', name: 'Name', phone: 'Phone', source: 'Source', bookingLink: 'Booking link', conversation: 'Conversation', replyPromoter: 'Reply to promoter', replyPlaceholder: 'Write conditions, a question or a proposal…', localMessage: 'Local example. This message is not sent by email.', sendSampleReply: 'Send sample reply', openPromoter: 'Open promoter view', confirmDate: 'Confirm date', rejectRequest: 'Reject request', openRequest: 'Open a request to view its details, offer and conversation.',
   calendarEyebrow: 'CALENDAR / AVAILABILITY', calendarTitle: 'DATES AND TIMES.', calendarBody: 'Open a day to see all 24 hours. Select an empty hour to create a slot or an existing block to edit it.', weekdays: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], unavailable: 'Unavailable', dayHours: 'DAY / 24 HOURS', add: 'Add', selectedDaySchedule: 'Selected day schedule', addAt: 'Add slot at',
   historyEyebrow: 'WORKSPACE / HISTORY', historyTitle: 'EVERYTHING THAT HAPPENED.',
@@ -232,7 +234,24 @@ const confirmedCount = computed(() => blocks.value.filter(block => block.status 
 const occupiedDays = computed(() => new Set(blocks.value.map(block => block.starts_at.slice(0, 10))).size)
 const validTimeRange = computed(() => endTime.value > startTime.value)
 const demoActiveBookings = computed(() => demo.bookings.value.filter(item => !item.archived))
-const demoFilteredBookings = computed(() => demoActiveBookings.value.filter(item => bookingFilter.value === 'all' || item.status === bookingFilter.value))
+const demoFilteredBookings = computed(() => {
+  const query = bookingSearch.value.trim().toLocaleLowerCase(preferences.locale.value === 'es' ? 'es' : 'en')
+  return demoActiveBookings.value.filter(item => {
+    if (bookingFilter.value !== 'all' && item.status !== bookingFilter.value) return false
+    if (!query) return true
+    const haystack = [
+      item.id,
+      item.artistName,
+      item.event.name,
+      item.event.venue,
+      item.event.city,
+      item.promoter.name,
+      item.promoter.email,
+      item.promoter.phone || ''
+    ].join(' ').toLocaleLowerCase(preferences.locale.value === 'es' ? 'es' : 'en')
+    return haystack.includes(query)
+  })
+})
 const selectedDemoBooking = computed(() => demo.bookings.value.find(item => item.id === selectedDemoBookingId.value))
 const demoCounts = computed(() => Object.fromEntries(bookingStatuses.map(status => [status, demoActiveBookings.value.filter(item => item.status === status).length])))
 const currentTour = computed(() => tourStep.value >= 0 ? tourSteps.value[tourStep.value] : null)
@@ -291,6 +310,7 @@ const historyItems = computed(() => demo.bookings.value.flatMap(booking => [
 const hours = Array.from({ length: 24 }, (_, index) => `${String(index).padStart(2, '0')}:00`)
 
 onMounted(async () => {
+  if (import.meta.client) sidebarCollapsed.value = localStorage.getItem('cuebooker.sidebar.collapsed') === 'true'
   await auth.initialize()
   if (!auth.signedIn.value) return navigateTo('/access')
   if (!auth.profile.value) await auth.fetchProfile()
@@ -351,6 +371,12 @@ watch(tourStep, async (step) => {
   scheduleTourPosition()
 })
 
+function toggleSidebar() {
+  sidebarCollapsed.value = !sidebarCollapsed.value
+  if (import.meta.client) localStorage.setItem('cuebooker.sidebar.collapsed', String(sidebarCollapsed.value))
+  if (currentTour.value) scheduleTourPosition(120)
+}
+
 function prefersReducedMotion() {
   return import.meta.client && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
@@ -403,22 +429,34 @@ async function positionTour() {
   const safeTop = Math.max(edge, headerBottom + gap)
   const safeBottom = viewportHeight - edge
 
-  if (targetRect.bottom < safeTop || targetRect.top > safeBottom) {
-    const top = targetRect.top + window.scrollY - safeTop
-    window.scrollTo({ top: Math.max(0, top), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
-    if (!prefersReducedMotion()) await new Promise(resolve => window.setTimeout(resolve, 320))
-    targetRect = target.getBoundingClientRect()
-  }
-
-  const spaceBelow = safeBottom - targetRect.bottom
-  const spaceAbove = targetRect.top - safeTop
   let top: number
 
-  if (spaceBelow >= cardRect.height + gap) top = targetRect.bottom + gap
-  else if (spaceAbove >= cardRect.height + gap) top = targetRect.top - cardRect.height - gap
-  else top = targetRect.top + targetRect.height / 2 < viewportHeight / 2
-    ? safeBottom - cardRect.height
-    : safeTop
+  if (mobileShell) {
+    const cardTop = Math.max(safeTop, safeBottom - cardRect.height)
+    const targetBottomLimit = cardTop - gap
+    if (targetRect.top < safeTop || targetRect.top > targetBottomLimit || targetRect.bottom > targetBottomLimit) {
+      const nextScrollTop = targetRect.top + window.scrollY - safeTop
+      window.scrollTo({ top: Math.max(0, nextScrollTop), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+      if (!prefersReducedMotion()) await new Promise(resolve => window.setTimeout(resolve, 280))
+      targetRect = target.getBoundingClientRect()
+    }
+    top = cardTop
+  } else {
+    if (targetRect.bottom < safeTop || targetRect.top > safeBottom) {
+      const nextScrollTop = targetRect.top + window.scrollY - safeTop
+      window.scrollTo({ top: Math.max(0, nextScrollTop), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+      if (!prefersReducedMotion()) await new Promise(resolve => window.setTimeout(resolve, 280))
+      targetRect = target.getBoundingClientRect()
+    }
+
+    const spaceBelow = safeBottom - targetRect.bottom
+    const spaceAbove = targetRect.top - safeTop
+    if (spaceBelow >= cardRect.height + gap) top = targetRect.bottom + gap
+    else if (spaceAbove >= cardRect.height + gap) top = targetRect.top - cardRect.height - gap
+    else top = targetRect.top + targetRect.height / 2 < viewportHeight / 2
+      ? safeBottom - cardRect.height
+      : safeTop
+  }
 
   const left = mobileShell
     ? edge
@@ -869,9 +907,17 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 </script>
 
 <template>
-  <main class="workspace">
+  <main class="workspace" :class="{ 'workspace--sidebar-collapsed': sidebarCollapsed }">
     <header id="workspace-header" class="workspace-header">
-      <NuxtLink class="brand" to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink>
+      <div class="workspace-brand-row">
+        <NuxtLink class="brand" to="/" aria-label="Cuebooker">
+          <CueBrand class="workspace-brand-wordmark" />
+          <CueBrand class="workspace-brand-icon" variant="icon" />
+        </NuxtLink>
+        <button class="sidebar-collapse-button" type="button" :aria-label="sidebarCollapsed ? copy.expandSidebar : copy.collapseSidebar" :title="sidebarCollapsed ? copy.expandSidebar : copy.collapseSidebar" @click="toggleSidebar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 4 12l5 7M20 5v14"/></svg>
+        </button>
+      </div>
       <nav id="workspace-navigation" aria-label="Workspace">
         <button data-workspace-view="overview" :class="{ active: activeView === 'overview' && !settingsOpen }" type="button" @click="changeView('overview')">{{ copy.overview }}</button>
         <button data-workspace-view="bookings" :class="{ active: activeView === 'bookings' && !settingsOpen }" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
@@ -958,6 +1004,15 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <div><span>{{ copy.samplesLabel }}</span><strong>{{ demoActiveBookings.length ? copy.samplesActive : copy.samplesRemoved }}</strong><p>{{ copy.samplesBody }}</p></div>
           <div class="demo-notice__actions"><button class="guide-action" type="button" @click="startTour">{{ copy.guidedTour }}</button><button v-if="demoActiveBookings.length" type="button" @click="clearSampleBookings">{{ copy.removeSamples }}</button><button v-else type="button" @click="restoreSampleBookings">{{ copy.restoreSamples }}</button></div>
         </aside>
+
+        <div class="booking-tools">
+          <label class="booking-search">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
+            <span class="sr-only">{{ copy.searchBookings }}</span>
+            <input v-model="bookingSearch" type="search" :placeholder="copy.searchBookingsPlaceholder" :aria-label="copy.searchBookings">
+          </label>
+          <span class="booking-search-count">{{ demoFilteredBookings.length }} / {{ demoActiveBookings.length }} {{ copy.searchResults }}</span>
+        </div>
 
         <div id="workspace-filters" class="status-filters" :class="{ 'tour-focus': tourStep === 1 }" :aria-label="copy.filterSamples">
           <button :class="{ active: bookingFilter === 'all' }" type="button" @click="bookingFilter = 'all'">{{ copy.all }} <strong>{{ demoActiveBookings.length }}</strong></button>
