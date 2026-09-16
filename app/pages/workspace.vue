@@ -867,8 +867,8 @@ async function selectDemoBooking(bookingId: string) {
   if (window.innerWidth <= 960) {
     const bookingTools = document.querySelector<HTMLElement>('.bookings-view .booking-tools')
     const mobileAnchor = bookingTools || detailTitle
-    // Keep search + results context visible and reveal the full large booking title.
-    const top = mobileAnchor.getBoundingClientRect().top + window.scrollY - headerOffset - 82
+    // Pin the booking tools directly below the sticky mobile header, then reveal the selected title immediately after them.
+    const top = mobileAnchor.getBoundingClientRect().top + window.scrollY - headerOffset - 12
     window.scrollTo({ top: Math.max(0, top), behavior: reducedMotion ? 'auto' : 'smooth' })
   } else {
     const top = detailTitle.getBoundingClientRect().top + window.scrollY - headerOffset
