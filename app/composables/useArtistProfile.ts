@@ -1,4 +1,5 @@
 export type FeeBasis = 'event' | 'set' | 'hour'
+export type ArtistImageStyle = 'photo' | 'artwork' | 'duotone'
 
 export type ArtistProfessionalProfile = {
   id: string
@@ -22,6 +23,11 @@ export type ArtistProfessionalProfile = {
   spotify_url: string | null
   cover_image_path: string | null
   cover_position_y: number
+  artist_image_path: string | null
+  artist_image_style: ArtistImageStyle
+  artist_image_position_x: number
+  artist_image_position_y: number
+  artist_image_scale: number
 }
 
 export type ArtistBookingProfile = {
@@ -48,11 +54,21 @@ export type ArtistProfileInput = {
   booking: Omit<ArtistBookingProfile, 'artist_id'>
 }
 
+export type ArtistVisualInput = {
+  artist_image_path: string | null
+  artist_image_style: ArtistImageStyle
+  artist_image_position_x: number
+  artist_image_position_y: number
+  artist_image_scale: number
+}
+
 export function useArtistProfile() {
   const config = useRuntimeConfig()
   const auth = useCueAuth()
   const supabaseUrl = computed(() => String(config.public.supabaseUrl || '').replace(/\/$/, ''))
   const publishableKey = computed(() => String(config.public.supabasePublishableKey || ''))
+  const activeArtistId = useState<string>('artist-profile-active-id', () => '')
+  const activeProfile = useState<ArtistProfileRecord | null>('artist-profile-active-record', () => null)
 
   function headers() {
     const token = auth.session.value?.access_token
@@ -64,13 +80,19 @@ export function useArtistProfile() {
     }
   }
 
+  function syncActiveProfile(record: ArtistProfileRecord) {
+    activeArtistId.value = record.artist.id
+    activeProfile.value = record
+    return record
+  }
+
   async function getProfile(artistId: string): Promise<ArtistProfileRecord> {
     const [artists, bookingProfiles] = await Promise.all([
       $fetch<ArtistProfessionalProfile[]>(`${supabaseUrl.value}/rest/v1/artists`, {
         headers: headers(),
         query: {
           id: `eq.${artistId}`,
-          select: 'id,stage_name,slug,bio,city,country_code,timezone,languages,primary_genres,secondary_genres,performance_formats,event_types,years_active,website_url,instagram_url,soundcloud_url,mixcloud_url,youtube_url,spotify_url,cover_image_path,cover_position_y',
+          select: 'id,stage_name,slug,bio,city,country_code,timezone,languages,primary_genres,secondary_genres,performance_formats,event_types,years_active,website_url,instagram_url,soundcloud_url,mixcloud_url,youtube_url,spotify_url,cover_image_path,cover_position_y,artist_image_path,artist_image_style,artist_image_position_x,artist_image_position_y,artist_image_scale',
           limit: '1'
         }
       }),
@@ -85,7 +107,7 @@ export function useArtistProfile() {
     ])
 
     if (!artists[0]) throw new Error('artist_not_found_or_forbidden')
-    return { artist: artists[0], booking: bookingProfiles[0] || null }
+    return syncActiveProfile({ artist: artists[0], booking: bookingProfiles[0] || null })
   }
 
   async function saveProfile(artistId: string, input: ArtistProfileInput): Promise<ArtistProfileRecord> {
@@ -106,32 +128,40 @@ export function useArtistProfile() {
     })
 
     if (!bookingProfiles[0]) throw new Error('artist_booking_profile_not_saved')
-    return { artist: artists[0], booking: bookingProfiles[0] }
+    return syncActiveProfile({ artist: artists[0], booking: bookingProfiles[0] })
   }
 
   function storagePath(path: string) {
     return path.split('/').map(encodeURIComponent).join('/')
   }
 
-  async function getCoverObjectUrl(path: string) {
+  async function getMediaObjectUrl(path: string) {
     const response = await fetch(`${supabaseUrl.value}/storage/v1/object/authenticated/artist-media/${storagePath(path)}`, {
       headers: headers()
     })
-    if (!response.ok) throw new Error('cover_download_failed')
+    if (!response.ok) throw new Error('artist_media_download_failed')
     return URL.createObjectURL(await response.blob())
   }
 
-  async function uploadCover(artistId: string, file: File) {
+  function getCoverObjectUrl(path: string) {
+    return getMediaObjectUrl(path)
+  }
+
+  function getArtistImageObjectUrl(path: string) {
+    return getMediaObjectUrl(path)
+  }
+
+  async function uploadMedia(artistId: string, folder: 'covers' | 'portraits', file: File) {
     const extensions: Record<string, string> = {
       'image/jpeg': 'jpg',
       'image/png': 'png',
       'image/webp': 'webp'
     }
     const extension = extensions[file.type]
-    if (!extension) throw new Error('cover_invalid_type')
-    if (file.size > 8 * 1024 * 1024) throw new Error('cover_too_large')
+    if (!extension) throw new Error('artist_media_invalid_type')
+    if (file.size > 8 * 1024 * 1024) throw new Error('artist_media_too_large')
 
-    const path = `${artistId}/covers/${crypto.randomUUID()}.${extension}`
+    const path = `${artistId}/${folder}/${crypto.randomUUID()}.${extension}`
     const response = await fetch(`${supabaseUrl.value}/storage/v1/object/artist-media/${storagePath(path)}`, {
       method: 'POST',
       headers: {
@@ -141,16 +171,32 @@ export function useArtistProfile() {
       },
       body: file
     })
-    if (!response.ok) throw new Error((await response.json().catch(() => null))?.message || 'cover_upload_failed')
+    if (!response.ok) throw new Error((await response.json().catch(() => null))?.message || 'artist_media_upload_failed')
     return path
   }
 
-  async function deleteCover(path: string) {
+  function uploadCover(artistId: string, file: File) {
+    return uploadMedia(artistId, 'covers', file)
+  }
+
+  function uploadArtistImage(artistId: string, file: File) {
+    return uploadMedia(artistId, 'portraits', file)
+  }
+
+  async function deleteMedia(path: string) {
     await $fetch(`${supabaseUrl.value}/storage/v1/object/artist-media`, {
       method: 'DELETE',
       headers: headers(),
       body: { prefixes: [path] }
     })
+  }
+
+  function deleteCover(path: string) {
+    return deleteMedia(path)
+  }
+
+  function deleteArtistImage(path: string) {
+    return deleteMedia(path)
   }
 
   async function saveCover(artistId: string, coverImagePath: string | null, coverPositionY: number) {
@@ -161,8 +207,42 @@ export function useArtistProfile() {
       body: { cover_image_path: coverImagePath, cover_position_y: coverPositionY }
     })
     if (!rows[0]) throw new Error('cover_not_saved')
+    if (activeProfile.value?.artist.id === artistId) {
+      activeProfile.value = {
+        ...activeProfile.value,
+        artist: { ...activeProfile.value.artist, ...rows[0] }
+      }
+    }
     return rows[0]
   }
 
-  return { getProfile, saveProfile, getCoverObjectUrl, uploadCover, deleteCover, saveCover }
+  async function saveArtistVisual(artistId: string, visual: ArtistVisualInput) {
+    const rows = await $fetch<ArtistProfessionalProfile[]>(`${supabaseUrl.value}/rest/v1/artists`, {
+      method: 'PATCH',
+      headers: { ...headers(), Prefer: 'return=representation' },
+      query: {
+        id: `eq.${artistId}`,
+        select: 'id,stage_name,slug,bio,city,country_code,timezone,languages,primary_genres,secondary_genres,performance_formats,event_types,years_active,website_url,instagram_url,soundcloud_url,mixcloud_url,youtube_url,spotify_url,cover_image_path,cover_position_y,artist_image_path,artist_image_style,artist_image_position_x,artist_image_position_y,artist_image_scale'
+      },
+      body: visual
+    })
+    if (!rows[0]) throw new Error('artist_visual_not_saved')
+    const record = syncActiveProfile({ artist: rows[0], booking: activeProfile.value?.booking || null })
+    return record.artist
+  }
+
+  return {
+    activeArtistId,
+    activeProfile,
+    getProfile,
+    saveProfile,
+    getCoverObjectUrl,
+    getArtistImageObjectUrl,
+    uploadCover,
+    uploadArtistImage,
+    deleteCover,
+    deleteArtistImage,
+    saveCover,
+    saveArtistVisual
+  }
 }
