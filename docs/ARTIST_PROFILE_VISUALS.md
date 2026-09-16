@@ -56,6 +56,6 @@ The private profile preview receives the same cutout through CSS variables publi
 Apply these migrations before testing this branch against a Supabase environment:
 
 - `20260916094500_add_artist_visual_portrait.sql`
-- `20260916083135_add_artist_cutout_path.sql`
+- `20260916100500_add_artist_cutout_path.sql`
 
-Both are already applied to `cuebooker-staging`. Production remains unchanged.
+Both schema changes are already applied to `cuebooker-staging`. Production remains unchanged.
