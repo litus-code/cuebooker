@@ -42,8 +42,8 @@ jobs:
       - name: Use repository npm version
         run: npm install --global npm@10.9.3
 
-      - name: Rebuild lockfile for dependency refresh
-        if: ${{ github.event_name == 'pull_request' && (github.head_ref == 'chore/deterministic-ci-installs' || github.head_ref == 'feature/cue-id-3d') }}
+      - name: Rebuild lockfile for this recovery PR
+        if: ${{ github.event_name == 'pull_request' && github.head_ref == 'chore/deterministic-ci-installs' }}
         shell: bash
         run: |
           echo "Rebuilding package-lock.json from package.json with npm $(npm --version)"
@@ -57,37 +57,6 @@ jobs:
             echo "No lockfile changes to commit"
           else
             git commit -m "Regenerate package lockfile with npm 10.9.3"
-            git push origin HEAD:${{ github.head_ref }}
-          fi
-
-      - name: Integrate CUE ID stage into artist visual profile
-        if: ${{ github.event_name == 'pull_request' && github.head_ref == 'feature/cue-id-3d' }}
-        shell: bash
-        run: |
-          node <<'NODE'
-          const fs = require('fs')
-          const path = 'app/components/ProfileCoverUploader.vue'
-          let source = fs.readFileSync(path, 'utf8')
-          if (!source.includes("import CueIdStage from './cue-id/CueIdStage.vue'")) {
-            const importMarker = "import type { ArtistImageStyle } from '../composables/useArtistProfile'\n"
-            if (!source.includes(importMarker)) throw new Error('Profile import marker not found')
-            source = source.replace(importMarker, `${importMarker}import CueIdStage from './cue-id/CueIdStage.vue'\n`)
-          }
-          if (!source.includes('<CueIdStage')) {
-            const marker = `      <small v-if="artistMessage">{{ artistMessage }}</small>\n    </aside>\n\n    <div v-if="imageUrl" class="cover-uploader__controls">`
-            const replacement = `      <small v-if="artistMessage">{{ artistMessage }}</small>\n    </aside>\n\n    <CueIdStage\n      :artist-name="activeArtist?.stage_name || ''"\n      :disabled="disabled"\n      compact\n      embedded\n    />\n\n    <div v-if="imageUrl" class="cover-uploader__controls">`
-            if (!source.includes(marker)) throw new Error('Profile visual marker not found')
-            source = source.replace(marker, replacement)
-          }
-          fs.writeFileSync(path, source)
-          NODE
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app/components/ProfileCoverUploader.vue
-          if git diff --cached --quiet; then
-            echo "CUE ID stage already integrated"
-          else
-            git commit -m "Integrate CUE ID 3D into artist profile"
             git push origin HEAD:${{ github.head_ref }}
           fi
 
