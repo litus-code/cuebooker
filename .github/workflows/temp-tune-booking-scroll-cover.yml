@@ -1,0 +1,33 @@
+name: TEMP tune booking scroll and cover
+
+on:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - .github/workflows/temp-tune-booking-scroll-cover.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feature/app-visual-system
+          fetch-depth: 0
+      - name: Apply tuning
+        run: python scripts/temp_tune_booking_scroll_cover.py
+      - name: Validate build
+        run: |
+          npm ci
+          npm run generate
+      - name: Commit patch
+        run: |
+          git config user.name "cuebooker-workspace-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add app/pages/workspace.vue app/components/ProfileCoverUploader.vue assets/css/workspace-responsive-final.css
+          git commit -m "Tune mobile booking scroll and profile cover density"
+          git push origin HEAD:feature/app-visual-system
