@@ -1,0 +1,33 @@
+name: TEMP fix cover composition and brand center
+
+on:
+  push:
+    branches:
+      - feature/app-visual-system
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/app-visual-system
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Apply patch
+        run: python scripts/temp_fix_cover_composition_and_brand_center.py
+      - name: Validate
+        run: |
+          npm ci
+          npm run build
+      - name: Commit
+        run: |
+          git config user.name cuebooker-workspace-bot
+          git config user.email actions@users.noreply.github.com
+          git add app/components/ProfileCoverUploader.vue assets/css/workspace-responsive-final.css
+          git diff --cached --quiet || git commit -m "Fix profile cover composition and collapsed brand alignment"
+          git push origin HEAD:feature/app-visual-system
