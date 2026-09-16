@@ -527,3 +527,13 @@ CUE -> Booking -> Activity -> Next Move -> Calendar
 ```
 
 Start with Block A. Preserve the existing visual system and current working capabilities. Refactor deliberately when necessary, but do not stack arbitrary fixes or recreate working areas from scratch.
+
+## Architecture baseline
+
+The Booking Core product vision must be implemented against:
+
+- `docs/ARCHITECTURE_REFERENCE.md`
+- `docs/ARCHITECTURE_DECISION_REGISTER.md`
+
+These documents define the scalable domain boundaries and current technology decisions. Product UX may evolve rapidly; tenant isolation, data ownership, security boundaries, persistence and integration contracts must evolve deliberately.
+

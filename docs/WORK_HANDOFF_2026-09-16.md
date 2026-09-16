@@ -596,3 +596,17 @@ Temporarily defer production CUE ID 3D, Passport expansion, constellation visual
 
 Primary UX constraint: capturing something that just happened should feel like “remember this for me”, not “administer a CRM”. Mobile capture should be exceptionally fast.
 
+## REQUIRED ARCHITECTURE READING
+
+Before implementing the active Booking Core, read these documents in order:
+
+1. `docs/BOOKING_CORE_PRODUCT_VISION.md`
+2. `docs/ARCHITECTURE_REFERENCE.md`
+3. `docs/ARCHITECTURE_DECISION_REGISTER.md`
+
+`ARCHITECTURE_REFERENCE.md` is the active technical baseline for platform, domain, database, multi-tenancy, security, AI, asynchronous work, integrations, performance, observability, privacy, testing and scaling.
+
+`ARCHITECTURE_DECISION_REGISTER.md` records accepted choices and the evidence required before re-opening them. Structural implementation must not casually contradict these decisions.
+
+Current rule: design the scalable domain/data/security boundary first, then implement vertical slices. Do not add infrastructure complexity merely to look enterprise-ready.
+
