@@ -866,9 +866,9 @@ async function selectDemoBooking(bookingId: string) {
 
   if (window.innerWidth <= 960) {
     const bookingTools = document.querySelector<HTMLElement>('.bookings-view .booking-tools')
-    const mobileAnchor = bookingTools || detailTitle
-    // Pin the booking tools directly below the sticky mobile header, then reveal the selected title immediately after them.
-    const top = mobileAnchor.getBoundingClientRect().top + window.scrollY - headerOffset - 12
+    const bookingToolsHeight = bookingTools ? Math.ceil(bookingTools.getBoundingClientRect().height) : 0
+    // Focus the selected booking itself. Search/results stay sticky above it, while filters and the list scroll away.
+    const top = detailTitle.getBoundingClientRect().top + window.scrollY - headerOffset - bookingToolsHeight - 10
     window.scrollTo({ top: Math.max(0, top), behavior: reducedMotion ? 'auto' : 'smooth' })
   } else {
     const top = detailTitle.getBoundingClientRect().top + window.scrollY - headerOffset
