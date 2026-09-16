@@ -59,6 +59,7 @@ The future directory depends on a useful supply of opted-in DJs. It supports dat
 The authenticated workspace includes an optional artist profile that can be completed after onboarding. It records:
 
 - artist identity, biography, city, country, time zone and working languages;
+- an optional artist cover with a CueBooker-designed fallback when no image is uploaded;
 - primary and secondary genres, performance formats and suitable event types;
 - media, social, technical rider and hospitality rider links;
 - private fee range, fee basis, usual set duration, travel regions and equipment notes.

@@ -20,6 +20,8 @@ export type ArtistProfessionalProfile = {
   mixcloud_url: string | null
   youtube_url: string | null
   spotify_url: string | null
+  cover_image_path: string | null
+  cover_position_y: number
 }
 
 export type ArtistBookingProfile = {
@@ -68,7 +70,7 @@ export function useArtistProfile() {
         headers: headers(),
         query: {
           id: `eq.${artistId}`,
-          select: 'id,stage_name,slug,bio,city,country_code,timezone,languages,primary_genres,secondary_genres,performance_formats,event_types,years_active,website_url,instagram_url,soundcloud_url,mixcloud_url,youtube_url,spotify_url',
+          select: 'id,stage_name,slug,bio,city,country_code,timezone,languages,primary_genres,secondary_genres,performance_formats,event_types,years_active,website_url,instagram_url,soundcloud_url,mixcloud_url,youtube_url,spotify_url,cover_image_path,cover_position_y',
           limit: '1'
         }
       }),
@@ -107,5 +109,60 @@ export function useArtistProfile() {
     return { artist: artists[0], booking: bookingProfiles[0] }
   }
 
-  return { getProfile, saveProfile }
+  function storagePath(path: string) {
+    return path.split('/').map(encodeURIComponent).join('/')
+  }
+
+  async function getCoverObjectUrl(path: string) {
+    const response = await fetch(`${supabaseUrl.value}/storage/v1/object/authenticated/artist-media/${storagePath(path)}`, {
+      headers: headers()
+    })
+    if (!response.ok) throw new Error('cover_download_failed')
+    return URL.createObjectURL(await response.blob())
+  }
+
+  async function uploadCover(artistId: string, file: File) {
+    const extensions: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp'
+    }
+    const extension = extensions[file.type]
+    if (!extension) throw new Error('cover_invalid_type')
+    if (file.size > 8 * 1024 * 1024) throw new Error('cover_too_large')
+
+    const path = `${artistId}/covers/${crypto.randomUUID()}.${extension}`
+    const response = await fetch(`${supabaseUrl.value}/storage/v1/object/artist-media/${storagePath(path)}`, {
+      method: 'POST',
+      headers: {
+        ...headers(),
+        'Content-Type': file.type,
+        'x-upsert': 'false'
+      },
+      body: file
+    })
+    if (!response.ok) throw new Error((await response.json().catch(() => null))?.message || 'cover_upload_failed')
+    return path
+  }
+
+  async function deleteCover(path: string) {
+    await $fetch(`${supabaseUrl.value}/storage/v1/object/artist-media`, {
+      method: 'DELETE',
+      headers: headers(),
+      body: { prefixes: [path] }
+    })
+  }
+
+  async function saveCover(artistId: string, coverImagePath: string | null, coverPositionY: number) {
+    const rows = await $fetch<Array<{ cover_image_path: string | null; cover_position_y: number }>>(`${supabaseUrl.value}/rest/v1/artists`, {
+      method: 'PATCH',
+      headers: { ...headers(), Prefer: 'return=representation' },
+      query: { id: `eq.${artistId}`, select: 'cover_image_path,cover_position_y' },
+      body: { cover_image_path: coverImagePath, cover_position_y: coverPositionY }
+    })
+    if (!rows[0]) throw new Error('cover_not_saved')
+    return rows[0]
+  }
+
+  return { getProfile, saveProfile, getCoverObjectUrl, uploadCover, deleteCover, saveCover }
 }

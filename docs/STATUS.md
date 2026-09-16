@@ -9,11 +9,12 @@ Branch `feature/artist-profile-onboarding` adds an optional professional profile
 - selecting a request scrolls its detail to the top on mobile and desktop, while respecting reduced-motion preferences;
 - onboarding explains that the professional profile is optional and can be completed later;
 - the workspace profile stores identity, location, genres, formats, event types, media links and private booking conditions;
+- the profile includes a private cover uploader with drag and drop, framing control and a bundled acid and Detroit fallback artwork;
 - exact fees, travel preferences, equipment notes and riders remain private to authorised artist members;
 - agency users can switch between roster artists, while editor memberships remain read-only;
 - the profile data is protected by RLS and the existing owner/manager permission helpers.
 
-Migration `20260916000127_add_artist_professional_profile.sql` is applied to `cuebooker-staging`. Production has not been changed.
+Migrations `20260916000127_add_artist_professional_profile.sql` and `20260916071203_add_artist_cover_image.sql` are applied to `cuebooker-staging`. Production has not been changed.
 
 ## On GitHub main
 

@@ -31,6 +31,8 @@ type ArtistProfileForm = {
   mixcloudUrl: string
   youtubeUrl: string
   spotifyUrl: string
+  coverImagePath: string
+  coverPositionY: number
   feeBasis: '' | FeeBasis
   feeMin: string
   feeTypical: string
@@ -46,7 +48,7 @@ type ArtistProfileForm = {
 function emptyProfileForm(): ArtistProfileForm {
   return {
     stageName: '', bio: '', city: '', countryCode: '', timezone: '', languages: '', primaryGenres: '', secondaryGenres: '',
-    performanceFormats: '', eventTypes: '', yearsActive: '', websiteUrl: '', instagramUrl: '', soundcloudUrl: '', mixcloudUrl: '', youtubeUrl: '', spotifyUrl: '',
+    performanceFormats: '', eventTypes: '', yearsActive: '', websiteUrl: '', instagramUrl: '', soundcloudUrl: '', mixcloudUrl: '', youtubeUrl: '', spotifyUrl: '', coverImagePath: '', coverPositionY: 50,
     feeBasis: '', feeMin: '', feeTypical: '', currency: 'EUR', setDurationMinutes: '', acceptsTravel: false, travelRegions: '', equipmentNotes: '', technicalRiderUrl: '', hospitalityRiderUrl: ''
   }
 }
@@ -86,6 +88,9 @@ const profileSaving = ref(false)
 const profileMessage = ref('')
 const profileWelcome = ref(false)
 const profilePreviewOpen = ref(false)
+const profileCoverUrl = ref('')
+const profileCoverUploading = ref(false)
+const profileCoverMessage = ref('')
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
   overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Historial', profile: 'Perfil',
@@ -107,6 +112,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   historyEmpty: 'Todavía no hay actividad en este perfil.', historyStatus: 'Estado actualizado', historyMessage: 'Mensaje', openTrace: 'Abrir oferta y ver traza', previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente', filterSamples: 'Filtrar bookings de ejemplo',
   profileEyebrow: 'ARTISTA / FICHA PROFESIONAL', profileTitle: 'TU INFORMACIÓN DE BOOKING.', profileBody: 'Completa esta ficha a tu ritmo. Hoy es privada y servirá para organizar mejor tus solicitudes y preparar futuras opciones de descubrimiento.',
   profileOptional: 'Ficha opcional', profileOptionalBody: 'Tu workspace ya está creado. Puedes completar estos datos ahora o volver desde Perfil cuando quieras.', later: 'Ahora no', previewProfile: 'Vista previa', previewPrivate: 'VISTA PRIVADA / NO PUBLICADA', previewClose: 'Cerrar vista previa', previewBioEmpty: 'Tu biografía aparecerá aquí cuando la completes.', previewGenresEmpty: 'Añade géneros para verlos en la ficha.', previewFormats: 'Formatos', previewLinks: 'Escuchar y seguir',
+  coverTitle: 'Tu sonido empieza por la imagen.', coverHint: 'Arrastra una foto o elígela. Si no añades ninguna, CueBooker usará esta portada acid y Detroit.', coverChoose: 'Añadir mi portada', coverChange: 'Cambiar portada', coverRemove: 'Usar portada CueBooker', coverPosition: 'Ajustar encuadre vertical', coverUploading: 'Subiendo portada…', coverSaved: 'Portada actualizada.', coverRemoved: 'Portada base restaurada.', coverInvalid: 'Usa JPG, PNG o WebP de hasta 8 MB.', coverError: 'No se pudo guardar la portada.',
   profilePublicSection: 'Identidad y ubicación', profilePublicHint: 'Información profesional preparada para una futura ficha pública. Todavía no se publica.',
   profileSoundSection: 'Sonido y formatos', profileBookingSection: 'Condiciones de booking', profileBookingHint: 'Solo tú y las personas autorizadas de tu equipo pueden ver estos datos.', profileLinksSection: 'Enlaces y material',
   stageName: 'Nombre artístico', bio: 'Biografía', bioPlaceholder: 'Describe el proyecto, su sonido y el tipo de directo.', baseCity: 'Ciudad base', countryCode: 'País', timezone: 'Zona horaria', languages: 'Idiomas', commaHint: 'Separa los valores con comas.',
@@ -140,6 +146,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   historyEmpty: 'There is no activity for this profile yet.', historyStatus: 'Status updated', historyMessage: 'Message', openTrace: 'Open offer and view trace', previousMonth: 'Previous month', nextMonth: 'Next month', filterSamples: 'Filter sample bookings',
   profileEyebrow: 'ARTIST / PROFESSIONAL PROFILE', profileTitle: 'YOUR BOOKING INFORMATION.', profileBody: 'Complete this profile at your own pace. It is private today and will help organise requests and prepare future discovery options.',
   profileOptional: 'Optional profile', profileOptionalBody: 'Your workspace is ready. Complete these details now or return from Profile whenever you want.', later: 'Not now', previewProfile: 'Preview', previewPrivate: 'PRIVATE PREVIEW / NOT PUBLISHED', previewClose: 'Close preview', previewBioEmpty: 'Your biography will appear here once completed.', previewGenresEmpty: 'Add genres to see them on the profile.', previewFormats: 'Formats', previewLinks: 'Listen and follow',
+  coverTitle: 'Your sound starts with the image.', coverHint: 'Drop a photo or choose one. If you skip it, CueBooker will use this acid and Detroit cover.', coverChoose: 'Add my cover', coverChange: 'Change cover', coverRemove: 'Use CueBooker cover', coverPosition: 'Adjust vertical framing', coverUploading: 'Uploading cover…', coverSaved: 'Cover updated.', coverRemoved: 'Default cover restored.', coverInvalid: 'Use a JPG, PNG or WebP file up to 8 MB.', coverError: 'The cover could not be saved.',
   profilePublicSection: 'Identity and location', profilePublicHint: 'Professional information prepared for a future public profile. It is not published yet.',
   profileSoundSection: 'Sound and formats', profileBookingSection: 'Booking terms', profileBookingHint: 'Only you and authorised team members can see these details.', profileLinksSection: 'Links and material',
   stageName: 'Artist name', bio: 'Biography', bioPlaceholder: 'Describe the project, its sound and performance style.', baseCity: 'Base city', countryCode: 'Country', timezone: 'Time zone', languages: 'Languages', commaHint: 'Separate values with commas.',
@@ -260,6 +267,7 @@ const profilePreviewLinks = computed(() => [
 ]
   .map(link => ({ ...link, url: link.url.trim() }))
   .filter(link => /^https?:\/\//i.test(link.url)))
+const profileCoverSource = computed(() => profileCoverUrl.value || '/images/profile/cuebooker-default-cover.webp')
 const historyItems = computed(() => demo.bookings.value.flatMap(booking => [
   ...booking.messages.map(message => ({
     id: message.id,
@@ -325,6 +333,7 @@ watch(profilePreviewOpen, (open) => {
 
 onBeforeUnmount(() => {
   if (import.meta.client) document.body.style.overflow = ''
+  if (profileCoverUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileCoverUrl.value)
 })
 watch(selectedDemoBookingId, async (id) => {
   if (id) await demo.markOpened(id)
@@ -372,6 +381,65 @@ function nullableNumber(value: string) {
   return trimmed ? Number(trimmed) : null
 }
 
+function replaceProfileCoverUrl(nextUrl: string) {
+  if (profileCoverUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileCoverUrl.value)
+  profileCoverUrl.value = nextUrl
+}
+
+async function loadProfileCover(path: string) {
+  replaceProfileCoverUrl('')
+  if (!path) return
+  try {
+    replaceProfileCoverUrl(await artistProfiles.getCoverObjectUrl(path))
+  } catch {
+    profileCoverMessage.value = copy.value.coverError
+  }
+}
+
+async function selectProfileCover(file: File) {
+  if (!selectedArtistId.value || !canEditSelectedArtist.value) return
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 8 * 1024 * 1024) {
+    profileCoverMessage.value = copy.value.coverInvalid
+    return
+  }
+
+  const previousPath = profileForm.value.coverImagePath
+  replaceProfileCoverUrl(URL.createObjectURL(file))
+  profileCoverUploading.value = true
+  profileCoverMessage.value = ''
+  try {
+    const path = await artistProfiles.uploadCover(selectedArtistId.value, file)
+    await artistProfiles.saveCover(selectedArtistId.value, path, profileForm.value.coverPositionY)
+    profileForm.value.coverImagePath = path
+    profileCoverMessage.value = copy.value.coverSaved
+    if (previousPath) await artistProfiles.deleteCover(previousPath).catch(() => undefined)
+  } catch {
+    profileCoverMessage.value = copy.value.coverError
+    await loadProfileCover(previousPath)
+  } finally {
+    profileCoverUploading.value = false
+  }
+}
+
+async function removeProfileCover() {
+  if (!selectedArtistId.value || !canEditSelectedArtist.value || !profileForm.value.coverImagePath) return
+  const previousPath = profileForm.value.coverImagePath
+  profileCoverUploading.value = true
+  profileCoverMessage.value = ''
+  try {
+    await artistProfiles.saveCover(selectedArtistId.value, null, 50)
+    profileForm.value.coverImagePath = ''
+    profileForm.value.coverPositionY = 50
+    replaceProfileCoverUrl('')
+    profileCoverMessage.value = copy.value.coverRemoved
+    await artistProfiles.deleteCover(previousPath).catch(() => undefined)
+  } catch {
+    profileCoverMessage.value = copy.value.coverError
+  } finally {
+    profileCoverUploading.value = false
+  }
+}
+
 async function loadArtistProfile() {
   if (!selectedArtistId.value) return
   profileLoading.value = true
@@ -397,6 +465,8 @@ async function loadArtistProfile() {
       mixcloudUrl: record.artist.mixcloud_url || '',
       youtubeUrl: record.artist.youtube_url || '',
       spotifyUrl: record.artist.spotify_url || '',
+      coverImagePath: record.artist.cover_image_path || '',
+      coverPositionY: record.artist.cover_position_y ?? 50,
       feeBasis: booking?.fee_basis || '',
       feeMin: booking?.fee_min === null || booking?.fee_min === undefined ? '' : String(booking.fee_min),
       feeTypical: booking?.fee_typical === null || booking?.fee_typical === undefined ? '' : String(booking.fee_typical),
@@ -408,6 +478,7 @@ async function loadArtistProfile() {
       technicalRiderUrl: booking?.technical_rider_url || '',
       hospitalityRiderUrl: booking?.hospitality_rider_url || ''
     }
+    await loadProfileCover(profileForm.value.coverImagePath)
   } catch (error: any) {
     errorMessage.value = error?.data?.message || error?.message || copy.value.profileSaveError
   } finally {
@@ -439,7 +510,9 @@ async function saveArtistProfile() {
         soundcloud_url: nullableText(form.soundcloudUrl),
         mixcloud_url: nullableText(form.mixcloudUrl),
         youtube_url: nullableText(form.youtubeUrl),
-        spotify_url: nullableText(form.spotifyUrl)
+        spotify_url: nullableText(form.spotifyUrl),
+        cover_image_path: nullableText(form.coverImagePath),
+        cover_position_y: form.coverPositionY
       },
       booking: {
         fee_basis: form.feeBasis || null,
@@ -896,6 +969,24 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <fieldset class="profile-fieldset" :disabled="!canEditSelectedArtist">
           <section class="profile-section">
             <header><div><p class="eyebrow">01</p><h2>{{ copy.profilePublicSection }}</h2></div><p>{{ copy.profilePublicHint }}</p></header>
+            <ProfileCoverUploader
+              class="profile-cover-field"
+              :image-url="profileCoverUrl"
+              :position-y="profileForm.coverPositionY"
+              :disabled="!canEditSelectedArtist"
+              :uploading="profileCoverUploading"
+              :title="copy.coverTitle"
+              :hint="copy.coverHint"
+              :choose-label="copy.coverChoose"
+              :change-label="copy.coverChange"
+              :remove-label="copy.coverRemove"
+              :position-label="copy.coverPosition"
+              :uploading-label="copy.coverUploading"
+              @select="selectProfileCover"
+              @remove="removeProfileCover"
+              @update:position-y="profileForm.coverPositionY = $event"
+            />
+            <p v-if="profileCoverMessage" class="profile-cover-message" :class="{ success: profileCoverMessage === copy.coverSaved || profileCoverMessage === copy.coverRemoved }">{{ profileCoverMessage }}</p>
             <div class="profile-fields">
               <label class="field-wide"><span>{{ copy.stageName }}</span><input v-model="profileForm.stageName" maxlength="120" required></label>
               <label class="field-wide"><span>{{ copy.bio }}</span><textarea v-model="profileForm.bio" rows="5" maxlength="2000" :placeholder="copy.bioPlaceholder" /></label>
@@ -962,6 +1053,8 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <button type="button" :aria-label="copy.previewClose" @click="profilePreviewOpen = false">×</button>
         </header>
         <section class="profile-preview-hero">
+          <img :src="profileCoverSource" alt="" :style="{ objectPosition: `50% ${profileForm.coverPositionY}%` }">
+          <div class="profile-preview-hero-shade" />
           <p v-if="profilePreviewLocation">{{ profilePreviewLocation }}</p>
           <h2 id="profile-preview-title">{{ profileForm.stageName || selectedArtist?.stage_name }}</h2>
           <div v-if="profilePreviewGenres.length" class="profile-preview-chips"><span v-for="genre in profilePreviewGenres" :key="genre">{{ genre }}</span></div>
@@ -1174,6 +1267,9 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-welcome span { display: block; margin-bottom: 7px; color: var(--cue-accent); font: 700 10px/1.2 monospace; letter-spacing: .1em; text-transform: uppercase; }
 .profile-welcome strong { max-width: 820px; font-size: 15px; line-height: 1.5; }
 .profile-welcome button { flex: 0 0 auto; min-height: 42px; padding: 0 16px; border: 1px solid var(--cue-border); background: transparent; color: var(--cue-text); cursor: pointer; font-weight: 800; }
+.profile-cover-field { margin: 0 22px; }
+.profile-cover-message { margin: 12px 22px 0; color: #ff9b9b; font-size: 12px; }
+.profile-cover-message.success { color: #8ce99a; }
 .profile-form { display: grid; gap: 18px; }
 .profile-fieldset { display: grid; gap: 18px; margin: 0; padding: 0; border: 0; min-width: 0; }
 .profile-fieldset:disabled { opacity: .72; }
@@ -1205,7 +1301,9 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-preview > header { position: sticky; z-index: 2; top: 0; display: flex; justify-content: space-between; align-items: center; min-height: 58px; padding: 0 22px; border-bottom: 1px solid #343434; background: rgba(11,11,11,.95); }
 .profile-preview > header p { margin: 0; color: #cfff57; font: 700 10px/1.3 monospace; letter-spacing: .12em; }
 .profile-preview > header button { width: 38px; height: 38px; border: 1px solid #343434; border-radius: 50%; background: transparent; color: #f4f2ed; cursor: pointer; font-size: 25px; }
-.profile-preview-hero { min-height: 360px; padding: clamp(40px,7vw,84px); border-bottom: 1px solid #343434; background: radial-gradient(circle at 82% 16%,rgba(207,255,87,.15),transparent 32%),#0b0b0b; }
+.profile-preview-hero { position: relative; min-height: 420px; padding: clamp(40px,7vw,84px); overflow: hidden; border-bottom: 1px solid #343434; background: #0b0b0b; isolation: isolate; }
+.profile-preview-hero > img { position: absolute; z-index: -2; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.profile-preview-hero-shade { position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg,rgba(0,0,0,.88),rgba(0,0,0,.44) 64%,rgba(0,0,0,.2)),linear-gradient(0deg,rgba(0,0,0,.75),transparent 55%); }
 .profile-preview-hero > p:first-child { margin: 0 0 18px; color: #a5a5a5; font: 700 11px/1.3 monospace; letter-spacing: .12em; text-transform: uppercase; }
 .profile-preview-hero h2 { max-width: 820px; margin: 0 0 30px; font-size: clamp(4rem,11vw,9rem); line-height: .78; letter-spacing: -.075em; text-transform: uppercase; overflow-wrap: anywhere; }
 .profile-preview-chips { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -1300,6 +1398,8 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .profile-welcome, .profile-section > header { align-items: stretch; flex-direction: column; }
   .profile-welcome button { width: 100%; }
   .profile-fields { grid-template-columns: 1fr; padding: 18px; }
+  .profile-cover-field { margin: 0 12px; }
+  .profile-cover-message { margin-inline: 12px; }
   .profile-fields .field-wide { grid-column: auto; }
   .profile-savebar { bottom: 0; grid-template-columns: 1fr auto; gap: 10px; margin-inline: -1px; }
   .profile-savebar > p { grid-column: 1 / -1; grid-row: 2; }
