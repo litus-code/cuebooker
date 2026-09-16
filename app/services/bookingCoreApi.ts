@@ -7,6 +7,7 @@ import type {
   CreateBookingInput,
   CreateContactInput,
   CreateCounterpartyInput,
+  CreateManualBookingInput,
   Workspace,
   WorkspaceMembership
 } from '../domain/bookingCore'
@@ -232,6 +233,41 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     return row
   }
 
+  async function createManualBooking(input: CreateManualBookingInput) {
+    if (input.offerAmountMinor != null && (!Number.isSafeInteger(input.offerAmountMinor) || input.offerAmountMinor < 0)) {
+      throw new Error('invalid_offer_amount_minor')
+    }
+
+    const rows = await $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/rpc/create_manual_booking`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: {
+        target_workspace_id: input.workspaceId,
+        target_artist_id: input.artistId,
+        target_source: input.source,
+        existing_contact_id: input.existingContactId || null,
+        contact_name: normalizedText(input.contactName),
+        contact_email: normalizedText(input.contactEmail),
+        contact_phone: normalizedText(input.contactPhone),
+        existing_counterparty_id: input.existingCounterpartyId || null,
+        counterparty_kind: input.counterpartyKind || 'other',
+        counterparty_name: normalizedText(input.counterpartyName),
+        event_name: normalizedText(input.eventName),
+        venue_name: normalizedText(input.venueName),
+        event_city: normalizedText(input.city),
+        event_country_code: countryCode(input.countryCode),
+        event_date: input.eventDate || null,
+        offer_amount_minor: input.offerAmountMinor ?? null,
+        offer_currency: currency(input.currency),
+        initial_note: normalizedText(input.initialNote)
+      }
+    })
+
+    const row = rows[0]
+    if (!row) throw new Error('manual_booking_create_failed')
+    return row
+  }
+
   async function listActivities(workspaceId: string, bookingId: string, limit = 100) {
     return $fetch<Activity[]>(`${baseUrl}/rest/v1/activities`, {
       headers: authHeaders(),
@@ -280,6 +316,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     createCounterparty,
     listBookings,
     createBooking,
+    createManualBooking,
     listActivities,
     createActivity
   }
