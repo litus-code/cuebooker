@@ -39,4 +39,4 @@ The private profile preview receives the same portrait through CSS variables pub
 
 ## Migration
 
-Apply `supabase/migrations/20260916094500_add_artist_visual_portrait.sql` before testing this branch against a Supabase environment.
+`supabase/migrations/20260916094500_add_artist_visual_portrait.sql` is applied to `cuebooker-staging`. The five visual columns were verified after the migration and the Supabase Security Advisor reported no new schema or RLS finding. Production has not been changed.
