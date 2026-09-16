@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import CueIdStage from '../components/cue-id/CueIdStage.vue'
+
 const preferences = useCuePreferences()
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
