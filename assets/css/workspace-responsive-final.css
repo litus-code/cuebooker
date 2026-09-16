@@ -73,6 +73,10 @@
 }
 
 @media (min-width: 961px) {
+  .workspace-header {
+    overflow: visible !important;
+  }
+
   .workspace,
   .workspace-header,
   .workspace > .editor-backdrop:has(.settings-panel) {
@@ -204,9 +208,6 @@
     height: 17px !important;
   }
 
-  .workspace--sidebar-collapsed > .editor-backdrop:has(.settings-panel) {
-    inset-left: var(--workspace-rail) !important;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

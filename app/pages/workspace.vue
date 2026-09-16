@@ -919,12 +919,12 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         </button>
       </div>
       <nav id="workspace-navigation" aria-label="Workspace">
-        <button data-workspace-view="overview" :class="{ active: activeView === 'overview' && !settingsOpen }" type="button" @click="changeView('overview')">{{ copy.overview }}</button>
-        <button data-workspace-view="bookings" :class="{ active: activeView === 'bookings' && !settingsOpen }" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
-        <button data-workspace-view="calendar" :class="{ active: activeView === 'calendar' && !settingsOpen }" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
-        <button data-workspace-view="history" :class="{ active: activeView === 'history' && !settingsOpen }" type="button" @click="changeView('history')">{{ copy.history }}</button>
-        <button data-workspace-view="profile" :class="{ active: activeView === 'profile' && !settingsOpen }" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
-        <button data-workspace-view="settings" :class="{ active: settingsOpen }" type="button" @click="openSettings">{{ copy.settings }}</button>
+        <button :title="copy.overview" data-workspace-view="overview" :class="{ active: activeView === 'overview' && !settingsOpen }" type="button" @click="changeView('overview')">{{ copy.overview }}</button>
+        <button :title="copy.bookings" data-workspace-view="bookings" :class="{ active: activeView === 'bookings' && !settingsOpen }" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
+        <button :title="copy.calendar" data-workspace-view="calendar" :class="{ active: activeView === 'calendar' && !settingsOpen }" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
+        <button :title="copy.history" data-workspace-view="history" :class="{ active: activeView === 'history' && !settingsOpen }" type="button" @click="changeView('history')">{{ copy.history }}</button>
+        <button :title="copy.profile" data-workspace-view="profile" :class="{ active: activeView === 'profile' && !settingsOpen }" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
+        <button :title="copy.settings" data-workspace-view="settings" :class="{ active: settingsOpen }" type="button" @click="openSettings">{{ copy.settings }}</button>
       </nav>
       <div class="account-actions">
         <CuePreferencesControl compact />
