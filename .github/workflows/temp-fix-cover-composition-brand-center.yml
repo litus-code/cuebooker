@@ -17,7 +17,7 @@ jobs:
           ref: feature/app-visual-system
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.19.0
       - name: Apply patch
         run: python scripts/temp_fix_cover_composition_and_brand_center.py
       - name: Validate
