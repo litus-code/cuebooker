@@ -1,0 +1,113 @@
+name: TEMP patch workspace structural UX
+
+on:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - .github/workflows/temp-patch-workspace-structure.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feature/app-visual-system
+          fetch-depth: 0
+
+      - name: Apply workspace structural changes
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+
+          path = Path('app/pages/workspace.vue')
+          text = path.read_text()
+
+          def replace_once(old: str, new: str, label: str):
+              global text
+              if old not in text:
+                  raise SystemExit(f'Missing patch target: {label}')
+              text = text.replace(old, new, 1)
+
+          replace_once(
+              "const bookingFilter = ref<'all' | BookingStatus>('all')\nconst selectedDemoBookingId = ref('')",
+              "const bookingFilter = ref<'all' | BookingStatus>('all')\nconst bookingSearch = ref('')\nconst sidebarCollapsed = ref(false)\nconst selectedDemoBookingId = ref('')",
+              'workspace refs'
+          )
+
+          replace_once(
+              "guidedTour: 'Ver recorrido guiado', removeSamples:",
+              "guidedTour: 'Ver recorrido guiado', searchBookings: 'Buscar solicitudes', searchBookingsPlaceholder: 'Sala, promotor, ciudad, evento o ID…', searchResults: 'resultados', collapseSidebar: 'Comprimir menú', expandSidebar: 'Expandir menú', removeSamples:",
+              'Spanish copy'
+          )
+
+          replace_once(
+              "guidedTour: 'View guided tour', removeSamples:",
+              "guidedTour: 'View guided tour', searchBookings: 'Search requests', searchBookingsPlaceholder: 'Venue, promoter, city, event or ID…', searchResults: 'results', collapseSidebar: 'Collapse menu', expandSidebar: 'Expand menu', removeSamples:",
+              'English copy'
+          )
+
+          replace_once(
+              "const demoFilteredBookings = computed(() => demoActiveBookings.value.filter(item => bookingFilter.value === 'all' || item.status === bookingFilter.value))",
+              "const demoFilteredBookings = computed(() => {\n  const query = bookingSearch.value.trim().toLocaleLowerCase(preferences.locale.value === 'es' ? 'es' : 'en')\n  return demoActiveBookings.value.filter(item => {\n    if (bookingFilter.value !== 'all' && item.status !== bookingFilter.value) return false\n    if (!query) return true\n    const haystack = [\n      item.id,\n      item.artistName,\n      item.event.name,\n      item.event.venue,\n      item.event.city,\n      item.promoter.name,\n      item.promoter.email,\n      item.promoter.phone || ''\n    ].join(' ').toLocaleLowerCase(preferences.locale.value === 'es' ? 'es' : 'en')\n    return haystack.includes(query)\n  })\n})",
+              'booking search computed'
+          )
+
+          replace_once(
+              "onMounted(async () => {\n  await auth.initialize()",
+              "onMounted(async () => {\n  if (import.meta.client) sidebarCollapsed.value = localStorage.getItem('cuebooker.sidebar.collapsed') === 'true'\n  await auth.initialize()",
+              'sidebar persistence load'
+          )
+
+          replace_once(
+              "function prefersReducedMotion() {",
+              "function toggleSidebar() {\n  sidebarCollapsed.value = !sidebarCollapsed.value\n  if (import.meta.client) localStorage.setItem('cuebooker.sidebar.collapsed', String(sidebarCollapsed.value))\n  if (currentTour.value) scheduleTourPosition(120)\n}\n\nfunction prefersReducedMotion() {",
+              'sidebar toggle'
+          )
+
+          replace_once(
+              '<main class="workspace">',
+              '<main class="workspace" :class="{ \'workspace--sidebar-collapsed\': sidebarCollapsed }">',
+              'workspace collapse class'
+          )
+
+          replace_once(
+              '      <NuxtLink class="brand" to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink>',
+              '''      <div class="workspace-brand-row">\n        <NuxtLink class="brand" to="/" aria-label="Cuebooker">\n          <CueBrand class="workspace-brand-wordmark" />\n          <CueBrand class="workspace-brand-icon" variant="icon" />\n        </NuxtLink>\n        <button class="sidebar-collapse-button" type="button" :aria-label="sidebarCollapsed ? copy.expandSidebar : copy.collapseSidebar" :title="sidebarCollapsed ? copy.expandSidebar : copy.collapseSidebar" @click="toggleSidebar">\n          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 4 12l5 7M20 5v14"/></svg>\n        </button>\n      </div>''',
+              'sidebar brand row'
+          )
+
+          replace_once(
+              '''        <div id="workspace-filters" class="status-filters" :class="{ 'tour-focus': tourStep === 1 }" :aria-label="copy.filterSamples">''',
+              '''        <div class="booking-tools">\n          <label class="booking-search">\n            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>\n            <span class="sr-only">{{ copy.searchBookings }}</span>\n            <input v-model="bookingSearch" type="search" :placeholder="copy.searchBookingsPlaceholder" :aria-label="copy.searchBookings">\n          </label>\n          <span class="booking-search-count">{{ demoFilteredBookings.length }} / {{ demoActiveBookings.length }} {{ copy.searchResults }}</span>\n        </div>\n\n        <div id="workspace-filters" class="status-filters" :class="{ 'tour-focus': tourStep === 1 }" :aria-label="copy.filterSamples">''',
+              'booking search UI'
+          )
+
+          old_tour = '''  if (targetRect.bottom < safeTop || targetRect.top > safeBottom) {\n    const top = targetRect.top + window.scrollY - safeTop\n    window.scrollTo({ top: Math.max(0, top), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })\n    if (!prefersReducedMotion()) await new Promise(resolve => window.setTimeout(resolve, 320))\n    targetRect = target.getBoundingClientRect()\n  }\n\n  const spaceBelow = safeBottom - targetRect.bottom\n  const spaceAbove = targetRect.top - safeTop\n  let top: number\n\n  if (spaceBelow >= cardRect.height + gap) top = targetRect.bottom + gap\n  else if (spaceAbove >= cardRect.height + gap) top = targetRect.top - cardRect.height - gap\n  else top = targetRect.top + targetRect.height / 2 < viewportHeight / 2\n    ? safeBottom - cardRect.height\n    : safeTop'''
+
+          new_tour = '''  let top: number\n\n  if (mobileShell) {\n    const cardTop = Math.max(safeTop, safeBottom - cardRect.height)\n    const targetBottomLimit = cardTop - gap\n    if (targetRect.top < safeTop || targetRect.top > targetBottomLimit || targetRect.bottom > targetBottomLimit) {\n      const nextScrollTop = targetRect.top + window.scrollY - safeTop\n      window.scrollTo({ top: Math.max(0, nextScrollTop), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })\n      if (!prefersReducedMotion()) await new Promise(resolve => window.setTimeout(resolve, 280))\n      targetRect = target.getBoundingClientRect()\n    }\n    top = cardTop\n  } else {\n    if (targetRect.bottom < safeTop || targetRect.top > safeBottom) {\n      const nextScrollTop = targetRect.top + window.scrollY - safeTop\n      window.scrollTo({ top: Math.max(0, nextScrollTop), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })\n      if (!prefersReducedMotion()) await new Promise(resolve => window.setTimeout(resolve, 280))\n      targetRect = target.getBoundingClientRect()\n    }\n\n    const spaceBelow = safeBottom - targetRect.bottom\n    const spaceAbove = targetRect.top - safeTop\n    if (spaceBelow >= cardRect.height + gap) top = targetRect.bottom + gap\n    else if (spaceAbove >= cardRect.height + gap) top = targetRect.top - cardRect.height - gap\n    else top = targetRect.top + targetRect.height / 2 < viewportHeight / 2\n      ? safeBottom - cardRect.height\n      : safeTop\n  }'''
+          replace_once(old_tour, new_tour, 'tour mobile safe stage')
+
+          path.write_text(text)
+          PY
+
+          git diff --check
+          git diff -- app/pages/workspace.vue
+
+      - name: Commit workspace changes
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No workspace changes to commit"
+            exit 0
+          fi
+          git config user.name "cuebooker-workspace-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add app/pages/workspace.vue
+          git commit -m "Improve workspace navigation and booking search"
+          git push origin HEAD:feature/app-visual-system
