@@ -23,13 +23,15 @@ Portrait files use the existing private `artist-media` bucket under `<artist-id>
 
 When an artist uploads a portrait, the original file is stored first. CueBooker then runs MODNet portrait matting in the browser through Transformers.js and uploads the generated transparent PNG only after processing finishes.
 
-The implementation uses the quantized `q8` MODNet model. The image is processed locally in the browser. The model assets are downloaded from Hugging Face/CDN infrastructure, but the uploaded portrait is not sent to a third-party inference API.
+The implementation uses the quantized `q8` MODNet model. The image is processed locally in the browser. The source Blob is exposed to the model through a temporary browser `blob:` URL and revoked immediately after inference. Model assets are downloaded from Hugging Face/CDN infrastructure, but the portrait is not sent to a third-party inference API.
 
-If client-side matting fails, the original portrait is still saved and the UI exposes a `Regenerate cutout` action. This keeps profile editing usable on unsupported browsers or unreliable networks.
+If client-side matting fails, the original portrait is still saved and the UI exposes a `Regenerar recorte` action. This keeps profile editing usable on unsupported browsers or unreliable networks.
 
 ## Editing behaviour
 
 `ProfileCoverUploader.vue` is the visual composer for the profile header. The actual cover stage is kept visually clean. Portrait controls live in a separate integrated strip below the stage rather than floating on top of the artwork.
+
+Changing style, position or scale updates the composition immediately. These settings are persisted independently in the background without clearing or re-downloading the active portrait, so the controls and image remain stable while editing.
 
 Once a transparent cutout exists, all three treatments use it:
 
@@ -39,7 +41,7 @@ Once a transparent cutout exists, all three treatments use it:
 
 The original uploaded file remains unchanged in storage. Horizontal position, vertical position and scale are persisted independently.
 
-The private profile preview receives the same cutout through CSS variables published by the visual editor, so the editing surface and preview use the same composition.
+The private profile preview uses a dedicated hero composition: cover as full background, artist layer centred over it, artist metadata anchored inside the hero and profile content immediately below. It no longer inherits the editor flow layout.
 
 ## Product rules
 
