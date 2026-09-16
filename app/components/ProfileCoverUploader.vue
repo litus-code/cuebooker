@@ -31,6 +31,7 @@ const artistInput = ref<HTMLInputElement | null>(null)
 const dragging = ref(false)
 const artistDragging = ref(false)
 const artistUploading = ref(false)
+const artistSettingsSaving = ref(false)
 const artistMessage = ref('')
 const artistOriginalUrl = ref('')
 const artistCutoutUrl = ref('')
@@ -38,6 +39,7 @@ const artistStyle = ref<ArtistImageStyle>('artwork')
 const artistPositionX = ref(50)
 const artistPositionY = ref(50)
 const artistScale = ref(1)
+let settingsSaveTimer: ReturnType<typeof setTimeout> | null = null
 
 const profiles = useArtistProfile()
 const preferences = useCuePreferences()
@@ -64,9 +66,8 @@ const artistCopy = computed(() => preferences.locale.value === 'es' ? {
   scale: 'Tamaño',
   uploading: 'Subiendo imagen…',
   cutting: 'Quitando fondo…',
-  saved: 'Imagen del artista actualizada.',
   cutoutReady: 'Fondo eliminado. Ya puedes ajustar la composición.',
-  cutoutFallback: 'Imagen guardada. El recorte automático no ha podido terminar; puedes regenerarlo.',
+  cutoutFallback: 'La foto está guardada, pero el recorte no ha terminado. Pulsa Regenerar recorte.',
   removed: 'Imagen del artista eliminada.',
   invalid: 'Usa JPG, PNG o WebP de hasta 8 MB.',
   error: 'No se pudo guardar la imagen del artista.'
@@ -86,9 +87,8 @@ const artistCopy = computed(() => preferences.locale.value === 'es' ? {
   scale: 'Size',
   uploading: 'Uploading image…',
   cutting: 'Removing background…',
-  saved: 'Artist image updated.',
   cutoutReady: 'Background removed. You can now adjust the composition.',
-  cutoutFallback: 'Image saved. Automatic cutout could not finish; you can regenerate it.',
+  cutoutFallback: 'The photo is saved, but the cutout did not finish. Use Regenerate cutout.',
   removed: 'Artist image removed.',
   invalid: 'Use a JPG, PNG or WebP file up to 8 MB.',
   error: 'The artist image could not be saved.'
@@ -126,14 +126,12 @@ function replaceObjectUrl(target: typeof artistOriginalUrl, next = '') {
 }
 
 async function loadArtistMedia(imagePath?: string | null, cutoutPath?: string | null) {
-  replaceObjectUrl(artistOriginalUrl)
-  replaceObjectUrl(artistCutoutUrl)
-
   try {
     const [original, cutout] = await Promise.all([
       imagePath ? profiles.getArtistImageObjectUrl(imagePath) : Promise.resolve(''),
       cutoutPath ? profiles.getArtistCutoutObjectUrl(cutoutPath) : Promise.resolve('')
     ])
+
     replaceObjectUrl(artistOriginalUrl, original)
     replaceObjectUrl(artistCutoutUrl, cutout)
   } catch {
@@ -141,20 +139,35 @@ async function loadArtistMedia(imagePath?: string | null, cutoutPath?: string | 
   }
 }
 
-function syncArtistVisual() {
+function syncArtistControls() {
   const artist = activeArtist.value
   if (!artist) return
   artistStyle.value = artist.artist_image_style || 'artwork'
   artistPositionX.value = artist.artist_image_position_x ?? 50
   artistPositionY.value = artist.artist_image_position_y ?? 50
   artistScale.value = Number(artist.artist_image_scale || 1)
-  void loadArtistMedia(artist.artist_image_path, artist.artist_cutout_path)
 }
 
 watch(
-  () => [activeArtist.value?.id, activeArtist.value?.artist_image_path, activeArtist.value?.artist_cutout_path],
-  syncArtistVisual,
+  () => activeArtist.value?.id,
+  () => {
+    const artist = activeArtist.value
+    if (!artist) return
+    syncArtistControls()
+    void loadArtistMedia(artist.artist_image_path, artist.artist_cutout_path)
+  },
   { immediate: true }
+)
+
+watch(
+  [
+    () => activeArtist.value?.artist_image_path,
+    () => activeArtist.value?.artist_cutout_path
+  ],
+  ([imagePath, cutoutPath], [previousImagePath, previousCutoutPath]) => {
+    if (imagePath === previousImagePath && cutoutPath === previousCutoutPath) return
+    void loadArtistMedia(imagePath, cutoutPath)
+  }
 )
 
 const artistFilter = computed(() => {
@@ -267,10 +280,9 @@ function onArtistDrop(event: DragEvent) {
 async function persistArtistSettings() {
   const artistId = profiles.activeArtistId.value
   const current = activeArtist.value
-  if (!artistId || !current || props.disabled || artistUploading.value) return
+  if (!artistId || !current || props.disabled) return
 
-  artistUploading.value = true
-  artistMessage.value = ''
+  artistSettingsSaving.value = true
   try {
     await profiles.saveArtistVisual(artistId, {
       artist_image_path: current.artist_image_path,
@@ -280,17 +292,24 @@ async function persistArtistSettings() {
       artist_image_position_y: artistPositionY.value,
       artist_image_scale: artistScale.value
     })
-    artistMessage.value = artistCopy.value.saved
   } catch {
     artistMessage.value = artistCopy.value.error
   } finally {
-    artistUploading.value = false
+    artistSettingsSaving.value = false
   }
+}
+
+function schedulePersistArtistSettings() {
+  if (settingsSaveTimer) clearTimeout(settingsSaveTimer)
+  settingsSaveTimer = setTimeout(() => {
+    settingsSaveTimer = null
+    void persistArtistSettings()
+  }, 250)
 }
 
 function setArtistStyle(value: ArtistImageStyle) {
   artistStyle.value = value
-  void persistArtistSettings()
+  schedulePersistArtistSettings()
 }
 
 async function regenerateCutout() {
@@ -359,6 +378,7 @@ async function removeArtistImage() {
 }
 
 onBeforeUnmount(() => {
+  if (settingsSaveTimer) clearTimeout(settingsSaveTimer)
   replaceObjectUrl(artistOriginalUrl)
   replaceObjectUrl(artistCutoutUrl)
   if (!import.meta.client) return
@@ -434,14 +454,15 @@ onBeforeUnmount(() => {
         </div>
 
         <div class="artist-layer__sliders">
-          <label><span>{{ artistCopy.x }}</span><input v-model.number="artistPositionX" type="range" min="15" max="85" :disabled="disabled || artistUploading" @change="persistArtistSettings"></label>
-          <label><span>{{ artistCopy.y }}</span><input v-model.number="artistPositionY" type="range" min="20" max="80" :disabled="disabled || artistUploading" @change="persistArtistSettings"></label>
-          <label><span>{{ artistCopy.scale }}</span><input v-model.number="artistScale" type="range" min="0.6" max="1.8" step="0.05" :disabled="disabled || artistUploading" @change="persistArtistSettings"></label>
+          <label><span>{{ artistCopy.x }}</span><input v-model.number="artistPositionX" type="range" min="15" max="85" :disabled="disabled || artistUploading" @change="schedulePersistArtistSettings"></label>
+          <label><span>{{ artistCopy.y }}</span><input v-model.number="artistPositionY" type="range" min="20" max="80" :disabled="disabled || artistUploading" @change="schedulePersistArtistSettings"></label>
+          <label><span>{{ artistCopy.scale }}</span><input v-model.number="artistScale" type="range" min="0.6" max="1.8" step="0.05" :disabled="disabled || artistUploading" @change="schedulePersistArtistSettings"></label>
         </div>
 
         <div class="artist-layer__footer">
           <button v-if="!hasAutomaticCutout" type="button" :disabled="disabled || artistUploading" @click="regenerateCutout">{{ artistCopy.recut }}</button>
           <button class="artist-layer__remove" type="button" :disabled="disabled || artistUploading" @click="removeArtistImage">{{ artistCopy.remove }}</button>
+          <span v-if="artistSettingsSaving" class="artist-layer__saving" aria-live="polite">•••</span>
         </div>
       </template>
 
@@ -470,10 +491,9 @@ onBeforeUnmount(() => {
 .cover-uploader__stage { position: relative; min-height: clamp(360px, 42vw, 520px); overflow: hidden; isolation: isolate; }
 .cover-uploader__background { position: absolute; z-index: -3; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease, filter .35s ease; }
 .cover-uploader__shade { position: absolute; z-index: -2; inset: 0; background: linear-gradient(90deg,rgba(0,0,0,.9) 0%,rgba(0,0,0,.5) 42%,rgba(0,0,0,.16) 100%),linear-gradient(0deg,rgba(0,0,0,.64),transparent 55%); }
-.cover-uploader__artist-image { position: absolute; z-index: -1; width: clamp(190px, 30vw, 390px); max-height: 90%; object-fit: contain; object-position: center bottom; pointer-events: none; transform-origin: center; transition: left .18s ease, top .18s ease, transform .18s ease, filter .18s ease; }
+.cover-uploader__artist-image { position: absolute; z-index: -1; width: clamp(190px, 30vw, 390px); max-height: 90%; object-fit: contain; object-position: center bottom; pointer-events: none; transform-origin: center; transition: left .12s ease, top .12s ease, transform .12s ease, filter .12s ease; }
 .cover-uploader__artist-image--fallback { max-height: 74%; border-radius: 4px; opacity: .82; -webkit-mask-image: linear-gradient(#000 0 78%, transparent 100%); mask-image: linear-gradient(#000 0 78%, transparent 100%); }
-.cover-uploader__artist-image--artwork { mix-blend-mode: screen; }
-.cover-uploader__artist-image--duotone { mix-blend-mode: screen; }
+.cover-uploader__artist-image--artwork,.cover-uploader__artist-image--duotone { mix-blend-mode: screen; }
 .cover-uploader__stage > input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .cover-uploader__intro { position: relative; z-index: 2; display: grid; align-content: center; justify-items: start; min-height: inherit; max-width: 500px; padding: clamp(32px,5vw,64px); }
 .cover-uploader__intro > span { color: #ceff54; font: 700 10px/1.2 monospace; letter-spacing: .15em; }
@@ -486,7 +506,7 @@ onBeforeUnmount(() => {
 .artist-layer--dragging { border-color: #ceff54; background: #111608; }
 .artist-layer__heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .artist-layer__heading > div { min-width: 0; }
-.artist-layer__heading span, .artist-layer__styles > span, .artist-layer__sliders span { color: #ceff54; font: 700 9px/1.2 monospace; letter-spacing: .12em; text-transform: uppercase; }
+.artist-layer__heading span,.artist-layer__styles > span,.artist-layer__sliders span { color: #ceff54; font: 700 9px/1.2 monospace; letter-spacing: .12em; text-transform: uppercase; }
 .artist-layer__heading p { max-width: 620px; margin: 6px 0 0; color: #aaa; font-size: 12px; line-height: 1.45; }
 .artist-layer__heading button { flex: none; min-height: 38px; padding: 0 14px; border: 1px solid #ceff54; background: transparent; color: #f4f2ed; cursor: pointer; font-weight: 800; }
 .artist-layer__styles { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 16px; }
@@ -496,9 +516,10 @@ onBeforeUnmount(() => {
 .artist-layer__sliders { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 18px; margin-top: 16px; }
 .artist-layer__sliders label { display: grid; gap: 7px; }
 .artist-layer__sliders input { width: 100%; accent-color: #ceff54; }
-.artist-layer__footer { display: flex; align-items: center; gap: 16px; margin-top: 14px; }
+.artist-layer__footer { display: flex; align-items: center; gap: 16px; min-height: 18px; margin-top: 14px; }
 .artist-layer__footer button { padding: 0; border: 0; background: transparent; color: #bdbdbd; cursor: pointer; font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
 .artist-layer__remove { color: #969696 !important; }
+.artist-layer__saving { margin-left: auto; color: #ceff54; letter-spacing: .18em; animation: saving-pulse 1s ease-in-out infinite; }
 .artist-layer small { display: block; margin-top: 10px; color: #d7d7d7; font-size: 11px; }
 .cover-uploader__controls { display: flex; align-items: end; gap: 18px; padding: 14px 20px; border-top: 1px solid rgba(255,255,255,.12); background: #101010; }
 .cover-uploader__controls label { display: grid; flex: 1; gap: 7px; }
@@ -508,22 +529,37 @@ onBeforeUnmount(() => {
 .cover-uploader--dragging .cover-uploader__stage { outline: 3px solid #ceff54; outline-offset: -3px; }
 .cover-uploader--dragging .cover-uploader__background { transform: scale(1.035); filter: brightness(1.15); }
 
-:global(.profile-preview-hero) { position: relative; isolation: isolate; overflow: hidden; }
-:global(.profile-preview-hero)::after { content: ''; position: absolute; z-index: 0; left: var(--cue-profile-artist-x, 50%); top: var(--cue-profile-artist-y, 50%); width: clamp(190px, 32vw, 400px); height: 90%; background-image: var(--cue-profile-artist-image, none); background-repeat: no-repeat; background-position: center bottom; background-size: contain; opacity: var(--cue-profile-artist-opacity, 0); filter: var(--cue-profile-artist-filter, none); transform: translate(-50%, -50%) scale(var(--cue-profile-artist-scale, 1)); transform-origin: center; pointer-events: none; }
-:global(.profile-preview-hero > *) { position: relative; z-index: 2; }
+@keyframes saving-pulse { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
+
+:global(.profile-preview) { width: min(1180px, calc(100vw - 48px)); }
+:global(.profile-preview-hero) { position: relative !important; min-height: clamp(380px,52vw,590px) !important; padding: 0 !important; overflow: hidden; background: #090909; isolation: isolate; }
+:global(.profile-preview-hero > img) { position: absolute !important; z-index: -3 !important; inset: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover !important; }
+:global(.profile-preview-hero-shade) { position: absolute !important; z-index: -2 !important; inset: 0 !important; background: linear-gradient(90deg,rgba(0,0,0,.82) 0%,rgba(0,0,0,.55) 38%,rgba(0,0,0,.16) 78%),linear-gradient(0deg,rgba(0,0,0,.8),transparent 58%) !important; }
+:global(.profile-preview-hero)::after { content: ''; position: absolute; z-index: 0; left: var(--cue-profile-artist-x,50%); top: var(--cue-profile-artist-y,50%); width: clamp(220px,34vw,430px); height: 94%; background-image: var(--cue-profile-artist-image,none); background-repeat: no-repeat; background-position: center bottom; background-size: contain; opacity: var(--cue-profile-artist-opacity,0); filter: var(--cue-profile-artist-filter,none); transform: translate(-50%,-50%) scale(var(--cue-profile-artist-scale,1)); transform-origin: center; pointer-events: none; }
+:global(.profile-preview-hero > h2) { position: absolute !important; z-index: 2 !important; left: clamp(24px,5vw,64px) !important; bottom: 88px !important; max-width: 48% !important; margin: 0 !important; font-size: clamp(3rem,6.5vw,6.6rem) !important; line-height: .82 !important; letter-spacing: -.07em !important; overflow-wrap: normal !important; word-break: normal !important; }
+:global(.profile-preview-hero > p:not(.profile-preview-empty)) { position: absolute !important; z-index: 2 !important; top: 38px !important; left: clamp(24px,5vw,64px) !important; max-width: 45% !important; margin: 0 !important; color: #c5c5c5 !important; }
+:global(.profile-preview-hero > .profile-preview-chips),:global(.profile-preview-hero > .profile-preview-empty) { position: absolute !important; z-index: 2 !important; left: clamp(24px,5vw,64px) !important; bottom: 38px !important; max-width: 48% !important; margin: 0 !important; }
+:global(.profile-preview-body) { min-height: 0 !important; grid-template-columns: minmax(0,1.35fr) minmax(240px,.65fr) !important; gap: clamp(28px,5vw,58px) !important; padding: clamp(30px,5vw,60px) !important; }
+:global(.profile-preview-bio) { max-width: 720px; margin: 0; font-size: clamp(1.1rem,2vw,1.65rem) !important; line-height: 1.5 !important; }
 
 @media (max-width: 760px) {
   .cover-uploader__stage { min-height: 470px; }
   .cover-uploader__intro { align-content: start; padding: 28px 20px; }
   .cover-uploader__intro h3 { max-width: 78%; font-size: 2.8rem; }
   .cover-uploader__intro p { max-width: 72%; }
-  .cover-uploader__artist-image { width: min(58vw, 250px); max-height: 62%; }
+  .cover-uploader__artist-image { width: min(58vw,250px); max-height: 62%; }
   .artist-layer { padding: 16px; }
   .artist-layer__heading { align-items: stretch; flex-direction: column; gap: 12px; }
   .artist-layer__heading button { width: 100%; }
   .artist-layer__sliders { grid-template-columns: 1fr; gap: 10px; }
   .cover-uploader__controls { align-items: stretch; flex-direction: column; gap: 10px; }
   .cover-uploader__controls button { width: 100%; }
-  :global(.profile-preview-hero)::after { width: min(60vw, 260px); height: 82%; }
+  :global(.profile-preview) { width: 100%; }
+  :global(.profile-preview-hero) { min-height: 420px !important; }
+  :global(.profile-preview-hero)::after { width: min(62vw,280px); height: 82%; }
+  :global(.profile-preview-hero > h2) { left: 22px !important; right: 22px !important; bottom: 84px !important; max-width: none !important; font-size: clamp(3rem,16vw,5.2rem) !important; }
+  :global(.profile-preview-hero > p:not(.profile-preview-empty)) { top: 24px !important; left: 22px !important; max-width: 75% !important; }
+  :global(.profile-preview-hero > .profile-preview-chips),:global(.profile-preview-hero > .profile-preview-empty) { left: 22px !important; right: 22px !important; bottom: 30px !important; max-width: none !important; }
+  :global(.profile-preview-body) { grid-template-columns: 1fr !important; gap: 28px !important; padding: 28px 22px 42px !important; }
 }
 </style>
