@@ -169,11 +169,30 @@
   }
 }
 
-/* Guided tour: compact control, not a landing-page CTA. */
+/* Guided tour: compact, positioned only after measurement and softly animated. */
 .workspace .tour-card {
   display: grid !important;
   width: min(350px, calc(100vw - 36px)) !important;
   padding: 18px !important;
+  border-color: color-mix(in srgb, var(--cue-accent) 78%, var(--workspace-line)) !important;
+  box-shadow:
+    0 16px 46px color-mix(in srgb, var(--cue-shadow) 68%, transparent),
+    0 0 22px color-mix(in srgb, var(--cue-accent) 14%, transparent) !important;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(5px) scale(.992);
+  transition:
+    opacity .18s ease,
+    transform .22s ease,
+    top .24s cubic-bezier(.2,.75,.2,1),
+    left .24s cubic-bezier(.2,.75,.2,1),
+    box-shadow .2s ease !important;
+}
+
+.workspace .tour-card[style*='--tour-top'] {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
 }
 
 .workspace .tour-card > strong {
@@ -203,11 +222,16 @@
   font-size: 21px !important;
 }
 
-@media (max-width: 960px) {
-  /* On compact layouts settings keeps the existing full-screen pattern, but loses the oversized controls. */
+@media (prefers-reduced-motion: reduce) {
   .workspace .tour-card {
-    right: 12px !important;
-    bottom: 76px !important;
+    transition: opacity .12s linear !important;
+    transform: none !important;
+  }
+}
+
+@media (max-width: 960px) {
+  /* On compact layouts settings keeps the full-page pattern and the tour stays intentionally compact. */
+  .workspace .tour-card {
     width: min(330px, calc(100vw - 24px)) !important;
     padding: 16px !important;
   }
