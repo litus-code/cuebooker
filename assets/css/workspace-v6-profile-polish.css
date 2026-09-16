@@ -35,23 +35,28 @@
     image-rendering: auto !important;
   }
 
-  /* Profile savebar: completion is context, save is an action, neither should dominate. */
+  /* Completion and save belong to the form ending, not to a floating toolbar. */
+  .workspace .profile-form {
+    gap: 0 !important;
+  }
+
   .workspace .profile-savebar {
-    position: sticky !important;
-    bottom: 0 !important;
-    z-index: 22 !important;
+    position: static !important;
+    bottom: auto !important;
+    z-index: auto !important;
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
     gap: 22px !important;
     width: 100% !important;
-    min-height: 68px !important;
-    margin-top: 24px !important;
-    padding: 12px 14px 12px 18px !important;
+    min-height: 64px !important;
+    box-sizing: border-box !important;
+    margin: -1px 0 0 !important;
+    padding: 11px 14px 11px 18px !important;
     border: 1px solid var(--workspace-line) !important;
-    background: color-mix(in srgb, var(--workspace-panel) 94%, transparent) !important;
-    box-shadow: 0 14px 42px color-mix(in srgb, var(--cue-shadow) 50%, transparent) !important;
-    backdrop-filter: blur(16px);
+    background: var(--workspace-panel) !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
   }
 
   .workspace .profile-savebar > div,
@@ -68,9 +73,9 @@
   .workspace .profile-savebar > button {
     flex: 0 0 auto !important;
     width: auto !important;
-    min-width: 150px !important;
-    min-height: 42px !important;
-    padding: 0 18px !important;
+    min-width: 138px !important;
+    min-height: 40px !important;
+    padding: 0 16px !important;
     font-size: 11px !important;
   }
 
@@ -227,11 +232,19 @@
     margin-bottom: 18px !important;
   }
 
+  .workspace .profile-form {
+    gap: 0 !important;
+  }
+
   .workspace .profile-savebar {
+    position: static !important;
     display: grid !important;
     grid-template-columns: 1fr auto !important;
-    gap: 12px !important;
+    gap: 10px !important;
+    margin: -1px 0 0 !important;
     padding: 12px !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
   }
 
   .workspace .profile-savebar .primary-button,
