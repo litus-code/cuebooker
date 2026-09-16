@@ -1,0 +1,1 @@
+Fresh preview validation for sidebar logo and settings navigation.
