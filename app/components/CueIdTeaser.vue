@@ -12,21 +12,21 @@ const props = withDefaults(defineProps<{
 const preferences = useCuePreferences()
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
-  eyebrow: 'CUE ID / OPCIONAL',
-  title: 'TU IDENTIDAD DENTRO DE CUEBOOKER.',
-  body: 'Una identidad visual ligada a tu trayectoria, tu perfil y la cultura de club. Podrás empezarla cuando quieras y dejarla para más tarde sin bloquear tu workspace.',
-  status: 'PRIMERA SEÑAL',
+  eyebrow: 'ARTIST PROFILE / CUE ID',
+  title: 'TU PERFIL TOMA FORMA EN CUEBOOKER.',
+  body: 'CUE ID forma parte de tu perfil de artista. Convierte tu identidad, tu imagen y tu trayectoria en una representación visual propia, sin crear un segundo perfil ni obligarte a completarlo ahora.',
+  status: 'IDENTIDAD VISUAL',
   signal: 'SIGNAL 00 · CREATED',
   name: 'TU NOMBRE',
-  action: 'Ver dirección visual'
+  action: 'Ver CUE ID'
 } : {
-  eyebrow: 'CUE ID / OPTIONAL',
-  title: 'YOUR IDENTITY INSIDE CUEBOOKER.',
-  body: 'A visual identity connected to your trajectory, profile and club culture. Start it when you want or leave it for later without blocking your workspace.',
-  status: 'FIRST SIGNAL',
+  eyebrow: 'ARTIST PROFILE / CUE ID',
+  title: 'YOUR PROFILE TAKES SHAPE IN CUEBOOKER.',
+  body: 'CUE ID is part of your artist profile. It turns your identity, image and trajectory into a visual representation without creating a second profile or forcing you to complete it now.',
+  status: 'VISUAL IDENTITY',
   signal: 'SIGNAL 00 · CREATED',
   name: 'YOUR NAME',
-  action: 'View visual direction'
+  action: 'View CUE ID'
 })
 </script>
 
