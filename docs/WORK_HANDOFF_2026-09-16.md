@@ -552,3 +552,21 @@ Read in this order:
 Do not start by inventing another redesign. Inspect the branch and current staging state first. Preserve what already works. Fix responsive parity and the asset inconsistency before extending the visual system.
 
 Once the app shell is stable, move directly into Artist Profile + the real humanoid CUE ID vertical slice. The approved direction is a credible modular identity system, not a procedural robot and not a separate gamified profile.
+
+## 22. Block A stabilisation update
+
+The first consolidation pass is now implemented on `feature/app-visual-system`:
+
+- the approved `logo-full-*` and `logo-*` packages have matching canvases and near-matching visible bounds, so no additional rescaling asset was introduced;
+- `workspace-v7-mobile-system.css` is loaded by Nuxt during SSR instead of being injected by a client plugin;
+- the DOM patch plugins for navigation, request scroll and Guided Tour placement have been removed;
+- Settings is an explicit sixth workspace destination on desktop and in the horizontally scrollable mobile navigation;
+- Sign out is the only persistent account utility in the shell;
+- request selection scroll remains owned by `workspace.vue` and accounts for the sticky mobile header;
+- Guided Tour placement is measured against the current target, sticky header and viewport, with reduced-motion handling;
+- the mobile profile save bar remains sticky but participates in document flow and no longer needs a large floating gap;
+- Artist Profile already includes the requested chip inputs, optional cover image with Cuebooker fallback, completion link from Overview and public-profile preview.
+
+Static generation and `git diff --check` pass after this consolidation. `nuxi typecheck` cannot run in the current checkout because no type-checker package is installed; the production Nuxt build still compiles both client and server successfully.
+
+Do not begin the real CUE ID vertical slice until this commit has deployed to staging and the Dark/Light × ES/EN desktop/mobile smoke matrix has been completed there.

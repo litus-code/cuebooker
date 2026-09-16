@@ -51,33 +51,6 @@
     white-space: nowrap;
   }
 
-  /* Settings sits directly under the main navigation, visually equal to the other destinations. */
-  .workspace-header .account-actions > .header-icon-button:first-of-type {
-    order: 2;
-    margin-top: -12px !important;
-  }
-
-  .workspace-header .account-actions > .header-icon-button:first-of-type:hover,
-  .workspace:has(.settings-panel) .workspace-header .account-actions > .header-icon-button:first-of-type {
-    border-color: var(--workspace-line) !important;
-    background: var(--workspace-panel-soft) !important;
-    color: var(--cue-text) !important;
-  }
-
-  .workspace-header .account-actions > .header-icon-button:first-of-type::before {
-    position: absolute;
-    top: 8px;
-    bottom: 8px;
-    left: 0;
-    width: 2px;
-    background: transparent;
-    content: '';
-  }
-
-  .workspace:has(.settings-panel) .workspace-header .account-actions > .header-icon-button:first-of-type::before {
-    background: var(--cue-accent);
-  }
-
   /* Sign out is the only persistent bottom utility. */
   .workspace-header .account-actions > .header-icon-button:last-of-type {
     order: 4;

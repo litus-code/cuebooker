@@ -91,6 +91,8 @@ const profilePreviewOpen = ref(false)
 const profileCoverUrl = ref('')
 const profileCoverUploading = ref(false)
 const profileCoverMessage = ref('')
+const tourCardStyle = ref<Record<string, string>>({})
+let tourPositionTimer: ReturnType<typeof setTimeout> | null = null
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
   overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Historial', profile: 'Perfil',
@@ -334,6 +336,8 @@ watch(profilePreviewOpen, (open) => {
 onBeforeUnmount(() => {
   if (import.meta.client) document.body.style.overflow = ''
   if (profileCoverUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileCoverUrl.value)
+  if (import.meta.client) window.removeEventListener('resize', handleViewportChange)
+  if (tourPositionTimer) window.clearTimeout(tourPositionTimer)
 })
 watch(selectedDemoBookingId, async (id) => {
   if (id) await demo.markOpened(id)
@@ -341,12 +345,93 @@ watch(selectedDemoBookingId, async (id) => {
 watch(tourStep, async (step) => {
   const item = tourSteps.value[step]
   if (!item) return
+  settingsOpen.value = false
   activeView.value = item.view
   await nextTick()
-  const target = document.getElementById(item.target)
-  if (!target) return
-  target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  scheduleTourPosition()
 })
+
+function prefersReducedMotion() {
+  return import.meta.client && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+async function changeView(view: WorkspaceView) {
+  settingsOpen.value = false
+  activeView.value = view
+  await nextTick()
+  const target = document.querySelector<HTMLElement>('.workspace .view')
+  if (!target) return
+  const header = document.getElementById('workspace-header')
+  const offset = (header?.getBoundingClientRect().height || 0) + 8
+  const top = target.getBoundingClientRect().top + window.scrollY - offset
+  window.scrollTo({ top: Math.max(0, top), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+}
+
+async function openSettings() {
+  settingsOpen.value = true
+  await nextTick()
+  document.querySelector<HTMLElement>('.settings-panel')?.focus({ preventScroll: true })
+  window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+}
+
+function scheduleTourPosition(delay = 280) {
+  if (!import.meta.client) return
+  if (tourPositionTimer) window.clearTimeout(tourPositionTimer)
+  tourCardStyle.value = {}
+  tourPositionTimer = window.setTimeout(() => void positionTour(), delay)
+}
+
+async function positionTour() {
+  const item = tourSteps.value[tourStep.value]
+  if (!item) return
+  await nextTick()
+
+  const target = document.getElementById(item.target)
+  const card = document.querySelector<HTMLElement>('.workspace .tour-card')
+  if (!target || !card) return
+
+  const edge = 12
+  const gap = 12
+  const headerBottom = document.getElementById('workspace-header')?.getBoundingClientRect().bottom || edge
+  const viewportHeight = window.innerHeight
+  const viewportWidth = window.innerWidth
+  let targetRect = target.getBoundingClientRect()
+  const cardRect = card.getBoundingClientRect()
+  const safeTop = Math.max(edge, headerBottom + gap)
+  const safeBottom = viewportHeight - edge
+
+  if (targetRect.bottom < safeTop || targetRect.top > safeBottom) {
+    const top = targetRect.top + window.scrollY - safeTop
+    window.scrollTo({ top: Math.max(0, top), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+    if (!prefersReducedMotion()) await new Promise(resolve => window.setTimeout(resolve, 320))
+    targetRect = target.getBoundingClientRect()
+  }
+
+  const spaceBelow = safeBottom - targetRect.bottom
+  const spaceAbove = targetRect.top - safeTop
+  let top: number
+
+  if (spaceBelow >= cardRect.height + gap) top = targetRect.bottom + gap
+  else if (spaceAbove >= cardRect.height + gap) top = targetRect.top - cardRect.height - gap
+  else top = targetRect.top + targetRect.height / 2 < viewportHeight / 2
+    ? safeBottom - cardRect.height
+    : safeTop
+
+  const left = viewportWidth <= 960
+    ? edge
+    : Math.min(viewportWidth - cardRect.width - edge, Math.max(edge, targetRect.right - cardRect.width))
+
+  tourCardStyle.value = {
+    '--tour-top': `${Math.max(safeTop, Math.min(top, safeBottom - cardRect.height))}px`,
+    '--tour-left': `${left}px`
+  }
+}
+
+function handleViewportChange() {
+  if (currentTour.value) scheduleTourPosition(80)
+}
+
+onMounted(() => window.addEventListener('resize', handleViewportChange, { passive: true }))
 
 function slugify(value: string) {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
@@ -737,6 +822,7 @@ function nextTourStep() {
 function closeTour() {
   if (import.meta.client && sampleNamespace.value) localStorage.setItem(`cuebooker.tour.seen.${sampleNamespace.value}`, 'true')
   tourStep.value = -1
+  tourCardStyle.value = {}
 }
 async function clearSampleBookings() {
   await demo.clearSamples()
@@ -781,15 +867,15 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
     <header id="workspace-header" class="workspace-header">
       <NuxtLink class="brand" to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink>
       <nav id="workspace-navigation" aria-label="Workspace">
-        <button data-workspace-view="overview" :class="{ active: activeView === 'overview' }" type="button" @click="activeView = 'overview'">{{ copy.overview }}</button>
-        <button data-workspace-view="bookings" :class="{ active: activeView === 'bookings' }" type="button" @click="activeView = 'bookings'">{{ copy.bookings }}</button>
-        <button data-workspace-view="calendar" :class="{ active: activeView === 'calendar' }" type="button" @click="activeView = 'calendar'">{{ copy.calendar }}</button>
-        <button data-workspace-view="history" :class="{ active: activeView === 'history' }" type="button" @click="activeView = 'history'">{{ copy.history }}</button>
-        <button data-workspace-view="profile" :class="{ active: activeView === 'profile' }" type="button" @click="activeView = 'profile'">{{ copy.profile }}</button>
+        <button data-workspace-view="overview" :class="{ active: activeView === 'overview' && !settingsOpen }" type="button" @click="changeView('overview')">{{ copy.overview }}</button>
+        <button data-workspace-view="bookings" :class="{ active: activeView === 'bookings' && !settingsOpen }" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
+        <button data-workspace-view="calendar" :class="{ active: activeView === 'calendar' && !settingsOpen }" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
+        <button data-workspace-view="history" :class="{ active: activeView === 'history' && !settingsOpen }" type="button" @click="changeView('history')">{{ copy.history }}</button>
+        <button data-workspace-view="profile" :class="{ active: activeView === 'profile' && !settingsOpen }" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
+        <button data-workspace-view="settings" :class="{ active: settingsOpen }" type="button" @click="openSettings">{{ copy.settings }}</button>
       </nav>
       <div class="account-actions">
         <CuePreferencesControl compact />
-        <button class="header-icon-button" type="button" :aria-label="copy.settings" :title="copy.settings" @click="settingsOpen = true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5v.2h-4v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5v-.2h4v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg></button>
         <button class="header-icon-button" type="button" :aria-label="copy.logout" :title="copy.logout" @click="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/></svg></button>
       </div>
     </header>
@@ -1069,7 +1155,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
     </div>
 
     <div v-if="settingsOpen" class="editor-backdrop" @click.self="settingsOpen = false">
-      <aside class="editor-panel settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <aside class="editor-panel settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title" tabindex="-1">
         <div class="editor-heading"><div><p class="eyebrow">{{ copy.accountPrivate }}</p><h2 id="settings-title">{{ copy.settingsTitle }}</h2></div><button type="button" :aria-label="copy.close" @click="settingsOpen = false">×</button></div>
         <section class="settings-group"><span>{{ copy.language }}</span><div class="settings-options"><button :class="{ active: preferences.locale.value === 'es' }" type="button" @click="preferences.setLocale('es')">ES</button><button :class="{ active: preferences.locale.value === 'en' }" type="button" @click="preferences.setLocale('en')">EN</button></div></section>
         <section class="settings-group"><span>{{ copy.appearance }}</span><div class="settings-options"><button :class="{ active: preferences.theme.value === 'dark' }" type="button" @click="preferences.setTheme('dark')">{{ copy.dark }}</button><button :class="{ active: preferences.theme.value === 'light' }" type="button" @click="preferences.setTheme('light')">{{ copy.light }}</button></div></section>
@@ -1098,10 +1184,10 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       </aside>
     </div>
 
-    <aside v-if="currentTour" class="tour-card" role="dialog" aria-live="polite">
+    <aside v-if="currentTour" class="tour-card" role="dialog" aria-live="polite" aria-labelledby="tour-card-title" :style="tourCardStyle">
       <button class="tour-card__close" type="button" :aria-label="copy.closeTour" @click="closeTour">×</button>
       <span>{{ String(tourStep + 1).padStart(2, '0') }} / {{ String(tourSteps.length).padStart(2, '0') }}</span>
-      <strong>{{ currentTour.title }}</strong>
+      <strong id="tour-card-title">{{ currentTour.title }}</strong>
       <p>{{ currentTour.body }}</p>
       <button class="primary-button" type="button" @click="nextTourStep">{{ tourStep === tourSteps.length - 1 ? copy.finish : copy.next }}</button>
     </aside>
