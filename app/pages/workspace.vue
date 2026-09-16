@@ -92,7 +92,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   loading: 'Cargando workspace…', rosterEyebrow: 'ROSTER / PRIMER ARTISTA', addFirstArtist: 'Añade el primer artista de',
   rosterBody: 'Quedará asociado al roster y podrás empezar a gestionar su actividad.', artistName: 'Nombre artístico', identifier: 'Identificador', creating: 'Creando…', addArtist: 'Añadir artista',
   noArtist: 'No hay un artista gestionable en esta cuenta.', noArtistBody: 'Tu cuenta todavía no tiene un artista o roster asignado.',
-  overviewEyebrow: 'WORKSPACE / RESUMEN', overviewTitle: 'QUÉ NECESITA TU ATENCIÓN.', overviewBody: 'Una entrada rápida a los bookings y fechas del artista, sin convertir el calendario en todo el producto.',
+  overviewEyebrow: 'WORKSPACE / RESUMEN', overviewTitle: 'QUÉ NECESITA TU ATENCIÓN.', overviewBody: 'Una entrada rápida a los bookings y fechas del artista, sin convertir el calendario en todo el producto.', profileCard: 'Ficha profesional', profileCardBody: 'Completa o actualiza los datos del artista.',
   realBookings: 'Bookings reales', realBookingsBody: 'Aún sin conectar. La bandeja completa está disponible con ejemplos.', holdsMonth: 'Holds este mes', holdsBody: 'Fechas pendientes de decisión.', confirmed: 'Confirmados', confirmedStatus: 'Confirmado', confirmedBody: 'Horarios confirmados este mes.', occupiedDays: 'Días ocupados', occupiedBody: 'Con al menos un horario registrado.',
   agendaEyebrow: 'AGENDA / ESTE MES', upcoming: 'Próximos horarios', viewCalendar: 'Ver calendario', privateSlot: 'Horario privado', noUpcoming: 'No hay horarios próximos registrados en este mes.', addSlot: 'Añadir horario',
   sampleEyebrow: 'BOOKINGS / MODO PRUEBA', sampleTitle: 'PRUEBA LA BANDEJA COMPLETA.', sampleBody: 'Las solicitudes reales todavía no están conectadas a esta cuenta. Puedes probar ahora los filtros, ofertas, conversaciones y cambios de estado con datos simulados.', openBookings: 'Abrir Bookings',
@@ -112,7 +112,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   primaryGenres: 'Géneros principales', primaryGenresHint: 'Máximo 3.', secondaryGenres: 'Géneros secundarios', performanceFormats: 'Formatos', eventTypes: 'Tipos de evento', yearsActive: 'Años en activo',
   feeBasis: 'Tipo de caché', feeEvent: 'Por actuación', feeSet: 'Por set', feeHour: 'Por hora', feeMin: 'Caché mínimo', feeTypical: 'Caché habitual', currency: 'Moneda', setDuration: 'Duración habitual del set', acceptsTravel: 'Acepto desplazamientos', travelRegions: 'Zonas donde trabajo', equipmentNotes: 'Equipo y necesidades técnicas',
   website: 'Web', instagram: 'Instagram', soundcloud: 'SoundCloud', mixcloud: 'Mixcloud', youtube: 'YouTube', spotify: 'Spotify', technicalRider: 'Rider técnico', hospitalityRider: 'Rider de hospitalidad',
-  saveProfile: 'Guardar ficha', profileSaved: 'Ficha guardada.', profileSaveError: 'No se pudo guardar la ficha.', profileCompletion: 'Perfil completado', profileReadOnly: 'Puedes consultar esta ficha, pero solo propietarios y managers pueden editarla.', minutes: 'minutos',
+  saveProfile: 'Guardar ficha', profileSaved: 'Ficha guardada.', profileSaveError: 'No se pudo guardar la ficha.', profileCompletion: 'Perfil completado', profileReadOnly: 'Puedes consultar esta ficha, pero solo propietarios y managers pueden editarla.', addWithEnter: 'Escribe y pulsa Enter.', removeChip: 'Eliminar', minutes: 'minutos',
   settingsTitle: 'Ajustes de cuenta', appearance: 'Apariencia', dark: 'Oscuro', light: 'Claro',
   language: 'Idioma', password: 'Cambiar contraseña', currentPassword: 'Contraseña actual',
   newPassword: 'Nueva contraseña', confirmPassword: 'Repetir contraseña', savePassword: 'Guardar contraseña',
@@ -125,7 +125,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   loading: 'Loading workspace…', rosterEyebrow: 'ROSTER / FIRST ARTIST', addFirstArtist: 'Add the first artist for',
   rosterBody: 'They will be linked to the roster so you can start managing their activity.', artistName: 'Artist name', identifier: 'Identifier', creating: 'Creating…', addArtist: 'Add artist',
   noArtist: 'There is no manageable artist in this account.', noArtistBody: 'Your account does not have an assigned artist or roster yet.',
-  overviewEyebrow: 'WORKSPACE / OVERVIEW', overviewTitle: 'WHAT NEEDS YOUR ATTENTION.', overviewBody: 'A quick view of the artist’s bookings and dates without making the calendar the whole product.',
+  overviewEyebrow: 'WORKSPACE / OVERVIEW', overviewTitle: 'WHAT NEEDS YOUR ATTENTION.', overviewBody: 'A quick view of the artist’s bookings and dates without making the calendar the whole product.', profileCard: 'Professional profile', profileCardBody: 'Complete or update the artist details.',
   realBookings: 'Real bookings', realBookingsBody: 'Not connected yet. The complete inbox is available with examples.', holdsMonth: 'Holds this month', holdsBody: 'Dates waiting for a decision.', confirmed: 'Confirmed', confirmedStatus: 'Confirmed', confirmedBody: 'Confirmed slots this month.', occupiedDays: 'Occupied days', occupiedBody: 'With at least one registered slot.',
   agendaEyebrow: 'AGENDA / THIS MONTH', upcoming: 'Upcoming slots', viewCalendar: 'View calendar', privateSlot: 'Private slot', noUpcoming: 'There are no upcoming slots registered this month.', addSlot: 'Add slot',
   sampleEyebrow: 'BOOKINGS / SAMPLE MODE', sampleTitle: 'TRY THE COMPLETE INBOX.', sampleBody: 'Real requests are not connected to this account yet. You can try filters, offers, conversations and status changes with sample data.', openBookings: 'Open Bookings',
@@ -145,7 +145,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   primaryGenres: 'Primary genres', primaryGenresHint: 'Maximum 3.', secondaryGenres: 'Secondary genres', performanceFormats: 'Formats', eventTypes: 'Event types', yearsActive: 'Years active',
   feeBasis: 'Fee basis', feeEvent: 'Per event', feeSet: 'Per set', feeHour: 'Per hour', feeMin: 'Minimum fee', feeTypical: 'Typical fee', currency: 'Currency', setDuration: 'Typical set duration', acceptsTravel: 'I accept travel bookings', travelRegions: 'Regions where I work', equipmentNotes: 'Equipment and technical requirements',
   website: 'Website', instagram: 'Instagram', soundcloud: 'SoundCloud', mixcloud: 'Mixcloud', youtube: 'YouTube', spotify: 'Spotify', technicalRider: 'Technical rider', hospitalityRider: 'Hospitality rider',
-  saveProfile: 'Save profile', profileSaved: 'Profile saved.', profileSaveError: 'The profile could not be saved.', profileCompletion: 'Profile completed', profileReadOnly: 'You can view this profile, but only owners and managers can edit it.', minutes: 'minutes',
+  saveProfile: 'Save profile', profileSaved: 'Profile saved.', profileSaveError: 'The profile could not be saved.', profileCompletion: 'Profile completed', profileReadOnly: 'You can view this profile, but only owners and managers can edit it.', addWithEnter: 'Type and press Enter.', removeChip: 'Remove', minutes: 'minutes',
   settingsTitle: 'Account settings', appearance: 'Appearance', dark: 'Dark', light: 'Light',
   language: 'Language', password: 'Change password', currentPassword: 'Current password',
   newPassword: 'New password', confirmPassword: 'Repeat password', savePassword: 'Save password',
@@ -281,6 +281,13 @@ watch([selectedArtistId, monthCursor], async () => {
 })
 watch(selectedArtistId, async (artistId) => {
   if (artistId) await loadArtistProfile()
+})
+watch(activeView, async (view) => {
+  await nextTick()
+  const nav = document.getElementById('workspace-navigation')
+  const tab = nav?.querySelector<HTMLElement>(`[data-workspace-view="${view}"]`)
+  if (!nav || !tab) return
+  nav.scrollTo({ left: tab.offsetLeft - (nav.clientWidth - tab.clientWidth) / 2, behavior: 'smooth' })
 })
 watch(rosterArtistName, value => { rosterArtistSlug.value = slugify(value) })
 watch(demo.ready, async (value) => {
@@ -587,8 +594,11 @@ async function selectDemoBooking(bookingId: string) {
   await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
   const detail = document.getElementById(`booking-thread-${nextId}`)
   if (!detail) return
+  const header = document.getElementById('workspace-header')
+  const headerOffset = header ? Math.ceil(header.getBoundingClientRect().height) + 8 : 16
+  const top = detail.getBoundingClientRect().top + window.scrollY - headerOffset
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  detail.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' })
+  window.scrollTo({ top: Math.max(0, top), behavior: reducedMotion ? 'auto' : 'smooth' })
   detail.focus({ preventScroll: true })
 }
 
@@ -669,14 +679,14 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
 <template>
   <main class="workspace">
-    <header class="workspace-header">
+    <header id="workspace-header" class="workspace-header">
       <NuxtLink class="brand" to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink>
-      <nav aria-label="Workspace">
-        <button :class="{ active: activeView === 'overview' }" type="button" @click="activeView = 'overview'">{{ copy.overview }}</button>
-        <button :class="{ active: activeView === 'bookings' }" type="button" @click="activeView = 'bookings'">{{ copy.bookings }}</button>
-        <button :class="{ active: activeView === 'calendar' }" type="button" @click="activeView = 'calendar'">{{ copy.calendar }}</button>
-        <button :class="{ active: activeView === 'history' }" type="button" @click="activeView = 'history'">{{ copy.history }}</button>
-        <button :class="{ active: activeView === 'profile' }" type="button" @click="activeView = 'profile'">{{ copy.profile }}</button>
+      <nav id="workspace-navigation" aria-label="Workspace">
+        <button data-workspace-view="overview" :class="{ active: activeView === 'overview' }" type="button" @click="activeView = 'overview'">{{ copy.overview }}</button>
+        <button data-workspace-view="bookings" :class="{ active: activeView === 'bookings' }" type="button" @click="activeView = 'bookings'">{{ copy.bookings }}</button>
+        <button data-workspace-view="calendar" :class="{ active: activeView === 'calendar' }" type="button" @click="activeView = 'calendar'">{{ copy.calendar }}</button>
+        <button data-workspace-view="history" :class="{ active: activeView === 'history' }" type="button" @click="activeView = 'history'">{{ copy.history }}</button>
+        <button data-workspace-view="profile" :class="{ active: activeView === 'profile' }" type="button" @click="activeView = 'profile'">{{ copy.profile }}</button>
       </nav>
       <div class="account-actions">
         <CuePreferencesControl compact />
@@ -722,6 +732,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <article class="summary-card"><span>{{ copy.holdsMonth }}</span><strong>{{ holdCount }}</strong><p>{{ copy.holdsBody }}</p></article>
           <article class="summary-card"><span>{{ copy.confirmed }}</span><strong>{{ confirmedCount }}</strong><p>{{ copy.confirmedBody }}</p></article>
           <article class="summary-card"><span>{{ copy.occupiedDays }}</span><strong>{{ occupiedDays }}</strong><p>{{ copy.occupiedBody }}</p></article>
+          <button class="summary-card summary-card--profile" type="button" @click="activeView = 'profile'"><span>{{ copy.profileCard }}</span><strong>{{ profileCompletion }}%</strong><p>{{ copy.profileCardBody }} →</p></button>
         </div>
 
         <div class="overview-grid">
@@ -862,7 +873,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               <label><span>{{ copy.baseCity }}</span><input v-model="profileForm.city" maxlength="120" autocomplete="address-level2"></label>
               <label><span>{{ copy.countryCode }}</span><input v-model="profileForm.countryCode" maxlength="2" pattern="[A-Za-z]{2}" placeholder="ES" autocomplete="country"></label>
               <label><span>{{ copy.timezone }}</span><input v-model="profileForm.timezone" maxlength="80" placeholder="Europe/Madrid"></label>
-              <label><span>{{ copy.languages }}</span><input v-model="profileForm.languages" placeholder="Español, Català, English"><small>{{ copy.commaHint }}</small></label>
+              <div class="chip-field"><span>{{ copy.languages }}</span><ProfileChipInput v-model="profileForm.languages" :limit="8" placeholder="Español" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
               <label><span>{{ copy.yearsActive }}</span><input v-model="profileForm.yearsActive" type="number" min="0" max="80"></label>
             </div>
           </section>
@@ -870,10 +881,10 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <section class="profile-section">
             <header><div><p class="eyebrow">02</p><h2>{{ copy.profileSoundSection }}</h2></div></header>
             <div class="profile-fields">
-              <label><span>{{ copy.primaryGenres }}</span><input v-model="profileForm.primaryGenres" placeholder="Techno, House, Electro"><small>{{ copy.primaryGenresHint }} {{ copy.commaHint }}</small></label>
-              <label><span>{{ copy.secondaryGenres }}</span><input v-model="profileForm.secondaryGenres" placeholder="Trance, Breaks"><small>{{ copy.commaHint }}</small></label>
-              <label><span>{{ copy.performanceFormats }}</span><input v-model="profileForm.performanceFormats" placeholder="DJ set, Live, Hybrid"><small>{{ copy.commaHint }}</small></label>
-              <label><span>{{ copy.eventTypes }}</span><input v-model="profileForm.eventTypes" placeholder="Club, Festival, Private event"><small>{{ copy.commaHint }}</small></label>
+              <div class="chip-field"><span>{{ copy.primaryGenres }}</span><ProfileChipInput v-model="profileForm.primaryGenres" :limit="3" placeholder="Techno" :remove-label="copy.removeChip" /><small>{{ copy.primaryGenresHint }} {{ copy.addWithEnter }}</small></div>
+              <div class="chip-field"><span>{{ copy.secondaryGenres }}</span><ProfileChipInput v-model="profileForm.secondaryGenres" :limit="8" placeholder="Trance" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
+              <div class="chip-field"><span>{{ copy.performanceFormats }}</span><ProfileChipInput v-model="profileForm.performanceFormats" :limit="6" placeholder="DJ set" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
+              <div class="chip-field"><span>{{ copy.eventTypes }}</span><ProfileChipInput v-model="profileForm.eventTypes" :limit="10" placeholder="Club" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
             </div>
           </section>
 
@@ -886,7 +897,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               <label><span>{{ copy.currency }}</span><input v-model="profileForm.currency" maxlength="3" pattern="[A-Za-z]{3}" placeholder="EUR"></label>
               <label><span>{{ copy.setDuration }}</span><div class="input-suffix"><input v-model="profileForm.setDurationMinutes" type="number" min="15" max="1440" step="15"><small>{{ copy.minutes }}</small></div></label>
               <label class="checkbox-field"><input v-model="profileForm.acceptsTravel" type="checkbox"><span>{{ copy.acceptsTravel }}</span></label>
-              <label class="field-wide"><span>{{ copy.travelRegions }}</span><input v-model="profileForm.travelRegions" placeholder="Catalunya, España, Europa"><small>{{ copy.commaHint }}</small></label>
+              <div class="chip-field field-wide"><span>{{ copy.travelRegions }}</span><ProfileChipInput v-model="profileForm.travelRegions" :limit="20" placeholder="Catalunya" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
               <label class="field-wide"><span>{{ copy.equipmentNotes }}</span><textarea v-model="profileForm.equipmentNotes" rows="4" maxlength="2000" /></label>
             </div>
           </section>
@@ -964,8 +975,9 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .brand { color: inherit; text-decoration: none; font-weight: 900; letter-spacing: .08em; }
 .brand span { color: var(--cue-toggle); }
 .eyebrow { color: var(--cue-accent); }
-.workspace-header nav { display: flex; gap: 3px; padding: 3px; border: 1px solid var(--cue-border); border-radius: 999px; background: var(--cue-surface); }
-.workspace-header nav button { min-height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--cue-muted); cursor: pointer; font-size: 12px; font-weight: 700; }
+.workspace-header nav { display: flex; flex-wrap: nowrap; gap: 3px; min-width: 0; max-width: min(620px, 52vw); padding: 3px; overflow-x: auto; border: 1px solid var(--cue-border); border-radius: 999px; background: var(--cue-surface); scrollbar-width: none; }
+.workspace-header nav::-webkit-scrollbar { display: none; }
+.workspace-header nav button { flex: 0 0 auto; min-height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--cue-muted); cursor: pointer; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .workspace-header nav button.active { background: var(--cue-toggle); color: #070707; box-shadow: 0 0 18px color-mix(in srgb, var(--cue-toggle) 28%, transparent); }
 .account-actions { display: flex; justify-content: flex-end; align-items: center; gap: 7px; color: var(--cue-muted); font-size: 12px; }
 .account-actions button, .panel-heading button, .next-panel button, .panel-empty button, .empty-actions button, .empty-actions a { border: 0; background: transparent; color: var(--cue-text); cursor: pointer; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
@@ -989,8 +1001,11 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .artist-identity > small { margin-top: 4px; color: var(--cue-accent); }
 .artist-identity strong { display: flex; align-items: center; gap: 9px; margin-top: 8px; font-size: 16px; }
 .artist-identity svg { width: 20px; height: 20px; color: var(--cue-accent); }
-.summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--cue-border); border-left: 1px solid var(--cue-border); }
+.summary-grid { display: grid; grid-template-columns: repeat(5, 1fr); border-top: 1px solid var(--cue-border); border-left: 1px solid var(--cue-border); }
 .summary-card { min-height: 170px; padding: 22px; border-right: 1px solid var(--cue-border); border-bottom: 1px solid var(--cue-border); background: var(--cue-surface); color: var(--cue-text); }
+.summary-card--profile { font: inherit; text-align: left; cursor: pointer; }
+.summary-card--profile:hover, .summary-card--profile:focus-visible { background: color-mix(in srgb, var(--cue-toggle) 10%, var(--cue-surface)); outline: none; }
+.summary-card--profile strong { color: var(--cue-toggle); }
 .summary-card > span { color: var(--cue-muted); font: 700 10px monospace; letter-spacing: .09em; text-transform: uppercase; }
 .summary-card strong { display: block; margin: 16px 0 8px; font-size: 54px; line-height: 1; }
 .summary-card p { max-width: 220px; margin: 0; color: var(--cue-muted); font-size: 13px; line-height: 1.45; }
@@ -1097,7 +1112,7 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .history-list > button:hover > div { border-color: var(--cue-accent); }
 .booking-detail { scroll-margin-top: 84px; }
 .booking-detail:focus { outline: none; }
-.profile-view { padding-bottom: 90px; }
+.profile-view { padding-bottom: 0; }
 .profile-progress { display: grid; min-width: 220px; gap: 7px; }
 .profile-progress > span, .profile-savebar span { color: var(--cue-muted); font: 700 10px/1.3 monospace; letter-spacing: .1em; text-transform: uppercase; }
 .profile-progress > strong { font-size: 28px; }
@@ -1117,9 +1132,9 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-section > header h2 { margin: 7px 0 0; font-size: clamp(1.4rem, 3vw, 2.3rem); text-transform: uppercase; }
 .profile-section > header > p { max-width: 500px; margin: 0; color: var(--cue-muted); font-size: 13px; line-height: 1.5; }
 .profile-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; padding: 22px; }
-.profile-fields label { display: grid; align-content: start; gap: 8px; }
-.profile-fields label > span { color: var(--cue-muted); font: 700 10px/1.2 monospace; letter-spacing: .09em; text-transform: uppercase; }
-.profile-fields label > small { margin-top: -3px; color: var(--cue-dim); font-size: 11px; }
+.profile-fields label, .profile-fields .chip-field { display: grid; align-content: start; gap: 8px; }
+.profile-fields label > span, .profile-fields .chip-field > span { color: var(--cue-muted); font: 700 10px/1.2 monospace; letter-spacing: .09em; text-transform: uppercase; }
+.profile-fields label > small, .profile-fields .chip-field > small { margin-top: -3px; color: var(--cue-dim); font-size: 11px; }
 .profile-fields .field-wide { grid-column: 1 / -1; }
 .profile-fields .checkbox-field { display: flex; align-items: center; align-self: end; min-height: 46px; padding: 0 13px; border: 1px solid var(--cue-border); }
 .profile-fields .checkbox-field input { width: 18px; min-height: 18px; margin: 0 10px 0 0; accent-color: var(--cue-toggle); }
@@ -1127,7 +1142,7 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .input-suffix { display: grid; grid-template-columns: 1fr auto; align-items: center; border: 1px solid var(--cue-border); }
 .input-suffix input { border: 0; }
 .input-suffix small { padding-right: 13px; color: var(--cue-muted); font-size: 11px; }
-.profile-savebar { position: sticky; z-index: 10; bottom: 18px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 20px; padding: 15px 18px; border: 1px solid var(--cue-border); background: color-mix(in srgb, var(--cue-bg) 95%, transparent); box-shadow: 0 18px 50px var(--cue-shadow); backdrop-filter: blur(14px); }
+.profile-savebar { position: sticky; z-index: 10; bottom: 0; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 20px; padding: 15px 18px; border: 1px solid var(--cue-border); background: color-mix(in srgb, var(--cue-bg) 97%, transparent); box-shadow: 0 -12px 34px var(--cue-shadow); backdrop-filter: blur(14px); }
 .profile-savebar > div { display: flex; align-items: baseline; gap: 10px; }
 .profile-savebar > div strong { font-size: 22px; }
 .profile-savebar > p { margin: 0; color: #ff9b9b; font-size: 12px; }
@@ -1162,17 +1177,16 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 @keyframes tour-pulse-light { from { box-shadow: 0 0 12px color-mix(in srgb, var(--cue-accent) 48%, transparent), 0 0 35px color-mix(in srgb, var(--cue-accent) 18%, transparent); } to { box-shadow: 0 0 25px color-mix(in srgb, var(--cue-accent) 74%, transparent), 0 0 70px color-mix(in srgb, var(--cue-accent) 31%, transparent); } }
 
 @media (max-width: 1040px) {
-  .workspace-header { grid-template-columns: 1fr auto; }
-  .workspace-header nav { position: fixed; right: 16px; bottom: 16px; left: 16px; z-index: 30; justify-content: stretch; box-shadow: 0 14px 40px #000; }
-  .workspace-header nav { overflow-x: auto; }
-  .workspace-header nav button { flex: 1 0 auto; padding-inline: 12px; }
+  .workspace-header { grid-template-columns: 1fr auto; padding-bottom: 8px; }
+  .workspace-header nav { grid-column: 1 / -1; grid-row: 2; width: 100%; max-width: none; justify-self: stretch; border-radius: 0; }
+  .workspace-header nav button { padding-inline: 16px; }
   .summary-grid { grid-template-columns: repeat(2, 1fr); }
   .overview-grid, .calendar-layout { grid-template-columns: 1fr; }
   .day-panel { position: static; }
 }
 
 @media (max-width: 680px) {
-  .workspace { padding: 0 14px 100px; }
+  .workspace { padding: 0 14px 24px; }
   .workspace-header { min-height: 62px; margin-inline: -14px; }
   .account-actions { gap: 8px; }
   .view-heading { display: block; padding: 20px 0 20px; }
@@ -1215,7 +1229,7 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .profile-welcome button { width: 100%; }
   .profile-fields { grid-template-columns: 1fr; padding: 18px; }
   .profile-fields .field-wide { grid-column: auto; }
-  .profile-savebar { bottom: 82px; grid-template-columns: 1fr auto; gap: 10px; }
+  .profile-savebar { bottom: 0; grid-template-columns: 1fr auto; gap: 10px; margin-inline: -1px; }
   .profile-savebar > p { grid-column: 1 / -1; grid-row: 2; }
   .profile-savebar .primary-button { min-width: 0; }
 }
