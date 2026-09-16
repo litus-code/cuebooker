@@ -50,7 +50,15 @@ export type ArtistProfileRecord = {
 }
 
 export type ArtistProfileInput = {
-  artist: Omit<ArtistProfessionalProfile, 'id' | 'slug'>
+  artist: Omit<ArtistProfessionalProfile,
+    | 'id'
+    | 'slug'
+    | 'artist_image_path'
+    | 'artist_image_style'
+    | 'artist_image_position_x'
+    | 'artist_image_position_y'
+    | 'artist_image_scale'
+  >
   booking: Omit<ArtistBookingProfile, 'artist_id'>
 }
 
