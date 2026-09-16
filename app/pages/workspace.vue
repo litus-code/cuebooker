@@ -448,15 +448,27 @@ async function positionTour() {
   let top: number
 
   if (mobileShell) {
-    const cardTop = Math.max(safeTop, safeBottom - cardRect.height)
-    const targetBottomLimit = cardTop - gap
-    if (targetRect.top < safeTop || targetRect.top > targetBottomLimit || targetRect.bottom > targetBottomLimit) {
-      const nextScrollTop = targetRect.top + window.scrollY - safeTop
-      window.scrollTo({ top: Math.max(0, nextScrollTop), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
-      if (!prefersReducedMotion()) await new Promise(resolve => window.setTimeout(resolve, 280))
-      targetRect = target.getBoundingClientRect()
+    const isDecisionStep = tourStep.value === tourSteps.value.length - 2
+    const fixedBottomTop = Math.max(safeTop, safeBottom - cardRect.height)
+
+    if (isDecisionStep) {
+      if (targetRect.top < safeTop || targetRect.bottom > safeBottom) {
+        const nextScrollTop = targetRect.top + window.scrollY - safeTop - 8
+        window.scrollTo({ top: Math.max(0, nextScrollTop), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+        if (!prefersReducedMotion()) await new Promise(resolve => window.setTimeout(resolve, 240))
+        targetRect = target.getBoundingClientRect()
+      }
+      top = Math.max(safeTop, targetRect.top - cardRect.height - gap)
+    } else {
+      const targetBottomLimit = fixedBottomTop - gap
+      if (targetRect.top < safeTop || targetRect.bottom > targetBottomLimit) {
+        const desiredTop = Math.max(safeTop, targetBottomLimit - Math.min(targetRect.height, 180))
+        const nextScrollTop = targetRect.top + window.scrollY - desiredTop
+        window.scrollTo({ top: Math.max(0, nextScrollTop), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+        if (!prefersReducedMotion()) await new Promise(resolve => window.setTimeout(resolve, 240))
+      }
+      top = fixedBottomTop
     }
-    top = cardTop
   } else {
     if (targetRect.bottom < safeTop || targetRect.top > safeBottom) {
       const nextScrollTop = targetRect.top + window.scrollY - safeTop
