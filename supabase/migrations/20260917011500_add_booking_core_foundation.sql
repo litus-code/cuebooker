@@ -122,9 +122,9 @@ create table public.bookings (
   foreign key (workspace_id, artist_id)
     references public.workspace_artists(workspace_id, artist_id) on delete restrict,
   foreign key (workspace_id, primary_contact_id)
-    references public.contacts(workspace_id, id) on delete set null,
+    references public.contacts(workspace_id, id) on delete restrict,
   foreign key (workspace_id, counterparty_id)
-    references public.counterparties(workspace_id, id) on delete set null,
+    references public.counterparties(workspace_id, id) on delete restrict,
   check (start_time is null or event_date is not null),
   check (end_time is null or event_date is not null),
   check (end_time is null or start_time is null or end_time > start_time)
@@ -141,7 +141,7 @@ create table public.booking_contacts (
   foreign key (workspace_id, booking_id)
     references public.bookings(workspace_id, id) on delete cascade,
   foreign key (workspace_id, contact_id)
-    references public.contacts(workspace_id, id) on delete cascade
+    references public.contacts(workspace_id, id) on delete restrict
 );
 
 create table public.activities (
@@ -161,7 +161,7 @@ create table public.activities (
   foreign key (workspace_id, booking_id)
     references public.bookings(workspace_id, id) on delete cascade,
   foreign key (workspace_id, contact_id)
-    references public.contacts(workspace_id, id) on delete set null
+    references public.contacts(workspace_id, id) on delete restrict
 );
 
 create index workspace_members_user_id_idx on public.workspace_members(user_id);
