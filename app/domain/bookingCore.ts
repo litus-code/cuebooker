@@ -141,6 +141,27 @@ export interface CreateBookingInput {
   feeBasis?: string | null
 }
 
+export interface CreateManualBookingInput {
+  workspaceId: string
+  artistId: string
+  source: BookingSource
+  existingContactId?: string | null
+  contactName?: string | null
+  contactEmail?: string | null
+  contactPhone?: string | null
+  existingCounterpartyId?: string | null
+  counterpartyKind?: CounterpartyKind
+  counterpartyName?: string | null
+  eventName?: string | null
+  venueName?: string | null
+  city?: string | null
+  countryCode?: string | null
+  eventDate?: string | null
+  offerAmountMinor?: number | null
+  currency?: string | null
+  initialNote?: string | null
+}
+
 export interface CreateActivityInput {
   workspaceId: string
   bookingId: string
