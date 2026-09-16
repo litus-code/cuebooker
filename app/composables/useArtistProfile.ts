@@ -24,6 +24,7 @@ export type ArtistProfessionalProfile = {
   cover_image_path: string | null
   cover_position_y: number
   artist_image_path: string | null
+  artist_cutout_path: string | null
   artist_image_style: ArtistImageStyle
   artist_image_position_x: number
   artist_image_position_y: number
@@ -54,6 +55,7 @@ export type ArtistProfileInput = {
     | 'id'
     | 'slug'
     | 'artist_image_path'
+    | 'artist_cutout_path'
     | 'artist_image_style'
     | 'artist_image_position_x'
     | 'artist_image_position_y'
@@ -64,11 +66,14 @@ export type ArtistProfileInput = {
 
 export type ArtistVisualInput = {
   artist_image_path: string | null
+  artist_cutout_path: string | null
   artist_image_style: ArtistImageStyle
   artist_image_position_x: number
   artist_image_position_y: number
   artist_image_scale: number
 }
+
+const artistSelect = 'id,stage_name,slug,bio,city,country_code,timezone,languages,primary_genres,secondary_genres,performance_formats,event_types,years_active,website_url,instagram_url,soundcloud_url,mixcloud_url,youtube_url,spotify_url,cover_image_path,cover_position_y,artist_image_path,artist_cutout_path,artist_image_style,artist_image_position_x,artist_image_position_y,artist_image_scale'
 
 export function useArtistProfile() {
   const config = useRuntimeConfig()
@@ -100,7 +105,7 @@ export function useArtistProfile() {
         headers: headers(),
         query: {
           id: `eq.${artistId}`,
-          select: 'id,stage_name,slug,bio,city,country_code,timezone,languages,primary_genres,secondary_genres,performance_formats,event_types,years_active,website_url,instagram_url,soundcloud_url,mixcloud_url,youtube_url,spotify_url,cover_image_path,cover_position_y,artist_image_path,artist_image_style,artist_image_position_x,artist_image_position_y,artist_image_scale',
+          select: artistSelect,
           limit: '1'
         }
       }),
@@ -122,7 +127,7 @@ export function useArtistProfile() {
     const artists = await $fetch<ArtistProfessionalProfile[]>(`${supabaseUrl.value}/rest/v1/artists`, {
       method: 'PATCH',
       headers: { ...headers(), Prefer: 'return=representation' },
-      query: { id: `eq.${artistId}` },
+      query: { id: `eq.${artistId}`, select: artistSelect },
       body: input.artist
     })
 
@@ -143,12 +148,16 @@ export function useArtistProfile() {
     return path.split('/').map(encodeURIComponent).join('/')
   }
 
-  async function getMediaObjectUrl(path: string) {
+  async function getMediaBlob(path: string) {
     const response = await fetch(`${supabaseUrl.value}/storage/v1/object/authenticated/artist-media/${storagePath(path)}`, {
       headers: headers()
     })
     if (!response.ok) throw new Error('artist_media_download_failed')
-    return URL.createObjectURL(await response.blob())
+    return response.blob()
+  }
+
+  async function getMediaObjectUrl(path: string) {
+    return URL.createObjectURL(await getMediaBlob(path))
   }
 
   function getCoverObjectUrl(path: string) {
@@ -159,7 +168,11 @@ export function useArtistProfile() {
     return getMediaObjectUrl(path)
   }
 
-  async function uploadMedia(artistId: string, folder: 'covers' | 'portraits', file: File) {
+  function getArtistCutoutObjectUrl(path: string) {
+    return getMediaObjectUrl(path)
+  }
+
+  async function uploadMedia(artistId: string, folder: 'covers' | 'portraits' | 'cutouts', file: Blob) {
     const extensions: Record<string, string> = {
       'image/jpeg': 'jpg',
       'image/png': 'png',
@@ -191,6 +204,10 @@ export function useArtistProfile() {
     return uploadMedia(artistId, 'portraits', file)
   }
 
+  function uploadArtistCutout(artistId: string, file: Blob) {
+    return uploadMedia(artistId, 'cutouts', file)
+  }
+
   async function deleteMedia(path: string) {
     await $fetch(`${supabaseUrl.value}/storage/v1/object/artist-media`, {
       method: 'DELETE',
@@ -204,6 +221,10 @@ export function useArtistProfile() {
   }
 
   function deleteArtistImage(path: string) {
+    return deleteMedia(path)
+  }
+
+  function deleteArtistCutout(path: string) {
     return deleteMedia(path)
   }
 
@@ -230,7 +251,7 @@ export function useArtistProfile() {
       headers: { ...headers(), Prefer: 'return=representation' },
       query: {
         id: `eq.${artistId}`,
-        select: 'id,stage_name,slug,bio,city,country_code,timezone,languages,primary_genres,secondary_genres,performance_formats,event_types,years_active,website_url,instagram_url,soundcloud_url,mixcloud_url,youtube_url,spotify_url,cover_image_path,cover_position_y,artist_image_path,artist_image_style,artist_image_position_x,artist_image_position_y,artist_image_scale'
+        select: artistSelect
       },
       body: visual
     })
@@ -244,12 +265,16 @@ export function useArtistProfile() {
     activeProfile,
     getProfile,
     saveProfile,
+    getMediaBlob,
     getCoverObjectUrl,
     getArtistImageObjectUrl,
+    getArtistCutoutObjectUrl,
     uploadCover,
     uploadArtistImage,
+    uploadArtistCutout,
     deleteCover,
     deleteArtistImage,
+    deleteArtistCutout,
     saveCover,
     saveArtistVisual
   }
