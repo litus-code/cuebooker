@@ -1,8 +1,0 @@
-from pathlib import Path
-
-path = Path('docs/WORK_HANDOFF_2026-09-16.md')
-text = path.read_text()
-marker = '## ACTIVE PRIORITY OVERRIDE · Booking Core'
-block = '''\n\n## ACTIVE PRIORITY OVERRIDE · Booking Core\n\nProduct priority changed on 16 September 2026 after validating that a large part of real DJ booking negotiation can begin or continue outside Cuebooker (phone, WhatsApp, email, Instagram, in-person, manager/agent).\n\nBefore continuing product work, read `docs/BOOKING_CORE_PRODUCT_VISION.md` in full. It is now a required companion to this handoff.\n\nCurrent product-development focus is:\n\n```text\nCUE -> Booking -> Activity -> Next Move -> Calendar\n```\n\nThis is an evolutionary change, not a rebuild. Preserve Overview, Bookings, filters/search, Booking Detail, Conversation as migration input for Activity, Calendar + 24h view, History, Guided Tour, Artist Profile, Dark/Light, ES/EN and the current visual system.\n\nImmediate implementation order:\n\n1. CUE / very fast manual booking creation.\n2. Activity as the unified booking history across email, phone, WhatsApp, notes and system events.\n3. Next Move + Hold, linked to Calendar.\n4. Overview driven by real attention states.\n\nTemporarily defer production CUE ID 3D, Passport expansion, constellation visualisation and deep external integrations until this operational loop is strong. Identity work remains valid and should not be deleted.\n\nPrimary UX constraint: capturing something that just happened should feel like “remember this for me”, not “administer a CRM”. Mobile capture should be exceptionally fast.\n'''
-if marker not in text:
-    path.write_text(text.rstrip() + block + '\n')
