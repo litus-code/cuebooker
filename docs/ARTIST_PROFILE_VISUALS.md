@@ -23,25 +23,37 @@ Portrait files use the existing private `artist-media` bucket under `<artist-id>
 
 When an artist uploads a portrait, the original file is stored first. CueBooker then runs MODNet portrait matting in the browser through Transformers.js and uploads the generated transparent PNG only after processing finishes.
 
-The implementation uses the quantized `q8` MODNet model. The image is processed locally in the browser. The source Blob is exposed to the model through a temporary browser `blob:` URL and revoked immediately after inference. Model assets are downloaded from Hugging Face/CDN infrastructure, but the portrait is not sent to a third-party inference API.
+The runtime uses the stable `@huggingface/transformers@3.8.1` browser build, `RawImage.fromBlob()` for the selected file and the MODNet `background-removal` pipeline with `fp32`, matching the model's documented usage. The uploaded portrait is processed in the browser and is not sent to a third-party inference API.
 
-If client-side matting fails, the original portrait is still saved and the UI exposes a `Regenerar recorte` action. This keeps profile editing usable on unsupported browsers or unreliable networks.
+If client-side matting fails, the original portrait is still saved and the UI exposes a `Regenerar recorte` action. The runtime also records the real browser error in the console instead of silently swallowing it.
 
 ## Editing behaviour
 
 `ProfileCoverUploader.vue` is the visual composer for the profile header. The actual cover stage is kept visually clean. Portrait controls live in a separate integrated strip below the stage rather than floating on top of the artwork.
 
-Changing style, position or scale updates the composition immediately. These settings are persisted independently in the background without clearing or re-downloading the active portrait, so the controls and image remain stable while editing.
-
 Once a transparent cutout exists, all three treatments use it:
 
-- `Photo`: natural transparent portrait.
+- `Foto`: natural transparent portrait.
 - `Artwork`: high-contrast monochrome treatment with CueBooker lime edging.
-- `Duotone`: acid-toned treatment.
+- `Duotono`: acid-toned treatment.
 
-The original uploaded file remains unchanged in storage. Horizontal position, vertical position and scale are persisted independently.
+The original uploaded file remains unchanged in storage. Horizontal position, vertical position and scale are persisted independently. Settings saves are debounced and do not reload media URLs, so the controls and portrait remain stable while editing.
 
-The private profile preview uses a dedicated hero composition: cover as full background, artist layer centred over it, artist metadata anchored inside the hero and profile content immediately below. It no longer inherits the editor flow layout.
+## Preview
+
+The private preview has a dedicated global override in `assets/css/profile-preview-fix.css`. This deliberately does not depend on scoped styles from the uploader component.
+
+Desktop preview rules:
+
+- modal uses the available width up to 1240px;
+- hero always fills the modal width;
+- hero uses a 16:9 composition;
+- cover uses `object-fit: cover`;
+- artist cutout is a separate centred layer;
+- stage name and genres are anchored inside the hero;
+- biography and secondary profile information begin immediately below the hero with no artificial empty height.
+
+Mobile uses a taller hero and a single-column body.
 
 ## Product rules
 
