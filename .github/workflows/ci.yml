@@ -68,13 +68,18 @@ jobs:
           const fs = require('fs')
           const path = 'app/components/ProfileCoverUploader.vue'
           let source = fs.readFileSync(path, 'utf8')
+          if (!source.includes("import CueIdStage from './cue-id/CueIdStage.vue'")) {
+            const importMarker = "import type { ArtistImageStyle } from '../composables/useArtistProfile'\n"
+            if (!source.includes(importMarker)) throw new Error('Profile import marker not found')
+            source = source.replace(importMarker, `${importMarker}import CueIdStage from './cue-id/CueIdStage.vue'\n`)
+          }
           if (!source.includes('<CueIdStage')) {
             const marker = `      <small v-if="artistMessage">{{ artistMessage }}</small>\n    </aside>\n\n    <div v-if="imageUrl" class="cover-uploader__controls">`
             const replacement = `      <small v-if="artistMessage">{{ artistMessage }}</small>\n    </aside>\n\n    <CueIdStage\n      :artist-name="activeArtist?.stage_name || ''"\n      :disabled="disabled"\n      compact\n      embedded\n    />\n\n    <div v-if="imageUrl" class="cover-uploader__controls">`
             if (!source.includes(marker)) throw new Error('Profile visual marker not found')
             source = source.replace(marker, replacement)
-            fs.writeFileSync(path, source)
           }
+          fs.writeFileSync(path, source)
           NODE
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
