@@ -199,7 +199,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
       query: {
         workspace_id: `eq.${workspaceId}`,
         ...(artistId ? { artist_id: `eq.${artistId}` } : {}),
-        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
+        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
         order: 'updated_at.desc',
         limit: String(Math.min(Math.max(limit, 1), 100))
       }
@@ -220,6 +220,8 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         primary_contact_id: input.primaryContactId || null,
         counterparty_id: input.counterpartyId || null,
         source: input.source,
+        ...(input.originChannel ? { origin_channel: input.originChannel } : {}),
+        ...(input.captureMethod ? { capture_method: input.captureMethod } : {}),
         status: input.status || 'new',
         event_name: normalizedText(input.eventName),
         venue_name: normalizedText(input.venueName),
