@@ -123,8 +123,8 @@ note_new = (
 )
 text = replace_once(text, note_anchor, note_new, 'smart note UI')
 
-css_anchor = ".cue-capture__note { display:grid; gap:7px; }\n"
-css_new = ".cue-capture__note { display:grid; gap:7px; }\n.cue-capture__interpret { display:flex; align-items:center; gap:10px; margin-top:-4px; }\n.cue-capture__interpret button { min-height:34px; padding:0 11px; border:1px solid #4b5128; background:rgba(206,255,84,.06); color:#ceff54; cursor:pointer; font:700 9px monospace; text-transform:uppercase; }\n.cue-capture__interpret button:disabled { opacity:.35; cursor:not-allowed; }\n.cue-capture__interpret p { margin:0; color:#929292; font-size:10px; line-height:1.35; }\n.cue-capture__next { display:grid; gap:7px; padding:10px 12px; border-left:2px solid #ceff54; background:rgba(206,255,84,.04); }\n"
+css_anchor = ".cue-capture__note { padding: 20px 0 12px; }\n"
+css_new = ".cue-capture__note { padding: 20px 0 12px; }\n.cue-capture__interpret { display:flex; align-items:center; gap:10px; margin-top:-4px; padding-bottom:10px; }\n.cue-capture__interpret button { min-height:34px; padding:0 11px; border:1px solid #4b5128; background:rgba(206,255,84,.06); color:#ceff54; cursor:pointer; font:700 9px monospace; text-transform:uppercase; }\n.cue-capture__interpret button:disabled { opacity:.35; cursor:not-allowed; }\n.cue-capture__interpret p { margin:0; color:#929292; font-size:10px; line-height:1.35; }\n.cue-capture__next { display:grid; gap:7px; padding:10px 12px; margin-bottom:10px; border-left:2px solid #ceff54; background:rgba(206,255,84,.04); }\n"
 if '.cue-capture__interpret {' not in text:
     if css_anchor not in text:
         raise SystemExit('missing anchor: note css')
