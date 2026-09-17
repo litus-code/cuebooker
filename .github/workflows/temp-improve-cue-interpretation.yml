@@ -1,0 +1,50 @@
+name: TEMP improve CUE interpretation
+
+on:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - .github/workflows/temp-improve-cue-interpretation.yml
+      - scripts/temp_improve_cue_interpretation.py
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feature/app-visual-system
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Improve CUE interpretation
+        run: python scripts/temp_improve_cue_interpretation.py
+      - name: Validate interpreter examples
+        run: |
+          node --experimental-strip-types --input-type=module <<'EOF'
+          const { interpretCueText } = await import('./app/services/cueInterpreter.ts')
+          const now = new Date('2026-09-17T10:00:00+02:00')
+          const a = interpretCueText('Me ha llamado Héctor de Nitsa para el 23 de septiembre. 1.200 €, pendiente confirmar horario.', 'es', now)
+          if (a.source !== 'phone' || a.contactName !== 'Héctor' || a.counterpartyName !== 'Nitsa' || a.eventDate !== '2026-09-23' || a.offerAmountMinor !== 120000 || a.currency !== 'EUR' || !a.nextMoveLabel) throw new Error(`Spanish sample failed: ${JSON.stringify(a)}`)
+          const b = interpretCueText("M'ha trucat l'Hèctor de Razzmatazz per divendres, 900 euros, pendent confirmar horari.", 'es', now)
+          if (b.source !== 'phone' || b.contactName !== 'Hèctor' || b.counterpartyName !== 'Razzmatazz' || b.offerAmountMinor !== 90000 || b.currency !== 'EUR' || !b.eventDate || !b.nextMoveLabel) throw new Error(`Catalan sample failed: ${JSON.stringify(b)}`)
+          const c = interpretCueText('Sarah called from Fabric for tomorrow, £1,500, pending confirm set time.', 'en', now)
+          if (c.source !== 'phone' || c.contactName !== 'Sarah' || c.counterpartyName !== 'Fabric' || c.offerAmountMinor !== 150000 || c.currency !== 'GBP' || !c.eventDate || !c.nextMoveLabel) throw new Error(`English sample failed: ${JSON.stringify(c)}`)
+          console.log('CUE interpreter examples OK')
+          EOF
+      - name: Install
+        run: npm ci
+      - name: Generate
+        run: npm run generate
+      - name: Commit integration
+        run: |
+          git config user.name "cuebooker-workspace-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add app/components/CueVoiceInput.vue app/components/CueCapturePanel.vue app/services/cueInterpreter.ts
+          git commit -m "Improve multilingual CUE voice interpretation"
+          git push origin HEAD:feature/app-visual-system
