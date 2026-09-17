@@ -74,6 +74,27 @@ async function serviceJson<T>(url: string, init: RequestInit, serviceKey: string
   return (text ? JSON.parse(text) : null) as T;
 }
 
+
+function dispatchNotificationEmails(supabaseUrl: string, serviceKey: string, limit = 10) {
+  const task = fetch(`${supabaseUrl.replace(/\/$/, "")}/functions/v1/dispatch-notification-emails`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${serviceKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ limit })
+  }).then(async response => {
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`notification_dispatch_${response.status}:${text.slice(0, 200)}`);
+    }
+  }).catch(error => {
+    console.error("notification-dispatch", error);
+  });
+
+  EdgeRuntime.waitUntil(task);
+}
+
 Deno.serve(async (request) => {
   const requestId = request.headers.get("x-cuebooker-request-id")?.trim() || crypto.randomUUID();
 
@@ -237,6 +258,11 @@ Deno.serve(async (request) => {
     }
 
     logEvent("batch_completed", requestId, { accepted, ignored });
+
+    if (accepted > 0) {
+      dispatchNotificationEmails(supabaseUrl, serviceKey);
+    }
+
     return json({ accepted, ignored, requestId }, 200, requestId);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
