@@ -3,6 +3,8 @@ export type WorkspaceRole = 'owner' | 'admin' | 'manager' | 'editor' | 'viewer'
 
 export type CounterpartyKind = 'venue' | 'promoter' | 'agency' | 'festival' | 'brand' | 'other'
 export type BookingSource = 'booking_form' | 'phone' | 'whatsapp' | 'email' | 'instagram' | 'in_person' | 'manager' | 'manual' | 'other'
+export type BookingOriginChannel = 'phone' | 'whatsapp' | 'email' | 'instagram' | 'in_person' | 'booking_form' | 'other'
+export type BookingCaptureMethod = 'manual' | 'public_form' | 'email_import' | 'share_extension' | 'api' | 'ai_capture' | 'system'
 export type CoreBookingStatus = 'new' | 'in_conversation' | 'waiting_response' | 'confirmed' | 'rejected' | 'cancelled'
 export type HoldStatus = 'active' | 'released' | 'converted'
 export type ActivityType =
@@ -69,7 +71,10 @@ export interface CoreBooking {
   artist_id: string
   primary_contact_id: string | null
   counterparty_id: string | null
+  /** Legacy compatibility field. Prefer origin_channel + capture_method in new logic. */
   source: BookingSource
+  origin_channel: BookingOriginChannel
+  capture_method: BookingCaptureMethod
   status: CoreBookingStatus
   event_name: string | null
   venue_name: string | null
@@ -159,6 +164,8 @@ export interface CreateBookingInput {
   primaryContactId?: string | null
   counterpartyId?: string | null
   source: BookingSource
+  originChannel?: BookingOriginChannel | null
+  captureMethod?: BookingCaptureMethod | null
   status?: CoreBookingStatus
   eventName?: string | null
   venueName?: string | null
