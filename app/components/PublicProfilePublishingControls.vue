@@ -17,7 +17,9 @@ const emit = defineEmits<{
 }>()
 
 const copied = ref(false)
-const publicUrl = computed(() => `https://cuebooker.com/${props.slug}`)
+const publicUrl = computed(() => import.meta.client
+  ? `${window.location.origin}/${props.slug}`
+  : `https://cuebooker.com/${props.slug}`)
 const bookingUrl = computed(() => `${publicUrl.value}?booking=1`)
 const copy = computed(() => props.locale === 'es' ? {
   eyebrow: 'PERFIL PÚBLICO', title: 'Tu puerta de entrada.',

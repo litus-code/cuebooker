@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { FeeBasis } from '../composables/useArtistProfile'
 import type { CoreBooking, Hold } from '../domain/bookingCore'
+import type { PublicArtistProfile } from '../domain/publicArtistProfile'
 
 const auth = useCueAuth()
 const availability = useAvailability()
 const bookingCore = useBookingCore()
 const artistProfiles = useArtistProfile()
+const publicPublishing = usePublicArtistPublishing()
 const preferences = useCuePreferences()
 const route = useRoute()
 const router = useRouter()
@@ -98,6 +100,13 @@ const profilePreviewOpen = ref(false)
 const profileCoverUrl = ref('')
 const profileCoverUploading = ref(false)
 const profileCoverMessage = ref('')
+const profileArtistImageUrl = ref('')
+const profileArtistCutoutUrl = ref('')
+const publicProfilePublished = ref(false)
+const publicProfileAcceptingRequests = ref(false)
+const publicProfileWorkspaceId = ref('')
+const publicPublishingSaving = ref(false)
+const publicPublishingMessage = ref('')
 const tourCardStyle = ref<Record<string, string>>({})
 let tourPositionTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -119,10 +128,10 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   historyEyebrow: 'WORKSPACE / HISTORIAL', historyTitle: 'TODO LO QUE HA PASADO.',
   historyBody: 'Abre cualquier movimiento para volver a la oferta y revisar toda la conversación que originó esa acción.',
   historyEmpty: 'Todavía no hay actividad en este perfil.', historyStatus: 'Estado actualizado', historyMessage: 'Mensaje', openTrace: 'Abrir oferta y ver traza', previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente', filterSamples: 'Filtrar bookings de ejemplo',
-  profileEyebrow: 'ARTISTA / FICHA PROFESIONAL', profileTitle: 'TU INFORMACIÓN DE BOOKING.', profileBody: 'Completa esta ficha a tu ritmo. Hoy es privada y servirá para organizar mejor tus solicitudes y preparar futuras opciones de descubrimiento.',
-  profileOptional: 'Ficha opcional', profileOptionalBody: 'Tu workspace ya está creado. Puedes completar estos datos ahora o volver desde Perfil cuando quieras.', later: 'Ahora no', previewProfile: 'Vista previa', previewPrivate: 'VISTA PRIVADA / NO PUBLICADA', previewClose: 'Cerrar vista previa', previewBioEmpty: 'Tu biografía aparecerá aquí cuando la completes.', previewGenresEmpty: 'Añade géneros para verlos en la ficha.', previewFormats: 'Formatos', previewLinks: 'Escuchar y seguir',
+  profileEyebrow: 'ARTISTA / FICHA PROFESIONAL', profileTitle: 'TU INFORMACIÓN DE BOOKING.', profileBody: 'Edita lo que verá quien visite tu perfil público. Tus condiciones privadas de booking siguen siendo solo de tu workspace.',
+  profileOptional: 'Ficha opcional', profileOptionalBody: 'Tu workspace ya está creado. Puedes completar estos datos ahora o volver desde Perfil cuando quieras.', later: 'Ahora no', previewProfile: 'Vista previa', previewPrivate: 'VISTA PREVIA / PERFIL PÚBLICO', previewClose: 'Cerrar vista previa', previewBioEmpty: 'Tu biografía aparecerá aquí cuando la completes.', previewGenresEmpty: 'Añade géneros para verlos en la ficha.', previewFormats: 'Formatos', previewLinks: 'Escuchar y seguir',
   coverTitle: 'Tu sonido empieza por la imagen.', coverHint: 'Arrastra una foto o elígela. Si no añades ninguna, CueBooker usará esta portada acid y Detroit.', coverChoose: 'Añadir mi portada', coverChange: 'Cambiar portada', coverRemove: 'Usar portada CueBooker', coverPosition: 'Ajustar encuadre vertical', coverUploading: 'Subiendo portada…', coverSaved: 'Portada actualizada.', coverRemoved: 'Portada base restaurada.', coverInvalid: 'Usa JPG, PNG o WebP de hasta 8 MB.', coverError: 'No se pudo guardar la portada.',
-  profilePublicSection: 'Identidad y ubicación', profilePublicHint: 'Información profesional preparada para una futura ficha pública. Todavía no se publica.',
+  profilePublicSection: 'Identidad y ubicación', profilePublicHint: 'Esta información forma parte de tu perfil público cuando decidas publicarlo.',
   profileSoundSection: 'Sonido y formatos', profileBookingSection: 'Condiciones de booking', profileBookingHint: 'Solo tú y las personas autorizadas de tu equipo pueden ver estos datos.', profileLinksSection: 'Enlaces y material',
   stageName: 'Nombre artístico', bio: 'Biografía', bioPlaceholder: 'Describe el proyecto, su sonido y el tipo de directo.', baseCity: 'Ciudad base', countryCode: 'País', timezone: 'Zona horaria', languages: 'Idiomas', commaHint: 'Separa los valores con comas.',
   primaryGenres: 'Géneros principales', primaryGenresHint: 'Máximo 3.', secondaryGenres: 'Géneros secundarios', performanceFormats: 'Formatos', eventTypes: 'Tipos de evento', yearsActive: 'Años en activo',
@@ -153,10 +162,10 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   historyEyebrow: 'WORKSPACE / HISTORY', historyTitle: 'EVERYTHING THAT HAPPENED.',
   historyBody: 'Open any activity to return to its offer and review the full conversation that caused it.',
   historyEmpty: 'There is no activity for this profile yet.', historyStatus: 'Status updated', historyMessage: 'Message', openTrace: 'Open offer and view trace', previousMonth: 'Previous month', nextMonth: 'Next month', filterSamples: 'Filter sample bookings',
-  profileEyebrow: 'ARTIST / PROFESSIONAL PROFILE', profileTitle: 'YOUR BOOKING INFORMATION.', profileBody: 'Complete this profile at your own pace. It is private today and will help organise requests and prepare future discovery options.',
-  profileOptional: 'Optional profile', profileOptionalBody: 'Your workspace is ready. Complete these details now or return from Profile whenever you want.', later: 'Not now', previewProfile: 'Preview', previewPrivate: 'PRIVATE PREVIEW / NOT PUBLISHED', previewClose: 'Close preview', previewBioEmpty: 'Your biography will appear here once completed.', previewGenresEmpty: 'Add genres to see them on the profile.', previewFormats: 'Formats', previewLinks: 'Listen and follow',
+  profileEyebrow: 'ARTIST / PROFESSIONAL PROFILE', profileTitle: 'YOUR BOOKING INFORMATION.', profileBody: 'Edit what people will see on your public artist profile. Your private booking terms remain visible only inside your workspace.',
+  profileOptional: 'Optional profile', profileOptionalBody: 'Your workspace is ready. Complete these details now or return from Profile whenever you want.', later: 'Not now', previewProfile: 'Preview', previewPrivate: 'PREVIEW / PUBLIC PROFILE', previewClose: 'Close preview', previewBioEmpty: 'Your biography will appear here once completed.', previewGenresEmpty: 'Add genres to see them on the profile.', previewFormats: 'Formats', previewLinks: 'Listen and follow',
   coverTitle: 'Your sound starts with the image.', coverHint: 'Drop a photo or choose one. If you skip it, CueBooker will use this acid and Detroit cover.', coverChoose: 'Add my cover', coverChange: 'Change cover', coverRemove: 'Use CueBooker cover', coverPosition: 'Adjust vertical framing', coverUploading: 'Uploading cover…', coverSaved: 'Cover updated.', coverRemoved: 'Default cover restored.', coverInvalid: 'Use a JPG, PNG or WebP file up to 8 MB.', coverError: 'The cover could not be saved.',
-  profilePublicSection: 'Identity and location', profilePublicHint: 'Professional information prepared for a future public profile. It is not published yet.',
+  profilePublicSection: 'Identity and location', profilePublicHint: 'This information becomes part of your public profile when you choose to publish it.',
   profileSoundSection: 'Sound and formats', profileBookingSection: 'Booking terms', profileBookingHint: 'Only you and authorised team members can see these details.', profileLinksSection: 'Links and material',
   stageName: 'Artist name', bio: 'Biography', bioPlaceholder: 'Describe the project, its sound and performance style.', baseCity: 'Base city', countryCode: 'Country', timezone: 'Time zone', languages: 'Languages', commaHint: 'Separate values with commas.',
   primaryGenres: 'Primary genres', primaryGenresHint: 'Maximum 3.', secondaryGenres: 'Secondary genres', performanceFormats: 'Formats', eventTypes: 'Event types', yearsActive: 'Years active',
@@ -265,23 +274,37 @@ const profileCompletion = computed(() => {
   ]
   return Math.round(fields.filter(value => String(value || '').trim()).length / fields.length * 100)
 })
-const profilePreviewGenres = computed(() => [
-  ...splitList(profileForm.value.primaryGenres, 3),
-  ...splitList(profileForm.value.secondaryGenres, 8)
-].slice(0, 8))
-const profilePreviewFormats = computed(() => splitList(profileForm.value.performanceFormats, 6))
-const profilePreviewLocation = computed(() => [profileForm.value.city.trim(), profileForm.value.countryCode.trim().toUpperCase()].filter(Boolean).join(', '))
-const profilePreviewLinks = computed(() => [
-  { label: copy.value.website, url: profileForm.value.websiteUrl },
-  { label: copy.value.instagram, url: profileForm.value.instagramUrl },
-  { label: copy.value.soundcloud, url: profileForm.value.soundcloudUrl },
-  { label: copy.value.mixcloud, url: profileForm.value.mixcloudUrl },
-  { label: copy.value.youtube, url: profileForm.value.youtubeUrl },
-  { label: copy.value.spotify, url: profileForm.value.spotifyUrl }
-]
-  .map(link => ({ ...link, url: link.url.trim() }))
-  .filter(link => /^https?:\/\//i.test(link.url)))
-const profileCoverSource = computed(() => profileCoverUrl.value || '/images/profile/cuebooker-default-cover.webp')
+const publicProfilePreview = computed<PublicArtistProfile>(() => {
+  const persisted = artistProfiles.activeProfile.value?.artist
+  return {
+    stageName: profileForm.value.stageName.trim() || selectedArtist.value?.stage_name || 'Artist',
+    slug: selectedArtist.value?.slug || persisted?.slug || '',
+    bio: nullableText(profileForm.value.bio),
+    city: nullableText(profileForm.value.city),
+    countryCode: nullableText(profileForm.value.countryCode)?.toUpperCase() || null,
+    languages: splitList(profileForm.value.languages, 8),
+    primaryGenres: splitList(profileForm.value.primaryGenres, 3),
+    secondaryGenres: splitList(profileForm.value.secondaryGenres, 8),
+    performanceFormats: splitList(profileForm.value.performanceFormats, 6),
+    eventTypes: splitList(profileForm.value.eventTypes, 10),
+    yearsActive: nullableNumber(profileForm.value.yearsActive),
+    websiteUrl: nullableText(profileForm.value.websiteUrl),
+    instagramUrl: nullableText(profileForm.value.instagramUrl),
+    soundcloudUrl: nullableText(profileForm.value.soundcloudUrl),
+    mixcloudUrl: nullableText(profileForm.value.mixcloudUrl),
+    youtubeUrl: nullableText(profileForm.value.youtubeUrl),
+    spotifyUrl: nullableText(profileForm.value.spotifyUrl),
+    coverUrl: profileCoverUrl.value || null,
+    coverPositionY: profileForm.value.coverPositionY,
+    artistImageUrl: profileArtistImageUrl.value || null,
+    artistCutoutUrl: profileArtistCutoutUrl.value || null,
+    artistImageStyle: persisted?.artist_image_style || 'photo',
+    artistImagePositionX: persisted?.artist_image_position_x ?? 50,
+    artistImagePositionY: persisted?.artist_image_position_y ?? 50,
+    artistImageScale: persisted?.artist_image_scale ?? 1,
+    acceptingRequests: publicProfileAcceptingRequests.value
+  }
+})
 const hours = Array.from({ length: 24 }, (_, index) => `${String(index).padStart(2, '0')}:00`)
 
 onMounted(async () => {
@@ -302,7 +325,11 @@ watch([selectedArtistId, monthCursor], async () => {
   if (selectedArtistId.value) await loadBlocks()
 })
 watch(selectedArtistId, async (artistId) => {
-  if (artistId) await loadArtistProfile()
+  bookingCoreWorkspaceId.value = ''
+  publicProfileWorkspaceId.value = ''
+  if (!artistId) return
+  await loadArtistProfile()
+  await ensureBookingCoreWorkspace()
 })
 watch(activeView, async (view) => {
   await nextTick()
@@ -321,6 +348,8 @@ watch(profilePreviewOpen, (open) => {
 onBeforeUnmount(() => {
   if (import.meta.client) document.body.style.overflow = ''
   if (profileCoverUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileCoverUrl.value)
+  if (profileArtistImageUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileArtistImageUrl.value)
+  if (profileArtistCutoutUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileArtistCutoutUrl.value)
   if (import.meta.client) window.removeEventListener('resize', handleViewportChange)
   if (tourPositionTimer) window.clearTimeout(tourPositionTimer)
   document.querySelectorAll<HTMLElement>('.tour-focus').forEach(element => element.classList.remove('tour-focus'))
@@ -572,6 +601,45 @@ function nullableNumber(value: string) {
   return trimmed ? Number(trimmed) : null
 }
 
+function replaceProfileArtistImageUrl(nextUrl: string) {
+  if (profileArtistImageUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileArtistImageUrl.value)
+  profileArtistImageUrl.value = nextUrl
+}
+
+function replaceProfileArtistCutoutUrl(nextUrl: string) {
+  if (profileArtistCutoutUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileArtistCutoutUrl.value)
+  profileArtistCutoutUrl.value = nextUrl
+}
+
+async function loadProfileVisualMedia(artistImagePath: string | null, artistCutoutPath: string | null) {
+  replaceProfileArtistImageUrl('')
+  replaceProfileArtistCutoutUrl('')
+  if (artistImagePath) {
+    try { replaceProfileArtistImageUrl(await artistProfiles.getArtistImageObjectUrl(artistImagePath)) } catch { /* optional preview media */ }
+  }
+  if (artistCutoutPath) {
+    try { replaceProfileArtistCutoutUrl(await artistProfiles.getArtistCutoutObjectUrl(artistCutoutPath)) } catch { /* optional preview media */ }
+  }
+}
+
+async function loadPublicPublishingState() {
+  publicProfilePublished.value = false
+  publicProfileAcceptingRequests.value = false
+  publicProfileWorkspaceId.value = ''
+  publicPublishingMessage.value = ''
+  if (!selectedArtistId.value) return
+  try {
+    const state = await publicPublishing.load(selectedArtistId.value)
+    publicProfilePublished.value = state.publicProfileEnabled
+    publicProfileAcceptingRequests.value = state.acceptingRequests
+    publicProfileWorkspaceId.value = state.workspaceId || ''
+  } catch (error: any) {
+    publicPublishingMessage.value = error?.message || (preferences.locale.value === 'es'
+      ? 'No se pudo cargar el estado del perfil público.'
+      : 'The public profile state could not be loaded.')
+  }
+}
+
 function replaceProfileCoverUrl(nextUrl: string) {
   if (profileCoverUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileCoverUrl.value)
   profileCoverUrl.value = nextUrl
@@ -669,11 +737,68 @@ async function loadArtistProfile() {
       technicalRiderUrl: booking?.technical_rider_url || '',
       hospitalityRiderUrl: booking?.hospitality_rider_url || ''
     }
-    await loadProfileCover(profileForm.value.coverImagePath)
+    await Promise.all([
+      loadProfileCover(profileForm.value.coverImagePath),
+      loadProfileVisualMedia(record.artist.artist_image_path, record.artist.artist_cutout_path),
+      loadPublicPublishingState()
+    ])
   } catch (error: any) {
     errorMessage.value = error?.data?.message || error?.message || copy.value.profileSaveError
   } finally {
     profileLoading.value = false
+  }
+}
+
+async function updatePublicProfilePublished(enabled: boolean) {
+  if (!selectedArtistId.value || !canEditSelectedArtist.value) return
+  publicPublishingSaving.value = true
+  publicPublishingMessage.value = ''
+  try {
+    if (!enabled && publicProfileAcceptingRequests.value) {
+      const workspaceId = publicProfileWorkspaceId.value || bookingCoreWorkspaceId.value
+      if (workspaceId) {
+        publicProfileAcceptingRequests.value = await publicPublishing.setAcceptingRequests(selectedArtistId.value, workspaceId, false)
+        publicProfileWorkspaceId.value = workspaceId
+      }
+    }
+    publicProfilePublished.value = await publicPublishing.setPublicProfileEnabled(selectedArtistId.value, enabled)
+    if (!publicProfilePublished.value) publicProfileAcceptingRequests.value = false
+    publicPublishingMessage.value = preferences.locale.value === 'es'
+      ? (enabled ? 'Perfil público activado.' : 'Perfil público desactivado.')
+      : (enabled ? 'Public profile enabled.' : 'Public profile disabled.')
+  } catch (error: any) {
+    publicPublishingMessage.value = error?.message || (preferences.locale.value === 'es'
+      ? 'No se pudo actualizar el perfil público.'
+      : 'The public profile could not be updated.')
+    await loadPublicPublishingState()
+  } finally {
+    publicPublishingSaving.value = false
+  }
+}
+
+async function updatePublicAcceptingRequests(enabled: boolean) {
+  if (!selectedArtistId.value || !canEditSelectedArtist.value || (enabled && !publicProfilePublished.value)) return
+  publicPublishingSaving.value = true
+  publicPublishingMessage.value = ''
+  try {
+    let workspaceId = publicProfileWorkspaceId.value || bookingCoreWorkspaceId.value
+    if (!workspaceId) {
+      await ensureBookingCoreWorkspace()
+      workspaceId = bookingCoreWorkspaceId.value
+    }
+    if (!workspaceId) throw new Error('booking_workspace_required')
+    publicProfileAcceptingRequests.value = await publicPublishing.setAcceptingRequests(selectedArtistId.value, workspaceId, enabled)
+    publicProfileWorkspaceId.value = workspaceId
+    publicPublishingMessage.value = preferences.locale.value === 'es'
+      ? (enabled ? 'Solicitudes de booking abiertas.' : 'Solicitudes de booking cerradas.')
+      : (enabled ? 'Booking enquiries opened.' : 'Booking enquiries closed.')
+  } catch (error: any) {
+    publicPublishingMessage.value = error?.message || (preferences.locale.value === 'es'
+      ? 'No se pudo actualizar la recepción de bookings.'
+      : 'Booking enquiry availability could not be updated.')
+    await loadPublicPublishingState()
+  } finally {
+    publicPublishingSaving.value = false
   }
 }
 
@@ -1149,9 +1274,22 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <div class="profile-heading-actions">
             <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
             <div v-else class="profile-progress"><span>{{ copy.profileCompletion }}</span><strong>{{ profileCompletion }}%</strong><i><b :style="{ width: `${profileCompletion}%` }" /></i></div>
-            <button class="profile-preview-button" type="button" @click="profilePreviewOpen = true"><span>{{ copy.previewProfile }}</span><svg class="external-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></button>
+            <button v-if="!canEditSelectedArtist" class="profile-preview-button" type="button" @click="profilePreviewOpen = true"><span>{{ copy.previewProfile }}</span><svg class="external-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></button>
           </div>
         </div>
+
+        <PublicProfilePublishingControls
+          v-if="selectedArtist && canEditSelectedArtist"
+          :slug="selectedArtist.slug"
+          :published="publicProfilePublished"
+          :accepting-requests="publicProfileAcceptingRequests"
+          :saving="publicPublishingSaving"
+          :locale="preferences.locale.value"
+          @preview="profilePreviewOpen = true"
+          @update-published="updatePublicProfilePublished"
+          @update-accepting-requests="updatePublicAcceptingRequests"
+        />
+        <p v-if="publicPublishingMessage" class="public-publishing-message">{{ publicPublishingMessage }}</p>
 
         <aside v-if="profileWelcome" class="profile-welcome">
           <div><span>{{ copy.profileOptional }}</span><strong>{{ copy.profileOptionalBody }}</strong></div>
@@ -1244,22 +1382,14 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
     <div v-if="profilePreviewOpen" class="profile-preview-backdrop" @click.self="profilePreviewOpen = false">
       <article class="profile-preview" role="dialog" aria-modal="true" aria-labelledby="profile-preview-title">
         <header>
-          <p>{{ copy.previewPrivate }}</p>
+          <p id="profile-preview-title">{{ copy.previewPrivate }}</p>
           <button type="button" :aria-label="copy.previewClose" @click="profilePreviewOpen = false">×</button>
         </header>
-        <section class="profile-preview-hero">
-          <img :src="profileCoverSource" alt="" :style="{ objectPosition: `50% ${profileForm.coverPositionY}%` }">
-          <div class="profile-preview-hero-shade" />
-          <p v-if="profilePreviewLocation">{{ profilePreviewLocation }}</p>
-          <h2 id="profile-preview-title">{{ profileForm.stageName || selectedArtist?.stage_name }}</h2>
-          <div v-if="profilePreviewGenres.length" class="profile-preview-chips"><span v-for="genre in profilePreviewGenres" :key="genre">{{ genre }}</span></div>
-          <p v-else class="profile-preview-empty">{{ copy.previewGenresEmpty }}</p>
-        </section>
-        <section class="profile-preview-body">
-          <p class="profile-preview-bio">{{ profileForm.bio || copy.previewBioEmpty }}</p>
-          <div v-if="profilePreviewFormats.length" class="profile-preview-block"><span>{{ copy.previewFormats }}</span><strong>{{ profilePreviewFormats.join(' · ') }}</strong></div>
-          <div v-if="profilePreviewLinks.length" class="profile-preview-block"><span>{{ copy.previewLinks }}</span><nav><a v-for="link in profilePreviewLinks" :key="link.label" :href="link.url" target="_blank" rel="noopener noreferrer"><span>{{ link.label }}</span><svg class="external-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></a></nav></div>
-        </section>
+        <PublicArtistProfile
+          :profile="publicProfilePreview"
+          :locale="preferences.locale.value"
+          preview
+        />
       </article>
     </div>
 
@@ -1506,8 +1636,9 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-savebar > p { margin: 0; color: #ff9b9b; font-size: 12px; }
 .profile-savebar > p.success { color: #8ce99a; }
 .profile-savebar .primary-button { min-width: 180px; padding: 0 18px; }
+.public-publishing-message { margin: -12px 0 24px; color: var(--cue-muted); font-size: 12px; }
 .profile-preview-backdrop { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 24px; overflow-y: auto; background: rgba(0,0,0,.82); backdrop-filter: blur(9px); }
-.profile-preview { width: min(980px, 100%); max-height: calc(100dvh - 48px); overflow-y: auto; border: 1px solid #343434; background: #0b0b0b; color: #f4f2ed; box-shadow: 0 30px 100px #000; }
+.profile-preview { width: min(1280px, 100%); max-height: calc(100dvh - 48px); overflow-y: auto; border: 1px solid #343434; background: #0b0b0b; color: #f4f2ed; box-shadow: 0 30px 100px #000; }
 .profile-preview > header { position: sticky; z-index: 2; top: 0; display: flex; justify-content: space-between; align-items: center; min-height: 58px; padding: 0 22px; border-bottom: 1px solid #343434; background: rgba(11,11,11,.95); }
 .profile-preview > header p { margin: 0; color: #cfff57; font: 700 10px/1.3 monospace; letter-spacing: .12em; }
 .profile-preview > header button { width: 38px; height: 38px; border: 1px solid #343434; border-radius: 50%; background: transparent; color: #f4f2ed; cursor: pointer; font-size: 25px; }
