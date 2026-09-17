@@ -5,6 +5,7 @@ const props = defineProps<{
   workspaceId: string
   bookings: CoreBooking[]
   locale: 'es' | 'en'
+  refreshKey?: number
 }>()
 
 const emit = defineEmits<{ changed: [] }>()
@@ -105,8 +106,7 @@ async function load() {
 
 watch(() => props.workspaceId, load, { immediate: true })
 watch(() => props.bookings.length, load)
-
-defineExpose({ refresh: load })
+watch(() => props.refreshKey, load)
 
 async function resolve(item: (typeof items.value)[number]) {
   workingId.value = item.id
