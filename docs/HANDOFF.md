@@ -534,7 +534,43 @@ CI run 35284305515: tests + production build success
 
 Remaining delivery gate: periodic retry draining for isolated failed deliveries is still not scheduled. First-attempt delivery is automatic; queued/failed retry recovery currently occurs on the next legitimate ingress-triggered dispatcher invocation. Do not add a database cron that stores the service-role credential in SQL.
 
-## 14. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
+## 14. Notification read API foundation — IMPLEMENTED ON BRANCH
+
+Functional commits:
+
+```text
+18c10ad32a235b4028c55c7cdeec724f631fa6d0
+0285611c4ad4083e1bcf6d69fa7bfa3f5add5aa3
+a6914dcfee527cf6e5c0a8f438b3825408e4cf2c
+```
+
+Files:
+
+```text
+app/domain/notification.ts
+app/services/notificationApi.ts
+app/composables/useNotifications.ts
+```
+
+Available client operations, all relying on existing notification RLS:
+
+- list recent notifications;
+- exact unread count through PostgREST count semantics;
+- mark one notification as read;
+- mark all visible unread notifications as read.
+
+The browser does not receive delivery-queue access and cannot mutate notification identity/content. The existing column-level `UPDATE(read_at)` grant remains the only client-side notification mutation.
+
+No notification-center UI was introduced in this slice. The intent is to make the future bell/panel a thin presentation layer over an already-defined domain/API contract.
+
+Validation at time of handoff update:
+
+```text
+CI run 35284465373: tests success; production build running
+PR preview run 35284465308: preview build success; deploy running
+```
+
+## 15. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
 
@@ -552,7 +588,7 @@ AI/voice limits should not be hard-coded into pricing before real usage/cost evi
 
 No billing, trial enforcement or Stripe integration is implemented yet.
 
-## 15. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
+## 16. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
 
 ### Smart Capture / interpretation
 
@@ -591,7 +627,7 @@ Treat human feedback as a cross-product rule:
 - retryable failure -> preserve work and explain next action;
 - technical/provider detail -> logs/admin, not promoter-facing copy.
 
-## 16. Root routing and static deployment
+## 17. Root routing and static deployment
 
 Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. `ASSETS.fetch()` must use the pretty `/200` path rather than `/200.html`.
 
@@ -603,7 +639,7 @@ Previously validated:
 
 PR #75 remains the staging preview vehicle.
 
-## 17. Security / operational follow-up
+## 18. Security / operational follow-up
 
 Before production:
 
@@ -623,7 +659,7 @@ Leaked Password Protection Disabled
 
 Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to the current Supabase secret-key model as a deliberate infrastructure task, not mixed into a product slice.
 
-## 18. Exact next product work
+## 19. Exact next product work
 
 Current sequencing is intentional:
 
@@ -641,7 +677,7 @@ Current sequencing is intentional:
 
 Do not jump ahead because downstream ideas are documented.
 
-## 19. Documentation workflow rule
+## 20. Documentation workflow rule
 
 Every meaningful implementation block must finish by updating this handoff with:
 
@@ -652,7 +688,7 @@ Every meaningful implementation block must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-## 20. Production gate
+## 21. Production gate
 
 Production Supabase:
 
