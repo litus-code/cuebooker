@@ -574,10 +574,22 @@ async function loadWorkspaceIdentity() {
     const [artistRows, organizationRows] = await Promise.all([availability.listArtists(), availability.listOrganizations()])
     artists.value = artistRows
     organizations.value = organizationRows
-    if (!selectedArtistId.value || !artists.value.some(item => item.id === selectedArtistId.value)) selectedArtistId.value = artists.value[0]?.id || ''
+
+    const requestedArtistId = typeof route.query.artist === 'string' ? route.query.artist : ''
+    if (requestedArtistId && artists.value.some(item => item.id === requestedArtistId)) {
+      selectedArtistId.value = requestedArtistId
+    } else if (!selectedArtistId.value || !artists.value.some(item => item.id === selectedArtistId.value)) {
+      selectedArtistId.value = artists.value[0]?.id || ''
+    }
+
     if (selectedArtistId.value) {
       await Promise.all([loadBlocks(), loadArtistProfile()])
       await ensureBookingCoreWorkspace()
+
+      const requestedBookingId = typeof route.query.booking === 'string' ? route.query.booking : ''
+      if (requestedBookingId && realBookings.value.some(item => item.id === requestedBookingId)) {
+        openRealBooking(requestedBookingId)
+      }
     }
   } catch (error: any) {
     errorMessage.value = error?.message || (preferences.locale.value === 'es' ? 'No se pudo cargar el workspace.' : 'The workspace could not be loaded.')
