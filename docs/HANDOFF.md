@@ -4,48 +4,16 @@ Updated: 17 September 2026
 Branch: `feature/app-visual-system`  
 Status: ACTIVE BATON PASS
 
-Read this immediately after `AGENTS.md`. This document records current implementation truth, not aspirations. Always query the live branch HEAD before modifying code.
+Read this immediately after `AGENTS.md`. This document records current implementation truth, not aspirations. Always query live branch HEAD before modifying code.
 
-## 1. Current revision anchors
-
-Booking Core cleanup anchor:
-
-```text
-2c6337aff199caa550317b642585fe2b8b283e5b
-Remove completed Booking Core migration helpers
-```
-
-Workspace/public-profile integration:
-
-```text
-4a7888c63d5c57deaa6885d299c17231406d650b
-Integrate public artist profile into workspace
-```
-
-Cloudflare root-artist routing fix:
-
-```text
-f32df1d4284db04ee5124af98def1b296bb7d67e
-Fix public artist Pages Function asset routing
-```
-
-Temporary validation workflow removal:
-
-```text
-10cd607fb3ec51c33239cb98e5f1ea4474682b63
-Remove temporary public ingress validation workflow
-```
-
-A documentation commit can exist after these hashes. Inspect live HEAD before coding.
-
-## 2. Product truth
+## 1. Product truth
 
 Cuebooker manages booking demand that an artist, manager or agency already receives. It does not promise to find gigs.
 
 All ingress mechanisms converge into the same Booking Core. Never create separate inboxes or booking models per channel.
 
 ```text
-+CUE / public profile / widget / email import / future share capture
++CUE / public Artist Profile / widget / email import / future share capture
  -> Contact / Counterparty
  -> Booking
  -> Activity
@@ -56,9 +24,9 @@ All ingress mechanisms converge into the same Booking Core. Never create separat
  -> History
 ```
 
-CUE ID / Passport / 3D identity work remains downstream.
+CUE ID / Passport / 3D identity remain downstream.
 
-## 3. Public entry product
+## 2. Public entry product — implemented on staging
 
 Canonical public identity:
 
@@ -66,13 +34,13 @@ Canonical public identity:
 cuebooker.com/<artist-slug>
 ```
 
-Example attributed deep link:
+Attributed deep link example:
 
 ```text
 /<artist-slug>?booking=1&src=instagram
 ```
 
-Public flow:
+Real public flow:
 
 ```text
 Public Artist Profile
@@ -85,13 +53,13 @@ Public Artist Profile
  -> authenticated Booking Core board
 ```
 
-The promoter does not need a Cuebooker account for the first enquiry.
+Promoters do not need a Cuebooker account.
 
-The future embedded website widget must reuse this same contract/backend. It is not another inbox.
+The future embedded widget must reuse this same intake contract/backend. It is not another inbox or booking type.
 
-## 4. Provenance semantics
+## 3. Provenance semantics
 
-Keep these facts separate:
+Keep separate:
 
 ```text
 origin_channel  = where the opportunity/conversation originated
@@ -110,13 +78,30 @@ entry_source = instagram
 WhatsApp conversation -> +CUE manual capture
 origin_channel = whatsapp
 capture_method = manual
-
-Direct email -> future automatic import
-origin_channel = email
-capture_method = email_import
 ```
 
 Do not overload `origin_channel` with referral attribution.
+
+## 4. Public profile and workspace integration
+
+The authenticated Profile preview and the public visitor profile use the same `PublicArtistProfile` component. Do not reintroduce a separate bespoke preview.
+
+Publication controls are separate:
+
+```text
+Perfil publicado / privado
+Aceptar solicitudes / booking cerrado
+```
+
+Private booking terms, fee thresholds, contacts, internal notes, negotiation history, holds, Next Moves and private calendar data stay outside the public profile contract.
+
+Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. The important routing fix is that `ASSETS.fetch()` uses the pretty `/200` path rather than `/200.html`.
+
+Validated previously on PR preview:
+
+- real artist slug -> HTTP 200 + artist metadata + Nuxt shell;
+- missing slug -> 404;
+- reserved `/workspace` -> application route, never artist resolution.
 
 ## 5. Public-ingress database foundation — STAGING ONLY
 
@@ -124,10 +109,10 @@ Supabase staging:
 
 ```text
 cuebooker-staging
-project id: lycprjeuuynfzwskycwv
+project: lycprjeuuynfzwskycwv
 ```
 
-Versioned migrations applied on staging:
+Applied/versioned public-ingress migrations:
 
 ```text
 20260917113205_add_public_booking_ingress_foundation.sql
@@ -136,215 +121,267 @@ Versioned migrations applied on staging:
 20260917114038_reserve_public_artist_slugs.sql
 ```
 
-Foundation includes:
+The deployed public-ingress path has already been HTTP-smoked end to end. A first request created a real Booking and the same idempotency key returned the same Booking without duplication.
 
-- public-profile enablement;
-- artist -> Booking Core workspace routing;
-- entry attribution;
-- idempotency storage;
-- truthful system/anonymous actor semantics;
-- atomic `create_public_booking` command;
-- strict private Booking Core RLS;
-- reserved product/application slugs.
-
-`create_public_booking` is executable by `service_role` only. `anon` and ordinary `authenticated` users cannot call it directly.
-
-## 6. Public Edge Functions — STAGING ONLY
-
-Active:
-
-```text
-get-public-artist-profile
-submit-booking-request
-```
-
-They intentionally use `verify_jwt = false` because they are public entry endpoints. Their security boundary is implemented in the function/database design:
-
-- public-safe artist projection only;
-- no arbitrary caller-supplied `workspace_id` authorization;
-- service-role credentials remain server-side;
-- payload validation and size limits;
-- honeypot baseline;
-- DB idempotency;
-- private fees/calendar/contacts/internal notes are not exposed.
-
-A stronger rate-limit/abuse-control layer is still a pre-production requirement.
-
-## 7. Public frontend now in branch
-
-Key files:
-
-```text
-app/domain/publicArtistProfile.ts
-app/composables/usePublicBooking.ts
-app/composables/usePublicArtistPublishing.ts
-app/components/PublicBookingForm.vue
-app/components/PublicArtistProfile.vue
-app/components/PublicProfilePublishingControls.vue
-app/pages/[slug].vue
-functions/[slug].js
-```
-
-`PublicBookingForm.vue` is deliberately low-friction. Sparse requests are valid; do not turn it into a CRM-length form.
-
-The authenticated Profile preview and the public visitor profile use the same reusable `PublicArtistProfile` component. Do not reintroduce a second bespoke preview design.
-
-Private booking terms, fees, internal notes, contacts, negotiation history and private calendar data must stay outside the public profile contract.
-
-## 8. Workspace publication controls
-
-The authenticated Profile surface now separates:
-
-```text
-Perfil publicado / privado
-Aceptar solicitudes / booking cerrado
-```
-
-Behavior:
-
-- publication state loads via `usePublicArtistPublishing()`;
-- unpublishing closes public booking acceptance first;
-- opening booking uses the real Booking Core workspace route;
-- preview/copy/open actions use the selected artist slug;
-- staging/PR preview links use the current browser origin;
-- managed-artist switching clears stale public/workspace route state before reloading;
-- authenticated media is reused for preview without exposing private Booking Core fields.
-
-## 9. Cloudflare Pages root artist routing
-
-The Nuxt app is still generated as static output. Root artist URLs are handled by `functions/[slug].js`.
-
-Important implementation detail discovered during smoke testing: Cloudflare `ASSETS.fetch()` must request the pretty path (`/200`, fallback `/`) rather than physical asset names such as `/200.html` / `/index.html` inside the Pages Function.
-
-The broken version produced a valid Nuxt shell with HTTP 404. Commit `f32df1d...` fixed this.
-
-Validated on the deployed PR preview while the staging artist was temporarily published:
-
-- `/<slug>` returned HTTP 200;
-- artist title metadata was injected;
-- Nuxt shell loaded;
-- nonexistent artist slug returned 404;
-- reserved `/workspace` continued to the normal application route rather than being treated as an artist profile.
-
-## 10. End-to-end public booking proof — COMPLETED ON STAGING
-
-Staging fixture used only for the smoke:
-
-```text
-artist_id: 5a89bb6b-48a1-449e-9ead-b44094be6287
-slug: lits
-workspace_id: 81c84e12-b895-43f4-84ac-5ca417ed8067
-```
-
-A real HTTP request was sent through deployed `submit-booking-request` with `entry_source=instagram`.
-
-Observed result:
-
-```text
-first request -> 201, created=true
-same idempotency key retry -> 200, created=false
-same Booking reference returned both times
-```
-
-Database verification showed exactly one real Booking with:
+Expected provenance was verified:
 
 ```text
 status = new
-source = booking_form
 origin_channel = booking_form
 capture_method = public_form
 entry_source = instagram
 created_by = null
 ```
 
-The request also created the expected Contact, Counterparty and exactly one inbound Activity. The Booking was readable under the workspace owner's authenticated RLS path, which is the same data path used by the real `BookingCoreInbox`.
+The resulting Booking was readable through the authenticated workspace RLS path used by `BookingCoreInbox`.
 
-Therefore the deployed ingress chain is proven through to real Booking Core persistence and board-readable data.
+## 6. Secure promoter follow-up — IMPLEMENTED ON STAGING
 
-The smoke Booking/submission/contact/counterparty fixture was then removed.
+Product decision:
 
-## 11. Staging cleanup — COMPLETED
+- the secure link lets a promoter read a safe booking summary/status/conversation and reply;
+- it does **not** let a promoter directly set internal `Booking.status`;
+- an external reply becomes an inbound Activity in the same Booking Core;
+- no second promoter-side booking model exists.
 
-The test artist was restored after the smoke to:
+New applied/versioned migrations:
 
 ```text
+20260917123613_add_public_booking_follow_up.sql
+20260917123841_allow_system_origin_inbound_email_threads.sql
+```
+
+### Secure-link model
+
+`public_booking_follow_up_access` stores:
+
+- workspace/booking/contact relation;
+- only SHA-256 of the bearer token;
+- expiry;
+- revoked/last-used timestamps.
+
+The raw token is never persisted in Booking Core, Activity or `email_messages`.
+
+Current validity for generated acknowledgement links is 180 days.
+
+`public_booking_follow_up_submissions` provides reply idempotency.
+
+Both tables have RLS enabled and explicit no-client-access policies; service role is the narrow server boundary.
+
+### Public follow-up RPCs
+
+`get_public_booking_follow_up(token_hash)` returns only a safe projection:
+
+- artist stage name + slug;
+- promoter contact name;
+- booking public status/event/venue/location/date/current offer;
+- conversation items safe for the promoter.
+
+It does not expose workspace IDs, internal notes, private fee policy, calendar, holds or operational Next Moves.
+
+`append_public_booking_follow_up_reply(...)`:
+
+- validates active/unexpired token;
+- is idempotent by access + request UUID;
+- creates only inbound Activity;
+- uses `created_by = null` / no fake user;
+- does not mutate booking status.
+
+Archived Booking Core protection was refined narrowly so trusted `service_role` inbound public-follow-up Activity can still preserve an external reply, alongside the existing trusted inbound-email path.
+
+## 7. Promoter follow-up Edge/API — STAGING ONLY
+
+New deployed Edge Function:
+
+```text
+booking-follow-up
+```
+
+It intentionally has `verify_jwt = false` because the secure bearer token is the authorization mechanism.
+
+Behavior:
+
+```text
+GET  /booking-follow-up?token=<raw>
+ -> SHA-256 in edge function
+ -> safe follow-up projection
+
+POST /booking-follow-up
+ { token, requestId, bodyText }
+ -> hashed token + idempotency fingerprint
+ -> inbound Activity
+ -> refreshed safe thread
+```
+
+CORS is restricted to Cuebooker production/staging/Pages preview origins plus localhost development.
+
+Frontend contract/files:
+
+```text
+app/domain/publicBookingFollowUp.ts
+app/services/publicBookingFollowUpApi.ts
+app/pages/request.vue
+```
+
+`/request?token=...` is now the real promoter follow-up surface. The old `useBookingDemo()` promoter simulation has been removed from this route.
+
+The page includes:
+
+- public status language;
+- safe event summary;
+- conversation thread;
+- reply composer;
+- retry-safe reply request IDs;
+- invalid/expired link states;
+- ES/EN;
+- `noindex,nofollow,noarchive` and no-referrer metadata;
+- link back to the artist profile.
+
+It intentionally contains no external “confirm/reject booking” action.
+
+## 8. Acknowledgement email after public enquiry
+
+`submit-booking-request` now attempts an automatic acknowledgement after Booking creation/reuse.
+
+New semantics:
+
+- acknowledgement email is a **system** message with `created_by = null`;
+- authenticated/manual outbound messages still require `created_by = auth.uid()` and `purpose = conversation`;
+- acknowledgement has `purpose = public_acknowledgement`;
+- at most one acknowledgement email record exists per Booking;
+- a 256-bit random follow-up token is generated; only its hash is stored;
+- the raw secure URL exists only in the provider payload in memory;
+- the stored email/Activity body does not contain the bearer secret;
+- Reply-To continues to use the existing `booking+<reply_token>@...` email-thread mechanism;
+- direct email replies to a system-origin acknowledgement now preserve `created_by = null` end to end rather than impersonating an owner.
+
+`PublicBookingForm` and the public Artist Profile now consume `confirmationSent` explicitly:
+
+- `true`: tell the promoter a confirmation email with secure follow-up link was sent;
+- `false`: truthfully say the booking is registered even though confirmation delivery was unavailable.
+
+A provider/email failure never rolls back the Booking.
+
+## 9. Validation performed for secure follow-up
+
+### Database/service-role contract
+
+A disposable staging Booking and known test token were used.
+
+Validated:
+
+- token hash resolves to safe projection;
+- initial public-form message is visible;
+- secure-link reply creates inbound Activity;
+- refreshed thread contains that reply;
+- retry with the same reply request ID does not create a duplicate.
+
+### Real HTTP public submit
+
+Temporary GitHub workflow `Temp public follow-up smoke` performed real public HTTP calls against deployed staging `submit-booking-request`.
+
+Observed:
+
+```text
+first request -> 201
+accepted = true
+created = true
+
+same request ID retry -> 200
+accepted = true
+created = false
+same Booking reference
+```
+
+The temporary workflow completed successfully and has been removed from the branch.
+
+### Staging email-provider result
+
+The smoke returned:
+
+```text
+confirmationSent = false
+```
+
+Database diagnosis:
+
+```text
+email purpose = public_acknowledgement
+status = failed
+failure_code = provider_not_configured
+created_by = null
+```
+
+This means the new acknowledgement path reached the provider gate correctly, but the deployed `submit-booking-request` function does not currently receive `BREVO_API_KEY` in staging.
+
+The unusable secure access generated for that failed delivery was revoked automatically.
+
+Do not claim acknowledgement email delivery is end-to-end proven until staging is given the provider secret and a safe delivery smoke succeeds.
+
+## 10. Staging cleanup — COMPLETED
+
+All disposable secure-follow-up and HTTP-smoke Bookings/Contacts were deleted.
+
+The fixture artist is restored to:
+
+```text
+slug = lits
 public_profile_enabled = false
 accepting_requests = false
 ```
 
-Do not leave staging artist fixtures published after future smoke tests.
+Do not leave staging fixtures publicly enabled after future smoke tests.
 
-## 12. CI / preview validation
+## 11. Security/advisors
 
-Normal PR workflows have passed after the integration and routing fix.
-
-Latest clean pre-documentation HEAD validated:
-
-```text
-10cd607fb3ec51c33239cb98e5f1ea4474682b63
-```
-
-For that revision:
-
-- PR `CI`: success;
-- PR `Deploy Staging`: success;
-- temporary public-ingress validation workflow had already been removed;
-- no production deployment was performed.
-
-PR preview alias remains:
-
-```text
-https://pr-75.cuebooker-staging.pages.dev
-```
-
-Always resolve the live HEAD and latest workflow run before relying on this hash.
-
-## 13. Supabase security status
-
-Current staging security advisor warning:
+Latest staging Security Advisor adds no new schema warning. Existing project-level warning remains:
 
 ```text
 Leaked Password Protection Disabled
 ```
 
-This is a project-level Auth configuration warning and predates the public-ingress slice. The public-ingress schema work itself did not introduce a new advisor warning.
+Performance advisor reports unused indexes on the young staging schema; do not remove them without real workload evidence.
 
-Do not weaken RLS or expose service-role credentials to resolve public-entry issues.
+Never expose service-role credentials or weaken RLS to simplify public follow-up.
 
-## 14. Exact next product block
+Technical follow-up: existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`. Migrate the project to the current Supabase secret-key model as a deliberate infrastructure task rather than mixing it into this product slice.
 
-The original public Artist Profile -> real Booking Core ingress proof is now complete on staging.
+## 12. Exact next product work
 
-Next work should be one of the deliberate follow-ups, in this order unless product priorities change:
+Finish/gate the current follow-up block before production:
 
-1. promoter acknowledgement email after successful public enquiry;
-2. secure promoter follow-up link/thread view;
-3. share-link generator with explicit Instagram / WhatsApp / website / EPK / QR attribution;
-4. embeddable widget using the exact same public intake contract;
-5. additional email/share/AI capture automation.
+1. make Brevo/provider secret available to the staging acknowledgement runtime and run one safe delivery smoke;
+2. visually smoke `/request?token=...` on desktop/mobile through the PR preview;
+3. add stronger rate/abuse protection to anonymous public intake and follow-up reply endpoints;
+4. explicit production-readiness review.
 
-Before production, also add stronger abuse/rate limiting for anonymous intake and perform an explicit production-readiness review.
+After that, continue the public-entry product in this order:
 
-Do not jump to CUE ID/3D work as a substitute for finishing operational entry/follow-up.
+1. share-link generator with explicit Instagram / WhatsApp / website / EPK / QR attribution;
+2. QR generation;
+3. embeddable widget using the exact same intake contract;
+4. additional email/share/AI capture automation.
 
-## 15. Homepage/marketing redesign remains deferred
+Do not create a new Booking Core model for any of these.
 
-The commercial home/headline still needs a later redesign for stronger product positioning, emotional clarity and authentic club/electronic-music culture.
+## 13. Homepage/marketing redesign remains deferred
 
-Do that only when claims can be grounded in real shipped behavior. Avoid generic AI/SaaS language and vanity-metric framing.
+The user wants the commercial home/headline revisited because it still lacks product power, emotional impact and authentic electronic-music identity.
 
-## 16. Documentation workflow rule
+Do this after the entry/follow-up product is sufficiently operational to market truthfully. Evaluate through product positioning, ethical persuasion/decision psychology, emotional clarity, accessibility, advertising impact and authentic club culture. Avoid generic AI/SaaS language and vanity-metric framing.
 
-Meaningful implementation blocks must finish by updating this handoff with:
+## 14. Documentation workflow rule
+
+Every meaningful implementation block must finish by updating this handoff with:
 
 - live functional commit;
-- what is actually implemented;
-- what was validated and where;
-- what remains unverified;
+- actual implementation state;
+- validation and environment;
+- remaining unverified work;
 - exact next step;
 - production state.
 
-## 17. Production gate
+## 15. Production gate
 
 Production Supabase:
 
@@ -352,6 +389,6 @@ Production Supabase:
 qlocooqfdzehogbwcbhr
 ```
 
-No public-ingress migration, Edge Function deployment, publication toggle or Cloudflare production release from this block was authorized or performed on production.
+No migration, Edge Function deployment, publication toggle or Cloudflare production release from the public follow-up block has been performed on production.
 
-Remain staging-only until abuse controls, acknowledgement/follow-up decisions, final UX smoke and explicit production review are complete.
+Remain staging-only until provider delivery, visual follow-up UX, abuse controls and explicit production review are complete.
