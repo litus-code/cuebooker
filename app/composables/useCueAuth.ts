@@ -1,6 +1,8 @@
 type CueUser = {
   id: string
   email?: string
+  user_metadata?: Record<string, unknown>
+  app_metadata?: Record<string, unknown>
 }
 
 type CueProfile = {
@@ -235,6 +237,38 @@ export function useCueAuth() {
     })
   }
 
+  async function updateLocalePreference(locale: 'es' | 'en') {
+    const current = await ensureFreshSession()
+    if (!current) return false
+
+    const payload = await $fetch<{ user?: CueUser } | CueUser>(`${supabaseUrl.value}/auth/v1/user`, {
+      method: 'PUT',
+      headers: baseHeaders(true),
+      body: {
+        data: {
+          ...(current.user.user_metadata || {}),
+          cuebooker_locale: locale
+        }
+      }
+    })
+
+    const updatedUser = 'user' in payload && payload.user ? payload.user : payload as CueUser
+    saveSession({
+      ...current,
+      user: {
+        ...current.user,
+        ...updatedUser,
+        user_metadata: {
+          ...(current.user.user_metadata || {}),
+          ...(updatedUser.user_metadata || {}),
+          cuebooker_locale: locale
+        }
+      }
+    })
+
+    return true
+  }
+
   function captureReferral(code: string | null | undefined, landingPath: string) {
     if (!import.meta.client || !code) return
     if (localStorage.getItem(REFERRAL_KEY)) return
@@ -327,6 +361,7 @@ export function useCueAuth() {
     signUp,
     signOut,
     updatePassword,
+    updateLocalePreference,
     captureReferral,
     persistReferralAttribution,
     completeOnboarding,
