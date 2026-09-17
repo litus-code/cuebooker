@@ -27,44 +27,106 @@ const widgetCode = computed(() => `<iframe src="${widgetUrl.value}" title="Cuebo
 
 const copy = computed(() => props.locale === 'es' ? {
   eyebrow: 'PERFIL PÚBLICO', title: 'Tu puerta de entrada.',
-  body: 'Comparte tu perfil donde ya está tu gente. El booking vive aquí y las solicitudes entran al mismo board.',
+  body: 'Comparte tu perfil donde ya está tu gente. Cada solicitud termina en el mismo Booking Core, venga de donde venga.',
   published: 'Perfil publicado', unpublished: 'Perfil privado', accepting: 'Aceptar solicitudes', closed: 'Booking cerrado',
-  preview: 'Vista previa', copy: 'Copiar enlace de booking', copied: 'Copiado', live: 'Abrir perfil',
-  publishHint: 'Publicar hace visible la ficha. Abrir booking permite que te envíen solicitudes sin registrarse.',
-  share: 'Compartir / atribución', shareTitle: 'Un mismo booking. Distintas puertas de entrada.',
-  shareBody: 'Cada enlace apunta al mismo formulario y solo añade la procedencia para saber desde dónde llegó la visita.',
+  preview: 'Vista previa', copyBooking: 'Copiar booking directo', copied: 'Copiado', live: 'Abrir perfil',
+  publishHint: 'Publicar hace visible tu ficha. Abrir booking permite recibir solicitudes sin que el promotor tenga que registrarse.',
+  share: 'Distribución', shareTitle: 'Lleva tu booking a los canales que ya utilizas.',
+  shareBody: 'No necesitas crear formularios distintos. Cuebooker genera una entrada adaptada a cada canal y conserva su procedencia.',
+  bookingClosedHint: 'Activa “Aceptar solicitudes” para usar las entradas que llevan directamente al formulario.',
+  profileGroup: 'Perfil', bookingGroup: 'Solicitudes directas', embedGroup: 'Tu web',
   publicProfile: 'Perfil público', directBooking: 'Booking directo', widget: 'Widget web',
-  instagram: 'Instagram', whatsapp: 'WhatsApp', website: 'Web', epk: 'EPK', qr: 'QR', email: 'Email', linkInBio: 'Link in bio',
-  bookingClosedHint: 'Abre “Aceptar solicitudes” para copiar enlaces o el widget que llevan directamente al formulario.'
+  instagram: 'Instagram', whatsapp: 'WhatsApp Business', website: 'Enlace web', epk: 'EPK', qr: 'QR', email: 'Email', linkInBio: 'Link in bio',
+  profileDesc: 'Tu landing pública como artista. Úsala como perfil profesional o presentación.',
+  bookingDesc: 'Abre directamente el formulario. Ideal cuando ya estás hablando con un promotor.',
+  instagramDesc: 'Para bio, stories, DM o enlaces del perfil. Las entradas quedan atribuidas a Instagram.',
+  whatsappDesc: 'Para el perfil de WhatsApp Business, respuestas rápidas o conversaciones con promotores.',
+  websiteDesc: 'Enlace directo desde botones o CTAs de tu web actual.',
+  widgetDesc: 'Código para incrustar el formulario de Cuebooker dentro de tu propia web.',
+  epkDesc: 'Añádelo a tu EPK para convertir una presentación en una vía directa de booking.',
+  qrDesc: 'Entrada preparada para QR. La generación visual del código llegará en el siguiente bloque.',
+  emailDesc: 'Inclúyelo en firma, propuestas o respuestas de booking por email.',
+  linkInBioDesc: 'Para servicios de link-in-bio u otras páginas de enlaces.',
+  copyLink: 'Copiar enlace', copyCode: 'Copiar código', prepared: 'Preparado', attribution: 'Procedencia',
+  profileStatus: 'Visible para cualquiera con el enlace', bookingStatus: 'Entra directamente al formulario', widgetStatus: 'Se incrusta en tu web'
 } : {
   eyebrow: 'PUBLIC PROFILE', title: 'Your booking front door.',
-  body: 'Share your profile where your audience already is. Booking lives here and every enquiry reaches the same board.',
+  body: 'Share your profile where your audience already is. Every enquiry lands in the same Booking Core, regardless of where it starts.',
   published: 'Profile published', unpublished: 'Profile private', accepting: 'Accept enquiries', closed: 'Booking closed',
-  preview: 'Preview', copy: 'Copy booking link', copied: 'Copied', live: 'Open profile',
-  publishHint: 'Publishing makes the profile visible. Opening booking lets promoters send enquiries without an account.',
-  share: 'Share / attribution', shareTitle: 'One booking flow. Different entry points.',
-  shareBody: 'Every link reaches the same form and only adds attribution so you know where the visit came from.',
+  preview: 'Preview', copyBooking: 'Copy direct booking', copied: 'Copied', live: 'Open profile',
+  publishHint: 'Publishing makes your profile visible. Opening booking lets promoters send enquiries without creating an account.',
+  share: 'Distribution', shareTitle: 'Bring booking into the channels you already use.',
+  shareBody: 'You do not need separate forms. Cuebooker gives each channel its own entry point while keeping attribution.',
+  bookingClosedHint: 'Turn on “Accept enquiries” to use entry points that open the booking form directly.',
+  profileGroup: 'Profile', bookingGroup: 'Direct enquiries', embedGroup: 'Your website',
   publicProfile: 'Public profile', directBooking: 'Direct booking', widget: 'Website widget',
-  instagram: 'Instagram', whatsapp: 'WhatsApp', website: 'Website', epk: 'EPK', qr: 'QR', email: 'Email', linkInBio: 'Link in bio',
-  bookingClosedHint: 'Open “Accept enquiries” to copy links or the widget that focus directly on the booking form.'
+  instagram: 'Instagram', whatsapp: 'WhatsApp Business', website: 'Website link', epk: 'EPK', qr: 'QR', email: 'Email', linkInBio: 'Link in bio',
+  profileDesc: 'Your public artist landing page. Use it as a professional profile or presentation.',
+  bookingDesc: 'Opens the form directly. Useful when you are already speaking with a promoter.',
+  instagramDesc: 'For bio, stories, DMs or profile links. Enquiries stay attributed to Instagram.',
+  whatsappDesc: 'For WhatsApp Business profile links, quick replies or promoter conversations.',
+  websiteDesc: 'Direct booking link for buttons or CTAs on your existing website.',
+  widgetDesc: 'Embed code for placing the Cuebooker form inside your own website.',
+  epkDesc: 'Add it to your EPK so a presentation can turn directly into a booking enquiry.',
+  qrDesc: 'Entry point prepared for QR. Visual QR generation comes in the next block.',
+  emailDesc: 'Use it in your signature, proposals or booking email replies.',
+  linkInBioDesc: 'For link-in-bio services or other link pages.',
+  copyLink: 'Copy link', copyCode: 'Copy code', prepared: 'Ready', attribution: 'Attribution',
+  profileStatus: 'Visible to anyone with the link', bookingStatus: 'Opens the booking form directly', widgetStatus: 'Embeds inside your website'
 })
-
-const shareLinks = computed(() => [
-  { key: 'profile', label: copy.value.publicProfile, value: publicUrl.value, needsBooking: false },
-  { key: 'booking', label: copy.value.directBooking, value: bookingUrl.value, needsBooking: true },
-  { key: 'instagram', label: copy.value.instagram, value: attributedBookingUrl('instagram'), needsBooking: true },
-  { key: 'whatsapp', label: copy.value.whatsapp, value: attributedBookingUrl('whatsapp'), needsBooking: true },
-  { key: 'website', label: copy.value.website, value: attributedBookingUrl('website'), needsBooking: true },
-  { key: 'widget', label: copy.value.widget, value: widgetCode.value, needsBooking: true },
-  { key: 'epk', label: copy.value.epk, value: attributedBookingUrl('epk'), needsBooking: true },
-  { key: 'qr', label: copy.value.qr, value: attributedBookingUrl('qr'), needsBooking: true },
-  { key: 'email', label: copy.value.email, value: attributedBookingUrl('email'), needsBooking: true },
-  { key: 'link_in_bio', label: copy.value.linkInBio, value: attributedBookingUrl('link_in_bio'), needsBooking: true }
-])
 
 function attributedBookingUrl(source: string) {
   return `${publicUrl.value}?booking=1&src=${encodeURIComponent(source)}`
 }
+
+const shareLinks = computed(() => [
+  {
+    key: 'profile', group: 'profile', label: copy.value.publicProfile, description: copy.value.profileDesc,
+    value: publicUrl.value, needsBooking: false, action: copy.value.copyLink, meta: copy.value.profileStatus
+  },
+  {
+    key: 'booking', group: 'booking', label: copy.value.directBooking, description: copy.value.bookingDesc,
+    value: bookingUrl.value, needsBooking: true, action: copy.value.copyLink, meta: copy.value.bookingStatus
+  },
+  {
+    key: 'instagram', group: 'booking', label: copy.value.instagram, description: copy.value.instagramDesc,
+    value: attributedBookingUrl('instagram'), needsBooking: true, action: copy.value.copyLink, meta: `${copy.value.attribution}: instagram`
+  },
+  {
+    key: 'whatsapp', group: 'booking', label: copy.value.whatsapp, description: copy.value.whatsappDesc,
+    value: attributedBookingUrl('whatsapp'), needsBooking: true, action: copy.value.copyLink, meta: `${copy.value.attribution}: whatsapp`
+  },
+  {
+    key: 'email', group: 'booking', label: copy.value.email, description: copy.value.emailDesc,
+    value: attributedBookingUrl('email'), needsBooking: true, action: copy.value.copyLink, meta: `${copy.value.attribution}: email`
+  },
+  {
+    key: 'epk', group: 'booking', label: copy.value.epk, description: copy.value.epkDesc,
+    value: attributedBookingUrl('epk'), needsBooking: true, action: copy.value.copyLink, meta: `${copy.value.attribution}: epk`
+  },
+  {
+    key: 'link_in_bio', group: 'booking', label: copy.value.linkInBio, description: copy.value.linkInBioDesc,
+    value: attributedBookingUrl('link_in_bio'), needsBooking: true, action: copy.value.copyLink, meta: `${copy.value.attribution}: link_in_bio`
+  },
+  {
+    key: 'qr', group: 'booking', label: copy.value.qr, description: copy.value.qrDesc,
+    value: attributedBookingUrl('qr'), needsBooking: true, action: copy.value.copyLink, meta: `${copy.value.attribution}: qr`
+  },
+  {
+    key: 'website', group: 'embed', label: copy.value.website, description: copy.value.websiteDesc,
+    value: attributedBookingUrl('website'), needsBooking: true, action: copy.value.copyLink, meta: `${copy.value.attribution}: website`
+  },
+  {
+    key: 'widget', group: 'embed', label: copy.value.widget, description: copy.value.widgetDesc,
+    value: widgetCode.value, needsBooking: true, action: copy.value.copyCode, meta: copy.value.widgetStatus
+  }
+])
+
+const shareGroups = computed(() => [
+  { key: 'profile', title: copy.value.profileGroup, items: shareLinks.value.filter(item => item.group === 'profile') },
+  { key: 'booking', title: copy.value.bookingGroup, items: shareLinks.value.filter(item => item.group === 'booking') },
+  { key: 'embed', title: copy.value.embedGroup, items: shareLinks.value.filter(item => item.group === 'embed') }
+])
 
 function checkboxValue(event: Event) {
   return (event.currentTarget as HTMLInputElement).checked
@@ -116,7 +178,7 @@ async function copyBookingLink() {
     <div class="public-profile-controls__actions">
       <button type="button" @click="emit('preview')">{{ copy.preview }}</button>
       <button type="button" :disabled="!published || !acceptingRequests" @click="copyBookingLink">
-        {{ copiedKey === 'booking-main' ? copy.copied : copy.copy }}
+        {{ copiedKey === 'booking-main' ? copy.copied : copy.copyBooking }}
       </button>
       <button type="button" :disabled="!published" :aria-expanded="shareOpen" @click="shareOpen = !shareOpen">
         {{ copy.share }} <span class="arrow arrow--ne" aria-hidden="true" />
@@ -125,22 +187,32 @@ async function copyBookingLink() {
     </div>
 
     <div v-if="shareOpen" class="public-profile-controls__share">
-      <div>
+      <div class="public-profile-controls__share-intro">
         <strong>{{ copy.shareTitle }}</strong>
         <p>{{ copy.shareBody }}</p>
         <small v-if="!acceptingRequests">{{ copy.bookingClosedHint }}</small>
       </div>
-      <div class="public-profile-controls__share-grid">
-        <button
-          v-for="link in shareLinks"
-          :key="link.key"
-          type="button"
-          :disabled="!published || (link.needsBooking && !acceptingRequests)"
-          @click="copyLink(link.key, link.value)"
-        >
-          <span>{{ link.label }}</span>
-          <small>{{ copiedKey === link.key ? copy.copied : link.value }}</small>
-        </button>
+
+      <div class="public-profile-controls__groups">
+        <section v-for="group in shareGroups" :key="group.key" class="public-profile-controls__group">
+          <h3>{{ group.title }}</h3>
+          <div class="public-profile-controls__share-grid">
+            <article v-for="link in group.items" :key="link.key" class="public-profile-controls__channel">
+              <div>
+                <span>{{ link.label }}</span>
+                <p>{{ link.description }}</p>
+                <small>{{ link.meta }}</small>
+              </div>
+              <button
+                type="button"
+                :disabled="!published || (link.needsBooking && !acceptingRequests)"
+                @click="copyLink(link.key, link.value)"
+              >
+                {{ copiedKey === link.key ? copy.copied : link.action }}
+              </button>
+            </article>
+          </div>
+        </section>
       </div>
     </div>
   </section>
@@ -162,18 +234,21 @@ async function copyBookingLink() {
 .public-profile-controls__actions button, .public-profile-controls__actions a { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 13px; border: 1px solid var(--cue-border); background: transparent; color: var(--cue-text); cursor: pointer; font: 700 10px/1 monospace; text-decoration: none; text-transform: uppercase; }
 .public-profile-controls__actions button:disabled { cursor: default; opacity: .4; }
 .public-profile-controls__actions button:hover:not(:disabled), .public-profile-controls__actions a:hover { border-color: var(--cue-accent); color: var(--cue-accent); }
-.public-profile-controls__actions button:focus-visible, .public-profile-controls__actions a:focus-visible, .public-profile-controls__share-grid button:focus-visible { outline: 2px solid var(--cue-accent); outline-offset: 2px; }
-.public-profile-controls__share { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(230px, .32fr) minmax(0, .68fr); gap: 20px; padding-top: 18px; border-top: 1px solid var(--cue-border); }
-.public-profile-controls__share > div:first-child > strong { display: block; font-size: 14px; text-transform: uppercase; }
-.public-profile-controls__share > div:first-child p { margin: 7px 0; color: var(--cue-muted); font-size: 12px; line-height: 1.45; }
-.public-profile-controls__share > div:first-child small { color: var(--cue-dim); font-size: 10px; line-height: 1.35; }
-.public-profile-controls__share-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
-.public-profile-controls__share-grid button { min-width: 0; min-height: 56px; padding: 9px 11px; border: 1px solid var(--cue-border); background: var(--cue-bg); color: var(--cue-text); cursor: pointer; text-align: left; }
-.public-profile-controls__share-grid button > span, .public-profile-controls__share-grid button > small { display: block; }
-.public-profile-controls__share-grid button > span { font: 800 10px/1.2 monospace; text-transform: uppercase; }
-.public-profile-controls__share-grid button > small { margin-top: 6px; overflow: hidden; color: var(--cue-muted); font: 9px/1.25 monospace; text-overflow: ellipsis; white-space: nowrap; }
-.public-profile-controls__share-grid button:hover:not(:disabled) { border-color: var(--cue-accent); }
-.public-profile-controls__share-grid button:disabled { cursor: default; opacity: .4; }
+.public-profile-controls__actions button:focus-visible, .public-profile-controls__actions a:focus-visible, .public-profile-controls__channel button:focus-visible { outline: 2px solid var(--cue-accent); outline-offset: 2px; }
+.public-profile-controls__share { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(220px, .28fr) minmax(0, .72fr); gap: 24px; padding-top: 18px; border-top: 1px solid var(--cue-border); }
+.public-profile-controls__share-intro > strong { display: block; font-size: 15px; line-height: 1.15; text-transform: uppercase; }
+.public-profile-controls__share-intro p { margin: 8px 0; color: var(--cue-muted); font-size: 12px; line-height: 1.5; }
+.public-profile-controls__share-intro small { color: var(--cue-dim); font-size: 10px; line-height: 1.4; }
+.public-profile-controls__groups { display: grid; gap: 22px; }
+.public-profile-controls__group h3 { margin: 0 0 9px; color: var(--cue-dim); font: 800 9px/1.2 monospace; letter-spacing: .1em; text-transform: uppercase; }
+.public-profile-controls__share-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.public-profile-controls__channel { display: flex; flex-direction: column; justify-content: space-between; min-width: 0; min-height: 138px; padding: 14px; border: 1px solid var(--cue-border); background: var(--cue-bg); }
+.public-profile-controls__channel > div > span { display: block; font: 900 11px/1.2 monospace; text-transform: uppercase; }
+.public-profile-controls__channel p { margin: 8px 0 10px; color: var(--cue-muted); font-size: 11px; line-height: 1.45; }
+.public-profile-controls__channel small { display: block; color: var(--cue-dim); font: 9px/1.3 monospace; }
+.public-profile-controls__channel button { align-self: flex-start; min-height: 34px; margin-top: 14px; padding: 0 10px; border: 1px solid var(--cue-border); background: transparent; color: var(--cue-text); cursor: pointer; font: 800 9px/1 monospace; text-transform: uppercase; }
+.public-profile-controls__channel button:hover:not(:disabled) { border-color: var(--cue-accent); color: var(--cue-accent); }
+.public-profile-controls__channel button:disabled { cursor: default; opacity: .4; }
 @media (max-width: 760px) {
   .public-profile-controls { grid-template-columns: 1fr; padding: 16px; }
   .public-profile-controls__actions, .public-profile-controls__share { grid-column: 1; }
@@ -181,5 +256,6 @@ async function copyBookingLink() {
 }
 @media (max-width: 520px) {
   .public-profile-controls__share-grid { grid-template-columns: 1fr; }
+  .public-profile-controls__channel { min-height: 0; }
 }
 </style>
