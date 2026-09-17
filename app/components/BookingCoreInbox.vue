@@ -88,6 +88,15 @@ async function handleOperationsChanged() {
   emit('operationsChanged')
 }
 
+async function handleBookingSaved() {
+  await loadActivity()
+  emit('operationsChanged')
+}
+
+async function handleActivityCreated() {
+  await loadActivity()
+}
+
 async function changeStatus(event: Event) {
   if (!selectedBooking.value) return
   const status = (event.target as HTMLSelectElement).value as CoreBookingStatus
@@ -160,7 +169,10 @@ function bookingTitle(booking: CoreBooking) {
             <h3>{{ bookingTitle(selectedBooking) }}</h3>
             <p>{{ selectedBooking.event_name || selectedBooking.city || '—' }}</p>
           </div>
-          <label class="core-inbox__status core-inbox__status-control"><span>{{ copy.status }}</span><select :value="selectedBooking.status" :disabled="updatingStatus" @change="changeStatus"><option v-for="(label, status) in statusLabels" :key="status" :value="status">{{ label }}</option></select></label>
+          <div class="core-inbox__header-actions">
+            <BookingCoreEditor :workspace-id="workspaceId" :booking="selectedBooking" :locale="locale" @saved="handleBookingSaved" />
+            <label class="core-inbox__status core-inbox__status-control"><span>{{ copy.status }}</span><select :value="selectedBooking.status" :disabled="updatingStatus" @change="changeStatus"><option v-for="(label, status) in statusLabels" :key="status" :value="status">{{ label }}</option></select></label>
+          </div>
         </header>
 
         <dl class="core-inbox__facts">
@@ -175,6 +187,13 @@ function bookingTitle(booking: CoreBooking) {
           :booking="selectedBooking"
           :locale="locale"
           @changed="handleOperationsChanged"
+        />
+
+        <BookingActivityComposer
+          :workspace-id="workspaceId"
+          :booking="selectedBooking"
+          :locale="locale"
+          @created="handleActivityCreated"
         />
 
         <section class="core-inbox__activity">
@@ -210,6 +229,7 @@ function bookingTitle(booking: CoreBooking) {
 .core-inbox__detail > header span { color:var(--cue-accent); font:700 9px monospace; text-transform:uppercase; letter-spacing:.1em; }
 .core-inbox__detail h3 { margin:6px 0 3px; font-size:28px; line-height:1; }
 .core-inbox__detail header p { margin:0; color:var(--cue-muted); font-size:12px; }
+.core-inbox__header-actions { display:flex; align-items:flex-start; gap:7px; flex-wrap:wrap; justify-content:flex-end; }
 .core-inbox__status { align-self:flex-start; padding:7px 9px; border:1px solid var(--cue-border); font:700 9px monospace; text-transform:uppercase; }
 .core-inbox__status-control { display:grid; gap:4px; padding:6px 8px; }
 .core-inbox__status-control > span { color:var(--cue-muted); font:700 7px monospace; letter-spacing:.08em; }

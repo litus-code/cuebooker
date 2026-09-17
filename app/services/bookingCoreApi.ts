@@ -13,6 +13,7 @@ import type {
   Hold,
   NextMove,
   SetNextMoveInput,
+  UpdateBookingDetailsInput,
   Workspace,
   WorkspaceMembership
 } from '../domain/bookingCore'
@@ -273,6 +274,35 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     return row
   }
 
+  async function updateBookingDetails(input: UpdateBookingDetailsInput) {
+    if (input.offerAmountMinor != null && (!Number.isSafeInteger(input.offerAmountMinor) || input.offerAmountMinor < 0)) {
+      throw new Error('invalid_offer_amount_minor')
+    }
+
+    const rows = await $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/rpc/update_booking_details`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: {
+        target_workspace_id: input.workspaceId,
+        target_booking_id: input.bookingId,
+        next_event_name: normalizedText(input.eventName),
+        next_venue_name: normalizedText(input.venueName),
+        next_city: normalizedText(input.city),
+        next_country_code: countryCode(input.countryCode),
+        next_event_date: input.eventDate || null,
+        next_start_time: input.startTime || null,
+        next_end_time: input.endTime || null,
+        next_event_timezone: normalizedText(input.eventTimezone),
+        next_offer_amount_minor: input.offerAmountMinor ?? null,
+        next_currency: currency(input.currency),
+        next_fee_basis: normalizedText(input.feeBasis)
+      }
+    })
+    const row = rows[0]
+    if (!row) throw new Error('booking_details_update_failed')
+    return row
+  }
+
   async function setBookingStatus(workspaceId: string, bookingId: string, status: CoreBookingStatus) {
     const rows = await $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/rpc/set_booking_status`, {
       method: 'POST',
@@ -436,6 +466,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     listBookings,
     createBooking,
     createManualBooking,
+    updateBookingDetails,
     setBookingStatus,
     listActivities,
     createActivity,
