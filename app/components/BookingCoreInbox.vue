@@ -254,6 +254,14 @@ function bookingTitle(booking: CoreBooking) {
           <div><dt>{{ copy.offer }}</dt><dd>{{ formatMoney(selectedBooking) }}</dd></div>
         </dl>
 
+        <BookingRelationshipMemory
+          :booking="selectedBooking"
+          :bookings="bookings"
+          :contact-name="selectedContact?.name"
+          :counterparty-name="selectedCounterparty?.name"
+          :locale="locale"
+        />
+
         <p v-if="selectedBooking.archived_at" class="core-inbox__readonly">{{ copy.archivedReadOnly }}</p>
 
         <BookingCoreConflictNotice
@@ -301,11 +309,17 @@ function bookingTitle(booking: CoreBooking) {
 .core-inbox__heading span { display:block; color:var(--cue-accent); font:700 9px/1.2 monospace; letter-spacing:.11em; }
 .core-inbox__heading strong { display:block; margin-top:4px; font-size:15px; }
 .core-inbox__heading b { min-width:34px; text-align:center; font:700 12px monospace; color:var(--cue-accent); }
+.core-inbox__zero { display:grid; justify-items:start; gap:8px; padding:24px 18px 28px; }
+.core-inbox__zero > span { color:var(--cue-accent); font:700 9px monospace; text-transform:uppercase; }
+.core-inbox__zero > strong { max-width:560px; font-size:clamp(20px,3vw,30px); line-height:1.05; }
+.core-inbox__zero > p { max-width:600px; margin:0; color:var(--cue-muted); font-size:12px; line-height:1.5; }
+.core-inbox__zero > button { margin-top:5px; min-height:40px; padding:0 15px; border:1px solid var(--cue-accent); background:var(--cue-accent); color:#090909; cursor:pointer; font-weight:800; }
 .core-inbox__tools { display:grid; gap:8px; padding:10px; border-bottom:1px solid var(--cue-border); }
 .core-inbox__tools > input { min-height:36px; border:1px solid var(--cue-border); background:var(--cue-raised); color:var(--cue-text); padding:0 10px; }
 .core-inbox__filters { display:flex; gap:4px; overflow-x:auto; scrollbar-width:thin; }
 .core-inbox__filters button { flex:0 0 auto; min-height:29px; padding:0 8px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; text-transform:uppercase; }
 .core-inbox__filters button.active { border-color:var(--cue-accent); color:var(--cue-accent); }
+.core-inbox__filters--archive button.active { background:var(--cue-raised); }
 .core-inbox__layout { display:grid; grid-template-columns:minmax(260px,.75fr) minmax(0,1.65fr); }
 .core-inbox__list { border-right:1px solid var(--cue-border); }
 .core-inbox__list button { display:grid; grid-template-columns:82px minmax(0,1fr) auto; align-items:center; gap:12px; width:100%; min-height:72px; padding:12px 14px; border:0; border-bottom:1px solid var(--cue-border); background:transparent; color:var(--cue-text); text-align:left; cursor:pointer; }
@@ -320,15 +334,13 @@ function bookingTitle(booking: CoreBooking) {
 .core-inbox__detail h3 { margin:6px 0 3px; font-size:28px; line-height:1; }
 .core-inbox__detail header p { margin:0; color:var(--cue-muted); font-size:12px; }
 .core-inbox__header-actions { display:flex; align-items:flex-start; gap:7px; flex-wrap:wrap; justify-content:flex-end; }
-.core-inbox__status { align-self:flex-start; padding:7px 9px; border:1px solid var(--cue-border); font:700 9px monospace; text-transform:uppercase; }
-.core-inbox__archive { min-height:31px; padding:0 9px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 9px monospace; text-transform:uppercase; }
+.core-inbox__archive { min-height:34px; padding:0 10px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; text-transform:uppercase; }
 .core-inbox__archive:hover { border-color:var(--cue-accent); color:var(--cue-text); }
-.core-inbox__archive:disabled { opacity:.5; cursor:wait; }
-.core-inbox__readonly { margin:14px 0 0; padding:10px 12px; border:1px solid var(--cue-border); background:var(--cue-raised); color:var(--cue-muted); font-size:11px; line-height:1.45; }
-.core-inbox__filters--archive { padding-bottom:2px; }
+.core-inbox__status { align-self:flex-start; padding:7px 9px; border:1px solid var(--cue-border); font:700 9px monospace; text-transform:uppercase; }
 .core-inbox__status-control { display:grid; gap:4px; padding:6px 8px; }
 .core-inbox__status-control > span { color:var(--cue-muted); font:700 7px monospace; letter-spacing:.08em; }
 .core-inbox__status-control select { border:0; outline:0; background:transparent; color:var(--cue-text); font:700 9px monospace; text-transform:uppercase; cursor:pointer; }
+.core-inbox__readonly { margin:12px 0; padding:10px 12px; border-left:2px solid var(--cue-muted); background:var(--cue-raised); color:var(--cue-muted); font-size:11px; }
 .core-inbox__facts { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); margin:0; border-bottom:1px solid var(--cue-border); }
 .core-inbox__facts > div { min-width:0; padding:14px 12px 14px 0; }
 .core-inbox__facts dt { color:var(--cue-muted); font:700 9px monospace; text-transform:uppercase; }
@@ -340,11 +352,6 @@ function bookingTitle(booking: CoreBooking) {
 .core-inbox__activity article strong { font:700 10px monospace; text-transform:uppercase; color:var(--cue-accent); }
 .core-inbox__activity article time { color:var(--cue-muted); font:10px monospace; }
 .core-inbox__activity article p { margin:6px 0 0; color:var(--cue-text); font-size:12px; line-height:1.45; }
-.core-inbox__zero { display:grid; justify-items:start; gap:8px; padding:clamp(24px,5vw,48px); }
-.core-inbox__zero > span { color:var(--cue-accent); font:700 9px monospace; letter-spacing:.09em; text-transform:uppercase; }
-.core-inbox__zero > strong { max-width:520px; font-size:clamp(22px,3vw,38px); line-height:1; text-transform:uppercase; }
-.core-inbox__zero > p { max-width:560px; margin:0; color:var(--cue-muted); font-size:12px; line-height:1.5; }
-.core-inbox__zero > button { min-height:40px; margin-top:6px; padding:0 16px; border:1px solid var(--cue-accent); background:var(--cue-accent); color:#090909; cursor:pointer; font:800 10px monospace; }
 .core-inbox__empty { margin:0; padding:18px; color:var(--cue-muted); font-size:12px; }
 @media (max-width: 760px) {
   .core-inbox__layout { grid-template-columns:1fr; }
