@@ -17,6 +17,29 @@ function requiredEnv(name: string) {
   return value;
 }
 
+async function sha256Hex(value: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function schedulerTokenValid(
+  supabaseUrl: string,
+  serviceKey: string,
+  rawToken: string
+) {
+  if (!/^[0-9a-f]{64}$/i.test(rawToken)) return false;
+  const tokenHash = await sha256Hex(rawToken);
+  const rows = await serviceJson<boolean>(
+    `${supabaseUrl}/rest/v1/rpc/consume_notification_dispatch_token`,
+    {
+      method: "POST",
+      body: JSON.stringify({ target_token_hash: tokenHash })
+    },
+    serviceKey
+  );
+  return rows === true;
+}
+
 async function serviceJson<T>(
   url: string,
   init: RequestInit,
@@ -285,7 +308,14 @@ Deno.serve(async request => {
   const serviceKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
   const authorization = request.headers.get("Authorization") || "";
   const suppliedToken = authorization.replace(/^Bearer\s+/i, "").trim();
-  if (!suppliedToken || suppliedToken !== serviceKey) {
+  const schedulerToken = request.headers.get("x-cuebooker-dispatch-token")?.trim() || "";
+
+  const serviceRoleAuthenticated = Boolean(suppliedToken && suppliedToken === serviceKey);
+  const schedulerAuthenticated = serviceRoleAuthenticated
+    ? false
+    : await schedulerTokenValid(supabaseUrl, serviceKey, schedulerToken);
+
+  if (!serviceRoleAuthenticated && !schedulerAuthenticated) {
     return json({ error: "authentication_required" }, 401);
   }
 
