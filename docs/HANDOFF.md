@@ -508,9 +508,31 @@ Deploy Staging / PR preview run 35283306104: success
 processing/ready/recipient delivery indexes: present on staging
 ```
 
-Important remaining activation gate:
+Automatic first-attempt activation is now wired server-to-server from the existing ingress Edge Functions:
 
-The dispatcher is ready but no insecure public drain or database cron storing a service-role credential was introduced. Automatic periodic invocation still needs an approved internal scheduler/secret path. Until that is wired, notification events and delivery rows queue correctly but delivery is not autonomously drained.
+- `submit-booking-request` dispatches only when a new public Booking was actually created;
+- `booking-follow-up` dispatches only when a new external follow-up Activity was actually created;
+- `ingest-booking-email` dispatches only when at least one inbound email item was accepted;
+- each invocation authenticates to `dispatch-notification-emails` with the already-existing service-role secret held in Edge Function environment;
+- calls run through `EdgeRuntime.waitUntil`, so promoter-facing responses are not blocked by notification email delivery;
+- idempotent retries that do not create a new domain event do not trigger duplicate notification sends.
+
+Deployment state:
+
+```text
+submit-booking-request ACTIVE v14
+booking-follow-up ACTIVE v13
+ingest-booking-email ACTIVE v15
+dispatch-notification-emails ACTIVE v1
+```
+
+Validation:
+
+```text
+CI run 35284305515: tests + production build success
+```
+
+Remaining delivery gate: periodic retry draining for isolated failed deliveries is still not scheduled. First-attempt delivery is automatic; queued/failed retry recovery currently occurs on the next legitimate ingress-triggered dispatcher invocation. Do not add a database cron that stores the service-role credential in SQL.
 
 ## 14. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
@@ -612,7 +634,7 @@ Current sequencing is intentional:
 4. complete direct email reply webhook handshake when terminal access returns;
 5. close/gate the public-entry block;
 6. then open Smart Capture text + voice as a distinct feature block;
-7. wire secure automatic invocation for the deployed notification email dispatcher;
+7. add a secure periodic retry mechanism for isolated failed notification-email deliveries;
 8. commercial homepage/marketing redesign after operational product truth is strong enough to market honestly;
 9. billing/trial enforcement after first external beta feedback, unless launch timing requires it earlier.
 ```
