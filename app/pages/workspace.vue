@@ -89,6 +89,7 @@ const cueCoreLoading = ref(false)
 const cueMessage = ref('')
 const bookingCoreOperationsRevision = ref(0)
 const realBookingFocusId = ref('')
+const showSampleMode = ref(false)
 const demoReply = ref('')
 const tourStep = ref(-1)
 const settingsOpen = ref(false)
@@ -1180,10 +1181,10 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           </section>
 
           <aside class="panel next-panel">
-            <p class="eyebrow">{{ copy.sampleEyebrow }}</p>
-            <h2>{{ copy.sampleTitle }}</h2>
-            <p>{{ copy.sampleBody }}</p>
-            <button type="button" @click="activeView = 'bookings'">{{ copy.openBookings }}</button>
+            <p class="eyebrow">{{ cueEntryCopy.eyebrow }}</p>
+            <h2>{{ preferences.locale.value === 'es' ? '¿HA PASADO ALGO?' : 'DID SOMETHING HAPPEN?' }}</h2>
+            <p>{{ cueEntryCopy.body }}</p>
+            <button type="button" :disabled="!bookingCoreWorkspaceId" @click="cueOpen = true">+ CUE</button>
           </aside>
         </div>
       </section>
@@ -1206,7 +1207,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <p v-if="cueMessage" class="cue-entry-message">{{ cueMessage }}</p>
 
         <BookingCoreInbox
-          v-if="bookingCoreWorkspaceId && realBookings.length"
+          v-if="bookingCoreWorkspaceId"
           :workspace-id="bookingCoreWorkspaceId"
           :bookings="realBookings"
           :locale="preferences.locale.value"
@@ -1214,12 +1215,17 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           @operations-changed="handleBookingCoreOperationsChanged"
         />
 
-        <aside id="sample-mode" class="demo-notice" :class="{ 'tour-focus': tourStep === 0 }">
-          <div><span>{{ copy.samplesLabel }}</span><strong>{{ demoActiveBookings.length ? copy.samplesActive : copy.samplesRemoved }}</strong><p>{{ copy.samplesBody }}</p></div>
-          <div class="demo-notice__actions"><button class="guide-action" type="button" @click="startTour">{{ copy.guidedTour }}</button><button v-if="demoActiveBookings.length" type="button" @click="clearSampleBookings">{{ copy.removeSamples }}</button><button v-else type="button" @click="restoreSampleBookings">{{ copy.restoreSamples }}</button></div>
+        <aside v-if="!showSampleMode" class="demo-launch">
+          <div><span>{{ preferences.locale.value === 'es' ? 'DEMO / OPCIONAL' : 'DEMO / OPTIONAL' }}</span><strong>{{ preferences.locale.value === 'es' ? '¿Quieres explorar con datos simulados?' : 'Want to explore with sample data?' }}</strong></div>
+          <button type="button" @click="showSampleMode = true">{{ preferences.locale.value === 'es' ? 'Abrir demo' : 'Open demo' }}</button>
         </aside>
 
-        <div class="booking-toolbar-row">
+        <aside v-if="showSampleMode" id="sample-mode" class="demo-notice" :class="{ 'tour-focus': tourStep === 0 }">
+          <div><span>{{ copy.samplesLabel }}</span><strong>{{ demoActiveBookings.length ? copy.samplesActive : copy.samplesRemoved }}</strong><p>{{ copy.samplesBody }}</p></div>
+          <div class="demo-notice__actions"><button class="guide-action" type="button" @click="startTour">{{ copy.guidedTour }}</button><button v-if="demoActiveBookings.length" type="button" @click="clearSampleBookings">{{ copy.removeSamples }}</button><button v-else type="button" @click="restoreSampleBookings">{{ copy.restoreSamples }}</button><button type="button" @click="showSampleMode = false">{{ preferences.locale.value === 'es' ? 'Cerrar demo' : 'Close demo' }}</button></div>
+        </aside>
+
+        <div v-if="showSampleMode" class="booking-toolbar-row">
           <div class="booking-tools">
             <label class="booking-search">
               <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
@@ -1236,7 +1242,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <span class="booking-search-count">{{ demoFilteredBookings.length }} / {{ demoActiveBookings.length }} {{ copy.searchResults }}</span>
         </div>
 
-        <div class="booking-workspace demo-booking-workspace">
+        <div v-if="showSampleMode" class="booking-workspace demo-booking-workspace">
           <div id="workspace-list" class="booking-list" :class="{ 'tour-focus': tourStep === 2 }">
             <button v-for="booking in demoFilteredBookings" :key="booking.id" type="button" :class="{ active: selectedDemoBookingId === booking.id }" @click="selectDemoBooking(booking.id)">
               <span class="booking-list__date">{{ formatDemoDate(booking.event.date) }}</span>
@@ -1330,7 +1336,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           :refresh-key="bookingCoreOperationsRevision"
           @open-booking="openRealBooking"
         />
-        <div v-if="historyItems.length" class="history-tools">
+        <div v-if="showSampleMode && historyItems.length" class="history-tools">
           <label class="booking-search history-search">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
             <span class="sr-only">{{ copy.searchHistory }}</span>
@@ -1338,15 +1344,15 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           </label>
           <span>{{ filteredHistoryItems.length }} / {{ historyItems.length }}</span>
         </div>
-        <div v-if="paginatedHistoryItems.length" class="history-list">
+        <div v-if="showSampleMode && paginatedHistoryItems.length" class="history-list">
           <button v-for="item in paginatedHistoryItems" :id="item.id === `status-${item.bookingId}` ? `history-booking-${item.bookingId}` : undefined" :key="item.id" type="button" :aria-label="`${copy.openTrace}: ${item.title}`" @click="openHistoryItem(item.bookingId)"><time>{{ formatDemoTime(item.at) }}</time><i /><div><span>{{ item.kind }}</span><strong>{{ item.title }}</strong><p>{{ item.detail }}</p><small>{{ copy.openTrace }} <svg class="inline-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 7l5 5-5 5"/></svg></small></div></button>
         </div>
-        <div v-if="filteredHistoryItems.length > historyPageSize" class="history-pagination" aria-label="Pagination">
+        <div v-if="showSampleMode && filteredHistoryItems.length > historyPageSize" class="history-pagination" aria-label="Pagination">
           <button type="button" :disabled="historyPage <= 1" @click="historyPage -= 1">{{ copy.previousPage }}</button>
           <span>{{ copy.page }} {{ historyPage }} / {{ historyPageCount }}</span>
           <button type="button" :disabled="historyPage >= historyPageCount" @click="historyPage += 1">{{ copy.nextPage }}</button>
         </div>
-        <p v-if="!paginatedHistoryItems.length" class="workspace-empty">{{ copy.historyEmpty }}</p>
+        <p v-if="showSampleMode && !paginatedHistoryItems.length" class="workspace-empty">{{ copy.historyEmpty }}</p>
       </section>
 
       <section v-else class="view profile-view">
@@ -1579,6 +1585,12 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .next-panel button { margin-top: 28px; color: #090909; }
 .panel-empty { padding: 32px 22px; color: var(--cue-muted); }
 .panel-empty button { padding: 0; color: var(--cue-accent); }
+.demo-launch { display:flex; align-items:center; justify-content:space-between; gap:18px; margin:14px 0 18px; padding:12px 14px; border:1px dashed var(--cue-border); background:transparent; }
+.demo-launch div { min-width:0; }
+.demo-launch span { display:block; color:var(--cue-muted); font:700 8px monospace; letter-spacing:.1em; }
+.demo-launch strong { display:block; margin-top:4px; color:var(--cue-muted); font-size:11px; }
+.demo-launch button { flex:0 0 auto; min-height:34px; padding:0 11px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); cursor:pointer; font:700 9px monospace; text-transform:uppercase; }
+.demo-launch button:hover { border-color:var(--cue-accent); color:var(--cue-accent); }
 .demo-notice { display: flex; justify-content: space-between; align-items: center; gap: 28px; padding: 20px 22px; border: 1px solid #665f18; background: #17170d; }
 .demo-notice span { display: block; margin-bottom: 7px; color: #e8ff2f; font: 700 10px monospace; letter-spacing: .1em; }
 .demo-notice strong { font-size: 17px; }
@@ -1829,6 +1841,8 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .cue-entry-bar > button { min-width: 104px; min-height: 44px; padding: 0 18px; border: 0; background: var(--cue-accent); color: #090909; cursor: pointer; font-weight: 900; letter-spacing: .04em; }
 .cue-entry-message { margin: -2px 0 14px; padding: 9px 12px; border-left: 2px solid var(--cue-mint); color: var(--cue-muted); font-size: 11px; }
 @media (max-width: 760px) {
+  .demo-launch { align-items:stretch; flex-direction:column; }
+  .demo-launch button { width:100%; }
   .cue-entry-bar { align-items: stretch; gap: 10px; margin-bottom: 10px; padding: 11px 12px; }
   .cue-entry-bar span { font-size: 8px; }
   .cue-entry-bar strong { font-size: 12px; }
