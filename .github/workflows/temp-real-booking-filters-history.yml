@@ -6,7 +6,7 @@ on:
       - feature/app-visual-system
     paths:
       - .github/workflows/temp-real-booking-filters-history.yml
-      - scripts/temp_real_booking_filters_history.py
+      - scripts/temp_real_booking_filters_history_v2.py
 
 permissions:
   contents: write
@@ -20,7 +20,7 @@ jobs:
           ref: feature/app-visual-system
           fetch-depth: 0
       - name: Patch real booking filters/history
-        run: python scripts/temp_real_booking_filters_history.py
+        run: python scripts/temp_real_booking_filters_history_v2.py
       - name: Install
         run: npm ci
       - name: Generate
