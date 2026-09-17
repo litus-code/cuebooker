@@ -194,6 +194,22 @@ export interface CreateManualBookingInput {
   initialNote?: string | null
 }
 
+export interface UpdateBookingDetailsInput {
+  workspaceId: string
+  bookingId: string
+  eventName?: string | null
+  venueName?: string | null
+  city?: string | null
+  countryCode?: string | null
+  eventDate?: string | null
+  startTime?: string | null
+  endTime?: string | null
+  eventTimezone?: string | null
+  offerAmountMinor?: number | null
+  currency?: string | null
+  feeBasis?: string | null
+}
+
 export interface CreateActivityInput {
   workspaceId: string
   bookingId: string
