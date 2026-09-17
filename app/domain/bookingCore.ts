@@ -4,6 +4,7 @@ export type WorkspaceRole = 'owner' | 'admin' | 'manager' | 'editor' | 'viewer'
 export type CounterpartyKind = 'venue' | 'promoter' | 'agency' | 'festival' | 'brand' | 'other'
 export type BookingSource = 'booking_form' | 'phone' | 'whatsapp' | 'email' | 'instagram' | 'in_person' | 'manager' | 'manual' | 'other'
 export type CoreBookingStatus = 'new' | 'in_conversation' | 'waiting_response' | 'confirmed' | 'rejected' | 'cancelled'
+export type HoldStatus = 'active' | 'released' | 'converted'
 export type ActivityType =
   | 'phone'
   | 'email'
@@ -103,6 +104,37 @@ export interface Activity {
   created_at: string
 }
 
+export interface NextMove {
+  id: string
+  workspace_id: string
+  booking_id: string
+  label: string
+  due_at: string | null
+  assignee_user_id: string | null
+  completed_at: string | null
+  created_by: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Hold {
+  id: string
+  workspace_id: string
+  booking_id: string
+  event_date: string
+  starts_at: string | null
+  ends_at: string | null
+  event_timezone: string | null
+  expires_at: string | null
+  priority: number | null
+  status: HoldStatus
+  released_at: string | null
+  converted_at: string | null
+  created_by: string
+  created_at: string
+  updated_at: string
+}
+
 export interface CreateContactInput {
   workspaceId: string
   name: string
@@ -172,4 +204,23 @@ export interface CreateActivityInput {
   metadata?: Record<string, unknown>
   visibility?: ActivityVisibility
   occurredAt?: string
+}
+
+export interface SetNextMoveInput {
+  workspaceId: string
+  bookingId: string
+  label: string
+  dueAt?: string | null
+  assigneeUserId?: string | null
+}
+
+export interface CreateHoldInput {
+  workspaceId: string
+  bookingId: string
+  eventDate: string
+  startsAt?: string | null
+  endsAt?: string | null
+  eventTimezone?: string | null
+  expiresAt?: string | null
+  priority?: number | null
 }
