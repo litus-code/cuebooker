@@ -311,9 +311,16 @@ Deno.serve(async request => {
   const schedulerToken = request.headers.get("x-cuebooker-dispatch-token")?.trim() || "";
 
   const serviceRoleAuthenticated = Boolean(suppliedToken && suppliedToken === serviceKey);
-  const schedulerAuthenticated = serviceRoleAuthenticated
-    ? false
-    : await schedulerTokenValid(supabaseUrl, serviceKey, schedulerToken);
+  let schedulerAuthenticated = false;
+
+  if (!serviceRoleAuthenticated && schedulerToken) {
+    try {
+      schedulerAuthenticated = await schedulerTokenValid(supabaseUrl, serviceKey, schedulerToken);
+    } catch (error) {
+      console.error("dispatch-notification-emails scheduler-auth", error);
+      return json({ error: "scheduler_auth_failed" }, 500);
+    }
+  }
 
   if (!serviceRoleAuthenticated && !schedulerAuthenticated) {
     return json({ error: "authentication_required" }, 401);
