@@ -88,6 +88,7 @@ const cueOpen = ref(false)
 const cueCoreLoading = ref(false)
 const cueMessage = ref('')
 const bookingCoreOperationsRevision = ref(0)
+const realBookingFocusId = ref('')
 const demoReply = ref('')
 const tourStep = ref(-1)
 const settingsOpen = ref(false)
@@ -542,13 +543,15 @@ const cueEntryCopy = computed(() => preferences.locale.value === 'es' ? {
 })
 
 async function loadRealBookings() {
-  if (!bookingCoreWorkspaceId.value) { realBookings.value = []; return }
-  realBookings.value = await bookingCore.listBookings(bookingCoreWorkspaceId.value)
+  if (!bookingCoreWorkspaceId.value || !selectedArtistId.value) { realBookings.value = []; return }
+  realBookings.value = await bookingCore.listBookings(bookingCoreWorkspaceId.value, 100, selectedArtistId.value)
 }
 
 async function loadRealHolds() {
-  if (!bookingCoreWorkspaceId.value) { realHolds.value = []; return }
-  realHolds.value = await bookingCore.listHolds(bookingCoreWorkspaceId.value, undefined, true)
+  if (!bookingCoreWorkspaceId.value || !realBookings.value.length) { realHolds.value = []; return }
+  const bookingIds = new Set(realBookings.value.map(item => item.id))
+  const rows = await bookingCore.listHolds(bookingCoreWorkspaceId.value, undefined, true)
+  realHolds.value = rows.filter(hold => bookingIds.has(hold.booking_id))
 }
 
 async function ensureBookingCoreWorkspace() {
@@ -575,7 +578,8 @@ async function ensureBookingCoreWorkspace() {
     }
 
     bookingCoreWorkspaceId.value = resolvedWorkspaceId
-    await Promise.all([loadRealBookings(), loadRealHolds()])
+    await loadRealBookings()
+    await loadRealHolds()
   } catch (error: any) {
     // Legacy manager/admin accounts may need the owner to bootstrap once.
     // Do not block the existing workspace while that transition is incomplete.
@@ -592,13 +596,20 @@ async function handleCueCreated() {
   cueOpen.value = false
   cueMessage.value = cueEntryCopy.value.saved
   await loadRealBookings()
+  await loadRealHolds()
   bookingCoreOperationsRevision.value += 1
   window.setTimeout(() => { cueMessage.value = '' }, 4500)
 }
 
 async function handleBookingCoreOperationsChanged() {
   bookingCoreOperationsRevision.value += 1
-  await Promise.all([loadRealBookings(), loadRealHolds()])
+  await loadRealBookings()
+  await loadRealHolds()
+}
+
+function openRealBooking(bookingId: string) {
+  realBookingFocusId.value = bookingId
+  activeView.value = 'bookings'
 }
 
 async function loadWorkspaceIdentity() {
@@ -1199,6 +1210,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           :workspace-id="bookingCoreWorkspaceId"
           :bookings="realBookings"
           :locale="preferences.locale.value"
+          :focus-booking-id="realBookingFocusId"
           @operations-changed="handleBookingCoreOperationsChanged"
         />
 
@@ -1293,10 +1305,10 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               <button v-for="block in dayBlocks" :key="block.id" class="timeline-block" :class="`timeline-block--${block.status}`" :style="blockStyle(block)" type="button" @click.stop="openCalendarBlock(block)">
                 <strong>{{ block.label || statusLabel(block.status) }}</strong><span>{{ time(block.starts_at) }}–{{ time(block.ends_at) }}</span>
               </button>
-              <button v-for="hold in selectedDayTimedCoreHolds" :key="`core-hold-${hold.id}`" class="timeline-block timeline-block--hold core-timeline-hold" :style="coreHoldStyle(hold)" type="button" @click.stop="activeView = 'bookings'">
+              <button v-for="hold in selectedDayTimedCoreHolds" :key="`core-hold-${hold.id}`" class="timeline-block timeline-block--hold core-timeline-hold" :style="coreHoldStyle(hold)" type="button" @click.stop="openRealBooking(hold.booking_id)">
                 <strong>{{ coreHoldLabel(hold) }}</strong><span>{{ hold.starts_at ? new Date(hold.starts_at).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' }) : '' }}–{{ hold.ends_at ? new Date(hold.ends_at).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' }) : '' }}</span>
               </button>
-              <button v-for="booking in selectedDayTimedConfirmedBookings" :key="`core-confirmed-${booking.id}`" class="timeline-block timeline-block--confirmed core-timeline-confirmed" :style="coreBookingTimeStyle(booking)" type="button" @click.stop="activeView = 'bookings'">
+              <button v-for="booking in selectedDayTimedConfirmedBookings" :key="`core-confirmed-${booking.id}`" class="timeline-block timeline-block--confirmed core-timeline-confirmed" :style="coreBookingTimeStyle(booking)" type="button" @click.stop="openRealBooking(booking.id)">
                 <strong>{{ coreBookingLabel(booking) }}</strong><span>{{ booking.start_time?.slice(0, 5) }}–{{ booking.end_time?.slice(0, 5) }}</span>
               </button>
             </div>
@@ -1310,6 +1322,14 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
           <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
+        <BookingCoreHistory
+          v-if="bookingCoreWorkspaceId"
+          :workspace-id="bookingCoreWorkspaceId"
+          :bookings="realBookings"
+          :locale="preferences.locale.value"
+          :refresh-key="bookingCoreOperationsRevision"
+          @open-booking="openRealBooking"
+        />
         <div v-if="historyItems.length" class="history-tools">
           <label class="booking-search history-search">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>

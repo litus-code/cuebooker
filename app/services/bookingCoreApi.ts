@@ -193,11 +193,12 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     return row
   }
 
-  async function listBookings(workspaceId: string, limit = 50) {
+  async function listBookings(workspaceId: string, limit = 50, artistId?: string) {
     return $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/bookings`, {
       headers: authHeaders(),
       query: {
         workspace_id: `eq.${workspaceId}`,
+        ...(artistId ? { artist_id: `eq.${artistId}` } : {}),
         select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
         order: 'updated_at.desc',
         limit: String(Math.min(Math.max(limit, 1), 100))
@@ -327,6 +328,20 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         select: 'id,workspace_id,booking_id,type,direction,contact_id,actor_user_id,body,metadata,visibility,occurred_at,created_by,created_at',
         order: 'occurred_at.asc',
         limit: String(Math.min(Math.max(limit, 1), 200))
+      }
+    })
+  }
+
+  async function listWorkspaceActivities(workspaceId: string, bookingIds: string[] = [], limit = 200) {
+    if (!bookingIds.length) return [] as Activity[]
+    return $fetch<Activity[]>(`${baseUrl}/rest/v1/activities`, {
+      headers: authHeaders(),
+      query: {
+        workspace_id: `eq.${workspaceId}`,
+        booking_id: `in.(${bookingIds.join(',')})`,
+        select: 'id,workspace_id,booking_id,type,direction,contact_id,actor_user_id,body,metadata,visibility,occurred_at,created_by,created_at',
+        order: 'occurred_at.desc',
+        limit: String(Math.min(Math.max(limit, 1), 500))
       }
     })
   }
@@ -469,6 +484,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     updateBookingDetails,
     setBookingStatus,
     listActivities,
+    listWorkspaceActivities,
     createActivity,
     listNextMoves,
     setNextMove,

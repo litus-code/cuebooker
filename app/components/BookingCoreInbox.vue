@@ -5,6 +5,7 @@ const props = defineProps<{
   workspaceId: string
   bookings: CoreBooking[]
   locale: 'es' | 'en'
+  focusBookingId?: string
 }>()
 
 const emit = defineEmits<{ operationsChanged: [] }>()
@@ -16,6 +17,8 @@ const activities = ref<Activity[]>([])
 const loadingMeta = ref(false)
 const loadingActivity = ref(false)
 const updatingStatus = ref(false)
+const realSearch = ref('')
+const realStatusFilter = ref<'all' | CoreBookingStatus>('all')
 
 const copy = computed(() => props.locale === 'es' ? {
   eyebrow: 'BOOKINGS / REALES',
@@ -45,7 +48,18 @@ const sourceLabels = computed<Record<string, string>>(() => props.locale === 'es
   booking_form: 'Booking form', phone: 'Phone', whatsapp: 'WhatsApp', email: 'Email', instagram: 'Instagram', in_person: 'In person', manager: 'Manager', manual: 'Manual', other: 'Other'
 })
 
-const selectedBooking = computed(() => props.bookings.find(item => item.id === selectedBookingId.value) || props.bookings[0] || null)
+const visibleBookings = computed(() => {
+  const query = realSearch.value.trim().toLowerCase()
+  return props.bookings.filter(booking => {
+    if (realStatusFilter.value !== 'all' && booking.status !== realStatusFilter.value) return false
+    if (!query) return true
+    const party = booking.counterparty_id ? counterparties.value.find(item => item.id === booking.counterparty_id) : null
+    const contact = booking.primary_contact_id ? contacts.value.find(item => item.id === booking.primary_contact_id) : null
+    return [booking.event_name, booking.venue_name, booking.city, booking.source, party?.name, contact?.name, contact?.email]
+      .filter(Boolean).join(' ').toLowerCase().includes(query)
+  })
+})
+const selectedBooking = computed(() => props.bookings.find(item => item.id === selectedBookingId.value) || visibleBookings.value[0] || props.bookings[0] || null)
 const selectedContact = computed(() => selectedBooking.value?.primary_contact_id ? contacts.value.find(item => item.id === selectedBooking.value?.primary_contact_id) || null : null)
 const selectedCounterparty = computed(() => selectedBooking.value?.counterparty_id ? counterparties.value.find(item => item.id === selectedBooking.value?.counterparty_id) || null : null)
 
@@ -53,6 +67,18 @@ watch(() => props.bookings, value => {
   if (!value.length) selectedBookingId.value = ''
   else if (!value.some(item => item.id === selectedBookingId.value)) selectedBookingId.value = value[0].id
 }, { immediate: true, deep: true })
+
+watch(() => props.focusBookingId, value => {
+  if (value && props.bookings.some(item => item.id === value)) {
+    realSearch.value = ''
+    realStatusFilter.value = 'all'
+    selectedBookingId.value = value
+  }
+}, { immediate: true })
+
+watch(visibleBookings, value => {
+  if (value.length && !value.some(item => item.id === selectedBookingId.value)) selectedBookingId.value = value[0].id
+}, { deep: true })
 
 watch(() => props.workspaceId, async value => {
   if (!value) return
@@ -147,10 +173,20 @@ function bookingTitle(booking: CoreBooking) {
 
     <p v-if="!bookings.length" class="core-inbox__empty">{{ copy.empty }}</p>
 
-    <div v-else class="core-inbox__layout">
+    <div v-if="bookings.length" class="core-inbox__tools">
+      <input v-model="realSearch" type="search" :placeholder="locale === 'es' ? 'Buscar booking, sala, contacto…' : 'Search booking, venue, contact…'">
+      <div class="core-inbox__filters">
+        <button type="button" :class="{ active: realStatusFilter === 'all' }" @click="realStatusFilter = 'all'">{{ locale === 'es' ? 'Todos' : 'All' }} · {{ bookings.length }}</button>
+        <button v-for="(label, status) in statusLabels" :key="status" type="button" :class="{ active: realStatusFilter === status }" @click="realStatusFilter = status">{{ label }} · {{ bookings.filter(item => item.status === status).length }}</button>
+      </div>
+    </div>
+
+    <p v-if="bookings.length && !visibleBookings.length" class="core-inbox__empty">{{ locale === 'es' ? 'No hay bookings con estos filtros.' : 'No bookings match these filters.' }}</p>
+
+    <div v-else-if="bookings.length" class="core-inbox__layout">
       <div class="core-inbox__list">
         <button
-          v-for="booking in bookings"
+          v-for="booking in visibleBookings"
           :key="booking.id"
           type="button"
           :class="{ active: selectedBooking?.id === booking.id }"
@@ -216,6 +252,11 @@ function bookingTitle(booking: CoreBooking) {
 .core-inbox__heading span { display:block; color:var(--cue-accent); font:700 9px/1.2 monospace; letter-spacing:.11em; }
 .core-inbox__heading strong { display:block; margin-top:4px; font-size:15px; }
 .core-inbox__heading b { min-width:34px; text-align:center; font:700 12px monospace; color:var(--cue-accent); }
+.core-inbox__tools { display:grid; gap:8px; padding:10px; border-bottom:1px solid var(--cue-border); }
+.core-inbox__tools > input { min-height:36px; border:1px solid var(--cue-border); background:var(--cue-raised); color:var(--cue-text); padding:0 10px; }
+.core-inbox__filters { display:flex; gap:4px; overflow-x:auto; scrollbar-width:thin; }
+.core-inbox__filters button { flex:0 0 auto; min-height:29px; padding:0 8px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; text-transform:uppercase; }
+.core-inbox__filters button.active { border-color:var(--cue-accent); color:var(--cue-accent); }
 .core-inbox__layout { display:grid; grid-template-columns:minmax(260px,.75fr) minmax(0,1.65fr); }
 .core-inbox__list { border-right:1px solid var(--cue-border); }
 .core-inbox__list button { display:grid; grid-template-columns:82px minmax(0,1fr) auto; align-items:center; gap:12px; width:100%; min-height:72px; padding:12px 14px; border:0; border-bottom:1px solid var(--cue-border); background:transparent; color:var(--cue-text); text-align:left; cursor:pointer; }
