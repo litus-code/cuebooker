@@ -69,6 +69,34 @@ test('accepts ISO and slash date formats', () => {
   )
 })
 
+test('rejects impossible calendar dates instead of normalizing them', () => {
+  assert.equal(
+    interpretCueText('Fecha 31/02/2027', 'es', new Date('2026-09-17T09:00:00Z')).eventDate,
+    undefined
+  )
+  assert.equal(
+    interpretCueText('February 30, 2027', 'en', new Date('2026-09-17T09:00:00Z')).eventDate,
+    undefined
+  )
+})
+
+test('parses common European and English booking fee formats consistently', () => {
+  const now = new Date('2026-09-17T09:00:00Z')
+  const cases: Array<[string, number, string]> = [
+    ['Oferta 1.200 €', 120000, 'EUR'],
+    ['Oferta 1,200 €', 120000, 'EUR'],
+    ['Oferta 1.200,50 €', 120050, 'EUR'],
+    ['Offer $1,200.50', 120050, 'USD'],
+    ['Fee £950', 95000, 'GBP']
+  ]
+
+  for (const [text, minor, currency] of cases) {
+    const result = interpretCueText(text, currency === 'EUR' ? 'es' : 'en', now)
+    assert.equal(result.offerAmountMinor, minor, text)
+    assert.equal(result.currency, currency, text)
+  }
+})
+
 test('does not fabricate structured data from unrelated text', () => {
   const result = interpretCueText(
     'Fue una conversación interesante y ya hablaremos más adelante.',
