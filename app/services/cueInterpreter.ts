@@ -67,7 +67,8 @@ function extractDate(raw: string, now: Date) {
     return isoDate(year, month, day)
   }
 
-  if (/\b(mañana|demà|tomorrow)\b/i.test(raw)) {
+  // Avoid JavaScript's ASCII-oriented \b around accented words such as "demà".
+  if (/(?:^|[\s,.;:!?])(mañana|demà|tomorrow)(?=$|[\s,.;:!?])/iu.test(raw)) {
     const date = new Date(now)
     date.setDate(date.getDate() + 1)
     return isoDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
@@ -102,7 +103,9 @@ function parseAmount(raw: string) {
 }
 
 function extractMoney(raw: string) {
-  const match = raw.match(/(?:€|£|\$|EUR|GBP|USD)\s*([0-9][0-9.,\s]*)|([0-9][0-9.,\s]*)\s*(€|£|\$|EUR|GBP|USD)/i)
+  // The numeric capture must end in a digit. This prevents a date fragment such
+  // as "October 10, $1,250" from being interpreted as "$10".
+  const match = raw.match(/(?:€|£|\$|EUR|GBP|USD)\s*([0-9](?:[0-9.,\s]*[0-9])?)|([0-9](?:[0-9.,\s]*[0-9])?)\s*(€|£|\$|EUR|GBP|USD)/i)
   if (!match) return {}
   const amountRaw = (match[1] || match[2] || '').trim()
   const token = (match[3] || match[0].match(/€|£|\$|EUR|GBP|USD/i)?.[0] || '').toUpperCase()
