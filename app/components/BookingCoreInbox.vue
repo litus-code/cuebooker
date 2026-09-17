@@ -204,7 +204,7 @@ function bookingTitle(booking: CoreBooking) {
       <button type="button" @click="emit('cueRequested')">{{ copy.emptyAction }}</button>
     </div>
 
-    <div v-if="bookings.length" class="core-inbox__tools">
+    <div v-if="bookings.length" id="core-inbox-tools" class="core-inbox__tools">
       <input v-model="realSearch" type="search" :placeholder="locale === 'es' ? 'Buscar booking, sala, contacto…' : 'Search booking, venue, contact…'">
       <div class="core-inbox__filters core-inbox__filters--archive">
         <button type="button" :class="{ active: archiveView === 'active' }" @click="archiveView = 'active'">{{ copy.active }} · {{ bookings.filter(item => !item.archived_at).length }}</button>
@@ -219,7 +219,7 @@ function bookingTitle(booking: CoreBooking) {
     <p v-if="bookings.length && !visibleBookings.length" class="core-inbox__empty">{{ locale === 'es' ? 'No hay bookings con estos filtros.' : 'No bookings match these filters.' }}</p>
 
     <div v-else-if="bookings.length" class="core-inbox__layout">
-      <div class="core-inbox__list">
+      <div id="core-inbox-list" class="core-inbox__list">
         <button
           v-for="booking in visibleBookings"
           :key="booking.id"
@@ -233,7 +233,7 @@ function bookingTitle(booking: CoreBooking) {
         </button>
       </div>
 
-      <article v-if="selectedBooking" class="core-inbox__detail">
+      <article v-if="selectedBooking" id="core-inbox-detail" class="core-inbox__detail">
         <header>
           <div>
             <span>{{ sourceLabels[selectedBooking.source] || selectedBooking.source }}</span>
@@ -247,7 +247,7 @@ function bookingTitle(booking: CoreBooking) {
           </div>
         </header>
 
-        <dl class="core-inbox__facts">
+        <dl id="core-inbox-facts" class="core-inbox__facts">
           <div><dt>{{ copy.date }}</dt><dd>{{ formatDate(selectedBooking.event_date) }}</dd></div>
           <div><dt>{{ copy.venue }}</dt><dd>{{ selectedCounterparty?.name || selectedBooking.venue_name || copy.noVenue }}</dd></div>
           <div><dt>{{ copy.contact }}</dt><dd>{{ loadingMeta ? '…' : selectedContact?.name || copy.noContact }}</dd></div>
@@ -274,6 +274,7 @@ function bookingTitle(booking: CoreBooking) {
         />
 
         <BookingCoreOperations
+          id="core-inbox-operations"
           v-if="!selectedBooking.archived_at"
           :workspace-id="workspaceId"
           :booking="selectedBooking"
@@ -282,6 +283,7 @@ function bookingTitle(booking: CoreBooking) {
         />
 
         <BookingActivityComposer
+          id="core-inbox-activity-composer"
           v-if="!selectedBooking.archived_at"
           :workspace-id="workspaceId"
           :booking="selectedBooking"

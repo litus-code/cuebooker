@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { bookingStatuses, statusTone, type BookingStatus } from '../domain/booking'
 import type { FeeBasis } from '../composables/useArtistProfile'
 import type { CoreBooking, Hold } from '../domain/bookingCore'
 
@@ -74,13 +73,7 @@ const editingBlockId = ref<string | null>(null)
 const rosterArtistName = ref('')
 const rosterArtistSlug = ref('')
 const rosterSubmitting = ref(false)
-const bookingFilter = ref<'all' | BookingStatus>('all')
-const bookingSearch = ref('')
-const historySearch = ref('')
-const historyPage = ref(1)
-const historyPageSize = 10
 const sidebarCollapsed = ref(false)
-const selectedDemoBookingId = ref('')
 const bookingCoreWorkspaceId = ref('')
 const realBookings = ref<CoreBooking[]>([])
 const realHolds = ref<Hold[]>([])
@@ -89,8 +82,6 @@ const cueCoreLoading = ref(false)
 const cueMessage = ref('')
 const bookingCoreOperationsRevision = ref(0)
 const realBookingFocusId = ref('')
-const showSampleMode = ref(route.query.demo === '1')
-const demoReply = ref('')
 const tourStep = ref(-1)
 const settingsOpen = ref(false)
 const passwordCurrent = ref('')
@@ -117,7 +108,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   rosterBody: 'Quedará asociado al roster y podrás empezar a gestionar su actividad.', artistName: 'Nombre artístico', identifier: 'Identificador', creating: 'Creando…', addArtist: 'Añadir artista',
   noArtist: 'No hay un artista gestionable en esta cuenta.', noArtistBody: 'Tu cuenta todavía no tiene un artista o roster asignado.',
   overviewEyebrow: 'WORKSPACE / RESUMEN', overviewTitle: 'QUÉ NECESITA TU ATENCIÓN.', overviewBody: 'Una entrada rápida a los bookings y fechas del artista, sin convertir el calendario en todo el producto.', profileCard: 'Ficha profesional', profileCardBody: 'Completa o actualiza los datos del artista.',
-  realBookings: 'Bookings reales', realBookingsBody: 'Aún sin conectar. La bandeja completa está disponible con ejemplos.', holdsMonth: 'Holds este mes', holdsBody: 'Fechas pendientes de decisión.', confirmed: 'Confirmados', confirmedStatus: 'Confirmado', confirmedBody: 'Horarios confirmados este mes.', occupiedDays: 'Días ocupados', occupiedBody: 'Con al menos un horario registrado.',
+  realBookings: 'Bookings reales', realBookingsBody: 'El workspace operativo todavía no está disponible para este artista.', holdsMonth: 'Holds este mes', holdsBody: 'Fechas pendientes de decisión.', confirmed: 'Confirmados', confirmedStatus: 'Confirmado', confirmedBody: 'Horarios confirmados este mes.', occupiedDays: 'Días ocupados', occupiedBody: 'Con al menos un horario registrado.',
   agendaEyebrow: 'AGENDA / ESTE MES', upcoming: 'Próximos horarios', viewCalendar: 'Ver calendario', privateSlot: 'Horario privado', noUpcoming: 'No hay horarios próximos registrados en este mes.', addSlot: 'Añadir horario',
   sampleEyebrow: 'BOOKINGS / MODO PRUEBA', sampleTitle: 'PRUEBA LA BANDEJA COMPLETA.', sampleBody: 'Las solicitudes reales todavía no están conectadas a esta cuenta. Puedes probar ahora los filtros, ofertas, conversaciones y cambios de estado con datos simulados.', openBookings: 'Abrir Bookings',
   bookingsEyebrow: 'BOOKINGS / BANDEJA', bookingsTitle: 'TODOS TUS BOOKINGS. UN SOLO HILO.',
@@ -151,7 +142,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   rosterBody: 'They will be linked to the roster so you can start managing their activity.', artistName: 'Artist name', identifier: 'Identifier', creating: 'Creating…', addArtist: 'Add artist',
   noArtist: 'There is no manageable artist in this account.', noArtistBody: 'Your account does not have an assigned artist or roster yet.',
   overviewEyebrow: 'WORKSPACE / OVERVIEW', overviewTitle: 'WHAT NEEDS YOUR ATTENTION.', overviewBody: 'A quick view of the artist’s bookings and dates without making the calendar the whole product.', profileCard: 'Professional profile', profileCardBody: 'Complete or update the artist details.',
-  realBookings: 'Real bookings', realBookingsBody: 'Not connected yet. The complete inbox is available with examples.', holdsMonth: 'Holds this month', holdsBody: 'Dates waiting for a decision.', confirmed: 'Confirmed', confirmedStatus: 'Confirmed', confirmedBody: 'Confirmed slots this month.', occupiedDays: 'Occupied days', occupiedBody: 'With at least one registered slot.',
+  realBookings: 'Real bookings', realBookingsBody: 'The operational workspace is not available for this artist yet.', holdsMonth: 'Holds this month', holdsBody: 'Dates waiting for a decision.', confirmed: 'Confirmed', confirmedStatus: 'Confirmed', confirmedBody: 'Confirmed slots this month.', occupiedDays: 'Occupied days', occupiedBody: 'With at least one registered slot.',
   agendaEyebrow: 'AGENDA / THIS MONTH', upcoming: 'Upcoming slots', viewCalendar: 'View calendar', privateSlot: 'Private slot', noUpcoming: 'There are no upcoming slots registered this month.', addSlot: 'Add slot',
   sampleEyebrow: 'BOOKINGS / SAMPLE MODE', sampleTitle: 'TRY THE COMPLETE INBOX.', sampleBody: 'Real requests are not connected to this account yet. You can try filters, offers, conversations and status changes with sample data.', openBookings: 'Open Bookings',
   bookingsEyebrow: 'BOOKINGS / INBOX', bookingsTitle: 'ALL YOUR BOOKINGS. ONE THREAD.',
@@ -181,32 +172,30 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
 })
 
 const tourSteps = computed(() => preferences.locale.value === 'es' ? [
-  { view: 'bookings' as const, target: 'sample-mode', title: 'Solicitudes de ejemplo', body: 'Cada cuenta empieza con solicitudes simuladas para que puedas entender el flujo antes de recibir la primera real.' },
-  { view: 'bookings' as const, target: 'workspace-filters', title: 'Filtra por estado', body: 'Los colores separan solicitudes nuevas, revisiones, respuestas pendientes y fechas confirmadas.' },
-  { view: 'bookings' as const, target: 'workspace-list', title: 'Abre un booking', body: 'La lista reúne la fecha, sala, artista, ciudad y estado. Selecciona una fila para abrir el detalle.' },
-  { view: 'bookings' as const, target: 'workspace-status', title: 'Estado automático', body: 'Abrir una solicitud la mueve a revisión. Responder actualiza quién tiene la siguiente acción.' },
-  { view: 'bookings' as const, target: 'workspace-details', title: 'Oferta y producción', body: 'Fecha, aforo, horario, oferta y contacto permanecen unidos al mismo booking.' },
-  { view: 'bookings' as const, target: 'workspace-reply', title: 'Conversación continua', body: 'Las respuestas se añaden al hilo. En estos ejemplos permanecen dentro del navegador y no envían emails.' },
-  { view: 'bookings' as const, target: 'workspace-actions', title: 'Decide el resultado', body: 'Confirmar o rechazar son decisiones manuales. Los demás cambios de estado siguen la actividad.' },
-  { view: 'calendar' as const, target: 'workspace-calendar', title: 'Revisa el día completo', body: 'El calendario real de la cuenta muestra el mes y las 24 horas del día seleccionado para evitar solapamientos.' }
+  { view: 'bookings' as const, target: 'workspace-cue', title: 'Captura rápida', body: 'Registra una llamada, un WhatsApp, un email o una conversación en cuanto ocurre. El booking puede empezar con pocos datos.' },
+  { view: 'bookings' as const, target: 'core-inbox-tools', title: 'Busca y filtra', body: 'La bandeja real separa activos y archivados, permite buscar y filtrar por estado sin salir del workspace.' },
+  { view: 'bookings' as const, target: 'core-inbox-list', title: 'Abre un booking', body: 'Cada fila mantiene fecha, entidad, origen y estado. Selecciona una para trabajar sobre su hilo real.' },
+  { view: 'bookings' as const, target: 'core-inbox-detail', title: 'Un hilo por booking', body: 'El booking concentra su contexto, estado, relación, conflictos, operativa y Activity en una sola superficie.' },
+  { view: 'bookings' as const, target: 'core-inbox-facts', title: 'Datos de la propuesta', body: 'Fecha, sala o entidad, contacto y oferta permanecen ligados al booking y se editan sin crear duplicados.' },
+  { view: 'bookings' as const, target: 'core-inbox-operations', title: 'Siguiente paso y holds', body: 'Define qué toca hacer y protege fechas con holds. El calendario los proyecta desde Booking Core.' },
+  { view: 'bookings' as const, target: 'core-inbox-activity-composer', title: 'Activity', body: 'Registra notas, llamadas, WhatsApp, Instagram o email para conservar la traza profesional del booking.' },
+  { view: 'calendar' as const, target: 'workspace-calendar', title: 'Revisa el día completo', body: 'El calendario combina disponibilidad privada, holds y bookings confirmados sin duplicar la fuente de verdad.' }
 ] : [
-  { view: 'bookings' as const, target: 'sample-mode', title: 'Sample requests', body: 'Every account starts with sample requests so you can understand the flow before the first real one arrives.' },
-  { view: 'bookings' as const, target: 'workspace-filters', title: 'Filter by status', body: 'Colours separate new requests, reviews, pending replies and confirmed dates.' },
-  { view: 'bookings' as const, target: 'workspace-list', title: 'Open a booking', body: 'The list brings together date, venue, artist, city and status. Select a row to open its details.' },
-  { view: 'bookings' as const, target: 'workspace-status', title: 'Automatic status', body: 'Opening a request moves it to review. Replying updates who needs to act next.' },
-  { view: 'bookings' as const, target: 'workspace-details', title: 'Offer and production', body: 'Date, capacity, schedule, offer and contact stay attached to the same booking.' },
-  { view: 'bookings' as const, target: 'workspace-reply', title: 'Continuous conversation', body: 'Replies are added to the thread. These examples remain in the browser and do not send email.' },
-  { view: 'bookings' as const, target: 'workspace-actions', title: 'Decide the outcome', body: 'Confirming or rejecting are manual decisions. Other status changes follow activity.' },
-  { view: 'calendar' as const, target: 'workspace-calendar', title: 'Review the full day', body: 'The real account calendar shows the month and all 24 hours of the selected day to prevent overlaps.' }
+  { view: 'bookings' as const, target: 'workspace-cue', title: 'Quick capture', body: 'Log a call, WhatsApp, email or conversation as soon as it happens. A booking can start with only a few details.' },
+  { view: 'bookings' as const, target: 'core-inbox-tools', title: 'Search and filter', body: 'The real inbox separates active and archived work, with search and status filters inside the workspace.' },
+  { view: 'bookings' as const, target: 'core-inbox-list', title: 'Open a booking', body: 'Each row keeps date, entity, source and status together. Select one to work on its real thread.' },
+  { view: 'bookings' as const, target: 'core-inbox-detail', title: 'One thread per booking', body: 'The booking keeps context, status, relationship memory, conflicts, operations and Activity in one surface.' },
+  { view: 'bookings' as const, target: 'core-inbox-facts', title: 'Proposal details', body: 'Date, venue or entity, contact and offer stay attached to the booking and can be edited without duplicates.' },
+  { view: 'bookings' as const, target: 'core-inbox-operations', title: 'Next move and holds', body: 'Define what needs to happen next and protect dates with holds. Calendar projects them from Booking Core.' },
+  { view: 'bookings' as const, target: 'core-inbox-activity-composer', title: 'Activity', body: 'Log notes, calls, WhatsApp, Instagram or email to preserve the professional trace of the booking.' },
+  { view: 'calendar' as const, target: 'workspace-calendar', title: 'Review the full day', body: 'Calendar combines private availability, holds and confirmed bookings without duplicating the source of truth.' }
 ])
 
 const manageableAgency = computed(() => organizations.value.find(item => item.type === 'agency' && ['owner', 'admin'].includes(item.role)))
 const ownerAgency = computed(() => organizations.value.find(item => item.type === 'agency' && item.role === 'owner'))
 const selectedArtist = computed(() => artists.value.find(item => item.id === selectedArtistId.value))
 const canEditSelectedArtist = computed(() => ['owner', 'manager'].includes(selectedArtist.value?.role || ''))
-const sampleNamespace = computed(() => auth.session.value?.user.id && selectedArtistId.value ? `workspace-${auth.session.value.user.id}-${selectedArtistId.value}` : undefined)
-const sampleArtistName = computed(() => selectedArtist.value?.stage_name)
-const demo = useBookingDemo(sampleNamespace, sampleArtistName)
+const tourNamespace = computed(() => auth.session.value?.user.id && selectedArtistId.value ? `workspace-${auth.session.value.user.id}-${selectedArtistId.value}` : undefined)
 const dateLocale = computed(() => preferences.locale.value === 'es' ? 'es-ES' : 'en-GB')
 const monthLabel = computed(() => new Intl.DateTimeFormat(dateLocale.value, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${monthCursor.value}T12:00:00Z`)))
 const selectedDateLabel = computed(() => new Intl.DateTimeFormat(dateLocale.value, { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${selectedDate.value}T12:00:00Z`)))
@@ -258,27 +247,6 @@ const holdCount = computed(() => blocks.value.filter(block => block.status === '
 const confirmedCount = computed(() => blocks.value.filter(block => block.status === 'confirmed').length + realBookings.value.filter(booking => !booking.archived_at && booking.status === 'confirmed').length)
 const occupiedDays = computed(() => new Set([...blocks.value.map(block => block.starts_at.slice(0, 10)), ...realHolds.value.filter(hold => hold.status === 'active').map(hold => hold.event_date), ...realBookings.value.filter(booking => !booking.archived_at && booking.status === 'confirmed' && booking.event_date).map(booking => booking.event_date as string)]).size)
 const validTimeRange = computed(() => endTime.value > startTime.value)
-const demoActiveBookings = computed(() => demo.bookings.value.filter(item => !item.archived))
-const demoFilteredBookings = computed(() => {
-  const query = bookingSearch.value.trim().toLocaleLowerCase(preferences.locale.value === 'es' ? 'es' : 'en')
-  return demoActiveBookings.value.filter(item => {
-    if (bookingFilter.value !== 'all' && item.status !== bookingFilter.value) return false
-    if (!query) return true
-    const haystack = [
-      item.id,
-      item.artistName,
-      item.event.name,
-      item.event.venue,
-      item.event.city,
-      item.promoter.name,
-      item.promoter.email,
-      item.promoter.phone || ''
-    ].join(' ').toLocaleLowerCase(preferences.locale.value === 'es' ? 'es' : 'en')
-    return haystack.includes(query)
-  })
-})
-const selectedDemoBooking = computed(() => demo.bookings.value.find(item => item.id === selectedDemoBookingId.value))
-const demoCounts = computed(() => Object.fromEntries(bookingStatuses.map(status => [status, demoActiveBookings.value.filter(item => item.status === status).length])))
 const currentTour = computed(() => tourStep.value >= 0 ? tourSteps.value[tourStep.value] : null)
 const hasArtistSelector = computed(() => artists.value.length > 1)
 const profileCompletion = computed(() => {
@@ -314,34 +282,6 @@ const profilePreviewLinks = computed(() => [
   .map(link => ({ ...link, url: link.url.trim() }))
   .filter(link => /^https?:\/\//i.test(link.url)))
 const profileCoverSource = computed(() => profileCoverUrl.value || '/images/profile/cuebooker-default-cover.webp')
-const historyItems = computed(() => demo.bookings.value.flatMap(booking => [
-  ...booking.messages.map(message => ({
-    id: message.id,
-    bookingId: booking.id,
-    at: message.createdAt,
-    kind: copy.value.historyMessage,
-    title: `${message.actor === 'artist' ? booking.artistName : booking.promoter.name} · ${booking.event.venue}`,
-    detail: message.body
-  })),
-  {
-    id: `status-${booking.id}`,
-    bookingId: booking.id,
-    at: booking.updatedAt,
-    kind: copy.value.historyStatus,
-    title: `${booking.event.venue} · ${demoStatusLabel(booking.status)}`,
-    detail: `${booking.event.city} · ${formatDemoDate(booking.event.date)}`
-  }
-]).sort((a, b) => b.at.localeCompare(a.at)))
-const filteredHistoryItems = computed(() => {
-  const query = historySearch.value.trim().toLocaleLowerCase(preferences.locale.value === 'es' ? 'es' : 'en')
-  if (!query) return historyItems.value
-  return historyItems.value.filter(item => [item.kind, item.title, item.detail].join(' ').toLocaleLowerCase(preferences.locale.value === 'es' ? 'es' : 'en').includes(query))
-})
-const historyPageCount = computed(() => Math.max(1, Math.ceil(filteredHistoryItems.value.length / historyPageSize)))
-const paginatedHistoryItems = computed(() => {
-  const start = (historyPage.value - 1) * historyPageSize
-  return filteredHistoryItems.value.slice(start, start + historyPageSize)
-})
 const hours = Array.from({ length: 24 }, (_, index) => `${String(index).padStart(2, '0')}:00`)
 
 onMounted(async () => {
@@ -372,20 +312,7 @@ watch(activeView, async (view) => {
   nav.scrollTo({ left: tab.offsetLeft - (nav.clientWidth - tab.clientWidth) / 2, behavior: 'smooth' })
 })
 watch(rosterArtistName, value => { rosterArtistSlug.value = slugify(value) })
-watch(historySearch, () => { historyPage.value = 1 })
-watch(historyPageCount, count => { if (historyPage.value > count) historyPage.value = count })
 watch(activeView, view => { if (view !== 'profile') profilePreviewOpen.value = false })
-watch(demo.ready, async (value) => {
-  if (!value) selectedDemoBookingId.value = ''
-  else if (!selectedDemoBookingId.value) {
-    selectedDemoBookingId.value = demoActiveBookings.value[0]?.id || ''
-    if (demoActiveBookings.value.length && import.meta.client && localStorage.getItem(`cuebooker.tour.seen.${sampleNamespace.value}`) !== 'true') {
-      await nextTick()
-      startTour()
-    }
-  }
-}, { immediate: true })
-
 watch(profilePreviewOpen, (open) => {
   if (!import.meta.client) return
   document.body.style.overflow = open ? 'hidden' : ''
@@ -396,9 +323,7 @@ onBeforeUnmount(() => {
   if (profileCoverUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileCoverUrl.value)
   if (import.meta.client) window.removeEventListener('resize', handleViewportChange)
   if (tourPositionTimer) window.clearTimeout(tourPositionTimer)
-})
-watch(selectedDemoBookingId, async (id) => {
-  if (id) await demo.markOpened(id)
+  document.querySelectorAll<HTMLElement>('.tour-focus').forEach(element => element.classList.remove('tour-focus'))
 })
 watch(tourStep, async (step) => {
   const item = tourSteps.value[step]
@@ -450,9 +375,11 @@ async function positionTour() {
   if (!item) return
   await nextTick()
 
+  document.querySelectorAll<HTMLElement>('.tour-focus').forEach(element => element.classList.remove('tour-focus'))
   const target = document.getElementById(item.target)
   const card = document.querySelector<HTMLElement>('.workspace .tour-card')
   if (!target || !card) return
+  target.classList.add('tour-focus')
 
   const edge = 12
   const gap = 12
@@ -977,43 +904,8 @@ function openUpcoming(block: AvailabilityBlock) {
   startEdit(block)
 }
 
-async function openCalendarBlock(block: AvailabilityBlock) {
-  if (!block.booking_reference) { startEdit(block); return }
-  const booking = demo.bookings.value.find(item => item.id === block.booking_reference)
-  if (!booking) { startEdit(block); return }
-
-  selectedDemoBookingId.value = booking.id
-  activeView.value = booking.archived ? 'history' : 'bookings'
-  await nextTick()
-  document.getElementById(booking.archived ? `history-booking-${booking.id}` : `booking-thread-${booking.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
-
-async function selectDemoBooking(bookingId: string) {
-  const nextId = selectedDemoBookingId.value === bookingId ? '' : bookingId
-  selectedDemoBookingId.value = nextId
-  if (!nextId) return
-
-  await nextTick()
-  await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
-  const detail = document.getElementById(`booking-thread-${nextId}`)
-  if (!detail) return
-  const header = document.getElementById('workspace-header')
-  const headerOffset = header ? Math.ceil(header.getBoundingClientRect().height) + 12 : 16
-  const detailTitle = detail.querySelector<HTMLElement>(':scope > header h2') || detail
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-  if (window.innerWidth <= 960) {
-    const bookingTools = document.querySelector<HTMLElement>('.bookings-view .booking-tools')
-    const bookingToolsHeight = bookingTools ? Math.ceil(bookingTools.getBoundingClientRect().height) : 0
-    // Focus the selected booking itself. Search/results stay sticky above it, while filters and the list scroll away.
-    const top = detailTitle.getBoundingClientRect().top + window.scrollY - headerOffset - bookingToolsHeight - 10
-    window.scrollTo({ top: Math.max(0, top), behavior: reducedMotion ? 'auto' : 'smooth' })
-  } else {
-    const top = detailTitle.getBoundingClientRect().top + window.scrollY - headerOffset
-    window.scrollTo({ top: Math.max(0, top), behavior: reducedMotion ? 'auto' : 'smooth' })
-  }
-
-  detail.focus({ preventScroll: true })
+function openCalendarBlock(block: AvailabilityBlock) {
+  startEdit(block)
 }
 
 function shortDate(value: string) {
@@ -1021,28 +913,8 @@ function shortDate(value: string) {
 }
 
 function time(value: string) { return value.slice(11, 16) }
-function formatDemoDate(value: string) { return new Intl.DateTimeFormat(dateLocale.value, { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(`${value}T12:00:00`)) }
-function formatDemoTime(value: string) { return new Intl.DateTimeFormat(dateLocale.value, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(value)) }
-function demoStatusLabel(status: BookingStatus) {
-  return preferences.locale.value === 'es'
-    ? { new: 'Nueva', in_review: 'En revisión', waiting_promoter: 'Esperando al promotor', confirmed: 'Confirmada', rejected: 'Rechazada' }[status]
-    : { new: 'New', in_review: 'In review', waiting_promoter: 'Waiting for promoter', confirmed: 'Confirmed', rejected: 'Rejected' }[status]
-}
-async function sendDemoReply() {
-  if (!selectedDemoBooking.value || !demoReply.value.trim()) return
-  await demo.addMessage(selectedDemoBooking.value.id, 'artist', demoReply.value)
-  demoReply.value = ''
-}
-async function confirmDemoBooking() {
-  if (selectedDemoBooking.value) await demo.setStatus(selectedDemoBooking.value.id, 'confirmed')
-}
-async function rejectDemoBooking() {
-  if (!selectedDemoBooking.value) return
-  await demo.setStatus(selectedDemoBooking.value.id, 'rejected')
-  selectedDemoBookingId.value = demoActiveBookings.value[0]?.id || ''
-}
 function startTour() {
-  bookingFilter.value = 'all'
+  if (!realBookings.value.some(item => !item.archived_at)) return
   tourStep.value = 0
 }
 function nextTourStep() {
@@ -1050,27 +922,12 @@ function nextTourStep() {
   else tourStep.value += 1
 }
 function closeTour() {
-  if (import.meta.client && sampleNamespace.value) localStorage.setItem(`cuebooker.tour.seen.${sampleNamespace.value}`, 'true')
+  if (import.meta.client && tourNamespace.value) localStorage.setItem(`cuebooker.tour.seen.${tourNamespace.value}`, 'true')
+  document.querySelectorAll<HTMLElement>('.tour-focus').forEach(element => element.classList.remove('tour-focus'))
   tourStep.value = -1
   tourCardStyle.value = {}
 }
-async function clearSampleBookings() {
-  await demo.clearSamples()
-  selectedDemoBookingId.value = ''
-}
-async function restoreSampleBookings() {
-  await demo.restoreSamples()
-  selectedDemoBookingId.value = demoActiveBookings.value[0]?.id || ''
-}
 function statusLabel(status: AvailabilityStatus) { return status === 'confirmed' ? copy.value.confirmedStatus : status === 'hold' ? 'Hold' : copy.value.unavailable }
-async function openHistoryItem(bookingId: string) {
-  const booking = demo.bookings.value.find(item => item.id === bookingId)
-  if (!booking) return
-  selectedDemoBookingId.value = booking.id
-  activeView.value = 'bookings'
-  await nextTick()
-  document.getElementById(`booking-thread-${booking.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
 async function logout() { await auth.signOut(); await navigateTo('/access') }
 async function savePassword() {
   passwordMessage.value = ''
@@ -1196,13 +1053,16 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
 
-        <section v-if="bookingCoreWorkspaceId" class="cue-entry-bar">
+        <section v-if="bookingCoreWorkspaceId" id="workspace-cue" class="cue-entry-bar">
           <div>
             <span>{{ cueEntryCopy.eyebrow }}</span>
             <strong>{{ cueEntryCopy.title }}</strong>
             <p>{{ cueEntryCopy.body }}</p>
           </div>
-          <button type="button" @click="cueOpen = true">+ CUE</button>
+          <div class="cue-entry-actions">
+            <button class="cue-tour-action" type="button" :disabled="!realBookings.some(item => !item.archived_at)" @click="startTour">{{ copy.guidedTour }}</button>
+            <button type="button" @click="cueOpen = true">+ CUE</button>
+          </div>
         </section>
         <p v-if="cueMessage" class="cue-entry-message">{{ cueMessage }}</p>
 
@@ -1216,57 +1076,6 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           @cue-requested="cueOpen = true"
         />
 
-        <aside v-if="showSampleMode" id="sample-mode" class="demo-notice" :class="{ 'tour-focus': tourStep === 0 }">
-          <div><span>{{ copy.samplesLabel }}</span><strong>{{ demoActiveBookings.length ? copy.samplesActive : copy.samplesRemoved }}</strong><p>{{ copy.samplesBody }}</p></div>
-          <div class="demo-notice__actions"><button class="guide-action" type="button" @click="startTour">{{ copy.guidedTour }}</button><button v-if="demoActiveBookings.length" type="button" @click="clearSampleBookings">{{ copy.removeSamples }}</button><button v-else type="button" @click="restoreSampleBookings">{{ copy.restoreSamples }}</button><button type="button" @click="showSampleMode = false">{{ preferences.locale.value === 'es' ? 'Cerrar demo' : 'Close demo' }}</button></div>
-        </aside>
-
-        <div v-if="showSampleMode" class="booking-toolbar-row">
-          <div class="booking-tools">
-            <label class="booking-search">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
-              <span class="sr-only">{{ copy.searchBookings }}</span>
-              <input v-model="bookingSearch" type="search" :placeholder="copy.searchBookingsPlaceholder" :aria-label="copy.searchBookings">
-            </label>
-          </div>
-
-          <div id="workspace-filters" class="status-filters" :class="{ 'tour-focus': tourStep === 1 }" :aria-label="copy.filterSamples">
-            <button :class="{ active: bookingFilter === 'all' }" type="button" @click="bookingFilter = 'all'">{{ copy.all }} <strong>{{ demoActiveBookings.length }}</strong></button>
-            <button v-for="status in bookingStatuses.filter(item => item !== 'rejected')" :key="status" type="button" :class="[{ active: bookingFilter === status }, `tone-${statusTone[status]}`]" @click="bookingFilter = status"><i />{{ demoStatusLabel(status) }} <strong>{{ demoCounts[status] }}</strong></button>
-          </div>
-
-          <span class="booking-search-count">{{ demoFilteredBookings.length }} / {{ demoActiveBookings.length }} {{ copy.searchResults }}</span>
-        </div>
-
-        <div v-if="showSampleMode" class="booking-workspace demo-booking-workspace">
-          <div id="workspace-list" class="booking-list" :class="{ 'tour-focus': tourStep === 2 }">
-            <button v-for="booking in demoFilteredBookings" :key="booking.id" type="button" :class="{ active: selectedDemoBookingId === booking.id }" @click="selectDemoBooking(booking.id)">
-              <span class="booking-list__date">{{ formatDemoDate(booking.event.date) }}</span>
-              <span><strong>{{ booking.event.venue }}</strong><small>{{ booking.artistName }} · {{ booking.event.city }}</small></span>
-              <span :class="`status-pill tone-${statusTone[booking.status]}`"><i />{{ demoStatusLabel(booking.status) }}</span>
-            </button>
-            <p v-if="!demoFilteredBookings.length" class="workspace-empty">{{ copy.noSamples }}</p>
-          </div>
-
-          <article v-if="selectedDemoBooking" :id="`booking-thread-${selectedDemoBooking.id}`" class="booking-detail" tabindex="-1">
-            <header>
-              <div><p class="eyebrow">{{ copy.sampleBooking }} / {{ selectedDemoBooking.id.slice(-8).toUpperCase() }}</p><h2>{{ selectedDemoBooking.event.venue }}</h2><p>{{ selectedDemoBooking.event.name }} · {{ selectedDemoBooking.artistName }}</p></div>
-              <div id="workspace-status" class="booking-status-display" :class="[{ 'tour-focus': tourStep === 3 }, `tone-${statusTone[selectedDemoBooking.status]}`]"><span>{{ copy.automaticStatus }}</span><strong><i />{{ demoStatusLabel(selectedDemoBooking.status) }}</strong></div>
-            </header>
-
-            <div id="workspace-details" class="booking-facts" :class="{ 'tour-focus': tourStep === 4 }">
-              <section><h3>{{ copy.eventData }}</h3><dl><div><dt>{{ copy.date }}</dt><dd>{{ formatDemoDate(selectedDemoBooking.event.date) }}</dd></div><div><dt>{{ copy.city }}</dt><dd>{{ selectedDemoBooking.event.city }}</dd></div><div><dt>{{ copy.venue }}</dt><dd>{{ selectedDemoBooking.event.venue }}</dd></div><div><dt>{{ copy.capacity }}</dt><dd>{{ selectedDemoBooking.event.capacity }}</dd></div><div><dt>{{ copy.offer }}</dt><dd>{{ selectedDemoBooking.event.offer }}</dd></div><div><dt>{{ copy.schedule }}</dt><dd>{{ selectedDemoBooking.event.schedule || '—' }}</dd></div></dl></section>
-              <section><h3>{{ copy.contact }}</h3><dl><div><dt>{{ copy.name }}</dt><dd>{{ selectedDemoBooking.promoter.name }}</dd></div><div><dt>Email</dt><dd>{{ selectedDemoBooking.promoter.email }}</dd></div><div v-if="selectedDemoBooking.promoter.phone"><dt>{{ copy.phone }}</dt><dd>{{ selectedDemoBooking.promoter.phone }}</dd></div><div><dt>{{ copy.source }}</dt><dd>{{ copy.bookingLink }}</dd></div></dl></section>
-            </div>
-
-            <section class="message-thread"><h3>{{ copy.conversation }}</h3><article v-for="message in selectedDemoBooking.messages" :key="message.id" :class="`message message--${message.actor}`"><header><strong>{{ message.actor === 'artist' ? selectedDemoBooking.artistName : selectedDemoBooking.promoter.name }}</strong><time>{{ formatDemoTime(message.createdAt) }}</time></header><p>{{ message.body }}</p></article></section>
-
-            <form id="workspace-reply" class="booking-reply" :class="{ 'tour-focus': tourStep === 5 }" @submit.prevent="sendDemoReply"><label>{{ copy.replyPromoter }}<textarea v-model="demoReply" rows="5" :placeholder="copy.replyPlaceholder" /></label><p>{{ copy.localMessage }}</p><button class="primary-button demo-action" type="submit" :disabled="!demoReply.trim()">{{ copy.sendSampleReply }}</button></form>
-
-            <footer id="workspace-actions" class="booking-actions" :class="{ 'tour-focus': tourStep === 6 }"><NuxtLink class="demo-secondary-action" :to="`/request?id=${selectedDemoBooking.id}`">{{ copy.openPromoter }}</NuxtLink><button v-if="selectedDemoBooking.status !== 'confirmed'" class="primary-button demo-action" type="button" @click="confirmDemoBooking">{{ copy.confirmDate }}</button><button v-if="selectedDemoBooking.status !== 'confirmed'" class="demo-danger-action" type="button" @click="rejectDemoBooking">{{ copy.rejectRequest }}</button></footer>
-          </article>
-          <div v-else class="booking-placeholder"><span>→</span><p>{{ copy.openRequest }}</p></div>
-        </div>
       </section>
 
       <section v-else-if="activeView === 'calendar'" class="view calendar-view">
@@ -1332,23 +1141,6 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           :refresh-key="bookingCoreOperationsRevision"
           @open-booking="openRealBooking"
         />
-        <div v-if="showSampleMode && historyItems.length" class="history-tools">
-          <label class="booking-search history-search">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
-            <span class="sr-only">{{ copy.searchHistory }}</span>
-            <input v-model="historySearch" type="search" :placeholder="copy.searchHistoryPlaceholder" :aria-label="copy.searchHistory">
-          </label>
-          <span>{{ filteredHistoryItems.length }} / {{ historyItems.length }}</span>
-        </div>
-        <div v-if="showSampleMode && paginatedHistoryItems.length" class="history-list">
-          <button v-for="item in paginatedHistoryItems" :id="item.id === `status-${item.bookingId}` ? `history-booking-${item.bookingId}` : undefined" :key="item.id" type="button" :aria-label="`${copy.openTrace}: ${item.title}`" @click="openHistoryItem(item.bookingId)"><time>{{ formatDemoTime(item.at) }}</time><i /><div><span>{{ item.kind }}</span><strong>{{ item.title }}</strong><p>{{ item.detail }}</p><small>{{ copy.openTrace }} <svg class="inline-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 7l5 5-5 5"/></svg></small></div></button>
-        </div>
-        <div v-if="showSampleMode && filteredHistoryItems.length > historyPageSize" class="history-pagination" aria-label="Pagination">
-          <button type="button" :disabled="historyPage <= 1" @click="historyPage -= 1">{{ copy.previousPage }}</button>
-          <span>{{ copy.page }} {{ historyPage }} / {{ historyPageCount }}</span>
-          <button type="button" :disabled="historyPage >= historyPageCount" @click="historyPage += 1">{{ copy.nextPage }}</button>
-        </div>
-        <p v-if="showSampleMode && !paginatedHistoryItems.length" class="workspace-empty">{{ copy.historyEmpty }}</p>
       </section>
 
       <section v-else class="view profile-view">
@@ -1750,10 +1542,10 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 :global(:root[data-theme='light']) .demo-notice__actions .guide-action,
 :global(:root[data-theme='light']) .add-button { border-color: var(--cue-accent); background: var(--cue-accent); color: var(--cue-accent-ink); }
 :global(:root[data-theme='light']) .tone-lime { color: #5127c7 !important; }
-:global(:root[data-theme='light']) .tour-focus { outline-color: var(--cue-accent); box-shadow: 0 0 18px color-mix(in srgb, var(--cue-accent) 62%, transparent), 0 0 55px color-mix(in srgb, var(--cue-accent) 25%, transparent); animation-name: tour-pulse-light; }
+:global(:root[data-theme='light'] .tour-focus) { outline-color: var(--cue-accent); box-shadow: 0 0 18px color-mix(in srgb, var(--cue-accent) 62%, transparent), 0 0 55px color-mix(in srgb, var(--cue-accent) 25%, transparent); animation-name: tour-pulse-light; }
 :global(:root[data-theme='light']) .tour-card { border-color: var(--cue-accent); box-shadow: 0 0 32px color-mix(in srgb, var(--cue-accent) 22%, transparent), 0 24px 80px var(--cue-shadow); }
 :global(:root[data-theme='light']) .tour-card > span { color: var(--cue-accent); }
-.tour-focus { position: relative; z-index: 32; outline: 2px solid var(--cue-accent); outline-offset: 5px; box-shadow: 0 0 18px color-mix(in srgb, var(--cue-accent) 70%, transparent), 0 0 55px color-mix(in srgb, var(--cue-accent) 28%, transparent); animation: tour-pulse 1.5s ease-in-out infinite alternate; }
+:global(.tour-focus) { position: relative; z-index: 32; outline: 2px solid var(--cue-accent); outline-offset: 5px; box-shadow: 0 0 18px color-mix(in srgb, var(--cue-accent) 70%, transparent), 0 0 55px color-mix(in srgb, var(--cue-accent) 28%, transparent); animation: tour-pulse 1.5s ease-in-out infinite alternate; }
 .tour-card { position: fixed; right: 24px; bottom: 24px; z-index: 60; width: min(390px, calc(100vw - 32px)); box-sizing: border-box; padding: 24px; border: 1px solid var(--cue-accent); background: var(--cue-surface); color: var(--cue-text); box-shadow: 0 0 32px color-mix(in srgb, var(--cue-accent) 25%, transparent), 0 24px 80px var(--cue-shadow); }
 .tour-card > span { color: var(--cue-accent); font: 700 10px monospace; letter-spacing: .12em; }
 .tour-card > strong { display: block; margin: 17px 0 9px; font-size: 24px; text-transform: uppercase; }
@@ -1834,7 +1626,12 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .cue-entry-bar span { display: block; margin-bottom: 5px; color: var(--cue-accent); font: 700 9px/1.2 monospace; letter-spacing: .12em; }
 .cue-entry-bar strong { display: block; font-size: 15px; }
 .cue-entry-bar p { margin: 4px 0 0; max-width: 760px; color: var(--cue-muted); font-size: 12px; line-height: 1.4; }
-.cue-entry-bar > button { min-width: 104px; min-height: 44px; padding: 0 18px; border: 0; background: var(--cue-accent); color: #090909; cursor: pointer; font-weight: 900; letter-spacing: .04em; }
+.cue-entry-actions { display:flex; align-items:center; gap:8px; flex:0 0 auto; }
+.cue-entry-actions > button { min-height:44px; padding:0 14px; cursor:pointer; font-weight:900; letter-spacing:.04em; }
+.cue-entry-actions > button:last-child { min-width:104px; padding-inline:18px; border:0; background:var(--cue-accent); color:#090909; }
+.cue-entry-actions .cue-tour-action { border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); font:700 9px monospace; text-transform:uppercase; }
+.cue-entry-actions .cue-tour-action:hover:not(:disabled) { border-color:var(--cue-accent); color:var(--cue-accent); }
+.cue-entry-actions .cue-tour-action:disabled { opacity:.42; cursor:not-allowed; }
 .cue-entry-message { margin: -2px 0 14px; padding: 9px 12px; border-left: 2px solid var(--cue-mint); color: var(--cue-muted); font-size: 11px; }
 @media (max-width: 760px) {
   .demo-launch { align-items:stretch; flex-direction:column; }
@@ -1843,7 +1640,9 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .cue-entry-bar span { font-size: 8px; }
   .cue-entry-bar strong { font-size: 12px; }
   .cue-entry-bar p { display: none; }
-  .cue-entry-bar > button { min-width: 82px; min-height: 38px; padding: 0 12px; }
+  .cue-entry-actions { align-self:center; }
+  .cue-entry-actions > button { min-height:38px; padding:0 10px; }
+  .cue-entry-actions > button:last-child { min-width:82px; padding-inline:12px; }
 }
 
 .core-calendar-holds { display:grid; gap:7px; padding:10px 12px; border-bottom:1px solid var(--cue-border); background:color-mix(in srgb, var(--cue-accent) 4%, var(--cue-surface)); }
