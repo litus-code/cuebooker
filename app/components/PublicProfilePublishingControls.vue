@@ -33,6 +33,18 @@ const copy = computed(() => props.locale === 'es' ? {
   publishHint: 'Publishing makes the profile visible. Opening booking lets promoters send enquiries without an account.'
 })
 
+function checkboxValue(event: Event) {
+  return (event.currentTarget as HTMLInputElement).checked
+}
+
+function changePublished(event: Event) {
+  emit('updatePublished', checkboxValue(event))
+}
+
+function changeAcceptingRequests(event: Event) {
+  emit('updateAcceptingRequests', checkboxValue(event))
+}
+
 async function copyBookingLink() {
   if (!import.meta.client || !props.published) return
   await navigator.clipboard.writeText(bookingUrl.value)
@@ -52,11 +64,11 @@ async function copyBookingLink() {
 
     <div class="public-profile-controls__settings">
       <label>
-        <input :checked="published" type="checkbox" :disabled="saving" @change="emit('updatePublished', ($event.target as HTMLInputElement).checked)">
+        <input :checked="published" type="checkbox" :disabled="saving" @change="changePublished">
         <span><strong>{{ published ? copy.published : copy.unpublished }}</strong><small>{{ publicUrl }}</small></span>
       </label>
       <label>
-        <input :checked="acceptingRequests" type="checkbox" :disabled="saving || !published" @change="emit('updateAcceptingRequests', ($event.target as HTMLInputElement).checked)">
+        <input :checked="acceptingRequests" type="checkbox" :disabled="saving || !published" @change="changeAcceptingRequests">
         <span><strong>{{ acceptingRequests ? copy.accepting : copy.closed }}</strong><small>Booking Core · public_form</small></span>
       </label>
     </div>
