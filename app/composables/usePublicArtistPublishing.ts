@@ -63,7 +63,7 @@ export function usePublicArtistPublishing() {
   }
 
   async function setAcceptingRequests(artistId: string, workspaceId: string, enabled: boolean) {
-    const userId = auth.user.value?.id
+    const userId = auth.session.value?.user.id
     if (!userId) throw new Error('authentication_required')
     if (!workspaceId) throw new Error('booking_workspace_required')
 
