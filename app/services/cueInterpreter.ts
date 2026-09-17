@@ -102,7 +102,7 @@ function parseAmount(raw: string) {
 }
 
 function extractMoney(raw: string) {
-  const match = raw.match(/(?:€|£|\$|EUR|GBP|USD)\s*([0-9][0-9.,\s]*)|([0-9][0-9.,\s]*)\s*(€|£|\$|EUR|GBP|USD)\b?/i)
+  const match = raw.match(/(?:€|£|\$|EUR|GBP|USD)\s*([0-9][0-9.,\s]*)|([0-9][0-9.,\s]*)\s*(€|£|\$|EUR|GBP|USD)/i)
   if (!match) return {}
   const amountRaw = (match[1] || match[2] || '').trim()
   const token = (match[3] || match[0].match(/€|£|\$|EUR|GBP|USD/i)?.[0] || '').toUpperCase()
