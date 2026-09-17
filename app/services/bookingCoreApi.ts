@@ -7,7 +7,11 @@ import type {
   CreateBookingInput,
   CreateContactInput,
   CreateCounterpartyInput,
+  CreateHoldInput,
   CreateManualBookingInput,
+  Hold,
+  NextMove,
+  SetNextMoveInput,
   Workspace,
   WorkspaceMembership
 } from '../domain/bookingCore'
@@ -305,6 +309,105 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     return row
   }
 
+  async function listNextMoves(workspaceId: string, bookingId?: string, activeOnly = true) {
+    return $fetch<NextMove[]>(`${baseUrl}/rest/v1/next_moves`, {
+      headers: authHeaders(),
+      query: {
+        workspace_id: `eq.${workspaceId}`,
+        ...(bookingId ? { booking_id: `eq.${bookingId}` } : {}),
+        ...(activeOnly ? { completed_at: 'is.null' } : {}),
+        select: 'id,workspace_id,booking_id,label,due_at,assignee_user_id,completed_at,created_by,created_at,updated_at',
+        order: activeOnly ? 'due_at.asc.nullslast,created_at.asc' : 'created_at.desc'
+      }
+    })
+  }
+
+  async function setNextMove(input: SetNextMoveInput) {
+    const rows = await $fetch<NextMove[]>(`${baseUrl}/rest/v1/rpc/set_booking_next_move`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: {
+        target_workspace_id: input.workspaceId,
+        target_booking_id: input.bookingId,
+        next_label: input.label.trim(),
+        next_due_at: input.dueAt || null,
+        next_assignee_user_id: input.assigneeUserId || null
+      }
+    })
+    const row = rows[0]
+    if (!row) throw new Error('next_move_create_failed')
+    return row
+  }
+
+  async function completeNextMove(workspaceId: string, nextMoveId: string) {
+    const rows = await $fetch<NextMove[]>(`${baseUrl}/rest/v1/rpc/complete_booking_next_move`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: { target_workspace_id: workspaceId, target_next_move_id: nextMoveId }
+    })
+    const row = rows[0]
+    if (!row) throw new Error('next_move_complete_failed')
+    return row
+  }
+
+  async function listHolds(workspaceId: string, bookingId?: string, activeOnly = true) {
+    return $fetch<Hold[]>(`${baseUrl}/rest/v1/holds`, {
+      headers: authHeaders(),
+      query: {
+        workspace_id: `eq.${workspaceId}`,
+        ...(bookingId ? { booking_id: `eq.${bookingId}` } : {}),
+        ...(activeOnly ? { status: 'eq.active' } : {}),
+        select: 'id,workspace_id,booking_id,event_date,starts_at,ends_at,event_timezone,expires_at,priority,status,released_at,converted_at,created_by,created_at,updated_at',
+        order: 'event_date.asc,priority.asc.nullslast,created_at.asc'
+      }
+    })
+  }
+
+  async function createHold(input: CreateHoldInput) {
+    if (input.priority != null && (!Number.isInteger(input.priority) || input.priority < 1 || input.priority > 9)) {
+      throw new Error('invalid_hold_priority')
+    }
+    const rows = await $fetch<Hold[]>(`${baseUrl}/rest/v1/rpc/create_booking_hold`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: {
+        target_workspace_id: input.workspaceId,
+        target_booking_id: input.bookingId,
+        hold_event_date: input.eventDate,
+        hold_starts_at: input.startsAt || null,
+        hold_ends_at: input.endsAt || null,
+        hold_event_timezone: normalizedText(input.eventTimezone),
+        hold_expires_at: input.expiresAt || null,
+        hold_priority: input.priority ?? null
+      }
+    })
+    const row = rows[0]
+    if (!row) throw new Error('hold_create_failed')
+    return row
+  }
+
+  async function releaseHold(workspaceId: string, holdId: string) {
+    const rows = await $fetch<Hold[]>(`${baseUrl}/rest/v1/rpc/release_booking_hold`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: { target_workspace_id: workspaceId, target_hold_id: holdId }
+    })
+    const row = rows[0]
+    if (!row) throw new Error('hold_release_failed')
+    return row
+  }
+
+  async function convertHold(workspaceId: string, holdId: string) {
+    const rows = await $fetch<Hold[]>(`${baseUrl}/rest/v1/rpc/convert_booking_hold`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: { target_workspace_id: workspaceId, target_hold_id: holdId }
+    })
+    const row = rows[0]
+    if (!row) throw new Error('hold_convert_failed')
+    return row
+  }
+
   return {
     ensureBookingWorkspace,
     listWorkspaceMemberships,
@@ -318,6 +421,13 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     createBooking,
     createManualBooking,
     listActivities,
-    createActivity
+    createActivity,
+    listNextMoves,
+    setNextMove,
+    completeNextMove,
+    listHolds,
+    createHold,
+    releaseHold,
+    convertHold
   }
 }
