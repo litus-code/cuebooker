@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { bookingStatuses, statusTone, type BookingStatus } from '../domain/booking'
 import type { FeeBasis } from '../composables/useArtistProfile'
+import type { CoreBooking } from '../domain/bookingCore'
 
 const auth = useCueAuth()
 const availability = useAvailability()
@@ -81,7 +82,7 @@ const historyPageSize = 10
 const sidebarCollapsed = ref(false)
 const selectedDemoBookingId = ref('')
 const bookingCoreWorkspaceId = ref('')
-const realBookings = ref<any[]>([])
+const realBookings = ref<CoreBooking[]>([])
 const cueOpen = ref(false)
 const cueCoreLoading = ref(false)
 const cueMessage = ref('')
@@ -1128,6 +1129,13 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <button type="button" @click="cueOpen = true">+ CUE</button>
         </section>
         <p v-if="cueMessage" class="cue-entry-message">{{ cueMessage }}</p>
+
+        <BookingCoreInbox
+          v-if="bookingCoreWorkspaceId && realBookings.length"
+          :workspace-id="bookingCoreWorkspaceId"
+          :bookings="realBookings"
+          :locale="preferences.locale.value"
+        />
 
         <aside id="sample-mode" class="demo-notice" :class="{ 'tour-focus': tourStep === 0 }">
           <div><span>{{ copy.samplesLabel }}</span><strong>{{ demoActiveBookings.length ? copy.samplesActive : copy.samplesRemoved }}</strong><p>{{ copy.samplesBody }}</p></div>
