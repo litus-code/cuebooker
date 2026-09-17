@@ -318,7 +318,35 @@ Deploy run 35277734983: PR preview success
 
 Visual/mobile review of the expanded distribution panel is still required.
 
-## 10. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
+## 10. Inbound email observability foundation — IMPLEMENTED ON BRANCH
+
+Operational hardening commits:
+
+```text
+b79af6c4785434721a270380ab2fc30165a36c11
+4b3c5842294e1362190fdf6d04fc6249b998c0b0
+```
+
+Changes:
+
+- `supabase/config.toml` now explicitly versions `[functions.ingest-booking-email] verify_jwt = false`, matching the deployed staging contract so future deploys do not depend on dashboard-only state;
+- every inbound webhook invocation receives a Cuebooker request/correlation ID;
+- responses expose that ID through `x-cuebooker-request-id` and response JSON;
+- structured JSON log events distinguish method rejection, missing configuration, webhook auth failure, invalid JSON, empty batch, ignored-item reasons, accepted items, completed batch and failed batch;
+- ignored reasons are explicit without logging message bodies, email addresses, webhook secrets or other high-risk payload content;
+- accepted Activity metadata records `ingest_request_id` so future admin/support tooling can correlate a stored booking event with Edge Function logs;
+- errors still return promoter/provider-safe codes while technical detail remains server-side.
+
+Validation:
+
+```text
+CI run 35278941346: tests + production build success
+Deploy/preview run 35278941375: preview build success; Cloudflare PR deployment initiated from same commit
+```
+
+This improves diagnosability of the existing inbound flow but does not replace the pending direct webhook-secret handshake. Production remains untouched.
+
+## 11. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
 
@@ -336,7 +364,7 @@ AI/voice limits should not be hard-coded into pricing before real usage/cost evi
 
 No billing, trial enforcement or Stripe integration is implemented yet.
 
-## 11. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
+## 12. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
 
 ### Smart Capture / interpretation
 
@@ -375,7 +403,7 @@ Treat human feedback as a cross-product rule:
 - retryable failure -> preserve work and explain next action;
 - technical/provider detail -> logs/admin, not promoter-facing copy.
 
-## 12. Root routing and static deployment
+## 13. Root routing and static deployment
 
 Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. `ASSETS.fetch()` must use the pretty `/200` path rather than `/200.html`.
 
@@ -387,7 +415,7 @@ Previously validated:
 
 PR #75 remains the staging preview vehicle.
 
-## 13. Security / operational follow-up
+## 14. Security / operational follow-up
 
 Before production:
 
@@ -407,7 +435,7 @@ Leaked Password Protection Disabled
 
 Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to the current Supabase secret-key model as a deliberate infrastructure task, not mixed into a product slice.
 
-## 14. Exact next product work
+## 15. Exact next product work
 
 Current sequencing is intentional:
 
@@ -425,7 +453,7 @@ Current sequencing is intentional:
 
 Do not jump ahead because downstream ideas are documented.
 
-## 15. Documentation workflow rule
+## 16. Documentation workflow rule
 
 Every meaningful implementation block must finish by updating this handoff with:
 
@@ -436,7 +464,7 @@ Every meaningful implementation block must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-## 16. Production gate
+## 17. Production gate
 
 Production Supabase:
 
