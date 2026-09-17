@@ -86,6 +86,7 @@ const realBookings = ref<CoreBooking[]>([])
 const cueOpen = ref(false)
 const cueCoreLoading = ref(false)
 const cueMessage = ref('')
+const bookingCoreOperationsRevision = ref(0)
 const demoReply = ref('')
 const tourStep = ref(-1)
 const settingsOpen = ref(false)
@@ -574,7 +575,12 @@ async function handleCueCreated() {
   cueOpen.value = false
   cueMessage.value = cueEntryCopy.value.saved
   await loadRealBookings()
+  bookingCoreOperationsRevision.value += 1
   window.setTimeout(() => { cueMessage.value = '' }, 4500)
+}
+
+function handleBookingCoreOperationsChanged() {
+  bookingCoreOperationsRevision.value += 1
 }
 
 async function loadWorkspaceIdentity() {
@@ -1091,6 +1097,15 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <button class="summary-card summary-card--profile" type="button" @click="activeView = 'profile'"><span>{{ copy.profileCard }}</span><strong>{{ profileCompletion }}%</strong><p>{{ copy.profileCardBody }} →</p></button>
         </div>
 
+        <BookingCoreAttention
+          v-if="bookingCoreWorkspaceId"
+          :workspace-id="bookingCoreWorkspaceId"
+          :bookings="realBookings"
+          :locale="preferences.locale.value"
+          :refresh-key="bookingCoreOperationsRevision"
+          @changed="handleBookingCoreOperationsChanged"
+        />
+
         <div class="overview-grid">
           <section class="panel agenda-panel">
             <div class="panel-heading"><div><p class="eyebrow">{{ copy.agendaEyebrow }}</p><h2>{{ copy.upcoming }}</h2></div><button type="button" @click="activeView = 'calendar'">{{ copy.viewCalendar }}</button></div>
@@ -1135,6 +1150,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           :workspace-id="bookingCoreWorkspaceId"
           :bookings="realBookings"
           :locale="preferences.locale.value"
+          @operations-changed="handleBookingCoreOperationsChanged"
         />
 
         <aside id="sample-mode" class="demo-notice" :class="{ 'tour-focus': tourStep === 0 }">
