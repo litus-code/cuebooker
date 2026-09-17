@@ -43,12 +43,14 @@ export type PublicBookingRequestInput = {
   offerCurrency?: string | null
   initialMessage?: string | null
   entrySource?: string | null
+  locale?: 'es' | 'en'
   website?: string
 }
 
 export type PublicBookingRequestResult = {
   accepted: true
   created: boolean
+  confirmationSent?: boolean
   reference?: string
 }
 
