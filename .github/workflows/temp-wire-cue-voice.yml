@@ -1,0 +1,45 @@
+name: TEMP wire CUE voice
+
+on:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - .github/workflows/temp-wire-cue-voice.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feature/app-visual-system
+          fetch-depth: 0
+      - name: Wire voice input
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('app/components/CueCapturePanel.vue')
+          text = path.read_text()
+          anchor = '          <label class="cue-capture__note"><span>{{ text.note }}</span><textarea v-model="initialNote" rows="3" :placeholder="text.notePlaceholder" /></label>\n'
+          addition = anchor + '          <CueVoiceInput v-model="initialNote" :locale="locale" />\n'
+          if '<CueVoiceInput v-model="initialNote"' not in text:
+              if anchor not in text:
+                  raise SystemExit('Cue note anchor missing')
+              text = text.replace(anchor, addition, 1)
+          path.write_text(text)
+          PY
+      - name: Install
+        run: npm ci
+      - name: Generate
+        run: npm run generate
+      - name: Commit integration
+        run: |
+          git config user.name "cuebooker-workspace-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add app/components/CueCapturePanel.vue
+          git commit -m "Connect voice dictation to CUE capture"
+          git push origin HEAD:feature/app-visual-system
