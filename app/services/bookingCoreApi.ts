@@ -319,6 +319,21 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     return row
   }
 
+  async function setBookingArchived(workspaceId: string, bookingId: string, archived: boolean) {
+    const rows = await $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/rpc/set_booking_archived`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: {
+        target_workspace_id: workspaceId,
+        target_booking_id: bookingId,
+        target_archived: archived
+      }
+    })
+    const row = rows[0]
+    if (!row) throw new Error('booking_archive_update_failed')
+    return row
+  }
+
   async function listActivities(workspaceId: string, bookingId: string, limit = 100) {
     return $fetch<Activity[]>(`${baseUrl}/rest/v1/activities`, {
       headers: authHeaders(),
@@ -483,6 +498,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     createManualBooking,
     updateBookingDetails,
     setBookingStatus,
+    setBookingArchived,
     listActivities,
     listWorkspaceActivities,
     createActivity,

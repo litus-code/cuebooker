@@ -233,7 +233,7 @@ const monthCells = computed(() => {
       current: day.getUTCMonth() === cursor.getUTCMonth(),
       blocks: blocks.value.filter(block => block.starts_at.slice(0, 10) === date),
       holds: realHolds.value.filter(hold => hold.status === 'active' && hold.event_date === date),
-      confirmedBookings: realBookings.value.filter(booking => booking.status === 'confirmed' && booking.event_date === date)
+      confirmedBookings: realBookings.value.filter(booking => !booking.archived_at && booking.status === 'confirmed' && booking.event_date === date)
     }
   })
 })
@@ -246,7 +246,7 @@ const selectedDayCoreHolds = computed(() => realHolds.value
   .sort((a, b) => (a.starts_at || a.event_date).localeCompare(b.starts_at || b.event_date)))
 const selectedDayTimedCoreHolds = computed(() => selectedDayCoreHolds.value.filter(hold => hold.starts_at && hold.ends_at))
 const selectedDayDateOnlyCoreHolds = computed(() => selectedDayCoreHolds.value.filter(hold => !hold.starts_at || !hold.ends_at))
-const selectedDayConfirmedBookings = computed(() => realBookings.value.filter(booking => booking.status === 'confirmed' && booking.event_date === selectedDate.value))
+const selectedDayConfirmedBookings = computed(() => realBookings.value.filter(booking => !booking.archived_at && booking.status === 'confirmed' && booking.event_date === selectedDate.value))
 const selectedDayTimedConfirmedBookings = computed(() => selectedDayConfirmedBookings.value.filter(booking => booking.start_time && booking.end_time))
 const selectedDayDateOnlyConfirmedBookings = computed(() => selectedDayConfirmedBookings.value.filter(booking => !booking.start_time || !booking.end_time))
 const upcomingBlocks = computed(() => blocks.value
@@ -254,8 +254,8 @@ const upcomingBlocks = computed(() => blocks.value
   .sort((a, b) => a.starts_at.localeCompare(b.starts_at))
   .slice(0, 4))
 const holdCount = computed(() => blocks.value.filter(block => block.status === 'hold').length + realHolds.value.filter(hold => hold.status === 'active').length)
-const confirmedCount = computed(() => blocks.value.filter(block => block.status === 'confirmed').length + realBookings.value.filter(booking => booking.status === 'confirmed').length)
-const occupiedDays = computed(() => new Set([...blocks.value.map(block => block.starts_at.slice(0, 10)), ...realHolds.value.filter(hold => hold.status === 'active').map(hold => hold.event_date), ...realBookings.value.filter(booking => booking.status === 'confirmed' && booking.event_date).map(booking => booking.event_date as string)]).size)
+const confirmedCount = computed(() => blocks.value.filter(block => block.status === 'confirmed').length + realBookings.value.filter(booking => !booking.archived_at && booking.status === 'confirmed').length)
+const occupiedDays = computed(() => new Set([...blocks.value.map(block => block.starts_at.slice(0, 10)), ...realHolds.value.filter(hold => hold.status === 'active').map(hold => hold.event_date), ...realBookings.value.filter(booking => !booking.archived_at && booking.status === 'confirmed' && booking.event_date).map(booking => booking.event_date as string)]).size)
 const validTimeRange = computed(() => endTime.value > startTime.value)
 const demoActiveBookings = computed(() => demo.bookings.value.filter(item => !item.archived))
 const demoFilteredBookings = computed(() => {
@@ -1150,7 +1150,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         </div>
 
         <div class="summary-grid">
-          <article class="summary-card summary-card--pending"><span>{{ copy.realBookings }}</span><strong>{{ cueCoreLoading ? '…' : realBookings.length }}</strong><p>{{ bookingCoreWorkspaceId ? (preferences.locale.value === 'es' ? 'Bookings guardados en tu workspace.' : 'Bookings saved in your workspace.') : copy.realBookingsBody }}</p></article>
+          <article class="summary-card summary-card--pending"><span>{{ copy.realBookings }}</span><strong>{{ cueCoreLoading ? '…' : realBookings.filter(item => !item.archived_at).length }}</strong><p>{{ bookingCoreWorkspaceId ? (preferences.locale.value === 'es' ? 'Bookings guardados en tu workspace.' : 'Bookings saved in your workspace.') : copy.realBookingsBody }}</p></article>
           <article class="summary-card"><span>{{ copy.holdsMonth }}</span><strong>{{ holdCount }}</strong><p>{{ copy.holdsBody }}</p></article>
           <article class="summary-card"><span>{{ copy.confirmed }}</span><strong>{{ confirmedCount }}</strong><p>{{ copy.confirmedBody }}</p></article>
           <article class="summary-card"><span>{{ copy.occupiedDays }}</span><strong>{{ occupiedDays }}</strong><p>{{ copy.occupiedBody }}</p></article>
@@ -1160,7 +1160,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <BookingCoreAttention
           v-if="bookingCoreWorkspaceId"
           :workspace-id="bookingCoreWorkspaceId"
-          :bookings="realBookings"
+          :bookings="realBookings.filter(item => !item.archived_at)"
           :locale="preferences.locale.value"
           :refresh-key="bookingCoreOperationsRevision"
           @changed="handleBookingCoreOperationsChanged"
