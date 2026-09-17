@@ -19,8 +19,9 @@ const bookingConfirmationSent = ref<boolean | null>(null)
 const bookingError = ref('')
 const requestId = ref('')
 
-const entrySource = computed(() => normalizePublicEntrySource(route.query.src))
-const bookingFocused = computed(() => route.query.booking === '1')
+const embedMode = computed(() => route.query.embed === '1')
+const entrySource = computed(() => normalizePublicEntrySource(route.query.src) || (embedMode.value ? 'website' : null))
+const bookingFocused = computed(() => route.query.booking === '1' || embedMode.value)
 const locale = computed<'es' | 'en'>(() => preferences.locale.value === 'en' ? 'en' : 'es')
 
 const copy = computed(() => locale.value === 'es' ? {
@@ -97,6 +98,7 @@ useHead(() => {
     title,
     meta: [
       { name: 'description', content: description },
+      ...(embedMode.value ? [{ name: 'robots', content: 'noindex,nofollow,noarchive' }] : []),
       { property: 'og:type', content: 'profile' },
       { property: 'og:title', content: title },
       { property: 'og:description', content: description },
@@ -111,8 +113,19 @@ useHead(() => {
 </script>
 
 <template>
+  <PublicBookingWidget
+    v-if="profile && embedMode"
+    :profile="profile"
+    :locale="locale"
+    :submitting="bookingSubmitting"
+    :sent="bookingSent"
+    :confirmation-sent="bookingConfirmationSent"
+    :error="bookingError"
+    @submit="submitBooking"
+  />
+
   <PublicArtistProfile
-    v-if="profile"
+    v-else-if="profile"
     :profile="profile"
     :locale="locale"
     :booking-focused="bookingFocused"
@@ -123,12 +136,12 @@ useHead(() => {
     @submit-booking="submitBooking"
   />
 
-  <main v-else class="public-profile-state">
+  <main v-else class="public-profile-state" :class="{ 'public-profile-state--embed': embedMode }">
     <CueBrand />
     <p v-if="loading">{{ copy.loading }}</p>
     <template v-else>
       <h1>{{ loadError === 'not_found' ? copy.notFound : copy.failed }}</h1>
-      <NuxtLink to="/">{{ copy.back }}</NuxtLink>
+      <NuxtLink v-if="!embedMode" to="/">{{ copy.back }}</NuxtLink>
     </template>
   </main>
 </template>
@@ -138,4 +151,6 @@ useHead(() => {
 .public-profile-state p { margin-top: 30px; color: var(--cue-muted, #999); }
 .public-profile-state h1 { max-width: 760px; margin: 38px 0 24px; font-size: clamp(2.6rem, 7vw, 7rem); line-height: .9; text-transform: uppercase; }
 .public-profile-state a { color: var(--cue-accent, #e8ff2f); font-weight: 800; }
+.public-profile-state--embed { padding: 24px; }
+.public-profile-state--embed h1 { font-size: clamp(2rem, 8vw, 4rem); }
 </style>
