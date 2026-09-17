@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import type { PublicBookingRequestInput } from '../domain/publicArtistProfile'
 
-type BookingFormSubmission = Omit<PublicBookingRequestInput, 'artistSlug' | 'requestId' | 'entrySource'>
+type BookingFormSubmission = Omit<PublicBookingRequestInput, 'artistSlug' | 'requestId' | 'entrySource' | 'locale'>
 
 const props = withDefaults(defineProps<{
   artistName: string
   locale?: 'es' | 'en'
   submitting?: boolean
   sent?: boolean
+  confirmationSent?: boolean | null
   error?: string
   preview?: boolean
 }>(), {
   locale: 'es',
   submitting: false,
   sent: false,
+  confirmationSent: null,
   error: '',
   preview: false
 })
@@ -47,7 +49,9 @@ const copy = computed(() => props.locale === 'es' ? {
   details: 'Añadir detalles del evento', organization: 'Promotor / organización', phone: 'Teléfono',
   event: 'Evento', venue: 'Sala / venue', city: 'Ciudad', country: 'País', date: 'Fecha',
   offer: 'Oferta', currency: 'Moneda', send: 'Enviar solicitud', sending: 'Enviando…',
-  sent: 'Solicitud enviada.', sentBody: 'Ha quedado registrada para el equipo del artista. Podrán continuar contigo por email.',
+  sent: 'Solicitud enviada.',
+  sentWithEmail: 'Te hemos enviado un email con tu enlace seguro para consultar el estado y continuar la conversación. También puedes responder directamente a ese email.',
+  sentWithoutEmail: 'La solicitud está registrada para el equipo del artista. Si la confirmación por email no ha podido entregarse, tu booking sigue guardado y podrán responderte desde Cuebooker.',
   preview: 'El formulario real aparecerá aquí cuando publiques el perfil.',
   error: 'No se pudo enviar. Revisa los datos o inténtalo de nuevo.'
 } : {
@@ -59,7 +63,9 @@ const copy = computed(() => props.locale === 'es' ? {
   details: 'Add event details', organization: 'Promoter / organisation', phone: 'Phone',
   event: 'Event', venue: 'Venue', city: 'City', country: 'Country', date: 'Date',
   offer: 'Offer', currency: 'Currency', send: 'Send enquiry', sending: 'Sending…',
-  sent: 'Enquiry sent.', sentBody: 'It is now registered for the artist team. They can continue with you by email.',
+  sent: 'Enquiry sent.',
+  sentWithEmail: 'We sent you an email with a secure link to check the status and continue the conversation. You can also reply directly to that email.',
+  sentWithoutEmail: 'Your enquiry is registered for the artist team. If the confirmation email could not be delivered, the booking is still safely recorded and they can respond through Cuebooker.',
   preview: 'The live form will appear here when the profile is published.',
   error: 'The enquiry could not be sent. Check the details or try again.'
 })
@@ -102,7 +108,7 @@ function submit() {
 
     <div v-if="sent" class="public-booking-form__success" role="status">
       <strong>{{ copy.sent }}</strong>
-      <p>{{ copy.sentBody }}</p>
+      <p>{{ confirmationSent ? copy.sentWithEmail : copy.sentWithoutEmail }}</p>
     </div>
 
     <div v-else-if="preview" class="public-booking-form__preview">
