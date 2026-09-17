@@ -1,0 +1,34 @@
+name: TEMP wire smart CUE
+
+on:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - .github/workflows/temp-wire-smart-cue.yml
+      - scripts/temp_wire_smart_cue.py
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feature/app-visual-system
+          fetch-depth: 0
+      - name: Patch smart CUE
+        run: python scripts/temp_wire_smart_cue.py
+      - name: Install
+        run: npm ci
+      - name: Generate
+        run: npm run generate
+      - name: Commit integration
+        run: |
+          git config user.name "cuebooker-workspace-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add app/domain/bookingCore.ts app/services/bookingCoreApi.ts app/components/CueCapturePanel.vue
+          git commit -m "Add smart CUE interpretation and next move capture"
+          git push origin HEAD:feature/app-visual-system
