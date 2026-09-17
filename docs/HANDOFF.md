@@ -671,6 +671,23 @@ Visual desktop/mobile smoke is still required before considering the notificatio
 
 Current smoke notification is intentionally left unread on staging so the bell badge and notification-center read flow can be visually verified without creating another test event.
 
+Additional notification UX hardening:
+
+- UI locale is now synchronized into Supabase Auth user metadata as `cuebooker_locale`, so notification emails can honor ES/EN instead of always falling back to ES;
+- local preference remains immediate/offline-friendly through `localStorage`;
+- notification center loads an exact unread count independently from the 40-item list;
+- unread badge refreshes every 60 seconds while the app is visible;
+- focus/visibility return triggers an immediate refresh;
+- when the panel is open, refresh updates both list and count.
+
+Commits:
+
+```text
+b4c0e187ee0027311b16c3c689a810d3e6c59595
+0cae9991d1c81fcb1879ef64a357fd0cd940bc02
+88ce55ef3be396d00f48a9cff97908068252e1c5
+```
+
 ## 16. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
