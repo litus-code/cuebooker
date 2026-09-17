@@ -1,10 +1,22 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
-function json(body: unknown, status = 200) {
+function json(body: unknown, status = 200, requestId?: string) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "Content-Type": "application/json" }
+    headers: {
+      "Content-Type": "application/json",
+      ...(requestId ? { "x-cuebooker-request-id": requestId } : {})
+    }
   });
+}
+
+function logEvent(event: string, requestId: string, details: Record<string, unknown> = {}) {
+  console.log(JSON.stringify({
+    scope: "ingest-booking-email",
+    event,
+    request_id: requestId,
+    ...details
+  }));
 }
 
 function requiredEnv(name: string) {
@@ -63,24 +75,48 @@ async function serviceJson<T>(url: string, init: RequestInit, serviceKey: string
 }
 
 Deno.serve(async (request) => {
-  if (request.method !== "POST") return json({ error: "method_not_allowed" }, 405);
+  const requestId = request.headers.get("x-cuebooker-request-id")?.trim() || crypto.randomUUID();
+
+  if (request.method !== "POST") {
+    logEvent("method_rejected", requestId, { method: request.method });
+    return json({ error: "method_not_allowed", requestId }, 405, requestId);
+  }
 
   const configuredSecret = Deno.env.get("CUEBOOKER_INBOUND_WEBHOOK_SECRET")?.trim();
-  if (!configuredSecret) return json({ error: "webhook_not_configured" }, 503);
+  if (!configuredSecret) {
+    logEvent("webhook_not_configured", requestId);
+    return json({ error: "webhook_not_configured", requestId }, 503, requestId);
+  }
+
   const suppliedSecret = request.headers.get("x-cuebooker-webhook-secret")?.trim();
-  if (!suppliedSecret || suppliedSecret !== configuredSecret) return json({ error: "unauthorized_webhook" }, 401);
+  if (!suppliedSecret || suppliedSecret !== configuredSecret) {
+    logEvent("webhook_auth_failed", requestId, { has_supplied_secret: Boolean(suppliedSecret) });
+    return json({ error: "unauthorized_webhook", requestId }, 401, requestId);
+  }
 
   let payload: any;
-  try { payload = await request.json(); }
-  catch { return json({ error: "invalid_json" }, 400); }
+  try {
+    payload = await request.json();
+  } catch {
+    logEvent("invalid_json", requestId);
+    return json({ error: "invalid_json", requestId }, 400, requestId);
+  }
 
   const allItems = Array.isArray(payload?.items) ? payload.items : [];
-  if (!allItems.length) return json({ accepted: 0, ignored: 0 });
+  if (!allItems.length) {
+    logEvent("empty_batch", requestId);
+    return json({ accepted: 0, ignored: 0, requestId }, 200, requestId);
+  }
 
-  // Bound provider batches so one webhook cannot monopolize an invocation.
   const items = allItems.slice(0, 50);
   let accepted = 0;
   let ignored = Math.max(0, allItems.length - items.length);
+
+  logEvent("batch_started", requestId, {
+    received: allItems.length,
+    processing: items.length,
+    truncated: allItems.length - items.length
+  });
 
   try {
     const supabaseUrl = requiredEnv("SUPABASE_URL");
@@ -89,10 +125,18 @@ Deno.serve(async (request) => {
     for (const rawItem of items) {
       const item = rawItem && typeof rawItem === "object" ? rawItem as Record<string, unknown> : {};
       const route = extractReplyToken(item);
-      if (!route) { ignored += 1; continue; }
+      if (!route) {
+        ignored += 1;
+        logEvent("item_ignored", requestId, { reason: "reply_token_missing" });
+        continue;
+      }
 
       const messageId = typeof item.MessageId === "string" ? item.MessageId.trim() : "";
-      if (!messageId) { ignored += 1; continue; }
+      if (!messageId) {
+        ignored += 1;
+        logEvent("item_ignored", requestId, { reason: "provider_message_id_missing" });
+        continue;
+      }
 
       const threadRows = await serviceJson<Array<{
         id: string;
@@ -107,18 +151,33 @@ Deno.serve(async (request) => {
         serviceKey
       );
       const thread = threadRows[0];
-      if (!thread) { ignored += 1; continue; }
+      if (!thread) {
+        ignored += 1;
+        logEvent("item_ignored", requestId, { reason: "thread_not_found" });
+        continue;
+      }
 
       const fromEmail = mailboxAddress(item.From)?.toLowerCase() || "";
       if (!fromEmail || fromEmail !== thread.to_email.trim().toLowerCase()) {
         ignored += 1;
+        logEvent("item_ignored", requestId, {
+          reason: "sender_mismatch",
+          booking_id: thread.booking_id
+        });
         continue;
       }
 
       const extracted = typeof item.ExtractedMarkdownMessage === "string" ? item.ExtractedMarkdownMessage.trim() : "";
       const rawText = typeof item.RawTextBody === "string" ? item.RawTextBody.trim() : "";
       const bodyText = (extracted || rawText).slice(0, 20000).trim();
-      if (!bodyText) { ignored += 1; continue; }
+      if (!bodyText) {
+        ignored += 1;
+        logEvent("item_ignored", requestId, {
+          reason: "body_empty",
+          booking_id: thread.booking_id
+        });
+        continue;
+      }
 
       const subject = (typeof item.Subject === "string" ? item.Subject.trim() : "Reply").slice(0, 300) || "Reply";
       const receivedAt = new Date().toISOString();
@@ -152,7 +211,8 @@ Deno.serve(async (request) => {
               subject,
               in_reply_to: typeof item.InReplyTo === "string" ? item.InReplyTo : null,
               spam_score: spamScore,
-              reply_recipient: route.recipient
+              reply_recipient: route.recipient,
+              ingest_request_id: requestId
             }
           })
         },
@@ -160,13 +220,30 @@ Deno.serve(async (request) => {
       );
 
       const result = rows[0];
-      if (result?.email_created || result?.activity_created) accepted += 1;
-      else ignored += 1;
+      if (result?.email_created || result?.activity_created) {
+        accepted += 1;
+        logEvent("item_accepted", requestId, {
+          booking_id: thread.booking_id,
+          email_created: Boolean(result.email_created),
+          activity_created: Boolean(result.activity_created)
+        });
+      } else {
+        ignored += 1;
+        logEvent("item_ignored", requestId, {
+          reason: "idempotent_or_noop",
+          booking_id: thread.booking_id
+        });
+      }
     }
 
-    return json({ accepted, ignored });
+    logEvent("batch_completed", requestId, { accepted, ignored });
+    return json({ accepted, ignored, requestId }, 200, requestId);
   } catch (error) {
-    console.error("ingest-booking-email", error);
-    return json({ error: "inbound_email_ingest_failed" }, 500);
+    const message = error instanceof Error ? error.message : String(error);
+    logEvent("batch_failed", requestId, {
+      error_code: message.split(":")[0].slice(0, 120)
+    });
+    console.error("ingest-booking-email", requestId, error);
+    return json({ error: "inbound_email_ingest_failed", requestId }, 500, requestId);
   }
 });
