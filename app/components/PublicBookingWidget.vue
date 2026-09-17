@@ -9,12 +9,14 @@ withDefaults(defineProps<{
   submitting?: boolean
   sent?: boolean
   confirmationSent?: boolean | null
+  reference?: string
   error?: string
 }>(), {
   locale: 'es',
   submitting: false,
   sent: false,
   confirmationSent: null,
+  reference: '',
   error: ''
 })
 
@@ -47,6 +49,7 @@ const emit = defineEmits<{
       :submitting="submitting"
       :sent="sent"
       :confirmation-sent="confirmationSent"
+      :reference="reference"
       :error="error"
       compact
       @submit="emit('submit', $event)"
