@@ -24,8 +24,6 @@ All ingress mechanisms converge into the same Booking Core. Never create separat
  -> History
 ```
 
-CUE ID / Passport / 3D identity remain downstream.
-
 The public-entry product direction is capability-driven rather than screen-driven:
 
 ```text
@@ -49,7 +47,7 @@ Canonical public identity:
 cuebooker.com/<artist-slug>
 ```
 
-Attributed deep link example:
+Attributed deep-link example:
 
 ```text
 /<artist-slug>?booking=1&src=instagram
@@ -91,7 +89,7 @@ entry_source = instagram
 
 Do not overload `origin_channel` with referral attribution.
 
-## 4. Public-ingress database foundation — STAGING ONLY
+## 4. Public-ingress foundation — STAGING ONLY
 
 Supabase staging:
 
@@ -111,7 +109,7 @@ Applied/versioned public-ingress migrations:
 20260917123841_allow_system_origin_inbound_email_threads.sql
 ```
 
-Real public-ingress smoke has proven:
+Real public-ingress smoke proved:
 
 ```text
 Public Artist Profile
@@ -136,15 +134,15 @@ entry_source = website / instagram depending link
 created_by = null
 ```
 
-## 5. Public Booking Form V2 — IMPLEMENTED ON BRANCH / PR PREVIEW
+## 5. Public Booking Form V2 — IMPLEMENTED / PR PREVIEW
 
-Functional implementation commits culminate at:
+Functional implementation culminated at:
 
 ```text
 cd54704b6aec843017252ce06b12f311aca7d30a
 ```
 
-Files changed in this slice:
+Files:
 
 ```text
 app/components/PublicBookingForm.vue
@@ -155,40 +153,34 @@ app/pages/[slug].vue
 
 Implemented behavior:
 
-- native date/calendar field remains the date input surface;
-- client-side date validation now rejects malformed dates before HTTP submission;
-- event date cannot be in the past;
-- event date is bounded to a generous ten-year future window so accidental years such as `12026` cannot reach the backend;
-- inline field-level validation for required name, email and proposal plus country/date/offer/currency;
-- collapsed optional details auto-open when one of their fields contains the first validation error;
-- focus moves to the first invalid field;
-- accessible `aria-invalid` / `aria-describedby` relationships are present;
-- form data is preserved when the backend fails;
-- backend error codes are translated into promoter-facing messages rather than exposing technical codes;
-- success copy distinguishes `confirmationSent=true` from a saved Booking whose confirmation email could not be delivered;
-- the public Booking reference is surfaced after successful submission when provided by the backend;
-- behavior is shared by public profile and iframe widget.
+- native date/calendar input;
+- malformed/past/unreasonably-future dates blocked client-side;
+- 10-year future guardrail prevents accidental years such as `12026` reaching backend;
+- inline validation for required name/email/proposal plus country/date/offer/currency;
+- optional details auto-open when first invalid field lives there;
+- focus moves to first invalid field;
+- `aria-invalid` / `aria-describedby` relationships;
+- form data preserved after backend failure;
+- technical API errors translated into promoter-facing messages;
+- success state distinguishes saved + confirmation email sent from saved + email delivery unavailable;
+- public Booking reference surfaced when returned;
+- same behavior shared by public profile and widget.
 
-Validation for this slice:
+Validation:
 
 ```text
-CI run: 35276181812
-Run tests: success
-Generate production build: success
-
-Deploy Staging / PR preview run: 35276181813
-Generate preview build: success
-Deploy PR preview to Cloudflare Pages: success
+CI run 35276181812: tests + production build success
+Deploy run 35276181813: PR preview success
 ```
 
-Visual/mobile smoke of the new field-level states is still required before calling the V2 UX closed.
+Visual/mobile smoke of field-level states is still required before calling V2 UX fully closed.
 
 ## 6. Secure promoter follow-up — PROVEN ON STAGING
 
 Product rule:
 
 - secure link lets a promoter read a safe booking summary/status/conversation and reply;
-- promoter cannot directly mutate internal `Booking.status`;
+- promoter cannot mutate internal `Booking.status`;
 - external reply becomes inbound Activity in the same Booking Core;
 - there is no second promoter booking model.
 
@@ -196,7 +188,7 @@ Product rule:
 
 `/request?token=...` is the real promoter follow-up surface.
 
-A real staging smoke on 17 September proved:
+A real staging smoke proved:
 
 ```text
 public form
@@ -207,17 +199,11 @@ public form
  -> inbound Activity on same Booking
 ```
 
-Observed Activity thread contained:
-
-- initial public-form inbound Activity;
-- outbound acknowledgement email Activity;
-- secure-link inbound promoter reply Activity.
-
-Retry-safe follow-up idempotency had already been proven separately.
+Observed Activity thread contained the initial public-form message, outbound acknowledgement email and secure-link inbound promoter reply.
 
 ## 7. Acknowledgement email — PROVEN ON STAGING
 
-Staging now has a working Brevo API key for `submit-booking-request`.
+Staging has a working Brevo API key for `submit-booking-request`.
 
 A real delivery smoke succeeded:
 
@@ -229,40 +215,35 @@ from_email = bookings@cuebooker.com
 provider_message_id = Brevo SMTP relay message id
 ```
 
-The public API returned a successful Booking while Brevo accepted the acknowledgement message.
+Semantics:
 
-Semantics remain:
-
-- acknowledgement is a system action with `created_by = null`;
+- acknowledgement is system-origin with `created_by = null`;
 - `purpose = public_acknowledgement`;
-- provider failure never rolls back the Booking;
-- secure follow-up token is 256-bit random and only its hash is persisted;
-- raw secure URL exists only in the provider payload in memory;
+- provider failure never rolls back Booking;
+- secure follow-up token is random 256-bit and only its hash persists;
+- raw secure URL exists only in provider payload memory;
 - Reply-To uses `booking+<reply_token>@reply.cuebooker.com`.
 
 ## 8. Direct email reply — PARTIALLY PROVEN, ONE GATE OPEN
-
-The direct Gmail reply path has been narrowed precisely.
 
 Proven:
 
 ```text
 Cuebooker acknowledgement
  -> Reply-To booking+<uuid>@reply.cuebooker.com
- -> Gmail sends to that exact recipient
- -> Brevo inbound receives the message
- -> Brevo marks it received
- -> Brevo marks it processed
+ -> Gmail sends to exact recipient
+ -> Brevo inbound receives message
+ -> Brevo marks received
+ -> Brevo marks processed
 ```
 
-Brevo inbound event observed:
+Observed Brevo path then ends with:
 
 ```text
-recipient = booking+<reply_token>@reply.cuebooker.com
-logs = received -> processed -> webhookFailed
+received -> processed -> webhookFailed
 ```
 
-The inbound webhook exists with:
+Inbound webhook:
 
 ```text
 type = inbound
@@ -272,57 +253,96 @@ endpoint = https://lycprjeuuynfzwskycwv.supabase.co/functions/v1/ingest-booking-
 header = x-cuebooker-webhook-secret
 ```
 
-`reply.cuebooker.com` is configured for inbound reception and Brevo demonstrably receives the mail, so do not reopen Gmail/Reply-To/MX investigation unless new evidence contradicts this.
+`reply.cuebooker.com` and Gmail/MX are therefore not the current investigation target. `ingest-booking-email` is ACTIVE and currently deployed with `verify_jwt = false`.
 
-`ingest-booking-email` is ACTIVE on staging and currently reports `verify_jwt = false`; custom webhook secret validation happens in the function body.
-
-Exact next diagnostic when a Mac/terminal is available:
+Exact next diagnostic when terminal access is available:
 
 ```text
-1. generate/choose one webhook secret;
-2. set the exact same value in Supabase staging as CUEBOOKER_INBOUND_WEBHOOK_SECRET;
-3. set the exact same value in Brevo webhook header x-cuebooker-webhook-secret;
-4. POST directly to ingest-booking-email with {"items":[]} and that header;
-5. expected response: {"accepted":0,"ignored":0};
-6. only after this succeeds, send a fresh Gmail reply and verify inbound email_messages + Activity.
+1. use one webhook secret;
+2. set exact same value in Supabase staging as CUEBOOKER_INBOUND_WEBHOOK_SECRET;
+3. set same value in Brevo x-cuebooker-webhook-secret header;
+4. POST directly to ingest-booking-email with {"items":[]};
+5. expected: {"accepted":0,"ignored":0};
+6. only then send a fresh Gmail reply and verify inbound email_messages + Activity.
 ```
 
-Do not keep re-sending email replies before the direct secret handshake test passes.
+Do not keep re-sending direct email replies before the handshake test passes.
 
-Security note: webhook/API secret values were exposed during interactive setup. Rotate secrets before production readiness even if staging testing continues with the current values temporarily.
+Rotate exposed setup secrets before production readiness.
 
-## 9. Share links and widget — IMPLEMENTED FOUNDATION
+## 9. Distribution / Share UX — IMPLEMENTED ON BRANCH / PR PREVIEW
 
-Share/distribution is not a separate booking model. Existing attributed surfaces include Instagram, WhatsApp, website, EPK, QR context, email and link-in-bio URLs.
-
-The iframe widget reuses the same public route/component/intake endpoint, e.g. conceptually:
+Latest functional commit:
 
 ```text
-/<slug>?embed=1&booking=1&src=website
+c336ebd946c9709f59524419fa3648471f3b0598
 ```
 
-Product direction for the next distribution iteration:
+File:
 
-- explain use cases rather than presenting a wall of URLs;
-- make Instagram and WhatsApp Business destinations explicit;
-- preserve `entry_source` attribution;
-- public Artist Profile remains the canonical landing surface;
-- widget/profile/button variants must all feed the same intake contract.
+```text
+app/components/PublicProfilePublishingControls.vue
+```
 
-## 10. Product direction captured, NOT FOR IMMEDIATE IMPLEMENTATION
+The previous technical wall of URLs has been replaced with use-case-driven distribution cards grouped as:
 
-These are strategic constraints for future sequencing, not permission to open parallel workstreams now.
+```text
+Perfil
+Solicitudes directas
+Tu web
+```
+
+Current supported entry surfaces in the UI:
+
+- public profile;
+- direct booking;
+- Instagram;
+- WhatsApp Business;
+- email;
+- EPK;
+- link-in-bio;
+- QR-attributed link;
+- website link;
+- iframe widget code.
+
+Each card explains where/why to use the entry point and shows attribution semantics rather than exposing a raw URL as the primary UX. Copy actions remain explicit (`Copiar enlace` / `Copiar código`). All attributed links still converge into the same public intake contract and preserve `entry_source`.
+
+Important: the QR card currently copies a QR-attributed URL only. Actual QR image generation remains a separate future slice and is not falsely presented as implemented.
+
+Validation:
+
+```text
+CI run 35277735399: tests + production build success
+Deploy run 35277734983: PR preview success
+```
+
+Visual/mobile review of the expanded distribution panel is still required.
+
+## 10. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
+
+Current launch hypothesis:
+
+```text
+30-day free trial
+ -> one simple Solo plan around €15/month as an initial/founder price
+ -> core booking workflow + public profile + links + widget + notifications included
+```
+
+Do not split Instagram links, WhatsApp links, widget or public profile into separate paid add-ons at launch. These are acquisition/distribution surfaces that increase the value of the same booking engine.
+
+A future Manager/Agency plan can be priced around workspace/roster/artist scale once real usage data exists.
+
+AI/voice limits should not be hard-coded into pricing before real usage/cost evidence exists.
+
+No billing, trial enforcement or Stripe integration is implemented yet.
+
+## 11. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
 
 ### Smart Capture / interpretation
 
 Voice and free text should become one Capture Engine rather than separate novelty features.
 
-Future inputs may include:
-
-- typed free text;
-- dictated voice;
-- pasted WhatsApp message;
-- pasted/imported email.
+Future inputs may include typed free text, dictated voice, pasted WhatsApp text and pasted/imported email.
 
 The engine should propose structured booking fields, show uncertainty/missing information and require human confirmation before writing Booking Core. AI must not silently invent booking facts.
 
@@ -342,31 +362,20 @@ Useful events include new booking request, promoter reply and meaningful unresol
 
 ### Internal Cuebooker admin / back office
 
-Future internal admin should cover:
-
-- platform/user/workspace health;
-- support/incidents;
-- operational KPIs;
-- email/webhook delivery;
-- logs and correlation IDs;
-- error diagnostics;
-- abuse/rate limiting;
-- alerts requiring intervention;
-- audited admin actions.
+Future internal admin should cover platform/user/workspace health, support/incidents, operational KPIs, email/webhook delivery, logs/correlation IDs, error diagnostics, abuse/rate limiting, alerts and audited admin actions.
 
 Observability data should be captured incrementally now even though the admin UI is deferred.
 
 ### Friendly system feedback
 
-Treat human feedback as a cross-product rule, not a one-off feature:
+Treat human feedback as a cross-product rule:
 
 - field error -> explain the field problem;
-- save success -> confirm clearly;
-- send success -> confirm clearly;
-- retryable failure -> preserve user work and explain the next action;
+- save/send success -> confirm clearly;
+- retryable failure -> preserve work and explain next action;
 - technical/provider detail -> logs/admin, not promoter-facing copy.
 
-## 11. Root routing and static deployment
+## 12. Root routing and static deployment
 
 Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. `ASSETS.fetch()` must use the pretty `/200` path rather than `/200.html`.
 
@@ -378,41 +387,45 @@ Previously validated:
 
 PR #75 remains the staging preview vehicle.
 
-## 12. Security / operational follow-up
+## 13. Security / operational follow-up
 
 Before production:
 
-- rotate Brevo API/webhook secrets that were exposed during setup;
+- rotate Brevo API/webhook secrets exposed during setup;
 - finish direct inbound email webhook smoke;
 - strengthen anonymous rate/abuse protection for public intake and follow-up;
-- perform visual desktop/mobile smoke of public profile, form, request page and widget;
+- perform visual desktop/mobile smoke of public profile, form, request page, distribution panel and widget;
 - review CSP/frame policy for widget on external origins;
 - run Supabase security/performance advisors;
 - explicitly review production migrations/functions/deployment.
 
-Existing Supabase project-level security warning remains:
+Existing project-level warning remains:
 
 ```text
 Leaked Password Protection Disabled
 ```
 
-Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to Supabase's current secret-key model as a deliberate infrastructure task, not mixed into a product slice.
+Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to the current Supabase secret-key model as a deliberate infrastructure task, not mixed into a product slice.
 
-## 13. Exact next product work
+## 14. Exact next product work
 
-Current block order is intentional. Do not jump ahead because downstream ideas are documented.
+Current sequencing is intentional:
 
 ```text
-1. visually smoke Public Booking Form V2 on desktop/mobile PR preview;
-2. fix any V2 UX regressions found in that smoke;
-3. complete direct email reply webhook handshake when terminal access is available;
-4. close/gate Public Booking Form V2;
-5. then open Smart Capture text + voice as the next distinct feature block;
-6. after Capture Engine, continue Public Artist Profile / distribution refinement;
-7. commercial homepage/marketing redesign remains downstream of operational product truth.
+1. visually smoke Public Booking Form V2 desktop/mobile;
+2. visually smoke new Distribution panel desktop/mobile;
+3. fix UX regressions found in those smokes;
+4. complete direct email reply webhook handshake when terminal access returns;
+5. close/gate the public-entry block;
+6. then open Smart Capture text + voice as a distinct feature block;
+7. then notification layer;
+8. commercial homepage/marketing redesign after operational product truth is strong enough to market honestly;
+9. billing/trial enforcement after first external beta feedback, unless launch timing requires it earlier.
 ```
 
-## 14. Documentation workflow rule
+Do not jump ahead because downstream ideas are documented.
+
+## 15. Documentation workflow rule
 
 Every meaningful implementation block must finish by updating this handoff with:
 
@@ -423,7 +436,7 @@ Every meaningful implementation block must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-## 15. Production gate
+## 16. Production gate
 
 Production Supabase:
 
