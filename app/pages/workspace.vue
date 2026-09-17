@@ -89,7 +89,7 @@ const cueCoreLoading = ref(false)
 const cueMessage = ref('')
 const bookingCoreOperationsRevision = ref(0)
 const realBookingFocusId = ref('')
-const showSampleMode = ref(false)
+const showSampleMode = ref(route.query.demo === '1')
 const demoReply = ref('')
 const tourStep = ref(-1)
 const settingsOpen = ref(false)
@@ -1213,12 +1213,8 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           :locale="preferences.locale.value"
           :focus-booking-id="realBookingFocusId"
           @operations-changed="handleBookingCoreOperationsChanged"
+          @cue-requested="cueOpen = true"
         />
-
-        <aside v-if="!showSampleMode" class="demo-launch">
-          <div><span>{{ preferences.locale.value === 'es' ? 'DEMO / OPCIONAL' : 'DEMO / OPTIONAL' }}</span><strong>{{ preferences.locale.value === 'es' ? '¿Quieres explorar con datos simulados?' : 'Want to explore with sample data?' }}</strong></div>
-          <button type="button" @click="showSampleMode = true">{{ preferences.locale.value === 'es' ? 'Abrir demo' : 'Open demo' }}</button>
-        </aside>
 
         <aside v-if="showSampleMode" id="sample-mode" class="demo-notice" :class="{ 'tour-focus': tourStep === 0 }">
           <div><span>{{ copy.samplesLabel }}</span><strong>{{ demoActiveBookings.length ? copy.samplesActive : copy.samplesRemoved }}</strong><p>{{ copy.samplesBody }}</p></div>

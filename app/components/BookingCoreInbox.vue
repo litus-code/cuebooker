@@ -8,7 +8,7 @@ const props = defineProps<{
   focusBookingId?: string
 }>()
 
-const emit = defineEmits<{ operationsChanged: [] }>()
+const emit = defineEmits<{ operationsChanged: []; cueRequested: [] }>()
 const bookingCore = useBookingCore()
 const selectedBookingId = ref('')
 const contacts = ref<Contact[]>([])
@@ -25,7 +25,7 @@ const realStatusFilter = ref<'all' | CoreBookingStatus>('all')
 const copy = computed(() => props.locale === 'es' ? {
   eyebrow: 'BOOKINGS / REALES',
   title: 'Bookings capturados',
-  empty: 'Todavía no hay bookings reales.',
+  empty: 'Todavía no hay bookings reales.', emptyTitle: 'Tu primer booking empieza con un CUE.', emptyBody: 'Si te llaman, te escriben o aparece una oportunidad, guárdala en segundos. No necesitas tener todos los datos.', emptyAction: '+ CUE',
   date: 'Fecha', venue: 'Sala / entidad', contact: 'Contacto', offer: 'Oferta', source: 'Origen', status: 'Estado', activity: 'Activity',
   noActivity: 'Todavía no hay actividad registrada.',
   noDate: 'Sin fecha', noVenue: 'Sin sala definida', noContact: 'Sin contacto', noOffer: 'Sin oferta',
@@ -33,7 +33,7 @@ const copy = computed(() => props.locale === 'es' ? {
 } : {
   eyebrow: 'BOOKINGS / REAL',
   title: 'Captured bookings',
-  empty: 'No real bookings yet.',
+  empty: 'No real bookings yet.', emptyTitle: 'Your first booking starts with a CUE.', emptyBody: 'If someone calls, messages you or an opportunity appears, save it in seconds. You do not need every detail yet.', emptyAction: '+ CUE',
   date: 'Date', venue: 'Venue / entity', contact: 'Contact', offer: 'Offer', source: 'Source', status: 'Status', activity: 'Activity',
   noActivity: 'No activity recorded yet.',
   noDate: 'No date', noVenue: 'No venue defined', noContact: 'No contact', noOffer: 'No offer',
@@ -197,7 +197,12 @@ function bookingTitle(booking: CoreBooking) {
       <b>{{ bookings.length }}</b>
     </header>
 
-    <p v-if="!bookings.length" class="core-inbox__empty">{{ copy.empty }}</p>
+    <div v-if="!bookings.length" class="core-inbox__zero">
+      <span>{{ copy.empty }}</span>
+      <strong>{{ copy.emptyTitle }}</strong>
+      <p>{{ copy.emptyBody }}</p>
+      <button type="button" @click="emit('cueRequested')">{{ copy.emptyAction }}</button>
+    </div>
 
     <div v-if="bookings.length" class="core-inbox__tools">
       <input v-model="realSearch" type="search" :placeholder="locale === 'es' ? 'Buscar booking, sala, contacto…' : 'Search booking, venue, contact…'">
@@ -335,6 +340,11 @@ function bookingTitle(booking: CoreBooking) {
 .core-inbox__activity article strong { font:700 10px monospace; text-transform:uppercase; color:var(--cue-accent); }
 .core-inbox__activity article time { color:var(--cue-muted); font:10px monospace; }
 .core-inbox__activity article p { margin:6px 0 0; color:var(--cue-text); font-size:12px; line-height:1.45; }
+.core-inbox__zero { display:grid; justify-items:start; gap:8px; padding:clamp(24px,5vw,48px); }
+.core-inbox__zero > span { color:var(--cue-accent); font:700 9px monospace; letter-spacing:.09em; text-transform:uppercase; }
+.core-inbox__zero > strong { max-width:520px; font-size:clamp(22px,3vw,38px); line-height:1; text-transform:uppercase; }
+.core-inbox__zero > p { max-width:560px; margin:0; color:var(--cue-muted); font-size:12px; line-height:1.5; }
+.core-inbox__zero > button { min-height:40px; margin-top:6px; padding:0 16px; border:1px solid var(--cue-accent); background:var(--cue-accent); color:#090909; cursor:pointer; font:800 10px monospace; }
 .core-inbox__empty { margin:0; padding:18px; color:var(--cue-muted); font-size:12px; }
 @media (max-width: 760px) {
   .core-inbox__layout { grid-template-columns:1fr; }
