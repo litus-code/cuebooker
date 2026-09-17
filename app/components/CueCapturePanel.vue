@@ -296,6 +296,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
           </section>
 
           <label class="cue-capture__note"><span>{{ text.note }}</span><textarea v-model="initialNote" rows="3" :placeholder="text.notePlaceholder" /></label>
+          <CueVoiceInput v-model="initialNote" :locale="locale" />
           <div class="cue-capture__interpret">
             <button type="button" :disabled="!initialNote.trim()" @click="interpretNote">{{ text.interpret }}</button>
             <p v-if="interpretationMessage">{{ interpretationMessage }}</p>
