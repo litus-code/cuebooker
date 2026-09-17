@@ -30,6 +30,7 @@ const copy = computed(() => props.locale === 'es' ? {
   sent: 'Email enviado y guardado en Activity.',
   noContactEmail: 'Este booking necesita un contacto con email antes de poder enviar.',
   providerMissing: 'El proveedor de email todavía no está configurado en staging.',
+  replyDomainMissing: 'El dominio de respuestas de email todavía no está configurado en staging.',
   sendError: 'No se ha podido enviar el email.'
 } : {
   title: 'Log activity',
@@ -43,6 +44,7 @@ const copy = computed(() => props.locale === 'es' ? {
   sent: 'Email sent and saved to Activity.',
   noContactEmail: 'This booking needs a contact with an email before sending.',
   providerMissing: 'The email provider is not configured in staging yet.',
+  replyDomainMissing: 'The email reply domain is not configured in staging yet.',
   sendError: 'The email could not be sent.'
 })
 
@@ -71,6 +73,7 @@ watch(direction, () => {
 function localEmailError(code: string) {
   if (code === 'contact_email_required' || code === 'booking_contact_required') return copy.value.noContactEmail
   if (code === 'email_provider_not_configured') return copy.value.providerMissing
+  if (code === 'email_reply_domain_not_configured') return copy.value.replyDomainMissing
   return copy.value.sendError
 }
 
