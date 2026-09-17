@@ -1,48 +1,51 @@
 # Cuebooker living handoff
 
-Updated: 17 September 2026
-Branch: `feature/app-visual-system`
+Updated: 17 September 2026  
+Branch: `feature/app-visual-system`  
 Status: ACTIVE BATON PASS
 
-Read this immediately after `AGENTS.md`. This document records current implementation truth. Always query the live branch HEAD before modifying code because this file can itself be the newest commit.
+Read this immediately after `AGENTS.md`. This document records current implementation truth, not aspirations. Always query the live branch HEAD before modifying code.
 
 ## 1. Current revision anchors
 
-Last functional Booking Core cleanup before the public-ingress block:
+Booking Core cleanup anchor:
 
 ```text
 2c6337aff199caa550317b642585fe2b8b283e5b
 Remove completed Booking Core migration helpers
 ```
 
-Public Artist Profile / public booking ingress functional integration commit:
+Workspace/public-profile integration:
 
 ```text
 4a7888c63d5c57deaa6885d299c17231406d650b
 Integrate public artist profile into workspace
 ```
 
-That commit was produced by a temporary guarded workflow only after `npm test` and `npm run generate` passed. The temporary workflow and patch helper deleted themselves in the same commit and must not be restored.
+Cloudflare root-artist routing fix:
 
-A documentation commit may exist after the functional hash above. Always inspect live HEAD.
+```text
+f32df1d4284db04ee5124af98def1b296bb7d67e
+Fix public artist Pages Function asset routing
+```
+
+Temporary validation workflow removal:
+
+```text
+10cd607fb3ec51c33239cb98e5f1ea4474682b63
+Remove temporary public ingress validation workflow
+```
+
+A documentation commit can exist after these hashes. Inspect live HEAD before coding.
 
 ## 2. Product truth
 
 Cuebooker manages booking demand that an artist, manager or agency already receives. It does not promise to find gigs.
 
-The operational model is one Booking Core with many ingress mechanisms. Never create separate inboxes or booking models per channel.
-
-Canonical principle:
+All ingress mechanisms converge into the same Booking Core. Never create separate inboxes or booking models per channel.
 
 ```text
-Any professional opportunity, wherever it starts,
-converges into the same Booking Core without losing provenance.
-```
-
-Current private operational loop:
-
-```text
-+CUE
++CUE / public profile / widget / email import / future share capture
  -> Contact / Counterparty
  -> Booking
  -> Activity
@@ -53,41 +56,38 @@ Current private operational loop:
  -> History
 ```
 
-Search/Filters, Archive/Restore and conflict diagnostics are real. CUE ID / Passport / 3D identity work remains intentionally downstream.
+CUE ID / Passport / 3D identity work remains downstream.
 
-## 3. Public entry product — fixed definition
+## 3. Public entry product
 
-Canonical product definition: `docs/BOOKING_INGRESS_PRODUCT.md`.
-
-The public professional identity is the artist profile itself:
+Canonical public identity:
 
 ```text
 cuebooker.com/<artist-slug>
 ```
 
-Example deep link:
+Example attributed deep link:
 
 ```text
 /<artist-slug>?booking=1&src=instagram
 ```
 
-The model is:
+Public flow:
 
 ```text
 Public Artist Profile
-  -> Booking Form
-  -> secure public intake boundary
-  -> Contact / Counterparty
-  -> Booking
-  -> initial inbound Activity
-  -> authenticated Booking board
+ -> Booking Form
+ -> submit-booking-request
+ -> create_public_booking
+ -> Contact / Counterparty
+ -> Booking(status=new)
+ -> inbound Activity
+ -> authenticated Booking Core board
 ```
 
-The promoter does not need an account for the first enquiry.
+The promoter does not need a Cuebooker account for the first enquiry.
 
-The embedded website widget will reuse the same intake contract/backend. It must not become another inbox or domain model.
-
-`+ CUE` remains the private capture path for enquiries that happen in WhatsApp, Instagram DM, phone, in person, manager conversations, etc.
+The future embedded website widget must reuse this same contract/backend. It is not another inbox.
 
 ## 4. Provenance semantics
 
@@ -107,7 +107,7 @@ origin_channel = booking_form
 capture_method = public_form
 entry_source = instagram
 
-WhatsApp conversation -> artist enters +CUE manually
+WhatsApp conversation -> +CUE manual capture
 origin_channel = whatsapp
 capture_method = manual
 
@@ -120,14 +120,14 @@ Do not overload `origin_channel` with referral attribution.
 
 ## 5. Public-ingress database foundation — STAGING ONLY
 
-Applied to Supabase project:
+Supabase staging:
 
 ```text
 cuebooker-staging
 project id: lycprjeuuynfzwskycwv
 ```
 
-Migrations currently applied and versioned in repo:
+Versioned migrations applied on staging:
 
 ```text
 20260917113205_add_public_booking_ingress_foundation.sql
@@ -136,66 +136,43 @@ Migrations currently applied and versioned in repo:
 20260917114038_reserve_public_artist_slugs.sql
 ```
 
-The foundation includes:
+Foundation includes:
 
 - public-profile enablement;
-- artist -> booking-workspace routing;
-- public entry attribution;
+- artist -> Booking Core workspace routing;
+- entry attribution;
 - idempotency storage;
-- truthful system/anonymous actor semantics instead of impersonating the owner;
+- truthful system/anonymous actor semantics;
 - atomic `create_public_booking` command;
-- private Booking Core RLS remains strict;
-- system/product route slugs are reserved at database level.
+- strict private Booking Core RLS;
+- reserved product/application slugs.
 
-Known reserved application names include routes such as `workspace`, `access`, `onboarding`, `app`, `request`, `api`, `cue-id`, `admin`, `settings`, `login`, `signup`, `account`, `auth`, `book`, `booking`, and `artists`.
+`create_public_booking` is executable by `service_role` only. `anon` and ordinary `authenticated` users cannot call it directly.
 
-## 6. Public-ingress database validation already completed
+## 6. Public Edge Functions — STAGING ONLY
 
-Validated on staging:
-
-- `create_public_booking` is executable by `service_role` only;
-- `anon` cannot execute it;
-- `authenticated` cannot execute it directly;
-- first request creates Contact / optional Counterparty / Booking / Activity atomically;
-- retry with the same idempotency key returns the same Booking and does not duplicate;
-- new public booking status is `new`;
-- `origin_channel = booking_form`;
-- `capture_method = public_form`;
-- `entry_source` is persisted independently;
-- initial Activity is inbound;
-- anonymous/system-created records are not falsely attributed to the workspace owner.
-
-Security advisor is clean for this schema work. The remaining project-level warning is Supabase leaked-password protection being disabled; it predates this block.
-
-Performance advisor FK coverage issues introduced by the new tables were fixed. Fresh-staging `unused_index` INFO notices are not grounds for deleting indexes without real workload evidence.
-
-## 7. Public Edge Functions — STAGING ONLY
-
-Active on staging:
+Active:
 
 ```text
 get-public-artist-profile
 submit-booking-request
 ```
 
-Both intentionally use `verify_jwt = false` because they are public product endpoints, not private authenticated APIs.
+They intentionally use `verify_jwt = false` because they are public entry endpoints. Their security boundary is implemented in the function/database design:
 
-Security boundary:
+- public-safe artist projection only;
+- no arbitrary caller-supplied `workspace_id` authorization;
+- service-role credentials remain server-side;
+- payload validation and size limits;
+- honeypot baseline;
+- DB idempotency;
+- private fees/calendar/contacts/internal notes are not exposed.
 
-- public profile endpoint exposes only a safe projection;
-- no `workspace_id`, private fees, private calendar data, contacts or internal notes are returned;
-- booking submission validates/normalizes input before using server-side service-role credentials;
-- browser never receives the service-role key;
-- caller identifies an artist by public slug, not by arbitrary target workspace UUID;
-- request payload is size-limited;
-- a honeypot exists;
-- idempotency is enforced in the database command.
+A stronger rate-limit/abuse-control layer is still a pre-production requirement.
 
-A stronger abuse/rate-limiting layer remains a pre-production requirement.
+## 7. Public frontend now in branch
 
-## 8. Public frontend now in branch
-
-Current real public-profile files include:
+Key files:
 
 ```text
 app/domain/publicArtistProfile.ts
@@ -208,114 +185,50 @@ app/pages/[slug].vue
 functions/[slug].js
 ```
 
-`app/pages/[slug].vue` is the real dynamic artist profile route. It reads the safe public projection and can deep-link/open the booking form using query params such as `booking=1` and `src=instagram`.
+`PublicBookingForm.vue` is deliberately low-friction. Sparse requests are valid; do not turn it into a CRM-length form.
 
-`PublicBookingForm.vue` is deliberately low-friction. Name, email and enough booking context are the core; event/venue/date/offer details can remain sparse. Do not turn it into a CRM-length form.
+The authenticated Profile preview and the public visitor profile use the same reusable `PublicArtistProfile` component. Do not reintroduce a second bespoke preview design.
 
-## 9. Static hosting / Cloudflare routing
+Private booking terms, fees, internal notes, contacts, negotiation history and private calendar data must stay outside the public profile contract.
 
-The app currently generates static Nuxt output. A dynamic Nuxt page alone is not enough for reliable direct entry from an Instagram/WhatsApp link.
+## 8. Workspace publication controls
 
-`functions/[slug].js` is a Cloudflare Pages Function for root-level artist slugs. It:
-
-- ignores reserved system paths;
-- validates the slug via the public profile endpoint;
-- serves the generated Nuxt shell at the requested root URL;
-- injects artist title/description/social metadata through HTMLRewriter;
-- routes staging/PR-preview hosts to staging Supabase;
-- routes `cuebooker.com`/`www.cuebooker.com` to the production public endpoint when production is eventually gated.
-
-Do not migrate the whole app to SSR just to solve this slice unless a later SEO/rendering requirement proves it necessary.
-
-## 10. Workspace profile integration now implemented
-
-Functional commit:
+The authenticated Profile surface now separates:
 
 ```text
-4a7888c63d5c57deaa6885d299c17231406d650b
-Integrate public artist profile into workspace
+Perfil publicado / privado
+Aceptar solicitudes / booking cerrado
 ```
 
-The authenticated Profile surface now uses the new publication model:
+Behavior:
 
-- publication status is loaded through `usePublicArtistPublishing()`;
-- `Perfil publicado / privado` is separate from `Aceptar solicitudes / booking cerrado`;
+- publication state loads via `usePublicArtistPublishing()`;
 - unpublishing closes public booking acceptance first;
-- opening booking resolves/uses the real Booking Core workspace route;
-- public profile controls expose preview/copy/open actions;
-- preview URLs use the current browser origin on staging/PR previews and `cuebooker.com` as the non-client production fallback;
-- switching managed artists clears stale workspace/public-route state and reloads the selected artist;
-- visual media used by preview is loaded from authenticated artist media without exposing private booking fields.
+- opening booking uses the real Booking Core workspace route;
+- preview/copy/open actions use the selected artist slug;
+- staging/PR preview links use the current browser origin;
+- managed-artist switching clears stale public/workspace route state before reloading;
+- authenticated media is reused for preview without exposing private Booking Core fields.
 
-Most importantly, the old bespoke profile-preview markup has been replaced by the same reusable component used publicly:
+## 9. Cloudflare Pages root artist routing
 
-```vue
-<PublicArtistProfile
-  :profile="publicProfilePreview"
-  :locale="preferences.locale.value"
-  preview
-/>
-```
+The Nuxt app is still generated as static output. Root artist URLs are handled by `functions/[slug].js`.
 
-Therefore “Vista previa de mi perfil” and the public visitor profile now share one visual/product contract instead of diverging implementations.
+Important implementation detail discovered during smoke testing: Cloudflare `ASSETS.fetch()` must request the pretty path (`/200`, fallback `/`) rather than physical asset names such as `/200.html` / `/index.html` inside the Pages Function.
 
-## 11. Public/private profile boundary
+The broken version produced a valid Nuxt shell with HTTP 404. Commit `f32df1d...` fixed this.
 
-The reusable preview/public contract includes only public-safe fields such as:
+Validated on the deployed PR preview while the staging artist was temporarily published:
 
-- stage name and slug;
-- cover / portrait visual treatment;
-- bio;
-- city/country;
-- languages;
-- genres;
-- performance formats / event types;
-- years active;
-- public website/social/music links;
-- whether booking requests are currently accepted.
+- `/<slug>` returned HTTP 200;
+- artist title metadata was injected;
+- Nuxt shell loaded;
+- nonexistent artist slug returned 404;
+- reserved `/workspace` continued to the normal application route rather than being treated as an artist profile.
 
-Do not put the following into `PublicArtistProfile`:
+## 10. End-to-end public booking proof — COMPLETED ON STAGING
 
-- minimum/typical fee;
-- private booking terms;
-- private calendar;
-- internal notes;
-- contacts;
-- negotiation history;
-- private rider/operations data unless deliberately redesigned as a public-safe artefact later.
-
-## 12. Current validation status
-
-The guarded workspace-integration workflow ran:
-
-```text
-npm ci
-npm test
-npm run generate
-```
-
-and only committed after they passed.
-
-The resulting bot commit then caused the normal PR `CI` and `Deploy Staging` workflows to report `action_required` with zero jobs. This is not a code-test failure; GitHub did not instantiate jobs for that bot-generated commit.
-
-This handoff refresh is intentionally a normal user-authored repository commit so the standard PR CI/Cloudflare preview can run against the integrated state.
-
-Do not declare the public flow fully validated until the new PR preview is green and the smoke checks below have been performed.
-
-## 13. Exact next validation block
-
-Next agent/session must continue here, not restart product definition.
-
-### A. CI / preview
-
-- resolve live branch HEAD;
-- verify normal CI succeeds;
-- verify PR Cloudflare preview deploy succeeds;
-- record the exact preview URL/hash.
-
-### B. Staging profile smoke
-
-Use only staging artist fixture if still present:
+Staging fixture used only for the smoke:
 
 ```text
 artist_id: 5a89bb6b-48a1-449e-9ead-b44094be6287
@@ -323,67 +236,102 @@ slug: lits
 workspace_id: 81c84e12-b895-43f4-84ac-5ca417ed8067
 ```
 
-Temporarily enable public profile + accepting requests on staging, then verify the PR preview route:
+A real HTTP request was sent through deployed `submit-booking-request` with `entry_source=instagram`.
+
+Observed result:
 
 ```text
-/lits?booking=1&src=instagram
+first request -> 201, created=true
+same idempotency key retry -> 200, created=false
+same Booking reference returned both times
 ```
 
-Check:
-
-- direct root URL resolves;
-- public profile renders;
-- booking form opens/focuses;
-- public-safe data only;
-- no private fee terms or private calendar data;
-- responsive/mobile behavior is viable.
-
-### C. Public submit / board proof
-
-A full HTTP POST from the deployed public form still needs proof. The DB/RPC path itself is already validated, but do not claim the deployed Edge Function POST is end-to-end proven until an actual request is sent through it.
-
-When a real public request is sent on staging, verify:
+Database verification showed exactly one real Booking with:
 
 ```text
-public form
- -> submit-booking-request
- -> create_public_booking
- -> Contact / Counterparty
- -> Booking(status=new)
- -> inbound Activity
- -> authenticated real BookingCoreInbox
+status = new
+source = booking_form
+origin_channel = booking_form
+capture_method = public_form
+entry_source = instagram
+created_by = null
 ```
 
-Then retry the same idempotency key and verify no duplicate.
+The request also created the expected Contact, Counterparty and exactly one inbound Activity. The Booking was readable under the workspace owner's authenticated RLS path, which is the same data path used by the real `BookingCoreInbox`.
 
-### D. Cleanup
+Therefore the deployed ingress chain is proven through to real Booking Core persistence and board-readable data.
 
-After smoke testing, restore the staging fixture to:
+The smoke Booking/submission/contact/counterparty fixture was then removed.
+
+## 11. Staging cleanup — COMPLETED
+
+The test artist was restored after the smoke to:
 
 ```text
 public_profile_enabled = false
 accepting_requests = false
 ```
 
-Do not leave the test artist accidentally published.
+Do not leave staging artist fixtures published after future smoke tests.
 
-## 14. Features deliberately after this proof
+## 12. CI / preview validation
 
-Once public profile -> form -> real board is proven:
+Normal PR workflows have passed after the integration and routing fix.
 
-1. promoter acknowledgement email;
-2. secure promoter follow-up link;
+Latest clean pre-documentation HEAD validated:
+
+```text
+10cd607fb3ec51c33239cb98e5f1ea4474682b63
+```
+
+For that revision:
+
+- PR `CI`: success;
+- PR `Deploy Staging`: success;
+- temporary public-ingress validation workflow had already been removed;
+- no production deployment was performed.
+
+PR preview alias remains:
+
+```text
+https://pr-75.cuebooker-staging.pages.dev
+```
+
+Always resolve the live HEAD and latest workflow run before relying on this hash.
+
+## 13. Supabase security status
+
+Current staging security advisor warning:
+
+```text
+Leaked Password Protection Disabled
+```
+
+This is a project-level Auth configuration warning and predates the public-ingress slice. The public-ingress schema work itself did not introduce a new advisor warning.
+
+Do not weaken RLS or expose service-role credentials to resolve public-entry issues.
+
+## 14. Exact next product block
+
+The original public Artist Profile -> real Booking Core ingress proof is now complete on staging.
+
+Next work should be one of the deliberate follow-ups, in this order unless product priorities change:
+
+1. promoter acknowledgement email after successful public enquiry;
+2. secure promoter follow-up link/thread view;
 3. share-link generator with explicit Instagram / WhatsApp / website / EPK / QR attribution;
-4. embeddable widget using the exact same intake;
+4. embeddable widget using the exact same public intake contract;
 5. additional email/share/AI capture automation.
 
-Do not create new Booking Core models for any of these.
+Before production, also add stronger abuse/rate limiting for anonymous intake and perform an explicit production-readiness review.
+
+Do not jump to CUE ID/3D work as a substitute for finishing operational entry/follow-up.
 
 ## 15. Homepage/marketing redesign remains deferred
 
-The user wants the commercial home/headline redesigned because it currently lacks enough power, emotional impact and authenticity.
+The commercial home/headline still needs a later redesign for stronger product positioning, emotional clarity and authentic club/electronic-music culture.
 
-Do that after the public entry product is operational enough to market truthfully. At that point evaluate the home through product positioning, persuasion/decision psychology, emotional clarity, accessibility, advertising impact and authentic club/electronic-music culture. Avoid generic AI/SaaS language and vanity-metric framing.
+Do that only when claims can be grounded in real shipped behavior. Avoid generic AI/SaaS language and vanity-metric framing.
 
 ## 16. Documentation workflow rule
 
@@ -396,16 +344,14 @@ Meaningful implementation blocks must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-This is how agents resume the project without depending on conversation memory.
-
 ## 17. Production gate
 
-Production Supabase project:
+Production Supabase:
 
 ```text
 qlocooqfdzehogbwcbhr
 ```
 
-No public-ingress migration, Edge Function deployment or publication toggle from this block is authorized for production yet.
+No public-ingress migration, Edge Function deployment, publication toggle or Cloudflare production release from this block was authorized or performed on production.
 
-Remain staging-only until CI, public-profile smoke, real public-submit -> real-board proof, abuse controls and explicit production review are complete.
+Remain staging-only until abuse controls, acknowledgement/follow-up decisions, final UX smoke and explicit production review are complete.
