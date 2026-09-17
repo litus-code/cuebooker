@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CoreBooking, Hold } from '../domain/bookingCore'
 import type { AvailabilityBlock } from '../composables/useAvailability'
+import { intervalForDate, intervalsOverlap, timeToMinutes } from '../services/timeOverlap'
 
 const props = defineProps<{
   workspaceId: string
@@ -28,18 +29,6 @@ const copy = computed(() => props.locale === 'es' ? {
   allDay: 'Same day', loading: 'Checking schedule…'
 })
 
-function minutes(value: string | null | undefined) {
-  if (!value) return null
-  const match = value.match(/(\d{2}):(\d{2})/)
-  if (!match) return null
-  return Number(match[1]) * 60 + Number(match[2])
-}
-
-function overlaps(aStart: number | null, aEnd: number | null, bStart: number | null, bEnd: number | null) {
-  if (aStart == null || aEnd == null || bStart == null || bEnd == null) return true
-  return aStart < bEnd && bStart < aEnd
-}
-
 function isoDate(value: string | null | undefined) {
   return value?.slice(0, 10) || ''
 }
@@ -48,17 +37,30 @@ function isoTime(value: string | null | undefined) {
   return value?.slice(11, 16) || null
 }
 
+function overlapsTimedRange(
+  ownStart: number | null,
+  ownEnd: number | null,
+  startsAt: string | null | undefined,
+  endsAt: string | null | undefined,
+  date: string
+) {
+  if (!startsAt || !endsAt) return true
+  const interval = intervalForDate(startsAt, endsAt, date)
+  if (!interval) return false
+  return intervalsOverlap(ownStart, ownEnd, interval.start, interval.end)
+}
+
 const conflicts = computed(() => {
   const date = props.booking.event_date
   if (!date || props.booking.archived_at) return []
-  const ownStart = minutes(props.booking.start_time)
-  const ownEnd = minutes(props.booking.end_time)
+  const ownStart = timeToMinutes(props.booking.start_time)
+  const ownEnd = timeToMinutes(props.booking.end_time)
   const rows: Array<{ id: string; kind: 'booking' | 'hold' | 'availability'; label: string; detail: string }> = []
 
   for (const booking of props.bookings) {
     if (booking.id === props.booking.id || booking.archived_at || booking.event_date !== date) continue
     if (booking.status === 'rejected' || booking.status === 'cancelled') continue
-    if (!overlaps(ownStart, ownEnd, minutes(booking.start_time), minutes(booking.end_time))) continue
+    if (!intervalsOverlap(ownStart, ownEnd, timeToMinutes(booking.start_time), timeToMinutes(booking.end_time))) continue
     rows.push({
       id: `booking-${booking.id}`,
       kind: 'booking',
@@ -69,7 +71,7 @@ const conflicts = computed(() => {
 
   for (const hold of holds.value) {
     if (hold.booking_id === props.booking.id || hold.status !== 'active' || hold.event_date !== date) continue
-    if (!overlaps(ownStart, ownEnd, minutes(isoTime(hold.starts_at)), minutes(isoTime(hold.ends_at)))) continue
+    if (!overlapsTimedRange(ownStart, ownEnd, hold.starts_at, hold.ends_at, date)) continue
     rows.push({
       id: `hold-${hold.id}`,
       kind: 'hold',
@@ -79,13 +81,12 @@ const conflicts = computed(() => {
   }
 
   for (const block of blocks.value) {
-    if (isoDate(block.starts_at) !== date && isoDate(block.ends_at) !== date) continue
-    if (!overlaps(ownStart, ownEnd, minutes(isoTime(block.starts_at)), minutes(isoTime(block.ends_at)))) continue
+    if (!overlapsTimedRange(ownStart, ownEnd, block.starts_at, block.ends_at, date)) continue
     rows.push({
       id: `availability-${block.id}`,
       kind: 'availability',
       label: block.label || copy.value.availability,
-      detail: `${isoTime(block.starts_at) || ''}–${isoTime(block.ends_at) || ''}`
+      detail: `${isoDate(block.starts_at) === date ? (isoTime(block.starts_at) || '00:00') : '00:00'}–${isoDate(block.ends_at) === date ? (isoTime(block.ends_at) || '24:00') : '24:00'}`
     })
   }
 
