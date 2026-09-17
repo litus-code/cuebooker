@@ -10,6 +10,7 @@ const props = withDefaults(defineProps<{
   bookingSubmitting?: boolean
   bookingSent?: boolean
   bookingConfirmationSent?: boolean | null
+  bookingReference?: string
   bookingError?: string
   preview?: boolean
 }>(), {
@@ -18,6 +19,7 @@ const props = withDefaults(defineProps<{
   bookingSubmitting: false,
   bookingSent: false,
   bookingConfirmationSent: null,
+  bookingReference: '',
   bookingError: '',
   preview: false
 })
@@ -144,6 +146,7 @@ async function openBooking() {
         :submitting="bookingSubmitting"
         :sent="bookingSent"
         :confirmation-sent="bookingConfirmationSent"
+        :reference="bookingReference"
         :error="bookingError"
         :preview="preview"
         @submit="emit('submitBooking', $event)"
