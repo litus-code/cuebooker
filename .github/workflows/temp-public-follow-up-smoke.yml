@@ -1,0 +1,40 @@
+name: Temp public follow-up smoke
+
+on:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - .github/workflows/temp-public-follow-up-smoke.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Submit public booking and verify idempotent retry
+        shell: bash
+        run: |
+          set -euo pipefail
+          endpoint='https://lycprjeuuynfzwskycwv.supabase.co/functions/v1/submit-booking-request'
+          payload='{"artistSlug":"lits","requestId":"05376704-002b-449a-8765-4843a000ae7e","contactName":"Cuebooker Follow-up HTTP Smoke","contactEmail":"cuebooker-followup-http-smoke@example.com","eventName":"HTTP follow-up smoke","venueName":"Staging Club","eventCity":"Barcelona","eventCountryCode":"ES","eventDate":"2026-10-26","initialMessage":"HTTP acknowledgement smoke","entrySource":"instagram","locale":"es"}'
+
+          first_file="$(mktemp)"
+          first_status="$(curl --silent --show-error --output "$first_file" --write-out '%{http_code}' -X POST "$endpoint" -H 'Content-Type: application/json' -d "$payload")"
+          echo "first_status=$first_status"
+          cat "$first_file"
+          echo
+          test "$first_status" = '201'
+          node -e 'const fs=require("fs"); const p=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); if(p.accepted!==true||p.created!==true||typeof p.confirmationSent!=="boolean"||!p.reference) process.exit(1)' "$first_file"
+
+          retry_file="$(mktemp)"
+          retry_status="$(curl --silent --show-error --output "$retry_file" --write-out '%{http_code}' -X POST "$endpoint" -H 'Content-Type: application/json' -d "$payload")"
+          echo "retry_status=$retry_status"
+          cat "$retry_file"
+          echo
+          test "$retry_status" = '200'
+          node -e 'const fs=require("fs"); const p=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); if(p.accepted!==true||p.created!==false||typeof p.confirmationSent!=="boolean"||!p.reference) process.exit(1)' "$retry_file"
