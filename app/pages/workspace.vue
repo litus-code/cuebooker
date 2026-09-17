@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FeeBasis } from '../composables/useArtistProfile'
 import type { CoreBooking, Hold } from '../domain/bookingCore'
+import type { CueNotification } from '../domain/notification'
 import type { PublicArtistProfile } from '../domain/publicArtistProfile'
 
 const auth = useCueAuth()
@@ -569,6 +570,37 @@ function openRealBooking(bookingId: string) {
   activeView.value = 'bookings'
 }
 
+async function openNotificationBooking(notification: CueNotification) {
+  try {
+    const rows = await bookingCore.listBookings(notification.workspace_id, 100)
+    const booking = rows.find(item => item.id === notification.booking_id)
+    if (!booking) throw new Error('notification_booking_not_found')
+
+    bookingCoreWorkspaceId.value = notification.workspace_id
+    if (selectedArtistId.value !== booking.artist_id) {
+      selectedArtistId.value = booking.artist_id
+      await nextTick()
+    }
+
+    realBookings.value = rows.filter(item => item.artist_id === booking.artist_id)
+    await loadRealHolds()
+    openRealBooking(booking.id)
+
+    await router.replace({
+      query: {
+        ...route.query,
+        artist: booking.artist_id,
+        booking: booking.id
+      }
+    })
+  } catch (error: any) {
+    console.warn('[notifications] booking open failed', error?.message || error)
+    errorMessage.value = preferences.locale.value === 'es'
+      ? 'No se pudo abrir este booking.'
+      : 'This booking could not be opened.'
+  }
+}
+
 async function loadWorkspaceIdentity() {
   try {
     const [artistRows, organizationRows] = await Promise.all([availability.listArtists(), availability.listOrganizations()])
@@ -1107,6 +1139,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <button :title="copy.settings" data-workspace-view="settings" :class="{ active: settingsOpen }" type="button" @click="openSettings">{{ copy.settings }}</button>
       </nav>
       <div class="account-actions">
+        <WorkspaceNotifications :locale="preferences.locale.value" @open-booking="openNotificationBooking" />
         <CuePreferencesControl compact />
         <button class="header-icon-button" type="button" :aria-label="copy.logout" :title="copy.logout" @click="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/></svg></button>
       </div>
