@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { PublicArtistProfile, PublicBookingRequestInput } from '../domain/publicArtistProfile'
 
-type BookingFormSubmission = Omit<PublicBookingRequestInput, 'artistSlug' | 'requestId' | 'entrySource'>
+type BookingFormSubmission = Omit<PublicBookingRequestInput, 'artistSlug' | 'requestId' | 'entrySource' | 'locale'>
 
 const props = withDefaults(defineProps<{
   profile: PublicArtistProfile
@@ -9,6 +9,7 @@ const props = withDefaults(defineProps<{
   bookingFocused?: boolean
   bookingSubmitting?: boolean
   bookingSent?: boolean
+  bookingConfirmationSent?: boolean | null
   bookingError?: string
   preview?: boolean
 }>(), {
@@ -16,6 +17,7 @@ const props = withDefaults(defineProps<{
   bookingFocused: false,
   bookingSubmitting: false,
   bookingSent: false,
+  bookingConfirmationSent: null,
   bookingError: '',
   preview: false
 })
@@ -141,6 +143,7 @@ async function openBooking() {
         :locale="locale"
         :submitting="bookingSubmitting"
         :sent="bookingSent"
+        :confirmation-sent="bookingConfirmationSent"
         :error="bookingError"
         :preview="preview"
         @submit="emit('submitBooking', $event)"
