@@ -100,7 +100,7 @@ Deno.serve(async (request) => {
         booking_id: string;
         contact_id: string;
         to_email: string;
-        created_by: string;
+        created_by: string | null;
       }>>(
         `${supabaseUrl}/rest/v1/email_messages?reply_token=eq.${encodeURIComponent(route.token)}&direction=eq.outbound&select=id,workspace_id,booking_id,contact_id,to_email,created_by&order=created_at.desc&limit=1`,
         { method: "GET" },
