@@ -29,7 +29,7 @@ const copy = computed(() => props.locale === 'es' ? {
   date: 'Fecha', venue: 'Sala / entidad', contact: 'Contacto', offer: 'Oferta', source: 'Origen', status: 'Estado', activity: 'Activity',
   noActivity: 'Todavía no hay actividad registrada.',
   noDate: 'Sin fecha', noVenue: 'Sin sala definida', noContact: 'Sin contacto', noOffer: 'Sin oferta',
-  active: 'Activos', archived: 'Archivados', archive: 'Archivar', restore: 'Restaurar'
+  active: 'Activos', archived: 'Archivados', archive: 'Archivar', restore: 'Restaurar', archivedReadOnly: 'Booking archivado. La traza se conserva en modo lectura.'
 } : {
   eyebrow: 'BOOKINGS / REAL',
   title: 'Captured bookings',
@@ -37,7 +37,7 @@ const copy = computed(() => props.locale === 'es' ? {
   date: 'Date', venue: 'Venue / entity', contact: 'Contact', offer: 'Offer', source: 'Source', status: 'Status', activity: 'Activity',
   noActivity: 'No activity recorded yet.',
   noDate: 'No date', noVenue: 'No venue defined', noContact: 'No contact', noOffer: 'No offer',
-  active: 'Active', archived: 'Archived', archive: 'Archive', restore: 'Restore'
+  active: 'Active', archived: 'Archived', archive: 'Archive', restore: 'Restore', archivedReadOnly: 'Archived booking. Its trace is preserved in read-only mode.'
 })
 
 const statusLabels = computed<Record<CoreBookingStatus, string>>(() => props.locale === 'es' ? {
@@ -65,7 +65,7 @@ const visibleBookings = computed(() => {
       .filter(Boolean).join(' ').toLowerCase().includes(query)
   })
 })
-const selectedBooking = computed(() => props.bookings.find(item => item.id === selectedBookingId.value) || visibleBookings.value[0] || props.bookings[0] || null)
+const selectedBooking = computed(() => visibleBookings.value.find(item => item.id === selectedBookingId.value) || visibleBookings.value[0] || null)
 const selectedContact = computed(() => selectedBooking.value?.primary_contact_id ? contacts.value.find(item => item.id === selectedBooking.value?.primary_contact_id) || null : null)
 const selectedCounterparty = computed(() => selectedBooking.value?.counterparty_id ? counterparties.value.find(item => item.id === selectedBooking.value?.counterparty_id) || null : null)
 
@@ -236,9 +236,9 @@ function bookingTitle(booking: CoreBooking) {
             <p>{{ selectedBooking.event_name || selectedBooking.city || '—' }}</p>
           </div>
           <div class="core-inbox__header-actions">
-            <BookingCoreEditor :workspace-id="workspaceId" :booking="selectedBooking" :locale="locale" @saved="handleBookingSaved" />
+            <BookingCoreEditor v-if="!selectedBooking.archived_at" :workspace-id="workspaceId" :booking="selectedBooking" :locale="locale" @saved="handleBookingSaved" />
             <button class="core-inbox__archive" type="button" :disabled="archiving" @click="toggleArchive">{{ selectedBooking.archived_at ? copy.restore : copy.archive }}</button>
-            <label class="core-inbox__status core-inbox__status-control"><span>{{ copy.status }}</span><select :value="selectedBooking.status" :disabled="updatingStatus" @change="changeStatus"><option v-for="(label, status) in statusLabels" :key="status" :value="status">{{ label }}</option></select></label>
+            <label v-if="!selectedBooking.archived_at" class="core-inbox__status core-inbox__status-control"><span>{{ copy.status }}</span><select :value="selectedBooking.status" :disabled="updatingStatus" @change="changeStatus"><option v-for="(label, status) in statusLabels" :key="status" :value="status">{{ label }}</option></select></label>
           </div>
         </header>
 
@@ -249,7 +249,10 @@ function bookingTitle(booking: CoreBooking) {
           <div><dt>{{ copy.offer }}</dt><dd>{{ formatMoney(selectedBooking) }}</dd></div>
         </dl>
 
+        <p v-if="selectedBooking.archived_at" class="core-inbox__readonly">{{ copy.archivedReadOnly }}</p>
+
         <BookingCoreConflictNotice
+          v-if="!selectedBooking.archived_at"
           :workspace-id="workspaceId"
           :booking="selectedBooking"
           :bookings="bookings"
@@ -258,6 +261,7 @@ function bookingTitle(booking: CoreBooking) {
         />
 
         <BookingCoreOperations
+          v-if="!selectedBooking.archived_at"
           :workspace-id="workspaceId"
           :booking="selectedBooking"
           :locale="locale"
@@ -265,6 +269,7 @@ function bookingTitle(booking: CoreBooking) {
         />
 
         <BookingActivityComposer
+          v-if="!selectedBooking.archived_at"
           :workspace-id="workspaceId"
           :booking="selectedBooking"
           :locale="locale"
@@ -314,6 +319,7 @@ function bookingTitle(booking: CoreBooking) {
 .core-inbox__archive { min-height:31px; padding:0 9px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 9px monospace; text-transform:uppercase; }
 .core-inbox__archive:hover { border-color:var(--cue-accent); color:var(--cue-text); }
 .core-inbox__archive:disabled { opacity:.5; cursor:wait; }
+.core-inbox__readonly { margin:14px 0 0; padding:10px 12px; border:1px solid var(--cue-border); background:var(--cue-raised); color:var(--cue-muted); font-size:11px; line-height:1.45; }
 .core-inbox__filters--archive { padding-bottom:2px; }
 .core-inbox__status-control { display:grid; gap:4px; padding:6px 8px; }
 .core-inbox__status-control > span { color:var(--cue-muted); font:700 7px monospace; letter-spacing:.08em; }
