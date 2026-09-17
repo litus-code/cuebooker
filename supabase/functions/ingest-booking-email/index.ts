@@ -74,14 +74,17 @@ Deno.serve(async (request) => {
   try { payload = await request.json(); }
   catch { return json({ error: "invalid_json" }, 400); }
 
-  const items = Array.isArray(payload?.items) ? payload.items : [];
-  if (!items.length) return json({ accepted: 0, ignored: 0 });
+  const allItems = Array.isArray(payload?.items) ? payload.items : [];
+  if (!allItems.length) return json({ accepted: 0, ignored: 0 });
+
+  // Bound provider batches so one webhook cannot monopolize an invocation.
+  const items = allItems.slice(0, 50);
+  let accepted = 0;
+  let ignored = Math.max(0, allItems.length - items.length);
 
   try {
     const supabaseUrl = requiredEnv("SUPABASE_URL");
     const serviceKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
-    let accepted = 0;
-    let ignored = 0;
 
     for (const rawItem of items) {
       const item = rawItem && typeof rawItem === "object" ? rawItem as Record<string, unknown> : {};
@@ -112,13 +115,6 @@ Deno.serve(async (request) => {
         continue;
       }
 
-      const existing = await serviceJson<Array<{ id: string }>>(
-        `${supabaseUrl}/rest/v1/email_messages?provider=eq.brevo&provider_message_id=eq.${encodeURIComponent(messageId)}&select=id&limit=1`,
-        { method: "GET" },
-        serviceKey
-      );
-      if (existing.length) { ignored += 1; continue; }
-
       const extracted = typeof item.ExtractedMarkdownMessage === "string" ? item.ExtractedMarkdownMessage.trim() : "";
       const rawText = typeof item.RawTextBody === "string" ? item.RawTextBody.trim() : "";
       const bodyText = (extracted || rawText).slice(0, 20000).trim();
@@ -131,64 +127,41 @@ Deno.serve(async (request) => {
       const spam = item.Spam && typeof item.Spam === "object" ? item.Spam as Record<string, unknown> : null;
       const spamScore = spam && typeof spam.Score === "number" ? spam.Score : null;
 
-      const inserted = await serviceJson<Array<{ id: string }>>(
-        `${supabaseUrl}/rest/v1/email_messages?select=id`,
+      const rows = await serviceJson<Array<{
+        email_message_id: string;
+        email_created: boolean;
+        activity_created: boolean;
+      }>>(
+        `${supabaseUrl}/rest/v1/rpc/ingest_booking_email_message`,
         {
           method: "POST",
-          headers: { Prefer: "return=representation" },
           body: JSON.stringify({
-            workspace_id: thread.workspace_id,
-            booking_id: thread.booking_id,
-            contact_id: thread.contact_id,
-            direction: "inbound",
-            to_email: route.recipient,
-            from_email: fromEmail,
-            subject,
-            body_text: bodyText,
-            status: "received",
-            provider: "brevo",
-            provider_message_id: messageId,
-            received_at: receivedAt,
-            created_by: thread.created_by
-          })
-        },
-        serviceKey
-      );
-      const emailMessageId = inserted[0]?.id;
-      if (!emailMessageId) throw new Error("inbound_email_insert_failed");
-
-      await serviceJson(
-        `${supabaseUrl}/rest/v1/activities`,
-        {
-          method: "POST",
-          headers: { Prefer: "return=minimal" },
-          body: JSON.stringify({
-            workspace_id: thread.workspace_id,
-            booking_id: thread.booking_id,
-            type: "email",
-            direction: "inbound",
-            contact_id: thread.contact_id,
-            actor_user_id: null,
-            body: bodyText,
-            metadata: {
-              email_message_id: emailMessageId,
+            target_workspace_id: thread.workspace_id,
+            target_booking_id: thread.booking_id,
+            target_contact_id: thread.contact_id,
+            target_to_email: route.recipient,
+            target_from_email: fromEmail,
+            target_subject: subject,
+            target_body_text: bodyText,
+            target_provider: "brevo",
+            target_provider_message_id: messageId,
+            target_received_at: receivedAt,
+            target_occurred_at: occurredAt,
+            target_created_by: thread.created_by,
+            target_metadata: {
               subject,
-              from_email: fromEmail,
-              provider: "brevo",
-              provider_message_id: messageId,
               in_reply_to: typeof item.InReplyTo === "string" ? item.InReplyTo : null,
               spam_score: spamScore,
-              ingested_by: "brevo_inbound"
-            },
-            visibility: "workspace",
-            occurred_at: occurredAt,
-            created_by: thread.created_by
+              reply_recipient: route.recipient
+            }
           })
         },
         serviceKey
       );
 
-      accepted += 1;
+      const result = rows[0];
+      if (result?.email_created || result?.activity_created) accepted += 1;
+      else ignored += 1;
     }
 
     return json({ accepted, ignored });
