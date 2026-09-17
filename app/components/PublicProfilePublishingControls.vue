@@ -22,6 +22,8 @@ const publicUrl = computed(() => import.meta.client
   ? `${window.location.origin}/${props.slug}`
   : `https://cuebooker.com/${props.slug}`)
 const bookingUrl = computed(() => `${publicUrl.value}?booking=1`)
+const widgetUrl = computed(() => `${publicUrl.value}?embed=1&booking=1&src=website`)
+const widgetCode = computed(() => `<iframe src="${widgetUrl.value}" title="Cuebooker booking" loading="lazy" style="width:100%;height:760px;border:0;" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>`)
 
 const copy = computed(() => props.locale === 'es' ? {
   eyebrow: 'PERFIL PÚBLICO', title: 'Tu puerta de entrada.',
@@ -31,9 +33,9 @@ const copy = computed(() => props.locale === 'es' ? {
   publishHint: 'Publicar hace visible la ficha. Abrir booking permite que te envíen solicitudes sin registrarse.',
   share: 'Compartir / atribución', shareTitle: 'Un mismo booking. Distintas puertas de entrada.',
   shareBody: 'Cada enlace apunta al mismo formulario y solo añade la procedencia para saber desde dónde llegó la visita.',
-  publicProfile: 'Perfil público', directBooking: 'Booking directo',
+  publicProfile: 'Perfil público', directBooking: 'Booking directo', widget: 'Widget web',
   instagram: 'Instagram', whatsapp: 'WhatsApp', website: 'Web', epk: 'EPK', qr: 'QR', email: 'Email', linkInBio: 'Link in bio',
-  bookingClosedHint: 'Abre “Aceptar solicitudes” para copiar enlaces que llevan directamente al formulario.'
+  bookingClosedHint: 'Abre “Aceptar solicitudes” para copiar enlaces o el widget que llevan directamente al formulario.'
 } : {
   eyebrow: 'PUBLIC PROFILE', title: 'Your booking front door.',
   body: 'Share your profile where your audience already is. Booking lives here and every enquiry reaches the same board.',
@@ -42,21 +44,22 @@ const copy = computed(() => props.locale === 'es' ? {
   publishHint: 'Publishing makes the profile visible. Opening booking lets promoters send enquiries without an account.',
   share: 'Share / attribution', shareTitle: 'One booking flow. Different entry points.',
   shareBody: 'Every link reaches the same form and only adds attribution so you know where the visit came from.',
-  publicProfile: 'Public profile', directBooking: 'Direct booking',
+  publicProfile: 'Public profile', directBooking: 'Direct booking', widget: 'Website widget',
   instagram: 'Instagram', whatsapp: 'WhatsApp', website: 'Website', epk: 'EPK', qr: 'QR', email: 'Email', linkInBio: 'Link in bio',
-  bookingClosedHint: 'Open “Accept enquiries” to copy links that focus directly on the booking form.'
+  bookingClosedHint: 'Open “Accept enquiries” to copy links or the widget that focus directly on the booking form.'
 })
 
 const shareLinks = computed(() => [
-  { key: 'profile', label: copy.value.publicProfile, url: publicUrl.value, needsBooking: false },
-  { key: 'booking', label: copy.value.directBooking, url: bookingUrl.value, needsBooking: true },
-  { key: 'instagram', label: copy.value.instagram, url: attributedBookingUrl('instagram'), needsBooking: true },
-  { key: 'whatsapp', label: copy.value.whatsapp, url: attributedBookingUrl('whatsapp'), needsBooking: true },
-  { key: 'website', label: copy.value.website, url: attributedBookingUrl('website'), needsBooking: true },
-  { key: 'epk', label: copy.value.epk, url: attributedBookingUrl('epk'), needsBooking: true },
-  { key: 'qr', label: copy.value.qr, url: attributedBookingUrl('qr'), needsBooking: true },
-  { key: 'email', label: copy.value.email, url: attributedBookingUrl('email'), needsBooking: true },
-  { key: 'link_in_bio', label: copy.value.linkInBio, url: attributedBookingUrl('link_in_bio'), needsBooking: true }
+  { key: 'profile', label: copy.value.publicProfile, value: publicUrl.value, needsBooking: false },
+  { key: 'booking', label: copy.value.directBooking, value: bookingUrl.value, needsBooking: true },
+  { key: 'instagram', label: copy.value.instagram, value: attributedBookingUrl('instagram'), needsBooking: true },
+  { key: 'whatsapp', label: copy.value.whatsapp, value: attributedBookingUrl('whatsapp'), needsBooking: true },
+  { key: 'website', label: copy.value.website, value: attributedBookingUrl('website'), needsBooking: true },
+  { key: 'widget', label: copy.value.widget, value: widgetCode.value, needsBooking: true },
+  { key: 'epk', label: copy.value.epk, value: attributedBookingUrl('epk'), needsBooking: true },
+  { key: 'qr', label: copy.value.qr, value: attributedBookingUrl('qr'), needsBooking: true },
+  { key: 'email', label: copy.value.email, value: attributedBookingUrl('email'), needsBooking: true },
+  { key: 'link_in_bio', label: copy.value.linkInBio, value: attributedBookingUrl('link_in_bio'), needsBooking: true }
 ])
 
 function attributedBookingUrl(source: string) {
@@ -75,9 +78,9 @@ function changeAcceptingRequests(event: Event) {
   emit('updateAcceptingRequests', checkboxValue(event))
 }
 
-async function copyLink(key: string, url: string) {
+async function copyLink(key: string, value: string) {
   if (!import.meta.client || !props.published) return
-  await navigator.clipboard.writeText(url)
+  await navigator.clipboard.writeText(value)
   copiedKey.value = key
   window.setTimeout(() => {
     if (copiedKey.value === key) copiedKey.value = ''
@@ -116,7 +119,7 @@ async function copyBookingLink() {
         {{ copiedKey === 'booking-main' ? copy.copied : copy.copy }}
       </button>
       <button type="button" :disabled="!published" :aria-expanded="shareOpen" @click="shareOpen = !shareOpen">
-        {{ copy.share }} <span class="arrow arrow--se" aria-hidden="true" />
+        {{ copy.share }} <span class="arrow arrow--ne" aria-hidden="true" />
       </button>
       <a v-if="published" :href="publicUrl" target="_blank" rel="noopener noreferrer">{{ copy.live }} <span class="arrow arrow--ne" aria-hidden="true" /></a>
     </div>
@@ -133,10 +136,10 @@ async function copyBookingLink() {
           :key="link.key"
           type="button"
           :disabled="!published || (link.needsBooking && !acceptingRequests)"
-          @click="copyLink(link.key, link.url)"
+          @click="copyLink(link.key, link.value)"
         >
           <span>{{ link.label }}</span>
-          <small>{{ copiedKey === link.key ? copy.copied : link.url }}</small>
+          <small>{{ copiedKey === link.key ? copy.copied : link.value }}</small>
         </button>
       </div>
     </div>
