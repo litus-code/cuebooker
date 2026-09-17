@@ -318,7 +318,12 @@ Deno.serve(async request => {
       schedulerAuthenticated = await schedulerTokenValid(supabaseUrl, serviceKey, schedulerToken);
     } catch (error) {
       console.error("dispatch-notification-emails scheduler-auth", error);
-      return json({ error: "scheduler_auth_failed" }, 500);
+      const message = error instanceof Error ? error.message : String(error);
+      const statusMatch = message.match(/^supabase_(\d{3})/);
+      return json({
+        error: "scheduler_auth_failed",
+        upstreamStatus: statusMatch ? Number(statusMatch[1]) : null
+      }, 500);
     }
   }
 
