@@ -6,6 +6,7 @@ on:
       - feature/app-visual-system
     paths:
       - .github/workflows/temp-real-booking-filters-history.yml
+      - scripts/temp_real_booking_filters_history.py
 
 permissions:
   contents: write
