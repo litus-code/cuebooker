@@ -37,13 +37,15 @@ const copy = computed(() => props.locale === 'es' ? {
 
 const relationshipName = computed(() => props.counterpartyName || props.contactName || props.booking.venue_name || props.booking.event_name || '—')
 
+function sameRelationship(item: CoreBooking) {
+  if (props.booking.counterparty_id) return item.counterparty_id === props.booking.counterparty_id
+  if (props.booking.primary_contact_id) return item.primary_contact_id === props.booking.primary_contact_id
+  return false
+}
+
 const previousBookings = computed(() => props.bookings
   .filter(item => item.id !== props.booking.id)
-  .filter(item => {
-    const sameCounterparty = Boolean(props.booking.counterparty_id && item.counterparty_id === props.booking.counterparty_id)
-    const sameContact = Boolean(props.booking.primary_contact_id && item.primary_contact_id === props.booking.primary_contact_id)
-    return sameCounterparty || sameContact
-  })
+  .filter(sameRelationship)
   .sort((a, b) => relationshipTimestamp(b) - relationshipTimestamp(a)))
 
 const relationshipBookings = computed(() => [props.booking, ...previousBookings.value])
