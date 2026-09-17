@@ -1,6 +1,6 @@
 # Cuebooker Architecture Decision Register
 
-Updated: 16 September 2026
+Updated: 17 September 2026
 Status: ACTIVE
 Companion document: `docs/ARCHITECTURE_REFERENCE.md`
 
@@ -38,6 +38,14 @@ This register records architecture choices that should not be casually reversed.
 | ADR-028 | External integrations use adapters + idempotent webhooks | Accepted | Providers change and retry events | Adapter implementations can change, boundary remains |
 | ADR-029 | Relationship Memory is derived initially | Accepted | Avoids duplicated truth and artificial scoring | Query cost justifies materialized projection/cache |
 | ADR-030 | CUE ID/Passport are downstream of operational truth | Accepted | Identity should emerge from real trajectory, not synthetic gamification | Product strategy explicitly changes after validation |
+| ADR-031 | All booking ingress converges into the same Booking Core | Accepted | Widget, public form, manual CUE, email and future adapters describe how an opportunity arrived, not different commercial entities | Domain evidence proves an ingress type needs fundamentally different lifecycle/invariants |
+| ADR-032 | The canonical public artist surface is `/<artist-slug>` and contains the booking capability | Accepted | Gives artists a useful professional public presence and keeps booking in artist context instead of a cold standalone form | Routing/SEO/product research demonstrates a dedicated booking URL should replace the artist profile as canonical surface |
+| ADR-033 | Authenticated “profile preview” previews the real public Artist Profile contract/layout | Accepted | Prevents two profile products from drifting and makes editing predictable | Draft/publishing requirements demand a distinct rendering system; even then public contract should remain shared |
+| ADR-034 | Keep booking origin, capture method and public entry attribution separate | Accepted | Operational provenance and marketing referral are different facts; separation supports future adapters and analytics without corrupting source semantics | Evidence shows the concepts cannot be reliably separated in real workflows |
+| ADR-035 | Anonymous public booking intake enters through a narrow server/edge boundary, never direct private-table browser writes | Accepted | Public callers are untrusted and unauthenticated; artist/workspace resolution, validation, idempotency and privileged writes require a protected trust boundary | Runtime provider may change; the trust-boundary principle does not |
+| ADR-036 | Anonymous intake must not impersonate an authenticated workspace user | Accepted | Current `created_by` constraints are incompatible with truthful anonymous provenance; attribution must distinguish internal/system creation from the promoter Contact | A future identity model gives every submitter a verified authenticated identity without adding promoter friction |
+| ADR-037 | Hosted public form and embedded widget share the same intake contract and Booking model | Accepted | Avoids duplicate backends/inboxes and guarantees consistent Contact/Booking/Activity semantics | Embedding requirements prove a separate bounded context is necessary |
+| ADR-038 | `docs/HANDOFF.md` is the living cross-agent baton pass | Accepted | Project continuity must survive chat/model memory loss; implementation truth belongs in the repository | A stronger automated source-of-truth mechanism replaces it and is documented |
 
 ## Decision process
 
