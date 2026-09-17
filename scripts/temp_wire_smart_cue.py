@@ -108,8 +108,19 @@ text = replace_once(
     'submit next move'
 )
 
-note_anchor = """          <label class=\"cue-capture__note\"><span>{{ text.note }}</span><textarea v-model=\"initialNote\" rows=\"3\" :placeholder=\"text.notePlaceholder\" /></label>\n\n          <button class=\"cue-capture__more\""" 
-note_new = """          <label class=\"cue-capture__note\"><span>{{ text.note }}</span><textarea v-model=\"initialNote\" rows=\"3\" :placeholder=\"text.notePlaceholder\" /></label>\n          <div class=\"cue-capture__interpret\">\n            <button type=\"button\" :disabled=\"!initialNote.trim()\" @click=\"interpretNote\">{{ text.interpret }}</button>\n            <p v-if=\"interpretationMessage\">{{ interpretationMessage }}</p>\n          </div>\n          <label v-if=\"nextMoveLabel\" class=\"cue-capture__next\"><span>{{ text.nextMove }}</span><input v-model=\"nextMoveLabel\" maxlength=\"240\"></label>\n\n          <button class=\"cue-capture__more\""" 
+note_anchor = (
+    '          <label class="cue-capture__note"><span>{{ text.note }}</span><textarea v-model="initialNote" rows="3" :placeholder="text.notePlaceholder" /></label>\n\n'
+    '          <button class="cue-capture__more"'
+)
+note_new = (
+    '          <label class="cue-capture__note"><span>{{ text.note }}</span><textarea v-model="initialNote" rows="3" :placeholder="text.notePlaceholder" /></label>\n'
+    '          <div class="cue-capture__interpret">\n'
+    '            <button type="button" :disabled="!initialNote.trim()" @click="interpretNote">{{ text.interpret }}</button>\n'
+    '            <p v-if="interpretationMessage">{{ interpretationMessage }}</p>\n'
+    '          </div>\n'
+    '          <label v-if="nextMoveLabel" class="cue-capture__next"><span>{{ text.nextMove }}</span><input v-model="nextMoveLabel" maxlength="240"></label>\n\n'
+    '          <button class="cue-capture__more"'
+)
 text = replace_once(text, note_anchor, note_new, 'smart note UI')
 
 css_anchor = ".cue-capture__note { display:grid; gap:7px; }\n"
