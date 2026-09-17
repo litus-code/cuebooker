@@ -6,6 +6,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
+  captured: [value: string]
 }>()
 
 const supported = ref(false)
@@ -13,6 +14,8 @@ const listening = ref(false)
 const errorMessage = ref('')
 let recognition: any = null
 let baseText = ''
+let latestText = ''
+let failed = false
 
 const copy = computed(() => props.locale === 'es' ? {
   start: 'Hablar',
@@ -49,16 +52,19 @@ function createRecognition() {
     }
     const spoken = transcript.trim()
     if (!spoken) return
-    emit('update:modelValue', [baseText.trim(), spoken].filter(Boolean).join(' '))
+    latestText = [baseText.trim(), spoken].filter(Boolean).join(' ')
+    emit('update:modelValue', latestText)
   }
 
   instance.onerror = () => {
+    failed = true
     listening.value = false
     errorMessage.value = copy.value.error
   }
 
   instance.onend = () => {
     listening.value = false
+    if (!failed && latestText.trim()) emit('captured', latestText.trim())
   }
 
   return instance
@@ -68,12 +74,15 @@ function start() {
   if (!supported.value || listening.value) return
   errorMessage.value = ''
   baseText = props.modelValue
+  latestText = props.modelValue
+  failed = false
   recognition = createRecognition()
   if (!recognition) return
   listening.value = true
   try {
     recognition.start()
   } catch {
+    failed = true
     listening.value = false
     errorMessage.value = copy.value.error
   }
@@ -81,7 +90,6 @@ function start() {
 
 function stop() {
   recognition?.stop?.()
-  listening.value = false
 }
 
 onBeforeUnmount(() => recognition?.abort?.())
