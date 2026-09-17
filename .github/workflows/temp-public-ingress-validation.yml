@@ -1,0 +1,76 @@
+name: Temp public ingress validation
+
+on:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - .github/workflows/temp-public-ingress-validation.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-and-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v7
+        with:
+          ref: feature/app-visual-system
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Use repository npm version
+        run: npm install --global npm@10.9.3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Generate staging preview
+        env:
+          NUXT_APP_BASE_URL: /
+          NUXT_PUBLIC_APP_ENV: staging
+          NUXT_PUBLIC_GTM_ID: GTM-MHP8MGS3
+          NUXT_PUBLIC_SUPABASE_URL: https://lycprjeuuynfzwskycwv.supabase.co
+          NUXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_EB86PM_vk7lZlJH7hadGlg_YMt-c2d9
+        run: npm run generate
+
+      - name: Verify public profile build inputs
+        shell: bash
+        run: |
+          test -f 'functions/[slug].js'
+          grep -q '<PublicArtistProfile' app/pages/workspace.vue
+          grep -q '<PublicProfilePublishingControls' app/pages/workspace.vue
+          grep -q 'submitBookingRequest' app/components/PublicBookingForm.vue
+          grep -q 'booking=1' app/pages/[slug].vue
+
+      - name: Verify Cloudflare preview secrets
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+
+      - name: Deploy PR 75 preview
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy .output/public --project-name=cuebooker-staging --branch=pr-75 --commit-hash=${{ github.sha }}
+
+      - name: Record preview
+        run: |
+          echo "Preview revision: ${{ github.sha }}"
+          echo "Preview: https://pr-75.cuebooker-staging.pages.dev"
