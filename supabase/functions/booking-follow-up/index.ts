@@ -74,6 +74,27 @@ async function serviceJson<T>(url: string, init: RequestInit, serviceKey: string
   return (text ? JSON.parse(text) : null) as T;
 }
 
+
+function dispatchNotificationEmails(supabaseUrl: string, serviceKey: string, limit = 10) {
+  const task = fetch(`${supabaseUrl.replace(/\/$/, "")}/functions/v1/dispatch-notification-emails`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${serviceKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ limit })
+  }).then(async response => {
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`notification_dispatch_${response.status}:${text.slice(0, 200)}`);
+    }
+  }).catch(error => {
+    console.error("notification-dispatch", error);
+  });
+
+  EdgeRuntime.waitUntil(task);
+}
+
 function mapError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   if (message.includes("follow_up_link_invalid") || message.includes("invalid_follow_up_token")) {
@@ -148,6 +169,10 @@ Deno.serve(async request => {
       { method: "POST", body: JSON.stringify({ target_token_hash: tokenHash }) },
       serviceKey
     );
+
+    if (result.created) {
+      dispatchNotificationEmails(supabaseUrl, serviceKey);
+    }
 
     return json(request, { accepted: true, created: Boolean(result.created), followUp }, result.created ? 201 : 200);
   } catch (error) {
