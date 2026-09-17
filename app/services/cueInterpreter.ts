@@ -117,6 +117,7 @@ function cleanName(value?: string) {
 function extractPeople(raw: string) {
   const contactPatterns = [
     /(?:me\s+(?:ha\s+)?llamado|me\s+(?:ha\s+)?escrito|he\s+hablado\s+con|hablé\s+con)\s+([\p{L}][\p{L}'’.-]*)(?:\s+de\s+([^,.;]+?))?(?=\s+(?:para|por|el|la|me|y|con)\b|[,.;]|$)/iu,
+    /(?:m['’]?ha\s+trucat|m['’]?ha\s+escrit|he\s+parlat\s+amb)\s+([\p{L}][\p{L}'’.-]*)(?:\s+(?:de|d['’])\s*([^,.;]+?))?(?=\s+(?:per|pel|la|el|i|amb)\b|[,.;]|$)/iu,
     /(?:called|messaged|spoke\s+with)\s+([\p{L}][\p{L}'’.-]*)(?:\s+(?:from|at)\s+([^,.;]+?))?(?=\s+(?:for|about|on|and|with)\b|[,.;]|$)/iu
   ]
   for (const pattern of contactPatterns) {
@@ -129,9 +130,9 @@ function extractPeople(raw: string) {
 function extractSource(raw: string): BookingSource | undefined {
   if (/\b(whatsapp|wa)\b/i.test(raw)) return 'whatsapp'
   if (/\b(instagram|insta|dm)\b/i.test(raw)) return 'instagram'
-  if (/\b(e-?mail|correo)\b/i.test(raw)) return 'email'
-  if (/\b(llamad[ao]|tel[eé]fono|phone|called)\b/i.test(raw)) return 'phone'
-  if (/\b(en persona|cara a cara|in person|meeting|reuni[oó]n)\b/i.test(raw)) return 'in_person'
+  if (/\b(e-?mail|correo|correu)\b/i.test(raw)) return 'email'
+  if (/\b(llamad[ao]|tel[eèé]fono?|trucat|trucada|phone|called)\b/i.test(raw)) return 'phone'
+  if (/\b(en persona|cara a cara|in person|meeting|reuni[oó]n|reuni[oó])\b/i.test(raw)) return 'in_person'
   return undefined
 }
 
@@ -143,6 +144,7 @@ function capitalize(value: string) {
 function extractNextMove(raw: string) {
   const patterns = [
     /\b(?:pendiente(?:\s+de)?|falta|hay\s+que|tengo\s+que)\s+([^,.\n]+)/i,
+    /\b(?:pendent(?:\s+de)?|falta|cal|he\s+de)\s+([^,.\n]+)/i,
     /\b(?:pending|need\s+to|needs\s+to|still\s+need\s+to)\s+([^,.\n]+)/i
   ]
   for (const pattern of patterns) {
@@ -150,6 +152,7 @@ function extractNextMove(raw: string) {
     if (match?.[1]) return capitalize(match[1])
   }
   if (/\besperando\s+(?:una\s+)?respuesta\b/i.test(raw)) return 'Esperar respuesta'
+  if (/\besperant\s+(?:una\s+)?resposta\b/i.test(raw)) return 'Esperar resposta'
   if (/\bwaiting\s+for\s+(?:a\s+)?reply\b/i.test(raw)) return 'Wait for reply'
   return undefined
 }
