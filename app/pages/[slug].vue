@@ -16,6 +16,7 @@ const loadError = ref<'not_found' | 'failed' | ''>('')
 const bookingSubmitting = ref(false)
 const bookingSent = ref(false)
 const bookingConfirmationSent = ref<boolean | null>(null)
+const bookingReference = ref('')
 const bookingError = ref('')
 const requestId = ref('')
 
@@ -58,6 +59,7 @@ async function submitBooking(payload: BookingFormSubmission) {
   bookingSubmitting.value = true
   bookingError.value = ''
   bookingConfirmationSent.value = null
+  bookingReference.value = ''
   if (!requestId.value) requestId.value = crypto.randomUUID()
 
   try {
@@ -70,6 +72,7 @@ async function submitBooking(payload: BookingFormSubmission) {
     })
     bookingSent.value = true
     bookingConfirmationSent.value = result.confirmationSent ?? false
+    bookingReference.value = result.reference || ''
   } catch (error) {
     bookingError.value = (error as Error)?.message || 'booking_request_failed'
   } finally {
@@ -82,6 +85,8 @@ watch(slug, () => {
   profile.value = null
   bookingSent.value = false
   bookingConfirmationSent.value = null
+  bookingReference.value = ''
+  bookingError.value = ''
   requestId.value = ''
   loadProfile()
 })
@@ -120,6 +125,7 @@ useHead(() => {
     :submitting="bookingSubmitting"
     :sent="bookingSent"
     :confirmation-sent="bookingConfirmationSent"
+    :reference="bookingReference"
     :error="bookingError"
     @submit="submitBooking"
   />
@@ -132,6 +138,7 @@ useHead(() => {
     :booking-submitting="bookingSubmitting"
     :booking-sent="bookingSent"
     :booking-confirmation-sent="bookingConfirmationSent"
+    :booking-reference="bookingReference"
     :booking-error="bookingError"
     @submit-booking="submitBooking"
   />
