@@ -532,7 +532,30 @@ Validation:
 CI run 35284305515: tests + production build success
 ```
 
-Remaining delivery gate: periodic retry draining for isolated failed deliveries is still not scheduled. First-attempt delivery is automatic; queued/failed retry recovery currently occurs on the next legitimate ingress-triggered dispatcher invocation. Do not add a database cron that stores the service-role credential in SQL.
+Periodic retry draining is now enabled on staging without persisting service-role or Brevo credentials in cron SQL.
+
+Implementation:
+
+- `pg_cron` + `pg_net` enabled on staging;
+- cron job `cuebooker-notification-email-retry` runs every 5 minutes;
+- each cron invocation generates a 256-bit one-time token through `private.issue_notification_dispatch_token()`;
+- only the SHA-256 hash is stored in `private.notification_dispatch_tokens`;
+- tokens expire after 2 minutes and are single-use;
+- the dispatcher accepts either internal service-role authentication or a valid one-time scheduler token;
+- token validation happens through service-role-only `consume_notification_dispatch_token()`;
+- no service-role JWT, Brevo key or long-lived dispatcher secret is stored in the cron command.
+
+Security note: `consume_notification_dispatch_token()` is `SECURITY DEFINER` because `service_role` intentionally has no direct access to the private token table; EXECUTE remains granted only to `service_role`.
+
+Staging smoke:
+
+```text
+manual pg_net scheduler request -> HTTP 200
+dispatcher response -> {"claimed":0,"sent":0,"failed":0}
+cron job active -> */5 * * * *
+```
+
+The earlier scheduler-auth 403 was traced to the private-table permission boundary and fixed in migration `20260918012000_fix_scheduler_token_consume_permissions.sql`.
 
 ## 14. Notification read API foundation — IMPLEMENTED ON BRANCH
 
@@ -670,7 +693,7 @@ Current sequencing is intentional:
 4. complete direct email reply webhook handshake when terminal access returns;
 5. close/gate the public-entry block;
 6. then open Smart Capture text + voice as a distinct feature block;
-7. add a secure periodic retry mechanism for isolated failed notification-email deliveries;
+7. notification email delivery foundation is operational on staging; validate a real new-booking notification email in the next end-to-end smoke;
 8. commercial homepage/marketing redesign after operational product truth is strong enough to market honestly;
 9. billing/trial enforcement after first external beta feedback, unless launch timing requires it earlier.
 ```
