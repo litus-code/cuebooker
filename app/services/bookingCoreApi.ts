@@ -2,6 +2,7 @@ import type {
   Activity,
   Contact,
   CoreBooking,
+  CoreBookingStatus,
   Counterparty,
   CreateActivityInput,
   CreateBookingInput,
@@ -272,6 +273,21 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     return row
   }
 
+  async function setBookingStatus(workspaceId: string, bookingId: string, status: CoreBookingStatus) {
+    const rows = await $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/rpc/set_booking_status`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: {
+        target_workspace_id: workspaceId,
+        target_booking_id: bookingId,
+        target_status: status
+      }
+    })
+    const row = rows[0]
+    if (!row) throw new Error('booking_status_update_failed')
+    return row
+  }
+
   async function listActivities(workspaceId: string, bookingId: string, limit = 100) {
     return $fetch<Activity[]>(`${baseUrl}/rest/v1/activities`, {
       headers: authHeaders(),
@@ -420,6 +436,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     listBookings,
     createBooking,
     createManualBooking,
+    setBookingStatus,
     listActivities,
     createActivity,
     listNextMoves,

@@ -15,6 +15,7 @@ const counterparties = ref<Counterparty[]>([])
 const activities = ref<Activity[]>([])
 const loadingMeta = ref(false)
 const loadingActivity = ref(false)
+const updatingStatus = ref(false)
 
 const copy = computed(() => props.locale === 'es' ? {
   eyebrow: 'BOOKINGS / REALES',
@@ -87,6 +88,24 @@ async function handleOperationsChanged() {
   emit('operationsChanged')
 }
 
+async function changeStatus(event: Event) {
+  if (!selectedBooking.value) return
+  const status = (event.target as HTMLSelectElement).value as CoreBookingStatus
+  if (status === selectedBooking.value.status) return
+  updatingStatus.value = true
+  try {
+    await bookingCore.setBookingStatus(props.workspaceId, selectedBooking.value.id, status)
+    await loadActivity()
+    emit('operationsChanged')
+  } catch (error: any) {
+    window.alert(error?.message === 'confirmed_booking_requires_date'
+      ? (props.locale === 'es' ? 'Para confirmar el booking primero necesitas una fecha.' : 'A booking needs a date before it can be confirmed.')
+      : (error?.message || 'Booking status could not be updated.'))
+  } finally {
+    updatingStatus.value = false
+  }
+}
+
 function formatDate(value: string | null) {
   if (!value) return copy.value.noDate
   return new Intl.DateTimeFormat(props.locale === 'es' ? 'es-ES' : 'en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(`${value}T12:00:00`))
@@ -141,7 +160,7 @@ function bookingTitle(booking: CoreBooking) {
             <h3>{{ bookingTitle(selectedBooking) }}</h3>
             <p>{{ selectedBooking.event_name || selectedBooking.city || '—' }}</p>
           </div>
-          <strong class="core-inbox__status">{{ statusLabels[selectedBooking.status] }}</strong>
+          <label class="core-inbox__status core-inbox__status-control"><span>{{ copy.status }}</span><select :value="selectedBooking.status" :disabled="updatingStatus" @change="changeStatus"><option v-for="(label, status) in statusLabels" :key="status" :value="status">{{ label }}</option></select></label>
         </header>
 
         <dl class="core-inbox__facts">
@@ -192,6 +211,9 @@ function bookingTitle(booking: CoreBooking) {
 .core-inbox__detail h3 { margin:6px 0 3px; font-size:28px; line-height:1; }
 .core-inbox__detail header p { margin:0; color:var(--cue-muted); font-size:12px; }
 .core-inbox__status { align-self:flex-start; padding:7px 9px; border:1px solid var(--cue-border); font:700 9px monospace; text-transform:uppercase; }
+.core-inbox__status-control { display:grid; gap:4px; padding:6px 8px; }
+.core-inbox__status-control > span { color:var(--cue-muted); font:700 7px monospace; letter-spacing:.08em; }
+.core-inbox__status-control select { border:0; outline:0; background:transparent; color:var(--cue-text); font:700 9px monospace; text-transform:uppercase; cursor:pointer; }
 .core-inbox__facts { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); margin:0; border-bottom:1px solid var(--cue-border); }
 .core-inbox__facts > div { min-width:0; padding:14px 12px 14px 0; }
 .core-inbox__facts dt { color:var(--cue-muted); font:700 9px monospace; text-transform:uppercase; }

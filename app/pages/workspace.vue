@@ -231,7 +231,8 @@ const monthCells = computed(() => {
       number: day.getUTCDate(),
       current: day.getUTCMonth() === cursor.getUTCMonth(),
       blocks: blocks.value.filter(block => block.starts_at.slice(0, 10) === date),
-      holds: realHolds.value.filter(hold => hold.status === 'active' && hold.event_date === date)
+      holds: realHolds.value.filter(hold => hold.status === 'active' && hold.event_date === date),
+      confirmedBookings: realBookings.value.filter(booking => booking.status === 'confirmed' && booking.event_date === date)
     }
   })
 })
@@ -244,13 +245,16 @@ const selectedDayCoreHolds = computed(() => realHolds.value
   .sort((a, b) => (a.starts_at || a.event_date).localeCompare(b.starts_at || b.event_date)))
 const selectedDayTimedCoreHolds = computed(() => selectedDayCoreHolds.value.filter(hold => hold.starts_at && hold.ends_at))
 const selectedDayDateOnlyCoreHolds = computed(() => selectedDayCoreHolds.value.filter(hold => !hold.starts_at || !hold.ends_at))
+const selectedDayConfirmedBookings = computed(() => realBookings.value.filter(booking => booking.status === 'confirmed' && booking.event_date === selectedDate.value))
+const selectedDayTimedConfirmedBookings = computed(() => selectedDayConfirmedBookings.value.filter(booking => booking.start_time && booking.end_time))
+const selectedDayDateOnlyConfirmedBookings = computed(() => selectedDayConfirmedBookings.value.filter(booking => !booking.start_time || !booking.end_time))
 const upcomingBlocks = computed(() => blocks.value
   .filter(block => block.ends_at >= new Date().toISOString())
   .sort((a, b) => a.starts_at.localeCompare(b.starts_at))
   .slice(0, 4))
 const holdCount = computed(() => blocks.value.filter(block => block.status === 'hold').length + realHolds.value.filter(hold => hold.status === 'active').length)
-const confirmedCount = computed(() => blocks.value.filter(block => block.status === 'confirmed').length)
-const occupiedDays = computed(() => new Set([...blocks.value.map(block => block.starts_at.slice(0, 10)), ...realHolds.value.filter(hold => hold.status === 'active').map(hold => hold.event_date)]).size)
+const confirmedCount = computed(() => blocks.value.filter(block => block.status === 'confirmed').length + realBookings.value.filter(booking => booking.status === 'confirmed').length)
+const occupiedDays = computed(() => new Set([...blocks.value.map(block => block.starts_at.slice(0, 10)), ...realHolds.value.filter(hold => hold.status === 'active').map(hold => hold.event_date), ...realBookings.value.filter(booking => booking.status === 'confirmed' && booking.event_date).map(booking => booking.event_date as string)]).size)
 const validTimeRange = computed(() => endTime.value > startTime.value)
 const demoActiveBookings = computed(() => demo.bookings.value.filter(item => !item.archived))
 const demoFilteredBookings = computed(() => {
@@ -594,7 +598,7 @@ async function handleCueCreated() {
 
 async function handleBookingCoreOperationsChanged() {
   bookingCoreOperationsRevision.value += 1
-  await loadRealHolds()
+  await Promise.all([loadRealBookings(), loadRealHolds()])
 }
 
 async function loadWorkspaceIdentity() {
@@ -944,6 +948,18 @@ function coreHoldExpiry(hold: Hold) {
   return new Intl.DateTimeFormat(dateLocale.value, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(hold.expires_at))
 }
 
+function coreBookingLabel(booking: CoreBooking) {
+  return booking.venue_name || booking.event_name || (preferences.locale.value === 'es' ? 'Booking confirmado' : 'Confirmed booking')
+}
+
+function coreBookingTimeStyle(booking: CoreBooking) {
+  if (!booking.start_time || !booking.end_time) return {}
+  const toMinutes = (value: string) => Number(value.slice(0, 2)) * 60 + Number(value.slice(3, 5))
+  const start = toMinutes(booking.start_time)
+  const end = toMinutes(booking.end_time)
+  return { top: `${start * .8}px`, height: `${Math.max((end - start) * .8, 42)}px` }
+}
+
 function openUpcoming(block: AvailabilityBlock) {
   activeView.value = 'calendar'
   startEdit(block)
@@ -1253,8 +1269,8 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               <div v-for="label in copy.weekdays" :key="label" class="weekday">{{ label }}</div>
               <button v-for="cell in monthCells" :key="cell.date" type="button" class="day" :class="{ muted: !cell.current, selected: selectedDate === cell.date }" @click="selectDay(cell.date)">
                 <span>{{ cell.number }}</span>
-                <small v-if="cell.blocks.length || cell.holds.length">{{ cell.blocks.length + cell.holds.length }}</small>
-                <span v-if="cell.blocks.length || cell.holds.length" class="day-statuses"><i v-for="block in cell.blocks.slice(0, 2)" :key="block.id" :class="`status-dot status-dot--${block.status}`" /><i v-if="cell.holds.length" class="status-dot status-dot--hold" /></span>
+                <small v-if="cell.blocks.length || cell.holds.length || cell.confirmedBookings.length">{{ cell.blocks.length + cell.holds.length + cell.confirmedBookings.length }}</small>
+                <span v-if="cell.blocks.length || cell.holds.length || cell.confirmedBookings.length" class="day-statuses"><i v-for="block in cell.blocks.slice(0, 1)" :key="block.id" :class="`status-dot status-dot--${block.status}`" /><i v-if="cell.holds.length" class="status-dot status-dot--hold" /><i v-if="cell.confirmedBookings.length" class="status-dot status-dot--confirmed" /></span>
               </button>
             </div>
             <div class="legend"><span><i class="status-dot status-dot--hold" />Hold</span><span><i class="status-dot status-dot--confirmed" />{{ copy.confirmedStatus }}</span><span><i class="status-dot status-dot--unavailable" />{{ copy.unavailable }}</span></div>
@@ -1262,7 +1278,11 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
           <section id="workspace-day-panel" class="day-panel panel">
             <div class="day-heading"><div><p class="eyebrow">{{ copy.dayHours }}</p><h2>{{ selectedDateLabel }}</h2></div><button class="add-button" type="button" @click="openCreate()">{{ copy.add }}</button></div>
-            <div v-if="selectedDayDateOnlyCoreHolds.length" class="core-calendar-holds">
+            <div v-if="selectedDayDateOnlyCoreHolds.length || selectedDayDateOnlyConfirmedBookings.length" class="core-calendar-holds">
+              <article v-for="booking in selectedDayDateOnlyConfirmedBookings" :key="`confirmed-${booking.id}`" class="core-calendar-confirmed">
+                <i class="status-dot status-dot--confirmed" />
+                <div><strong>{{ coreBookingLabel(booking) }}</strong><span>{{ preferences.locale.value === 'es' ? 'Confirmado · horario pendiente' : 'Confirmed · schedule pending' }}</span></div>
+              </article>
               <article v-for="hold in selectedDayDateOnlyCoreHolds" :key="hold.id">
                 <i class="status-dot status-dot--hold" />
                 <div><strong>{{ coreHoldLabel(hold) }}</strong><span>Hold · {{ hold.priority ? `P${hold.priority}` : (preferences.locale.value === 'es' ? 'Sin prioridad' : 'No priority') }}<template v-if="hold.expires_at"> · {{ preferences.locale.value === 'es' ? 'Caduca' : 'Expires' }} {{ coreHoldExpiry(hold) }}</template></span></div>
@@ -1275,6 +1295,9 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               </button>
               <button v-for="hold in selectedDayTimedCoreHolds" :key="`core-hold-${hold.id}`" class="timeline-block timeline-block--hold core-timeline-hold" :style="coreHoldStyle(hold)" type="button" @click.stop="activeView = 'bookings'">
                 <strong>{{ coreHoldLabel(hold) }}</strong><span>{{ hold.starts_at ? new Date(hold.starts_at).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' }) : '' }}–{{ hold.ends_at ? new Date(hold.ends_at).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' }) : '' }}</span>
+              </button>
+              <button v-for="booking in selectedDayTimedConfirmedBookings" :key="`core-confirmed-${booking.id}`" class="timeline-block timeline-block--confirmed core-timeline-confirmed" :style="coreBookingTimeStyle(booking)" type="button" @click.stop="activeView = 'bookings'">
+                <strong>{{ coreBookingLabel(booking) }}</strong><span>{{ booking.start_time?.slice(0, 5) }}–{{ booking.end_time?.slice(0, 5) }}</span>
               </button>
             </div>
           </section>
@@ -1800,4 +1823,6 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .core-calendar-holds strong { font-size:11px; }
 .core-calendar-holds span { margin-top:3px; color:var(--cue-muted); font-size:9px; }
 .core-timeline-hold { z-index:3; border-style:dashed !important; }
+.core-calendar-confirmed { border-style:solid !important; }
+.core-timeline-confirmed { z-index:4; }
 </style>
