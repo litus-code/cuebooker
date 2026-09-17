@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { BookingSource, CoreBooking, CounterpartyKind } from '../domain/bookingCore'
+import { interpretCueText } from '../services/cueInterpreter'
 
 const props = defineProps<{
   open: boolean
@@ -37,6 +38,8 @@ const eventDate = ref('')
 const offer = ref('')
 const currency = ref('EUR')
 const initialNote = ref('')
+const nextMoveLabel = ref('')
+const interpretationMessage = ref('')
 const moreOpen = ref(false)
 
 const text = computed(() => props.locale === 'es' ? {
@@ -50,7 +53,8 @@ const text = computed(() => props.locale === 'es' ? {
   withWho: 'Sala / promotor / evento', existingPlace: 'Ya existe', newPlace: 'Nuevo', choosePlace: 'Selecciona una entidad', type: 'Tipo', venue: 'Sala', promoter: 'Promotor', festival: 'Festival', agency: 'Agencia', brand: 'Marca', other: 'Otro',
   placeName: 'Nombre',
   event: 'Evento', date: 'Fecha', city: 'Ciudad', offer: 'Oferta',
-  note: 'Qué se ha hablado', notePlaceholder: 'Ej. Me ha llamado Héctor. 1.200 €, pendiente confirmar horario.',
+  note: 'Qué se ha hablado', notePlaceholder: 'Ej. Me ha llamado Héctor de Nitsa para el 23 de septiembre. 1.200 €, pendiente confirmar horario.',
+  interpret: 'Interpretar CUE', interpreted: 'He separado lo que parece importante. Revísalo antes de guardar.', nothingDetected: 'No he detectado datos claros todavía. Puedes completar el CUE manualmente.', nextMove: 'Siguiente paso',
   more: 'Añadir más datos', less: 'Ocultar datos extra',
   cancel: 'Cancelar', save: 'Guardar CUE', saving: 'Guardando…',
   minimum: 'Escribe al menos un contacto, una sala/evento o una nota.',
@@ -66,7 +70,8 @@ const text = computed(() => props.locale === 'es' ? {
   withWho: 'Venue / promoter / event', existingPlace: 'Existing', newPlace: 'New', choosePlace: 'Choose an entity', type: 'Type', venue: 'Venue', promoter: 'Promoter', festival: 'Festival', agency: 'Agency', brand: 'Brand', other: 'Other',
   placeName: 'Name',
   event: 'Event', date: 'Date', city: 'City', offer: 'Offer',
-  note: 'What was discussed', notePlaceholder: 'E.g. Hector called. €1,200, waiting to confirm schedule.',
+  note: 'What was discussed', notePlaceholder: 'E.g. Hector from Nitsa called for September 23. €1,200, pending confirm schedule.',
+  interpret: 'Interpret CUE', interpreted: 'I separated the details that look useful. Review them before saving.', nothingDetected: 'No clear details detected yet. You can complete the CUE manually.', nextMove: 'Next move',
   more: 'Add more details', less: 'Hide extra details',
   cancel: 'Cancel', save: 'Save CUE', saving: 'Saving…',
   minimum: 'Add at least a contact, venue/event or a note.',
@@ -109,6 +114,8 @@ function reset() {
   offer.value = ''
   currency.value = 'EUR'
   initialNote.value = ''
+  nextMoveLabel.value = ''
+  interpretationMessage.value = ''
   moreOpen.value = false
   errorMessage.value = ''
 }
@@ -141,6 +148,30 @@ watch(() => props.open, async value => {
 function close() {
   if (submitting.value) return
   emit('close')
+}
+
+function interpretNote() {
+  interpretationMessage.value = ''
+  const parsed = interpretCueText(initialNote.value, props.locale)
+  const detected = Object.keys(parsed).length > 0
+
+  if (parsed.source) source.value = parsed.source
+  if (parsed.contactName) {
+    contactMode.value = 'new'
+    contactName.value = parsed.contactName
+  }
+  if (parsed.counterpartyName) {
+    counterpartyMode.value = 'new'
+    counterpartyName.value = parsed.counterpartyName
+    if (!venueName.value) venueName.value = parsed.counterpartyName
+  }
+  if (parsed.eventDate) eventDate.value = parsed.eventDate
+  if (parsed.offerAmountMinor != null) offer.value = String(parsed.offerAmountMinor / 100)
+  if (parsed.currency) currency.value = parsed.currency
+  if (parsed.nextMoveLabel) nextMoveLabel.value = parsed.nextMoveLabel
+
+  if (parsed.eventDate || parsed.offerAmountMinor != null) moreOpen.value = true
+  interpretationMessage.value = detected ? text.value.interpreted : text.value.nothingDetected
 }
 
 function parseOfferMinor() {
@@ -186,7 +217,8 @@ async function submit() {
       eventDate: eventDate.value || null,
       offerAmountMinor: offerMinor,
       currency: offerMinor == null ? null : currency.value,
-      initialNote: initialNote.value
+      initialNote: initialNote.value,
+      nextMoveLabel: nextMoveLabel.value
     })
     emit('created', booking)
     reset()
@@ -264,6 +296,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
           </section>
 
           <label class="cue-capture__note"><span>{{ text.note }}</span><textarea v-model="initialNote" rows="3" :placeholder="text.notePlaceholder" /></label>
+          <div class="cue-capture__interpret">
+            <button type="button" :disabled="!initialNote.trim()" @click="interpretNote">{{ text.interpret }}</button>
+            <p v-if="interpretationMessage">{{ interpretationMessage }}</p>
+          </div>
+          <label v-if="nextMoveLabel" class="cue-capture__next"><span>{{ text.nextMove }}</span><input v-model="nextMoveLabel" maxlength="240"></label>
 
           <button class="cue-capture__more" type="button" @click="moreOpen = !moreOpen">{{ moreOpen ? text.less : text.more }} <span>{{ moreOpen ? '−' : '+' }}</span></button>
 
@@ -316,6 +353,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 .cue-capture__grid--party { grid-template-columns: minmax(0,1.6fr) minmax(130px,.7fr); }
 .cue-capture label { display: grid; gap: 6px; }
 .cue-capture__note { padding: 20px 0 12px; }
+.cue-capture__interpret { display:flex; align-items:center; gap:10px; margin-top:-4px; padding-bottom:10px; }
+.cue-capture__interpret button { min-height:34px; padding:0 11px; border:1px solid #4b5128; background:rgba(206,255,84,.06); color:#ceff54; cursor:pointer; font:700 9px monospace; text-transform:uppercase; }
+.cue-capture__interpret button:disabled { opacity:.35; cursor:not-allowed; }
+.cue-capture__interpret p { margin:0; color:#929292; font-size:10px; line-height:1.35; }
+.cue-capture__next { display:grid; gap:7px; padding:10px 12px; margin-bottom:10px; border-left:2px solid #ceff54; background:rgba(206,255,84,.04); }
 .cue-capture__more { display: flex; justify-content: space-between; width: 100%; min-height: 40px; padding: 0; border: 0; border-bottom: 1px solid #292929; background: transparent; color: #bdbdbd; cursor: pointer; font-size: 11px; text-align: left; }
 .cue-capture__more span { color: #ceff54; font-size: 18px; }
 .cue-capture__details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 18px 0 2px; }

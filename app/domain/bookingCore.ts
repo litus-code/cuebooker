@@ -192,6 +192,7 @@ export interface CreateManualBookingInput {
   offerAmountMinor?: number | null
   currency?: string | null
   initialNote?: string | null
+  nextMoveLabel?: string | null
 }
 
 export interface UpdateBookingDetailsInput {
