@@ -401,7 +401,61 @@ No fake Booking was created solely for this validation. The next real public boo
 
 This is intentionally channel-neutral. Email delivery, in-product notification center and future Web Push should consume this same notification event model rather than create separate booking logic.
 
-## 12. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
+## 12. Notification email templates + delivery queue — IMPLEMENTED ON STAGING
+
+Functional commits:
+
+```text
+9862c9c7ac448fce9cfbe4c8b5370301dc2e6cc9
+cd1de87b82893d115396d735fca91b03ea59150d
+153bf42c3206877707f350e757ba7242c2358e39
+```
+
+Files:
+
+```text
+supabase/migrations/20260917234500_add_notification_email_delivery_queue.sql
+supabase/functions/_shared/notificationEmailTemplates.ts
+tests/notificationEmailTemplates.test.ts
+```
+
+Staging migration applied successfully to `lycprjeuuynfzwskycwv`.
+
+Delivery model:
+
+- notification events and email delivery attempts are separate records;
+- every new notification automatically enqueues one `notification_email_deliveries` row;
+- delivery state supports `queued / processing / sent / failed`;
+- attempts, provider IDs, error code, retry timestamp and sent/failed timestamps are tracked;
+- one delivery row per notification prevents retry duplication;
+- queue indexes support ready/retry scans and recipient diagnostics;
+- the queue is service-role-only; no browser RLS policy exposes operational delivery state.
+
+Template layer:
+
+- two initial templates: `booking_request_received` and `promoter_reply_received`;
+- ES/EN copy;
+- subject + preheader + plain-text fallback + branded HTML;
+- contextual artist/contact/event/venue/city/date values;
+- CTA points back to the Booking rather than reproducing the conversation;
+- dynamic HTML content is escaped;
+- promoter message body is intentionally not copied into notification email templates.
+
+Current visual language is deliberately restrained: dark Cuebooker shell, lime accent, one clear CTA, short contextual copy.
+
+Validation:
+
+```text
+CI run 35281897382: tests + production build success
+notification template unit tests: success
+staging queue RLS: enabled
+notifications_enqueue_email_delivery trigger: present
+ready + recipient queue indexes: present
+```
+
+No delivery dispatcher/cron is wired yet, so queued rows are not claimed/sent automatically in this slice. The next backend step is an idempotent dispatcher that resolves recipient email + Booking context, renders these templates, sends through Brevo and updates the delivery row. Do not send directly from the notification trigger.
+
+## 13. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
 
@@ -419,7 +473,7 @@ AI/voice limits should not be hard-coded into pricing before real usage/cost evi
 
 No billing, trial enforcement or Stripe integration is implemented yet.
 
-## 13. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
+## 14. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
 
 ### Smart Capture / interpretation
 
@@ -458,7 +512,7 @@ Treat human feedback as a cross-product rule:
 - retryable failure -> preserve work and explain next action;
 - technical/provider detail -> logs/admin, not promoter-facing copy.
 
-## 14. Root routing and static deployment
+## 15. Root routing and static deployment
 
 Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. `ASSETS.fetch()` must use the pretty `/200` path rather than `/200.html`.
 
@@ -470,7 +524,7 @@ Previously validated:
 
 PR #75 remains the staging preview vehicle.
 
-## 15. Security / operational follow-up
+## 16. Security / operational follow-up
 
 Before production:
 
@@ -490,7 +544,7 @@ Leaked Password Protection Disabled
 
 Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to the current Supabase secret-key model as a deliberate infrastructure task, not mixed into a product slice.
 
-## 16. Exact next product work
+## 17. Exact next product work
 
 Current sequencing is intentional:
 
@@ -501,14 +555,14 @@ Current sequencing is intentional:
 4. complete direct email reply webhook handshake when terminal access returns;
 5. close/gate the public-entry block;
 6. then open Smart Capture text + voice as a distinct feature block;
-7. add email delivery from the shared notification event stream;
+7. wire idempotent email dispatcher for queued notification deliveries;
 8. commercial homepage/marketing redesign after operational product truth is strong enough to market honestly;
 9. billing/trial enforcement after first external beta feedback, unless launch timing requires it earlier.
 ```
 
 Do not jump ahead because downstream ideas are documented.
 
-## 17. Documentation workflow rule
+## 18. Documentation workflow rule
 
 Every meaningful implementation block must finish by updating this handoff with:
 
@@ -519,7 +573,7 @@ Every meaningful implementation block must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-## 18. Production gate
+## 19. Production gate
 
 Production Supabase:
 
