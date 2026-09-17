@@ -508,6 +508,27 @@ async function sendAcknowledgement(
   return true;
 }
 
+
+function dispatchNotificationEmails(supabaseUrl: string, serviceKey: string, limit = 10) {
+  const task = fetch(`${supabaseUrl.replace(/\/$/, "")}/functions/v1/dispatch-notification-emails`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${serviceKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ limit })
+  }).then(async response => {
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`notification_dispatch_${response.status}:${text.slice(0, 200)}`);
+    }
+  }).catch(error => {
+    console.error("notification-dispatch", error);
+  });
+
+  EdgeRuntime.waitUntil(task);
+}
+
 function mapDatabaseError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   if (message.includes("public_booking_unavailable")) return { status: 404, code: "booking_unavailable" };
@@ -597,6 +618,10 @@ Deno.serve(async request => {
       confirmationSent = await sendAcknowledgement(request, supabaseUrl, serviceKey, result.booking_id, payload.locale);
     } catch (error) {
       console.error("submit-booking-request acknowledgement", error);
+    }
+
+    if (result.created) {
+      dispatchNotificationEmails(supabaseUrl, serviceKey);
     }
 
     return json({
