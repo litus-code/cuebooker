@@ -641,6 +641,8 @@ attempts=2
 
 The periodic cron itself is also running successfully on staging at 5-minute intervals.
 
+Scheduler configuration is now versioned through `private.configure_notification_email_retry(dispatch_url, schedule)` in migration `20260918015000_add_notification_retry_configurator.sql`. The shared migration never hard-codes a staging URL; each environment installs the same job with its own dispatcher endpoint. Staging has been reconfigured through this function and currently uses job id 2.
+
 ### Notification center
 
 A first functional notification-center UI now exists on the branch:
@@ -666,6 +668,8 @@ Current behavior:
 - inline SVG only, no emoji/icon inconsistency.
 
 Visual desktop/mobile smoke is still required before considering the notification-center presentation final.
+
+Current smoke notification is intentionally left unread on staging so the bell badge and notification-center read flow can be visually verified without creating another test event.
 
 ## 16. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
