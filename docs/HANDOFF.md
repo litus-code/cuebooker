@@ -593,7 +593,81 @@ CI run 35284465373: tests success; production build running
 PR preview run 35284465308: preview build success; deploy running
 ```
 
-## 15. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
+## 15. Notification delivery E2E + notification center — IMPLEMENTED ON STAGING / BRANCH
+
+Additional functional commits:
+
+```text
+72080374718db2971933aa9d87ca5831b1b49a94
+805eae97674d1b9c431466868d5ae51d8c94b533
+5da673a870506a0c853b4c5dd1b1bdd2975276c7
+```
+
+### Delivery smoke
+
+A real existing staging Booking was reused for an explicitly marked notification smoke instead of creating another fake Booking.
+
+Smoke notification:
+
+```text
+booking_id: 214d912e-f4f1-414f-9d8d-eda2f50be115
+kind: booking_request_received
+metadata.smoke_test: true
+recipient: workspace owner
+```
+
+The first dispatcher attempt exposed missing service-role SELECT grants on `notifications` and `profiles`:
+
+```text
+claimed=1
+sent=0
+failed=1
+last_error_code=supabase_403
+```
+
+Migration `20260918013500_grant_notification_dispatch_context.sql` grants only the server-side reads required for delivery. Browser RLS/grants are unchanged.
+
+Retry smoke after the migration:
+
+```text
+dispatcher HTTP 200
+claimed=1
+sent=1
+failed=0
+provider=brevo
+provider_message_id=<202609172309.81894022181@smtp-relay.mailin.fr>
+attempts=2
+```
+
+The periodic cron itself is also running successfully on staging at 5-minute intervals.
+
+### Notification center
+
+A first functional notification-center UI now exists on the branch:
+
+```text
+app/components/WorkspaceNotifications.vue
+```
+
+It is integrated into the workspace header and uses the existing RLS-backed notification API.
+
+Current behavior:
+
+- bell icon with unread badge;
+- recent-notification list;
+- distinct copy for new booking vs promoter reply;
+- read/unread state;
+- mark one as read by opening it;
+- mark all as read;
+- notification click resolves the Booking, switches artist when needed, opens the real Booking view and persists `artist` + `booking` query params;
+- desktop uses an anchored panel;
+- mobile uses a vertical bottom sheet rather than a horizontal notification rail;
+- Escape/outside-click closes the panel;
+- inline SVG only, no emoji/icon inconsistency.
+
+Visual desktop/mobile smoke is still required before considering the notification-center presentation final.
+
+## 16. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
 
@@ -611,7 +685,7 @@ AI/voice limits should not be hard-coded into pricing before real usage/cost evi
 
 No billing, trial enforcement or Stripe integration is implemented yet.
 
-## 16. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
+## 17. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
 
 ### Smart Capture / interpretation
 
@@ -650,7 +724,7 @@ Treat human feedback as a cross-product rule:
 - retryable failure -> preserve work and explain next action;
 - technical/provider detail -> logs/admin, not promoter-facing copy.
 
-## 17. Root routing and static deployment
+## 18. Root routing and static deployment
 
 Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. `ASSETS.fetch()` must use the pretty `/200` path rather than `/200.html`.
 
@@ -662,7 +736,7 @@ Previously validated:
 
 PR #75 remains the staging preview vehicle.
 
-## 18. Security / operational follow-up
+## 19. Security / operational follow-up
 
 Before production:
 
@@ -682,7 +756,7 @@ Leaked Password Protection Disabled
 
 Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to the current Supabase secret-key model as a deliberate infrastructure task, not mixed into a product slice.
 
-## 19. Exact next product work
+## 20. Exact next product work
 
 Current sequencing is intentional:
 
@@ -693,14 +767,14 @@ Current sequencing is intentional:
 4. complete direct email reply webhook handshake when terminal access returns;
 5. close/gate the public-entry block;
 6. then open Smart Capture text + voice as a distinct feature block;
-7. notification email delivery foundation is operational on staging; validate a real new-booking notification email in the next end-to-end smoke;
+7. notification delivery E2E is proven on staging; visually smoke the notification center and real email presentation desktop/mobile;
 8. commercial homepage/marketing redesign after operational product truth is strong enough to market honestly;
 9. billing/trial enforcement after first external beta feedback, unless launch timing requires it earlier.
 ```
 
 Do not jump ahead because downstream ideas are documented.
 
-## 20. Documentation workflow rule
+## 21. Documentation workflow rule
 
 Every meaningful implementation block must finish by updating this handoff with:
 
@@ -711,7 +785,7 @@ Every meaningful implementation block must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-## 21. Production gate
+## 22. Production gate
 
 Production Supabase:
 
