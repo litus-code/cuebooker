@@ -30,21 +30,10 @@ class AttributeHandler {
   element(element) { element.setAttribute(this.attribute, this.value) }
 }
 
-async function passThrough(context, reason) {
-  const response = await context.next()
-  const headers = new Headers(response.headers)
-  headers.set('X-Cuebooker-Artist-Route', reason)
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers
-  })
-}
-
 export async function onRequestGet(context) {
   const slug = String(context.params.slug || '').trim().toLowerCase()
   if (!slug || RESERVED.has(slug) || slug.includes('.') || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
-    return passThrough(context, 'reserved-or-invalid')
+    return context.next()
   }
 
   const requestUrl = new URL(context.request.url)
@@ -56,15 +45,15 @@ export async function onRequestGet(context) {
     endpoint.searchParams.set('slug', slug)
     profileResponse = await fetch(endpoint, { headers: { Accept: 'application/json' } })
   } catch {
-    return passThrough(context, 'profile-fetch-error')
+    return context.next()
   }
 
-  if (profileResponse.status === 404) return passThrough(context, 'profile-not-found')
-  if (!profileResponse.ok) return passThrough(context, `profile-${profileResponse.status}`)
+  if (profileResponse.status === 404) return context.next()
+  if (!profileResponse.ok) return context.next()
 
   const payload = await profileResponse.json().catch(() => null)
   const artist = payload?.artist
-  if (!artist?.stageName || artist.slug !== slug) return passThrough(context, 'profile-invalid')
+  if (!artist?.stageName || artist.slug !== slug) return context.next()
 
   // Pages' ASSETS binding expects the pretty path, not the physical HTML filename.
   const shellUrl = new URL('/200', context.request.url)
@@ -73,7 +62,7 @@ export async function onRequestGet(context) {
     const fallbackUrl = new URL('/', context.request.url)
     shell = await context.env.ASSETS.fetch(new Request(fallbackUrl, context.request))
   }
-  if (!shell.ok) return passThrough(context, 'shell-unavailable')
+  if (!shell.ok) return context.next()
 
   const title = `${artist.stageName} · Booking | Cuebooker`
   const description = compactDescription(artist.bio) || `Professional artist profile and booking enquiries for ${artist.stageName} on Cuebooker.`
@@ -94,6 +83,5 @@ export async function onRequestGet(context) {
   const headers = new Headers(response.headers)
   headers.set('Cache-Control', 'public, max-age=60, s-maxage=300')
   headers.set('Vary', 'Accept-Encoding')
-  headers.set('X-Cuebooker-Artist-Route', 'hit')
   return new Response(response.body, { status: 200, headers })
 }
