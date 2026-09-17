@@ -16,6 +16,7 @@ const error = ref('')
 const items = ref<CueNotification[]>([])
 const unread = ref(0)
 const root = ref<HTMLElement | null>(null)
+let refreshTimer: ReturnType<typeof window.setInterval> | null = null
 
 const copy = computed(() => props.locale === 'es' ? {
   label: 'Notificaciones',
@@ -78,8 +79,12 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    items.value = await notifications.list(40)
-    unread.value = items.value.filter(item => !item.read_at).length
+    const [nextItems, nextUnread] = await Promise.all([
+      notifications.list(40),
+      notifications.unreadCount()
+    ])
+    items.value = nextItems
+    unread.value = nextUnread
   } catch {
     error.value = copy.value.retry
   } finally {
@@ -128,15 +133,33 @@ function handleKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') open.value = false
 }
 
+function handleVisibilityChange() {
+  if (document.visibilityState === 'visible') {
+    if (open.value) void load()
+    else void refreshCount()
+  }
+}
+
 onMounted(() => {
   refreshCount()
+  refreshTimer = window.setInterval(() => {
+    if (document.visibilityState !== 'visible') return
+    if (open.value) void load()
+    else void refreshCount()
+  }, 60_000)
+
   document.addEventListener('click', handleDocumentClick)
   document.addEventListener('keydown', handleKeydown)
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+  window.addEventListener('focus', refreshCount)
 })
 
 onBeforeUnmount(() => {
+  if (refreshTimer) window.clearInterval(refreshTimer)
   document.removeEventListener('click', handleDocumentClick)
   document.removeEventListener('keydown', handleKeydown)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+  window.removeEventListener('focus', refreshCount)
 })
 </script>
 
