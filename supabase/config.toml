@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.submit-booking-request]
 verify_jwt = false
+
+[functions.booking-follow-up]
+verify_jwt = false
