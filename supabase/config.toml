@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.ingest-booking-email]
 verify_jwt = false
+
+[functions.dispatch-notification-emails]
+verify_jwt = false
