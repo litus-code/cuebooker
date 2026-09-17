@@ -19,6 +19,14 @@ function requiredEnv(name: string) {
   return value;
 }
 
+function replyDomain() {
+  const value = requiredEnv("CUEBOOKER_REPLY_DOMAIN").toLowerCase();
+  if (!/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(value) || value.includes("..")) {
+    throw new Error("invalid_cuebooker_reply_domain");
+  }
+  return value;
+}
+
 async function rest<T>(
   url: string,
   init: RequestInit,
@@ -172,8 +180,30 @@ Deno.serve(async (request) => {
       return json({ error: "email_provider_not_configured" }, 503);
     }
 
+    let configuredReplyDomain: string;
+    try {
+      configuredReplyDomain = replyDomain();
+    } catch {
+      await rest(
+        `${supabaseUrl}/rest/v1/email_messages?id=eq.${encodeURIComponent(queued.id)}`,
+        {
+          method: "PATCH",
+          headers: { Prefer: "return=minimal" },
+          body: JSON.stringify({
+            status: "failed",
+            failed_at: new Date().toISOString(),
+            failure_code: "reply_domain_not_configured"
+          })
+        },
+        serviceKey,
+        serviceKey
+      );
+      return json({ error: "email_reply_domain_not_configured" }, 503);
+    }
+
     const fromEmail = Deno.env.get("CUEBOOKER_FROM_EMAIL")?.trim() || "bookings@cuebooker.com";
     const fromName = Deno.env.get("CUEBOOKER_FROM_NAME")?.trim() || "Cuebooker";
+    const replyToEmail = `booking+${queued.reply_token}@${configuredReplyDomain}`;
 
     const providerResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
@@ -184,6 +214,7 @@ Deno.serve(async (request) => {
       body: JSON.stringify({
         sender: { email: fromEmail, name: fromName },
         to: [{ email: toEmail }],
+        replyTo: { email: replyToEmail, name: fromName },
         subject,
         textContent: bodyText
       })
@@ -253,6 +284,7 @@ Deno.serve(async (request) => {
             email_message_id: queued.id,
             subject,
             to_email: toEmail,
+            reply_to: replyToEmail,
             provider: "brevo",
             provider_message_id: providerMessageId
           },
