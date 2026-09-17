@@ -1,0 +1,34 @@
+name: TEMP archive conflict UI
+
+on:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - .github/workflows/temp-archive-conflict-ui.yml
+      - scripts/temp_archive_conflict_ui.py
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feature/app-visual-system
+          fetch-depth: 0
+      - name: Patch archive and conflicts UI
+        run: python scripts/temp_archive_conflict_ui.py
+      - name: Install
+        run: npm ci
+      - name: Generate
+        run: npm run generate
+      - name: Commit integration
+        run: |
+          git config user.name "cuebooker-workspace-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add app/services/bookingCoreApi.ts app/components/BookingCoreInbox.vue app/pages/workspace.vue
+          git commit -m "Add booking archive and conflict diagnostics"
+          git push origin HEAD:feature/app-visual-system
