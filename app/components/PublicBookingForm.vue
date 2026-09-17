@@ -11,13 +11,15 @@ const props = withDefaults(defineProps<{
   confirmationSent?: boolean | null
   error?: string
   preview?: boolean
+  compact?: boolean
 }>(), {
   locale: 'es',
   submitting: false,
   sent: false,
   confirmationSent: null,
   error: '',
-  preview: false
+  preview: false,
+  compact: false
 })
 
 const emit = defineEmits<{
@@ -99,7 +101,7 @@ function submit() {
 </script>
 
 <template>
-  <section class="public-booking-form" aria-labelledby="public-booking-title">
+  <section class="public-booking-form" :class="{ 'public-booking-form--compact': compact }" aria-labelledby="public-booking-title">
     <div class="public-booking-form__heading">
       <p>{{ copy.eyebrow }}</p>
       <h2 id="public-booking-title">{{ copy.title }}</h2>
@@ -189,10 +191,19 @@ function submit() {
 .public-booking-form__success strong { color: var(--cue-accent, #e8ff2f); font-size: 20px; }
 .public-booking-form__success p, .public-booking-form__preview p { margin: 8px 0 0; color: var(--cue-muted, #999); line-height: 1.55; }
 .public-booking-form__honeypot { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+.public-booking-form--compact { min-height: 100%; box-sizing: border-box; padding: 24px; border-top: 0; }
+.public-booking-form--compact .public-booking-form__heading { margin-bottom: 24px; }
+.public-booking-form--compact .public-booking-form__heading h2 { max-width: 620px; font-size: clamp(2rem, 7vw, 4rem); }
+.public-booking-form--compact .public-booking-form__heading > span { max-width: 560px; margin-top: 12px; font-size: 13px; }
+.public-booking-form--compact .public-booking-form__form { gap: 13px; max-width: none; }
+.public-booking-form--compact input { min-height: 44px; }
+.public-booking-form--compact textarea { min-height: 110px; }
 @media (max-width: 700px) {
   .public-booking-form { padding: 28px 18px 42px; }
   .public-booking-form__form, .public-booking-form__details-grid { grid-template-columns: 1fr; }
   .public-booking-form__message, .public-booking-form__details, .public-booking-form__submit, .public-booking-form__error { grid-column: 1; }
   .public-booking-form__heading h2 { font-size: clamp(2.2rem, 13vw, 4.2rem); }
+  .public-booking-form--compact { padding: 20px 16px 28px; }
+  .public-booking-form--compact .public-booking-form__heading h2 { font-size: clamp(2rem, 12vw, 3.7rem); }
 }
 </style>
