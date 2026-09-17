@@ -47,21 +47,20 @@ const realSearch = ref('')''',
 const archiving = ref(false)
 const archiveView = ref<'active' | 'archived'>('active')
 const realSearch = ref('')''', 'inbox archive state')
-text = once(text,
-'''  noActivity: 'Todavía no hay actividad registrada.',
-  noDate: 'Sin fecha', noVenue: 'Sin sala definida', noContact: 'Sin contacto', noOffer: 'Sin oferta' ''',
-'''  noActivity: 'Todavía no hay actividad registrada.',
-  noDate: 'Sin fecha', noVenue: 'Sin sala definida', noContact: 'Sin contacto', noOffer: 'Sin oferta',
-  active: 'Activos', archived: 'Archivados', archive: 'Archivar', restore: 'Restaurar' ''', 'es archive copy') if "active: 'Activos'" not in text else text
-text = once(text,
-'''  noActivity: 'No activity recorded yet.',
-  noDate: 'No date', noVenue: 'No venue defined', noContact: 'No contact', noOffer: 'No offer' ''',
-'''  noActivity: 'No activity recorded yet.',
-  noDate: 'No date', noVenue: 'No venue defined', noContact: 'No contact', noOffer: 'No offer',
-  active: 'Active', archived: 'Archived', archive: 'Archive', restore: 'Restore' ''', 'en archive copy') if "active: 'Active'" not in text else text
-# Copy lines in current file end with } so handle exact actual snippets too
-text = text.replace("  noDate: 'Sin fecha', noVenue: 'Sin sala definida', noContact: 'Sin contacto', noOffer: 'Sin oferta'\n} : {", "  noDate: 'Sin fecha', noVenue: 'Sin sala definida', noContact: 'Sin contacto', noOffer: 'Sin oferta',\n  active: 'Activos', archived: 'Archivados', archive: 'Archivar', restore: 'Restaurar'\n} : {", 1)
-text = text.replace("  noDate: 'No date', noVenue: 'No venue defined', noContact: 'No contact', noOffer: 'No offer'\n})", "  noDate: 'No date', noVenue: 'No venue defined', noContact: 'No contact', noOffer: 'No offer',\n  active: 'Active', archived: 'Archived', archive: 'Archive', restore: 'Restore'\n})", 1)
+
+# Add labels to the exact current copy blocks. Keep this idempotent.
+if "active: 'Activos'" not in text:
+    old_es = "  noDate: 'Sin fecha', noVenue: 'Sin sala definida', noContact: 'Sin contacto', noOffer: 'Sin oferta'\n} : {"
+    new_es = "  noDate: 'Sin fecha', noVenue: 'Sin sala definida', noContact: 'Sin contacto', noOffer: 'Sin oferta',\n  active: 'Activos', archived: 'Archivados', archive: 'Archivar', restore: 'Restaurar'\n} : {"
+    if old_es not in text:
+        raise SystemExit('exact ES copy block missing')
+    text = text.replace(old_es, new_es, 1)
+if "active: 'Active'" not in text:
+    old_en = "  noDate: 'No date', noVenue: 'No venue defined', noContact: 'No contact', noOffer: 'No offer'\n})"
+    new_en = "  noDate: 'No date', noVenue: 'No venue defined', noContact: 'No contact', noOffer: 'No offer',\n  active: 'Active', archived: 'Archived', archive: 'Archive', restore: 'Restore'\n})"
+    if old_en not in text:
+        raise SystemExit('exact EN copy block missing')
+    text = text.replace(old_en, new_en, 1)
 
 needle = '''  return props.bookings.filter(booking => {
     if (realStatusFilter.value !== 'all' && booking.status !== realStatusFilter.value) return false'''
