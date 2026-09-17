@@ -455,7 +455,64 @@ ready + recipient queue indexes: present
 
 No delivery dispatcher/cron is wired yet, so queued rows are not claimed/sent automatically in this slice. The next backend step is an idempotent dispatcher that resolves recipient email + Booking context, renders these templates, sends through Brevo and updates the delivery row. Do not send directly from the notification trigger.
 
-## 13. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
+## 13. Notification email dispatcher — IMPLEMENTED ON STAGING
+
+Functional commits:
+
+```text
+5fad91b84d7dbb98b7e0e0c6c081d2e2a31a7e5d
+bf7a42900153af1d74b6bb96a048337d8d6038a5
+c0a09f3ac18ce803855facd40449edbcce1ccb72
+5e8d5d7b8cbcdefa843a3bbcb2aaa1f47e7f2a6f
+```
+
+Files:
+
+```text
+supabase/migrations/20260918003000_add_notification_email_claim.sql
+supabase/functions/dispatch-notification-emails/index.ts
+supabase/config.toml
+app/pages/workspace.vue
+```
+
+Staging state:
+
+- service-role-only `claim_notification_email_deliveries(batch_size)` uses `FOR UPDATE SKIP LOCKED`;
+- jobs can be reclaimed after 15 minutes in stale `processing`;
+- max delivery attempts = 5;
+- retry backoff is handled by dispatcher;
+- Brevo delivery writes provider message ID and `sent/failed` operational state;
+- recipient email is resolved from Supabase Auth server-side;
+- recipient display name comes from `profiles`;
+- booking/artist/contact/counterparty context is resolved server-side;
+- email locale currently reads Auth metadata when present and otherwise falls back to ES;
+- dispatcher never accepts arbitrary recipient/content from the caller;
+- dispatcher endpoint requires the existing service-role bearer token in function code even though Supabase JWT gateway verification is disabled;
+- `dispatch-notification-emails` is ACTIVE on staging, version 1;
+- `supabase/config.toml` versions `verify_jwt = false` because custom service-role authentication happens inside the function.
+
+Booking CTA deep-link support was added:
+
+```text
+/workspace?artist=<artist-id>&booking=<booking-id>
+```
+
+The workspace now honors both query params, selects the requested artist when accessible and opens the real Booking after Booking Core has loaded.
+
+Validation:
+
+```text
+Edge Function deployment: ACTIVE v1
+CI run 35283306204: tests + production build success
+Deploy Staging / PR preview run 35283306104: success
+processing/ready/recipient delivery indexes: present on staging
+```
+
+Important remaining activation gate:
+
+The dispatcher is ready but no insecure public drain or database cron storing a service-role credential was introduced. Automatic periodic invocation still needs an approved internal scheduler/secret path. Until that is wired, notification events and delivery rows queue correctly but delivery is not autonomously drained.
+
+## 14. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
 
@@ -473,7 +530,7 @@ AI/voice limits should not be hard-coded into pricing before real usage/cost evi
 
 No billing, trial enforcement or Stripe integration is implemented yet.
 
-## 14. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
+## 15. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
 
 ### Smart Capture / interpretation
 
@@ -512,7 +569,7 @@ Treat human feedback as a cross-product rule:
 - retryable failure -> preserve work and explain next action;
 - technical/provider detail -> logs/admin, not promoter-facing copy.
 
-## 15. Root routing and static deployment
+## 16. Root routing and static deployment
 
 Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. `ASSETS.fetch()` must use the pretty `/200` path rather than `/200.html`.
 
@@ -524,7 +581,7 @@ Previously validated:
 
 PR #75 remains the staging preview vehicle.
 
-## 16. Security / operational follow-up
+## 17. Security / operational follow-up
 
 Before production:
 
@@ -544,7 +601,7 @@ Leaked Password Protection Disabled
 
 Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to the current Supabase secret-key model as a deliberate infrastructure task, not mixed into a product slice.
 
-## 17. Exact next product work
+## 18. Exact next product work
 
 Current sequencing is intentional:
 
@@ -555,14 +612,14 @@ Current sequencing is intentional:
 4. complete direct email reply webhook handshake when terminal access returns;
 5. close/gate the public-entry block;
 6. then open Smart Capture text + voice as a distinct feature block;
-7. wire idempotent email dispatcher for queued notification deliveries;
+7. wire secure automatic invocation for the deployed notification email dispatcher;
 8. commercial homepage/marketing redesign after operational product truth is strong enough to market honestly;
 9. billing/trial enforcement after first external beta feedback, unless launch timing requires it earlier.
 ```
 
 Do not jump ahead because downstream ideas are documented.
 
-## 18. Documentation workflow rule
+## 19. Documentation workflow rule
 
 Every meaningful implementation block must finish by updating this handoff with:
 
@@ -573,7 +630,7 @@ Every meaningful implementation block must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-## 19. Production gate
+## 20. Production gate
 
 Production Supabase:
 
