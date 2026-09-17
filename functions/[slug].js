@@ -3,7 +3,14 @@ const RESERVED = new Set([
   'cue-id', 'login', 'onboarding', 'request', 'settings', 'signup', 'workspace'
 ])
 
-const PUBLIC_PROFILE_ENDPOINT = 'https://lycprjeuuynfzwskycwv.supabase.co/functions/v1/get-public-artist-profile'
+const STAGING_SUPABASE_URL = 'https://lycprjeuuynfzwskycwv.supabase.co'
+const PRODUCTION_SUPABASE_URL = 'https://qlocooqfdzehogbwcbhr.supabase.co'
+
+function supabaseUrlForHost(hostname) {
+  return hostname === 'cuebooker.com' || hostname === 'www.cuebooker.com'
+    ? PRODUCTION_SUPABASE_URL
+    : STAGING_SUPABASE_URL
+}
 
 function compactDescription(value) {
   if (typeof value !== 'string') return ''
@@ -29,9 +36,12 @@ export async function onRequestGet(context) {
     return context.next()
   }
 
+  const requestUrl = new URL(context.request.url)
+  const publicProfileEndpoint = `${supabaseUrlForHost(requestUrl.hostname)}/functions/v1/get-public-artist-profile`
+
   let profileResponse
   try {
-    const endpoint = new URL(PUBLIC_PROFILE_ENDPOINT)
+    const endpoint = new URL(publicProfileEndpoint)
     endpoint.searchParams.set('slug', slug)
     profileResponse = await fetch(endpoint, { headers: { Accept: 'application/json' } })
   } catch {
@@ -55,7 +65,7 @@ export async function onRequestGet(context) {
 
   const title = `${artist.stageName} · Booking | Cuebooker`
   const description = compactDescription(artist.bio) || `Professional artist profile and booking enquiries for ${artist.stageName} on Cuebooker.`
-  const canonical = new URL(`/${encodeURIComponent(slug)}`, context.request.url).toString()
+  const canonical = `https://cuebooker.com/${encodeURIComponent(slug)}`
 
   const response = new HTMLRewriter()
     .on('title', new TitleHandler(title))
