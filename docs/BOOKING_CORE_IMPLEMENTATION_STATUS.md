@@ -2,7 +2,7 @@
 
 Updated: 17 September 2026
 Branch: `feature/app-visual-system`
-Status: FOUNDATION IN PROGRESS
+Status: FIRST REAL VERTICAL SLICE WORKING ON STAGING
 
 Read after:
 
@@ -19,13 +19,37 @@ CUE -> Booking -> Activity -> Next Move -> Calendar
 
 CUE ID / Passport / 3D remain intentionally behind this operational core until the loop above is strong.
 
-## Implemented foundation
+## Current milestone
 
-Migration:
+The first real operational slice now exists on staging:
 
-`supabase/migrations/20260917011500_add_booking_core_foundation.sql`
+```text
+legacy account
+  -> workspace bootstrap
+  -> + CUE
+  -> atomic manual capture
+  -> Booking
+  -> initial Activity
+  -> real booking inbox/detail
+```
 
-The migration is additive and does not replace the current workspace UI/demo model yet.
+The existing demo inbox is intentionally still present below the real inbox while the remaining real booking actions are migrated.
+
+## Database foundation
+
+Core migrations in the repository include:
+
+- `20260917011000_reconcile_booking_core_prototype.sql`
+- `20260917011500_add_booking_core_foundation.sql`
+- `20260917014500_add_booking_workspace_bootstrap.sql`
+- `20260917015500_harden_booking_core_foundation.sql`
+- `20260917020500_fix_workspace_owner_cascade_delete.sql`
+- `20260917022000_add_manual_booking_capture.sql`
+- `20260917023000_sync_legacy_workspace_memberships.sql`
+
+These migrations have been applied and validated on `cuebooker-staging` Supabase.
+
+They have NOT been applied to production yet.
 
 ### Tenant boundary
 
@@ -45,6 +69,8 @@ Roles:
 
 Workspace membership is the authorization boundary for new Booking Core operational data.
 
+Legacy artist/agency ownership and memberships can bootstrap into this model idempotently. Creating a new workspace remains owner-controlled; legitimate members can resolve an already-created workspace.
+
 ### Operational relationship data
 
 Added:
@@ -53,11 +79,9 @@ Added:
 - `counterparties`
 - `contact_counterparties`
 
-`counterparties` represents workspace-scoped external professional entities such as venue, promoter, agency, festival or brand.
+`counterparties` represents external venues, promoters, agencies, festivals, brands and other professional entities.
 
-Important transition decision: the pre-existing `public.organizations` table is currently an identity/membership model used by the existing agency/promoter implementation. It must NOT be reused directly as the Booking Core external CRM entity because its RLS semantics require organization membership. Requiring a Cuebooker user to be a member of an external venue/promoter organization would be incorrect.
-
-For now, Booking Core therefore uses `counterparties`. The legacy identity organization model can later be migrated/renamed deliberately after application code has moved to `workspaces`.
+Important transition decision: the pre-existing `public.organizations` table remains an identity/membership model for the legacy agency implementation. It is not reused as an external booking counterparty because its RLS semantics require organization membership.
 
 ### Booking domain
 
@@ -66,9 +90,9 @@ Added:
 - `bookings`
 - `booking_contacts`
 
-Bookings are workspace-scoped and reference an artist through `workspace_artists`.
+Bookings are workspace-scoped and reference artists through `workspace_artists`.
 
-Initial sources:
+Sources include:
 
 - booking_form
 - phone
@@ -80,7 +104,7 @@ Initial sources:
 - manual
 - other
 
-Initial states:
+States include:
 
 - new
 - in_conversation
@@ -89,100 +113,157 @@ Initial states:
 - rejected
 - cancelled
 
-Commercial amount is represented as integer minor units plus ISO currency. No floating-point money.
-
-Event date can exist before exact start/end times, matching real booking negotiation where incomplete information is valid.
+Money uses integer minor units plus ISO currency. Event/date information is intentionally nullable so an incomplete real-world opportunity can exist before exact details are known.
 
 ### Activity stream
 
-Added `activities` as an append-oriented operational history.
+`activities` is append-oriented operational history.
 
-Initial types include:
+Initial types include phone, email, WhatsApp, Instagram, note, status changes, hold events, Next Move events and system events.
 
-- phone
-- email
-- whatsapp
-- instagram
-- note
-- status_change
-- hold_created / released / converted
-- next_move_created / completed
-- system
+Authenticated application users have SELECT + INSERT on Activity in this slice. Ordinary UPDATE/DELETE is deliberately not granted.
 
-Authenticated product users only receive SELECT + INSERT on `activities` in this foundation. UPDATE/DELETE is deliberately not granted so imported/system history is not casually mutated.
+## CUE manual capture
 
-### Tenant integrity
+Implemented `public.create_manual_booking(...)` as one database transaction.
 
-Cross-workspace references are protected structurally as well as through RLS.
+One CUE action can atomically:
 
-Important FKs use `(workspace_id, entity_id)` rather than only entity ID. This prevents a booking in Workspace A from referencing a contact, counterparty or artist mapping in Workspace B even if application code is wrong.
+1. reuse or create a contact;
+2. reuse or create a counterparty;
+3. create the booking;
+4. create its initial Activity;
+5. create the booking-contact relation.
 
-`workspace_id`, `created_by` and `created_at` are protected on mutable tenant records. Records cannot be moved between workspaces through a normal UPDATE.
+If any operation fails, the complete transaction rolls back. Vue does not orchestrate partial record creation.
 
-Historical references from bookings/activities to contacts/counterparties use restrictive deletion instead of silently nulling identity/history.
+The command has been executed as an authenticated staging owner inside a validation transaction and returned a real booking row. The validation transaction was rolled back, leaving no test data.
 
-### RLS and permissions
+## Application layer
 
-New tenant-owned tables have RLS enabled.
+Added:
 
-Baseline rules:
+- `app/domain/bookingCore.ts`
+- `app/services/bookingCoreApi.ts`
+- `app/composables/useBookingCore.ts`
 
-- members can read workspace operational data;
-- editor and above can mutate normal Booking Core operational data;
-- admin/owner manage workspace membership and artist mappings;
-- only an existing owner can grant/promote another member to owner;
-- admins cannot promote themselves to owner;
-- the final workspace owner cannot be demoted or deleted;
-- private activities are visible only to their creator in this initial model;
-- service credentials remain server-only.
+The UI does not contain direct Booking Core table semantics. Supabase/PostgREST interaction is behind the application API layer.
 
-## Deliberately NOT implemented yet
+Current API supports:
 
-The foundation does not yet wire the current workspace screen to these tables.
+- workspace bootstrap/resolution;
+- workspace memberships/artists;
+- contacts;
+- counterparties;
+- bookings;
+- activities;
+- atomic manual CUE creation.
 
-Not implemented in this slice:
+## UI implemented
 
-- automatic workspace creation/backfill for existing Cuebooker accounts;
-- repositories/services for the new Postgres Booking Core;
-- `+ CUE` UI;
-- natural-language/AI parsing;
-- Next Move table/service;
-- Hold table/service;
-- Calendar projection;
+### `+ CUE`
+
+Added `app/components/CueCapturePanel.vue`.
+
+The first capture experience is intentionally low-friction:
+
+- channel/source;
+- existing or new contact;
+- existing or new venue/promoter/counterparty;
+- note describing what happened;
+- optional event/date/city/offer details.
+
+The form permits incomplete bookings. The product should not require CRM-style completeness before a real opportunity can be saved.
+
+### Real booking inbox
+
+Added `app/components/BookingCoreInbox.vue`.
+
+The Bookings screen now shows real bookings created through Booking Core before the existing demo area. Selecting a real booking shows:
+
+- status;
+- source;
+- date;
+- venue/counterparty;
+- primary contact;
+- offer;
+- Activity timeline.
+
+The demo remains temporarily below it so existing functionality and guided-tour coverage are not removed while real actions are migrated.
+
+### Overview
+
+The Overview real-booking KPI now uses actual Booking Core records instead of always displaying a placeholder.
+
+## Security validation completed on staging
+
+Explicit tests completed:
+
+- authenticated owner can see their workspace;
+- unrelated authenticated identity sees zero rows through RLS;
+- cross-workspace entity references are rejected by composite FKs;
+- owner bootstrap is idempotent;
+- final-owner protection was tested and corrected so manual owner removal is blocked without preventing workspace cascade deletion;
+- public `SECURITY DEFINER` bootstrap exposure was removed: privileged implementation is private with an invoker-facing wrapper;
+- Supabase security advisor is clean for Booking Core.
+
+The remaining Supabase security advisor warning is project-level Auth leaked-password protection being disabled. This is not a Booking Core schema defect, but it should be enabled before production launch.
+
+Performance advisors originally identified uncovered FKs. Covering indexes were added. Current unused-index notices are expected on a new staging schema with effectively no workload and should not be used to remove indexes yet.
+
+## CI / preview status
+
+Current clean integration HEAD at time of this update is based on the Booking Core inbox integration and temporary integration scripts/workflows have been removed.
+
+Nuxt production generation passes in CI and the PR preview deploy passes.
+
+Do not claim `staging.cuebooker.com` itself was updated unless the deploy workflow explicitly ran that job; current branch workflow primarily deploys the PR preview.
+
+## Deliberately not implemented yet
+
+The following are intentionally next, not missing by accident:
+
+- real status-transition commands/UI;
+- generalized Activity creation UI beyond initial CUE capture;
+- Next Move table/service/UI;
+- Hold table/service/UI;
+- Calendar projection from Hold/confirmed Booking;
+- real booking filtering/search replacing demo filters;
 - email ingestion/threading;
-- WhatsApp/share integrations;
-- voice capture;
-- Relationship Memory projections.
+- WhatsApp/share integration;
+- voice capture/transcription;
+- AI extraction for natural-language CUE;
+- Relationship Memory projections;
+- production migration.
 
-## Required next slice
+## Next slice
 
-Before exposing `+ CUE`, create a safe workspace bootstrap/migration path for current accounts.
+Next product/architecture block:
 
-The next slice should:
+```text
+Booking -> Activity actions -> Next Move -> Hold -> Calendar projection
+```
 
-1. define how each existing solo artist and agency maps to a workspace;
-2. create/bootstrap that workspace without duplicate creation on retry;
-3. link existing artists through `workspace_artists`;
-4. preserve the current organization/artist membership behaviour while the UI migrates;
-5. provide application repositories/services for Workspace, Contact, Counterparty, Booking and Activity;
-6. test tenant isolation and role boundaries;
-7. only then wire the first manual CUE creation flow.
+Recommended order:
 
-## Validation rule
+1. add explicit domain commands for booking status transitions and Activity creation;
+2. introduce `next_moves` with one active Next Move per booking at product level;
+3. introduce `holds` separately from Booking status;
+4. project Hold/confirmed bookings into Calendar without making Calendar source of truth;
+5. make Overview `Qué necesita tu atención` read from real Next Moves/Holds;
+6. then expand CUE with natural-language extraction and later voice/share surfaces.
 
-Do not apply structural SQL to production merely because CI builds the Nuxt application. The migration must be validated against a disposable/local or staging Supabase database first, including explicit RLS tests with at least two different users/workspaces.
+## Production gate
 
-Minimum security test cases before production migration:
+Do not apply Booking Core migrations to production until:
 
-- Workspace A member cannot select Workspace B contacts/bookings/activities.
-- Cross-workspace composite references fail at FK level.
-- viewer cannot create/update Booking Core data.
-- editor can create booking/activity but cannot manage membership.
-- admin cannot promote self to owner.
-- final owner cannot be demoted/deleted.
-- deleting a referenced contact/counterparty is rejected rather than erasing history.
-- anonymous role has no access to private Booking Core tables.
+- the final staging migration chain is replayed cleanly;
+- RLS tests remain green;
+- CUE and real inbox are manually smoke-tested using the staging application;
+- production backup/rollback procedure is confirmed;
+- project-level Auth leaked-password protection decision is resolved;
+- staging and production environment configuration is verified separately.
 
 ## Development principle
 
-Implement vertical slices against this foundation. Do not rebuild the current product from scratch and do not add infrastructure for hypothetical scale. Keep the operational domain clean enough that external workers/services can be extracted later without changing Booking Core semantics.
+Build vertical slices against this foundation. Preserve current working capability while migrating it. Do not rebuild the product from scratch and do not introduce infrastructure for hypothetical scale. Keep domain boundaries strong enough that integrations, AI workers or other services can later be extracted without changing Booking Core semantics.
