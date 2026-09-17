@@ -7,6 +7,7 @@ on:
     paths:
       - .github/workflows/temp-safe-cue-preview.yml
       - scripts/temp_safe_cue_preview.py
+      - app/services/cueInterpreter.ts
 
 permissions:
   contents: write
