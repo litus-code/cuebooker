@@ -3,7 +3,7 @@ import type { PublicArtistProfile, PublicBookingRequestInput } from '../domain/p
 import { isReservedArtistSlug, normalizePublicEntrySource } from '../domain/publicArtistProfile'
 import { getPublicArtistProfile, submitPublicBookingRequest } from '../services/publicBookingIngressApi'
 
-type BookingFormSubmission = Omit<PublicBookingRequestInput, 'artistSlug' | 'requestId' | 'entrySource'>
+type BookingFormSubmission = Omit<PublicBookingRequestInput, 'artistSlug' | 'requestId' | 'entrySource' | 'locale'>
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -15,6 +15,7 @@ const loading = ref(true)
 const loadError = ref<'not_found' | 'failed' | ''>('')
 const bookingSubmitting = ref(false)
 const bookingSent = ref(false)
+const bookingConfirmationSent = ref<boolean | null>(null)
 const bookingError = ref('')
 const requestId = ref('')
 
@@ -55,16 +56,19 @@ async function submitBooking(payload: BookingFormSubmission) {
   if (!profile.value || bookingSubmitting.value) return
   bookingSubmitting.value = true
   bookingError.value = ''
+  bookingConfirmationSent.value = null
   if (!requestId.value) requestId.value = crypto.randomUUID()
 
   try {
-    await submitPublicBookingRequest(String(config.public.supabaseUrl || ''), {
+    const result = await submitPublicBookingRequest(String(config.public.supabaseUrl || ''), {
       ...payload,
       artistSlug: profile.value.slug,
       requestId: requestId.value,
-      entrySource: entrySource.value
+      entrySource: entrySource.value,
+      locale: locale.value
     })
     bookingSent.value = true
+    bookingConfirmationSent.value = result.confirmationSent ?? false
   } catch (error) {
     bookingError.value = (error as Error)?.message || 'booking_request_failed'
   } finally {
@@ -76,6 +80,7 @@ onMounted(loadProfile)
 watch(slug, () => {
   profile.value = null
   bookingSent.value = false
+  bookingConfirmationSent.value = null
   requestId.value = ''
   loadProfile()
 })
@@ -113,6 +118,7 @@ useHead(() => {
     :booking-focused="bookingFocused"
     :booking-submitting="bookingSubmitting"
     :booking-sent="bookingSent"
+    :booking-confirmation-sent="bookingConfirmationSent"
     :booking-error="bookingError"
     @submit-booking="submitBooking"
   />
