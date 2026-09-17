@@ -346,7 +346,62 @@ Deploy/preview run 35278941375: preview build success; Cloudflare PR deployment 
 
 This improves diagnosability of the existing inbound flow but does not replace the pending direct webhook-secret handshake. Production remains untouched.
 
-## 11. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
+## 11. Notification foundation — IMPLEMENTED ON STAGING
+
+Migration / functional commit:
+
+```text
+485dd6dd624fc0d34417ecd8bca8ec517f086ca7
+supabase/migrations/20260917232000_add_notification_foundation.sql
+```
+
+Staging migration applied successfully to:
+
+```text
+lycprjeuuynfzwskycwv
+```
+
+Current model:
+
+- `public.notifications` is the shared user-facing notification event stream;
+- current event kinds are `booking_request_received` and `promoter_reply_received`;
+- one notification row is created per eligible workspace member (`owner/admin/manager/editor`), excluding passive `viewer` members;
+- dedupe is enforced per workspace + recipient + event key;
+- notifications reference the Booking and optional Activity instead of copying conversation content;
+- metadata carries structured context only;
+- RLS allows a signed-in user to read only their own notifications;
+- authenticated clients receive only `SELECT` plus column-level `UPDATE(read_at)`, so notification identity/content cannot be rewritten by the browser;
+- indexes cover recipient timeline, unread recipient timeline and booking lookup.
+
+Automatic creation now happens at the domain boundary:
+
+```text
+new public_form Booking
+ -> booking_request_received
+
+external inbound Activity
+ ingested_by = public_follow_up | brevo_inbound
+ -> promoter_reply_received
+```
+
+The initial public-form Activity does not create a duplicate reply notification.
+
+Validation:
+
+```text
+CI run 35279648215: success
+Deploy Staging run 35279648389: success
+staging RLS: enabled
+recipient SELECT/UPDATE policies: present
+recipient/unread/booking indexes: present
+booking + external-reply triggers: present
+```
+
+No fake Booking was created solely for this validation. The next real public booking or promoter reply will exercise the triggers naturally.
+
+This is intentionally channel-neutral. Email delivery, in-product notification center and future Web Push should consume this same notification event model rather than create separate booking logic.
+
+## 12. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
 
@@ -364,7 +419,7 @@ AI/voice limits should not be hard-coded into pricing before real usage/cost evi
 
 No billing, trial enforcement or Stripe integration is implemented yet.
 
-## 12. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
+## 13. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
 
 ### Smart Capture / interpretation
 
@@ -374,19 +429,19 @@ Future inputs may include typed free text, dictated voice, pasted WhatsApp text 
 
 The engine should propose structured booking fields, show uncertainty/missing information and require human confirmation before writing Booking Core. AI must not silently invent booking facts.
 
-### Notification layer
+### Notification delivery
 
-A booking product cannot rely on users opening the app to discover new demand.
+The shared notification event stream now exists on staging. Delivery remains deliberately separate.
 
 Preferred sequencing:
 
 ```text
-email notifications first
- -> in-product notification center
+email delivery from notifications
+ -> in-product notification center using the same rows
  -> Web Push/PWA where justified
 ```
 
-Useful events include new booking request, promoter reply and meaningful unresolved follow-up.
+Do not emit independent email-only or push-only booking events.
 
 ### Internal Cuebooker admin / back office
 
@@ -403,7 +458,7 @@ Treat human feedback as a cross-product rule:
 - retryable failure -> preserve work and explain next action;
 - technical/provider detail -> logs/admin, not promoter-facing copy.
 
-## 13. Root routing and static deployment
+## 14. Root routing and static deployment
 
 Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. `ASSETS.fetch()` must use the pretty `/200` path rather than `/200.html`.
 
@@ -415,7 +470,7 @@ Previously validated:
 
 PR #75 remains the staging preview vehicle.
 
-## 14. Security / operational follow-up
+## 15. Security / operational follow-up
 
 Before production:
 
@@ -435,7 +490,7 @@ Leaked Password Protection Disabled
 
 Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to the current Supabase secret-key model as a deliberate infrastructure task, not mixed into a product slice.
 
-## 15. Exact next product work
+## 16. Exact next product work
 
 Current sequencing is intentional:
 
@@ -446,14 +501,14 @@ Current sequencing is intentional:
 4. complete direct email reply webhook handshake when terminal access returns;
 5. close/gate the public-entry block;
 6. then open Smart Capture text + voice as a distinct feature block;
-7. then notification layer;
+7. add email delivery from the shared notification event stream;
 8. commercial homepage/marketing redesign after operational product truth is strong enough to market honestly;
 9. billing/trial enforcement after first external beta feedback, unless launch timing requires it earlier.
 ```
 
 Do not jump ahead because downstream ideas are documented.
 
-## 16. Documentation workflow rule
+## 17. Documentation workflow rule
 
 Every meaningful implementation block must finish by updating this handoff with:
 
@@ -464,7 +519,7 @@ Every meaningful implementation block must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-## 17. Production gate
+## 18. Production gate
 
 Production Supabase:
 
