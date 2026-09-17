@@ -7,6 +7,7 @@ const props = defineProps<{
   locale: 'es' | 'en'
 }>()
 
+const emit = defineEmits<{ operationsChanged: [] }>()
 const bookingCore = useBookingCore()
 const selectedBookingId = ref('')
 const contacts = ref<Contact[]>([])
@@ -67,7 +68,8 @@ watch(() => props.workspaceId, async value => {
   }
 }, { immediate: true })
 
-watch(() => selectedBooking.value?.id, async bookingId => {
+async function loadActivity() {
+  const bookingId = selectedBooking.value?.id
   activities.value = []
   if (!bookingId || !props.workspaceId) return
   loadingActivity.value = true
@@ -76,7 +78,14 @@ watch(() => selectedBooking.value?.id, async bookingId => {
   } finally {
     loadingActivity.value = false
   }
-}, { immediate: true })
+}
+
+watch(() => selectedBooking.value?.id, loadActivity, { immediate: true })
+
+async function handleOperationsChanged() {
+  await loadActivity()
+  emit('operationsChanged')
+}
 
 function formatDate(value: string | null) {
   if (!value) return copy.value.noDate
@@ -141,6 +150,13 @@ function bookingTitle(booking: CoreBooking) {
           <div><dt>{{ copy.contact }}</dt><dd>{{ loadingMeta ? '…' : selectedContact?.name || copy.noContact }}</dd></div>
           <div><dt>{{ copy.offer }}</dt><dd>{{ formatMoney(selectedBooking) }}</dd></div>
         </dl>
+
+        <BookingCoreOperations
+          :workspace-id="workspaceId"
+          :booking="selectedBooking"
+          :locale="locale"
+          @changed="handleOperationsChanged"
+        />
 
         <section class="core-inbox__activity">
           <h4>{{ copy.activity }}</h4>
