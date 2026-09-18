@@ -6,7 +6,7 @@ const props = defineProps<{
   booking: CoreBooking
   locale: 'es' | 'en'
   suggestedFollowUp?: { subject: string; body: string } | null
-  suggestedRetryEmail?: { subject: string; body: string } | null
+  suggestedRetryEmail?: { subject: string; body: string; recipientChanged: boolean } | null
 }>()
 
 const emit = defineEmits<{ created: [] }>()
@@ -38,7 +38,8 @@ const copy = computed(() => props.locale === 'es' ? {
   prepareFollowUp: 'Preparar seguimiento',
   followUpHint: 'Cuebooker ha preparado un borrador. Revísalo antes de enviarlo.',
   prepareRetry: 'Preparar reintento',
-  retryHint: 'El último email falló. Cuebooker puede recuperar el mismo mensaje para que lo revises y decidas si reenviarlo.'
+  retryHint: 'El último email falló. Cuebooker puede recuperar el mismo mensaje para que lo revises y decidas si reenviarlo.',
+  retryUpdatedRecipient: 'El email del contacto ha cambiado desde el envío fallido. El reintento usará el email actualizado.'
 } : {
   title: 'Log interaction',
   help: 'Note keeps internal memory. Call, WhatsApp and Instagram log a conversation. Email sends from Cuebooker.',
@@ -57,7 +58,8 @@ const copy = computed(() => props.locale === 'es' ? {
   prepareFollowUp: 'Prepare follow-up',
   followUpHint: 'Cuebooker prepared a draft. Review it before sending.',
   prepareRetry: 'Prepare retry',
-  retryHint: 'The latest email failed. Cuebooker can restore the same message so you can review it and decide whether to resend.'
+  retryHint: 'The latest email failed. Cuebooker can restore the same message so you can review it and decide whether to resend.',
+  retryUpdatedRecipient: 'The contact email changed after the failed send. The retry will use the updated email.'
 })
 
 const types = computed<Array<{ value: ActivityType; label: string }>>(() => [
@@ -161,7 +163,7 @@ async function submit() {
       </div>
     </div>
     <div v-if="suggestedRetryEmail" class="activity-composer__suggestion activity-composer__suggestion--warning">
-      <div><strong>{{ copy.prepareRetry }}</strong><small>{{ copy.retryHint }}</small></div>
+      <div><strong>{{ copy.prepareRetry }}</strong><small>{{ suggestedRetryEmail.recipientChanged ? copy.retryUpdatedRecipient : copy.retryHint }}</small></div>
       <button type="button" @click="applySuggestedRetry">{{ copy.prepareRetry }}</button>
     </div>
     <div v-else-if="suggestedFollowUp" class="activity-composer__suggestion">
