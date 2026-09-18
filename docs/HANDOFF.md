@@ -1392,7 +1392,65 @@ The tested booking visibly had no date. The UI now explains this and disables co
 - Distribution no longer reserves an empty left column below its intro;
 - Distribution channel cards now use recognizable pictograms rather than text abbreviations.
 
-## 24. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
+## 24. Smart Capture extraction quality pass — IMPLEMENTED ON BRANCH / EDGE DEPLOYED TO STAGING
+
+Functional commits:
+
+```text
+cbf41934b4310fea7e74481957f6e1783f6180dd
+28fe87924288002dcfd83f7a26d428a27e1a8f88
+3f77a39de19f6d81d5c23dc755d60395a8c35922
+8a5635183812e12706b7e0d7058c075aefc5b064
+```
+
+Staging `smart-capture` is ACTIVE v5.
+
+### Semantic provider resilience
+
+Semantic extraction no longer depends on the previous single default model. The function now tries:
+
+```text
+CUEBOOKER_SMART_CAPTURE_MODEL (when configured)
+-> gpt-5.6-luna
+-> gpt-5.6-terra
+```
+
+and logs only safe operational model/status metadata when an attempt fails.
+
+### Local fallback quality
+
+The deterministic fallback now additionally extracts common spoken booking details:
+
+- plural conversation forms such as “hemos hablado con …”;
+- venue names introduced as Sala / Club / Venue;
+- explicit time ranges such as “de 3 a 4”;
+- Spanish verbal EUR amounts such as “tres mil euros”;
+- venue, start and end times are now shown in review and applied into the CUE draft.
+
+A regression test covers the real spoken-style case:
+
+```text
+Héctor
+Sala Apolo
+24 de diciembre
+de 3 a 4
+tres mil euros
+```
+
+Expected fallback fields:
+
+```text
+contact = Héctor
+venue/counterparty = Apolo
+date = 2026-12-24
+start = 03:00
+end = 04:00
+fee = 3000 EUR
+```
+
+Server semantic extraction remains the preferred path. Local parsing is only resilience.
+
+## 25. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
 
@@ -1410,7 +1468,7 @@ AI/voice limits should not be hard-coded into pricing before real usage/cost evi
 
 No billing, trial enforcement or Stripe integration is implemented yet.
 
-## 25. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
+## 26. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
 
 ### Smart Capture / interpretation
 
@@ -1449,7 +1507,7 @@ Treat human feedback as a cross-product rule:
 - retryable failure -> preserve work and explain next action;
 - technical/provider detail -> logs/admin, not promoter-facing copy.
 
-## 26. Root routing and static deployment
+## 27. Root routing and static deployment
 
 Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. `ASSETS.fetch()` must use the pretty `/200` path rather than `/200.html`.
 
@@ -1461,7 +1519,7 @@ Previously validated:
 
 PR #75 remains the staging preview vehicle.
 
-## 27. Security / operational follow-up
+## 28. Security / operational follow-up
 
 Before production:
 
@@ -1481,7 +1539,7 @@ Leaked Password Protection Disabled
 
 Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to the current Supabase secret-key model as a deliberate infrastructure task, not mixed into a product slice.
 
-## 28. Exact next product work
+## 29. Exact next product work
 
 Current sequencing is intentional:
 
@@ -1499,7 +1557,7 @@ Current sequencing is intentional:
 
 Do not jump ahead because downstream ideas are documented.
 
-## 29. Documentation workflow rule
+## 30. Documentation workflow rule
 
 Every meaningful implementation block must finish by updating this handoff with:
 
@@ -1510,7 +1568,7 @@ Every meaningful implementation block must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-## 30. Production gate
+## 31. Production gate
 
 Production Supabase:
 
