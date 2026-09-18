@@ -16,6 +16,7 @@ const saving = ref(false)
 const errorMessage = ref('')
 const nextLabel = ref('')
 const nextDue = ref('')
+const autoCompleteOnReply = ref(false)
 const holdDate = ref('')
 const holdExpires = ref('')
 const holdPriority = ref('')
@@ -29,6 +30,9 @@ const copy = computed(() => props.locale === 'es' ? {
   due: 'Cuándo',
   saveNext: 'Guardar próxima acción',
   complete: 'Hecho',
+  autoReply: 'Marcar como hecha cuando llegue una respuesta',
+  autoReplyHint: 'Cuebooker la cerrará solo cuando entre una respuesta real en este booking.',
+  autoReplyActive: 'Se cerrará al recibir respuesta',
   hold: 'Reservar fecha (hold)',
   holdHelp: 'Bloquea provisionalmente la fecha de este booking mientras se negocia. El hold aparece en Calendario.',
   noHold: 'No hay fechas reservadas provisionalmente.',
@@ -51,6 +55,9 @@ const copy = computed(() => props.locale === 'es' ? {
   due: 'When',
   saveNext: 'Save next action',
   complete: 'Done',
+  autoReply: 'Mark as done when a reply arrives',
+  autoReplyHint: 'Cuebooker will close it only when a real reply arrives in this booking.',
+  autoReplyActive: 'Will close when a reply arrives',
   hold: 'Reserve date (hold)',
   holdHelp: 'Provisionally blocks this booking date while it is negotiated. The hold appears in Calendar.',
   noHold: 'No dates are provisionally reserved.',
@@ -102,6 +109,7 @@ async function load() {
 
 watch(() => [props.workspaceId, props.booking.id], () => {
   if (!holdDate.value && props.booking.event_date) holdDate.value = props.booking.event_date
+  autoCompleteOnReply.value = false
   void load()
 }, { immediate: true })
 
@@ -121,10 +129,12 @@ async function setNextMove() {
       workspaceId: props.workspaceId,
       bookingId: props.booking.id,
       label,
-      dueAt: toIsoOrNull(nextDue.value)
+      dueAt: toIsoOrNull(nextDue.value),
+      completionTrigger: autoCompleteOnReply.value ? 'inbound_activity' : 'manual'
     })
     nextLabel.value = ''
     nextDue.value = ''
+    autoCompleteOnReply.value = false
     await load()
     emit('changed')
   } catch (error: any) {
@@ -208,12 +218,20 @@ async function convertHold(hold: Hold) {
         <header><strong>{{ copy.nextMove }}</strong><small>{{ copy.nextHelp }}</small></header>
         <div v-if="loading" class="core-ops__empty">…</div>
         <div v-else-if="activeNextMove" class="core-ops__current">
-          <div><strong>{{ activeNextMove.label }}</strong><small>{{ activeNextMove.due_at ? localDateTime(activeNextMove.due_at) : '—' }}</small></div>
+          <div>
+            <strong>{{ activeNextMove.label }}</strong>
+            <small>{{ activeNextMove.due_at ? localDateTime(activeNextMove.due_at) : '—' }}</small>
+            <em v-if="activeNextMove.completion_trigger === 'inbound_activity'" class="core-ops__automation">{{ copy.autoReplyActive }}</em>
+          </div>
           <button type="button" :disabled="saving" @click="completeNextMove">{{ copy.complete }}</button>
         </div>
         <p v-else class="core-ops__empty">{{ copy.noNext }}</p>
         <form class="core-ops__form" @submit.prevent="setNextMove">
           <label class="core-ops__form-main"><span>{{ copy.nextMove }}</span><input v-model="nextLabel" :placeholder="copy.nextPlaceholder" maxlength="240"></label>
+          <label class="core-ops__auto-reply">
+            <input v-model="autoCompleteOnReply" type="checkbox">
+            <span><strong>{{ copy.autoReply }}</strong><small>{{ copy.autoReplyHint }}</small></span>
+          </label>
           <div class="core-ops__form-row">
             <label><span>{{ copy.due }}</span><input v-model="nextDue" type="datetime-local"></label>
             <button type="submit" :disabled="saving">{{ saving ? copy.saving : copy.saveNext }}</button>
@@ -263,6 +281,7 @@ async function convertHold(hold: Hold) {
 .core-ops__current, .core-ops__holds article { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:11px 12px; border-bottom:1px solid var(--cue-border); }
 .core-ops__current > div, .core-ops__holds article > div:first-child { min-width:0; }
 .core-ops__current strong, .core-ops__current small, .core-ops__holds strong, .core-ops__holds small { display:block; }
+.core-ops__automation { display:inline-block; margin-top:6px; padding:3px 6px; border:1px solid color-mix(in srgb,var(--cue-accent) 55%,var(--cue-border)); color:var(--cue-accent); font:800 7px monospace; font-style:normal; text-transform:uppercase; }
 .core-ops__current strong, .core-ops__holds strong { font-size:12px; }
 .core-ops__current small, .core-ops__holds small { margin-top:4px; color:var(--cue-muted); font-size:10px; }
 .core-ops button { min-height:32px; padding:0 10px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); cursor:pointer; font:700 9px monospace; text-transform:uppercase; }
@@ -270,6 +289,11 @@ async function convertHold(hold: Hold) {
 .core-ops button:disabled { opacity:.45; cursor:wait; }
 .core-ops__form { display:grid; gap:10px; padding:12px; }
 .core-ops__form-main { min-width:0; }
+.core-ops__auto-reply { display:flex; align-items:flex-start; gap:8px; padding:9px 10px; border:1px solid var(--cue-border); background:color-mix(in srgb,var(--cue-accent) 3%,transparent); cursor:pointer; }
+.core-ops__auto-reply input { flex:0 0 auto; width:15px; min-height:15px; margin:1px 0 0; accent-color:var(--cue-accent); }
+.core-ops__auto-reply > span { min-width:0; }
+.core-ops__auto-reply strong { display:block; color:var(--cue-text); font-size:10px; }
+.core-ops__auto-reply small { display:block; margin-top:3px; color:var(--cue-muted); font-size:9px; line-height:1.35; }
 .core-ops__form-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:end; }
 .core-ops__form-row--hold { grid-template-columns:1fr 1fr; }
 .core-ops__form--hold > button { justify-self:start; }
