@@ -44,9 +44,9 @@ const interpretationPreview = ref<CueInterpretation | null>(null)
 const moreOpen = ref(false)
 
 const text = computed(() => props.locale === 'es' ? {
-  eyebrow: 'CUE / CAPTURA RÁPIDA',
-  title: '¿QUÉ HA PASADO?',
-  intro: 'Guarda una oportunidad sin convertirla en papeleo. Completa solo lo que ya sabes.',
+  eyebrow: 'CUE / NUEVA OPORTUNIDAD',
+  title: 'CAPTURA UNA OPORTUNIDAD',
+  intro: 'Cuéntaselo a Cuebooker por voz o texto. Crearemos un booking nuevo con lo que sepamos y podrás completarlo después.',
   channel: 'Canal',
   phone: 'Teléfono', whatsapp: 'WhatsApp', email: 'Email', instagram: 'Instagram', inPerson: 'En persona', manual: 'Otro',
   who: 'Contacto',
@@ -54,16 +54,16 @@ const text = computed(() => props.locale === 'es' ? {
   withWho: 'Sala / promotor / evento', existingPlace: 'Ya existe', newPlace: 'Nuevo', choosePlace: 'Selecciona una entidad', type: 'Tipo', venue: 'Sala', promoter: 'Promotor', festival: 'Festival', agency: 'Agencia', brand: 'Marca', other: 'Otro',
   placeName: 'Nombre',
   event: 'Evento', date: 'Fecha', city: 'Ciudad', offer: 'Oferta',
-  note: 'Qué se ha hablado', notePlaceholder: 'Ej. Me ha llamado Héctor de Nitsa para el 23 de septiembre. 1.200 €, pendiente confirmar horario.',
-  interpret: 'Interpretar CUE', interpreted: 'He separado lo que parece importante. Revísalo antes de guardar.', nothingDetected: 'No he detectado datos claros todavía. Puedes completar el CUE manualmente.', reviewSuggestions: 'Esto es lo que he entendido. Nada se aplicará hasta que lo confirmes.', applySuggestions: 'Aplicar sugerencias', discardSuggestions: 'Descartar', suggestionsApplied: 'Sugerencias aplicadas. Revísalas antes de guardar el CUE.', nextMove: 'Siguiente paso',
+  note: 'Cuéntaselo a Cuebooker', notePlaceholder: 'Ej. Me ha llamado Héctor de Nitsa para el 23 de septiembre. 1.200 €, pendiente confirmar horario.',
+  interpret: 'Interpretar lo que he contado', interpreted: 'He separado lo que parece importante. Revísalo antes de crear el booking.', nothingDetected: 'No he detectado datos claros todavía. Puedes completar el CUE manualmente.', reviewSuggestions: 'Esto es lo que he entendido. Nada se aplicará hasta que lo confirmes.', applySuggestions: 'Aplicar sugerencias', discardSuggestions: 'Descartar', suggestionsApplied: 'Sugerencias aplicadas. Revísalas antes de guardar el CUE.', nextMove: 'Siguiente paso',
   more: 'Añadir más datos', less: 'Ocultar datos extra',
-  cancel: 'Cancelar', save: 'Guardar CUE', saving: 'Guardando…',
+  cancel: 'Cancelar', save: 'Crear booking', saving: 'Creando…',
   minimum: 'Escribe al menos un contacto, una sala/evento o una nota.',
   error: 'No se ha podido guardar este CUE.'
 } : {
-  eyebrow: 'CUE / QUICK CAPTURE',
-  title: 'WHAT HAPPENED?',
-  intro: 'Save an opportunity without turning it into admin. Fill only what you already know.',
+  eyebrow: 'CUE / NEW OPPORTUNITY',
+  title: 'CAPTURE AN OPPORTUNITY',
+  intro: 'Tell Cuebooker by voice or text. We will create a new booking with what we know and you can complete it later.',
   channel: 'Channel',
   phone: 'Phone', whatsapp: 'WhatsApp', email: 'Email', instagram: 'Instagram', inPerson: 'In person', manual: 'Other',
   who: 'Contact',
@@ -71,10 +71,10 @@ const text = computed(() => props.locale === 'es' ? {
   withWho: 'Venue / promoter / event', existingPlace: 'Existing', newPlace: 'New', choosePlace: 'Choose an entity', type: 'Type', venue: 'Venue', promoter: 'Promoter', festival: 'Festival', agency: 'Agency', brand: 'Brand', other: 'Other',
   placeName: 'Name',
   event: 'Event', date: 'Date', city: 'City', offer: 'Offer',
-  note: 'What was discussed', notePlaceholder: 'E.g. Hector from Nitsa called for September 23. €1,200, pending confirm schedule.',
-  interpret: 'Interpret CUE', interpreted: 'I separated the details that look useful. Review them before saving.', nothingDetected: 'No clear details detected yet. You can complete the CUE manually.', reviewSuggestions: 'This is what I understood. Nothing will be applied until you confirm it.', applySuggestions: 'Apply suggestions', discardSuggestions: 'Discard', suggestionsApplied: 'Suggestions applied. Review them before saving the CUE.', nextMove: 'Next move',
+  note: 'Tell Cuebooker', notePlaceholder: 'E.g. Hector from Nitsa called for September 23. €1,200, pending confirm schedule.',
+  interpret: 'Interpret what I said', interpreted: 'I separated the details that look useful. Review them before creating the booking.', nothingDetected: 'No clear details detected yet. You can complete the CUE manually.', reviewSuggestions: 'This is what I understood. Nothing will be applied until you confirm it.', applySuggestions: 'Apply suggestions', discardSuggestions: 'Discard', suggestionsApplied: 'Suggestions applied. Review them before saving the CUE.', nextMove: 'Next move',
   more: 'Add more details', less: 'Hide extra details',
-  cancel: 'Cancel', save: 'Save CUE', saving: 'Saving…',
+  cancel: 'Cancel', save: 'Create booking', saving: 'Creating…',
   minimum: 'Add at least a contact, venue/event or a note.',
   error: 'This CUE could not be saved.'
 })
@@ -304,6 +304,37 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
             <button v-for="option in sourceOptions" :key="option.value" type="button" :class="{ active: source === option.value }" @click="source = option.value">{{ option.label }}</button>
           </fieldset>
 
+          <section class="cue-capture__tell">
+            <div class="cue-capture__tell-head">
+              <strong>{{ text.note }}</strong>
+              <small>{{ locale === 'es' ? 'Habla o escribe. Cuebooker intentará extraer los datos.' : 'Speak or type. Cuebooker will try to extract the details.' }}</small>
+            </div>
+            <textarea v-model="initialNote" rows="4" :placeholder="text.notePlaceholder" />
+            <div class="cue-capture__smart-actions">
+              <CueVoiceInput v-model="initialNote" :locale="locale" @captured="onVoiceCaptured" />
+              <div class="cue-capture__interpret">
+                <button type="button" :disabled="!initialNote.trim()" @click="interpretNote">{{ text.interpret }}</button>
+                <p v-if="interpretationMessage" aria-live="polite">{{ interpretationMessage }}</p>
+              </div>
+            </div>
+            <section v-if="interpretationPreview" class="cue-capture__preview" aria-live="polite">
+              <p>{{ text.reviewSuggestions }}</p>
+              <div class="cue-capture__preview-items">
+                <span v-if="interpretationPreview.source">{{ text.channel }} · {{ sourceOptions.find(item => item.value === interpretationPreview?.source)?.label }}</span>
+                <span v-if="interpretationPreview.contactName">{{ text.who }} · {{ interpretationPreview.contactName }}</span>
+                <span v-if="interpretationPreview.counterpartyName">{{ text.withWho }} · {{ interpretationPreview.counterpartyName }}</span>
+                <span v-if="interpretationPreview.eventDate">{{ text.date }} · {{ interpretationPreview.eventDate }}</span>
+                <span v-if="interpretationPreview.offerAmountMinor != null">{{ text.offer }} · {{ (interpretationPreview.offerAmountMinor / 100).toLocaleString(locale === 'es' ? 'es-ES' : 'en-GB') }} {{ interpretationPreview.currency || '' }}</span>
+                <span v-if="interpretationPreview.nextMoveLabel">{{ text.nextMove }} · {{ interpretationPreview.nextMoveLabel }}</span>
+              </div>
+              <div class="cue-capture__preview-actions">
+                <button type="button" @click="discardInterpretation">{{ text.discardSuggestions }}</button>
+                <button type="button" class="apply" @click="applyInterpretation">{{ text.applySuggestions }}</button>
+              </div>
+            </section>
+            <label v-if="nextMoveLabel" class="cue-capture__next"><span>{{ text.nextMove }}</span><input v-model="nextMoveLabel" maxlength="240"></label>
+          </section>
+
           <section class="cue-capture__section">
             <div class="cue-capture__section-head">
               <strong>{{ text.who }}</strong>
@@ -341,28 +372,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
             </div>
           </section>
 
-          <label class="cue-capture__note"><span>{{ text.note }}</span><textarea v-model="initialNote" rows="3" :placeholder="text.notePlaceholder" /></label>
-          <CueVoiceInput v-model="initialNote" :locale="locale" @captured="onVoiceCaptured" />
-          <div class="cue-capture__interpret">
-            <button type="button" :disabled="!initialNote.trim()" @click="interpretNote">{{ text.interpret }}</button>
-            <p v-if="interpretationMessage" aria-live="polite">{{ interpretationMessage }}</p>
-          </div>
-          <section v-if="interpretationPreview" class="cue-capture__preview" aria-live="polite">
-            <p>{{ text.reviewSuggestions }}</p>
-            <div class="cue-capture__preview-items">
-              <span v-if="interpretationPreview.source">{{ text.channel }} · {{ sourceOptions.find(item => item.value === interpretationPreview?.source)?.label }}</span>
-              <span v-if="interpretationPreview.contactName">{{ text.who }} · {{ interpretationPreview.contactName }}</span>
-              <span v-if="interpretationPreview.counterpartyName">{{ text.withWho }} · {{ interpretationPreview.counterpartyName }}</span>
-              <span v-if="interpretationPreview.eventDate">{{ text.date }} · {{ interpretationPreview.eventDate }}</span>
-              <span v-if="interpretationPreview.offerAmountMinor != null">{{ text.offer }} · {{ (interpretationPreview.offerAmountMinor / 100).toLocaleString(locale === 'es' ? 'es-ES' : 'en-GB') }} {{ interpretationPreview.currency || '' }}</span>
-              <span v-if="interpretationPreview.nextMoveLabel">{{ text.nextMove }} · {{ interpretationPreview.nextMoveLabel }}</span>
-            </div>
-            <div class="cue-capture__preview-actions">
-              <button type="button" @click="discardInterpretation">{{ text.discardSuggestions }}</button>
-              <button type="button" class="apply" @click="applyInterpretation">{{ text.applySuggestions }}</button>
-            </div>
-          </section>
-          <label v-if="nextMoveLabel" class="cue-capture__next"><span>{{ text.nextMove }}</span><input v-model="nextMoveLabel" maxlength="240"></label>
 
           <button class="cue-capture__more" type="button" @click="moreOpen = !moreOpen">{{ moreOpen ? text.less : text.more }} <span>{{ moreOpen ? '−' : '+' }}</span></button>
 
@@ -414,7 +423,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 .cue-capture__grid--contact { grid-template-columns: 1fr 1fr; }
 .cue-capture__grid--party { grid-template-columns: minmax(0,1.6fr) minmax(130px,.7fr); }
 .cue-capture label { display: grid; gap: 6px; }
-.cue-capture__note { padding: 20px 0 12px; }
+.cue-capture__tell { display:grid; gap:10px; padding:18px 0; border-bottom:1px solid #292929; }
+.cue-capture__tell-head { display:grid; gap:4px; }
+.cue-capture__tell-head strong { font-size:14px; }
+.cue-capture__tell-head small { color:#8f8f8f; font-size:10px; line-height:1.4; }
+.cue-capture__tell textarea { width:100%; min-height:96px; box-sizing:border-box; padding:12px; border:1px solid #3d3d3d; background:#111; color:#f4f3ef; resize:vertical; font:inherit; line-height:1.45; }
+.cue-capture__smart-actions { display:flex; align-items:flex-start; gap:8px; flex-wrap:wrap; }
 .cue-capture__interpret { display:flex; align-items:center; gap:10px; margin-top:-4px; padding-bottom:10px; }
 .cue-capture__interpret button { min-height:34px; padding:0 11px; border:1px solid #4b5128; background:rgba(206,255,84,.06); color:#ceff54; cursor:pointer; font:700 9px monospace; text-transform:uppercase; }
 .cue-capture__interpret button:disabled { opacity:.35; cursor:not-allowed; }
@@ -446,6 +460,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   .cue-capture__channel { padding: 16px 0; gap: 5px; }
   .cue-capture__channel button { min-height: 31px; padding: 0 8px; font-size: 9px; }
   .cue-capture__section { padding: 15px 0; }
+  .cue-capture { height:100dvh; }
+  .cue-capture__tell { padding:16px 0; }
+  .cue-capture__smart-actions { display:grid; grid-template-columns:1fr; }
+  .cue-capture__interpret { margin-top:0; }
   .cue-capture__grid--contact, .cue-capture__grid--party, .cue-capture__details { grid-template-columns: 1fr; }
   .cue-capture__actions { margin: 18px -16px -20px; padding-right: 16px; padding-left: 16px; }
 }
