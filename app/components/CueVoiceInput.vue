@@ -51,7 +51,7 @@ onMounted(() => {
   const browser = window as any
   const hasSpeech = Boolean(browser.SpeechRecognition || browser.webkitSpeechRecognition)
 
-  mode.value = hasSpeech ? 'speech' : hasRecorder ? 'recorder' : 'none'
+  mode.value = hasRecorder ? 'recorder' : hasSpeech ? 'speech' : 'none'
   supported.value = mode.value !== 'none'
 })
 
@@ -316,7 +316,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .cue-voice { display:grid; gap:7px; }
-.cue-voice button { display:flex; align-items:center; gap:8px; min-height:42px; width:max-content; max-width:100%; padding:0 13px; border:1px solid #485135; background:rgba(206,255,84,.035); color:#ceff54; cursor:pointer; font:800 9px monospace; text-transform:uppercase; }
+.cue-voice button { display:flex; align-items:center; gap:8px; min-height:44px; width:max-content; max-width:100%; padding:0 13px; border:1px solid #485135; background:rgba(206,255,84,.035); color:#ceff54; cursor:pointer; font:800 9px monospace; text-transform:uppercase; }
 .cue-voice button:hover { border-color:#ceff54; }
 .cue-voice button.active { border-color:#ceff54; background:rgba(206,255,84,.09); }
 .cue-voice button:disabled { opacity:.5; cursor:wait; }
