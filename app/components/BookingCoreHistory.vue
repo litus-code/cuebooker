@@ -14,6 +14,7 @@ const activities = ref<Activity[]>([])
 const loading = ref(false)
 const search = ref('')
 const typeFilter = ref<'all' | 'communication' | 'operations' | 'system'>('all')
+const visibleLimit = ref(10)
 
 const copy = computed(() => props.locale === 'es' ? {
   eyebrow: 'ACTIVITY / REAL',
@@ -50,6 +51,12 @@ const filtered = computed(() => {
       .filter(Boolean).join(' ').toLowerCase()
     return haystack.includes(query)
   })
+})
+const paged = computed(() => filtered.value.slice(0, visibleLimit.value))
+const hasMore = computed(() => visibleLimit.value < filtered.value.length)
+
+watch([search, typeFilter], () => {
+  visibleLimit.value = 10
 })
 
 function bookingLabel(activity: Activity) {
@@ -119,11 +126,16 @@ watch(() => [props.workspaceId, props.refreshKey, props.bookings.map(item => ite
     </div>
     <p v-if="loading" class="core-history__empty">…</p>
     <div v-else-if="filtered.length" class="core-history__list">
-      <button v-for="activity in filtered" :key="activity.id" type="button" @click="emit('openBooking', activity.booking_id)">
+      <button v-for="activity in paged" :key="activity.id" type="button" @click="emit('openBooking', activity.booking_id)">
         <time>{{ formatTime(activity.occurred_at) }}</time>
         <i />
         <div><span>{{ activityLabel(activity) }}</span><strong>{{ bookingLabel(activity) }}</strong><p v-if="activityDetail(activity)">{{ activityDetail(activity) }}</p><small>{{ copy.open }}</small></div>
       </button>
+      <div v-if="hasMore" class="core-history__load-more">
+        <button type="button" @click="visibleLimit += 10">
+          {{ locale === 'es' ? `Cargar 10 más · ${filtered.length - paged.length} restantes` : `Load 10 more · ${filtered.length - paged.length} remaining` }}
+        </button>
+      </div>
     </div>
     <p v-else class="core-history__empty">{{ copy.empty }}</p>
   </section>
@@ -150,5 +162,8 @@ watch(() => [props.workspaceId, props.refreshKey, props.bookings.map(item => ite
 .core-history__list p { margin:4px 0 0; color:var(--cue-muted); font-size:11px; line-height:1.4; }
 .core-history__list small { display:block; margin-top:6px; color:var(--cue-muted); font-size:9px; }
 .core-history__empty { margin:0; padding:18px; color:var(--cue-muted); font-size:11px; }
+.core-history__load-more { padding:10px; border-top:1px solid var(--cue-border); }
+.core-history__load-more button { width:100%; min-height:40px; border:1px solid var(--cue-border); background:var(--cue-raised); color:var(--cue-text); cursor:pointer; font:800 8px monospace; text-transform:uppercase; }
+.core-history__load-more button:hover { border-color:var(--cue-accent); color:var(--cue-accent); }
 @media (max-width:680px) { .core-history__tools { align-items:stretch; flex-direction:column; } .core-history__list > button { grid-template-columns:88px 6px minmax(0,1fr); gap:8px; } }
 </style>
