@@ -3352,3 +3352,135 @@ fresh real iPhone microphone smoke
 Do not call voice fully closed until both physical-device paths are proven.
 
 Production remains untouched.
+
+## 59. Delivery webhook observability — IMPLEMENTED ON STAGING / BRANCH
+
+Final Brevo delivery tracking previously had one diagnostic blind spot:
+
+```text
+email_messages remains accepted
+but we cannot tell whether:
+  Brevo never called the webhook
+  the webhook was called but could not correlate the message
+  the webhook correlated but persistence failed
+```
+
+Cuebooker now records one minimal receipt for every authenticated transactional callback.
+
+The receipt intentionally stores no email body and no full webhook payload.
+
+Stored operational metadata:
+
+```text
+received_at
+event_name
+normalized_status
+provider_message_id
+tag_email_id
+matched_email_id
+match_method = none | tag | provider_message_id
+processing_status = received | unmatched | persisted | error
+processed_at
+```
+
+Table:
+
+```text
+public.email_delivery_webhook_receipts
+```
+
+Security:
+
+```text
+RLS enabled
+anon SELECT = false
+authenticated SELECT = false
+service_role SELECT = true
+no browser policies by design
+```
+
+The existing custom webhook secret remains the request authentication boundary.
+
+The observability write is best-effort: if recording the receipt itself fails, email delivery processing continues.
+
+The callback then updates the same receipt after processing:
+
+```text
+no email match -> unmatched
+email match + email_messages update -> persisted
+processing exception after receipt creation -> error
+```
+
+Repository migrations:
+
+```text
+20260918233000_add_email_delivery_webhook_receipts.sql
+20260918233500_index_email_delivery_webhook_receipt_match.sql
+```
+
+Staging Edge Function:
+
+```text
+brevo-transactional-events ACTIVE v4
+verify_jwt = false
+custom x-cuebooker-webhook-secret still required
+```
+
+Initial receipt count after deployment:
+
+```text
+0
+```
+
+This is expected because no real authenticated Brevo callback has occurred after v4 deployment yet.
+
+How to interpret the next real callback:
+
+```text
+no receipt row
+-> no authenticated callback reached v4
+
+receipt processing_status = unmatched
+-> webhook reached Cuebooker but tag/message-id correlation failed
+
+receipt processing_status = error
+-> callback reached Cuebooker and failed during processing
+
+receipt processing_status = persisted
+-> callback reached Cuebooker, correlated and updated email_messages
+```
+
+Do not infer a Brevo configuration problem until this receipt evidence is checked.
+
+Related functional commits:
+
+```text
+b74bbf8f855294e4702ba9b637ca6087a07b98cb
+b24054d540aa90aa3e54a347fca9c55bd2fa6617
+fef030a8e8db873da7f3380b817b4e20b139373b
+```
+
+Production remains untouched.
+
+Voice capture mode policy is now unit-tested:
+
+```text
+app/services/voiceCaptureMode.ts
+tests/voiceCaptureMode.test.ts
+```
+
+The tests lock the intended priority:
+
+```text
+MediaRecorder + SpeechRecognition -> recorder
+SpeechRecognition only -> speech fallback
+neither -> no voice mode
+```
+
+Functional commits:
+
+```text
+9209559c0fce8de9320fbaefd80b78a4871e1cc5
+5227d1dce36f2b50aa7be9c955cedefdc5d849b4
+85c8695c206e67bbfc29717dba537a52d329f7d6
+```
