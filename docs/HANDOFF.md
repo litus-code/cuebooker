@@ -3306,3 +3306,49 @@ ff563fa72a92b7ad73b79453fcf7a493069645f0
 Final visual QA on the authenticated staging workspace remains a human/browser-render verification step; no further layout changes should be made without seeing an actual rendering issue.
 
 Production remains untouched.
+
+## 58. Voice capture priority restored — IMPLEMENTED ON BRANCH
+
+An old resilience decision was still active in `CueVoiceInput`: browsers exposing SpeechRecognition preferred live browser dictation even when MediaRecorder was available.
+
+That preference was introduced while the staging Smart Capture provider path was unavailable, but it no longer matches the current staging state.
+
+Current order is now restored to:
+
+```text
+if MediaRecorder + getUserMedia are available:
+  record audio
+  -> Smart Capture server transcription
+  -> semantic extraction
+  + run SpeechRecognition in parallel only as fallback transcript
+
+if audio/server path fails and browser transcript exists:
+  browser transcript
+  -> Smart Capture text extraction
+  -> local parser if needed
+
+if MediaRecorder is unavailable but SpeechRecognition exists:
+  browser dictation remains the primary fallback mode
+```
+
+Recorder error cleanup now also stops the shadow SpeechRecognition instance, stops tracks, clears chunks and releases the recorder reference so a failed audio attempt cannot leave background capture running.
+
+The voice button minimum target is also 44px.
+
+Functional commits:
+
+```text
+72a51d06d6390758c608cb9bc3cdc91933172329
+07db5eab5841f038cffa51438dc16130cb1f1eac
+```
+
+Remaining gate:
+
+```text
+fresh real desktop microphone smoke
+fresh real iPhone microphone smoke
+```
+
+Do not call voice fully closed until both physical-device paths are proven.
+
+Production remains untouched.
