@@ -104,12 +104,20 @@ async function save() {
     open.value = false
     emit('saved', updated)
   } catch (error: any) {
-    const code = error?.message || ''
-    errorMessage.value = code === 'booking_time_requires_date'
+    const code = String(error?.data?.message || error?.data?.error || error?.message || '')
+    errorMessage.value = code.includes('booking_time_requires_date')
       ? (props.locale === 'es' ? 'Añade una fecha antes de indicar horario.' : 'Add a date before setting a schedule.')
-      : code === 'invalid_booking_time_range'
-        ? (props.locale === 'es' ? 'La hora de fin debe ser posterior al inicio.' : 'End time must be after start time.')
-        : code || copy.value.error
+      : code.includes('invalid_country_code')
+        ? (props.locale === 'es' ? 'El país debe ser un código de dos letras, por ejemplo ES.' : 'Country must use a two-letter code, for example ES.')
+        : code.includes('invalid_currency')
+          ? (props.locale === 'es' ? 'La moneda debe usar tres letras, por ejemplo EUR.' : 'Currency must use three letters, for example EUR.')
+          : code.includes('invalid_offer_amount')
+            ? (props.locale === 'es' ? 'La oferta debe ser un importe válido y positivo.' : 'Offer must be a valid positive amount.')
+            : code.includes('workspace_access_denied')
+              ? (props.locale === 'es' ? 'No tienes permisos para editar este booking.' : 'You do not have permission to edit this booking.')
+              : code.includes('booking_not_found')
+                ? (props.locale === 'es' ? 'Este booking ya no está disponible. Recarga el workspace.' : 'This booking is no longer available. Reload the workspace.')
+                : copy.value.error
   } finally {
     saving.value = false
   }
