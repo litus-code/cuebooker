@@ -2804,3 +2804,133 @@ The existing amount non-negative and ISO-like uppercase currency constraints rem
 Supabase security advisors show no regression from this invariant.
 
 Production remains untouched.
+
+## 50. Relationship Memory semantic hardening — IMPLEMENTED ON BRANCH
+
+Relationship Memory now distinguishes relationship history from confirmed commercial outcome.
+
+The relationship grouping remains identity-based:
+
+```text
+counterparty_id when present
+otherwise primary_contact_id
+```
+
+All related Bookings still contribute to relationship history, including rejected/cancelled opportunities, because they are still part of the real relationship.
+
+However:
+
+```text
+Último caché / Last fee
+```
+
+now comes only from the latest historically previous Booking that is:
+
+```text
+status = confirmed
+offer_amount_minor present
+currency present
+```
+
+An unconfirmed negotiation offer is no longer presented as historical cachet.
+
+When the current Booking has an event date, `Última fecha` also uses only relationship Bookings with an earlier event date, so a later future Booking cannot be mislabelled as the previous date.
+
+Pure derivation + tests:
+
+```text
+app/services/relationshipMemory.ts
+tests/relationshipMemory.test.ts
+app/components/BookingRelationshipMemory.vue
+```
+
+Functional commits:
+
+```text
+07136055ca84ca94d3b974f799dd87576962356f
+529857a228f95272455b3fc7fdd940dda6b2adb0
+b02d321f6915a35ebfd325903e2ea45a7e56ef4e
+```
+
+Production remains untouched.
+
+
+## 51. Final email failure restores operational truth — IMPLEMENTED ON STAGING / BRANCH
+
+Outbound conversational Activity automatically moves a non-terminal Booking to:
+
+```text
+waiting_response
+```
+
+A final provider delivery failure means that state is no longer operationally true.
+
+Cuebooker now applies this deterministic correction only when all guards pass:
+
+```text
+email is outbound
+delivery_status changed
+delivery_status is final failure:
+  hard_bounce
+  blocked
+  spam
+  invalid
+  error
+email is the latest outbound attempt for that Booking
+Booking.status = waiting_response
+Booking is not archived
+```
+
+Then:
+
+```text
+waiting_response
+-> in_conversation
+```
+
+and Cuebooker writes a traced internal `status_change` Activity with:
+
+```text
+automatic = true
+reason = outbound_delivery_failed
+delivery_status
+email_message_id
+```
+
+Conservative exclusions:
+
+- `deferred` does not change Booking status;
+- `soft_bounce` does not change Booking status;
+- a callback arriving late for an older email cannot overwrite the state created by a newer attempt;
+- terminal commercial states are never changed;
+- archived Bookings are never changed.
+
+Repository migration:
+
+```text
+20260918213000_sync_booking_status_from_email_delivery.sql
+```
+
+Staging rollback smoke verified:
+
+```text
+older email hard-bounces
+-> Booking remains waiting_response
+
+latest email hard-bounces
+-> Booking becomes in_conversation
+-> exactly 1 automatic status_change Activity
+-> ROLLBACK
+```
+
+No smoke rows remained after rollback.
+
+Functional commit:
+
+```text
+8269560f00aa4b4bc1faf46154744636821ff722
+```
+
+Supabase security/performance advisors introduced no new regression.
+
+Production remains untouched.
