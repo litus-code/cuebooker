@@ -1221,7 +1221,126 @@ The purpose is to show the differentiating workflow before explaining feature vo
 
 Visual mobile/desktop review remains required after preview deployment.
 
-## 22. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
+## 22. Demo-readiness product pass — IMPLEMENTED ON BRANCH
+
+This pass responds to the first full desktop review of the real workspace and public profile.
+
+Functional commits include:
+
+```text
+2f32c27ba48f0c1c70248390e1d0cb6cb15cd282
+029b5ff6f0bccd3b3d7f371f7c45eb6583f9af54
+ea58a1c1f01f5b2e0b9eccf3b5efec0a53f67a4b
+d1eabb6e294237babf409b742c149f3039e716f1
+411a5e6f73ff3e516429f5fa5c1dcf83558c2bdc
+cc745c47f819f7152741027038572a635a2aef75
+fcdbdf667ce3772fe6ef774bfb307736de41133a
+5c082cbdc1474e96077abeaba97bd0643d511b78
+b11677c32de674a8829a7dabb03c5a08d8ea1ac0
+e6cd9c026ef3998e0f66caa2af53a29fa438cfbf
+02dc985abffb008b787a50643a5ffb913cce3b96
+```
+
+### Notifications
+
+Desktop notifications now use a labelled trigger and a fixed right-side drawer with an internally scrollable list rather than an anchored popover that could overlap/crop against workspace navigation.
+
+Mobile keeps the compact bell trigger and bottom-sheet pattern.
+
+### CUE / Smart Capture voice resilience
+
+MediaRecorder audio capture now also attempts browser speech recognition in parallel when the browser exposes it.
+
+The fallback transcript is not the primary path. The sequence is:
+
+```text
+MediaRecorder audio
+ -> server Smart Capture audio transcription
+ -> semantic extraction
+
+if audio transcription fails AND browser transcript exists:
+ browser transcript
+ -> server Smart Capture text extraction
+
+if semantic extraction also fails:
+ browser transcript
+ -> local basic parser / editable text
+```
+
+The intent is graceful degradation rather than a dead-end error.
+
+A fresh desktop + iPhone smoke is still required. Do not call voice closed until both are proven.
+
+### Booking operational mental model
+
+Cuebooker now communicates the product contract more explicitly:
+
+```text
+CUE
+ -> quickly creates the booking from something that just happened
+
+Booking
+ -> continues conversation, next action, hold and decision
+
+Next action
+ -> work reminder only; does not alter status or reserve calendar
+
+Hold
+ -> provisional booking-linked date reservation; appears in Calendar
+
+Confirm booking
+ -> human booking decision; matching hold converts and booking appears in Calendar
+
+Manual calendar block
+ -> travel / studio / unavailability not created by a booking
+```
+
+The hold UI no longer exposes a misleading independent "Confirm booking" action. Booking confirmation stays at the booking decision level, matching the current database command semantics.
+
+### Calendar conflict behaviour
+
+The existing booking conflict notice already checks:
+
+- other bookings;
+- active holds;
+- manual availability blocks.
+
+Manual calendar block creation now also warns when overlapping:
+
+- another manual block;
+- an active hold;
+- a confirmed booking.
+
+These are currently product/UI warnings, not a database-level exclusion guarantee.
+
+### Bookings vs Activity
+
+To remove the previous "Active / Archived / History" ambiguity:
+
+- Bookings uses **En curso / Archivados**;
+- archived bookings remain recoverable under Bookings;
+- workspace **Historial** is renamed **Actividad**;
+- Activity remains the chronological cross-booking event stream.
+
+### Distribution
+
+"Copiar booking directo" is now "Copiar enlace de solicitud".
+
+Distribution groups receive stronger lime hierarchy and compact visual channel markers. The direct enquiry copy now explains that the link is for turning an existing promoter conversation into a structured request.
+
+### Profile and public presentation
+
+The profile editor already has a sticky save bar with completion percentage and save action.
+
+Public profile fallback presentation is now consistent with the editor contract:
+
+- uploaded cover wins when one exists;
+- otherwise the Cuebooker default cover artwork is used;
+- the artist portrait remains foreground content.
+
+The current staging artist `lits` still has no persisted custom cover, so the default artwork is expected until one is uploaded.
+
+## 23. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
 
@@ -1239,7 +1358,7 @@ AI/voice limits should not be hard-coded into pricing before real usage/cost evi
 
 No billing, trial enforcement or Stripe integration is implemented yet.
 
-## 23. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
+## 24. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
 
 ### Smart Capture / interpretation
 
@@ -1278,7 +1397,7 @@ Treat human feedback as a cross-product rule:
 - retryable failure -> preserve work and explain next action;
 - technical/provider detail -> logs/admin, not promoter-facing copy.
 
-## 24. Root routing and static deployment
+## 25. Root routing and static deployment
 
 Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. `ASSETS.fetch()` must use the pretty `/200` path rather than `/200.html`.
 
@@ -1290,7 +1409,7 @@ Previously validated:
 
 PR #75 remains the staging preview vehicle.
 
-## 25. Security / operational follow-up
+## 26. Security / operational follow-up
 
 Before production:
 
@@ -1310,7 +1429,7 @@ Leaked Password Protection Disabled
 
 Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to the current Supabase secret-key model as a deliberate infrastructure task, not mixed into a product slice.
 
-## 26. Exact next product work
+## 27. Exact next product work
 
 Current sequencing is intentional:
 
@@ -1328,7 +1447,7 @@ Current sequencing is intentional:
 
 Do not jump ahead because downstream ideas are documented.
 
-## 27. Documentation workflow rule
+## 28. Documentation workflow rule
 
 Every meaningful implementation block must finish by updating this handoff with:
 
@@ -1339,7 +1458,7 @@ Every meaningful implementation block must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-## 28. Production gate
+## 29. Production gate
 
 Production Supabase:
 
