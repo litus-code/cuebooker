@@ -210,5 +210,14 @@ async function submit() {
 .activity-composer__error, .activity-composer__success { margin:0; padding:0 9px 9px; font-size:10px; }
 .activity-composer__error { color:#ff7c7c; }
 .activity-composer__success { color:var(--cue-accent); }
-@media (max-width:680px) { .activity-composer__top { align-items:flex-start; flex-direction:column; } .activity-composer__suggestion { align-items:flex-start; flex-direction:column; } .activity-composer__types { justify-content:flex-start; } .activity-composer__body, .activity-composer__body--email { grid-template-columns:1fr; } .activity-composer__subject { grid-column:1; } }
+@media (max-width:680px) {
+  .activity-composer__top { align-items:flex-start; flex-direction:column; }
+  .activity-composer__suggestion { align-items:flex-start; flex-direction:column; }
+  .activity-composer__suggestion button,
+  .activity-composer__types button,
+  .activity-composer__save { min-height:44px; }
+  .activity-composer__types { width:100%; justify-content:flex-start; }
+  .activity-composer__body, .activity-composer__body--email { grid-template-columns:1fr; }
+  .activity-composer__subject { grid-column:1; }
+}
 </style>
