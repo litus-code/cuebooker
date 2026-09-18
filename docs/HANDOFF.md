@@ -3484,3 +3484,38 @@ Functional commits:
 5227d1dce36f2b50aa7be9c955cedefdc5d849b4
 85c8695c206e67bbfc29717dba537a52d329f7d6
 ```
+
+## 60. Staging automation health check — VERIFIED
+
+A direct staging health check was run after the latest automation work.
+
+Current derived-operation state:
+
+```text
+expired active Holds = 0
+unsent notification email deliveries = 0
+delivery webhook receipts = 0
+```
+
+The zero webhook receipt count is expected immediately after deploying callback observability v4 because no new authenticated Brevo callback has occurred yet.
+
+Both scheduled automation jobs are active every five minutes:
+
+```text
+cuebooker-expire-holds
+schedule = */5 * * * *
+
+cuebooker-notification-email-retry
+schedule = */5 * * * *
+```
+
+Recent `cron.job_run_details` entries for both jobs repeatedly report:
+
+```text
+status = succeeded
+return_message = 1 row
+```
+
+Therefore the automation layer is not merely configured; the schedulers are executing successfully in staging.
+
+Production remains untouched.
