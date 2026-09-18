@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CoreBooking } from '../domain/bookingCore'
+import { deriveRelationshipMemory } from '../services/relationshipMemory'
 
 const props = defineProps<{
   booking: CoreBooking
@@ -37,27 +38,13 @@ const copy = computed(() => props.locale === 'es' ? {
 
 const relationshipName = computed(() => props.counterpartyName || props.contactName || props.booking.venue_name || props.booking.event_name || '—')
 
-function sameRelationship(item: CoreBooking) {
-  if (props.booking.counterparty_id) return item.counterparty_id === props.booking.counterparty_id
-  if (props.booking.primary_contact_id) return item.primary_contact_id === props.booking.primary_contact_id
-  return false
-}
-
-const previousBookings = computed(() => props.bookings
-  .filter(item => item.id !== props.booking.id)
-  .filter(sameRelationship)
-  .sort((a, b) => relationshipTimestamp(b) - relationshipTimestamp(a)))
-
-const relationshipBookings = computed(() => [props.booking, ...previousBookings.value])
-const confirmedCount = computed(() => relationshipBookings.value.filter(item => item.status === 'confirmed').length)
-const lastPreviousBooking = computed(() => previousBookings.value[0] || null)
-const lastFeeBooking = computed(() => previousBookings.value.find(item => item.offer_amount_minor != null && item.currency) || null)
-const cities = computed(() => Array.from(new Set(relationshipBookings.value.map(item => item.city?.trim()).filter(Boolean))).slice(0, 4) as string[])
-
-function relationshipTimestamp(booking: CoreBooking) {
-  if (booking.event_date) return new Date(`${booking.event_date}T12:00:00Z`).getTime()
-  return new Date(booking.updated_at).getTime()
-}
+const memory = computed(() => deriveRelationshipMemory(props.booking, props.bookings))
+const previousBookings = computed(() => memory.value.previousBookings)
+const relationshipBookings = computed(() => memory.value.relationshipBookings)
+const confirmedCount = computed(() => memory.value.confirmedCount)
+const lastPreviousBooking = computed(() => memory.value.lastPreviousBooking)
+const lastFeeBooking = computed(() => memory.value.lastConfirmedFeeBooking)
+const cities = computed(() => memory.value.cities)
 
 function formatDate(booking: CoreBooking | null) {
   if (!booking?.event_date) return copy.value.noDate
