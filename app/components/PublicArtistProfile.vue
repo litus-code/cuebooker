@@ -84,6 +84,10 @@ async function openBooking() {
     <section class="public-artist-profile__hero">
       <div class="public-artist-profile__cover">
         <img v-if="profile.coverUrl" class="public-artist-profile__cover-image" :src="profile.coverUrl" alt="" :style="{ objectPosition: `50% ${profile.coverPositionY}%` }">
+        <template v-else-if="profile.artistImageUrl">
+          <img class="public-artist-profile__cover-image public-artist-profile__cover-image--portrait-fallback" :src="profile.artistImageUrl" alt="" aria-hidden="true">
+          <div class="public-artist-profile__cover-fallback-overlay" aria-hidden="true" />
+        </template>
         <div v-else class="public-artist-profile__cover-default" aria-hidden="true"><i /><i /><i /></div>
         <div class="public-artist-profile__shade" />
         <img
@@ -164,6 +168,8 @@ async function openBooking() {
 .public-artist-profile__hero { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(360px, .65fr); min-height: min(760px, calc(100vh - 64px)); border-bottom: 1px solid var(--cue-border, #2c2c2c); }
 .public-artist-profile__cover { position: relative; min-height: 600px; overflow: hidden; background: #121212; }
 .public-artist-profile__cover-image { width: 100%; height: 100%; object-fit: cover; }
+.public-artist-profile__cover-image--portrait-fallback { position:absolute; inset:-5%; width:110%; height:110%; filter:blur(26px) saturate(.75) brightness(.52); transform:scale(1.08); }
+.public-artist-profile__cover-fallback-overlay { position:absolute; inset:0; background:radial-gradient(circle at 70% 32%, rgba(206,255,84,.12), transparent 32%), linear-gradient(180deg,rgba(8,8,8,.1),rgba(8,8,8,.72)); }
 .public-artist-profile__cover-default { position: absolute; inset: 0; overflow: hidden; background: radial-gradient(circle at 28% 35%, color-mix(in srgb, var(--cue-accent, #e8ff2f) 28%, transparent), transparent 30%), #111; }
 .public-artist-profile__cover-default i { position: absolute; width: 60vw; height: 60vw; max-width: 760px; max-height: 760px; border: 1px solid color-mix(in srgb, var(--cue-accent, #e8ff2f) 40%, transparent); border-radius: 50%; }
 .public-artist-profile__cover-default i:nth-child(1) { top: -32%; left: -15%; }
@@ -191,18 +197,62 @@ async function openBooking() {
 .public-artist-profile__links a:hover { border-color: var(--cue-accent, #e8ff2f); color: var(--cue-accent, #e8ff2f); }
 .public-artist-profile__booking { scroll-margin-top: 12px; }
 @media (max-width: 900px) {
-  .public-artist-profile__hero { grid-template-columns: 1fr; min-height: auto; }
-  .public-artist-profile__cover { min-height: 58vh; }
-  .public-artist-profile__identity { min-height: 340px; }
-  .public-artist-profile__identity h1 { font-size: clamp(4rem, 17vw, 8rem); }
-  .public-artist-profile__story { grid-template-columns: 1fr; }
+  .public-artist-profile__hero {
+    position:relative;
+    display:block;
+    min-height:76svh;
+    overflow:hidden;
+  }
+  .public-artist-profile__cover {
+    position:absolute;
+    inset:0;
+    min-height:0;
+    height:100%;
+  }
+  .public-artist-profile__shade {
+    background:linear-gradient(180deg,rgba(0,0,0,.02) 18%,rgba(0,0,0,.28) 52%,rgba(0,0,0,.92) 92%);
+  }
+  .public-artist-profile__portrait {
+    width:min(70%,520px);
+    max-height:72%;
+  }
+  .public-artist-profile__identity {
+    position:relative;
+    z-index:3;
+    min-height:76svh;
+    box-sizing:border-box;
+    justify-content:flex-end;
+    padding:clamp(28px,6vw,48px) clamp(18px,5vw,34px) clamp(30px,7vw,52px);
+    background:linear-gradient(180deg,transparent 44%,rgba(8,8,8,.18) 60%,rgba(8,8,8,.92) 100%);
+  }
+  .public-artist-profile__identity > p { margin-bottom:8px; }
+  .public-artist-profile__identity h1 {
+    max-width:90%;
+    font-size:clamp(4rem,17vw,7.5rem);
+    line-height:.78;
+  }
+  .public-artist-profile__genres { margin-top:18px; }
+  .public-artist-profile__booking-cta { margin-top:22px; }
+  .public-artist-profile__story { grid-template-columns:1fr; }
 }
 @media (max-width: 520px) {
-  .public-artist-profile__topbar { min-height: 56px; }
-  .public-artist-profile__cover { min-height: 52vh; }
-  .public-artist-profile__identity { min-height: 290px; padding: 28px 18px; }
-  .public-artist-profile__identity h1 { font-size: clamp(3.2rem, 18vw, 6rem); }
-  .public-artist-profile__story { padding: 38px 18px 54px; }
-  .public-artist-profile__links { padding-inline: 18px; }
+  .public-artist-profile__topbar { min-height:56px; }
+  .public-artist-profile__hero,
+  .public-artist-profile__identity { min-height:72svh; }
+  .public-artist-profile__portrait {
+    width:min(76%,410px);
+    max-height:68%;
+  }
+  .public-artist-profile__identity { padding:22px 18px 28px; }
+  .public-artist-profile__identity h1 {
+    max-width:100%;
+    font-size:clamp(3.35rem,18vw,5.7rem);
+  }
+  .public-artist-profile__genres { gap:5px; margin-top:14px; }
+  .public-artist-profile__genres span { padding:6px 8px; font-size:8px; }
+  .public-artist-profile__booking-cta { min-height:50px; margin-top:18px; }
+  .public-artist-profile__story { padding:30px 18px 40px; gap:26px; }
+  .public-artist-profile__story p { font-size:clamp(1.15rem,5.5vw,1.6rem); line-height:1.24; }
+  .public-artist-profile__links { padding:28px 18px 36px; }
 }
 </style>
