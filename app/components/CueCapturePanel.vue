@@ -17,6 +17,7 @@ const emit = defineEmits<{
 
 const bookingCore = useBookingCore()
 const smartCapture = useSmartCapture()
+const analytics = useAnalytics()
 const voiceInput = ref<{ setProcessing: (value: boolean) => void } | null>(null)
 const submitting = ref(false)
 const analyzing = ref(false)
@@ -162,6 +163,10 @@ async function loadOptions() {
 watch(() => props.open, async value => {
   if (!value) return
   reset()
+  analytics.track('cue_open', {
+    workspace_id: props.workspaceId,
+    artist_id: props.artistId
+  })
   await loadOptions()
 })
 
@@ -186,6 +191,10 @@ async function interpretNote() {
   const raw = initialNote.value.trim()
   if (!raw || analyzing.value) return
 
+  analytics.track('smart_capture_start', {
+    mode: 'text',
+    text_length: raw.length
+  })
   analyzing.value = true
   interpretationMessage.value = ''
   smartResult.value = null
@@ -198,7 +207,18 @@ async function interpretNote() {
       locale: props.locale,
       text: raw
     })
+    analytics.track('smart_capture_result', {
+      mode: 'text',
+      success: true,
+      missing_fields: smartResult.value.missingFields.length,
+      warnings: smartResult.value.warnings.length
+    })
   } catch (error: any) {
+    analytics.track('smart_capture_result', {
+      mode: 'text',
+      success: false,
+      fallback: 'local_parser'
+    })
     const parsed = interpretCueText(raw, props.locale)
     const detected = Object.keys(parsed).length > 0
     interpretationPreview.value = detected ? parsed : null
@@ -244,6 +264,11 @@ function applyEntityMatches(contact: string | null, party: string | null) {
 function applySmartResult() {
   const parsed = smartResult.value
   if (!parsed) return
+  analytics.track('smart_capture_apply', {
+    source: parsed.source.value || null,
+    missing_fields: parsed.missingFields.length,
+    warnings: parsed.warnings.length
+  })
 
   if (parsed.source.value) source.value = parsed.source.value
   applyEntityMatches(parsed.contact.name.value, parsed.counterparty.name.value)
@@ -301,6 +326,11 @@ function onVoiceCaptured(value: string) {
 
 async function onAudioCaptured(audio: Blob, filename: string) {
   if (analyzing.value) return
+  analytics.track('smart_capture_start', {
+    mode: 'audio',
+    audio_bytes: audio.size,
+    audio_type: audio.type || null
+  })
   analyzing.value = true
   interpretationMessage.value = ''
   smartResult.value = null
@@ -316,7 +346,18 @@ async function onAudioCaptured(audio: Blob, filename: string) {
     })
     initialNote.value = result.transcript
     smartResult.value = result
+    analytics.track('smart_capture_result', {
+      mode: 'audio',
+      success: true,
+      transcript_length: result.transcript.length,
+      missing_fields: result.missingFields.length,
+      warnings: result.warnings.length
+    })
   } catch {
+    analytics.track('smart_capture_result', {
+      mode: 'audio',
+      success: false
+    })
     interpretationMessage.value = props.locale === 'es'
       ? 'No he podido procesar el audio con Smart Capture. Puedes conservarlo como texto manual.'
       : 'Smart Capture could not process the audio. You can continue with manual text.'
@@ -376,6 +417,11 @@ async function submit() {
       initialNote: initialNote.value,
       nextMoveLabel: nextMoveLabel.value,
       nextMoveDueAt: nextMoveDueAt.value ? new Date(nextMoveDueAt.value).toISOString() : null
+    })
+    analytics.track('booking_created', {
+      capture_method: 'cue',
+      source: source.value,
+      used_smart_capture: Boolean(initialNote.value.trim())
     })
     emit('created', booking)
     reset()
