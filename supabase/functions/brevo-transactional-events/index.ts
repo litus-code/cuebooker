@@ -68,10 +68,39 @@ Deno.serve(async (request) => {
   const deliveryStatus = brevoDeliveryStatus(event);
   if (!event) return json({ error: "missing_event" }, 400);
 
+  let receiptId = "";
+  let supabaseUrl = "";
+  let serviceKey = "";
+
   try {
-    const supabaseUrl = requiredEnv("SUPABASE_URL");
-    const serviceKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
-    let emailId = eventTagId(payload);
+    supabaseUrl = requiredEnv("SUPABASE_URL");
+    serviceKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
+
+    const tagEmailId = eventTagId(payload);
+    let emailId = tagEmailId;
+    let matchMethod: "none" | "tag" | "provider_message_id" = tagEmailId ? "tag" : "none";
+
+    try {
+      const receiptRows = await rest<Array<{ id: string }>>(
+        `${supabaseUrl}/rest/v1/email_delivery_webhook_receipts?select=id`,
+        {
+          method: "POST",
+          headers: { Prefer: "return=representation" },
+          body: JSON.stringify({
+            event_name: event,
+            normalized_status: deliveryStatus || null,
+            provider_message_id: messageId || null,
+            tag_email_id: tagEmailId || null,
+            match_method: matchMethod,
+            processing_status: "received"
+          })
+        },
+        serviceKey
+      );
+      receiptId = receiptRows[0]?.id || "";
+    } catch (receiptError) {
+      console.error("brevo-transactional-events receipt_insert_failed", receiptError);
+    }
 
     if (!emailId && messageId) {
       const rows = await rest<Array<{ id: string }>>(
@@ -80,9 +109,31 @@ Deno.serve(async (request) => {
         serviceKey
       );
       emailId = rows[0]?.id || "";
+      if (emailId) matchMethod = "provider_message_id";
     }
 
-    if (!emailId) return json({ accepted: true, matched: false });
+    if (!emailId) {
+      if (receiptId) {
+        try {
+          await rest(
+            `${supabaseUrl}/rest/v1/email_delivery_webhook_receipts?id=eq.${encodeURIComponent(receiptId)}`,
+            {
+              method: "PATCH",
+              headers: { Prefer: "return=minimal" },
+              body: JSON.stringify({
+                match_method: "none",
+                processing_status: "unmatched",
+                processed_at: new Date().toISOString()
+              })
+            },
+            serviceKey
+          );
+        } catch (receiptError) {
+          console.error("brevo-transactional-events receipt_update_failed", receiptError);
+        }
+      }
+      return json({ accepted: true, matched: false });
+    }
 
     const at = eventTime(payload);
     const patch: Record<string, unknown> = { last_delivery_event_at: at };
@@ -101,8 +152,47 @@ Deno.serve(async (request) => {
       serviceKey
     );
 
+    if (receiptId) {
+      try {
+        await rest(
+          `${supabaseUrl}/rest/v1/email_delivery_webhook_receipts?id=eq.${encodeURIComponent(receiptId)}`,
+          {
+            method: "PATCH",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify({
+              matched_email_id: emailId,
+              match_method: matchMethod,
+              processing_status: "persisted",
+              processed_at: new Date().toISOString()
+            })
+          },
+          serviceKey
+        );
+      } catch (receiptError) {
+        console.error("brevo-transactional-events receipt_update_failed", receiptError);
+      }
+    }
+
     return json({ accepted: true, matched: true });
   } catch (error) {
+    if (receiptId && supabaseUrl && serviceKey) {
+      try {
+        await rest(
+          `${supabaseUrl}/rest/v1/email_delivery_webhook_receipts?id=eq.${encodeURIComponent(receiptId)}`,
+          {
+            method: "PATCH",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify({
+              processing_status: "error",
+              processed_at: new Date().toISOString()
+            })
+          },
+          serviceKey
+        );
+      } catch (receiptError) {
+        console.error("brevo-transactional-events receipt_error_update_failed", receiptError);
+      }
+    }
     console.error("brevo-transactional-events", error);
     return json({ error: "webhook_processing_failed" }, 500);
   }
