@@ -14,18 +14,20 @@ const listening = ref(false)
 const errorMessage = ref('')
 let recognition: any = null
 let baseText = ''
-let latestText = ''
+let committedText = ''
+let interimText = ''
 let failed = false
+let manuallyStopped = false
 
 const copy = computed(() => props.locale === 'es' ? {
   start: 'Hablar',
   stop: 'Parar',
-  listening: 'Escuchando…',
+  listening: 'Escuchando… sigue hablando hasta pulsar Parar.',
   error: 'No he podido usar el micrófono. Puedes seguir escribiendo.'
 } : {
   start: 'Speak',
   stop: 'Stop',
-  listening: 'Listening…',
+  listening: 'Listening… keep speaking until you press Stop.',
   error: 'I could not use the microphone. You can keep typing.'
 })
 
@@ -41,30 +43,55 @@ function createRecognition() {
 
   const instance = new Recognition()
   instance.lang = props.locale === 'es' ? 'es-ES' : 'en-US'
-  instance.continuous = false
+  instance.continuous = true
   instance.interimResults = true
   instance.maxAlternatives = 1
 
   instance.onresult = (event: any) => {
-    let transcript = ''
-    for (let index = 0; index < event.results.length; index += 1) {
-      transcript += `${event.results[index][0]?.transcript || ''} `
+    let finalChunk = ''
+    let interimChunk = ''
+
+    for (let index = event.resultIndex; index < event.results.length; index += 1) {
+      const transcript = String(event.results[index][0]?.transcript || '').trim()
+      if (!transcript) continue
+
+      if (event.results[index].isFinal) finalChunk += `${transcript} `
+      else interimChunk += `${transcript} `
     }
-    const spoken = transcript.trim()
-    if (!spoken) return
-    latestText = [baseText.trim(), spoken].filter(Boolean).join(' ')
-    emit('update:modelValue', latestText)
+
+    if (finalChunk.trim()) {
+      committedText = [committedText.trim(), finalChunk.trim()].filter(Boolean).join(' ')
+    }
+
+    interimText = interimChunk.trim()
+    const nextValue = [baseText.trim(), committedText.trim(), interimText].filter(Boolean).join(' ')
+    emit('update:modelValue', nextValue)
   }
 
-  instance.onerror = () => {
-    failed = true
-    listening.value = false
-    errorMessage.value = copy.value.error
+  instance.onerror = (event: any) => {
+    const benign = event?.error === 'no-speech' || event?.error === 'aborted'
+    if (!benign) {
+      failed = true
+      errorMessage.value = copy.value.error
+    }
   }
 
   instance.onend = () => {
+    if (listening.value && !manuallyStopped && !failed) {
+      try {
+        recognition?.start?.()
+        return
+      } catch {
+        // Fall through and finish the capture.
+      }
+    }
+
     listening.value = false
-    if (!failed && latestText.trim()) emit('captured', latestText.trim())
+    const finalValue = [baseText.trim(), committedText.trim()].filter(Boolean).join(' ')
+    if (!failed && finalValue.trim()) {
+      emit('update:modelValue', finalValue.trim())
+      emit('captured', finalValue.trim())
+    }
   }
 
   return instance
@@ -74,8 +101,10 @@ function start() {
   if (!supported.value || listening.value) return
   errorMessage.value = ''
   baseText = props.modelValue
-  latestText = props.modelValue
+  committedText = ''
+  interimText = ''
   failed = false
+  manuallyStopped = false
   recognition = createRecognition()
   if (!recognition) return
   listening.value = true
@@ -89,10 +118,14 @@ function start() {
 }
 
 function stop() {
+  manuallyStopped = true
   recognition?.stop?.()
 }
 
-onBeforeUnmount(() => recognition?.abort?.())
+onBeforeUnmount(() => {
+  manuallyStopped = true
+  recognition?.abort?.()
+})
 </script>
 
 <template>
