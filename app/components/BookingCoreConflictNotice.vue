@@ -21,8 +21,8 @@ const copy = computed(() => props.locale === 'es' ? {
   title: 'Posible solape',
   body: 'Hay otra ocupación para esta fecha. Revísala antes de confirmar.',
   reviewTitle: 'Revisar agenda',
-  reviewBody: 'Hay un Hold de este booking en otra fecha. Revísalo antes de seguir.',
-  combinedBody: 'Hay un Hold de este booking en otra fecha y además otra ocupación que puede solaparse.',
+  reviewBody: 'Hay un Hold de este booking que ya no coincide con su fecha u horario. Revísalo antes de seguir.',
+  combinedBody: 'Hay un Hold de este booking desalineado y además otra ocupación que puede solaparse.',
   booking: 'Booking', hold: 'Hold', availability: 'Disponibilidad',
   ownHold: 'Hold de este booking',
   allDay: 'Mismo día', loading: 'Comprobando agenda…'
@@ -30,8 +30,8 @@ const copy = computed(() => props.locale === 'es' ? {
   title: 'Possible conflict',
   body: 'There is another commitment on this date. Review it before confirming.',
   reviewTitle: 'Review schedule',
-  reviewBody: 'This booking has a Hold on a different date. Review it before continuing.',
-  combinedBody: 'This booking has a Hold on a different date and another commitment may also overlap.',
+  reviewBody: 'This booking has a Hold that no longer matches its date or schedule. Review it before continuing.',
+  combinedBody: 'This booking has a misaligned Hold and another commitment may also overlap.',
   booking: 'Booking', hold: 'Hold', availability: 'Availability',
   ownHold: 'This booking Hold',
   allDay: 'Same day', loading: 'Checking schedule…'
@@ -58,12 +58,25 @@ function overlapsTimedRange(
   return intervalsOverlap(ownStart, ownEnd, interval.start, interval.end)
 }
 
+function holdMatchesBookingSchedule(hold: Hold) {
+  if (hold.event_date !== (props.booking.event_date || '')) return false
+  if (!hold.starts_at && !hold.ends_at) return true
+
+  const holdStart = isoTime(hold.starts_at)
+  const holdEnd = isoTime(hold.ends_at)
+  const bookingStart = props.booking.start_time?.slice(0, 5) || null
+  const bookingEnd = props.booking.end_time?.slice(0, 5) || null
+
+  if (!bookingStart && !bookingEnd) return true
+  return holdStart === bookingStart && holdEnd === bookingEnd
+}
+
 const mismatchedOwnHolds = computed(() => {
   if (props.booking.archived_at) return []
   return holds.value.filter(hold =>
     hold.booking_id === props.booking.id
     && hold.status === 'active'
-    && hold.event_date !== (props.booking.event_date || '')
+    && !holdMatchesBookingSchedule(hold)
   )
 })
 
@@ -164,7 +177,7 @@ watch(
     <div v-if="mismatchedOwnHolds.length || conflicts.length" class="booking-conflicts__items">
       <article v-for="hold in mismatchedOwnHolds" :key="`own-hold-${hold.id}`">
         <span>{{ copy.ownHold }}</span>
-        <strong>{{ hold.event_date }}</strong>
+        <strong>{{ hold.event_date }}{{ hold.starts_at ? ` · ${isoTime(hold.starts_at) || ''}${hold.ends_at ? `–${isoTime(hold.ends_at) || ''}` : ''}` : '' }}</strong>
         <small>{{ hold.expires_at ? `${props.locale === 'es' ? 'Caduca' : 'Expires'} ${hold.expires_at.slice(0, 16).replace('T', ' ')}` : copy.allDay }}</small>
       </article>
       <article v-for="conflict in conflicts" :key="conflict.id">
