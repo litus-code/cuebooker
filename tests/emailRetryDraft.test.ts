@@ -28,6 +28,7 @@ function message(id: string, deliveryStatus: string | null, createdAt: string): 
   return {
     id,
     booking_id: 'booking-1',
+    to_email: 'old@example.com',
     delivery_status: deliveryStatus,
     delivered_at: null,
     bounced_at: deliveryStatus === 'hard_bounce' ? createdAt : null,
@@ -41,12 +42,14 @@ function message(id: string, deliveryStatus: string | null, createdAt: string): 
 test('reuses the exact failed outbound email as an editable retry draft', () => {
   const draft = buildFailedEmailRetryDraft(
     [activity('email-1')],
-    [message('email-1', 'hard_bounce', '2026-09-18T10:00:00.000Z')]
+    [message('email-1', 'hard_bounce', '2026-09-18T10:00:00.000Z')],
+    'old@example.com'
   )
 
   assert.deepEqual(draft, {
     subject: 'Booking Sala X',
-    body: 'Hola, te reenvío la propuesta.'
+    body: 'Hola, te reenvío la propuesta.',
+    recipientChanged: false
   })
 })
 
@@ -56,7 +59,8 @@ test('does not suggest retry when a newer attempt was accepted', () => {
     [
       message('email-1', 'hard_bounce', '2026-09-18T10:00:00.000Z'),
       message('email-2', 'accepted', '2026-09-18T11:00:00.000Z')
-    ]
+    ],
+    'old@example.com'
   )
 
   assert.equal(draft, null)
@@ -65,8 +69,20 @@ test('does not suggest retry when a newer attempt was accepted', () => {
 test('does not invent a retry when the failed provider row has no linked outbound Activity', () => {
   const draft = buildFailedEmailRetryDraft(
     [],
-    [message('email-1', 'error', '2026-09-18T10:00:00.000Z')]
+    [message('email-1', 'error', '2026-09-18T10:00:00.000Z')],
+    'old@example.com'
   )
 
   assert.equal(draft, null)
+})
+
+
+test('marks retry context when the contact email was corrected after the failed send', () => {
+  const draft = buildFailedEmailRetryDraft(
+    [activity('email-1')],
+    [message('email-1', 'hard_bounce', '2026-09-18T10:00:00.000Z')],
+    'new@example.com'
+  )
+
+  assert.equal(draft?.recipientChanged, true)
 })
