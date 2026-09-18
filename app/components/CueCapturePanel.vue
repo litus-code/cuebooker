@@ -320,8 +320,10 @@ function discardSmartResult() {
   smartResult.value = null
 }
 
-function onVoiceCaptured(value: string) {
+async function onVoiceCaptured(value: string) {
   initialNote.value = value
+  await nextTick()
+  await interpretNote()
 }
 
 async function onAudioCaptured(audio: Blob, filename: string, fallbackTranscript = '') {
@@ -391,8 +393,8 @@ async function onAudioCaptured(audio: Blob, filename: string, fallbackTranscript
     } else {
       const detail = error?.data?.detail || error?.data?.error || ''
       interpretationMessage.value = props.locale === 'es'
-        ? `No he podido transcribir este audio. Inténtalo de nuevo o escríbelo.${detail ? ` · ${detail}` : ''}`
-        : `I could not transcribe this audio. Try again or type it.${detail ? ` · ${detail}` : ''}`
+        ? 'No he podido transcribir este audio. Inténtalo de nuevo o escríbelo.'
+        : 'I could not transcribe this audio. Try again or type it.'
     }
   } finally {
     analyzing.value = false
