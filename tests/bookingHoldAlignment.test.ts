@@ -86,3 +86,18 @@ test('does not invent a time mismatch when the booking itself has no schedule', 
     true
   )
 })
+
+
+test('matches UTC provider timestamps using the event timezone', () => {
+  assert.equal(
+    holdMatchesBookingSchedule(
+      booking(),
+      hold({
+        starts_at: '2026-10-10T20:00:00.000Z',
+        ends_at: '2026-10-10T21:30:00.000Z',
+        event_timezone: 'Europe/Madrid'
+      })
+    ),
+    true
+  )
+})
