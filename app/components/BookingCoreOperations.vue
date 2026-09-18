@@ -113,6 +113,11 @@ watch(() => [props.workspaceId, props.booking.id], () => {
   void load()
 }, { immediate: true })
 
+watch(() => props.booking.event_date, (nextDate, previousDate) => {
+  if (!nextDate) return
+  if (!holdDate.value || holdDate.value === previousDate) holdDate.value = nextDate
+})
+
 function toIsoOrNull(value: string) {
   if (!value) return null
   const parsed = new Date(value)
