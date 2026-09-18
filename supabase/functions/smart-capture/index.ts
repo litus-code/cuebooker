@@ -165,48 +165,66 @@ function outputText(payload: any) {
 
 async function transcribeAudio(apiKey: string, file: File, locale: "es" | "en") {
   if (file.size <= 0 || file.size > 20 * 1024 * 1024) throw new Error("invalid_audio_size");
-  const allowed = ["audio/webm", "audio/mp4", "audio/mpeg", "audio/wav", "audio/x-m4a", "audio/ogg"];
+  const allowed = ["audio/webm", "audio/mp4", "audio/mpeg", "audio/wav", "audio/x-m4a", "audio/ogg", "audio/aac"];
   if (file.type && !allowed.some(type => file.type.startsWith(type))) throw new Error("unsupported_audio_type");
 
-  const form = new FormData();
-  form.set("model", Deno.env.get("CUEBOOKER_TRANSCRIPTION_MODEL")?.trim() || "gpt-transcribe");
-  form.set("language", locale);
-  form.set(
-    "prompt",
-    locale === "es"
-      ? "Contexto: bookings de DJs, promotores, salas, festivales, fechas, horarios, fees, hospitality, viajes y nombres propios de la escena electrónica."
-      : "Context: DJ bookings, promoters, venues, festivals, dates, schedules, fees, hospitality, travel and electronic-music proper names."
-  );
   const baseType = (file.type || "").split(";")[0].trim() || "audio/webm";
   const extension = baseType === "audio/mp4" || baseType === "audio/x-m4a" ? "m4a"
     : baseType === "audio/mpeg" ? "mp3"
       : baseType === "audio/wav" ? "wav"
         : baseType === "audio/ogg" ? "ogg"
-          : "webm";
-  const normalizedFile = new File(
-    [await file.arrayBuffer()],
-    `cuebooker-capture.${extension}`,
-    { type: baseType }
-  );
-  form.set("file", normalizedFile, normalizedFile.name);
+          : baseType === "audio/aac" ? "aac"
+            : "webm";
 
-  const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}` },
-    body: form
-  });
-  const text = await response.text();
-  if (!response.ok) {
-    console.error("smart-capture transcription provider", response.status);
-    throw new Error(`transcription_provider_${response.status}`);
+  const bytes = await file.arrayBuffer();
+  const normalizedFile = new File([bytes], `cuebooker-capture.${extension}`, { type: baseType });
+  const configured = Deno.env.get("CUEBOOKER_TRANSCRIPTION_MODEL")?.trim();
+  const models = [...new Set([configured, "gpt-transcribe", "gpt-4o-transcribe"].filter(Boolean))] as string[];
+  let lastStatus = 0;
+
+  for (const model of models) {
+    const form = new FormData();
+    form.set("model", model);
+    form.set("language", locale);
+    form.set(
+      "prompt",
+      locale === "es"
+        ? "Contexto: bookings de DJs, promotores, salas, festivales, fechas, horarios, fees, hospitality, viajes y nombres propios de la escena electrónica."
+        : "Context: DJ bookings, promoters, venues, festivals, dates, schedules, fees, hospitality, travel and electronic-music proper names."
+    );
+    form.set("file", normalizedFile, normalizedFile.name);
+
+    const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}` },
+      body: form
+    });
+    const text = await response.text();
+    lastStatus = response.status;
+
+    if (!response.ok) {
+      console.warn("smart-capture transcription attempt failed", JSON.stringify({
+        model,
+        status: response.status,
+        mime: baseType,
+        bytes: file.size
+      }));
+      continue;
+    }
+
+    let parsed: any;
+    try { parsed = JSON.parse(text); } catch {
+      console.warn("smart-capture transcription invalid response", model);
+      continue;
+    }
+
+    const transcript = String(parsed?.text || "").trim();
+    if (!transcript) continue;
+    if (transcript.length > 20000) throw new Error("transcription_too_long");
+    return transcript;
   }
 
-  let parsed: any;
-  try { parsed = JSON.parse(text); } catch { throw new Error("transcription_invalid_response"); }
-  const transcript = String(parsed?.text || "").trim();
-  if (!transcript) throw new Error("transcription_empty");
-  if (transcript.length > 20000) throw new Error("transcription_too_long");
-  return transcript;
+  throw new Error(`transcription_provider_${lastStatus || 502}`);
 }
 
 async function extractBooking(apiKey: string, transcript: string, locale: "es" | "en") {
