@@ -381,6 +381,14 @@ function prefersReducedMotion() {
 async function changeView(view: WorkspaceView) {
   settingsOpen.value = false
   activeView.value = view
+
+  if (view !== 'bookings' && route.query.booking) {
+    const { booking: _booking, ...query } = route.query
+    void router.replace({ query }).catch(() => {
+      // View navigation must not be blocked by URL state cleanup.
+    })
+  }
+
   await nextTick()
   const target = document.querySelector<HTMLElement>('.workspace .view')
   if (!target) return
