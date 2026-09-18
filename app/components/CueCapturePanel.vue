@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { BookingSource, CoreBooking, CounterpartyKind } from '../domain/bookingCore'
+import type { SmartCaptureResult } from '../domain/smartCapture'
 import { interpretCueText, type CueInterpretation } from '../services/cueInterpreter'
 
 const props = defineProps<{
@@ -15,7 +16,10 @@ const emit = defineEmits<{
 }>()
 
 const bookingCore = useBookingCore()
+const smartCapture = useSmartCapture()
+const voiceInput = ref<{ setProcessing: (value: boolean) => void } | null>(null)
 const submitting = ref(false)
+const analyzing = ref(false)
 const loadingOptions = ref(false)
 const errorMessage = ref('')
 const contacts = ref<Array<{ id: string; name: string; email: string | null }>>([])
@@ -35,12 +39,18 @@ const eventName = ref('')
 const venueName = ref('')
 const city = ref('')
 const eventDate = ref('')
+const startTime = ref('')
+const endTime = ref('')
+const eventTimezone = ref('')
 const offer = ref('')
 const currency = ref('EUR')
+const feeBasis = ref('')
 const initialNote = ref('')
 const nextMoveLabel = ref('')
+const nextMoveDueAt = ref('')
 const interpretationMessage = ref('')
 const interpretationPreview = ref<CueInterpretation | null>(null)
+const smartResult = ref<SmartCaptureResult | null>(null)
 const moreOpen = ref(false)
 
 const text = computed(() => props.locale === 'es' ? {
@@ -112,12 +122,18 @@ function reset() {
   venueName.value = ''
   city.value = ''
   eventDate.value = ''
+  startTime.value = ''
+  endTime.value = ''
+  eventTimezone.value = ''
   offer.value = ''
   currency.value = 'EUR'
+  feeBasis.value = ''
   initialNote.value = ''
   nextMoveLabel.value = ''
+  nextMoveDueAt.value = ''
   interpretationMessage.value = ''
   interpretationPreview.value = null
+  smartResult.value = null
   moreOpen.value = false
   errorMessage.value = ''
 }
@@ -164,30 +180,53 @@ function stageInterpretation(raw: string) {
   interpretationMessage.value = detected ? text.value.interpreted : text.value.nothingDetected
 }
 
-function interpretNote() {
-  stageInterpretation(initialNote.value)
+async function interpretNote() {
+  const raw = initialNote.value.trim()
+  if (!raw || analyzing.value) return
+
+  analyzing.value = true
+  interpretationMessage.value = ''
+  smartResult.value = null
+  interpretationPreview.value = null
+
+  try {
+    smartResult.value = await smartCapture.analyzeText({
+      workspaceId: props.workspaceId,
+      artistId: props.artistId,
+      locale: props.locale,
+      text: raw
+    })
+  } catch (error: any) {
+    const parsed = interpretCueText(raw, props.locale)
+    const detected = Object.keys(parsed).length > 0
+    interpretationPreview.value = detected ? parsed : null
+    interpretationMessage.value = detected
+      ? (props.locale === 'es'
+          ? 'Smart Capture no está disponible ahora. Te muestro una detección local básica.'
+          : 'Smart Capture is unavailable right now. Showing basic local detection.')
+      : (props.locale === 'es'
+          ? 'Smart Capture no está disponible ahora y no he detectado datos fiables localmente.'
+          : 'Smart Capture is unavailable right now and no reliable local details were detected.')
+  } finally {
+    analyzing.value = false
+  }
 }
 
-function applyInterpretation() {
-  const parsed = interpretationPreview.value
-  if (!parsed) return
-
-  if (parsed.source) source.value = parsed.source
-
-  if (parsed.contactName) {
-    const match = contacts.value.find(item => normalizeEntityName(item.name) === normalizeEntityName(parsed.contactName!))
+function applyEntityMatches(contact: string | null, party: string | null) {
+  if (contact) {
+    const match = contacts.value.find(item => normalizeEntityName(item.name) === normalizeEntityName(contact))
     if (match) {
       contactMode.value = 'existing'
       existingContactId.value = match.id
     } else {
       contactMode.value = 'new'
       existingContactId.value = ''
-      contactName.value = parsed.contactName
+      contactName.value = contact
     }
   }
 
-  if (parsed.counterpartyName) {
-    const match = counterparties.value.find(item => normalizeEntityName(item.name) === normalizeEntityName(parsed.counterpartyName!))
+  if (party) {
+    const match = counterparties.value.find(item => normalizeEntityName(item.name) === normalizeEntityName(party))
     if (match) {
       counterpartyMode.value = 'existing'
       existingCounterpartyId.value = match.id
@@ -195,17 +234,52 @@ function applyInterpretation() {
     } else {
       counterpartyMode.value = 'new'
       existingCounterpartyId.value = ''
-      counterpartyName.value = parsed.counterpartyName
-      if (!venueName.value) venueName.value = parsed.counterpartyName
+      counterpartyName.value = party
     }
   }
+}
 
+function applySmartResult() {
+  const parsed = smartResult.value
+  if (!parsed) return
+
+  if (parsed.source.value) source.value = parsed.source.value
+  applyEntityMatches(parsed.contact.name.value, parsed.counterparty.name.value)
+
+  if (parsed.contact.email.value) contactEmail.value = parsed.contact.email.value
+  if (parsed.contact.phone.value) contactPhone.value = parsed.contact.phone.value
+  if (parsed.counterparty.kind.value) counterpartyKind.value = parsed.counterparty.kind.value
+  if (parsed.event.name.value) eventName.value = parsed.event.name.value
+  if (parsed.event.venueName.value) venueName.value = parsed.event.venueName.value
+  if (parsed.event.city.value) city.value = parsed.event.city.value
+  if (parsed.event.countryCode.value) countryCode.value = parsed.event.countryCode.value
+  if (parsed.event.eventDate.value) eventDate.value = parsed.event.eventDate.value
+  if (parsed.event.startTime.value) startTime.value = parsed.event.startTime.value
+  if (parsed.event.endTime.value) endTime.value = parsed.event.endTime.value
+  if (parsed.event.timezone.value) eventTimezone.value = parsed.event.timezone.value
+  if (parsed.offer.amountMinor.value != null) offer.value = String(parsed.offer.amountMinor.value / 100)
+  if (parsed.offer.currency.value) currency.value = parsed.offer.currency.value
+  if (parsed.offer.feeBasis.value) feeBasis.value = parsed.offer.feeBasis.value
+  if (parsed.nextAction.label.value) nextMoveLabel.value = parsed.nextAction.label.value
+  if (parsed.nextAction.dueAt.value) nextMoveDueAt.value = parsed.nextAction.dueAt.value.slice(0, 16)
+
+  moreOpen.value = true
+  smartResult.value = null
+  interpretationMessage.value = props.locale === 'es'
+    ? 'Smart Capture aplicado. Revisa los datos antes de crear el booking.'
+    : 'Smart Capture applied. Review the details before creating the booking.'
+}
+
+function applyInterpretation() {
+  const parsed = interpretationPreview.value
+  if (!parsed) return
+  if (parsed.source) source.value = parsed.source
+  applyEntityMatches(parsed.contactName || null, parsed.counterpartyName || null)
   if (parsed.eventDate) eventDate.value = parsed.eventDate
   if (parsed.offerAmountMinor != null) offer.value = String(parsed.offerAmountMinor / 100)
   if (parsed.currency) currency.value = parsed.currency
   if (parsed.nextMoveLabel) nextMoveLabel.value = parsed.nextMoveLabel
   if (parsed.eventDate || parsed.offerAmountMinor != null) moreOpen.value = true
-
   interpretationPreview.value = null
   interpretationMessage.value = text.value.suggestionsApplied
 }
@@ -215,9 +289,39 @@ function discardInterpretation() {
   interpretationMessage.value = ''
 }
 
+function discardSmartResult() {
+  smartResult.value = null
+}
+
 function onVoiceCaptured(value: string) {
   initialNote.value = value
-  stageInterpretation(value)
+}
+
+async function onAudioCaptured(audio: Blob, filename: string) {
+  if (analyzing.value) return
+  analyzing.value = true
+  interpretationMessage.value = ''
+  smartResult.value = null
+  interpretationPreview.value = null
+
+  try {
+    const result = await smartCapture.analyzeAudio({
+      workspaceId: props.workspaceId,
+      artistId: props.artistId,
+      locale: props.locale,
+      audio,
+      filename
+    })
+    initialNote.value = result.transcript
+    smartResult.value = result
+  } catch {
+    interpretationMessage.value = props.locale === 'es'
+      ? 'No he podido procesar el audio con Smart Capture. Puedes conservarlo como texto manual.'
+      : 'Smart Capture could not process the audio. You can continue with manual text.'
+  } finally {
+    analyzing.value = false
+    voiceInput.value?.setProcessing(false)
+  }
 }
 
 function parseOfferMinor() {
@@ -261,10 +365,15 @@ async function submit() {
       venueName: venueName.value || counterpartyName.value,
       city: city.value,
       eventDate: eventDate.value || null,
+      startTime: startTime.value || null,
+      endTime: endTime.value || null,
+      eventTimezone: eventTimezone.value,
       offerAmountMinor: offerMinor,
       currency: offerMinor == null ? null : currency.value,
+      feeBasis: feeBasis.value,
       initialNote: initialNote.value,
-      nextMoveLabel: nextMoveLabel.value
+      nextMoveLabel: nextMoveLabel.value,
+      nextMoveDueAt: nextMoveDueAt.value ? new Date(nextMoveDueAt.value).toISOString() : null
     })
     emit('created', booking)
     reset()
@@ -311,13 +420,21 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
             </div>
             <textarea v-model="initialNote" rows="4" :placeholder="text.notePlaceholder" />
             <div class="cue-capture__smart-actions">
-              <CueVoiceInput v-model="initialNote" :locale="locale" @captured="onVoiceCaptured" />
+              <CueVoiceInput ref="voiceInput" v-model="initialNote" :locale="locale" @captured="onVoiceCaptured" @audio-captured="onAudioCaptured" />
               <div class="cue-capture__interpret">
-                <button type="button" :disabled="!initialNote.trim()" @click="interpretNote">{{ text.interpret }}</button>
+                <button type="button" :disabled="!initialNote.trim() || analyzing" @click="interpretNote">{{ analyzing ? (locale === 'es' ? 'Analizando…' : 'Analysing…') : 'Smart Capture' }}</button>
                 <p>{{ locale === 'es' ? 'Detección básica. No sustituye la revisión.' : 'Basic detection. Review before applying.' }}</p>
                 <p v-if="interpretationMessage" aria-live="polite">{{ interpretationMessage }}</p>
               </div>
             </div>
+            <SmartCaptureReview
+              v-if="smartResult"
+              :result="smartResult"
+              :locale="locale"
+              @apply="applySmartResult"
+              @discard="discardSmartResult"
+            />
+
             <section v-if="interpretationPreview" class="cue-capture__preview" aria-live="polite">
               <p>{{ text.reviewSuggestions }}</p>
               <div class="cue-capture__preview-items">
@@ -333,7 +450,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
                 <button type="button" class="apply" @click="applyInterpretation">{{ text.applySuggestions }}</button>
               </div>
             </section>
-            <label v-if="nextMoveLabel" class="cue-capture__next"><span>{{ text.nextMove }}</span><input v-model="nextMoveLabel" maxlength="240"></label>
+            <div v-if="nextMoveLabel" class="cue-capture__next">
+              <label><span>{{ text.nextMove }}</span><input v-model="nextMoveLabel" maxlength="240"></label>
+              <label><span>{{ locale === 'es' ? 'Cuándo' : 'When' }}</span><input v-model="nextMoveDueAt" type="datetime-local"></label>
+            </div>
           </section>
 
           <section class="cue-capture__section">
@@ -380,6 +500,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
             <label><span>{{ text.event }}</span><input v-model="eventName"></label>
             <label><span>{{ text.date }}</span><input v-model="eventDate" type="date"></label>
             <label><span>{{ text.city }}</span><input v-model="city"></label>
+            <label><span>{{ locale === 'es' ? 'País' : 'Country' }}</span><input v-model="countryCode" maxlength="2" placeholder="ES"></label>
+            <label><span>{{ locale === 'es' ? 'Inicio' : 'Start' }}</span><input v-model="startTime" type="time"></label>
+            <label><span>{{ locale === 'es' ? 'Fin' : 'End' }}</span><input v-model="endTime" type="time"></label>
+            <label><span>{{ locale === 'es' ? 'Zona horaria' : 'Timezone' }}</span><input v-model="eventTimezone" placeholder="Europe/Madrid"></label>
+            <label><span>{{ locale === 'es' ? 'Base del fee' : 'Fee basis' }}</span><input v-model="feeBasis" placeholder="event"></label>
             <label class="cue-capture__offer"><span>{{ text.offer }}</span><div><input v-model="offer" inputmode="decimal" placeholder="1200"><select v-model="currency"><option>EUR</option><option>GBP</option><option>USD</option></select></div></label>
           </div>
 
@@ -441,7 +566,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 .cue-capture__preview-actions { display:flex; justify-content:flex-end; gap:7px; }
 .cue-capture__preview-actions button { min-height:34px; padding:0 10px; border:1px solid #404040; background:transparent; color:#c6c6c6; cursor:pointer; font:700 9px monospace; text-transform:uppercase; }
 .cue-capture__preview-actions button.apply { border-color:#ceff54; background:#ceff54; color:#090909; }
-.cue-capture__next { display:grid; gap:7px; padding:10px 12px; margin-bottom:10px; border-left:2px solid #ceff54; background:rgba(206,255,84,.04); }
+.cue-capture__next { display:grid; grid-template-columns:minmax(0,1fr) minmax(150px,.6fr); gap:8px; padding:10px 12px; margin-bottom:10px; border-left:2px solid #ceff54; background:rgba(206,255,84,.04); }
 .cue-capture__more { display: flex; justify-content: space-between; width: 100%; min-height: 40px; padding: 0; border: 0; border-bottom: 1px solid #292929; background: transparent; color: #bdbdbd; cursor: pointer; font-size: 11px; text-align: left; }
 .cue-capture__more span { color: #ceff54; font-size: 18px; }
 .cue-capture__details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 18px 0 2px; }
@@ -465,7 +590,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   .cue-capture__tell { padding:16px 0; }
   .cue-capture__smart-actions { display:grid; grid-template-columns:1fr; }
   .cue-capture__interpret { margin-top:0; }
-  .cue-capture__grid--contact, .cue-capture__grid--party, .cue-capture__details { grid-template-columns: 1fr; }
+  .cue-capture__grid--contact, .cue-capture__grid--party, .cue-capture__details, .cue-capture__next { grid-template-columns: 1fr; }
   .cue-capture__actions { margin: 18px -16px -20px; padding-right: 16px; padding-left: 16px; }
 }
 </style>
