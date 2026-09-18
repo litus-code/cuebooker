@@ -2756,3 +2756,51 @@ Functional commits:
 ```
 
 Production remains untouched.
+
+## 49. Commercial fact invariant — IMPLEMENTED ON STAGING / BRANCH
+
+Cuebooker now treats Booking offer amount + currency as one atomic commercial fact.
+
+Before adding the invariant, staging validation showed:
+
+```text
+currency without amount = 0
+amount without currency = 0
+negative amounts = 0
+```
+
+The current product paths were already behaving consistently, so the convention is now protected at database level for future ingress paths.
+
+Invariant:
+
+```text
+offer_amount_minor IS NULL <=> currency IS NULL
+```
+
+Valid:
+
+```text
+no offer + no currency
+120000 + EUR
+```
+
+Invalid:
+
+```text
+no amount + EUR
+120000 + no currency
+```
+
+Repository migration:
+
+```text
+20260918193000_enforce_booking_offer_currency_pair.sql
+```
+
+Staging verification forced an invalid update inside an exception subtransaction. Postgres raised a check violation and preserved the original Booking.
+
+The existing amount non-negative and ISO-like uppercase currency constraints remain in place.
+
+Supabase security advisors show no regression from this invariant.
+
+Production remains untouched.
