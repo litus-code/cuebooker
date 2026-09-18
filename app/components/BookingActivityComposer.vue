@@ -19,9 +19,10 @@ const errorMessage = ref('')
 const successMessage = ref('')
 
 const copy = computed(() => props.locale === 'es' ? {
-  title: 'Registrar actividad',
+  title: 'Registrar interacción',
+  help: 'Guarda lo que ha pasado. Las interacciones entrantes y salientes actualizan el estado del booking automáticamente.',
   note: 'Nota', phone: 'Llamada', whatsapp: 'WhatsApp', email: 'Email', instagram: 'Instagram',
-  inbound: 'Entrante', outbound: 'Saliente', internal: 'Interna',
+  inbound: 'Recibida', outbound: 'Enviada', internal: 'Interna',
   placeholder: 'Ej. Héctor confirma que el horario llega mañana.',
   emailPlaceholder: 'Escribe el email que quieres enviar desde este booking.',
   subject: 'Asunto del email',
@@ -33,9 +34,10 @@ const copy = computed(() => props.locale === 'es' ? {
   replyDomainMissing: 'El dominio de respuestas de email todavía no está configurado en staging.',
   sendError: 'No se ha podido enviar el email.'
 } : {
-  title: 'Log activity',
+  title: 'Log interaction',
+  help: 'Save what happened. Incoming and outgoing interactions update the booking status automatically.',
   note: 'Note', phone: 'Call', whatsapp: 'WhatsApp', email: 'Email', instagram: 'Instagram',
-  inbound: 'Inbound', outbound: 'Outbound', internal: 'Internal',
+  inbound: 'Received', outbound: 'Sent', internal: 'Internal',
   placeholder: 'E.g. Hector confirms the schedule arrives tomorrow.',
   emailPlaceholder: 'Write the email you want to send from this booking.',
   subject: 'Email subject',
@@ -124,7 +126,7 @@ async function submit() {
 <template>
   <form class="activity-composer" @submit.prevent="submit">
     <div class="activity-composer__top">
-      <strong>{{ copy.title }}</strong>
+      <div class="activity-composer__intro"><strong>{{ copy.title }}</strong><small>{{ copy.help }}</small></div>
       <div class="activity-composer__types">
         <button v-for="item in types" :key="item.value" type="button" :class="{ active: type === item.value }" @click="type = item.value">{{ item.label }}</button>
       </div>
@@ -143,7 +145,9 @@ async function submit() {
 <style scoped>
 .activity-composer { margin-top:16px; border:1px solid var(--cue-border); background:var(--cue-raised); }
 .activity-composer__top { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 10px; border-bottom:1px solid var(--cue-border); }
-.activity-composer__top > strong { font:700 9px monospace; text-transform:uppercase; letter-spacing:.08em; }
+.activity-composer__intro { display:grid; gap:4px; max-width:430px; }
+.activity-composer__intro > strong { font:700 9px monospace; text-transform:uppercase; letter-spacing:.08em; }
+.activity-composer__intro > small { color:var(--cue-muted); font-size:9px; line-height:1.4; }
 .activity-composer__types { display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; }
 .activity-composer__types button { min-height:28px; padding:0 8px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; }
 .activity-composer__types button.active { border-color:var(--cue-accent); color:var(--cue-accent); }
