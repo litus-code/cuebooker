@@ -450,7 +450,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         workspace_id: `eq.${workspaceId}`,
         ...(bookingId ? { booking_id: `eq.${bookingId}` } : {}),
         ...(activeOnly ? { completed_at: 'is.null' } : {}),
-        select: 'id,workspace_id,booking_id,label,due_at,assignee_user_id,completed_at,created_by,created_at,updated_at',
+        select: 'id,workspace_id,booking_id,label,due_at,assignee_user_id,completion_trigger,completed_at,created_by,created_at,updated_at',
         order: activeOnly ? 'due_at.asc.nullslast,created_at.asc' : 'created_at.desc'
       }
     })
@@ -465,7 +465,8 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         target_booking_id: input.bookingId,
         next_label: input.label.trim(),
         next_due_at: input.dueAt || null,
-        next_assignee_user_id: input.assigneeUserId || null
+        next_assignee_user_id: input.assigneeUserId || null,
+        next_completion_trigger: input.completionTrigger || 'manual'
       }
     })
     const row = rows[0]
