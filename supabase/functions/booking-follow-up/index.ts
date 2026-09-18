@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { consumePublicRateLimit, publicRateLimitKey } from "../_shared/publicRateLimit.ts";
 
 function allowedOrigin(value: string | null) {
   if (!value) return null;
@@ -144,6 +145,28 @@ Deno.serve(async request => {
     const bodyText = typeof payload.bodyText === "string" ? payload.bodyText.trim() : "";
     if (!validToken(token) || !validUuid(requestId) || !bodyText || bodyText.length > 10000) {
       return json(request, { error: "invalid_request" }, 400);
+    }
+
+    const [clientKey, tokenRateKey] = await Promise.all([
+      publicRateLimitKey(request, serviceKey, "booking-follow-up-client"),
+      publicRateLimitKey(request, serviceKey, "booking-follow-up-token", token)
+    ]);
+    const rateDecisions = await Promise.all([
+      consumePublicRateLimit(serviceJson, supabaseUrl, serviceKey, "booking_follow_up_client", clientKey, 30, 600),
+      consumePublicRateLimit(serviceJson, supabaseUrl, serviceKey, "booking_follow_up_token", tokenRateKey, 12, 600)
+    ]);
+    const blocked = rateDecisions.filter(item => !item.allowed);
+    if (blocked.length) {
+      const retryAfter = Math.max(...blocked.map(item => item.retryAfterSeconds), 1);
+      return new Response(JSON.stringify({ error: "rate_limited" }), {
+        status: 429,
+        headers: {
+          ...corsHeaders(request),
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+          "Retry-After": String(retryAfter)
+        }
+      });
     }
 
     const tokenHash = await sha256Hex(token);
