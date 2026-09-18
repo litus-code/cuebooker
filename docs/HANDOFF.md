@@ -1627,6 +1627,31 @@ The UI reads email delivery state and can show:
 
 The outbound message sent at 2026-09-18 13:11 local to `litulandio@gmail.com` was successfully accepted by Brevo and received a provider message id. No final delivery event is currently available because the transactional delivery webhook has not yet been registered in Brevo.
 
+### Branded direct booking email
+
+Direct booking emails were still using Brevo `textContent` only, which rendered as an unstyled plain email in Gmail. This has now been corrected on branch and deployed to staging `send-booking-email` v16.
+
+New direct booking delivery uses both:
+
+```text
+htmlContent -> Cuebooker dark/lime branded shell
+textContent -> plain-text fallback
+```
+
+Shared renderer:
+
+```text
+supabase/functions/_shared/bookingConversationEmailTemplate.ts
+```
+
+CI and staging deployment passed for the implementation commits.
+
+### Inbound reply smoke
+
+The 13:11 outbound row has the expected tokenized Reply-To under `reply.cuebooker.com`. A later Gmail reply still produced no inbound `email_messages` row and no inbound Activity in staging. The UI is therefore not the failure point.
+
+The current break remains before successful database ingestion, in the Brevo inbound route/webhook authentication path. `ingest-booking-email` is ACTIVE and expects `x-cuebooker-webhook-secret`; the Brevo webhook must send that header with the exact configured secret.
+
 ## 28. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
