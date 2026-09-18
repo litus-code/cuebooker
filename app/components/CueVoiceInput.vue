@@ -34,7 +34,7 @@ const copy = computed(() => props.locale === 'es' ? {
   recording: 'Grabando',
   processing: 'Procesando audio…',
   hint: 'Habla con naturalidad. Puedes parar cuando termines.',
-  fallbackHint: 'Modo de dictado del navegador.',
+  fallbackHint: 'Dictado en directo. Al parar, Cuebooker intentará convertirlo en booking.',
   error: 'No he podido acceder al micrófono. Puedes seguir escribiendo.'
 } : {
   start: 'Tell it by voice',
@@ -42,7 +42,7 @@ const copy = computed(() => props.locale === 'es' ? {
   recording: 'Recording',
   processing: 'Processing audio…',
   hint: 'Speak naturally. Stop when you are done.',
-  fallbackHint: 'Browser dictation fallback.',
+  fallbackHint: 'Live dictation. When you stop, Cuebooker will try to turn it into a booking.',
   error: 'I could not access the microphone. You can keep typing.'
 })
 
@@ -51,7 +51,7 @@ onMounted(() => {
   const browser = window as any
   const hasSpeech = Boolean(browser.SpeechRecognition || browser.webkitSpeechRecognition)
 
-  mode.value = hasRecorder ? 'recorder' : hasSpeech ? 'speech' : 'none'
+  mode.value = hasSpeech ? 'speech' : hasRecorder ? 'recorder' : 'none'
   supported.value = mode.value !== 'none'
 })
 
