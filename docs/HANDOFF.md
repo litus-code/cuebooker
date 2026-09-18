@@ -2640,6 +2640,8 @@ Cuebooker surfaces a review warning when:
 
 An all-day Hold on the same Booking date remains valid; Cuebooker does not invent a time mismatch.
 
+Timed Hold comparison is timezone-aware. Provider/Postgres timestamps may arrive normalized to UTC, so Cuebooker converts the Hold instant through `hold.event_timezone` (or Booking timezone fallback) before comparing it to Booking local start/end time. This prevents false drift such as `20:00Z` being treated as different from `22:00 Europe/Madrid`.
+
 The system does not move, release or recreate the Hold automatically. That remains an artist decision.
 
 Pure alignment logic + tests:
@@ -2659,6 +2661,8 @@ be1c98751392d50320e5f72025eb6e5adfa6477f
 55c67be1e98f0fda1d3cb3ea506bc9dbf1e5c5ee
 e544d7fc65b0df0eaccb53729fdad9423319e97c
 1cc581ae3a193b17d7bb9e520aa7038917b04ac1
+0c40d843c5f4874b52461b5f3fccabd0693909a8
+f1d418851a8fbcf4f390e9c18748a7842a32a840
 ```
 
 Production remains untouched.
