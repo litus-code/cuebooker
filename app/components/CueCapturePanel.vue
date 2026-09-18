@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { BookingSource, CoreBooking, CounterpartyKind } from '../domain/bookingCore'
 import type { SmartCaptureResult } from '../domain/smartCapture'
-import { interpretCueText, type CueInterpretation } from '../services/cueInterpreter'
 
 const props = defineProps<{
   open: boolean
@@ -16,7 +15,7 @@ const emit = defineEmits<{
 }>()
 
 const bookingCore = useBookingCore()
-const smartCapture = useSmartCapture()
+const captureEngine = useCaptureEngine()
 const analytics = useAnalytics()
 const voiceInput = ref<{ setProcessing: (value: boolean) => void } | null>(null)
 const submitting = ref(false)
@@ -51,7 +50,6 @@ const initialNote = ref('')
 const nextMoveLabel = ref('')
 const nextMoveDueAt = ref('')
 const interpretationMessage = ref('')
-const interpretationPreview = ref<CueInterpretation | null>(null)
 const smartResult = ref<SmartCaptureResult | null>(null)
 const moreOpen = ref(false)
 
@@ -135,7 +133,6 @@ function reset() {
   nextMoveLabel.value = ''
   nextMoveDueAt.value = ''
   interpretationMessage.value = ''
-  interpretationPreview.value = null
   smartResult.value = null
   moreOpen.value = false
   errorMessage.value = ''
@@ -179,14 +176,6 @@ function normalizeEntityName(value: string) {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase().replace(/\s+/g, ' ')
 }
 
-function stageInterpretation(raw: string) {
-  interpretationMessage.value = ''
-  const parsed = interpretCueText(raw, props.locale)
-  const detected = Object.keys(parsed).length > 0
-  interpretationPreview.value = detected ? parsed : null
-  interpretationMessage.value = detected ? text.value.interpreted : text.value.nothingDetected
-}
-
 async function interpretNote() {
   const raw = initialNote.value.trim()
   if (!raw || analyzing.value) return
@@ -198,37 +187,22 @@ async function interpretNote() {
   analyzing.value = true
   interpretationMessage.value = ''
   smartResult.value = null
-  interpretationPreview.value = null
 
   try {
-    smartResult.value = await smartCapture.analyzeText({
+    const analysis = await captureEngine.analyzeText({
       workspaceId: props.workspaceId,
       artistId: props.artistId,
       locale: props.locale,
       text: raw
     })
+    smartResult.value = analysis.result
     analytics.track('smart_capture_result', {
       mode: 'text',
-      success: true,
-      missing_fields: smartResult.value.missingFields.length,
-      warnings: smartResult.value.warnings.length
+      success: analysis.method !== 'local_parser',
+      fallback: analysis.method === 'local_parser' ? analysis.method : null,
+      missing_fields: analysis.result.missingFields.length,
+      warnings: analysis.result.warnings.length
     })
-  } catch (error: any) {
-    analytics.track('smart_capture_result', {
-      mode: 'text',
-      success: false,
-      fallback: 'local_parser'
-    })
-    const parsed = interpretCueText(raw, props.locale)
-    const detected = Object.keys(parsed).length > 0
-    interpretationPreview.value = detected ? parsed : null
-    interpretationMessage.value = detected
-      ? (props.locale === 'es'
-          ? 'Smart Capture no está disponible ahora. Te muestro una detección local básica.'
-          : 'Smart Capture is unavailable right now. Showing basic local detection.')
-      : (props.locale === 'es'
-          ? 'Smart Capture no está disponible ahora y no he detectado datos fiables localmente.'
-          : 'Smart Capture is unavailable right now and no reliable local details were detected.')
   } finally {
     analyzing.value = false
   }
@@ -297,28 +271,6 @@ function applySmartResult() {
     : 'Smart Capture applied. Review the details before creating the booking.'
 }
 
-function applyInterpretation() {
-  const parsed = interpretationPreview.value
-  if (!parsed) return
-  if (parsed.source) source.value = parsed.source
-  applyEntityMatches(parsed.contactName || null, parsed.counterpartyName || null)
-  if (parsed.venueName) venueName.value = parsed.venueName
-  if (parsed.eventDate) eventDate.value = parsed.eventDate
-  if (parsed.startTime) startTime.value = parsed.startTime
-  if (parsed.endTime) endTime.value = parsed.endTime
-  if (parsed.offerAmountMinor != null) offer.value = String(parsed.offerAmountMinor / 100)
-  if (parsed.currency) currency.value = parsed.currency
-  if (parsed.nextMoveLabel) nextMoveLabel.value = parsed.nextMoveLabel
-  if (parsed.venueName || parsed.eventDate || parsed.startTime || parsed.endTime || parsed.offerAmountMinor != null) moreOpen.value = true
-  interpretationPreview.value = null
-  interpretationMessage.value = text.value.suggestionsApplied
-}
-
-function discardInterpretation() {
-  interpretationPreview.value = null
-  interpretationMessage.value = ''
-}
-
 function discardSmartResult() {
   smartResult.value = null
 }
@@ -339,66 +291,42 @@ async function onAudioCaptured(audio: Blob, filename: string, fallbackTranscript
   analyzing.value = true
   interpretationMessage.value = ''
   smartResult.value = null
-  interpretationPreview.value = null
 
   try {
-    const result = await smartCapture.analyzeAudio({
+    const analysis = await captureEngine.analyzeAudio({
       workspaceId: props.workspaceId,
       artistId: props.artistId,
       locale: props.locale,
       audio,
-      filename
+      filename,
+      fallbackTranscript
     })
-    initialNote.value = result.transcript
-    smartResult.value = result
+    initialNote.value = analysis.result.transcript || fallbackTranscript
+    smartResult.value = analysis.result
+
+    if (analysis.method === 'browser_transcript') {
+      interpretationMessage.value = props.locale === 'es'
+        ? 'He recuperado la voz mediante el dictado del navegador. Revisa lo que he entendido.'
+        : 'I recovered the voice using browser dictation. Review what I understood.'
+    }
+
     analytics.track('smart_capture_result', {
-      mode: 'audio',
-      success: true,
-      transcript_length: result.transcript.length,
-      missing_fields: result.missingFields.length,
-      warnings: result.warnings.length
+      mode: analysis.method === 'browser_transcript' ? 'audio_browser_fallback' : 'audio',
+      success: analysis.method !== 'local_parser',
+      fallback: analysis.method === 'local_parser' ? analysis.method : null,
+      transcript_length: analysis.result.transcript.length,
+      missing_fields: analysis.result.missingFields.length,
+      warnings: analysis.result.warnings.length
     })
-  } catch (error: any) {
+  } catch {
+    interpretationMessage.value = props.locale === 'es'
+      ? 'No he podido transcribir este audio. Inténtalo de nuevo o escríbelo.'
+      : 'I could not transcribe this audio. Try again or type it.'
     analytics.track('smart_capture_result', {
       mode: 'audio',
       success: false,
       browser_fallback_available: Boolean(fallbackTranscript.trim())
     })
-
-    const fallback = fallbackTranscript.trim()
-    if (fallback) {
-      try {
-        const result = await smartCapture.analyzeText({
-          workspaceId: props.workspaceId,
-          artistId: props.artistId,
-          locale: props.locale,
-          text: fallback
-        })
-        initialNote.value = fallback
-        smartResult.value = result
-        interpretationMessage.value = props.locale === 'es'
-          ? 'He recuperado la voz mediante el dictado del navegador. Revisa lo que he entendido.'
-          : 'I recovered the voice using browser dictation. Review what I understood.'
-        analytics.track('smart_capture_result', {
-          mode: 'audio_browser_fallback',
-          success: true,
-          transcript_length: fallback.length,
-          missing_fields: result.missingFields.length,
-          warnings: result.warnings.length
-        })
-      } catch {
-        initialNote.value = fallback
-        stageInterpretation(fallback)
-        interpretationMessage.value = props.locale === 'es'
-          ? 'He recuperado el texto de tu voz, pero la interpretación inteligente no ha respondido. Puedes revisarlo y crear el booking.'
-          : 'I recovered your spoken text, but smart interpretation did not respond. You can review it and create the booking.'
-      }
-    } else {
-      const detail = error?.data?.detail || error?.data?.error || ''
-      interpretationMessage.value = props.locale === 'es'
-        ? 'No he podido transcribir este audio. Inténtalo de nuevo o escríbelo.'
-        : 'I could not transcribe this audio. Try again or type it.'
-    }
   } finally {
     analyzing.value = false
     voiceInput.value?.setProcessing(false)
@@ -518,7 +446,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
               <CueVoiceInput ref="voiceInput" v-model="initialNote" :locale="locale" @captured="onVoiceCaptured" @audio-captured="onAudioCaptured" />
               <div class="cue-capture__interpret">
                 <button type="button" :disabled="!initialNote.trim() || analyzing" @click="interpretNote">{{ analyzing ? (locale === 'es' ? 'Analizando…' : 'Analysing…') : 'Smart Capture' }}</button>
-                <p>{{ locale === 'es' ? 'Detección básica. No sustituye la revisión.' : 'Basic detection. Review before applying.' }}</p>
+                <p>{{ locale === 'es' ? 'Una sola captura para voz o texto. Revisa siempre antes de aplicar.' : 'One capture flow for voice or text. Always review before applying.' }}</p>
                 <p v-if="interpretationMessage" aria-live="polite">{{ interpretationMessage }}</p>
               </div>
             </div>
@@ -530,23 +458,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
               @discard="discardSmartResult"
             />
 
-            <section v-if="interpretationPreview" class="cue-capture__preview" aria-live="polite">
-              <p>{{ text.reviewSuggestions }}</p>
-              <div class="cue-capture__preview-items">
-                <span v-if="interpretationPreview.source">{{ text.channel }} · {{ sourceOptions.find(item => item.value === interpretationPreview?.source)?.label }}</span>
-                <span v-if="interpretationPreview.contactName">{{ text.who }} · {{ interpretationPreview.contactName }}</span>
-                <span v-if="interpretationPreview.counterpartyName">{{ text.withWho }} · {{ interpretationPreview.counterpartyName }}</span>
-                <span v-if="interpretationPreview.venueName">{{ text.venue }} · {{ interpretationPreview.venueName }}</span>
-                <span v-if="interpretationPreview.eventDate">{{ text.date }} · {{ interpretationPreview.eventDate }}</span>
-                <span v-if="interpretationPreview.startTime || interpretationPreview.endTime">{{ locale === 'es' ? 'Horario' : 'Schedule' }} · {{ interpretationPreview.startTime || '—' }}–{{ interpretationPreview.endTime || '—' }}</span>
-                <span v-if="interpretationPreview.offerAmountMinor != null">{{ text.offer }} · {{ (interpretationPreview.offerAmountMinor / 100).toLocaleString(locale === 'es' ? 'es-ES' : 'en-GB') }} {{ interpretationPreview.currency || '' }}</span>
-                <span v-if="interpretationPreview.nextMoveLabel">{{ text.nextMove }} · {{ interpretationPreview.nextMoveLabel }}</span>
-              </div>
-              <div class="cue-capture__preview-actions">
-                <button type="button" @click="discardInterpretation">{{ text.discardSuggestions }}</button>
-                <button type="button" class="apply" @click="applyInterpretation">{{ text.applySuggestions }}</button>
-              </div>
-            </section>
             <div v-if="nextMoveLabel" class="cue-capture__next">
               <label><span>{{ text.nextMove }}</span><input v-model="nextMoveLabel" maxlength="240"></label>
               <label><span>{{ locale === 'es' ? 'Cuándo' : 'When' }}</span><input v-model="nextMoveDueAt" type="datetime-local"></label>
