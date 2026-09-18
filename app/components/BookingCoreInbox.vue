@@ -174,6 +174,21 @@ async function loadActivity(options: { silent?: boolean } = {}) {
   }
 }
 
+function activityContactName(activity: Activity) {
+  if (activity.contact_id) {
+    const contact = contacts.value.find(item => item.id === activity.contact_id)
+    if (contact?.name) return contact.name
+  }
+  return selectedContact.value?.name || (props.locale === 'es' ? 'Contacto' : 'Contact')
+}
+
+function activityTypeLabel(activity: Activity) {
+  const labels = props.locale === 'es'
+    ? { email:'Email', phone:'Llamada', whatsapp:'WhatsApp', instagram:'Instagram', note:'Nota' }
+    : { email:'Email', phone:'Call', whatsapp:'WhatsApp', instagram:'Instagram', note:'Note' }
+  return labels[activity.type as keyof typeof labels] || activity.type.replaceAll('_', ' ')
+}
+
 function emailDeliveryLabel(activity: Activity) {
   if (activity.type !== 'email' || activity.direction !== 'outbound') return ''
   const emailId = typeof activity.metadata?.email_message_id === 'string' ? activity.metadata.email_message_id : ''
@@ -457,12 +472,12 @@ async function selectBooking(bookingId: string) {
               :class="['thread-item', `thread-item--${activity.direction || 'internal'}`]"
             >
               <div class="thread-item__meta">
-                <strong>{{ activity.type.replaceAll('_', ' ') }}</strong>
+                <strong>{{ activityTypeLabel(activity) }}</strong>
                 <span>
                   {{ activity.direction === 'inbound'
-                    ? ((selectedContact?.name || (locale === 'es' ? 'Contacto' : 'Contact')) + ' → ' + (locale === 'es' ? 'Tú' : 'You'))
+                    ? (activityContactName(activity) + ' → ' + (locale === 'es' ? 'Tú' : 'You'))
                     : activity.direction === 'outbound'
-                      ? ((locale === 'es' ? 'Tú' : 'You') + ' → ' + (selectedContact?.name || (locale === 'es' ? 'Contacto' : 'Contact')))
+                      ? ((locale === 'es' ? 'Tú' : 'You') + ' → ' + activityContactName(activity))
                       : (locale === 'es' ? 'Nota interna' : 'Internal note') }}
                 </span>
                 <em v-if="emailDeliveryLabel(activity)" class="thread-item__delivery">{{ emailDeliveryLabel(activity) }}</em>
