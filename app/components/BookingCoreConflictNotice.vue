@@ -2,6 +2,7 @@
 import type { CoreBooking, Hold } from '../domain/bookingCore'
 import type { AvailabilityBlock } from '../composables/useAvailability'
 import { intervalForDate, intervalsOverlap, timeToMinutes } from '../services/timeOverlap'
+import { holdMatchesBookingSchedule } from '../services/bookingHoldAlignment'
 
 const props = defineProps<{
   workspaceId: string
@@ -58,25 +59,12 @@ function overlapsTimedRange(
   return intervalsOverlap(ownStart, ownEnd, interval.start, interval.end)
 }
 
-function holdMatchesBookingSchedule(hold: Hold) {
-  if (hold.event_date !== (props.booking.event_date || '')) return false
-  if (!hold.starts_at && !hold.ends_at) return true
-
-  const holdStart = isoTime(hold.starts_at)
-  const holdEnd = isoTime(hold.ends_at)
-  const bookingStart = props.booking.start_time?.slice(0, 5) || null
-  const bookingEnd = props.booking.end_time?.slice(0, 5) || null
-
-  if (!bookingStart && !bookingEnd) return true
-  return holdStart === bookingStart && holdEnd === bookingEnd
-}
-
 const mismatchedOwnHolds = computed(() => {
   if (props.booking.archived_at) return []
   return holds.value.filter(hold =>
     hold.booking_id === props.booking.id
     && hold.status === 'active'
-    && !holdMatchesBookingSchedule(hold)
+    && !holdMatchesBookingSchedule(props.booking, hold)
   )
 })
 
