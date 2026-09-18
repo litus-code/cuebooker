@@ -2984,3 +2984,43 @@ Functional commits:
 ```
 
 Production remains untouched.
+
+## 53. Conversation contact attribution — IMPLEMENTED ON BRANCH
+
+Conversation Activity already stores its own `contact_id`, but the thread UI previously labelled every inbound/outbound item using the Booking's current primary Contact.
+
+That could misattribute historical communication if:
+
+- another contact participated in the Booking;
+- the primary contact changed later;
+- imported communication referenced a different linked contact.
+
+The thread now resolves each Activity through its own `contact_id` first.
+
+Fallback:
+
+```text
+Activity.contact_id -> matching Contact.name
+else -> current primary Contact
+else -> generic Contact
+```
+
+This preserves historical communication attribution while keeping the current primary Contact as the sending target for new email.
+
+Visible Activity type labels are also humanized:
+
+```text
+phone -> Llamada / Call
+note -> Nota / Note
+whatsapp -> WhatsApp
+instagram -> Instagram
+email -> Email
+```
+
+Functional commit:
+
+```text
+fb8f048aae9d95c90f27e0b884bbd7a30060c4bc
+```
+
+Production remains untouched.
