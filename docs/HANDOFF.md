@@ -1450,7 +1450,64 @@ fee = 3000 EUR
 
 Server semantic extraction remains the preferred path. Local parsing is only resilience.
 
-## 25. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
+## 25. Booking persistence + semantic model quality — IMPLEMENTED ON BRANCH / EDGE DEPLOYED TO STAGING
+
+Functional commits:
+
+```text
+6341388bff8657c6a75d586dc0273a8dfb8c7c53
+703d785b8f0fc1b0c10d3af101d2abb2b985ff23
+7d67a54b4687bb989cda60d76ad680715592f68c
+5097fac7e31cc36fe0115de18867fafa391e4afa
+```
+
+### Composite RPC response fix
+
+Several Postgres RPCs return a single composite row rather than an array. The client previously typed those responses as arrays and read `rows[0]`, causing false failures after successful database operations.
+
+The API client now normalizes either shape:
+
+```text
+T | T[] -> T
+```
+
+Covered RPC flows include:
+
+- create Smart CUE booking;
+- update booking details;
+- booking status changes;
+- archive/unarchive;
+- hold create/release/convert.
+
+### Semantic user-facing errors
+
+Technical codes such as `manual_booking_create_failed` and `booking_details_update_failed` are no longer intended to surface directly.
+
+Creation/edit flows map known validation cases to product language, including:
+
+- missing date when schedule exists;
+- invalid country code;
+- invalid currency;
+- invalid offer amount;
+- workspace permission errors;
+- booking not found.
+
+### Smart Capture model strategy
+
+Staging `smart-capture` is ACTIVE v6.
+
+Semantic extraction now prefers:
+
+```text
+CUEBOOKER_SMART_CAPTURE_MODEL (if explicitly configured)
+-> gpt-5.6-terra
+-> gpt-5.6-sol
+-> gpt-5.6-luna
+```
+
+Terra is the default quality/cost balance. Sol is the high-capability fallback; Luna remains a cost-sensitive fallback.
+
+## 26. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
 
@@ -1468,7 +1525,7 @@ AI/voice limits should not be hard-coded into pricing before real usage/cost evi
 
 No billing, trial enforcement or Stripe integration is implemented yet.
 
-## 26. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
+## 27. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
 
 ### Smart Capture / interpretation
 
@@ -1507,7 +1564,7 @@ Treat human feedback as a cross-product rule:
 - retryable failure -> preserve work and explain next action;
 - technical/provider detail -> logs/admin, not promoter-facing copy.
 
-## 27. Root routing and static deployment
+## 28. Root routing and static deployment
 
 Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. `ASSETS.fetch()` must use the pretty `/200` path rather than `/200.html`.
 
@@ -1519,7 +1576,7 @@ Previously validated:
 
 PR #75 remains the staging preview vehicle.
 
-## 28. Security / operational follow-up
+## 29. Security / operational follow-up
 
 Before production:
 
@@ -1539,7 +1596,7 @@ Leaked Password Protection Disabled
 
 Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to the current Supabase secret-key model as a deliberate infrastructure task, not mixed into a product slice.
 
-## 29. Exact next product work
+## 30. Exact next product work
 
 Current sequencing is intentional:
 
@@ -1557,7 +1614,7 @@ Current sequencing is intentional:
 
 Do not jump ahead because downstream ideas are documented.
 
-## 30. Documentation workflow rule
+## 31. Documentation workflow rule
 
 Every meaningful implementation block must finish by updating this handoff with:
 
@@ -1568,7 +1625,7 @@ Every meaningful implementation block must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-## 31. Production gate
+## 32. Production gate
 
 Production Supabase:
 
