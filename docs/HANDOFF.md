@@ -2119,3 +2119,45 @@ No smoke fixture remains.
 
 Production remains untouched.
 
+## 40. Outbound email acceptance invariant — IMPLEMENTED ON STAGING
+
+Functional commits:
+
+```text
+0587f8c3e9440f2b7ddf2b005eb6e0f5207caef3
+a2efce9c893a6562e6ae69a1237321cc62e21608
+ebd0ad38094dd5f6c76a65363ee96ae11216f17c
+```
+
+Staging `send-booking-email` is ACTIVE v18.
+
+When Brevo returns a successful transactional send response, Cuebooker now persists provider acceptance immediately:
+
+```text
+status = sent
+delivery_status = accepted
+last_delivery_event_at = sent_at
+```
+
+Migration:
+
+```text
+20260918193000_normalize_email_delivery_acceptance.sql
+```
+
+adds a database-level normalization trigger so any future outbound path that legitimately reaches `status = sent` cannot leave delivery tracking empty. The trigger only fills missing provider-acceptance state and never overwrites later delivered/bounce/open events.
+
+The migration also backfilled the real staging outbound email that had been sent after the original tracking migration and was still `delivery_status = null`. Verification showed the latest outbound sent rows consistently at `accepted` with matching `last_delivery_event_at`.
+
+Conversation UI now shows a delivery label only when the Activity is linked to a real `email_messages` record. Old/manual email Activity is no longer falsely labelled as provider-accepted.
+
+Validation:
+
+```text
+CI run 35371633756: success
+Deploy Staging run 35371633745: success
+Supabase security advisors: no new warning introduced
+```
+
+The remaining final-delivery gate is still external Brevo configuration: register the transactional webhook against `brevo-transactional-events` with the configured private header. Production remains untouched.
+
