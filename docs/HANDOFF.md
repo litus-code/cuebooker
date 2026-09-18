@@ -2666,3 +2666,93 @@ f1d418851a8fbcf4f390e9c18748a7842a32a840
 ```
 
 Production remains untouched.
+
+## 48. Assisted email retry + human Activity memory — IMPLEMENTED ON BRANCH
+
+This block continues the assistant rule:
+
+```text
+detect mechanical failure
+-> recover useful context
+-> prepare the next action
+-> human reviews
+-> human sends
+```
+
+### Failed email retry is assisted, never automatic
+
+When the latest real outbound email attempt for a Booking has one of these provider states:
+
+```text
+soft_bounce
+hard_bounce
+blocked
+spam
+invalid
+error
+```
+
+Cuebooker now looks up the exact outbound Activity linked through:
+
+```text
+Activity.metadata.email_message_id
+-> email_messages.id
+```
+
+If that Activity has a real subject + body, Conversation offers:
+
+```text
+Preparar reintento
+```
+
+The action restores the exact previous subject/body into the normal Email composer.
+
+Safety boundaries:
+
+- only the latest real provider-tracked attempt is considered;
+- a later accepted/delivered attempt suppresses the retry suggestion;
+- no linked outbound Activity -> no invented retry draft;
+- missing current contact email -> no retry suggestion;
+- failed delivery retry takes precedence over the stale 72-hour follow-up suggestion;
+- Cuebooker never resends automatically;
+- current contact email is used by the normal send path, so corrected contact data is respected.
+
+Implementation:
+
+```text
+app/services/emailRetryDraft.ts
+tests/emailRetryDraft.test.ts
+app/components/BookingActivityComposer.vue
+app/components/BookingCoreInbox.vue
+```
+
+### Activity detail changes use human language
+
+`booking_details_updated` already records `changed_fields` in Activity.
+
+The Activity UI now translates those database field names into product language.
+
+Example:
+
+```text
+Before:
+Booking actualizado · offer_amount_minor, event_date, start_time
+
+Now:
+Booking actualizado
+Cambió: oferta, fecha, hora de inicio
+```
+
+No technical database column names need to leak into the artist-facing operational history.
+
+Functional commits:
+
+```text
+7afcfc725920149ce77452f98a2537cde1ffa790
+44c4004c77228cbdff8b8429305882a9bad0fd95
+0a04408ddfd1031fc106db67e2fde9238835edce
+9667ca3671a57656107f033d2c8f692977defd7d
+0bfc0aa2649b8460216a00e80db55b25ea0dbcfc
+```
+
+Production remains untouched.
