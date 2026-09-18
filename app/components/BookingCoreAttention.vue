@@ -8,7 +8,7 @@ const props = defineProps<{
   refreshKey?: number
 }>()
 
-const emit = defineEmits<{ changed: []; openBookings: [] }>()
+const emit = defineEmits<{ changed: []; openBookings: []; openBooking: [bookingId: string] }>()
 const bookingCore = useBookingCore()
 const nextMoves = ref<NextMove[]>([])
 const holds = ref<Hold[]>([])
@@ -18,20 +18,28 @@ const workingId = ref('')
 const copy = computed(() => props.locale === 'es' ? {
   eyebrow: 'QUÉ NECESITA TU ATENCIÓN',
   title: 'Lo siguiente, sin perder el hilo',
-  next: 'Siguiente paso',
+  next: 'Próxima acción',
   hold: 'Hold',
   done: 'Hecho',
   release: 'Liberar',
+  open: 'Abrir booking',
+  overdue: 'Vencida',
+  expiredHold: 'Hold caducado',
+  today: 'Hoy',
   noItems: 'No hay nada urgente ahora mismo.', browse: 'Ver bookings',
   noDate: 'Sin fecha',
   expires: 'Caduca'
 } : {
   eyebrow: 'WHAT NEEDS YOUR ATTENTION',
   title: 'What comes next, without losing context',
-  next: 'Next move',
+  next: 'Next action',
   hold: 'Hold',
   done: 'Done',
   release: 'Release',
+  open: 'Open booking',
+  overdue: 'Overdue',
+  expiredHold: 'Expired hold',
+  today: 'Today',
   noItems: 'Nothing urgent right now.', browse: 'View bookings',
   noDate: 'No date',
   expires: 'Expires'
@@ -46,6 +54,7 @@ const items = computed(() => {
     meta: string
     sortAt: number
     actionLabel: string
+    urgency: 'overdue' | 'today' | 'normal'
   }> = []
 
   for (const move of nextMoves.value) {
@@ -57,7 +66,8 @@ const items = computed(() => {
       title: move.label,
       meta: [booking?.venue_name || booking?.event_name || copy.value.noDate, move.due_at ? formatDateTime(move.due_at) : ''].filter(Boolean).join(' · '),
       sortAt: move.due_at ? new Date(move.due_at).getTime() : Number.MAX_SAFE_INTEGER - 1,
-      actionLabel: copy.value.done
+      actionLabel: copy.value.done,
+      urgency: urgencyFor(move.due_at)
     })
   }
 
@@ -70,12 +80,33 @@ const items = computed(() => {
       title: `${copy.value.hold}: ${booking?.venue_name || booking?.event_name || copy.value.noDate}`,
       meta: [formatDateOnly(hold.event_date), hold.expires_at ? `${copy.value.expires} ${formatDateTime(hold.expires_at)}` : '', hold.priority ? `P${hold.priority}` : ''].filter(Boolean).join(' · '),
       sortAt: hold.expires_at ? new Date(hold.expires_at).getTime() : new Date(`${hold.event_date}T12:00:00`).getTime(),
-      actionLabel: copy.value.release
+      actionLabel: copy.value.release,
+      urgency: urgencyFor(hold.expires_at)
     })
   }
 
   return rows.sort((a, b) => a.sortAt - b.sortAt).slice(0, 8)
 })
+
+function urgencyFor(value: string | null) {
+  if (!value) return 'normal' as const
+  const target = new Date(value)
+  if (Number.isNaN(target.getTime())) return 'normal' as const
+  const now = new Date()
+  if (target.getTime() < now.getTime()) return 'overdue' as const
+  if (
+    target.getFullYear() === now.getFullYear()
+    && target.getMonth() === now.getMonth()
+    && target.getDate() === now.getDate()
+  ) return 'today' as const
+  return 'normal' as const
+}
+
+function urgencyLabel(item: (typeof items.value)[number]) {
+  if (item.urgency === 'overdue') return item.kind === 'hold' ? copy.value.expiredHold : copy.value.overdue
+  if (item.urgency === 'today') return copy.value.today
+  return ''
+}
 
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat(props.locale === 'es' ? 'es-ES' : 'en-GB', {
@@ -129,10 +160,14 @@ async function resolve(item: (typeof items.value)[number]) {
     </div>
     <div v-if="loading" class="attention-panel__empty">…</div>
     <div v-else-if="items.length" class="attention-panel__list">
-      <article v-for="item in items" :key="`${item.kind}-${item.id}`">
+      <article v-for="item in items" :key="`${item.kind}-${item.id}`" :class="{ 'attention-panel__item--overdue': item.urgency === 'overdue' }">
         <span :class="['attention-panel__type', `attention-panel__type--${item.kind}`]">{{ item.kind === 'next' ? copy.next : copy.hold }}</span>
-        <div><strong>{{ item.title }}</strong><small>{{ item.meta }}</small></div>
-        <button type="button" :disabled="workingId === item.id" @click="resolve(item)">{{ item.actionLabel }}</button>
+        <button class="attention-panel__context" type="button" :aria-label="`${copy.open}: ${item.title}`" @click="emit('openBooking', item.bookingId)">
+          <strong>{{ item.title }}</strong>
+          <small>{{ item.meta }}</small>
+          <em v-if="urgencyLabel(item)" :class="`attention-panel__urgency attention-panel__urgency--${item.urgency}`">{{ urgencyLabel(item) }}</em>
+        </button>
+        <button class="attention-panel__resolve" type="button" :disabled="workingId === item.id" @click="resolve(item)">{{ item.actionLabel }}</button>
       </article>
     </div>
     <div v-else class="attention-panel__empty attention-panel__empty--action"><span>{{ copy.noItems }}</span><button type="button" @click="emit('openBookings')">{{ copy.browse }} →</button></div>
@@ -149,19 +184,24 @@ async function resolve(item: (typeof items.value)[number]) {
 .attention-panel__list article:first-child { border-top:0; }
 .attention-panel__type { font:700 8px monospace; letter-spacing:.08em; text-transform:uppercase; color:var(--cue-muted); }
 .attention-panel__type--next { color:var(--cue-accent); }
-.attention-panel__list div { min-width:0; }
-.attention-panel__list strong, .attention-panel__list small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.attention-panel__list strong { font-size:12px; }
-.attention-panel__list small { margin-top:4px; color:var(--cue-muted); font-size:10px; }
-.attention-panel__list button { min-height:32px; padding:0 10px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); cursor:pointer; font:700 9px monospace; text-transform:uppercase; }
-.attention-panel__list button:hover { border-color:var(--cue-accent); }
-.attention-panel__list button:disabled { opacity:.4; cursor:wait; }
+.attention-panel__context { position:relative; min-width:0; padding:4px 0; border:0; background:transparent; color:var(--cue-text); text-align:left; cursor:pointer; }
+.attention-panel__context strong, .attention-panel__context small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.attention-panel__context strong { font-size:12px; }
+.attention-panel__context small { margin-top:4px; color:var(--cue-muted); font-size:10px; }
+.attention-panel__context:hover strong { color:var(--cue-accent); }
+.attention-panel__urgency { display:inline-block; margin-top:6px; padding:2px 5px; border:1px solid var(--cue-border); color:var(--cue-muted); font:800 7px monospace; font-style:normal; text-transform:uppercase; }
+.attention-panel__urgency--today { border-color:color-mix(in srgb,#ffbf5f 65%,var(--cue-border)); color:#ffbf5f; }
+.attention-panel__urgency--overdue { border-color:color-mix(in srgb,#ff6f7d 65%,var(--cue-border)); color:#ff6f7d; }
+.attention-panel__item--overdue { background:color-mix(in srgb,#ff6f7d 4%,transparent); }
+.attention-panel__resolve { min-height:32px; padding:0 10px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); cursor:pointer; font:700 9px monospace; text-transform:uppercase; }
+.attention-panel__resolve:hover { border-color:var(--cue-accent); }
+.attention-panel__resolve:disabled { opacity:.4; cursor:wait; }
 .attention-panel__empty { padding:18px; color:var(--cue-muted); font-size:12px; }
 .attention-panel__empty--action { display:flex; align-items:center; justify-content:space-between; gap:14px; }
 .attention-panel__empty--action button { border:0; background:transparent; color:var(--cue-accent); cursor:pointer; font:800 9px monospace; text-transform:uppercase; }
 @media (max-width:760px) {
   .attention-panel__list article { grid-template-columns:76px minmax(0,1fr); }
-  .attention-panel__list button { grid-column:2; justify-self:start; }
+  .attention-panel__resolve { grid-column:2; justify-self:start; }
   .attention-panel__heading h2 { font-size:16px; }
 }
 </style>
