@@ -268,5 +268,29 @@
   "cta": {
     "topButton": "Volver arriba",
     "email": "contacto@cuebooker.com"
+  },
+  "join": {
+    "index": "05 / ENTRA AHORA",
+    "eyebrow": "30 DÍAS PARA PROBARLO CON TRABAJO REAL",
+    "title": "Úsalo con bookings reales. Sin tarjeta y sin aprender otra forma de trabajar.",
+    "body": "La prueba tiene sentido si CueBooker entra en tu operativa de verdad: una llamada, una propuesta, una respuesta pendiente y una fecha que tienes que controlar. Durante 30 días puedes probar el núcleo completo y decidir si realmente te ahorra memoria, seguimiento y tiempo.",
+    "nowTitle": "Lo que ganas desde el primer día",
+    "now": [
+      "Smart Capture por voz o texto para convertir conversaciones en bookings revisables",
+      "Inbox con estados automáticos y conversación centralizada",
+      "Calendario, próxima acción y reservas provisionales de fecha",
+      "Perfil público y formulario para recibir solicitudes estructuradas",
+      "Notificaciones y trazabilidad sin obligar al promotor a usar CueBooker"
+    ],
+    "upcomingTitle": "Lo próximo",
+    "upcoming": [
+      "Captura inteligente desde WhatsApp y emails pegados",
+      "Respuestas de email completamente enlazadas al hilo del booking",
+      "Más automatización de canales con confirmación humana",
+      "Experiencia Manager / Agencia más profunda para rosters",
+      "Planes comerciales simples cuando el flujo esté validado"
+    ],
+    "note": "Entrar ahora también significa ayudarnos a afinar CueBooker sobre operativa real, no sobre métricas de vanidad ni workflows inventados.",
+    "cta": "Empezar 30 días"
   }
 }
