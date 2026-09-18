@@ -128,6 +128,23 @@ const shareGroups = computed(() => [
   { key: 'embed', title: copy.value.embedGroup, items: shareLinks.value.filter(item => item.group === 'embed') }
 ])
 
+const channelIcons: Record<string, string> = {
+  profile: 'ID',
+  booking: 'REQ',
+  instagram: 'IG',
+  whatsapp: 'WA',
+  email: '@',
+  epk: 'EPK',
+  link_in_bio: 'BIO',
+  qr: 'QR',
+  website: 'WEB',
+  widget: '<>'
+}
+
+function channelIcon(key: string) {
+  return channelIcons[key] || '+'
+}
+
 function checkboxValue(event: Event) {
   return (event.currentTarget as HTMLInputElement).checked
 }
@@ -199,7 +216,7 @@ async function copyBookingLink() {
           <div class="public-profile-controls__share-grid">
             <article v-for="link in group.items" :key="link.key" class="public-profile-controls__channel">
               <div>
-                <span class="public-profile-controls__channel-title"><i aria-hidden="true">{{ ({ profile: 'ID', booking: 'REQ', instagram: 'IG', whatsapp: 'WA', email: '@', epk: 'EPK', link_in_bio: 'BIO', qr: 'QR', website: 'WEB', widget: '&lt;&gt;' } as Record<string,string>)[link.key] }}</i>{{ link.label }}</span>
+                <span class="public-profile-controls__channel-title"><i aria-hidden="true">{{ channelIcon(link.key) }}</i>{{ link.label }}</span>
                 <p>{{ link.description }}</p>
                 <small>{{ link.meta }}</small>
               </div>
