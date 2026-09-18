@@ -2054,6 +2054,9 @@ Production remains untouched.
 
 ## 39. Conversation/email tracking closure + operational loop smoke — STAGING
 
+> **Superseded diagnostic note (2026-09-18):** Earlier text in this section attributes the missing final delivery state to an unregistered/misconfigured Brevo transactional webhook. Do not treat that as established fact. Brevo outbound sending works, real emails arrive, provider_message_id is persisted, and inbound replies through Brevo are proven. The remaining diagnostic is narrower: trace the real final delivery event through `Brevo event -> brevo-transactional-events -> correlation -> email_messages persistence -> UI` and prove exactly where it is lost, ignored or not persisted before changing Brevo configuration.
+
+
 Repository hardening commit:
 
 ```text
@@ -2120,6 +2123,9 @@ No smoke fixture remains.
 Production remains untouched.
 
 ## 40. Outbound email acceptance invariant — IMPLEMENTED ON STAGING
+
+> **Superseded diagnostic note (2026-09-18):** Earlier text in this section attributes the missing final delivery state to an unregistered/misconfigured Brevo transactional webhook. Do not treat that as established fact. Brevo outbound sending works, real emails arrive, provider_message_id is persisted, and inbound replies through Brevo are proven. The remaining diagnostic is narrower: trace the real final delivery event through `Brevo event -> brevo-transactional-events -> correlation -> email_messages persistence -> UI` and prove exactly where it is lost, ignored or not persisted before changing Brevo configuration.
+
 
 Functional commits:
 
@@ -2250,6 +2256,9 @@ Production remains untouched.
 
 ## 42. Branded public booking acknowledgement — IMPLEMENTED ON STAGING
 
+> **Superseded diagnostic note (2026-09-18):** Earlier text in this section attributes the missing final delivery state to an unregistered/misconfigured Brevo transactional webhook. Do not treat that as established fact. Brevo outbound sending works, real emails arrive, provider_message_id is persisted, and inbound replies through Brevo are proven. The remaining diagnostic is narrower: trace the real final delivery event through `Brevo event -> brevo-transactional-events -> correlation -> email_messages persistence -> UI` and prove exactly where it is lost, ignored or not persisted before changing Brevo configuration.
+
+
 Functional commits:
 
 ```text
@@ -2284,6 +2293,9 @@ The only remaining delivery-tracking gap is external configuration in Brevo: reg
 Production remains untouched.
 
 ## 43. Transactional delivery tracking hardening — IMPLEMENTED ON STAGING
+
+> **Superseded diagnostic note (2026-09-18):** Earlier text in this section attributes the missing final delivery state to an unregistered/misconfigured Brevo transactional webhook. Do not treat that as established fact. Brevo outbound sending works, real emails arrive, provider_message_id is persisted, and inbound replies through Brevo are proven. The remaining diagnostic is narrower: trace the real final delivery event through `Brevo event -> brevo-transactional-events -> correlation -> email_messages persistence -> UI` and prove exactly where it is lost, ignored or not persisted before changing Brevo configuration.
+
 
 Functional commits:
 
