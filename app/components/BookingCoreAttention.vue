@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Activity, CoreBooking, Hold, NextMove } from '../domain/bookingCore'
 import type { CueNotification } from '../domain/notification'
-import { deriveBookingAttentionSignals, type BookingAttentionSignalKind } from '../services/bookingAttention'
+import { deriveBookingAttentionSignals, deriveEmailDeliveryAttentionSignals, type BookingAttentionSignalKind } from '../services/bookingAttention'
 
 const props = defineProps<{
   workspaceId: string
@@ -17,6 +17,7 @@ const nextMoves = ref<NextMove[]>([])
 const holds = ref<Hold[]>([])
 const activities = ref<Activity[]>([])
 const notificationItems = ref<CueNotification[]>([])
+const emailMessages = ref<import('../services/bookingCoreApi').BookingEmailMessage[]>([])
 const loading = ref(false)
 const workingId = ref('')
 const ATTENTION_WINDOW_MS = 48 * 60 * 60 * 1000
@@ -35,9 +36,11 @@ const copy = computed(() => props.locale === 'es' ? {
   reply: 'Respuesta',
   newBooking: 'Nuevo booking',
   waiting: 'Seguimiento',
+  delivery: 'Email',
   replyTitle: 'Tienes una respuesta nueva',
   newBookingTitle: 'Revisar nuevo booking',
   waitingTitle: 'Lleva 3 días esperando respuesta',
+  deliveryTitle: 'Un email no ha llegado',
   openAction: 'Abrir',
   noItems: 'No hay nada urgente ahora mismo.', browse: 'Ver bookings',
   noDate: 'Sin fecha',
@@ -56,9 +59,11 @@ const copy = computed(() => props.locale === 'es' ? {
   reply: 'Reply',
   newBooking: 'New booking',
   waiting: 'Follow-up',
+  delivery: 'Email',
   replyTitle: 'You have a new reply',
   newBookingTitle: 'Review new booking',
   waitingTitle: 'Waiting for a reply for 3 days',
+  deliveryTitle: 'An email was not delivered',
   openAction: 'Open',
   noItems: 'Nothing urgent right now.', browse: 'View bookings',
   noDate: 'No date',
@@ -138,6 +143,22 @@ const items = computed(() => {
     })
   }
 
+  for (const signal of deriveEmailDeliveryAttentionSignals(props.bookings, emailMessages.value)) {
+    const booking = props.bookings.find(item => item.id === signal.bookingId)
+    const context = booking?.venue_name || booking?.event_name || copy.value.noDate
+    rows.push({
+      id: signal.id,
+      kind: signal.kind,
+      bookingId: signal.bookingId,
+      title: copy.value.deliveryTitle,
+      meta: [context, formatDateTime(signal.occurredAt)].filter(Boolean).join(' · '),
+      sortAt: new Date(signal.occurredAt).getTime(),
+      actionLabel: null,
+      urgency: 'attention',
+      rank: 1
+    })
+  }
+
   for (const signal of deriveBookingAttentionSignals(props.bookings, activities.value)) {
     if (signal.kind !== 'stale_waiting') continue
     const booking = props.bookings.find(item => item.id === signal.bookingId)
@@ -158,7 +179,7 @@ const items = computed(() => {
   const sorted = rows.sort((a, b) => {
     const rankDelta = a.rank - b.rank
     if (rankDelta !== 0) return rankDelta
-    if (a.kind === 'reply_received' || a.kind === 'new_booking') return b.sortAt - a.sortAt
+    if (a.kind === 'reply_received' || a.kind === 'new_booking' || a.kind === 'delivery_failed') return b.sortAt - a.sortAt
     return a.sortAt - b.sortAt
   })
 
@@ -191,6 +212,7 @@ function kindLabel(kind: (typeof items.value)[number]['kind']) {
   if (kind === 'hold') return copy.value.hold
   if (kind === 'reply_received') return copy.value.reply
   if (kind === 'new_booking') return copy.value.newBooking
+  if (kind === 'delivery_failed') return copy.value.delivery
   return copy.value.waiting
 }
 
@@ -217,15 +239,17 @@ async function load() {
   loading.value = true
   try {
     const bookingIds = props.bookings.map(item => item.id)
-    const [moves, holdRows, activityRows, notifications] = await Promise.all([
+    const [moves, holdRows, activityRows, notifications, deliveryRows] = await Promise.all([
       bookingCore.listNextMoves(props.workspaceId, undefined, true),
       bookingCore.listHolds(props.workspaceId, undefined, true),
       bookingCore.listWorkspaceActivities(props.workspaceId, bookingIds, 500),
-      notificationApi.list(100)
+      notificationApi.list(100),
+      bookingCore.listWorkspaceBookingEmailMessages(props.workspaceId, bookingIds)
     ])
     nextMoves.value = moves
     holds.value = holdRows
     activities.value = activityRows
+    emailMessages.value = deliveryRows
     notificationItems.value = notifications.filter(item =>
       item.workspace_id === props.workspaceId
       && bookingIds.includes(item.booking_id)
@@ -289,6 +313,7 @@ async function resolve(item: (typeof items.value)[number]) {
 .attention-panel__type--next { color:var(--cue-accent); }
 .attention-panel__type--reply_received { color:#73b7ff; }
 .attention-panel__type--new_booking { color:#ceff54; }
+.attention-panel__type--delivery_failed { color:#ff6f7d; }
 .attention-panel__type--stale_waiting { color:#ffbf5f; }
 .attention-panel__context { position:relative; min-width:0; padding:4px 0; border:0; background:transparent; color:var(--cue-text); text-align:left; cursor:pointer; }
 .attention-panel__context strong, .attention-panel__context small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
