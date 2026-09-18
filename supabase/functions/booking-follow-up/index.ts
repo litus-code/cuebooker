@@ -147,24 +147,34 @@ Deno.serve(async request => {
       return json(request, { error: "invalid_request" }, 400);
     }
 
-    const [clientKey, tokenRateKey] = await Promise.all([
-      publicRateLimitKey(request, serviceKey, "booking-follow-up-client"),
-      publicRateLimitKey(request, serviceKey, "booking-follow-up-token", token)
-    ]);
-    const rateDecisions = await Promise.all([
-      consumePublicRateLimit(serviceJson, supabaseUrl, serviceKey, "booking_follow_up_client", clientKey, 30, 600),
-      consumePublicRateLimit(serviceJson, supabaseUrl, serviceKey, "booking_follow_up_token", tokenRateKey, 12, 600)
-    ]);
-    const blocked = rateDecisions.filter(item => !item.allowed);
-    if (blocked.length) {
-      const retryAfter = Math.max(...blocked.map(item => item.retryAfterSeconds), 1);
+    const clientKey = await publicRateLimitKey(request, serviceKey, "booking-follow-up-client");
+    const clientDecision = await consumePublicRateLimit(
+      serviceJson, supabaseUrl, serviceKey, "booking_follow_up_client", clientKey, 30, 600
+    );
+    if (!clientDecision.allowed) {
       return new Response(JSON.stringify({ error: "rate_limited" }), {
         status: 429,
         headers: {
           ...corsHeaders(request),
           "Content-Type": "application/json",
           "Cache-Control": "no-store",
-          "Retry-After": String(retryAfter)
+          "Retry-After": String(Math.max(clientDecision.retryAfterSeconds, 1))
+        }
+      });
+    }
+
+    const tokenRateKey = await publicRateLimitKey(request, serviceKey, "booking-follow-up-token", token);
+    const tokenDecision = await consumePublicRateLimit(
+      serviceJson, supabaseUrl, serviceKey, "booking_follow_up_token", tokenRateKey, 12, 600
+    );
+    if (!tokenDecision.allowed) {
+      return new Response(JSON.stringify({ error: "rate_limited" }), {
+        status: 429,
+        headers: {
+          ...corsHeaders(request),
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+          "Retry-After": String(Math.max(tokenDecision.retryAfterSeconds, 1))
         }
       });
     }
