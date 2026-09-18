@@ -2566,3 +2566,99 @@ Functional commit:
 ```
 
 No production changes were made.
+
+## 47. Booking schedule synchronization invariants — IMPLEMENTED ON STAGING / BRANCH
+
+This block tightens the boundary between derived synchronization and artist-owned decisions.
+
+### Calendar remains a projection
+
+Confirmed bookings continue to project directly from Booking truth. Editing a confirmed Booking date or schedule therefore updates Calendar without copying/synchronizing a separate calendar record.
+
+No new calendar persistence layer was introduced.
+
+### Confirmed Booking must retain an event date
+
+A domain inconsistency was found:
+
+```text
+confirmed Booking
+-> edit details
+-> remove event_date
+-> Booking remains confirmed
+-> Calendar projection silently disappears
+```
+
+This is now prevented in two layers.
+
+UI:
+
+```text
+BookingCoreEditor
+-> confirmed + empty event date
+-> save blocked with human copy
+```
+
+Database invariant:
+
+```text
+status = confirmed
+=> event_date IS NOT NULL
+```
+
+Repository migration:
+
+```text
+20260918190000_enforce_confirmed_booking_date.sql
+```
+
+Staging had zero invalid confirmed bookings before applying the constraint.
+
+A staging verification attempted to clear the date of a confirmed Booking inside a PL/pgSQL exception subtransaction. The database raised a check violation as expected and preserved the original row.
+
+No new Supabase security advisor regression was introduced.
+
+### Hold proposal follows Booking date safely
+
+The new-Hold form now follows Booking.event_date when:
+
+- the Hold date field is empty; or
+- it still contains the previous Booking date.
+
+If the artist deliberately chose another Hold date, Cuebooker preserves that explicit value.
+
+This avoids silently reintroducing an old Booking date after editing the Booking.
+
+### Hold schedule drift detection
+
+Own active Holds are now checked against current Booking truth.
+
+Cuebooker surfaces a review warning when:
+
+- Hold date differs from Booking date; or
+- a timed Hold is on the same date but its explicit time range no longer matches the Booking schedule.
+
+An all-day Hold on the same Booking date remains valid; Cuebooker does not invent a time mismatch.
+
+The system does not move, release or recreate the Hold automatically. That remains an artist decision.
+
+Pure alignment logic + tests:
+
+```text
+app/services/bookingHoldAlignment.ts
+tests/bookingHoldAlignment.test.ts
+```
+
+Relevant functional commits:
+
+```text
+796466201145d496b955723394b3f771f44d45bc
+d1ad9dd6179763836b8ea02cdcab999e3bfd8d9c
+15abf4e1772f4b8669c9316b775ef3566450cc84
+be1c98751392d50320e5f72025eb6e5adfa6477f
+55c67be1e98f0fda1d3cb3ea506bc9dbf1e5c5ee
+e544d7fc65b0df0eaccb53729fdad9423319e97c
+1cc581ae3a193b17d7bb9e520aa7038917b04ac1
+```
+
+Production remains untouched.
