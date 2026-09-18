@@ -82,10 +82,27 @@ export function createNotificationApi(options: NotificationApiOptions) {
     })
   }
 
+  async function markBookingRead(workspaceId: string, bookingId: string) {
+    if (!workspaceId.trim() || !bookingId.trim()) return
+    await $fetch(`${baseUrl}/rest/v1/notifications`, {
+      method: 'PATCH',
+      headers: authHeaders('return=minimal'),
+      query: {
+        workspace_id: `eq.${workspaceId}`,
+        booking_id: `eq.${bookingId}`,
+        read_at: 'is.null'
+      },
+      body: {
+        read_at: new Date().toISOString()
+      }
+    })
+  }
+
   return {
     list,
     unreadCount,
     markRead,
-    markAllRead
+    markAllRead,
+    markBookingRead
   }
 }
