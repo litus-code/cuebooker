@@ -1340,7 +1340,59 @@ Public profile fallback presentation is now consistent with the editor contract:
 
 The current staging artist `lits` still has no persisted custom cover, so the default artwork is expected until one is uploaded.
 
-## 23. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
+## 23. Madrid demo hotfix pass — IMPLEMENTED ON BRANCH
+
+Follow-up fixes from the live desktop smoke:
+
+Functional commits:
+
+```text
+e32b0034167d92b270b3892a05606ee7c12e6d5e
+df94d9194b4734927ac668217b183afccb756203
+407f58ae6e778fefc31439cdd5e31ed4d1914ca0
+f89247c21538171c51e5f49a2aef2c9787bbea7d
+941651d43c7406b79f00afb418c1f53300c3b3b6
+137fc09d6ebb629fe8f84ff6d8cbbd00f81d369d
+```
+
+### Voice fallback
+
+Staging currently reports `smart_capture_provider_not_configured` from the Smart Capture server provider path.
+
+For demo resilience, browsers exposing SpeechRecognition/WebkitSpeechRecognition now prefer live dictation instead of MediaRecorder. When dictation stops:
+
+```text
+voice -> browser transcript -> Smart Capture text
+                          -> local parser when server provider is unavailable
+```
+
+The user-visible provider/internal error code is no longer surfaced.
+
+This is a graceful fallback, not a replacement for restoring the server-side provider configuration before production.
+
+### Booking decision modal
+
+Native `window.confirm` / technical error behaviour for booking decisions has been replaced with a Cuebooker modal.
+
+Confirmation now validates the booking date before calling `set_booking_status`.
+
+The 400 observed in the desktop smoke was expected database protection:
+
+```text
+confirmed_booking_requires_date
+```
+
+The tested booking visibly had no date. The UI now explains this and disables confirmation until a date exists instead of making a failing RPC.
+
+### Visual polish
+
+- calendar "Añadir bloqueo" control uses the Cuebooker accent system;
+- confirmed calendar legend dot uses an explicit green token;
+- profile cover upload CTA has a smaller, balanced plus icon and typography;
+- Distribution no longer reserves an empty left column below its intro;
+- Distribution channel cards now use recognizable pictograms rather than text abbreviations.
+
+## 24. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
 
@@ -1358,7 +1410,7 @@ AI/voice limits should not be hard-coded into pricing before real usage/cost evi
 
 No billing, trial enforcement or Stripe integration is implemented yet.
 
-## 24. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
+## 25. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
 
 ### Smart Capture / interpretation
 
@@ -1397,7 +1449,7 @@ Treat human feedback as a cross-product rule:
 - retryable failure -> preserve work and explain next action;
 - technical/provider detail -> logs/admin, not promoter-facing copy.
 
-## 25. Root routing and static deployment
+## 26. Root routing and static deployment
 
 Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. `ASSETS.fetch()` must use the pretty `/200` path rather than `/200.html`.
 
@@ -1409,7 +1461,7 @@ Previously validated:
 
 PR #75 remains the staging preview vehicle.
 
-## 26. Security / operational follow-up
+## 27. Security / operational follow-up
 
 Before production:
 
@@ -1429,7 +1481,7 @@ Leaked Password Protection Disabled
 
 Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to the current Supabase secret-key model as a deliberate infrastructure task, not mixed into a product slice.
 
-## 27. Exact next product work
+## 28. Exact next product work
 
 Current sequencing is intentional:
 
@@ -1447,7 +1499,7 @@ Current sequencing is intentional:
 
 Do not jump ahead because downstream ideas are documented.
 
-## 28. Documentation workflow rule
+## 29. Documentation workflow rule
 
 Every meaningful implementation block must finish by updating this handoff with:
 
@@ -1458,7 +1510,7 @@ Every meaningful implementation block must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-## 29. Production gate
+## 30. Production gate
 
 Production Supabase:
 
