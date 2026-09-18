@@ -384,7 +384,13 @@ async function selectBooking(bookingId: string) {
             >
               <div class="thread-item__meta">
                 <strong>{{ activity.type.replaceAll('_', ' ') }}</strong>
-                <span>{{ activity.direction === 'inbound' ? (locale === 'es' ? 'Recibido' : 'Received') : activity.direction === 'outbound' ? (locale === 'es' ? 'Enviado' : 'Sent') : (locale === 'es' ? 'Nota interna' : 'Internal note') }}</span>
+                <span>
+                  {{ activity.direction === 'inbound'
+                    ? ((selectedContact?.name || (locale === 'es' ? 'Contacto' : 'Contact')) + ' → ' + (locale === 'es' ? 'Tú' : 'You'))
+                    : activity.direction === 'outbound'
+                      ? ((locale === 'es' ? 'Tú' : 'You') + ' → ' + (selectedContact?.name || (locale === 'es' ? 'Contacto' : 'Contact')))
+                      : (locale === 'es' ? 'Nota interna' : 'Internal note') }}
+                </span>
                 <time>{{ formatTime(activity.occurred_at) }}</time>
               </div>
               <p>{{ activity.body }}</p>
