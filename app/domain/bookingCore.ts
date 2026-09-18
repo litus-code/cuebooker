@@ -7,6 +7,7 @@ export type BookingOriginChannel = 'phone' | 'whatsapp' | 'email' | 'instagram' 
 export type BookingCaptureMethod = 'manual' | 'public_form' | 'email_import' | 'share_extension' | 'api' | 'ai_capture' | 'system'
 export type CoreBookingStatus = 'new' | 'in_conversation' | 'waiting_response' | 'confirmed' | 'rejected' | 'cancelled'
 export type HoldStatus = 'active' | 'released' | 'converted'
+export type NextMoveCompletionTrigger = 'manual' | 'inbound_activity'
 export type ActivityType =
   | 'phone'
   | 'email'
@@ -116,6 +117,7 @@ export interface NextMove {
   label: string
   due_at: string | null
   assignee_user_id: string | null
+  completion_trigger: NextMoveCompletionTrigger
   completed_at: string | null
   created_by: string
   created_at: string
@@ -251,6 +253,7 @@ export interface SetNextMoveInput {
   label: string
   dueAt?: string | null
   assigneeUserId?: string | null
+  completionTrigger?: NextMoveCompletionTrigger
 }
 
 export interface CreateHoldInput {
