@@ -2487,3 +2487,82 @@ Functional HEAD before this documentation update:
 ```
 
 CI tests for the functional HEAD passed. Production remains untouched.
+
+## 46. Assistant loop friction reduction — IMPLEMENTED ON BRANCH
+
+Three assistant-model refinements were added after the assisted follow-up block.
+
+### Delivery failure resolves after a real retry
+
+Delivery attention now evaluates the latest outbound email attempt per Booking rather than the latest historical failure.
+
+Therefore:
+
+```text
+old hard bounce
+-> artist retries
+-> newer outbound accepted/delivered
+-> old delivery warning disappears automatically
+```
+
+This prevents stale provider errors from creating permanent attention noise.
+
+Implementation:
+
+```text
+app/services/bookingAttention.ts
+tests/bookingAttention.test.ts
+app/services/bookingCoreApi.ts
+```
+
+Functional commits:
+
+```text
+87ff7c161f7f83d8f0c23728857405c21d016a5b
+92f34fa382f303b30b105a21017972fa00feb8c5
+b48de508a3dec898d711374de6a30eae4c758d9d
+```
+
+### CUE opens the Booking it just created
+
+`CueCapturePanel` already returned the newly created `CoreBooking`, but the workspace previously only refreshed the list.
+
+Now:
+
+```text
+CUE create
+-> refresh Booking Core
+-> switch to Bookings
+-> focus/open the exact newly created Booking
+```
+
+No extra search/click is required before continuing conversation, next action, hold or decision.
+
+Functional commit:
+
+```text
+e860577ebb83eccd1df4bf6cf5041d7796c2086b
+```
+
+### Booking date / Hold drift is detected, not silently mutated
+
+If a Booking date is edited while that Booking still has an active Hold on a different date, Cuebooker now surfaces the mismatch in the schedule/conflict notice.
+
+The system deliberately does not move or release the Hold automatically.
+
+```text
+Booking date changes
+-> active own Hold remains on old date
+-> Cuebooker detects mismatch
+-> artist reviews and chooses the correct action
+```
+
+This preserves artist control while preventing silent operational drift.
+
+Functional commit:
+
+```text
+43fcf54645508e81a67817428befdf5fb47d8f51
+```
+
+No production changes were made.
