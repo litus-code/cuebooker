@@ -21,12 +21,13 @@ const holdExpires = ref('')
 const holdPriority = ref('')
 
 const copy = computed(() => props.locale === 'es' ? {
-  eyebrow: 'OPERATIVA',
-  nextMove: 'Siguiente paso',
-  noNext: 'No hay ningún siguiente paso definido.',
+  eyebrow: 'SEGUIMIENTO',
+  nextMove: 'Próxima acción',
+  nextHelp: 'Tu recordatorio operativo: qué tienes que hacer después. No cambia el estado del booking.',
+  noNext: 'No hay ninguna próxima acción definida.',
   nextPlaceholder: 'Ej. Confirmar horario con Héctor',
   due: 'Cuándo',
-  saveNext: 'Definir siguiente paso',
+  saveNext: 'Guardar próxima acción',
   complete: 'Hecho',
   hold: 'Hold',
   noHold: 'No hay holds activos.',
@@ -41,12 +42,13 @@ const copy = computed(() => props.locale === 'es' ? {
   invalidHold: 'El hold necesita una fecha.',
   error: 'No se ha podido actualizar la operativa.'
 } : {
-  eyebrow: 'OPERATIONS',
-  nextMove: 'Next move',
-  noNext: 'No next move has been defined.',
+  eyebrow: 'FOLLOW-UP',
+  nextMove: 'Next action',
+  nextHelp: 'Your operational reminder: what you need to do next. It does not change booking status.',
+  noNext: 'No next action has been defined.',
   nextPlaceholder: 'E.g. Confirm schedule with Hector',
   due: 'When',
-  saveNext: 'Set next move',
+  saveNext: 'Save next action',
   complete: 'Done',
   hold: 'Hold',
   noHold: 'No active holds.',
@@ -198,7 +200,7 @@ async function convertHold(hold: Hold) {
     <div class="core-ops__eyebrow">{{ copy.eyebrow }}</div>
     <div class="core-ops__grid">
       <section>
-        <header><strong>{{ copy.nextMove }}</strong></header>
+        <header><strong>{{ copy.nextMove }}</strong><small>{{ copy.nextHelp }}</small></header>
         <div v-if="loading" class="core-ops__empty">…</div>
         <div v-else-if="activeNextMove" class="core-ops__current">
           <div><strong>{{ activeNextMove.label }}</strong><small>{{ activeNextMove.due_at ? localDateTime(activeNextMove.due_at) : '—' }}</small></div>
@@ -240,6 +242,7 @@ async function convertHold(hold: Hold) {
 .core-ops__grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .core-ops__grid > section { min-width:0; border:1px solid var(--cue-border); background:var(--cue-raised); }
 .core-ops__grid header { padding:11px 12px; border-bottom:1px solid var(--cue-border); font-size:11px; text-transform:uppercase; letter-spacing:.05em; }
+.core-ops__grid header small { display:block; margin-top:5px; max-width:430px; color:var(--cue-muted); font-size:9px; line-height:1.4; letter-spacing:0; text-transform:none; font-weight:400; }
 .core-ops__current, .core-ops__holds article { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:11px 12px; border-bottom:1px solid var(--cue-border); }
 .core-ops__current > div, .core-ops__holds article > div:first-child { min-width:0; }
 .core-ops__current strong, .core-ops__current small, .core-ops__holds strong, .core-ops__holds small { display:block; }
