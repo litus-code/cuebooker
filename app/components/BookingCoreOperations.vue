@@ -29,14 +29,15 @@ const copy = computed(() => props.locale === 'es' ? {
   due: 'Cuándo',
   saveNext: 'Guardar próxima acción',
   complete: 'Hecho',
-  hold: 'Hold',
-  noHold: 'No hay holds activos.',
-  holdDate: 'Fecha del hold',
+  hold: 'Reservar fecha (hold)',
+  holdHelp: 'Úsalo cuando quieras bloquear una fecha de forma provisional mientras se negocia el booking.',
+  noHold: 'No hay fechas reservadas provisionalmente.',
+  holdDate: 'Fecha',
   expires: 'Caduca',
   priority: 'Prioridad',
-  createHold: 'Crear hold',
-  release: 'Liberar',
-  convert: 'Confirmar',
+  createHold: 'Reservar fecha',
+  release: 'Liberar fecha',
+  convert: 'Confirmar booking',
   saving: 'Guardando…',
   invalidNext: 'Escribe el siguiente paso.',
   invalidHold: 'El hold necesita una fecha.',
@@ -50,14 +51,15 @@ const copy = computed(() => props.locale === 'es' ? {
   due: 'When',
   saveNext: 'Save next action',
   complete: 'Done',
-  hold: 'Hold',
-  noHold: 'No active holds.',
-  holdDate: 'Hold date',
+  hold: 'Reserve date (hold)',
+  holdHelp: 'Use it when you want to provisionally block a date while the booking is being negotiated.',
+  noHold: 'No dates are provisionally reserved.',
+  holdDate: 'Date',
   expires: 'Expires',
   priority: 'Priority',
-  createHold: 'Create hold',
-  release: 'Release',
-  convert: 'Confirm',
+  createHold: 'Reserve date',
+  release: 'Release date',
+  convert: 'Confirm booking',
   saving: 'Saving…',
   invalidNext: 'Enter a next move.',
   invalidHold: 'A hold needs a date.',
@@ -214,8 +216,11 @@ async function convertHold(hold: Hold) {
         </form>
       </section>
 
-      <section>
-        <header><strong>{{ copy.hold }}</strong></header>
+      <details class="core-ops__hold-box" :open="activeHolds.length > 0">
+        <summary>
+          <span><strong>{{ copy.hold }}</strong><small>{{ copy.holdHelp }}</small></span>
+          <b v-if="activeHolds.length">{{ activeHolds.length }}</b>
+        </summary>
         <div v-if="activeHolds.length" class="core-ops__holds">
           <article v-for="hold in activeHolds" :key="hold.id">
             <div><strong>{{ dateOnly(hold.event_date) }}</strong><small>{{ hold.expires_at ? `${copy.expires}: ${localDateTime(hold.expires_at)}` : '—' }}</small></div>
@@ -230,7 +235,7 @@ async function convertHold(hold: Hold) {
           <label><span>{{ copy.priority }}</span><input v-model="holdPriority" type="number" min="1" max="9" inputmode="numeric"></label>
           <button type="submit" :disabled="saving">{{ saving ? copy.saving : copy.createHold }}</button>
         </form>
-      </section>
+      </details>
     </div>
     <p v-if="errorMessage" class="core-ops__error">{{ errorMessage }}</p>
   </section>
@@ -240,8 +245,14 @@ async function convertHold(hold: Hold) {
 .core-ops { margin-top:18px; border-top:1px solid var(--cue-border); padding-top:16px; }
 .core-ops__eyebrow { margin-bottom:10px; color:var(--cue-accent); font:700 9px/1.2 monospace; letter-spacing:.11em; }
 .core-ops__grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-.core-ops__grid > section { min-width:0; border:1px solid var(--cue-border); background:var(--cue-raised); }
+.core-ops__grid > section, .core-ops__hold-box { min-width:0; border:1px solid var(--cue-border); background:var(--cue-raised); }
 .core-ops__grid header { padding:11px 12px; border-bottom:1px solid var(--cue-border); font-size:11px; text-transform:uppercase; letter-spacing:.05em; }
+.core-ops__hold-box > summary { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:11px 12px; cursor:pointer; list-style:none; }
+.core-ops__hold-box > summary::-webkit-details-marker { display:none; }
+.core-ops__hold-box > summary span { display:grid; gap:5px; }
+.core-ops__hold-box > summary strong { font-size:11px; text-transform:uppercase; letter-spacing:.05em; }
+.core-ops__hold-box > summary small { max-width:430px; color:var(--cue-muted); font-size:9px; line-height:1.4; }
+.core-ops__hold-box > summary b { color:var(--cue-accent); font:700 10px monospace; }
 .core-ops__grid header small { display:block; margin-top:5px; max-width:430px; color:var(--cue-muted); font-size:9px; line-height:1.4; letter-spacing:0; text-transform:none; font-weight:400; }
 .core-ops__current, .core-ops__holds article { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:11px 12px; border-bottom:1px solid var(--cue-border); }
 .core-ops__current > div, .core-ops__holds article > div:first-child { min-width:0; }
