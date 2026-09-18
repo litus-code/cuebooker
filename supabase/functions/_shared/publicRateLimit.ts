@@ -7,8 +7,12 @@ export type RateLimitDecision = {
 type ServiceJson = <T>(url: string, init: RequestInit, serviceKey: string) => Promise<T>;
 
 function forwardedClientAddress(request: Request) {
-  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  return forwarded
+  const forwarded = (request.headers.get("x-forwarded-for") || "")
+    .split(",")
+    .map(value => value.trim())
+    .filter(Boolean);
+  const gatewayAddress = forwarded.length ? forwarded[forwarded.length - 1] : "";
+  return gatewayAddress
     || request.headers.get("cf-connecting-ip")?.trim()
     || request.headers.get("x-real-ip")?.trim()
     || "";
