@@ -146,6 +146,12 @@ async function handleBookingSaved() {
   emit('operationsChanged')
 }
 
+function handleContactSaved(updated: Contact) {
+  const index = contacts.value.findIndex(item => item.id === updated.id)
+  if (index >= 0) contacts.value.splice(index, 1, updated)
+  else contacts.value.push(updated)
+}
+
 async function handleActivityCreated() {
   await loadActivity()
 }
@@ -342,7 +348,19 @@ async function selectBooking(bookingId: string) {
           <dl id="core-inbox-facts" class="core-inbox__facts">
             <div><dt>{{ copy.date }}</dt><dd :class="{ missing: !selectedBooking.event_date }">{{ formatDate(selectedBooking.event_date) }}</dd></div>
             <div><dt>{{ copy.venue }}</dt><dd :class="{ missing: !selectedCounterparty?.name && !selectedBooking.venue_name }">{{ selectedCounterparty?.name || selectedBooking.venue_name || copy.noVenue }}</dd></div>
-            <div><dt>{{ copy.contact }}</dt><dd :class="{ missing: !loadingMeta && !selectedContact?.name }">{{ loadingMeta ? '…' : selectedContact?.name || copy.noContact }}</dd></div>
+            <div class="core-inbox__contact-fact">
+              <dt>{{ copy.contact }}</dt>
+              <dd :class="{ missing: !loadingMeta && !selectedContact?.name }">{{ loadingMeta ? '…' : selectedContact?.name || copy.noContact }}</dd>
+              <small v-if="selectedContact?.email">{{ selectedContact.email }}</small>
+              <small v-if="selectedContact?.phone">{{ selectedContact.phone }}</small>
+              <BookingContactEditor
+                v-if="selectedContact && !selectedBooking.archived_at"
+                :workspace-id="workspaceId"
+                :contact="selectedContact"
+                :locale="locale"
+                @saved="handleContactSaved"
+              />
+            </div>
             <div><dt>{{ copy.offer }}</dt><dd :class="{ missing: selectedBooking.offer_amount_minor == null }">{{ formatMoney(selectedBooking) }}</dd></div>
           </dl>
         </section>
@@ -522,6 +540,7 @@ async function selectBooking(bookingId: string) {
 .core-inbox__facts dt { color:var(--cue-muted); font:700 9px monospace; text-transform:uppercase; }
 .core-inbox__facts dd { margin:5px 0 0; overflow:hidden; text-overflow:ellipsis; font-size:12px; }
 .core-inbox__facts dd.missing { color:var(--cue-accent); font-style:italic; }
+.core-inbox__contact-fact small { display:block; margin-top:3px; color:var(--cue-muted); font-size:9px; line-height:1.3; }
 .core-inbox__conversation { margin-top:16px; border:1px solid var(--cue-border); background:color-mix(in srgb,var(--cue-raised) 45%,transparent); }
 .core-inbox__conversation-heading { padding:12px 14px; border-bottom:1px solid var(--cue-border); }
 .core-inbox__conversation-heading span { display:block; font:800 11px monospace; text-transform:uppercase; letter-spacing:.08em; }
