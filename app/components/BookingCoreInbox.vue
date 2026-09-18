@@ -85,8 +85,9 @@ const selectedContact = computed(() => selectedBooking.value?.primary_contact_id
 const selectedCounterparty = computed(() => selectedBooking.value?.counterparty_id ? counterparties.value.find(item => item.id === selectedBooking.value?.counterparty_id) || null : null)
 const suggestedFollowUp = computed(() => {
   const booking = selectedBooking.value
-  if (!booking || !shouldSuggestFollowUp(booking, activities.value)) return null
-  return buildFollowUpDraft(booking, selectedContact.value, activities.value, props.locale)
+  const contact = selectedContact.value
+  if (!booking || !contact?.email || !shouldSuggestFollowUp(booking, activities.value)) return null
+  return buildFollowUpDraft(booking, contact, activities.value, props.locale)
 })
 
 const conversationActivities = computed(() => activities.value.filter(activity =>
