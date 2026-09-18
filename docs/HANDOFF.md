@@ -826,7 +826,173 @@ Mobile review showed that the booking detail contained too many competing concep
 
 Visual mobile smoke is required after preview deploy.
 
-## 18. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
+## 18. Smart Capture V1 foundation — IMPLEMENTED ON BRANCH / EDGE FUNCTION DEPLOYED TO STAGING
+
+Smart Capture is now treated as a first-class product capability, not as the old regex parser.
+
+Functional commits:
+
+```text
+ff2a04910c86be99c9db0f741547999bf56ca501
+07b10d35d1eb9fc37f1cb33d45f89b69d5d60332
+e52b241f643575bb511ff038ccc26b84d6781464
+9643dd74eb86dab146ef2618a24372047123a43a
+6c6e3c70053aad18532b56f9a7c81047c812665d
+f7f2d09603c9a6b7fbfcfae72cc4056b12ee0c72
+d1981b7164697960e7044502f07c39d5669a06df
+3866ff3133ddb992e63a2f8472303bb6e8678987
+d2c59efe10242724392b0d87a4bdf691240939f7
+d1467ec54802f80bedb2ae2a7122b997b2065ec5
+481cae9d61d7e87cbd7ec16f70db5168554c89fc
+b18797d9f4564bcee42af7f5689065279ce0f4ff
+59fa0d900bab4fdf67368d093bddc9a9720a5d96
+```
+
+### Architecture
+
+The primary flow is now:
+
+```text
+voice or text
+-> authenticated smart-capture Edge Function
+-> audio transcription when needed
+-> strict structured semantic extraction
+-> confidence + evidence + warnings + missing fields
+-> human review
+-> apply selected result
+-> create Smart CUE booking
+-> Booking Core
+```
+
+The Edge Function:
+
+- requires an authenticated user;
+- verifies editable workspace membership;
+- verifies the artist belongs to the workspace;
+- does not persist transcript or extracted data;
+- accepts text or multipart audio;
+- limits audio to 20 MB;
+- uses server-side transcription for audio;
+- uses strict JSON-schema extraction;
+- never receives provider credentials from the browser.
+
+Provider configuration is server-side through:
+
+```text
+OPENAI_API_KEY
+CUEBOOKER_TRANSCRIPTION_MODEL (optional; default gpt-4o-transcribe)
+CUEBOOKER_SMART_CAPTURE_MODEL (optional; default gpt-5-mini)
+```
+
+If the provider is unavailable/unconfigured, text Smart Capture falls back explicitly to the existing local deterministic parser and tells the user that the result is basic detection. It must never claim semantic AI ran when it did not.
+
+### Structured extraction
+
+Smart Capture returns:
+
+- transcript;
+- summary;
+- source/channel;
+- contact name/email/phone;
+- counterparty name/type;
+- event name/venue/city/country/date/start/end/timezone;
+- offer amount/currency/fee basis;
+- next action + due date;
+- hotel/travel/hospitality/technical/other conditions;
+- missing fields;
+- warnings.
+
+Every primary field contains:
+
+```text
+value
+confidence = high | medium | low | unknown
+evidence
+```
+
+Evidence is kept short and derived from the source text. Nothing is applied automatically.
+
+### Review UX
+
+`SmartCaptureReview.vue` renders:
+
+- interpreted summary;
+- field-by-field values;
+- confidence labels;
+- source evidence;
+- detected conditions;
+- missing fields;
+- warnings;
+- Apply / Discard.
+
+### Voice
+
+Browser SpeechRecognition is no longer the primary capture path.
+
+On capable browsers, CUE now:
+
+- records microphone audio with MediaRecorder;
+- uses noise suppression / echo cancellation / auto gain when available;
+- supports up to 5 minutes per capture;
+- sends the recorded audio to Smart Capture;
+- transcribes server-side;
+- places the returned transcript into the CUE;
+- returns the semantic review in the same operation.
+
+Browser dictation remains only as a compatibility fallback where MediaRecorder/getUserMedia is unavailable.
+
+### Smart CUE persistence
+
+Migration:
+
+```text
+20260918031500_add_smart_cue_booking_rpc.sql
+```
+
+adds `create_smart_cue_booking(...)`, preserving:
+
+- country;
+- date;
+- start/end times;
+- timezone;
+- fee/currency/fee basis;
+- initial transcript/note;
+- next action;
+- next-action due date.
+
+A transaction + rollback smoke proved that the RPC persists the extended data without leaving test rows.
+
+### Overnight club bookings
+
+The smoke exposed a legacy domain assumption that required `end_time > start_time`, which incorrectly rejected normal DJ sets such as:
+
+```text
+23:30 -> 01:00
+```
+
+Migrations:
+
+```text
+20260918032500_allow_overnight_booking_times.sql
+20260918033000_allow_overnight_booking_constraint.sql
+```
+
+now define `end_time <= start_time` as ending on the following calendar day.
+
+This is deliberate club/booking domain behavior, not a validation relaxation by accident.
+
+### Remaining gate
+
+Before calling Smart Capture production-ready:
+
+1. confirm the provider key/models are configured in staging;
+2. run a real authenticated text extraction;
+3. run a real iPhone audio capture/transcription;
+4. review extraction quality with natural Spanish/Catalan/English booking speech;
+5. add rate/cost protection before production;
+6. keep the old regex parser only as explicit fallback.
+
+## 19. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
 
@@ -844,7 +1010,7 @@ AI/voice limits should not be hard-coded into pricing before real usage/cost evi
 
 No billing, trial enforcement or Stripe integration is implemented yet.
 
-## 19. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
+## 20. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
 
 ### Smart Capture / interpretation
 
@@ -883,7 +1049,7 @@ Treat human feedback as a cross-product rule:
 - retryable failure -> preserve work and explain next action;
 - technical/provider detail -> logs/admin, not promoter-facing copy.
 
-## 20. Root routing and static deployment
+## 21. Root routing and static deployment
 
 Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. `ASSETS.fetch()` must use the pretty `/200` path rather than `/200.html`.
 
@@ -895,7 +1061,7 @@ Previously validated:
 
 PR #75 remains the staging preview vehicle.
 
-## 21. Security / operational follow-up
+## 22. Security / operational follow-up
 
 Before production:
 
@@ -915,7 +1081,7 @@ Leaked Password Protection Disabled
 
 Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to the current Supabase secret-key model as a deliberate infrastructure task, not mixed into a product slice.
 
-## 22. Exact next product work
+## 23. Exact next product work
 
 Current sequencing is intentional:
 
@@ -933,7 +1099,7 @@ Current sequencing is intentional:
 
 Do not jump ahead because downstream ideas are documented.
 
-## 23. Documentation workflow rule
+## 24. Documentation workflow rule
 
 Every meaningful implementation block must finish by updating this handoff with:
 
@@ -944,7 +1110,7 @@ Every meaningful implementation block must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-## 24. Production gate
+## 25. Production gate
 
 Production Supabase:
 
