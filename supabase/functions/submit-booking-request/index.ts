@@ -585,19 +585,29 @@ Deno.serve(async request => {
     const supabaseUrl = requiredEnv("SUPABASE_URL").replace(/\/$/, "");
     const serviceKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
 
-    const [clientKey, artistKey, contactKey] = await Promise.all([
-      publicRateLimitKey(request, serviceKey, "public-booking-client"),
+    const clientKey = await publicRateLimitKey(request, serviceKey, "public-booking-client");
+    const clientDecision = await consumePublicRateLimit(
+      serviceJson, supabaseUrl, serviceKey, "public_booking_client", clientKey, 20, 600
+    );
+    if (!clientDecision.allowed) {
+      return json(
+        { error: "rate_limited" },
+        429,
+        { "Retry-After": String(Math.max(clientDecision.retryAfterSeconds, 1)) }
+      );
+    }
+
+    const [artistKey, contactKey] = await Promise.all([
       publicRateLimitKey(request, serviceKey, "public-booking-artist", payload.artistSlug),
       publicRateLimitKey(request, serviceKey, "public-booking-contact", `${payload.artistSlug}\n${payload.contactEmail}`)
     ]);
-    const rateDecisions = await Promise.all([
-      consumePublicRateLimit(serviceJson, supabaseUrl, serviceKey, "public_booking_client", clientKey, 20, 600),
+    const targetDecisions = await Promise.all([
       consumePublicRateLimit(serviceJson, supabaseUrl, serviceKey, "public_booking_artist", artistKey, 120, 3600),
       consumePublicRateLimit(serviceJson, supabaseUrl, serviceKey, "public_booking_contact", contactKey, 5, 3600)
     ]);
-    const blocked = rateDecisions.filter(item => !item.allowed);
-    if (blocked.length) {
-      const retryAfter = Math.max(...blocked.map(item => item.retryAfterSeconds), 1);
+    const blockedTarget = targetDecisions.filter(item => !item.allowed);
+    if (blockedTarget.length) {
+      const retryAfter = Math.max(...blockedTarget.map(item => item.retryAfterSeconds), 1);
       return json({ error: "rate_limited" }, 429, { "Retry-After": String(retryAfter) });
     }
 
