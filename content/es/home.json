@@ -12,19 +12,20 @@
     "signup": "Crear cuenta"
   },
   "hero": {
-    "eyebrow": "BOOKING OPERATIVO PARA DJS Y AGENCIAS",
-    "titleTop": "CUÉNTALO.",
-    "titleBottom": "CUEBOOKER LO ORDENA.",
-    "body": "Una llamada, un WhatsApp, un email o una conversación. Escríbelo o dilo en voz alta. CueBooker extrae lo importante, te enseña lo que ha entendido y convierte ese contexto en un booking que puedes seguir hasta cerrarlo.",
-    "primaryCta": "Probar CueBooker",
-    "secondaryCta": "Ver cómo funciona",
+    "eyebrow": "BOOKINGS REALES. MENOS MEMORIA. MÁS CONTROL.",
+    "titleTop": "NO PIERDAS",
+    "titleBottom": "EL BOOKING.",
+    "body": "WhatsApp, llamada, email o voz. Cuebooker entiende lo importante, te lo enseña y mantiene el hilo hasta cerrar la fecha.",
+    "primaryCta": "Probar 30 días",
+    "secondaryCta": "Ver el flujo",
     "networkIdle": "PASÓ ALGO · CUÉNTALO",
     "networkSearching": "ENTENDIENDO EL CONTEXTO",
     "networkFound": "BOOKING LISTO PARA SEGUIR",
     "proofs": [
-      "Voz o texto → datos de booking revisables",
-      "El estado cambia con la conversación",
-      "Contexto, fecha y próxima acción en un solo hilo"
+      "CAPTURA",
+      "REVISA",
+      "SIGUE",
+      "DECIDE"
     ]
   },
   "problem": {
