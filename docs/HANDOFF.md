@@ -3585,3 +3585,83 @@ fd2ed94f559e35239f8c203fa2cb27d4ed9d40c4
 ```
 
 Production remains untouched.
+
+## 62. Unified Capture Engine — FIRST SLICE IMPLEMENTED ON BRANCH
+
+CUE no longer owns separate Smart Capture/fallback policies for text and audio.
+
+A single Capture Engine now owns:
+
+```text
+text -> Smart Capture -> SmartCaptureResult
+text provider failure -> local parser -> SmartCaptureResult
+
+audio -> server transcription + Smart Capture -> SmartCaptureResult
+audio failure + browser transcript -> text Smart Capture -> SmartCaptureResult
+audio + text provider failure -> local parser -> SmartCaptureResult
+audio failure without fallback transcript -> retry/type message
+```
+
+The former `interpretationPreview` branch has been removed from CUE.
+
+All successful/recoverable capture paths now converge into the same:
+
+```text
+SmartCaptureReview
+-> confidence
+-> evidence
+-> warnings
+-> explicit human Apply / Discard
+```
+
+Local fallback results are normalized into the same contract with limited confidence and a human review warning instead of a second UI.
+
+Implementation:
+
+```text
+app/services/captureEngine.ts
+app/composables/useCaptureEngine.ts
+tests/captureEngine.test.ts
+app/components/CueCapturePanel.vue
+```
+
+Validation:
+
+```text
+CI run 35400422315 = success
+tests = success
+Nuxt generate = success
+```
+
+This is the architectural first slice for future pasted WhatsApp/email/imported content. Do not create parallel capture models.
+
+Production remains untouched.
+
+## 63. Commercial website redesign direction — PROTOTYPE BEFORE CODE
+
+The next commercial-home phase must not begin as another incremental CSS/content patch.
+
+Product direction agreed:
+
+```text
+first design the website as a prototype
+-> validate narrative, identity and impact
+-> only then apply implementation code
+```
+
+The redesign must explain:
+
+```text
+what Cuebooker is
+why it exists
+what administrative friction it removes
+what the artist remains in control of
+how capture -> context -> next action works
+why it is rooted in real booking/club work rather than vanity metrics
+```
+
+The home should sell benefits and operational relief before internal product terminology.
+
+Visual direction should feel distinctive, credible and culturally connected to electronic music / club work without becoming a superficial nightlife caricature.
+
+Do not implement the redesigned home in Nuxt until the prototype itself feels convincing.
