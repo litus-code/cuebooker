@@ -112,7 +112,7 @@ const tourCardStyle = ref<Record<string, string>>({})
 let tourPositionTimer: ReturnType<typeof setTimeout> | null = null
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
-  overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Historial', profile: 'Perfil',
+  overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Actividad', profile: 'Perfil',
   artist: 'Artista', role: 'DJ', settings: 'Ajustes', logout: 'Cerrar sesión',
   loading: 'Cargando workspace…', rosterEyebrow: 'ROSTER / PRIMER ARTISTA', addFirstArtist: 'Añade el primer artista de',
   rosterBody: 'Quedará asociado al roster y podrás empezar a gestionar su actividad.', artistName: 'Nombre artístico', identifier: 'Identificador', creating: 'Creando…', addArtist: 'Añadir artista',
@@ -126,8 +126,8 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   samplesLabel: 'EJEMPLOS INICIALES / DATOS SIMULADOS', samplesActive: 'Tu workspace empieza con solicitudes de muestra.', samplesRemoved: 'Has eliminado las solicitudes de muestra.', samplesBody: 'Los ejemplos pertenecen únicamente a este perfil y navegador. No modifican el calendario privado y puedes retirarlos cuando quieras.', guidedTour: 'Ver recorrido guiado', searchBookings: 'Buscar solicitudes', searchBookingsPlaceholder: 'Sala, promotor, ciudad, evento o ID…', searchResults: 'resultados', searchHistory: 'Buscar en historial', searchHistoryPlaceholder: 'Sala, ciudad, mensaje o estado…', previousPage: 'Anterior', nextPage: 'Siguiente', page: 'Página', collapseSidebar: 'Comprimir menú', expandSidebar: 'Expandir menú', removeSamples: 'Eliminar ejemplos', restoreSamples: 'Restaurar ejemplos', all: 'Todas', noSamples: 'No hay solicitudes de prueba en este estado.',
   sampleBooking: 'BOOKING DE PRUEBA', automaticStatus: 'Estado automático', eventData: 'Datos del evento', date: 'Fecha', city: 'Ciudad', venue: 'Sala', capacity: 'Aforo', offer: 'Oferta', schedule: 'Horario', contact: 'Contacto', name: 'Nombre', phone: 'Tel.', source: 'Origen', bookingLink: 'Enlace de booking', conversation: 'Conversación', replyPromoter: 'Responder al promotor', replyPlaceholder: 'Escribe condiciones, una pregunta o una propuesta…', localMessage: 'Ejemplo local. El mensaje no se envía por email.', sendSampleReply: 'Enviar respuesta de ejemplo', openPromoter: 'Abrir vista del promotor', confirmDate: 'Confirmar fecha', rejectRequest: 'Rechazar solicitud', openRequest: 'Abre una solicitud para ver sus datos, la oferta y la conversación.',
   calendarEyebrow: 'CALENDARIO / AGENDA', calendarTitle: 'FECHAS Y HORARIOS.', calendarBody: 'Los holds y bookings confirmados aparecen aquí automáticamente. Usa “Añadir bloqueo” para viajes, estudio o indisponibilidad que no nacen de un booking.', weekdays: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], unavailable: 'No disponible', dayHours: 'DÍA / 24 HORAS', add: 'Añadir bloqueo', selectedDaySchedule: 'Horario del día seleccionado', addAt: 'Añadir bloqueo a las',
-  historyEyebrow: 'WORKSPACE / HISTORIAL', historyTitle: 'TODO LO QUE HA PASADO.',
-  historyBody: 'Abre cualquier movimiento para volver a la oferta y revisar toda la conversación que originó esa acción.',
+  historyEyebrow: 'WORKSPACE / ACTIVIDAD', historyTitle: 'TODO LO QUE HA PASADO.',
+  historyBody: 'Mensajes, cambios de estado, holds y acciones ordenados por tiempo. Los bookings archivados siguen estando en Bookings → Archivados.',
   historyEmpty: 'Todavía no hay actividad en este perfil.', historyStatus: 'Estado actualizado', historyMessage: 'Mensaje', openTrace: 'Abrir oferta y ver traza', previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente', filterSamples: 'Filtrar bookings de ejemplo',
   profileEyebrow: 'ARTISTA / FICHA PROFESIONAL', profileTitle: 'TU INFORMACIÓN DE BOOKING.', profileBody: 'Edita lo que verá quien visite tu perfil público. Tus condiciones privadas de booking siguen siendo solo de tu workspace.',
   profileOptional: 'Ficha opcional', profileOptionalBody: 'Tu workspace ya está creado. Puedes completar estos datos ahora o volver desde Perfil cuando quieras.', later: 'Ahora no', previewProfile: 'Vista previa', previewPrivate: 'VISTA PREVIA / PERFIL PÚBLICO', previewClose: 'Cerrar vista previa', previewBioEmpty: 'Tu biografía aparecerá aquí cuando la completes.', previewGenresEmpty: 'Añade géneros para verlos en la ficha.', previewFormats: 'Formatos', previewLinks: 'Escuchar y seguir',
@@ -146,7 +146,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   passwordLength: 'La nueva contraseña debe tener al menos 8 caracteres.', close: 'Cerrar', accountPrivate: 'CUENTA / PRIVADO',
   editSlot: 'EDITAR BLOQUEO MANUAL', newSlot: 'NUEVO BLOQUEO MANUAL', privateLabel: 'Qué bloqueas', privatePlaceholder: 'Estudio, viaje, no disponible…', start: 'Inicio', end: 'Fin', invalidTime: 'La hora de fin debe ser posterior a la hora de inicio.', status: 'Estado', saving: 'Guardando…', saveChanges: 'Guardar cambios', createSlot: 'Crear horario', deleteSlot: 'Eliminar horario', finish: 'Terminar', next: 'Siguiente', closeTour: 'Cerrar recorrido'
 } : {
-  overview: 'Overview', bookings: 'Bookings', calendar: 'Calendar', history: 'History', profile: 'Profile',
+  overview: 'Overview', bookings: 'Bookings', calendar: 'Calendar', history: 'Activity', profile: 'Profile',
   artist: 'Artist', role: 'DJ', settings: 'Settings', logout: 'Sign out',
   loading: 'Loading workspace…', rosterEyebrow: 'ROSTER / FIRST ARTIST', addFirstArtist: 'Add the first artist for',
   rosterBody: 'They will be linked to the roster so you can start managing their activity.', artistName: 'Artist name', identifier: 'Identifier', creating: 'Creating…', addArtist: 'Add artist',
@@ -160,8 +160,8 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   samplesLabel: 'STARTER EXAMPLES / SAMPLE DATA', samplesActive: 'Your workspace starts with sample requests.', samplesRemoved: 'You removed the sample requests.', samplesBody: 'These examples belong only to this profile and browser. They do not change your private calendar and you can remove them whenever you want.', guidedTour: 'View guided tour', searchBookings: 'Search requests', searchBookingsPlaceholder: 'Venue, promoter, city, event or ID…', searchResults: 'results', searchHistory: 'Search history', searchHistoryPlaceholder: 'Venue, city, message or status…', previousPage: 'Previous', nextPage: 'Next', page: 'Page', collapseSidebar: 'Collapse menu', expandSidebar: 'Expand menu', removeSamples: 'Remove examples', restoreSamples: 'Restore examples', all: 'All', noSamples: 'There are no sample requests with this status.',
   sampleBooking: 'SAMPLE BOOKING', automaticStatus: 'Automatic status', eventData: 'Event details', date: 'Date', city: 'City', venue: 'Venue', capacity: 'Capacity', offer: 'Offer', schedule: 'Schedule', contact: 'Contact', name: 'Name', phone: 'Phone', source: 'Source', bookingLink: 'Booking link', conversation: 'Conversation', replyPromoter: 'Reply to promoter', replyPlaceholder: 'Write conditions, a question or a proposal…', localMessage: 'Local example. This message is not sent by email.', sendSampleReply: 'Send sample reply', openPromoter: 'Open promoter view', confirmDate: 'Confirm date', rejectRequest: 'Reject request', openRequest: 'Open a request to view its details, offer and conversation.',
   calendarEyebrow: 'CALENDAR / SCHEDULE', calendarTitle: 'DATES AND TIMES.', calendarBody: 'Holds and confirmed bookings appear here automatically. Use “Add block” for travel, studio time or unavailability that does not come from a booking.', weekdays: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], unavailable: 'Unavailable', dayHours: 'DAY / 24 HOURS', add: 'Add block', selectedDaySchedule: 'Selected day schedule', addAt: 'Add block at',
-  historyEyebrow: 'WORKSPACE / HISTORY', historyTitle: 'EVERYTHING THAT HAPPENED.',
-  historyBody: 'Open any activity to return to its offer and review the full conversation that caused it.',
+  historyEyebrow: 'WORKSPACE / ACTIVITY', historyTitle: 'EVERYTHING THAT HAPPENED.',
+  historyBody: 'Messages, status changes, holds and actions ordered over time. Archived bookings remain under Bookings → Archived.',
   historyEmpty: 'There is no activity for this profile yet.', historyStatus: 'Status updated', historyMessage: 'Message', openTrace: 'Open offer and view trace', previousMonth: 'Previous month', nextMonth: 'Next month', filterSamples: 'Filter sample bookings',
   profileEyebrow: 'ARTIST / PROFESSIONAL PROFILE', profileTitle: 'YOUR BOOKING INFORMATION.', profileBody: 'Edit what people will see on your public artist profile. Your private booking terms remain visible only inside your workspace.',
   profileOptional: 'Optional profile', profileOptionalBody: 'Your workspace is ready. Complete these details now or return from Profile whenever you want.', later: 'Not now', previewProfile: 'Preview', previewPrivate: 'PREVIEW / PUBLIC PROFILE', previewClose: 'Close preview', previewBioEmpty: 'Your biography will appear here once completed.', previewGenresEmpty: 'Add genres to see them on the profile.', previewFormats: 'Formats', previewLinks: 'Listen and follow',
@@ -491,12 +491,12 @@ function slugify(value: string) {
 const cueEntryCopy = computed(() => preferences.locale.value === 'es' ? {
   eyebrow: 'CUE / CAPTURA RÁPIDA',
   title: 'REGISTRA LO QUE ACABA DE PASAR.',
-  body: 'Una llamada, un WhatsApp o una conversación. Guárdalo ahora y completa el booking cuando avance.',
+  body: 'Úsalo para capturar algo que acaba de pasar. CUE crea el booking en segundos; después continúas conversación, próxima acción, hold y decisión dentro del booking.',
   saved: 'CUE guardado. El booking ya forma parte de tu workspace.'
 } : {
   eyebrow: 'CUE / QUICK CAPTURE',
   title: 'SAVE WHAT JUST HAPPENED.',
-  body: 'A call, WhatsApp or conversation. Capture it now and complete the booking as it moves forward.',
+  body: 'Use it to capture something that just happened. CUE creates the booking in seconds; then continue the conversation, next action, hold and decision inside the booking.',
   saved: 'CUE saved. The booking is now part of your workspace.'
 })
 
