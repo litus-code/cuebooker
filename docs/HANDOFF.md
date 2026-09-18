@@ -1648,10 +1648,21 @@ CI and staging deployment passed for the implementation commits.
 
 ### Inbound reply smoke
 
-The 13:11 outbound row has the expected tokenized Reply-To under `reply.cuebooker.com`. A later Gmail reply still produced no inbound `email_messages` row and no inbound Activity in staging. The UI is therefore not the failure point.
+The previously failing Gmail -> Brevo -> Cuebooker path is now verified end to end on staging.
 
-The current break remains before successful database ingestion, in the Brevo inbound route/webhook authentication path. `ingest-booking-email` is ACTIVE and expects `x-cuebooker-webhook-secret`; the Brevo webhook must send that header with the exact configured secret.
+Root cause was a mismatch between the Brevo webhook header value and Supabase `CUEBOOKER_INBOUND_WEBHOOK_SECRET`. After synchronizing them, a fresh reply to subject `prueba cuebooker` created:
 
+- one inbound `email_messages` row with `status = received`;
+- one inbound email Activity on the same booking;
+- the Gmail provider message id and `InReplyTo` metadata were preserved.
+
+Verified booking:
+
+```text
+dc2145dd-1625-4e3b-bc33-50f7e9b36840
+```
+
+The real staging roundtrip gate is therefore closed.
 ## 28. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
