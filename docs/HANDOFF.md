@@ -1990,3 +1990,64 @@ The intent is an assistant-like triage surface rather than a dashboard that crea
 Staging schema and trigger presence were verified after migration. Existing project-level advisor warnings remain unchanged; no new security warning was introduced by this block.
 
 Production remains untouched.
+
+
+## 38. Calm review/read semantics + attention budget — IMPLEMENTED ON BRANCH
+
+The assistant model is now reflected in notification/read behavior as well as automation.
+
+### Reviewing a Booking clears its noise
+
+When the user deliberately opens a Booking:
+
+- unread notifications for that Booking are marked read through existing notification RLS;
+- this also applies when opening from Overview/Calendar/History/deep-link flows that use `openRealBooking`;
+- direct row selection inside the real Booking inbox emits `bookingOpened` so the same rule applies there;
+- the notification badge refreshes immediately through a lightweight client event;
+- failure to synchronize read state never blocks Booking navigation.
+
+This avoids the common product anti-pattern where the user has already reviewed the work but the app continues displaying a red/unread badge.
+
+### Overview uses unread event truth for new/reply attention
+
+Immediate attention for:
+
+```text
+new public Booking
+new promoter reply
+```
+
+is now driven by unread notification rows rather than only by Booking status.
+
+Therefore:
+
+```text
+event arrives
+-> unread notification
+-> Overview attention
+
+user opens Booking
+-> notification becomes read
+-> immediate attention clears
+```
+
+Manual CUE capture does not generate artificial "new booking" pressure for something the user just created themselves.
+
+Stale waiting-response detection remains derived from Booking + Activity because it represents elapsed operational state rather than unread UI state.
+
+### Attention budget
+
+Overview is intentionally a triage surface, not a complete task dump.
+
+Current quieting rules:
+
+- at most one primary attention item per Booking;
+- maximum 8 visible attention items;
+- explicit future Next Actions are hidden until they enter a 48-hour attention window;
+- Holds without an explicit expiry are not presented as urgent attention;
+- expiring Holds enter attention within 48 hours, then disappear automatically after expiry when the hold lifecycle job releases them;
+- undated explicit Next Actions remain visible because there is no other deadline Cuebooker can safely infer.
+
+The 48-hour window is an initial product default. It should be tuned from beta behavior rather than multiplied into more notifications.
+
+Production remains untouched.
