@@ -2,6 +2,7 @@
 import type { Activity, Contact, CoreBooking, Counterparty, CoreBookingStatus } from '../domain/bookingCore'
 import type { BookingEmailMessage } from '../services/bookingCoreApi'
 import { buildFollowUpDraft, shouldSuggestFollowUp } from '../services/followUpDraft'
+import { buildFailedEmailRetryDraft } from '../services/emailRetryDraft'
 
 const props = defineProps<{
   workspaceId: string
@@ -83,10 +84,15 @@ const hasMoreBookings = computed(() => visibleLimit.value < visibleBookings.valu
 const selectedBooking = computed(() => visibleBookings.value.find(item => item.id === selectedBookingId.value) || visibleBookings.value[0] || null)
 const selectedContact = computed(() => selectedBooking.value?.primary_contact_id ? contacts.value.find(item => item.id === selectedBooking.value?.primary_contact_id) || null : null)
 const selectedCounterparty = computed(() => selectedBooking.value?.counterparty_id ? counterparties.value.find(item => item.id === selectedBooking.value?.counterparty_id) || null : null)
+const suggestedRetryEmail = computed(() => {
+  if (!selectedContact.value?.email) return null
+  return buildFailedEmailRetryDraft(activities.value, emailMessages.value)
+})
+
 const suggestedFollowUp = computed(() => {
   const booking = selectedBooking.value
   const contact = selectedContact.value
-  if (!booking || !contact?.email || !shouldSuggestFollowUp(booking, activities.value)) return null
+  if (!booking || !contact?.email || suggestedRetryEmail.value || !shouldSuggestFollowUp(booking, activities.value)) return null
   return buildFollowUpDraft(booking, contact, activities.value, props.locale)
 })
 
@@ -473,6 +479,7 @@ async function selectBooking(bookingId: string) {
             :booking="selectedBooking"
             :locale="locale"
             :suggested-follow-up="suggestedFollowUp"
+            :suggested-retry-email="suggestedRetryEmail"
             @created="handleActivityCreated"
           />
         </section>
