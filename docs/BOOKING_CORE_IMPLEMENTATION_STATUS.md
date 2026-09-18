@@ -1,6 +1,6 @@
 # Booking Core implementation status
 
-Updated: 17 September 2026
+Updated: 18 September 2026
 Branch: `feature/app-visual-system`
 Status: OPERATIONAL CORE VERTICAL SLICE WORKING ON STAGING
 
@@ -41,9 +41,13 @@ legacy account
   -> real History
   -> Archive / Restore
   -> conflict diagnostics
+  -> Relationship Memory
+  -> natural-language CUE extraction/review
+  -> voice CUE input
+  -> outbound/inbound email threading
 ```
 
-The old browser demo still exists below the real booking surface temporarily. It is now migration scaffolding, not the source of truth, and the next product block is to remove the remaining dependency on it.
+The authenticated workspace no longer renders the legacy booking/history demo. Real Booking Core is the primary operational surface, including the real zero-booking state with `+ CUE` and real Activity/History. The standalone `/app` route remains an explicit optional functional demo and is not mixed into the authenticated product.
 
 ## Database foundation
 
@@ -110,7 +114,7 @@ The command has been exercised as an authenticated staging owner inside rollback
 
 ## Booking and Activity UI
 
-`app/components/BookingCoreInbox.vue` shows real Booking Core records before the legacy demo.
+`app/components/BookingCoreInbox.vue` is the authenticated Bookings surface. It renders real Booking Core records and, when there are none, a real zero-booking state with `+ CUE`.
 
 The selected real booking exposes:
 
@@ -217,6 +221,22 @@ Date-only Holds/confirmed bookings are represented as day-level operational item
 
 This is intentionally an application projection for the current scale. It can later become a database read model/view when more scheduling sources such as travel and studio time are introduced.
 
+## CUE natural language, voice and email
+
+CUE now has deterministic Booking Core persistence plus richer capture adapters:
+
+- natural-language interpretation proposes structured booking fields before persistence;
+- voice input feeds the same capture/review path rather than creating a second booking model;
+- outbound email is written back into Booking Activity;
+- inbound replies are correlated through a tokenized Reply-To address and persisted into the same booking thread;
+- staging has completed a real outbound -> Gmail reply -> Brevo inbound -> Activity roundtrip.
+
+These adapters do not own booking truth. They feed the same Booking Core commands and Activity model.
+
+## Relationship Memory
+
+`app/components/BookingRelationshipMemory.vue` derives professional context from real Booking Core data rather than a synthetic score. It remains downstream of bookings/activities and does not replace Contact or Counterparty truth.
+
 ## Application layer
 
 Booking Core boundaries:
@@ -264,13 +284,11 @@ This matters because old push-triggered workflows had been creating noisy bot co
 
 The deterministic operational spine exists, but V1 is not finished. Important next work includes:
 
-- remove the remaining demo booking/history dependency and make the real empty state useful;
 - manually smoke-test the real preview on desktop and mobile with a staging account;
-- natural-language CUE extraction;
-- voice capture;
-- email ingestion/reply threading;
+- manually exercise the complete CUE -> Booking -> Activity -> Next Move/Hold -> Calendar -> History path;
+- manually exercise Archive / Restore and conflict warnings in preview;
+- duplicate-provider and archived-booking email hardening checks;
 - later WhatsApp/share surfaces;
-- Relationship Memory;
 - product analytics/observability and launch hardening;
 - production migration only after the gate below.
 
@@ -291,17 +309,27 @@ Do not apply Booking Core migrations to production until:
 
 ## Next implementation block
 
-Prioritize removal of the remaining demo scaffolding:
+The authenticated demo-removal block is complete:
 
 ```text
 real zero-booking state with + CUE
--> real inbox becomes the primary/only operational surface
--> real History becomes primary
--> sample data becomes an explicit optional demo, not product UI
--> remove obsolete demo coupling once parity is verified
+-> real inbox is the primary/only authenticated booking surface
+-> real History is primary
+-> standalone /app remains an explicit optional demo
+-> obsolete workspace demo copy/styles removed
 ```
 
-Natural-language/voice CUE should follow once the deterministic real product surface no longer depends on demo objects, so AI proposes data into a reliable domain rather than becoming the domain itself.
+Immediate priority is verification rather than another feature layer:
+
+```text
+desktop/mobile staging smoke
+-> CUE -> Booking -> Activity -> Next Move/Hold -> Calendar -> History
+-> Archive / Restore
+-> conflict diagnostics
+-> CI / preview green
+```
+
+Do not apply Booking Core migrations to production during this verification block.
 
 ## Development principle
 
