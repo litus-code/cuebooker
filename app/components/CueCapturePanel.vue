@@ -324,7 +324,7 @@ function onVoiceCaptured(value: string) {
   initialNote.value = value
 }
 
-async function onAudioCaptured(audio: Blob, filename: string) {
+async function onAudioCaptured(audio: Blob, filename: string, fallbackTranscript = '') {
   if (analyzing.value) return
   analytics.track('smart_capture_start', {
     mode: 'audio',
@@ -353,14 +353,47 @@ async function onAudioCaptured(audio: Blob, filename: string) {
       missing_fields: result.missingFields.length,
       warnings: result.warnings.length
     })
-  } catch {
+  } catch (error: any) {
     analytics.track('smart_capture_result', {
       mode: 'audio',
-      success: false
+      success: false,
+      browser_fallback_available: Boolean(fallbackTranscript.trim())
     })
-    interpretationMessage.value = props.locale === 'es'
-      ? 'No he podido procesar el audio con Smart Capture. Puedes conservarlo como texto manual.'
-      : 'Smart Capture could not process the audio. You can continue with manual text.'
+
+    const fallback = fallbackTranscript.trim()
+    if (fallback) {
+      try {
+        const result = await smartCapture.analyzeText({
+          workspaceId: props.workspaceId,
+          artistId: props.artistId,
+          locale: props.locale,
+          text: fallback
+        })
+        initialNote.value = fallback
+        smartResult.value = result
+        interpretationMessage.value = props.locale === 'es'
+          ? 'He recuperado la voz mediante el dictado del navegador. Revisa lo que he entendido.'
+          : 'I recovered the voice using browser dictation. Review what I understood.'
+        analytics.track('smart_capture_result', {
+          mode: 'audio_browser_fallback',
+          success: true,
+          transcript_length: fallback.length,
+          missing_fields: result.missingFields.length,
+          warnings: result.warnings.length
+        })
+      } catch {
+        initialNote.value = fallback
+        stageInterpretation(fallback)
+        interpretationMessage.value = props.locale === 'es'
+          ? 'He recuperado el texto de tu voz, pero la interpretación inteligente no ha respondido. Puedes revisarlo y crear el booking.'
+          : 'I recovered your spoken text, but smart interpretation did not respond. You can review it and create the booking.'
+      }
+    } else {
+      const detail = error?.data?.detail || error?.data?.error || ''
+      interpretationMessage.value = props.locale === 'es'
+        ? `No he podido transcribir este audio. Inténtalo de nuevo o escríbelo.${detail ? ` · ${detail}` : ''}`
+        : `I could not transcribe this audio. Try again or type it.${detail ? ` · ${detail}` : ''}`
+    }
   } finally {
     analyzing.value = false
     voiceInput.value?.setProcessing(false)
