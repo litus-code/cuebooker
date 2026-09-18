@@ -169,7 +169,7 @@ async function transcribeAudio(apiKey: string, file: File, locale: "es" | "en") 
   if (file.type && !allowed.some(type => file.type.startsWith(type))) throw new Error("unsupported_audio_type");
 
   const form = new FormData();
-  form.set("model", Deno.env.get("CUEBOOKER_TRANSCRIPTION_MODEL")?.trim() || "gpt-4o-transcribe");
+  form.set("model", Deno.env.get("CUEBOOKER_TRANSCRIPTION_MODEL")?.trim() || "gpt-transcribe");
   form.set("language", locale);
   form.set(
     "prompt",
@@ -177,7 +177,18 @@ async function transcribeAudio(apiKey: string, file: File, locale: "es" | "en") 
       ? "Contexto: bookings de DJs, promotores, salas, festivales, fechas, horarios, fees, hospitality, viajes y nombres propios de la escena electrónica."
       : "Context: DJ bookings, promoters, venues, festivals, dates, schedules, fees, hospitality, travel and electronic-music proper names."
   );
-  form.set("file", file, file.name || "cuebooker-capture.webm");
+  const baseType = (file.type || "").split(";")[0].trim() || "audio/webm";
+  const extension = baseType === "audio/mp4" || baseType === "audio/x-m4a" ? "m4a"
+    : baseType === "audio/mpeg" ? "mp3"
+      : baseType === "audio/wav" ? "wav"
+        : baseType === "audio/ogg" ? "ogg"
+          : "webm";
+  const normalizedFile = new File(
+    [await file.arrayBuffer()],
+    `cuebooker-capture.${extension}`,
+    { type: baseType }
+  );
+  form.set("file", normalizedFile, normalizedFile.name);
 
   const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
     method: "POST",
@@ -360,8 +371,11 @@ Deno.serve(async (request) => {
     if (code === "invalid_audio_size" || code === "unsupported_audio_type" || code === "transcription_too_long") {
       return json({ error: code }, 400);
     }
-    if (code.startsWith("transcription_provider_") || code.startsWith("extraction_provider_")) {
-      return json({ error: "smart_capture_provider_failed" }, 502);
+    if (code.startsWith("transcription_provider_")) {
+      return json({ error: "smart_capture_transcription_failed", detail: code }, 502);
+    }
+    if (code.startsWith("extraction_provider_")) {
+      return json({ error: "smart_capture_extraction_failed", detail: code }, 502);
     }
     return json({ error: "smart_capture_failed" }, 500);
   }
