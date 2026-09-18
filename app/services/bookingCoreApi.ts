@@ -400,7 +400,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
       query: {
         workspace_id: `eq.${workspaceId}`,
         booking_id: `eq.${bookingId}`,
-        select: 'id,booking_id,delivery_status,delivered_at,bounced_at,opened_at,last_delivery_event_at,delivery_failure_code,created_at',
+        select: 'id,booking_id,to_email,delivery_status,delivered_at,bounced_at,opened_at,last_delivery_event_at,delivery_failure_code,created_at',
         order: 'created_at.asc',
         limit: '100'
       }
@@ -415,7 +415,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         workspace_id: `eq.${workspaceId}`,
         booking_id: `in.(${bookingIds.join(',')})`,
         direction: 'eq.outbound',
-        select: 'id,booking_id,delivery_status,delivered_at,bounced_at,opened_at,last_delivery_event_at,delivery_failure_code,created_at',
+        select: 'id,booking_id,to_email,delivery_status,delivered_at,bounced_at,opened_at,last_delivery_event_at,delivery_failure_code,created_at',
         order: 'last_delivery_event_at.desc.nullslast',
         limit: '500'
       }
