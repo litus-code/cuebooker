@@ -1629,14 +1629,14 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #777; }
 .agenda-list .status-dot, .legend .status-dot { margin: 0; }
 .status-dot--hold { background: #e8ff2f; }
-.status-dot--confirmed { background: var(--cue-mint); }
+.status-dot--confirmed { background:#57e389; box-shadow:0 0 0 1px color-mix(in srgb,#57e389 24%,transparent); }
 .status-dot--unavailable { background: #ff8585; }
 .legend { display: flex; flex-wrap: wrap; gap: 16px; padding: 16px; color: var(--cue-muted); font-size: 11px; }
 .legend span { display: flex; align-items: center; gap: 7px; }
 .day-panel { position: sticky; top: 92px; overflow: hidden; }
 .day-heading { align-items: center; padding: 18px; border-bottom: 1px solid var(--cue-border); }
 .day-heading h2 { font-size: 20px; text-transform: capitalize; }
-.add-button { min-height: 40px; padding: 0 16px; border: 0; background: #e8ff2f; color: #070707; cursor: pointer; font-weight: 800; }
+.add-button { min-height:38px; padding:0 14px; border:1px solid var(--cue-accent); background:var(--cue-accent); color:#070707; cursor:pointer; font-size:11px; font-weight:850; }
 .timeline { position: relative; height: 590px; overflow-y: auto; }
 .hour-row { display: block; width: 100%; height: 48px; padding: 0 12px; border: 0; border-bottom: 1px solid var(--cue-border); background: transparent; color: var(--cue-muted); text-align: left; cursor: crosshair; }
 .hour-row:hover { background: var(--cue-raised); color: var(--cue-accent); }
