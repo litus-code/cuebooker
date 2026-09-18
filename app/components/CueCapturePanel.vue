@@ -639,6 +639,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 .cue-capture__switch button { min-height: 28px; padding: 0 8px; font-size: 8px; }
 .cue-capture__switch button.active { border-color: #777; color: #fff; background: #1c1c1c; }
 .cue-capture input, .cue-capture select, .cue-capture textarea { width: 100%; box-sizing: border-box; border: 1px solid #343434; border-radius: 0; background: #111; color: #f4f3ef; font: inherit; outline: none; }
+.cue-capture button:focus-visible,
+.cue-capture input:focus-visible,
+.cue-capture select:focus-visible,
+.cue-capture textarea:focus-visible {
+  outline:2px solid #ceff54;
+  outline-offset:2px;
+}
 .cue-capture input, .cue-capture select { min-height: 42px; padding: 0 11px; }
 .cue-capture textarea { padding: 11px; resize: vertical; line-height: 1.45; }
 .cue-capture input:focus, .cue-capture select:focus, .cue-capture textarea:focus { border-color: #ceff54; }
