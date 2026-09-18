@@ -14,6 +14,7 @@ import type {
   NextMove,
   SetNextMoveInput,
   UpdateBookingDetailsInput,
+  UpdateContactInput,
   Workspace,
   WorkspaceMembership
 } from '../domain/bookingCore'
@@ -165,6 +166,27 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     })
     const row = rows[0]
     if (!row) throw new Error('contact_create_failed')
+    return row
+  }
+
+  async function updateContact(input: UpdateContactInput) {
+    const rows = await $fetch<Contact[]>(`${baseUrl}/rest/v1/contacts`, {
+      method: 'PATCH',
+      headers: authHeaders('return=representation'),
+      query: {
+        id: `eq.${input.contactId}`,
+        workspace_id: `eq.${input.workspaceId}`
+      },
+      body: {
+        name: input.name.trim(),
+        email: normalizedText(input.email),
+        phone: normalizedText(input.phone),
+        role_label: normalizedText(input.roleLabel),
+        notes: normalizedText(input.notes)
+      }
+    })
+    const row = rows[0]
+    if (!row) throw new Error('contact_update_failed')
     return row
   }
 
@@ -504,6 +526,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     listWorkspaceArtists,
     listContacts,
     createContact,
+    updateContact,
     listCounterparties,
     createCounterparty,
     listBookings,
