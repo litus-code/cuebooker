@@ -26,6 +26,16 @@ type BookingCoreApiOptions = {
   userId: () => string | null | undefined
 }
 
+export type BookingEmailMessage = {
+  id: string
+  booking_id: string
+  delivery_status: string | null
+  delivered_at: string | null
+  bounced_at: string | null
+  opened_at: string | null
+  delivery_failure_code: string | null
+}
+
 export type WorkspaceArtist = {
   workspace_id: string
   artist_id: string
@@ -382,6 +392,19 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     })
   }
 
+  async function listBookingEmailMessages(workspaceId: string, bookingId: string) {
+    return $fetch<BookingEmailMessage[]>(`${baseUrl}/rest/v1/email_messages`, {
+      headers: authHeaders(),
+      query: {
+        workspace_id: `eq.${workspaceId}`,
+        booking_id: `eq.${bookingId}`,
+        select: 'id,booking_id,delivery_status,delivered_at,bounced_at,opened_at,delivery_failure_code',
+        order: 'created_at.asc',
+        limit: '100'
+      }
+    })
+  }
+
   async function listWorkspaceActivities(workspaceId: string, bookingIds: string[] = [], limit = 200) {
     if (!bookingIds.length) return [] as Activity[]
     return $fetch<Activity[]>(`${baseUrl}/rest/v1/activities`, {
@@ -536,6 +559,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     setBookingStatus,
     setBookingArchived,
     listActivities,
+    listBookingEmailMessages,
     listWorkspaceActivities,
     createActivity,
     listNextMoves,
