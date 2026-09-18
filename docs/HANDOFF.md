@@ -3024,3 +3024,81 @@ fb8f048aae9d95c90f27e0b884bbd7a30060c4bc
 ```
 
 Production remains untouched.
+
+## 54. Confirmation converts the correct Hold — IMPLEMENTED ON STAGING / BRANCH
+
+A confirmation edge case was fixed in `set_booking_status`.
+
+Previously, when several active Holds existed on the same Booking date, confirmation selected the Hold only by:
+
+```text
+event_date
+priority
+created_at
+```
+
+A higher-priority Hold with the wrong time range could therefore be converted even when the Booking already had a precise schedule.
+
+Confirmation now keeps the same human decision flow but selects the Hold more precisely.
+
+Rules:
+
+```text
+same Booking
+active Hold
+same event_date
+
+if Booking has no complete start/end:
+  same-date Hold can match
+
+if Booking has complete start/end:
+  all-day Hold can match
+  OR timed Hold must match Booking local start/end
+```
+
+Timed comparison is timezone-aware through the Hold timezone with Booking timezone fallback.
+
+When several Holds match, an exact timed Hold is preferred over an all-day Hold, then normal priority/creation ordering applies.
+
+All remaining active Holds for the Booking are released automatically after confirmation, exactly as before.
+
+Staging rollback smoke:
+
+```text
+Booking 22:00–23:30 Europe/Madrid
+
+Hold A
+priority 1
+20:00–21:00 local
+-> released
+
+Hold B
+priority 5
+22:00–23:30 local
+-> converted
+
+Booking
+-> confirmed
+
+hold_converted Activity = 1
+hold_released Activity = 1
+-> ROLLBACK
+```
+
+No smoke Booking remained after rollback.
+
+Repository migration:
+
+```text
+20260918214500_match_hold_schedule_on_confirmation.sql
+```
+
+Functional commit:
+
+```text
+632d61a586b689d404bb6c23a5a5a739bcbf61d0
+```
+
+Supabase advisors introduced no new regression.
+
+Production remains untouched.
