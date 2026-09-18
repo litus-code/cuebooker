@@ -169,8 +169,8 @@ function emailDeliveryLabel(activity: Activity) {
   const status = message.delivery_status
   if (!status) return props.locale === 'es' ? 'Enviado' : 'Sent'
   const labels: Record<string, string> = props.locale === 'es'
-    ? { accepted:'Aceptado', delivered:'Entregado', deferred:'En espera', soft_bounce:'Rebote temporal', hard_bounce:'Rebotado', blocked:'Bloqueado', spam:'Spam', invalid:'Email inválido' }
-    : { accepted:'Accepted', delivered:'Delivered', deferred:'Deferred', soft_bounce:'Soft bounce', hard_bounce:'Bounced', blocked:'Blocked', spam:'Spam', invalid:'Invalid email' }
+    ? { accepted:'Aceptado', delivered:'Entregado', deferred:'En espera', soft_bounce:'Rebote temporal', hard_bounce:'Rebotado', blocked:'Bloqueado', spam:'Spam', invalid:'Email inválido', error:'Error de entrega' }
+    : { accepted:'Accepted', delivered:'Delivered', deferred:'Deferred', soft_bounce:'Soft bounce', hard_bounce:'Bounced', blocked:'Blocked', spam:'Spam', invalid:'Invalid email', error:'Delivery error' }
   return labels[status] || status
 }
 
