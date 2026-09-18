@@ -667,13 +667,15 @@ async function selectBooking(bookingId: string) {
   .core-inbox__archive-switch { align-items:stretch; flex-direction:column; }
   .core-inbox__archive-switch > small { text-align:left; }
   .core-inbox__filters:not(.core-inbox__filters--archive) { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); overflow:visible; }
-  .core-inbox__filters:not(.core-inbox__filters--archive) button { width:100%; min-height:36px; white-space:normal; }
+  .core-inbox__filters:not(.core-inbox__filters--archive) button { width:100%; min-height:44px; white-space:normal; }
   .core-inbox__detail > header { flex-direction:column; gap:12px; }
   .core-inbox__header-actions { display:grid; grid-template-columns:1fr; width:100%; min-width:0; justify-content:stretch; }
   .core-inbox__archive { justify-self:start; }
   .core-inbox__decision-block { width:100%; min-width:0; }
   .core-inbox__status { min-width:0; }
   .core-inbox__decisions { grid-template-columns:repeat(3,minmax(0,1fr)); min-width:0; }
+  .core-inbox__decisions button,
+  .core-inbox__archive { min-height:44px; }
   .core-inbox__decisions button { min-width:0; padding-inline:4px; }
   .core-inbox__details-heading { align-items:center; }
   .core-inbox__facts { grid-template-columns:1fr 1fr; }
