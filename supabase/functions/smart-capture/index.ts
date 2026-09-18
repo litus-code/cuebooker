@@ -254,7 +254,7 @@ Rules:
 `.trim();
 
   const configuredModel = Deno.env.get("CUEBOOKER_SMART_CAPTURE_MODEL")?.trim();
-  const models = [...new Set([configuredModel, "gpt-5.6-luna", "gpt-5.6-terra"].filter(Boolean))] as string[];
+  const models = [...new Set([configuredModel, "gpt-5.6-terra", "gpt-5.6-sol", "gpt-5.6-luna"].filter(Boolean))] as string[];
   let lastStatus = 0;
 
   for (const model of models) {
