@@ -9,7 +9,7 @@ const props = defineProps<{
   focusBookingId?: string
 }>()
 
-const emit = defineEmits<{ operationsChanged: []; cueRequested: [] }>()
+const emit = defineEmits<{ operationsChanged: []; cueRequested: []; bookingOpened: [bookingId: string] }>()
 const bookingCore = useBookingCore()
 const selectedBookingId = ref('')
 const contacts = ref<Contact[]>([])
@@ -309,6 +309,7 @@ async function scrollToSelectedBooking() {
 
 async function selectBooking(bookingId: string) {
   selectedBookingId.value = bookingId
+  emit('bookingOpened', bookingId)
   await scrollToSelectedBooking()
 }
 </script>
