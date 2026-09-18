@@ -598,6 +598,18 @@ function openRealBooking(bookingId: string) {
   realBookingFocusId.value = bookingId
   activeView.value = 'bookings'
   markBookingNotificationsRead(bookingId)
+
+  if (route.query.booking !== bookingId) {
+    void router.replace({
+      query: {
+        ...route.query,
+        artist: selectedArtistId.value || route.query.artist,
+        booking: bookingId
+      }
+    }).catch(() => {
+      // Opening the Booking must not be blocked by URL state sync.
+    })
+  }
 }
 
 async function openNotificationBooking(notification: CueNotification) {
@@ -616,13 +628,6 @@ async function openNotificationBooking(notification: CueNotification) {
     await loadRealHolds()
     openRealBooking(booking.id)
 
-    await router.replace({
-      query: {
-        ...route.query,
-        artist: booking.artist_id,
-        booking: booking.id
-      }
-    })
   } catch (error: any) {
     console.warn('[notifications] booking open failed', error?.message || error)
     errorMessage.value = preferences.locale.value === 'es'
