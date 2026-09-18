@@ -26,16 +26,22 @@ const copy = computed(() => props.locale === 'es' ? {
   eyebrow: 'BOOKINGS / REALES',
   title: 'Bookings capturados',
   empty: 'Todavía no hay bookings reales.', emptyTitle: 'Tu primer booking empieza con un CUE.', emptyBody: 'Si te llaman, te escriben o aparece una oportunidad, guárdala en segundos. No necesitas tener todos los datos.', emptyAction: '+ CUE',
-  date: 'Fecha', venue: 'Sala / entidad', contact: 'Contacto', offer: 'Oferta', source: 'Origen', status: 'Estado', activity: 'Activity',
+  date: 'Fecha', venue: 'Sala / entidad', contact: 'Contacto', offer: 'Oferta', source: 'Origen', status: 'Estado', activity: 'Historial de actividad',
   noActivity: 'Todavía no hay actividad registrada.',
+  confirm: 'Confirmar', reject: 'Rechazar', cancel: 'Cancelar',
+  confirmQuestion: '¿Confirmar este booking?', rejectQuestion: '¿Rechazar este booking?', cancelQuestion: '¿Cancelar este booking?',
+  automaticState: 'Estado automático según la última interacción.',
   noDate: 'Sin fecha', noVenue: 'Sin sala definida', noContact: 'Sin contacto', noOffer: 'Sin oferta',
   active: 'Activos', archived: 'Archivados', archive: 'Archivar', restore: 'Restaurar', archivedReadOnly: 'Booking archivado. La traza se conserva en modo lectura.'
 } : {
   eyebrow: 'BOOKINGS / REAL',
   title: 'Captured bookings',
   empty: 'No real bookings yet.', emptyTitle: 'Your first booking starts with a CUE.', emptyBody: 'If someone calls, messages you or an opportunity appears, save it in seconds. You do not need every detail yet.', emptyAction: '+ CUE',
-  date: 'Date', venue: 'Venue / entity', contact: 'Contact', offer: 'Offer', source: 'Source', status: 'Status', activity: 'Activity',
+  date: 'Date', venue: 'Venue / entity', contact: 'Contact', offer: 'Offer', source: 'Source', status: 'Status', activity: 'Activity history',
   noActivity: 'No activity recorded yet.',
+  confirm: 'Confirm', reject: 'Reject', cancel: 'Cancel',
+  confirmQuestion: 'Confirm this booking?', rejectQuestion: 'Reject this booking?', cancelQuestion: 'Cancel this booking?',
+  automaticState: 'Automatic state based on the latest interaction.',
   noDate: 'No date', noVenue: 'No venue defined', noContact: 'No contact', noOffer: 'No offer',
   active: 'Active', archived: 'Archived', archive: 'Archive', restore: 'Restore', archivedReadOnly: 'Archived booking. Its trace is preserved in read-only mode.'
 })
@@ -80,6 +86,7 @@ watch(() => props.focusBookingId, value => {
     realStatusFilter.value = 'all'
     archiveView.value = props.bookings.find(item => item.id === value)?.archived_at ? 'archived' : 'active'
     selectedBookingId.value = value
+    if (import.meta.client) void scrollToSelectedBooking()
   }
 }, { immediate: true })
 
@@ -130,10 +137,17 @@ async function handleActivityCreated() {
   await loadActivity()
 }
 
-async function changeStatus(event: Event) {
-  if (!selectedBooking.value) return
-  const status = (event.target as HTMLSelectElement).value as CoreBookingStatus
-  if (status === selectedBooking.value.status) return
+async function decideStatus(status: Extract<CoreBookingStatus, 'confirmed' | 'rejected' | 'cancelled'>) {
+  if (!selectedBooking.value || selectedBooking.value.status === status) return
+
+  const question = status === 'confirmed'
+    ? copy.value.confirmQuestion
+    : status === 'rejected'
+      ? copy.value.rejectQuestion
+      : copy.value.cancelQuestion
+
+  if (!window.confirm(question)) return
+
   updatingStatus.value = true
   try {
     await bookingCore.setBookingStatus(props.workspaceId, selectedBooking.value.id, status)
@@ -185,6 +199,26 @@ function bookingTitle(booking: CoreBooking) {
   const party = booking.counterparty_id ? counterparties.value.find(item => item.id === booking.counterparty_id) : null
   return booking.venue_name || party?.name || booking.event_name || copy.value.noVenue
 }
+
+function prefersReducedMotion() {
+  return import.meta.client && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+async function scrollToSelectedBooking() {
+  if (!import.meta.client) return
+  await nextTick()
+  const detail = document.getElementById('core-inbox-detail')
+  if (!detail) return
+  const header = document.getElementById('workspace-header')
+  const offset = (header?.getBoundingClientRect().height || 0) + 10
+  const top = detail.getBoundingClientRect().top + window.scrollY - offset
+  window.scrollTo({ top: Math.max(0, top), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+}
+
+async function selectBooking(bookingId: string) {
+  selectedBookingId.value = bookingId
+  await scrollToSelectedBooking()
+}
 </script>
 
 <template>
@@ -211,8 +245,8 @@ function bookingTitle(booking: CoreBooking) {
         <button type="button" :class="{ active: archiveView === 'archived' }" @click="archiveView = 'archived'">{{ copy.archived }} · {{ bookings.filter(item => !!item.archived_at).length }}</button>
       </div>
       <div class="core-inbox__filters">
-        <button type="button" :class="{ active: realStatusFilter === 'all' }" @click="realStatusFilter = 'all'">{{ locale === 'es' ? 'Todos' : 'All' }} · {{ visibleBookings.length }}</button>
-        <button v-for="(label, status) in statusLabels" :key="status" type="button" :class="{ active: realStatusFilter === status }" @click="realStatusFilter = status">{{ label }} · {{ bookings.filter(item => item.status === status).length }}</button>
+        <button type="button" :class="['status-filter', 'status-filter--all', { active: realStatusFilter === 'all' }]" @click="realStatusFilter = 'all'">{{ locale === 'es' ? 'Todos' : 'All' }} · {{ visibleBookings.length }}</button>
+        <button v-for="(label, status) in statusLabels" :key="status" type="button" :class="['status-filter', `status-filter--${status}`, { active: realStatusFilter === status }]" @click="realStatusFilter = status">{{ label }} · {{ bookings.filter(item => item.status === status).length }}</button>
       </div>
     </div>
 
@@ -225,11 +259,11 @@ function bookingTitle(booking: CoreBooking) {
           :key="booking.id"
           type="button"
           :class="{ active: selectedBooking?.id === booking.id }"
-          @click="selectedBookingId = booking.id"
+          @click="selectBooking(booking.id)"
         >
           <time>{{ formatDate(booking.event_date) }}</time>
           <span><strong>{{ bookingTitle(booking) }}</strong><small>{{ booking.event_name || sourceLabels[booking.source] || booking.source }}</small></span>
-          <em>{{ statusLabels[booking.status] }}</em>
+          <em :class="`booking-status booking-status--${booking.status}`">{{ statusLabels[booking.status] }}</em>
         </button>
       </div>
 
@@ -243,7 +277,18 @@ function bookingTitle(booking: CoreBooking) {
           <div class="core-inbox__header-actions">
             <BookingCoreEditor v-if="!selectedBooking.archived_at" :workspace-id="workspaceId" :booking="selectedBooking" :locale="locale" @saved="handleBookingSaved" />
             <button class="core-inbox__archive" type="button" :disabled="archiving" @click="toggleArchive">{{ selectedBooking.archived_at ? copy.restore : copy.archive }}</button>
-            <label v-if="!selectedBooking.archived_at" class="core-inbox__status core-inbox__status-control"><span>{{ copy.status }}</span><select :value="selectedBooking.status" :disabled="updatingStatus" @change="changeStatus"><option v-for="(label, status) in statusLabels" :key="status" :value="status">{{ label }}</option></select></label>
+            <div v-if="!selectedBooking.archived_at" class="core-inbox__decision-block">
+              <div :class="['core-inbox__status', `core-inbox__status--${selectedBooking.status}`]">
+                <span>{{ copy.status }}</span>
+                <strong>{{ statusLabels[selectedBooking.status] }}</strong>
+                <small v-if="['new','in_conversation','waiting_response'].includes(selectedBooking.status)">{{ copy.automaticState }}</small>
+              </div>
+              <div v-if="!['confirmed','rejected','cancelled'].includes(selectedBooking.status)" class="core-inbox__decisions">
+                <button type="button" class="decision-confirm" :disabled="updatingStatus" @click="decideStatus('confirmed')">{{ copy.confirm }}</button>
+                <button type="button" class="decision-reject" :disabled="updatingStatus" @click="decideStatus('rejected')">{{ copy.reject }}</button>
+                <button type="button" class="decision-cancel" :disabled="updatingStatus" @click="decideStatus('cancelled')">{{ copy.cancel }}</button>
+              </div>
+            </div>
           </div>
         </header>
 
@@ -322,6 +367,14 @@ function bookingTitle(booking: CoreBooking) {
 .core-inbox__filters button { flex:0 0 auto; min-height:29px; padding:0 8px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; text-transform:uppercase; }
 .core-inbox__filters button.active { border-color:var(--cue-accent); color:var(--cue-accent); }
 .core-inbox__filters--archive button.active { background:var(--cue-raised); }
+.status-filter.active { background:color-mix(in srgb, var(--status-color, var(--cue-accent)) 8%, transparent); border-color:var(--status-color, var(--cue-accent)); color:var(--status-color, var(--cue-accent)); }
+.status-filter--all { --status-color:var(--cue-text); }
+.status-filter--new, .booking-status--new, .core-inbox__status--new { --status-color:#ceff54; }
+.status-filter--in_conversation, .booking-status--in_conversation, .core-inbox__status--in_conversation { --status-color:#73b7ff; }
+.status-filter--waiting_response, .booking-status--waiting_response, .core-inbox__status--waiting_response { --status-color:#ffbf5f; }
+.status-filter--confirmed, .booking-status--confirmed, .core-inbox__status--confirmed { --status-color:#55d98d; }
+.status-filter--rejected, .booking-status--rejected, .core-inbox__status--rejected { --status-color:#ff6f7d; }
+.status-filter--cancelled, .booking-status--cancelled, .core-inbox__status--cancelled { --status-color:#8e8e8e; }
 .core-inbox__layout { display:grid; grid-template-columns:minmax(260px,.75fr) minmax(0,1.65fr); }
 .core-inbox__list { border-right:1px solid var(--cue-border); }
 .core-inbox__list button { display:grid; grid-template-columns:82px minmax(0,1fr) auto; align-items:center; gap:12px; width:100%; min-height:72px; padding:12px 14px; border:0; border-bottom:1px solid var(--cue-border); background:transparent; color:var(--cue-text); text-align:left; cursor:pointer; }
@@ -329,7 +382,7 @@ function bookingTitle(booking: CoreBooking) {
 .core-inbox__list time { color:var(--cue-muted); font:700 10px monospace; }
 .core-inbox__list span strong, .core-inbox__list span small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .core-inbox__list span small { margin-top:4px; color:var(--cue-muted); font-size:11px; }
-.core-inbox__list em { font:700 9px monospace; color:var(--cue-accent); text-transform:uppercase; font-style:normal; }
+.core-inbox__list em { font:700 9px monospace; color:var(--status-color,var(--cue-accent)); text-transform:uppercase; font-style:normal; }
 .core-inbox__detail { min-width:0; padding:18px; }
 .core-inbox__detail > header { display:flex; justify-content:space-between; gap:18px; padding-bottom:18px; border-bottom:1px solid var(--cue-border); }
 .core-inbox__detail > header span { color:var(--cue-accent); font:700 9px monospace; text-transform:uppercase; letter-spacing:.1em; }
@@ -338,10 +391,17 @@ function bookingTitle(booking: CoreBooking) {
 .core-inbox__header-actions { display:flex; align-items:flex-start; gap:7px; flex-wrap:wrap; justify-content:flex-end; }
 .core-inbox__archive { min-height:34px; padding:0 10px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; text-transform:uppercase; }
 .core-inbox__archive:hover { border-color:var(--cue-accent); color:var(--cue-text); }
-.core-inbox__status { align-self:flex-start; padding:7px 9px; border:1px solid var(--cue-border); font:700 9px monospace; text-transform:uppercase; }
-.core-inbox__status-control { display:grid; gap:4px; padding:6px 8px; }
-.core-inbox__status-control > span { color:var(--cue-muted); font:700 7px monospace; letter-spacing:.08em; }
-.core-inbox__status-control select { border:0; outline:0; background:transparent; color:var(--cue-text); font:700 9px monospace; text-transform:uppercase; cursor:pointer; }
+.core-inbox__decision-block { display:grid; gap:7px; min-width:210px; }
+.core-inbox__status { display:grid; gap:4px; align-self:flex-start; padding:9px 10px; border:1px solid color-mix(in srgb,var(--status-color,var(--cue-border)) 70%,var(--cue-border)); background:color-mix(in srgb,var(--status-color,var(--cue-accent)) 5%,transparent); }
+.core-inbox__status > span { color:var(--status-color,var(--cue-muted)); font:700 7px monospace; letter-spacing:.08em; text-transform:uppercase; }
+.core-inbox__status > strong { color:var(--cue-text); font:800 10px monospace; text-transform:uppercase; }
+.core-inbox__status > small { max-width:220px; color:var(--cue-muted); font-size:9px; line-height:1.35; }
+.core-inbox__decisions { display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px; }
+.core-inbox__decisions button { min-height:31px; padding:0 7px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 7px monospace; text-transform:uppercase; }
+.core-inbox__decisions button:disabled { opacity:.45; cursor:wait; }
+.core-inbox__decisions .decision-confirm { border-color:#55d98d; color:#55d98d; }
+.core-inbox__decisions .decision-reject { border-color:#ff6f7d; color:#ff6f7d; }
+.core-inbox__decisions .decision-cancel { border-color:#666; color:#aaa; }
 .core-inbox__readonly { margin:12px 0; padding:10px 12px; border-left:2px solid var(--cue-muted); background:var(--cue-raised); color:var(--cue-muted); font-size:11px; }
 .core-inbox__facts { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); margin:0; border-bottom:1px solid var(--cue-border); }
 .core-inbox__facts > div { min-width:0; padding:14px 12px 14px 0; }
@@ -363,5 +423,10 @@ function bookingTitle(booking: CoreBooking) {
   .core-inbox__detail { padding:14px; }
   .core-inbox__detail h3 { font-size:22px; }
   .core-inbox__facts { grid-template-columns:1fr 1fr; }
+  .core-inbox__filters:not(.core-inbox__filters--archive) { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); overflow:visible; }
+  .core-inbox__filters:not(.core-inbox__filters--archive) button { width:100%; min-height:36px; white-space:normal; }
+  .core-inbox__header-actions { width:100%; justify-content:stretch; }
+  .core-inbox__decision-block { width:100%; }
+  .core-inbox__decisions { grid-template-columns:1fr 1fr 1fr; }
 }
 </style>
