@@ -33,6 +33,7 @@ export type BookingEmailMessage = {
   delivered_at: string | null
   bounced_at: string | null
   opened_at: string | null
+  last_delivery_event_at: string | null
   delivery_failure_code: string | null
 }
 
@@ -398,9 +399,24 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
       query: {
         workspace_id: `eq.${workspaceId}`,
         booking_id: `eq.${bookingId}`,
-        select: 'id,booking_id,delivery_status,delivered_at,bounced_at,opened_at,delivery_failure_code',
+        select: 'id,booking_id,delivery_status,delivered_at,bounced_at,opened_at,last_delivery_event_at,delivery_failure_code',
         order: 'created_at.asc',
         limit: '100'
+      }
+    })
+  }
+
+  async function listWorkspaceBookingEmailMessages(workspaceId: string, bookingIds: string[] = []) {
+    if (!bookingIds.length) return [] as BookingEmailMessage[]
+    return $fetch<BookingEmailMessage[]>(`${baseUrl}/rest/v1/email_messages`, {
+      headers: authHeaders(),
+      query: {
+        workspace_id: `eq.${workspaceId}`,
+        booking_id: `in.(${bookingIds.join(',')})`,
+        direction: 'eq.outbound',
+        select: 'id,booking_id,delivery_status,delivered_at,bounced_at,opened_at,last_delivery_event_at,delivery_failure_code',
+        order: 'last_delivery_event_at.desc.nullslast',
+        limit: '500'
       }
     })
   }
@@ -561,6 +577,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     setBookingArchived,
     listActivities,
     listBookingEmailMessages,
+    listWorkspaceBookingEmailMessages,
     listWorkspaceActivities,
     createActivity,
     listNextMoves,
