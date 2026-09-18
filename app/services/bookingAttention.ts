@@ -89,6 +89,7 @@ export type BookingEmailDeliveryAttention = {
   delivery_status: string | null
   bounced_at: string | null
   last_delivery_event_at: string | null
+  created_at: string
 }
 
 const FAILED_DELIVERY_STATES = new Set(['soft_bounce', 'hard_bounce', 'blocked', 'spam', 'invalid', 'error'])
@@ -107,27 +108,27 @@ export function deriveEmailDeliveryAttentionSignals(
       .map(booking => booking.id)
   )
 
-  const latestFailureByBooking = new Map<string, BookingEmailDeliveryAttention>()
+  const latestAttemptByBooking = new Map<string, BookingEmailDeliveryAttention>()
 
   for (const message of messages) {
     if (!activeBookingIds.has(message.booking_id)) continue
-    if (!message.delivery_status || !FAILED_DELIVERY_STATES.has(message.delivery_status)) continue
 
-    const current = latestFailureByBooking.get(message.booking_id)
-    const messageTime = new Date(message.bounced_at || message.last_delivery_event_at || 0).getTime()
+    const current = latestAttemptByBooking.get(message.booking_id)
+    const messageTime = new Date(message.created_at).getTime()
     const currentTime = current
-      ? new Date(current.bounced_at || current.last_delivery_event_at || 0).getTime()
+      ? new Date(current.created_at).getTime()
       : Number.NEGATIVE_INFINITY
 
-    if (!current || messageTime > currentTime) latestFailureByBooking.set(message.booking_id, message)
+    if (!current || messageTime > currentTime) latestAttemptByBooking.set(message.booking_id, message)
   }
 
-  return [...latestFailureByBooking.values()]
+  return [...latestAttemptByBooking.values()]
+    .filter(message => Boolean(message.delivery_status && FAILED_DELIVERY_STATES.has(message.delivery_status)))
     .map(message => ({
       id: `delivery-${message.id}`,
       bookingId: message.booking_id,
       kind: 'delivery_failed' as const,
-      occurredAt: message.bounced_at || message.last_delivery_event_at || new Date(0).toISOString()
+      occurredAt: message.bounced_at || message.last_delivery_event_at || message.created_at
     }))
     .sort((a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime())
 }
