@@ -275,6 +275,8 @@ Deno.serve(async (request) => {
           provider_message_id: providerMessageId,
           from_email: fromEmail,
           sent_at: sentAt,
+          delivery_status: "accepted",
+          last_delivery_event_at: sentAt,
           failed_at: null,
           failure_code: null
         })
