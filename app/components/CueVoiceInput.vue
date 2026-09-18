@@ -7,7 +7,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: string]
   captured: [value: string]
-  audioCaptured: [audio: Blob, filename: string]
+  audioCaptured: [audio: Blob, filename: string, fallbackTranscript: string]
 }>()
 
 const supported = ref(false)
@@ -25,6 +25,8 @@ let recognition: any = null
 let fallbackBase = ''
 let fallbackCommitted = ''
 let fallbackStopped = false
+let shadowRecognition: any = null
+let shadowTranscript = ''
 
 const copy = computed(() => props.locale === 'es' ? {
   start: 'Contarlo por voz',
@@ -67,6 +69,43 @@ function preferredMimeType() {
     'audio/ogg;codecs=opus'
   ]
   return candidates.find(type => MediaRecorder.isTypeSupported(type)) || ''
+}
+
+function createShadowRecognition() {
+  const browser = window as any
+  const Recognition = browser.SpeechRecognition || browser.webkitSpeechRecognition
+  if (!Recognition) return null
+
+  const instance = new Recognition()
+  instance.lang = props.locale === 'es' ? 'es-ES' : 'en-US'
+  instance.continuous = true
+  instance.interimResults = false
+  instance.onresult = (event: any) => {
+    for (let index = event.resultIndex; index < event.results.length; index += 1) {
+      if (!event.results[index].isFinal) continue
+      const transcript = String(event.results[index][0]?.transcript || '').trim()
+      if (transcript) shadowTranscript = [shadowTranscript, transcript].filter(Boolean).join(' ')
+    }
+  }
+  instance.onerror = () => {}
+  instance.onend = () => {
+    if (recording.value && shadowRecognition === instance) {
+      try { instance.start() } catch {}
+    }
+  }
+  return instance
+}
+
+function startShadowRecognition() {
+  shadowTranscript = ''
+  shadowRecognition = createShadowRecognition()
+  try { shadowRecognition?.start?.() } catch { shadowRecognition = null }
+}
+
+function stopShadowRecognition() {
+  const instance = shadowRecognition
+  shadowRecognition = null
+  try { instance?.stop?.() } catch {}
 }
 
 function stopTracks() {
@@ -112,6 +151,7 @@ async function startRecorder() {
     recorder.onstop = () => {
       recording.value = false
       clearTimer()
+      stopShadowRecognition()
       stopTracks()
 
       const finalType = recorder?.mimeType || mimeType || 'audio/webm'
@@ -130,11 +170,12 @@ async function startRecorder() {
         : finalType.includes('ogg') ? 'ogg'
           : finalType.includes('mpeg') ? 'mp3'
             : 'webm'
-      emit('audioCaptured', audio, `cuebooker-capture.${extension}`)
+      emit('audioCaptured', audio, `cuebooker-capture.${extension}`, shadowTranscript.trim())
     }
 
     recorder.start(1000)
     recording.value = true
+    startShadowRecognition()
     timer = window.setInterval(() => {
       elapsed.value += 1
       if (elapsed.value >= 300) stopRecorder()
@@ -151,6 +192,7 @@ async function startRecorder() {
 function stopRecorder() {
   if (!recording.value || !recorder) return
   processing.value = true
+  stopShadowRecognition()
   recorder.stop()
 }
 
@@ -247,6 +289,8 @@ onBeforeUnmount(() => {
   clearTimer()
   fallbackStopped = true
   recognition?.abort?.()
+  try { shadowRecognition?.abort?.() } catch {}
+  shadowRecognition = null
   if (recorder && recorder.state !== 'inactive') recorder.stop()
   stopTracks()
 })
