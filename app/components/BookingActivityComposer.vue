@@ -151,13 +151,13 @@ async function submit() {
 .activity-composer__types { display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; }
 .activity-composer__types button { min-height:28px; padding:0 8px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; }
 .activity-composer__types button.active { border-color:var(--cue-accent); color:var(--cue-accent); }
-.activity-composer__body { display:grid; grid-template-columns:minmax(0,1fr) 105px auto; gap:7px; padding:9px; }
-.activity-composer__body--email { grid-template-columns:minmax(0,1fr) 105px auto; }
+.activity-composer__body { display:grid; grid-template-columns:minmax(0,1fr) 130px 150px; gap:8px; align-items:end; padding:10px; }
+.activity-composer__body--email { grid-template-columns:minmax(0,1fr) 130px 150px; }
 .activity-composer__subject { grid-column:1 / -1; min-height:36px; }
 .activity-composer textarea, .activity-composer select, .activity-composer__subject { box-sizing:border-box; border:1px solid var(--cue-border); background:var(--cue-surface); color:var(--cue-text); padding:8px 9px; font-size:11px; }
-.activity-composer textarea { resize:vertical; min-height:54px; }
-.activity-composer select { min-height:36px; }
-.activity-composer__save { min-height:36px; align-self:end; padding:0 11px; border:1px solid var(--cue-accent); background:var(--cue-accent); color:#080808; cursor:pointer; font:700 8px monospace; text-transform:uppercase; }
+.activity-composer textarea { resize:vertical; min-height:58px; }
+.activity-composer select { width:100%; min-height:42px; padding-inline:10px; }
+.activity-composer__save { width:100%; min-height:42px; align-self:end; padding:0 11px; border:1px solid var(--cue-accent); background:var(--cue-accent); color:#080808; cursor:pointer; font:700 8px monospace; text-transform:uppercase; }
 .activity-composer__error, .activity-composer__success { margin:0; padding:0 9px 9px; font-size:10px; }
 .activity-composer__error { color:#ff7c7c; }
 .activity-composer__success { color:var(--cue-accent); }
