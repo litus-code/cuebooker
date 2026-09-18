@@ -2,7 +2,7 @@
 
 Updated: 18 September 2026
 Branch: `feature/app-visual-system`
-Status: STAGING FOUNDATION DEPLOYED, OUTBOUND HTML VERIFIED IN CODE, REAL INBOUND ROUNDTRIP STILL PENDING
+Status: STAGING ROUNDTRIP VERIFIED
 
 ## Purpose
 
@@ -155,3 +155,44 @@ The real outbound message created at 13:11 local for `litulandio@gmail.com` is p
 After the Gmail reply test, staging still contains no corresponding inbound `email_messages` row or inbound email Activity. This proves the Booking UI is not hiding a stored reply; the reply has not completed the provider -> `ingest-booking-email` path.
 
 The inbound function remains ACTIVE with JWT verification disabled and custom webhook authentication enforced through `x-cuebooker-webhook-secret`. The provider-side webhook/header configuration must be validated before the roundtrip can be called complete.
+
+
+## 18 September real roundtrip verified
+
+A fresh end-to-end staging smoke passed after synchronizing the Brevo inbound webhook secret with `CUEBOOKER_INBOUND_WEBHOOK_SECRET`.
+
+Verified path:
+
+```text
+Cuebooker outbound
+-> Brevo transactional send
+-> Gmail delivery
+-> Gmail reply
+-> reply.cuebooker.com
+-> Brevo inboundEmailProcessed
+-> ingest-booking-email
+-> email_messages inbound row
+-> Booking Activity inbound row
+```
+
+Verified booking:
+
+```text
+dc2145dd-1625-4e3b-bc33-50f7e9b36840
+```
+
+Fresh outbound subject:
+
+```text
+prueba cuebooker
+```
+
+Fresh inbound subject:
+
+```text
+Re: prueba cuebooker
+```
+
+The inbound message was persisted as `direction = inbound`, `status = received`, `provider = brevo`, and an inbound email Activity was created for the same booking.
+
+This closes the previously pending real staging roundtrip gate. Duplicate-provider and archived-booking smoke cases remain useful hardening checks before production.
