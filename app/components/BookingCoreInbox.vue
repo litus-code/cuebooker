@@ -163,9 +163,11 @@ async function loadActivity(options: { silent?: boolean } = {}) {
 function emailDeliveryLabel(activity: Activity) {
   if (activity.type !== 'email' || activity.direction !== 'outbound') return ''
   const emailId = typeof activity.metadata?.email_message_id === 'string' ? activity.metadata.email_message_id : ''
+  if (!emailId) return ''
   const message = emailMessages.value.find(item => item.id === emailId)
-  const status = message?.delivery_status
-  if (!status) return props.locale === 'es' ? 'Aceptado' : 'Accepted'
+  if (!message) return ''
+  const status = message.delivery_status
+  if (!status) return props.locale === 'es' ? 'Enviado' : 'Sent'
   const labels: Record<string, string> = props.locale === 'es'
     ? { accepted:'Aceptado', delivered:'Entregado', deferred:'En espera', soft_bounce:'Rebote temporal', hard_bounce:'Rebotado', blocked:'Bloqueado', spam:'Spam', invalid:'Email inválido' }
     : { accepted:'Accepted', delivered:'Delivered', deferred:'Deferred', soft_bounce:'Soft bounce', hard_bounce:'Bounced', blocked:'Blocked', spam:'Spam', invalid:'Invalid email' }
