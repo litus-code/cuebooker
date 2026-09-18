@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Activity, Contact, CoreBooking, Counterparty, CoreBookingStatus } from '../domain/bookingCore'
+import type { BookingEmailMessage } from '../services/bookingCoreApi'
 
 const props = defineProps<{
   workspaceId: string
@@ -14,6 +15,7 @@ const selectedBookingId = ref('')
 const contacts = ref<Contact[]>([])
 const counterparties = ref<Counterparty[]>([])
 const activities = ref<Activity[]>([])
+const emailMessages = ref<BookingEmailMessage[]>([])
 const loadingMeta = ref(false)
 const loadingActivity = ref(false)
 const updatingStatus = ref(false)
@@ -125,13 +127,31 @@ watch(() => props.workspaceId, async value => {
 async function loadActivity() {
   const bookingId = selectedBooking.value?.id
   activities.value = []
+  emailMessages.value = []
   if (!bookingId || !props.workspaceId) return
   loadingActivity.value = true
   try {
-    activities.value = await bookingCore.listActivities(props.workspaceId, bookingId)
+    const [activityRows, emailRows] = await Promise.all([
+      bookingCore.listActivities(props.workspaceId, bookingId),
+      bookingCore.listBookingEmailMessages(props.workspaceId, bookingId)
+    ])
+    activities.value = activityRows
+    emailMessages.value = emailRows
   } finally {
     loadingActivity.value = false
   }
+}
+
+function emailDeliveryLabel(activity: Activity) {
+  if (activity.type !== 'email' || activity.direction !== 'outbound') return ''
+  const emailId = typeof activity.metadata?.email_message_id === 'string' ? activity.metadata.email_message_id : ''
+  const message = emailMessages.value.find(item => item.id === emailId)
+  const status = message?.delivery_status
+  if (!status) return props.locale === 'es' ? 'Aceptado' : 'Accepted'
+  const labels: Record<string, string> = props.locale === 'es'
+    ? { accepted:'Aceptado', delivered:'Entregado', deferred:'En espera', soft_bounce:'Rebote temporal', hard_bounce:'Rebotado', blocked:'Bloqueado', spam:'Spam', invalid:'Email inválido' }
+    : { accepted:'Accepted', delivered:'Delivered', deferred:'Deferred', soft_bounce:'Soft bounce', hard_bounce:'Bounced', blocked:'Blocked', spam:'Spam', invalid:'Invalid email' }
+  return labels[status] || status
 }
 
 watch(() => selectedBooking.value?.id, loadActivity, { immediate: true })
@@ -391,6 +411,7 @@ async function selectBooking(bookingId: string) {
                       ? ((locale === 'es' ? 'Tú' : 'You') + ' → ' + (selectedContact?.name || (locale === 'es' ? 'Contacto' : 'Contact')))
                       : (locale === 'es' ? 'Nota interna' : 'Internal note') }}
                 </span>
+                <em v-if="emailDeliveryLabel(activity)" class="thread-item__delivery">{{ emailDeliveryLabel(activity) }}</em>
                 <time>{{ formatTime(activity.occurred_at) }}</time>
               </div>
               <p>{{ activity.body }}</p>
@@ -560,6 +581,8 @@ async function selectBooking(bookingId: string) {
 .thread-item__meta strong { color:var(--cue-text); font:800 9px monospace; text-transform:uppercase; }
 .thread-item__meta span { color:var(--cue-muted); font:700 8px monospace; text-transform:uppercase; }
 .thread-item__meta time { margin-left:auto; color:var(--cue-muted); font:8px monospace; }
+.thread-item__delivery { margin-left:auto; padding:3px 6px; border:1px solid var(--cue-border); color:var(--cue-muted); font:800 7px monospace; font-style:normal; text-transform:uppercase; }
+.thread-item__delivery + time { margin-left:0; }
 .thread-item > p { margin:7px 0 0; font-size:12px; line-height:1.45; }
 .core-inbox__empty { margin:0; padding:18px; color:var(--cue-muted); font-size:12px; }
 @media (max-width: 760px) {
