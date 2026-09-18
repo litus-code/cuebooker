@@ -19,6 +19,7 @@ const activities = ref<Activity[]>([])
 const notificationItems = ref<CueNotification[]>([])
 const loading = ref(false)
 const workingId = ref('')
+const ATTENTION_WINDOW_MS = 48 * 60 * 60 * 1000
 
 const copy = computed(() => props.locale === 'es' ? {
   eyebrow: 'QUÉ NECESITA TU ATENCIÓN',
@@ -79,31 +80,40 @@ const items = computed(() => {
 
   for (const move of nextMoves.value) {
     const booking = props.bookings.find(item => item.id === move.booking_id)
+    const urgency = urgencyFor(move.due_at)
+    const dueTime = move.due_at ? new Date(move.due_at).getTime() : null
+    if (dueTime && urgency === 'normal' && dueTime > Date.now() + ATTENTION_WINDOW_MS) continue
+
     rows.push({
       id: move.id,
       kind: 'next',
       bookingId: move.booking_id,
       title: move.label,
       meta: [booking?.venue_name || booking?.event_name || copy.value.noDate, move.due_at ? formatDateTime(move.due_at) : ''].filter(Boolean).join(' · '),
-      sortAt: move.due_at ? new Date(move.due_at).getTime() : Number.MAX_SAFE_INTEGER - 1,
+      sortAt: dueTime ?? Number.MAX_SAFE_INTEGER - 1,
       actionLabel: copy.value.done,
-      urgency: urgencyFor(move.due_at),
-      rank: urgencyFor(move.due_at) === 'overdue' ? 0 : urgencyFor(move.due_at) === 'today' ? 3 : 5
+      urgency,
+      rank: urgency === 'overdue' ? 0 : urgency === 'today' ? 3 : 5
     })
   }
 
   for (const hold of holds.value) {
+    if (!hold.expires_at) continue
     const booking = props.bookings.find(item => item.id === hold.booking_id)
+    const urgency = urgencyFor(hold.expires_at)
+    const expiryTime = new Date(hold.expires_at).getTime()
+    if (urgency === 'normal' && expiryTime > Date.now() + ATTENTION_WINDOW_MS) continue
+
     rows.push({
       id: hold.id,
       kind: 'hold',
       bookingId: hold.booking_id,
       title: `${copy.value.hold}: ${booking?.venue_name || booking?.event_name || copy.value.noDate}`,
-      meta: [formatDateOnly(hold.event_date), hold.expires_at ? `${copy.value.expires} ${formatDateTime(hold.expires_at)}` : '', hold.priority ? `P${hold.priority}` : ''].filter(Boolean).join(' · '),
-      sortAt: hold.expires_at ? new Date(hold.expires_at).getTime() : new Date(`${hold.event_date}T12:00:00`).getTime(),
+      meta: [formatDateOnly(hold.event_date), `${copy.value.expires} ${formatDateTime(hold.expires_at)}`, hold.priority ? `P${hold.priority}` : ''].filter(Boolean).join(' · '),
+      sortAt: expiryTime,
       actionLabel: copy.value.release,
-      urgency: urgencyFor(hold.expires_at),
-      rank: urgencyFor(hold.expires_at) === 'overdue' ? 0 : urgencyFor(hold.expires_at) === 'today' ? 3 : 5
+      urgency,
+      rank: urgency === 'overdue' ? 0 : urgency === 'today' ? 3 : 5
     })
   }
 
