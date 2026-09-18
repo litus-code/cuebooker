@@ -1357,6 +1357,8 @@ f89247c21538171c51e5f49a2aef2c9787bbea7d
 
 ### Voice fallback
 
+> **Superseded provider-state note (2026-09-18):** The paragraph below describing `smart_capture_provider_not_configured` reflects an earlier staging state. Current staging Smart Capture uses the configured OpenAI provider/model strategy and text capture is proven. Keep the browser SpeechRecognition fallback as resilience, but do not treat provider configuration as the active blocker. The remaining voice gate is a fresh real desktop + iPhone capture smoke.
+
 Staging currently reports `smart_capture_provider_not_configured` from the Smart Capture server provider path.
 
 For demo resilience, browsers exposing SpeechRecognition/WebkitSpeechRecognition now prefer live dictation instead of MediaRecorder. When dictation stops:
