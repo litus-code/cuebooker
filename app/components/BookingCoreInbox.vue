@@ -17,6 +17,8 @@ const activities = ref<Activity[]>([])
 const loadingMeta = ref(false)
 const loadingActivity = ref(false)
 const updatingStatus = ref(false)
+const pendingDecision = ref<Extract<CoreBookingStatus, 'confirmed' | 'rejected' | 'cancelled'> | null>(null)
+const decisionError = ref('')
 const archiving = ref(false)
 const archiveView = ref<'active' | 'archived'>('active')
 const realSearch = ref('')
@@ -148,26 +150,42 @@ async function handleActivityCreated() {
   await loadActivity()
 }
 
-async function decideStatus(status: Extract<CoreBookingStatus, 'confirmed' | 'rejected' | 'cancelled'>) {
+function decideStatus(status: Extract<CoreBookingStatus, 'confirmed' | 'rejected' | 'cancelled'>) {
   if (!selectedBooking.value || selectedBooking.value.status === status) return
+  decisionError.value = ''
+  pendingDecision.value = status
+}
 
-  const question = status === 'confirmed'
-    ? copy.value.confirmQuestion
-    : status === 'rejected'
-      ? copy.value.rejectQuestion
-      : copy.value.cancelQuestion
+function closeDecisionModal() {
+  if (updatingStatus.value) return
+  pendingDecision.value = null
+  decisionError.value = ''
+}
 
-  if (!window.confirm(question)) return
+async function confirmDecision() {
+  const status = pendingDecision.value
+  const booking = selectedBooking.value
+  if (!status || !booking) return
+
+  if (status === 'confirmed' && !booking.event_date) {
+    decisionError.value = props.locale === 'es'
+      ? 'Antes de confirmar necesitas añadir una fecha al booking.'
+      : 'Add a booking date before confirming.'
+    return
+  }
 
   updatingStatus.value = true
+  decisionError.value = ''
   try {
-    await bookingCore.setBookingStatus(props.workspaceId, selectedBooking.value.id, status)
+    await bookingCore.setBookingStatus(props.workspaceId, booking.id, status)
+    pendingDecision.value = null
     await loadActivity()
     emit('operationsChanged')
   } catch (error: any) {
-    window.alert(error?.message === 'confirmed_booking_requires_date'
-      ? (props.locale === 'es' ? 'Para confirmar el booking primero necesitas una fecha.' : 'A booking needs a date before it can be confirmed.')
-      : (error?.message || 'Booking status could not be updated.'))
+    const code = error?.data?.message || error?.data?.error || error?.message || ''
+    decisionError.value = code === 'confirmed_booking_requires_date'
+      ? (props.locale === 'es' ? 'Antes de confirmar necesitas añadir una fecha al booking.' : 'Add a booking date before confirming.')
+      : (props.locale === 'es' ? 'No he podido actualizar el estado. Revisa los datos del booking e inténtalo de nuevo.' : 'I could not update the status. Review the booking details and try again.')
   } finally {
     updatingStatus.value = false
   }
@@ -397,6 +415,44 @@ async function selectBooking(bookingId: string) {
       </article>
     </div>
   </section>
+
+  <div v-if="pendingDecision" class="core-decision-modal" @click.self="closeDecisionModal">
+    <article role="dialog" aria-modal="true" aria-labelledby="core-decision-title">
+      <span>{{ locale === 'es' ? 'DECISIÓN DE BOOKING' : 'BOOKING DECISION' }}</span>
+      <h3 id="core-decision-title">
+        {{ pendingDecision === 'confirmed'
+          ? (locale === 'es' ? '¿Confirmar este booking?' : 'Confirm this booking?')
+          : pendingDecision === 'rejected'
+            ? (locale === 'es' ? '¿Rechazar este booking?' : 'Reject this booking?')
+            : (locale === 'es' ? '¿Cancelar este booking?' : 'Cancel this booking?') }}
+      </h3>
+      <p v-if="pendingDecision === 'confirmed'">
+        {{ selectedBooking?.event_date
+          ? (locale === 'es' ? 'La fecha quedará confirmada y aparecerá en Calendario. Si existe un hold de esta fecha, se convertirá automáticamente.' : 'The date will be confirmed and shown in Calendar. A matching hold will be converted automatically.')
+          : (locale === 'es' ? 'Este booking todavía no tiene fecha. Añádela en “Datos del booking” antes de confirmarlo.' : 'This booking does not have a date yet. Add one under “Booking details” before confirming.') }}
+      </p>
+      <p v-else>{{ locale === 'es' ? 'La decisión quedará registrada en la actividad del booking.' : 'The decision will be recorded in booking activity.' }}</p>
+      <p v-if="decisionError" class="core-decision-modal__error">{{ decisionError }}</p>
+      <div>
+        <button type="button" class="core-decision-modal__secondary" :disabled="updatingStatus" @click="closeDecisionModal">{{ locale === 'es' ? 'Volver' : 'Back' }}</button>
+        <button
+          type="button"
+          class="core-decision-modal__primary"
+          :class="{ danger: pendingDecision !== 'confirmed' }"
+          :disabled="updatingStatus || (pendingDecision === 'confirmed' && !selectedBooking?.event_date)"
+          @click="confirmDecision"
+        >
+          {{ updatingStatus
+            ? (locale === 'es' ? 'Guardando…' : 'Saving…')
+            : pendingDecision === 'confirmed'
+              ? (locale === 'es' ? 'Confirmar booking' : 'Confirm booking')
+              : pendingDecision === 'rejected'
+                ? (locale === 'es' ? 'Rechazar booking' : 'Reject booking')
+                : (locale === 'es' ? 'Cancelar booking' : 'Cancel booking') }}
+        </button>
+      </div>
+    </article>
+  </div>
 </template>
 
 <style scoped>
@@ -503,5 +559,24 @@ async function selectBooking(bookingId: string) {
   .core-inbox__details-heading { align-items:center; }
   .core-inbox__facts { grid-template-columns:1fr 1fr; }
   .thread-item { width:auto; max-width:92%; }
+}
+
+.core-decision-modal { position:fixed; z-index:120; inset:0; display:grid; place-items:center; padding:20px; background:rgba(0,0,0,.76); backdrop-filter:blur(7px); }
+.core-decision-modal article { width:min(520px,100%); padding:24px; border:1px solid var(--cue-border); background:var(--cue-surface); box-shadow:0 28px 90px rgba(0,0,0,.55); }
+.core-decision-modal article > span { color:var(--cue-accent); font:800 9px/1.2 monospace; letter-spacing:.1em; }
+.core-decision-modal h3 { margin:10px 0 12px; font-size:26px; line-height:1.05; text-transform:uppercase; }
+.core-decision-modal p { margin:0; color:var(--cue-muted); font-size:12px; line-height:1.55; }
+.core-decision-modal__error { margin-top:14px !important; padding:10px 12px; border-left:2px solid #ff8585; color:#ffb0b0 !important; background:color-mix(in srgb,#ff8585 6%,transparent); }
+.core-decision-modal article > div { display:flex; justify-content:flex-end; gap:8px; margin-top:22px; }
+.core-decision-modal button { min-height:42px; padding:0 14px; cursor:pointer; font:800 9px monospace; text-transform:uppercase; }
+.core-decision-modal__secondary { border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); }
+.core-decision-modal__primary { border:1px solid var(--cue-accent); background:var(--cue-accent); color:#080808; }
+.core-decision-modal__primary.danger { border-color:#ff8585; background:#ff8585; }
+.core-decision-modal button:disabled { opacity:.45; cursor:not-allowed; }
+@media (max-width:560px) {
+  .core-decision-modal { align-items:end; padding:0; }
+  .core-decision-modal article { width:100%; box-sizing:border-box; border-right:0; border-bottom:0; border-left:0; }
+  .core-decision-modal article > div { display:grid; grid-template-columns:1fr; }
+  .core-decision-modal button { width:100%; }
 }
 </style>
