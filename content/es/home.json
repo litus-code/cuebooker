@@ -1,15 +1,272 @@
 {
-  "seo": {"title": "CueBooker | No pierdas el hilo de ningún booking", "description": "Guarda llamadas, WhatsApps, emails y conversaciones en segundos. CueBooker conserva el contexto, el siguiente paso, los holds y tu calendario para que ningún booking se pierda."},
-  "nav": {"problem": "El problema", "product": "Cómo funciona", "roles": "Para quién", "tryProduct": "Disponible ahora", "login": "Iniciar sesión", "signup": "Crear cuenta"},
-  "hero": {"eyebrow": "MEMORIA OPERATIVA PARA DJS Y AGENCIAS", "titleTop": "NO PIERDAS", "titleBottom": "EL HILO", "body": "Te llaman. Te escriben por WhatsApp. Llega un email. Hablas con alguien en una sala. Guárdalo en segundos y CueBooker mantiene el booking, lo que ha pasado, lo que falta y la fecha bajo control.", "primaryCta": "Crear cuenta", "secondaryCta": "Ver cómo funciona", "networkIdle": "PASÓ ALGO · GUÁRDALO", "networkSearching": "ORDENANDO CONTEXTO", "networkFound": "SIGUIENTE PASO CLARO", "proofs": ["Captura una conversación sin cambiar de canal", "Cada booking conserva contexto y siguiente paso", "Holds y confirmados llegan al mismo calendario"]},
-  "problem": {"index": "01 / EL RUIDO", "eyebrow": "ASÍ SE MUEVEN LOS BOOKINGS DE VERDAD", "title": "La conversación está repartida. La responsabilidad no.", "body": "Un booking puede empezar con una llamada, seguir por WhatsApp, cambiar de condiciones por email y cerrarse días después. El problema no es usar muchos canales. El problema es recordar qué pasó, qué quedó pendiente y qué fecha comprometiste en cada uno.", "quoteOne": "¿Te va bien el 24?", "quoteTwo": "Falta confirmar horario", "file": "fechas_artistas_FINAL_v8.xlsx", "statement": "CueBooker no sustituye tus canales. Evita que el contexto se pierda entre ellos."},
-  "search": {"index": "07 / VISIÓN", "eyebrow": "MÁS ADELANTE · CUANDO EXISTA LA RED", "title": "La trayectoria primero. El discovery después.", "body": "Con una base real de bookings, relaciones y disponibilidad, CueBooker podrá añadir descubrimiento de artistas sin convertir seguidores o popularidad en una medida de valor. El núcleo seguirá siendo la trayectoria y el trabajo real del artista.", "where": "Dónde", "when": "Cuándo", "sound": "Sonido", "budget": "Presupuesto", "button": "Simular búsqueda", "searching": "Buscando DJs disponibles", "resultCount": "3 artistas disponibles", "resultHint": "Vista conceptual de una función futura. El presupuesto filtra coincidencias, pero el caché de cada DJ permanece privado. Los artistas y resultados son ficticios.", "visibility": "DISPONIBILIDAD VOLUNTARIA", "available": "Disponible para solicitudes", "request": "Ver perfil y solicitar fecha", "why": "Por qué encaja", "reasons": ["Disponible en tu fecha", "Sonido compatible", "Dentro del presupuesto"], "artists": [{"name": "NØRA", "city": "BARCELONA", "sound": "HYPNOTIC · TECHNO"}, {"name": "KAIRO", "city": "GIRONA", "sound": "DETROIT · GROOVE"}, {"name": "MARA V", "city": "BARCELONA", "sound": "INDUSTRIAL · LIVE"}]},
-  "flow": {"index": "02 / EL FLUJO", "eyebrow": "DE LO QUE ACABA DE PASAR A LO QUE TOCA HACER", "title": "Un gesto rápido. Un hilo que no se pierde.", "body": "CueBooker empieza después del mundo real, no en lugar de él. Capturas lo importante, revisas lo que ha entendido y el booking queda conectado a su historia, siguiente paso y calendario.", "steps": [{"name": "CUE", "detail": "Escribe o dicta lo que acaba de pasar: una llamada, WhatsApp, email o conversación."}, {"name": "Booking", "detail": "CueBooker organiza contacto, sala o promotor, fecha, oferta y origen sin obligarte a saberlo todo desde el inicio."}, {"name": "Activity", "detail": "Cada llamada, nota, cambio de estado o movimiento queda unido a la misma oportunidad."}, {"name": "Next Move", "detail": "Define una sola acción clara: confirmar horario, esperar respuesta, enviar rider o lo que toque."}, {"name": "Hold", "detail": "Reserva una fecha provisional sin confundirla con un booking confirmado."}, {"name": "Calendar", "detail": "Holds, confirmados y disponibilidad privada conviven sin duplicar la información."}]},
-  "integrations": {"index": "03 / TUS CANALES", "eyebrow": "NO CAMBIES CÓMO HABLAS CON LA GENTE", "title": "Teléfono, WhatsApp, email o Instagram siguen siendo tuyos.", "body": "CueBooker no obliga al promotor ni al DJ a mover la conversación a otro chat. Registras lo importante cuando ocurre y recuperas el contexto cuando lo necesitas.", "items": [{"label": "CAPTURA", "name": "Escribe o habla", "body": "Cuenta lo que acaba de pasar con tus palabras. CueBooker puede separar canal, contacto, fecha, oferta y siguiente paso para que los revises antes de guardar."}, {"label": "SEGUIMIENTO", "name": "Activity + Next Move", "body": "Añade una llamada, una nota o un mensaje y deja visible qué toca hacer después. No necesitas reconstruir la conversación de memoria."}, {"label": "AGENDA", "name": "Holds y confirmados", "body": "Una fecha provisional sigue siendo un Hold. Cuando el booking se confirma, el calendario refleja la decisión y cierra los holds incompatibles."}], "note": "La captura funciona aunque no conectes ninguna cuenta externa. Integraciones automáticas de email y otros canales llegarán detrás de adaptadores, sin convertirlas en requisito para usar CueBooker."},
-  "roles": {"index": "04 / PARA QUIÉN", "eyebrow": "POCO VOLUMEN O MUCHO, EL PROBLEMA ES EL MISMO", "title": "Valor desde el primer booking. Profundidad cuando crece el trabajo.", "items": [{"name": "DJ independiente", "headline": "Dos bolos al mes también merecen no perderse.", "body": "Si te llaman por una fecha, guárdala en segundos. CueBooker recuerda quién fue, qué se habló, qué falta y dónde encaja en tu calendario."}, {"name": "Promotor o sala", "headline": "No necesitas aprender otra herramienta para hablar con un DJ.", "body": "Puedes seguir usando teléfono, correo o los canales habituales. Cuando uses el formulario público, la información entra ya estructurada en el mismo sistema del artista."}, {"name": "Manager o agencia", "headline": "El mismo hilo, multiplicado por todo tu roster.", "body": "Cada artista mantiene sus bookings, holds y calendario separados dentro del workspace, con equipo y permisos compartidos cuando hacen falta."}]},
-  "access": {"index": "05 / ACCESO", "eyebrow": "EL WORKSPACE ES DEL ARTISTA Y SU EQUIPO", "title": "Empieza simple. La estructura aparece cuando la necesitas.", "body": "Un DJ puede trabajar solo dentro de su workspace. Una agencia utiliza el mismo núcleo con varios artistas. El promotor no necesita adoptar CueBooker para que el DJ pueda mantener su seguimiento.", "selectorLabel": "Selecciona un perfil", "demoTitle": "Acceso disponible.", "demoNote": " DJs y agencias ya pueden crear su cuenta y entrar en el workspace real de Booking Core.", "roles": [{"name": "DJ", "label": "ACCESO / ARTISTA", "account": "TU WORKSPACE", "headline": "Captura el próximo booking en segundos.", "steps": ["Crea tu cuenta y perfil", "Abre + CUE", "Escribe o dicta qué ha pasado", "Revisa el siguiente paso y calendario"], "cta": "Crear cuenta como DJ", "route": "/access?mode=signup"}, {"name": "PROMOTOR", "label": "ACCESO / PROMOTOR", "account": "SIN OBLIGACIÓN DE CUENTA", "headline": "Habla con el artista por el canal que ya utilizas.", "steps": ["Llama, escribe o usa el enlace del DJ", "Comparte fecha y condiciones", "El artista conserva el seguimiento", "El formulario público estructura la información cuando se usa"], "cta": "Ver formulario de booking", "route": "/artist"}, {"name": "AGENCIA", "label": "ACCESO / MANAGER", "account": "WORKSPACE MULTIARTISTA", "headline": "Una operación común sin mezclar artistas.", "steps": ["Registra la agencia", "Añade tu roster", "Cambia de artista dentro del workspace", "Gestiona bookings, holds y calendario por separado"], "cta": "Crear cuenta como agencia", "route": "/access?mode=signup"}]},
-  "demo": {"index": "06 / PRODUCTO", "eyebrow": "YA FUNCIONA SOBRE DATOS REALES", "title": "El núcleo operativo ya está conectado.", "body": "Tu workspace funciona sobre bookings reales desde el primer CUE. Los datos de demostración quedan como una opción aparte para explorar el producto, no como parte de tu operativa.", "currentTitle": "Disponible ahora", "current": ["CUE rápido por texto y dictado compatible", "Interpretación revisable de fecha, oferta, contacto y siguiente paso", "Bandeja real con búsqueda, filtros, edición y estados", "Activity, Next Move, Holds y atención pendiente", "Calendario con holds, confirmados y avisos de solape", "Historial real, archivo y restauración", "Relationship Memory basada en relaciones y bookings reales"], "realTitle": "Siguiente", "real": ["Extracción con IA de servidor para lenguaje más libre", "Email con respuestas enlazadas automáticamente al booking", "Compartir hacia CueBooker desde otros canales", "CUE Passport e identidad del artista"], "realNote": "Las funciones futuras se apoyarán en el mismo Booking Core. La IA propondrá datos; nunca será la fuente de verdad ni ejecutará cambios críticos sin validación.", "panelButton": "Crear cuenta", "requestButton": "Ver formulario público"},
-  "entry": {"eyebrow": "TU MEMORIA OPERATIVA", "title": "La próxima vez que pase algo, no lo dejes en tu cabeza.", "body": "Crea tu workspace y usa + CUE para guardar el próximo booking, aunque todavía solo sepas quién llamó y qué quedó pendiente."},
-  "feedback": {"eyebrow": "PRUEBAS Y FEEDBACK", "title": "Queremos probarlo con la forma real en que trabajas.", "body": "Si eres DJ, manager, agencia, promotor o sala, cuéntanos cómo llegan tus bookings y qué suele perderse entre una conversación y la siguiente.", "note": "Este formulario sirve para participar en pruebas y enviar feedback. Para utilizar tu espacio privado, crea una cuenta.", "form": {"title": "Participa en las pruebas de CueBooker", "body": "Cuéntanos qué perfil tienes. Te contactaremos para probar funciones y recoger feedback sobre tu forma real de trabajar.", "nameLabel": "Nombre", "namePlaceholder": "¿Cómo te llamas?", "emailLabel": "Correo electrónico", "emailPlaceholder": "tu@email.com", "emailHelp": "Usaremos tu correo para contactarte sobre pruebas de CueBooker.", "profileLabel": "¿Cuál es tu perfil?", "profiles": ["DJ independiente", "Manager o agencia", "Promotor, sala o festival"], "consentLabel": "Consentimiento", "consentText": "Acepto que CueBooker utilice mis datos para contactarme sobre pruebas y enviarme novedades relacionadas con el proyecto.", "submit": "Quiero participar", "success": "Hemos recibido tus datos. Te contactaremos para próximas pruebas y sesiones de feedback.", "successCta": "Crear cuenta", "invalid": "Los datos introducidos no son válidos. Revisa el correo electrónico y vuelve a intentarlo.", "required": "Este campo es obligatorio.", "loading": "Cargando formulario seguro…"}},
-  "cta": {"topButton": "Volver arriba", "email": "contacto@cuebooker.com"}
+  "seo": {
+    "title": "CueBooker | Cuéntalo. No pierdas el booking.",
+    "description": "Convierte llamadas, WhatsApps, emails y conversaciones en bookings que puedes seguir. Habla o escribe, revisa lo que CueBooker ha entendido y mantén contexto, estado y fecha bajo control."
+  },
+  "nav": {
+    "problem": "El problema",
+    "product": "Cómo funciona",
+    "roles": "Para quién",
+    "tryProduct": "Disponible ahora",
+    "login": "Iniciar sesión",
+    "signup": "Crear cuenta"
+  },
+  "hero": {
+    "eyebrow": "BOOKING OPERATIVO PARA DJS Y AGENCIAS",
+    "titleTop": "CUÉNTALO.",
+    "titleBottom": "CUEBOOKER LO ORDENA.",
+    "body": "Una llamada, un WhatsApp, un email o una conversación. Escríbelo o dilo en voz alta. CueBooker extrae lo importante, te enseña lo que ha entendido y convierte ese contexto en un booking que puedes seguir hasta cerrarlo.",
+    "primaryCta": "Probar CueBooker",
+    "secondaryCta": "Ver cómo funciona",
+    "networkIdle": "PASÓ ALGO · CUÉNTALO",
+    "networkSearching": "ENTENDIENDO EL CONTEXTO",
+    "networkFound": "BOOKING LISTO PARA SEGUIR",
+    "proofs": [
+      "Voz o texto → datos de booking revisables",
+      "El estado cambia con la conversación",
+      "Contexto, fecha y próxima acción en un solo hilo"
+    ]
+  },
+  "problem": {
+    "index": "01 / EL PROBLEMA",
+    "eyebrow": "LOS BOOKINGS NO NACEN EN UN FORMULARIO",
+    "title": "No faltan herramientas. Sobran conversaciones sueltas.",
+    "body": "Un booking puede empezar por WhatsApp, cambiar por teléfono y terminar por email. El problema aparece cuando días después tienes que recordar quién dijo qué, si estabas esperando respuesta, qué fee se habló o si esa fecha seguía libre.",
+    "quoteOne": "¿Te va bien el 24?",
+    "quoteTwo": "Falta confirmar horario",
+    "file": "fechas_artistas_FINAL_v8.xlsx",
+    "statement": "CueBooker no te obliga a cambiar de canal. Convierte lo que ya ocurre en un hilo operativo que no se pierde."
+  },
+  "search": {
+    "index": "07 / VISIÓN",
+    "eyebrow": "MÁS ADELANTE · CUANDO EXISTA LA RED",
+    "title": "La trayectoria primero. El discovery después.",
+    "body": "Con una base real de bookings, relaciones y disponibilidad, CueBooker podrá añadir descubrimiento de artistas sin convertir seguidores o popularidad en una medida de valor. El núcleo seguirá siendo la trayectoria y el trabajo real del artista.",
+    "where": "Dónde",
+    "when": "Cuándo",
+    "sound": "Sonido",
+    "budget": "Presupuesto",
+    "button": "Simular búsqueda",
+    "searching": "Buscando DJs disponibles",
+    "resultCount": "3 artistas disponibles",
+    "resultHint": "Vista conceptual de una función futura. El presupuesto filtra coincidencias, pero el caché de cada DJ permanece privado. Los artistas y resultados son ficticios.",
+    "visibility": "DISPONIBILIDAD VOLUNTARIA",
+    "available": "Disponible para solicitudes",
+    "request": "Ver perfil y solicitar fecha",
+    "why": "Por qué encaja",
+    "reasons": [
+      "Disponible en tu fecha",
+      "Sonido compatible",
+      "Dentro del presupuesto"
+    ],
+    "artists": [
+      {
+        "name": "NØRA",
+        "city": "BARCELONA",
+        "sound": "HYPNOTIC · TECHNO"
+      },
+      {
+        "name": "KAIRO",
+        "city": "GIRONA",
+        "sound": "DETROIT · GROOVE"
+      },
+      {
+        "name": "MARA V",
+        "city": "BARCELONA",
+        "sound": "INDUSTRIAL · LIVE"
+      }
+    ]
+  },
+  "flow": {
+    "index": "02 / CÓMO FUNCIONA",
+    "eyebrow": "DE UNA CONVERSACIÓN A UN BOOKING SEGUIMIENTO",
+    "title": "Habla como siempre. CueBooker hace el trabajo pesado.",
+    "body": "Captura lo que acaba de pasar, revisa lo que CueBooker ha entendido y sigue trabajando sobre un booking vivo. El sistema mantiene el estado, la conversación, la próxima acción y el calendario conectados.",
+    "steps": [
+      {
+        "name": "1. Cuéntalo",
+        "detail": "Habla o escribe con tus palabras. No hace falta rellenar un formulario perfecto."
+      },
+      {
+        "name": "2. Revisa",
+        "detail": "CueBooker propone contacto, sala o promotor, fecha, fee, condiciones y lo que falta por concretar."
+      },
+      {
+        "name": "3. Sigue el hilo",
+        "detail": "Mensajes, llamadas y notas quedan unidos al mismo booking y el estado operativo se actualiza con la conversación."
+      },
+      {
+        "name": "4. Decide",
+        "detail": "Cuando toca, confirma, rechaza o cancela. Las decisiones importantes siempre son tuyas."
+      },
+      {
+        "name": "5. No pises fechas",
+        "detail": "Reserva provisionalmente una fecha cuando haga falta y deja que el calendario refleje qué está realmente cerrado."
+      }
+    ]
+  },
+  "integrations": {
+    "index": "03 / DONDE EMPIECE",
+    "eyebrow": "NO CAMBIES TU FORMA DE TRABAJAR",
+    "title": "El booking puede empezar donde quiera. El seguimiento acaba en CueBooker.",
+    "body": "Teléfono, WhatsApp, email, Instagram, una conversación en persona o un formulario público. CueBooker centraliza el contexto sin obligar al promotor a entrar en otra plataforma.",
+    "items": [
+      {
+        "label": "SMART CAPTURE",
+        "name": "Voz o texto",
+        "body": "Cuenta lo que ha pasado. CueBooker estructura la información, señala dudas y te deja revisar antes de crear el booking."
+      },
+      {
+        "label": "CONVERSACIÓN",
+        "name": "Un solo hilo",
+        "body": "Cada interacción queda en el mismo contexto. Sabes qué se ha dicho, qué falta y quién está esperando a quién."
+      },
+      {
+        "label": "CALENDARIO",
+        "name": "Fechas con contexto",
+        "body": "Una fecha provisional no parece confirmada y una confirmación no vive separada del booking que la originó."
+      }
+    ],
+    "note": "CueBooker no pretende sustituir WhatsApp, email o teléfono. Su trabajo es que ninguna oportunidad dependa de tu memoria."
+  },
+  "roles": {
+    "index": "04 / PARA QUIÉN",
+    "eyebrow": "POCO VOLUMEN O MUCHO, EL PROBLEMA ES EL MISMO",
+    "title": "Valor desde el primer booking. Profundidad cuando crece el trabajo.",
+    "items": [
+      {
+        "name": "DJ independiente",
+        "headline": "Dos bolos al mes también merecen no perderse.",
+        "body": "Si te llaman por una fecha, guárdala en segundos. CueBooker recuerda quién fue, qué se habló, qué falta y dónde encaja en tu calendario."
+      },
+      {
+        "name": "Promotor o sala",
+        "headline": "No necesitas aprender otra herramienta para hablar con un DJ.",
+        "body": "Puedes seguir usando teléfono, correo o los canales habituales. Cuando uses el formulario público, la información entra ya estructurada en el mismo sistema del artista."
+      },
+      {
+        "name": "Manager o agencia",
+        "headline": "El mismo hilo, multiplicado por todo tu roster.",
+        "body": "Cada artista mantiene sus bookings, holds y calendario separados dentro del workspace, con equipo y permisos compartidos cuando hacen falta."
+      }
+    ]
+  },
+  "access": {
+    "index": "05 / ACCESO",
+    "eyebrow": "EL WORKSPACE ES DEL ARTISTA Y SU EQUIPO",
+    "title": "Empieza simple. La estructura aparece cuando la necesitas.",
+    "body": "Un DJ puede trabajar solo dentro de su workspace. Una agencia utiliza el mismo núcleo con varios artistas. El promotor no necesita adoptar CueBooker para que el DJ pueda mantener su seguimiento.",
+    "selectorLabel": "Selecciona un perfil",
+    "demoTitle": "Acceso disponible.",
+    "demoNote": " DJs y agencias ya pueden crear su cuenta y entrar en el workspace real de Booking Core.",
+    "roles": [
+      {
+        "name": "DJ",
+        "label": "ACCESO / ARTISTA",
+        "account": "TU WORKSPACE",
+        "headline": "Captura el próximo booking en segundos.",
+        "steps": [
+          "Crea tu cuenta y perfil",
+          "Abre + CUE",
+          "Escribe o dicta qué ha pasado",
+          "Revisa el siguiente paso y calendario"
+        ],
+        "cta": "Crear cuenta como DJ",
+        "route": "/access?mode=signup"
+      },
+      {
+        "name": "PROMOTOR",
+        "label": "ACCESO / PROMOTOR",
+        "account": "SIN OBLIGACIÓN DE CUENTA",
+        "headline": "Habla con el artista por el canal que ya utilizas.",
+        "steps": [
+          "Llama, escribe o usa el enlace del DJ",
+          "Comparte fecha y condiciones",
+          "El artista conserva el seguimiento",
+          "El formulario público estructura la información cuando se usa"
+        ],
+        "cta": "Ver formulario de booking",
+        "route": "/artist"
+      },
+      {
+        "name": "AGENCIA",
+        "label": "ACCESO / MANAGER",
+        "account": "WORKSPACE MULTIARTISTA",
+        "headline": "Una operación común sin mezclar artistas.",
+        "steps": [
+          "Registra la agencia",
+          "Añade tu roster",
+          "Cambia de artista dentro del workspace",
+          "Gestiona bookings, holds y calendario por separado"
+        ],
+        "cta": "Crear cuenta como agencia",
+        "route": "/access?mode=signup"
+      }
+    ]
+  },
+  "demo": {
+    "index": "06 / PRODUCTO",
+    "eyebrow": "EL PRODUCTO",
+    "title": "Ya puedes usar el núcleo real de CueBooker.",
+    "body": "Captura una oportunidad, revisa lo que el sistema ha entendido y síguela en el mismo workspace hasta resolverla.",
+    "currentTitle": "Disponible ahora",
+    "current": [
+      "Smart Capture por texto y voz con revisión antes de aplicar",
+      "Bookings reales con búsqueda y filtros por estado",
+      "Estados operativos automáticos según la conversación",
+      "Hilo de mensajes, llamadas y notas por booking",
+      "Edición de fecha, sala, fee y datos incompletos",
+      "Próxima acción, reservas provisionales de fecha y calendario",
+      "Perfil público y formulario para recibir nuevas oportunidades",
+      "Notificaciones por email y dentro del workspace"
+    ],
+    "realTitle": "En construcción",
+    "real": [
+      "Captura desde contenido pegado de WhatsApp y email",
+      "Respuesta por email completamente enlazada al hilo",
+      "Más automatización de canales sin perder control humano",
+      "Planes comerciales y trial de 30 días"
+    ],
+    "realNote": "CueBooker puede proponer y ordenar. Las decisiones que cambian un booking siguen siendo humanas.",
+    "panelButton": "Crear cuenta",
+    "requestButton": "Ver formulario público"
+  },
+  "entry": {
+    "eyebrow": "PRUÉBALO CON UN BOOKING REAL",
+    "title": "La próxima vez que te escriban por una fecha, no lo dejes en tu cabeza.",
+    "body": "Abre + CUE, cuéntale a CueBooker qué ha pasado y revisa cómo convierte esa conversación en un booking que puedes seguir."
+  },
+  "feedback": {
+    "eyebrow": "PRUEBAS Y FEEDBACK",
+    "title": "Queremos probarlo con la forma real en que trabajas.",
+    "body": "Si eres DJ, manager, agencia, promotor o sala, cuéntanos cómo llegan tus bookings y qué suele perderse entre una conversación y la siguiente.",
+    "note": "Este formulario sirve para participar en pruebas y enviar feedback. Para utilizar tu espacio privado, crea una cuenta.",
+    "form": {
+      "title": "Participa en las pruebas de CueBooker",
+      "body": "Cuéntanos qué perfil tienes. Te contactaremos para probar funciones y recoger feedback sobre tu forma real de trabajar.",
+      "nameLabel": "Nombre",
+      "namePlaceholder": "¿Cómo te llamas?",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "tu@email.com",
+      "emailHelp": "Usaremos tu correo para contactarte sobre pruebas de CueBooker.",
+      "profileLabel": "¿Cuál es tu perfil?",
+      "profiles": [
+        "DJ independiente",
+        "Manager o agencia",
+        "Promotor, sala o festival"
+      ],
+      "consentLabel": "Consentimiento",
+      "consentText": "Acepto que CueBooker utilice mis datos para contactarme sobre pruebas y enviarme novedades relacionadas con el proyecto.",
+      "submit": "Quiero participar",
+      "success": "Hemos recibido tus datos. Te contactaremos para próximas pruebas y sesiones de feedback.",
+      "successCta": "Crear cuenta",
+      "invalid": "Los datos introducidos no son válidos. Revisa el correo electrónico y vuelve a intentarlo.",
+      "required": "Este campo es obligatorio.",
+      "loading": "Cargando formulario seguro…"
+    }
+  },
+  "cta": {
+    "topButton": "Volver arriba",
+    "email": "contacto@cuebooker.com"
+  }
 }
