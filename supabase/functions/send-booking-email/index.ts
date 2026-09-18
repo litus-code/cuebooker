@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { renderBookingConversationEmail } from "../_shared/bookingConversationEmailTemplate.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -213,6 +214,10 @@ Deno.serve(async (request) => {
     const configuredFromName = Deno.env.get("CUEBOOKER_FROM_NAME")?.trim();
     const fromName = artistName ? `${artistName} via Cuebooker` : (configuredFromName || "Cuebooker");
     const replyToEmail = `booking+${queued.reply_token}@${configuredReplyDomain}`;
+    const renderedEmail = renderBookingConversationEmail({
+      artistName: artistName || "Cuebooker",
+      bodyText
+    });
 
     const providerResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
@@ -225,7 +230,8 @@ Deno.serve(async (request) => {
         to: [{ email: toEmail }],
         replyTo: { email: replyToEmail, name: fromName },
         subject,
-        textContent: bodyText,
+        htmlContent: renderedEmail.html,
+        textContent: renderedEmail.text,
         tags: ["cuebooker", `cuebooker_email_${queued.id}`]
       })
     });
