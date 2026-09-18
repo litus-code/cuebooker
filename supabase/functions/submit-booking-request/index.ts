@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { consumePublicRateLimit, publicRateLimitKey } from "../_shared/publicRateLimit.ts";
+import { renderBookingConversationEmail } from "../_shared/bookingConversationEmailTemplate.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -463,7 +464,13 @@ async function sendAcknowledgement(
   const fromName = Deno.env.get("CUEBOOKER_FROM_NAME")?.trim() || "Cuebooker";
   const replyToEmail = `booking+${email.reply_token}@${configuredReplyDomain}`;
   const followUpUrl = `${followUpOrigin(request, supabaseUrl)}/request?token=${encodeURIComponent(token)}`;
-  const providerBody = `${copy.storedBody}\n\n${copy.linkLabel}\n${followUpUrl}`;
+  const renderedEmail = renderBookingConversationEmail({
+    artistName: context.artistName,
+    bodyText: copy.storedBody,
+    locale,
+    actionUrl: followUpUrl,
+    actionLabel: locale === "en" ? "Open secure booking" : "Abrir booking seguro"
+  });
 
   const providerResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
@@ -473,7 +480,8 @@ async function sendAcknowledgement(
       to: [{ email: context.contactEmail }],
       replyTo: { email: replyToEmail, name: fromName },
       subject: copy.subject,
-      textContent: providerBody
+      htmlContent: renderedEmail.html,
+      textContent: renderedEmail.text
     })
   });
   const providerText = await providerResponse.text();
