@@ -1,6 +1,9 @@
 export type BookingConversationEmailContext = {
   artistName: string
   bodyText: string
+  locale?: 'es' | 'en'
+  actionUrl?: string
+  actionLabel?: string
 }
 
 function escapeHtml(value: string) {
@@ -33,6 +36,16 @@ export function renderBookingConversationEmail(
   const safeArtistName = escapeHtml(artistName)
   const preheader = escapeHtml(preheaderFromBody(context.bodyText))
   const message = renderBody(context.bodyText)
+  const locale = context.locale === 'en' ? 'en' : 'es'
+  const actionUrl = context.actionUrl?.trim() || ''
+  const actionLabel = context.actionLabel?.trim()
+    || (locale === 'en' ? 'Open secure booking' : 'Abrir booking seguro')
+  const action = actionUrl
+    ? `<div style="margin:26px 0 4px;"><a href="${escapeHtml(actionUrl)}" style="display:inline-block;padding:14px 18px;background:#e8ff2f;color:#090909;text-decoration:none;font-size:12px;font-weight:900;letter-spacing:.02em;">${escapeHtml(actionLabel)}</a></div>`
+    : ''
+  const footer = locale === 'en'
+    ? 'Sent from Cuebooker · Reply directly to this email to continue the conversation.'
+    : 'Enviado desde Cuebooker · Responde directamente a este email para continuar la conversación.'
 
   const html = `<!doctype html>
 <html>
@@ -51,11 +64,12 @@ export function renderBookingConversationEmail(
             <tr>
               <td style="padding:30px 24px 24px;">
                 <div style="color:#f2f0eb;font-size:15px;line-height:1.6;">${message}</div>
+                ${action}
               </td>
             </tr>
             <tr>
               <td style="padding:17px 24px 20px;border-top:1px solid #222;color:#777;font-size:11px;line-height:1.5;">
-                Enviado desde Cuebooker · Responde directamente a este email para continuar la conversación.
+                ${footer}
               </td>
             </tr>
           </table>
@@ -65,8 +79,12 @@ export function renderBookingConversationEmail(
   </body>
 </html>`
 
+  const text = actionUrl
+    ? `${context.bodyText}\n\n${actionLabel}:\n${actionUrl}`
+    : context.bodyText
+
   return {
     html,
-    text: context.bodyText
+    text
   }
 }
