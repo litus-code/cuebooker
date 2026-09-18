@@ -28,12 +28,12 @@ const form = reactive({
 })
 
 const copy = computed(() => props.locale === 'es' ? {
-  edit: 'Editar booking',
+  edit: 'Editar datos',
   title: 'Completar booking',
   event: 'Evento', venue: 'Sala', city: 'Ciudad', country: 'País', date: 'Fecha', start: 'Inicio', end: 'Fin', timezone: 'Zona horaria', offer: 'Oferta', currency: 'Moneda', feeBasis: 'Base del fee',
   cancel: 'Cancelar', save: 'Guardar cambios', saving: 'Guardando…', invalidOffer: 'La oferta no es válida.', error: 'No se ha podido actualizar el booking.'
 } : {
-  edit: 'Edit booking',
+  edit: 'Edit details',
   title: 'Complete booking',
   event: 'Event', venue: 'Venue', city: 'City', country: 'Country', date: 'Date', start: 'Start', end: 'End', timezone: 'Timezone', offer: 'Offer', currency: 'Currency', feeBasis: 'Fee basis',
   cancel: 'Cancel', save: 'Save changes', saving: 'Saving…', invalidOffer: 'The offer is not valid.', error: 'The booking could not be updated.'
@@ -118,7 +118,10 @@ async function save() {
 
 <template>
   <div class="booking-editor-entry">
-    <button class="booking-editor-entry__button" type="button" @click="show">{{ copy.edit }}</button>
+    <button class="booking-editor-entry__button" type="button" @click="show">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4ZM13.5 6.5l4 4"/></svg>
+      <span>{{ copy.edit }}</span>
+    </button>
     <div v-if="open" class="booking-editor-backdrop" @click.self="close">
       <form class="booking-editor" role="dialog" aria-modal="true" @submit.prevent="save">
         <header><div><span>CUE / BOOKING</span><h3>{{ copy.title }}</h3></div><button type="button" aria-label="Close" @click="close">×</button></header>
@@ -142,7 +145,9 @@ async function save() {
 </template>
 
 <style scoped>
-.booking-editor-entry__button { min-height:34px; padding:0 11px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); cursor:pointer; font:700 9px monospace; text-transform:uppercase; }
+.booking-editor-entry__button { display:flex; align-items:center; gap:7px; min-height:34px; padding:0 11px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); cursor:pointer; font:700 9px monospace; text-transform:uppercase; }
+.booking-editor-entry__button:hover { border-color:var(--cue-accent); color:var(--cue-accent); }
+.booking-editor-entry__button svg { width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 .booking-editor-backdrop { position:fixed; z-index:95; inset:0; display:grid; place-items:center; padding:18px; background:rgba(0,0,0,.72); backdrop-filter:blur(4px); }
 .booking-editor { width:min(720px,100%); max-height:90dvh; overflow:auto; border:1px solid var(--cue-border); background:var(--cue-surface); color:var(--cue-text); }
 .booking-editor > header { display:flex; justify-content:space-between; gap:16px; padding:18px 20px; border-bottom:1px solid var(--cue-border); }
