@@ -247,7 +247,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
       throw new Error('invalid_offer_amount_minor')
     }
 
-    const rows = await $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/rpc/create_cue_booking`, {
+    const rows = await $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/rpc/create_smart_cue_booking`, {
       method: 'POST',
       headers: authHeaders(),
       body: {
@@ -266,10 +266,15 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         event_city: normalizedText(input.city),
         event_country_code: countryCode(input.countryCode),
         event_date: input.eventDate || null,
+        start_time: input.startTime || null,
+        end_time: input.endTime || null,
+        event_timezone: normalizedText(input.eventTimezone),
         offer_amount_minor: input.offerAmountMinor ?? null,
         offer_currency: currency(input.currency),
+        fee_basis: normalizedText(input.feeBasis),
         initial_note: normalizedText(input.initialNote),
-        initial_next_move: normalizedText(input.nextMoveLabel)
+        initial_next_move: normalizedText(input.nextMoveLabel),
+        initial_next_due_at: input.nextMoveDueAt || null
       }
     })
 
