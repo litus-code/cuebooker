@@ -29,16 +29,16 @@ const copy = computed(() => props.locale === 'es' ? {
   eyebrow: 'PERFIL PÚBLICO', title: 'Tu puerta de entrada.',
   body: 'Comparte tu perfil donde ya está tu gente. Cada solicitud termina en el mismo Booking Core, venga de donde venga.',
   published: 'Perfil publicado', unpublished: 'Perfil privado', accepting: 'Aceptar solicitudes', closed: 'Booking cerrado',
-  preview: 'Vista previa', copyBooking: 'Copiar booking directo', copied: 'Copiado', live: 'Abrir perfil',
+  preview: 'Vista previa', copyBooking: 'Copiar enlace de solicitud', copied: 'Copiado', live: 'Abrir perfil',
   publishHint: 'Publicar hace visible tu ficha. Abrir booking permite recibir solicitudes sin que el promotor tenga que registrarse.',
   share: 'Distribución', shareTitle: 'Lleva tu booking a los canales que ya utilizas.',
   shareBody: 'No necesitas crear formularios distintos. Cuebooker genera una entrada adaptada a cada canal y conserva su procedencia.',
   bookingClosedHint: 'Activa “Aceptar solicitudes” para usar las entradas que llevan directamente al formulario.',
   profileGroup: 'Perfil', bookingGroup: 'Solicitudes directas', embedGroup: 'Tu web',
-  publicProfile: 'Perfil público', directBooking: 'Booking directo', widget: 'Widget web',
+  publicProfile: 'Perfil público', directBooking: 'Solicitud directa', widget: 'Widget web',
   instagram: 'Instagram', whatsapp: 'WhatsApp Business', website: 'Enlace web', epk: 'EPK', qr: 'QR', email: 'Email', linkInBio: 'Link in bio',
   profileDesc: 'Tu landing pública como artista. Úsala como perfil profesional o presentación.',
-  bookingDesc: 'Abre directamente el formulario. Ideal cuando ya estás hablando con un promotor.',
+  bookingDesc: 'Comparte este enlace cuando ya estás hablando con un promotor y quieres pasar la conversación a una solicitud estructurada.',
   instagramDesc: 'Para bio, stories, DM o enlaces del perfil. Las entradas quedan atribuidas a Instagram.',
   whatsappDesc: 'Para el perfil de WhatsApp Business, respuestas rápidas o conversaciones con promotores.',
   websiteDesc: 'Enlace directo desde botones o CTAs de tu web actual.',
@@ -53,16 +53,16 @@ const copy = computed(() => props.locale === 'es' ? {
   eyebrow: 'PUBLIC PROFILE', title: 'Your booking front door.',
   body: 'Share your profile where your audience already is. Every enquiry lands in the same Booking Core, regardless of where it starts.',
   published: 'Profile published', unpublished: 'Profile private', accepting: 'Accept enquiries', closed: 'Booking closed',
-  preview: 'Preview', copyBooking: 'Copy direct booking', copied: 'Copied', live: 'Open profile',
+  preview: 'Preview', copyBooking: 'Copy enquiry link', copied: 'Copied', live: 'Open profile',
   publishHint: 'Publishing makes your profile visible. Opening booking lets promoters send enquiries without creating an account.',
   share: 'Distribution', shareTitle: 'Bring booking into the channels you already use.',
   shareBody: 'You do not need separate forms. Cuebooker gives each channel its own entry point while keeping attribution.',
   bookingClosedHint: 'Turn on “Accept enquiries” to use entry points that open the booking form directly.',
   profileGroup: 'Profile', bookingGroup: 'Direct enquiries', embedGroup: 'Your website',
-  publicProfile: 'Public profile', directBooking: 'Direct booking', widget: 'Website widget',
+  publicProfile: 'Public profile', directBooking: 'Direct enquiry', widget: 'Website widget',
   instagram: 'Instagram', whatsapp: 'WhatsApp Business', website: 'Website link', epk: 'EPK', qr: 'QR', email: 'Email', linkInBio: 'Link in bio',
   profileDesc: 'Your public artist landing page. Use it as a professional profile or presentation.',
-  bookingDesc: 'Opens the form directly. Useful when you are already speaking with a promoter.',
+  bookingDesc: 'Share this when you are already talking to a promoter and want to turn the conversation into a structured enquiry.',
   instagramDesc: 'For bio, stories, DMs or profile links. Enquiries stay attributed to Instagram.',
   whatsappDesc: 'For WhatsApp Business profile links, quick replies or promoter conversations.',
   websiteDesc: 'Direct booking link for buttons or CTAs on your existing website.',
@@ -199,7 +199,7 @@ async function copyBookingLink() {
           <div class="public-profile-controls__share-grid">
             <article v-for="link in group.items" :key="link.key" class="public-profile-controls__channel">
               <div>
-                <span>{{ link.label }}</span>
+                <span class="public-profile-controls__channel-title"><i aria-hidden="true">{{ ({ profile: 'ID', booking: 'REQ', instagram: 'IG', whatsapp: 'WA', email: '@', epk: 'EPK', link_in_bio: 'BIO', qr: 'QR', website: 'WEB', widget: '&lt;&gt;' } as Record<string,string>)[link.key] }}</i>{{ link.label }}</span>
                 <p>{{ link.description }}</p>
                 <small>{{ link.meta }}</small>
               </div>
@@ -235,15 +235,16 @@ async function copyBookingLink() {
 .public-profile-controls__actions button:disabled { cursor: default; opacity: .4; }
 .public-profile-controls__actions button:hover:not(:disabled), .public-profile-controls__actions a:hover { border-color: var(--cue-accent); color: var(--cue-accent); }
 .public-profile-controls__actions button:focus-visible, .public-profile-controls__actions a:focus-visible, .public-profile-controls__channel button:focus-visible { outline: 2px solid var(--cue-accent); outline-offset: 2px; }
-.public-profile-controls__share { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(220px, .28fr) minmax(0, .72fr); gap: 24px; padding-top: 18px; border-top: 1px solid var(--cue-border); }
+.public-profile-controls__share { grid-column:1 / -1; display:grid; grid-template-columns:minmax(190px,.22fr) minmax(0,.78fr); gap:18px; padding-top:18px; border-top:1px solid var(--cue-border); }
 .public-profile-controls__share-intro > strong { display: block; font-size: 15px; line-height: 1.15; text-transform: uppercase; }
 .public-profile-controls__share-intro p { margin: 8px 0; color: var(--cue-muted); font-size: 12px; line-height: 1.5; }
 .public-profile-controls__share-intro small { color: var(--cue-dim); font-size: 10px; line-height: 1.4; }
 .public-profile-controls__groups { display: grid; gap: 22px; }
-.public-profile-controls__group h3 { margin: 0 0 9px; color: var(--cue-dim); font: 800 9px/1.2 monospace; letter-spacing: .1em; text-transform: uppercase; }
+.public-profile-controls__group h3 { margin:0 0 12px; color:var(--cue-accent); font:900 11px/1.2 monospace; letter-spacing:.12em; text-transform:uppercase; }
 .public-profile-controls__share-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .public-profile-controls__channel { display: flex; flex-direction: column; justify-content: space-between; min-width: 0; min-height: 138px; padding: 14px; border: 1px solid var(--cue-border); background: var(--cue-bg); }
-.public-profile-controls__channel > div > span { display: block; font: 900 11px/1.2 monospace; text-transform: uppercase; }
+.public-profile-controls__channel-title { display:flex; align-items:center; gap:9px; font:900 11px/1.2 monospace; text-transform:uppercase; }
+.public-profile-controls__channel-title i { display:grid; place-items:center; min-width:32px; height:32px; padding:0 6px; border:1px solid color-mix(in srgb,var(--cue-accent) 55%,var(--cue-border)); color:var(--cue-accent); font:900 8px/1 monospace; font-style:normal; }
 .public-profile-controls__channel p { margin: 8px 0 10px; color: var(--cue-muted); font-size: 11px; line-height: 1.45; }
 .public-profile-controls__channel small { display: block; color: var(--cue-dim); font: 9px/1.3 monospace; }
 .public-profile-controls__channel button { align-self: flex-start; min-height: 34px; margin-top: 14px; padding: 0 10px; border: 1px solid var(--cue-border); background: transparent; color: var(--cue-text); cursor: pointer; font: 800 9px/1 monospace; text-transform: uppercase; }
