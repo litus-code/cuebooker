@@ -268,5 +268,29 @@
   "cta": {
     "topButton": "Back to top",
     "email": "contacto@cuebooker.com"
+  },
+  "join": {
+    "index": "05 / JOIN NOW",
+    "eyebrow": "30 DAYS TO TRY IT WITH REAL WORK",
+    "title": "Use it on real bookings. No card and no new way of working to learn.",
+    "body": "The trial only matters if CueBooker enters your real operation: a call, an offer, a pending reply and a date you need to protect. For 30 days you can use the complete core and decide whether it genuinely saves memory, follow-up and time.",
+    "nowTitle": "What you get from day one",
+    "now": [
+      "Smart Capture by voice or text to turn conversations into reviewable bookings",
+      "Inbox with automatic operational states and one conversation thread",
+      "Calendar, next action and provisional date holds",
+      "Public artist profile and form for structured enquiries",
+      "Notifications and traceability without forcing promoters into CueBooker"
+    ],
+    "upcomingTitle": "Coming next",
+    "upcoming": [
+      "Smart capture from pasted WhatsApp and email content",
+      "Email replies fully linked to the booking thread",
+      "More channel automation with human confirmation",
+      "Deeper Manager / Agency workflows for rosters",
+      "Simple commercial plans once the workflow is proven"
+    ],
+    "note": "Joining now also means helping us refine CueBooker around real operational work, not vanity metrics or invented workflows.",
+    "cta": "Start 30 days"
   }
 }
