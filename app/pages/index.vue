@@ -136,16 +136,34 @@ useHead(() => ({
         <p class="eyebrow">{{ copy.hero.eyebrow }}</p>
         <h1>{{ copy.hero.titleTop }}<br><em><span v-for="word in copy.hero.titleBottom.split(' ')" :key="word">{{ word }}</span></em></h1>
         <p class="lead">{{ copy.hero.body }}</p>
-        <ul class="hero__proofs">
-          <li v-for="proof in copy.hero.proofs" :key="proof"><i />{{ proof }}</li>
-        </ul>
         <div class="hero__actions">
           <button class="button button--primary" @click="trackAuth('signup', 'hero'); trackCta('hero_primary', 'hero', '/access?mode=signup'); router.push('/access?mode=signup')">{{ copy.hero.primaryCta }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
           <button class="text-button" @click="trackCta('see_how_it_works', 'hero', '#product'); scrollTo('#product')">{{ copy.hero.secondaryCta }} <span class="arrow arrow--down" aria-hidden="true" /></button>
         </div>
       </div>
-      <CueNetwork :state="searchState" :label="networkLabel" />
-      <p class="hero__edge mono">ARTIST <span class="arrow arrow--right" aria-hidden="true" /> AVAILABILITY <span class="arrow arrow--right" aria-hidden="true" /> REQUEST <span class="arrow arrow--right" aria-hidden="true" /> CONFIRMED</p>
+
+      <div class="hero-capture" aria-label="Ejemplo de captura de booking">
+        <div class="hero-capture__incoming">
+          <span class="mono">WHATSAPP / 02:14</span>
+          <p>“23 OCT · NITSA · 1.500 + HOTEL · FALTA HORARIO”</p>
+        </div>
+        <div class="hero-capture__pulse" aria-hidden="true"><i /><span>SMART CAPTURE</span></div>
+        <div class="hero-capture__booking">
+          <header><span class="mono">BOOKING</span><b>{{ locale === 'es' ? 'ESPERANDO RESPUESTA' : 'WAITING RESPONSE' }}</b></header>
+          <strong>NITSA</strong>
+          <dl>
+            <div><dt>{{ locale === 'es' ? 'FECHA' : 'DATE' }}</dt><dd>23 OCT</dd></div>
+            <div><dt>FEE</dt><dd>€1.500</dd></div>
+            <div><dt>HOTEL</dt><dd>INCL.</dd></div>
+            <div><dt>{{ locale === 'es' ? 'FALTA' : 'MISSING' }}</dt><dd>{{ locale === 'es' ? 'HORARIO' : 'SCHEDULE' }}</dd></div>
+          </dl>
+        </div>
+        <div class="hero-capture__steps">
+          <span v-for="(proof, index) in copy.hero.proofs" :key="proof"><i>{{ String(index + 1).padStart(2,'0') }}</i>{{ proof }}</span>
+        </div>
+      </div>
+
+      <p class="hero__edge mono">INPUT <span class="arrow arrow--right" aria-hidden="true" /> CONTEXT <span class="arrow arrow--right" aria-hidden="true" /> BOOKING <span class="arrow arrow--right" aria-hidden="true" /> FOLLOW-UP</p>
     </section>
 
     <section id="problem" class="problem section-pad" data-analytics-section="problem">
