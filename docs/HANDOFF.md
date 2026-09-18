@@ -2161,3 +2161,125 @@ Supabase security advisors: no new warning introduced
 
 The remaining final-delivery gate is still external Brevo configuration: register the transactional webhook against `brevo-transactional-events` with the configured private header. Production remains untouched.
 
+## 41. Public ingress abuse protection — IMPLEMENTED ON STAGING
+
+Functional commits:
+
+```text
+623b26f89af672596665c1b1e5419cd640be71fe
+80efdbe242b3cb8821287cc7d68a9bd01c658d20
+46f9dbb8c5c2f9051fae32dbe05b4208ecb5bcfa
+65f31818998d2a8036f1a1fb1ecf0461f90a5d5f
+86da82480cc5dc6b443e0dec50d4638f8124686f
+bd08b210c5bd3ef3e421456e492c7aef05964e0a
+c6fe9717e0eaef1e78af666d12442d7d3a673c66
+f438c5ac420e042d4df98a1f78ffb7c04305299f
+71aed7a2cf661b7ae78f3e17f799f418856308c7
+f03bd455211035b1dc4de7e50202e73ef6546e14
+```
+
+Staging Edge Functions:
+
+```text
+submit-booking-request ACTIVE v19
+booking-follow-up ACTIVE v18
+```
+
+Public intake now uses atomic fixed-window budgets in Postgres through a service-role-only RPC. The private bucket table stores only:
+
+```text
+scope
+HMAC-SHA256 key
+window start
+request count
+timestamps
+```
+
+Raw IP addresses, promoter emails and follow-up tokens are never persisted in the limiter.
+
+Current initial budgets:
+
+```text
+Public booking form
+- client: 20 / 10 minutes
+- artist: 120 / hour
+- same artist + contact email: 5 / hour
+
+Secure follow-up reply
+- client: 30 / 10 minutes
+- secure token: 12 / 10 minutes
+```
+
+Client budget is evaluated first. A client already blocked by its own budget does not consume the artist/contact/token budget, preventing one abusive source from burning shared capacity.
+
+Rate-limit identities are HMACed server-side. `CUEBOOKER_RATE_LIMIT_SECRET` is used when configured; the server-only service credential is the staging fallback. A dedicated rate-limit secret should be configured deliberately before production.
+
+`X-Forwarded-For` processing uses the gateway-nearest non-empty address rather than trusting a caller-prepended first value. Cloudflare/X-Real-IP headers are fallback inputs.
+
+Rate-limited requests return HTTP 429 + `Retry-After`. Product UI preserves entered text and shows human copy rather than the internal `rate_limited` code.
+
+Database validation proved:
+
+```text
+request 1 -> allowed, 1 remaining
+request 2 -> allowed, 0 remaining
+request 3 -> blocked, Retry-After returned
+```
+
+The smoke bucket was deleted afterward and no fixture bucket remains.
+
+Retention:
+
+```text
+cuebooker-prune-public-rate-limits
+every 6 hours
+delete inactive buckets older than 48 hours
+```
+
+Permission validation:
+
+```text
+anon execute = false
+authenticated execute = false
+service_role execute = true
+```
+
+Supabase advisors introduced no new security warning. The existing leaked-password warning remains. The previously reported unindexed `notifications.activity_id` foreign key is now covered by `notifications_activity_id_idx`.
+
+Production remains untouched.
+
+## 42. Branded public booking acknowledgement — IMPLEMENTED ON STAGING
+
+Functional commits:
+
+```text
+7c30d0a7c0ea2882b588333a9f523c02cde9259f
+ef715a27ca65425375f0825fd24bf234e0aadb8a
+```
+
+Staging:
+
+```text
+submit-booking-request ACTIVE v20
+send-booking-email ACTIVE v19
+CI run 35372755327: success
+Deploy Staging run 35372755378: success
+```
+
+The automatic acknowledgement sent after a public booking form now uses the same Cuebooker dark/lime email renderer as booking conversation email.
+
+It includes:
+
+- branded HTML;
+- plain-text fallback;
+- artist context;
+- localized ES/EN footer;
+- a visible CTA to the secure booking follow-up URL;
+- Reply-To continuing to route into the booking email thread.
+
+The shared renderer remains backwards-compatible for normal booking conversation email.
+
+The only remaining delivery-tracking gap is external configuration in Brevo: register the transactional-event webhook against `brevo-transactional-events` with the private `x-cuebooker-webhook-secret` header. Code, staging schema and callback function are ready.
+
+Production remains untouched.
+
