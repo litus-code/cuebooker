@@ -2283,3 +2283,93 @@ The only remaining delivery-tracking gap is external configuration in Brevo: reg
 
 Production remains untouched.
 
+## 43. Transactional delivery tracking hardening — IMPLEMENTED ON STAGING
+
+Functional commits:
+
+```text
+be2ca1f1a518ba15ee47f39aa9ce4bd97de6cbfc
+b358e07629da8fdd53c5b52d69cdcb2458d632ba
+fe7ea7995c65d015a9019dec5accd6813ca73a7e
+ad741fd29033d0fc1ef2d37f3dd6cabe184f1745
+723c7552f4d3f7bab51ad4675d0f9aa30071457b
+```
+
+The Brevo transactional callback now uses a tested shared event normalizer:
+
+```text
+supabase/functions/_shared/brevoTransactionalEvent.ts
+tests/brevoTransactionalEvent.test.ts
+```
+
+Tracked delivery states now include:
+
+```text
+accepted
+delivered
+deferred
+soft_bounce
+hard_bounce
+blocked
+spam
+invalid
+error
+```
+
+Brevo `error` is therefore represented as a real final delivery failure rather than silently leaving the message at `accepted`. Proxy-open and unique-proxy-open events also update `opened_at`.
+
+Repository migration:
+
+```text
+20260918201500_add_email_delivery_error_status.sql
+```
+
+Staging migration was applied and rollback validation proved `delivery_status = error` satisfies the database constraint without leaving fixture changes.
+
+Staging Edge Function:
+
+```text
+brevo-transactional-events ACTIVE v3
+verify_jwt = false
+custom x-cuebooker-webhook-secret authentication remains required
+```
+
+Validation for commit `723c7552f4d3f7bab51ad4675d0f9aa30071457b`:
+
+```text
+CI run 35379699885: success
+tests: success
+Nuxt production generation: success
+Deploy Staging / PR preview run 35379699864: success
+Preview: https://pr-75.cuebooker-staging.pages.dev
+```
+
+Supabase advisors show no security regression from this change. The existing Auth leaked-password warning remains, and the service-only `notification_email_deliveries` table continues to intentionally expose no browser RLS policies.
+
+### Remaining real delivery gate
+
+The latest real outbound booking emails in staging have:
+
+```text
+status = sent
+provider = brevo
+provider_message_id = present
+delivery_status = accepted
+delivered_at = null
+bounced_at = null
+```
+
+This means Cuebooker currently proves provider acceptance, not mailbox delivery. Code, schema and staging Edge Function are ready.
+
+The remaining gate is external Brevo configuration: register a transactional webhook pointing to:
+
+```text
+https://lycprjeuuynfzwskycwv.supabase.co/functions/v1/brevo-transactional-events
+```
+
+with the configured private `x-cuebooker-webhook-secret` matching `BREVO_TRANSACTIONAL_WEBHOOK_SECRET`, and enable at least delivered, deferred, soft bounce, hard bounce, blocked, spam, invalid email, error and opening events.
+
+After that configuration, send one fresh booking email and verify the same `email_messages` row moves from `accepted` to `delivered` or the appropriate failure state. Do not infer delivery from Brevo send acceptance.
+
+Production remains untouched.
+
