@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Activity, CoreBooking, Hold, NextMove } from '../domain/bookingCore'
+import type { CueNotification } from '../domain/notification'
 import { deriveBookingAttentionSignals, type BookingAttentionSignalKind } from '../services/bookingAttention'
 
 const props = defineProps<{
@@ -11,9 +12,11 @@ const props = defineProps<{
 
 const emit = defineEmits<{ changed: []; openBookings: []; openBooking: [bookingId: string] }>()
 const bookingCore = useBookingCore()
+const notificationApi = useNotifications()
 const nextMoves = ref<NextMove[]>([])
 const holds = ref<Hold[]>([])
 const activities = ref<Activity[]>([])
+const notificationItems = ref<CueNotification[]>([])
 const loading = ref(false)
 const workingId = ref('')
 
@@ -104,24 +107,41 @@ const items = computed(() => {
     })
   }
 
+  for (const notification of notificationItems.value) {
+    if (notification.read_at) continue
+    const booking = props.bookings.find(item => item.id === notification.booking_id)
+    if (!booking || booking.archived_at) continue
+    const kind: BookingAttentionSignalKind = notification.kind === 'promoter_reply_received'
+      ? 'reply_received'
+      : 'new_booking'
+    const context = booking.venue_name || booking.event_name || copy.value.noDate
+    rows.push({
+      id: `notification-${notification.id}`,
+      kind,
+      bookingId: booking.id,
+      title: kind === 'reply_received' ? copy.value.replyTitle : copy.value.newBookingTitle,
+      meta: [context, formatDateTime(notification.created_at)].filter(Boolean).join(' · '),
+      sortAt: new Date(notification.created_at).getTime(),
+      actionLabel: null,
+      urgency: 'attention',
+      rank: kind === 'reply_received' ? 1 : 2
+    })
+  }
+
   for (const signal of deriveBookingAttentionSignals(props.bookings, activities.value)) {
+    if (signal.kind !== 'stale_waiting') continue
     const booking = props.bookings.find(item => item.id === signal.bookingId)
     const context = booking?.venue_name || booking?.event_name || copy.value.noDate
-    const labels = {
-      reply_received: { title: copy.value.replyTitle, rank: 1 },
-      new_booking: { title: copy.value.newBookingTitle, rank: 2 },
-      stale_waiting: { title: copy.value.waitingTitle, rank: 4 }
-    } as const
     rows.push({
       id: signal.id,
       kind: signal.kind,
       bookingId: signal.bookingId,
-      title: labels[signal.kind].title,
+      title: copy.value.waitingTitle,
       meta: [context, formatDateTime(signal.occurredAt)].filter(Boolean).join(' · '),
       sortAt: new Date(signal.occurredAt).getTime(),
       actionLabel: null,
       urgency: 'attention',
-      rank: labels[signal.kind].rank
+      rank: 4
     })
   }
 
@@ -187,14 +207,20 @@ async function load() {
   loading.value = true
   try {
     const bookingIds = props.bookings.map(item => item.id)
-    const [moves, holdRows, activityRows] = await Promise.all([
+    const [moves, holdRows, activityRows, notifications] = await Promise.all([
       bookingCore.listNextMoves(props.workspaceId, undefined, true),
       bookingCore.listHolds(props.workspaceId, undefined, true),
-      bookingCore.listWorkspaceActivities(props.workspaceId, bookingIds, 500)
+      bookingCore.listWorkspaceActivities(props.workspaceId, bookingIds, 500),
+      notificationApi.list(100)
     ])
     nextMoves.value = moves
     holds.value = holdRows
     activities.value = activityRows
+    notificationItems.value = notifications.filter(item =>
+      item.workspace_id === props.workspaceId
+      && bookingIds.includes(item.booking_id)
+      && !item.read_at
+    )
   } finally {
     loading.value = false
   }
