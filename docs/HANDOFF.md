@@ -3102,3 +3102,67 @@ Functional commit:
 Supabase advisors introduced no new regression.
 
 Production remains untouched.
+
+## 55. Full Booking Core loop revalidated — STAGING
+
+After the latest automation/invariant hardening, the core operational loop was re-run in staging using the actual domain RPCs and Activity triggers inside a transaction with rollback.
+
+Flow:
+
+```text
+Smart CUE booking
+-> edit Booking details
+-> outbound WhatsApp Activity
+-> automatic waiting_response
+-> Next Action with inbound_activity completion trigger
+-> inbound WhatsApp Activity
+-> automatic in_conversation
+-> Next Action auto-completed
+-> timed Hold created
+-> manual Confirm decision
+-> matching Hold converted
+-> Booking confirmed
+-> Activity/Calendar projection verified
+-> ROLLBACK
+```
+
+Observed state before rollback:
+
+```text
+booking_status = confirmed
+event_date = 2026-12-31
+schedule = 22:00–23:30
+offer = 1200 EUR
+hold_status = converted
+next_move_completed = true
+conversation Activity = 2
+status_change Activity = 3
+booking_details_updated Activity = 2
+automatic Next Action completion = 1
+hold_converted Activity = 1
+```
+
+The three status changes are the expected:
+
+```text
+new/in_conversation path -> waiting_response after outbound
+waiting_response -> in_conversation after inbound
+in_conversation -> confirmed after explicit human decision
+```
+
+Rollback cleanup verification:
+
+```text
+smoke Bookings remaining = 0
+```
+
+Validation for functional HEAD `a2437b80ab0684325397bfb9c05ee287c9ac95b3`:
+
+```text
+CI run 35386567522 = success
+Deploy Staging / PR preview run 35386567552 = success
+```
+
+This SQL smoke starts after Smart Capture has produced structured CUE data. Voice transcription/interpretation remains a separate ingress layer already connected to the same Smart CUE command.
+
+Production remains untouched.
