@@ -499,8 +499,8 @@ onBeforeUnmount(() => {
 .cover-uploader__intro > span { color: #ceff54; font: 700 10px/1.2 monospace; letter-spacing: .15em; }
 .cover-uploader__intro h3 { margin: 10px 0 8px; font-size: clamp(2rem,3.4vw,3.45rem); line-height: .9; letter-spacing: -.055em; text-transform: uppercase; }
 .cover-uploader__intro p { max-width: 420px; margin: 0 0 16px; color: #c3c3c3; line-height: 1.42; }
-.cover-uploader__intro button { display: inline-flex; align-items: center; justify-content: center; gap: 11px; min-height: 44px; padding: 0 18px; border: 1px solid #ceff54; background: rgba(0,0,0,.65); color: #f4f2ed; cursor: pointer; font-weight: 900; }
-.cover-uploader__intro button i { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 50%; background: #ceff54; color: #090909; font-size: 19px; font-style: normal; }
+.cover-uploader__intro button { display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:40px; padding:0 14px; border:1px solid #ceff54; background:rgba(0,0,0,.65); color:#f4f2ed; cursor:pointer; font-size:12px; font-weight:850; }
+.cover-uploader__intro button i { display:grid; place-items:center; width:20px; height:20px; border-radius:50%; background:#ceff54; color:#090909; font-size:14px; line-height:1; font-style:normal; }
 .cover-uploader button:disabled { cursor: not-allowed; opacity: .55; }
 .artist-layer { padding: 18px 20px; border-top: 1px solid rgba(255,255,255,.14); background: #0b0b0b; transition: border-color .2s ease, background .2s ease; }
 .artist-layer--dragging { border-color: #ceff54; background: #111608; }
@@ -576,8 +576,8 @@ onBeforeUnmount(() => {
   .cover-uploader__intro > span { font-size: 8px; }
   .cover-uploader__intro h3 { margin: 8px 0 7px; font-size: clamp(1.45rem, 7.2vw, 2rem); line-height: .92; }
   .cover-uploader__intro p { margin-bottom: 12px; font-size: 11px; line-height: 1.35; }
-  .cover-uploader__intro button { min-height: 40px; padding-inline: 12px; font-size: 11px; }
-  .cover-uploader__intro button i { width: 24px; height: 24px; font-size: 17px; }
+  .cover-uploader__intro button { min-height:38px; padding-inline:11px; font-size:10px; }
+  .cover-uploader__intro button i { width:18px; height:18px; font-size:13px; }
 }
 
 </style>
