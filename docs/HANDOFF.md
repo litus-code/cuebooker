@@ -2934,3 +2934,53 @@ Functional commit:
 Supabase security/performance advisors introduced no new regression.
 
 Production remains untouched.
+
+## 52. Retry assistant respects corrected contact email — IMPLEMENTED ON BRANCH
+
+The failed-email retry assistant now compares:
+
+```text
+failed email_messages.to_email
+vs
+current Contact.email
+```
+
+If the Contact email was corrected after the failed send, Cuebooker tells the artist that the retry will use the updated address.
+
+The assistant still restores the exact previous subject/body from the failed outbound Activity.
+
+Behavior:
+
+```text
+email to old address fails
+-> Contact email is corrected
+-> Prepare retry appears
+-> Cuebooker explains that the recipient changed
+-> composer uses current Contact.email
+-> artist reviews
+-> artist explicitly sends
+```
+
+No resend is automatic and no historical email recipient is rewritten.
+
+Implementation:
+
+```text
+app/services/bookingCoreApi.ts
+app/services/emailRetryDraft.ts
+tests/emailRetryDraft.test.ts
+app/components/BookingCoreInbox.vue
+app/components/BookingActivityComposer.vue
+```
+
+Functional commits:
+
+```text
+9b39831ea1c33664201644fce18b3658a4dd579a
+28d90e950bfc87abd856152ee22e956a89ea7b4d
+580a2c3e54e45401b67d648647328befc6d6d194
+729833b77d1f7abb4461181bb6a46ea4b490a95b
+3ed7c2275428e1d8ca12b49a5be3e18a8504fede
+```
+
+Production remains untouched.
