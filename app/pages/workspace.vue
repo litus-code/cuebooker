@@ -1231,6 +1231,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           :refresh-key="bookingCoreOperationsRevision"
           @changed="handleBookingCoreOperationsChanged"
           @open-bookings="activeView = 'bookings'"
+          @open-booking="openRealBooking"
         />
 
         <div class="overview-grid">
