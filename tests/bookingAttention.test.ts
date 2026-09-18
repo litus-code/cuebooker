@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { deriveBookingAttentionSignals } from '../app/services/bookingAttention.ts'
+import { deriveBookingAttentionSignals, deriveEmailDeliveryAttentionSignals } from '../app/services/bookingAttention.ts'
 import type { Activity, CoreBooking } from '../app/domain/bookingCore.ts'
 
 function booking(overrides: Partial<CoreBooking>): CoreBooking {
@@ -113,4 +113,47 @@ test('does not generate operational attention for archived or terminal bookings'
   )
 
   assert.deepEqual(signals, [])
+})
+
+
+test('surfaces one attention signal for the latest real email delivery failure per booking', () => {
+  const signals = deriveEmailDeliveryAttentionSignals(
+    [booking({ status: 'waiting_response' })],
+    [
+      {
+        id: 'email-old',
+        booking_id: 'booking-1',
+        delivery_status: 'soft_bounce',
+        bounced_at: '2026-09-18T09:00:00.000Z',
+        last_delivery_event_at: '2026-09-18T09:00:00.000Z'
+      },
+      {
+        id: 'email-new',
+        booking_id: 'booking-1',
+        delivery_status: 'hard_bounce',
+        bounced_at: '2026-09-18T10:00:00.000Z',
+        last_delivery_event_at: '2026-09-18T10:00:00.000Z'
+      }
+    ]
+  )
+
+  assert.equal(signals.length, 1)
+  assert.equal(signals[0]?.kind, 'delivery_failed')
+  assert.equal(signals[0]?.id, 'delivery-email-new')
+})
+
+test('ignores accepted/delivered email and terminal or archived bookings for delivery attention', () => {
+  const messages = [
+    {
+      id: 'email-1',
+      booking_id: 'booking-1',
+      delivery_status: 'delivered',
+      bounced_at: null,
+      last_delivery_event_at: '2026-09-18T10:00:00.000Z'
+    }
+  ]
+
+  assert.deepEqual(deriveEmailDeliveryAttentionSignals([booking({ status: 'waiting_response' })], messages), [])
+  assert.deepEqual(deriveEmailDeliveryAttentionSignals([booking({ status: 'rejected' })], [{ ...messages[0], delivery_status: 'error' }]), [])
+  assert.deepEqual(deriveEmailDeliveryAttentionSignals([booking({ archived_at: '2026-09-18T11:00:00.000Z' })], [{ ...messages[0], delivery_status: 'blocked' }]), [])
 })
