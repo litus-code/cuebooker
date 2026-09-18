@@ -56,6 +56,7 @@ export const useAnalytics = () => {
     consent.value = 'granted'
     localStorage.setItem(CONSENT_STORAGE_KEY, 'granted')
     loadGtm()
+    queueMicrotask(() => trackPageView())
   }
 
   const deny = () => {
@@ -65,11 +66,21 @@ export const useAnalytics = () => {
   }
 
   const track = (event: string, payload: AnalyticsPayload = {}) => {
-    if (!import.meta.client || consent.value !== 'granted' || !enabled.value) return
+    if (!import.meta.client || consent.value !== 'granted' || !enabled.value) return false
 
     getDataLayer().push({
       event,
       ...payload
+    })
+    return true
+  }
+
+  const trackPageView = (path = window.location.pathname + window.location.search) => {
+    if (!import.meta.client) return false
+    return track('page_view', {
+      page_path: path,
+      page_title: document.title,
+      page_referrer: document.referrer || null
     })
   }
 
@@ -79,6 +90,7 @@ export const useAnalytics = () => {
     init,
     accept,
     deny,
-    track
+    track,
+    trackPageView
   }
 }
