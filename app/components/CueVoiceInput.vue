@@ -145,7 +145,10 @@ async function startRecorder() {
       recording.value = false
       processing.value = false
       clearTimer()
+      stopShadowRecognition()
       stopTracks()
+      chunks = []
+      recorder = null
     }
 
     recorder.onstop = () => {
