@@ -125,14 +125,16 @@ test('surfaces one attention signal for the latest real email delivery failure p
         booking_id: 'booking-1',
         delivery_status: 'soft_bounce',
         bounced_at: '2026-09-18T09:00:00.000Z',
-        last_delivery_event_at: '2026-09-18T09:00:00.000Z'
+        last_delivery_event_at: '2026-09-18T09:00:00.000Z',
+        created_at: '2026-09-18T08:59:00.000Z'
       },
       {
         id: 'email-new',
         booking_id: 'booking-1',
         delivery_status: 'hard_bounce',
         bounced_at: '2026-09-18T10:00:00.000Z',
-        last_delivery_event_at: '2026-09-18T10:00:00.000Z'
+        last_delivery_event_at: '2026-09-18T10:00:00.000Z',
+        created_at: '2026-09-18T09:59:00.000Z'
       }
     ]
   )
@@ -149,11 +151,39 @@ test('ignores accepted/delivered email and terminal or archived bookings for del
       booking_id: 'booking-1',
       delivery_status: 'delivered',
       bounced_at: null,
-      last_delivery_event_at: '2026-09-18T10:00:00.000Z'
+      last_delivery_event_at: '2026-09-18T10:00:00.000Z',
+      created_at: '2026-09-18T09:59:00.000Z'
     }
   ]
 
   assert.deepEqual(deriveEmailDeliveryAttentionSignals([booking({ status: 'waiting_response' })], messages), [])
   assert.deepEqual(deriveEmailDeliveryAttentionSignals([booking({ status: 'rejected' })], [{ ...messages[0], delivery_status: 'error' }]), [])
   assert.deepEqual(deriveEmailDeliveryAttentionSignals([booking({ archived_at: '2026-09-18T11:00:00.000Z' })], [{ ...messages[0], delivery_status: 'blocked' }]), [])
+})
+
+
+test('clears an old delivery failure when a newer outbound attempt is accepted', () => {
+  const signals = deriveEmailDeliveryAttentionSignals(
+    [booking({ status: 'waiting_response' })],
+    [
+      {
+        id: 'email-bounced',
+        booking_id: 'booking-1',
+        delivery_status: 'hard_bounce',
+        bounced_at: '2026-09-18T09:00:00.000Z',
+        last_delivery_event_at: '2026-09-18T09:00:00.000Z',
+        created_at: '2026-09-18T08:59:00.000Z'
+      },
+      {
+        id: 'email-retry',
+        booking_id: 'booking-1',
+        delivery_status: 'accepted',
+        bounced_at: null,
+        last_delivery_event_at: '2026-09-18T10:00:00.000Z',
+        created_at: '2026-09-18T09:59:00.000Z'
+      }
+    ]
+  )
+
+  assert.deepEqual(signals, [])
 })
