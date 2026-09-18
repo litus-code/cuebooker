@@ -31,12 +31,12 @@ const copy = computed(() => props.locale === 'es' ? {
   edit: 'Editar datos',
   title: 'Completar booking',
   event: 'Evento', venue: 'Sala', city: 'Ciudad', country: 'País', date: 'Fecha', start: 'Inicio', end: 'Fin', timezone: 'Zona horaria', offer: 'Oferta', currency: 'Moneda', feeBasis: 'Base del fee',
-  cancel: 'Cancelar', save: 'Guardar cambios', saving: 'Guardando…', invalidOffer: 'La oferta no es válida.', error: 'No se ha podido actualizar el booking.'
+  cancel: 'Cancelar', save: 'Guardar cambios', saving: 'Guardando…', invalidOffer: 'La oferta no es válida.', confirmedDateRequired: 'Un booking confirmado debe mantener una fecha.', error: 'No se ha podido actualizar el booking.'
 } : {
   edit: 'Edit details',
   title: 'Complete booking',
   event: 'Event', venue: 'Venue', city: 'City', country: 'Country', date: 'Date', start: 'Start', end: 'End', timezone: 'Timezone', offer: 'Offer', currency: 'Currency', feeBasis: 'Fee basis',
-  cancel: 'Cancel', save: 'Save changes', saving: 'Saving…', invalidOffer: 'The offer is not valid.', error: 'The booking could not be updated.'
+  cancel: 'Cancel', save: 'Save changes', saving: 'Saving…', invalidOffer: 'The offer is not valid.', confirmedDateRequired: 'A confirmed booking must keep an event date.', error: 'The booking could not be updated.'
 })
 
 function syncForm() {
@@ -77,6 +77,11 @@ function close() {
 }
 
 async function save() {
+  if (props.booking.status === 'confirmed' && !form.eventDate) {
+    errorMessage.value = copy.value.confirmedDateRequired
+    return
+  }
+
   const offerAmountMinor = parseOffer()
   if (Number.isNaN(offerAmountMinor)) {
     errorMessage.value = copy.value.invalidOffer
