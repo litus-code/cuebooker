@@ -1,4 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import {
+  brevoDeliveryStatus,
+  isBrevoFailureStatus,
+  isBrevoOpenEvent
+} from "../_shared/brevoTransactionalEvent.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,19 +50,6 @@ function eventTagId(payload: any) {
   return tag ? String(tag).replace(/^cuebooker_email_/, "") : "";
 }
 
-function mappedStatus(event: string) {
-  const key = event.toLowerCase();
-  if (key === "delivered") return "delivered";
-  if (key === "deferred") return "deferred";
-  if (key === "soft_bounce" || key === "softbounce") return "soft_bounce";
-  if (key === "hard_bounce" || key === "hardbounce") return "hard_bounce";
-  if (key === "blocked") return "blocked";
-  if (key === "spam") return "spam";
-  if (key === "invalid" || key === "invalid_email") return "invalid";
-  if (key === "request" || key === "sent") return "accepted";
-  return "";
-}
-
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (request.method !== "POST") return json({ error: "method_not_allowed" }, 405);
@@ -73,7 +65,7 @@ Deno.serve(async (request) => {
 
   const event = String(payload?.event || "").trim();
   const messageId = String(payload?.["message-id"] || "").trim();
-  const deliveryStatus = mappedStatus(event);
+  const deliveryStatus = brevoDeliveryStatus(event);
   if (!event) return json({ error: "missing_event" }, 400);
 
   try {
@@ -97,11 +89,11 @@ Deno.serve(async (request) => {
 
     if (deliveryStatus) patch.delivery_status = deliveryStatus;
     if (deliveryStatus === "delivered") patch.delivered_at = at;
-    if (["soft_bounce","hard_bounce","blocked","spam","invalid"].includes(deliveryStatus)) {
+    if (isBrevoFailureStatus(deliveryStatus)) {
       patch.bounced_at = at;
-      patch.delivery_failure_code = String(payload?.reason || event).slice(0, 300);
+      patch.delivery_failure_code = String(payload?.reason || payload?.message || event).slice(0, 300);
     }
-    if (event === "opened" || event === "unique_opened") patch.opened_at = at;
+    if (isBrevoOpenEvent(event)) patch.opened_at = at;
 
     await rest(
       `${supabaseUrl}/rest/v1/email_messages?id=eq.${encodeURIComponent(emailId)}`,
