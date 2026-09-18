@@ -8,7 +8,7 @@ const props = defineProps<{
   refreshKey?: number
 }>()
 
-const emit = defineEmits<{ changed: [] }>()
+const emit = defineEmits<{ changed: []; openBookings: [] }>()
 const bookingCore = useBookingCore()
 const nextMoves = ref<NextMove[]>([])
 const holds = ref<Hold[]>([])
@@ -22,7 +22,7 @@ const copy = computed(() => props.locale === 'es' ? {
   hold: 'Hold',
   done: 'Hecho',
   release: 'Liberar',
-  noItems: 'No hay nada urgente ahora mismo.',
+  noItems: 'No hay nada urgente ahora mismo.', browse: 'Ver bookings',
   noDate: 'Sin fecha',
   expires: 'Caduca'
 } : {
@@ -32,7 +32,7 @@ const copy = computed(() => props.locale === 'es' ? {
   hold: 'Hold',
   done: 'Done',
   release: 'Release',
-  noItems: 'Nothing urgent right now.',
+  noItems: 'Nothing urgent right now.', browse: 'View bookings',
   noDate: 'No date',
   expires: 'Expires'
 })
@@ -135,7 +135,7 @@ async function resolve(item: (typeof items.value)[number]) {
         <button type="button" :disabled="workingId === item.id" @click="resolve(item)">{{ item.actionLabel }}</button>
       </article>
     </div>
-    <div v-else class="attention-panel__empty">{{ copy.noItems }}</div>
+    <div v-else class="attention-panel__empty attention-panel__empty--action"><span>{{ copy.noItems }}</span><button type="button" @click="emit('openBookings')">{{ copy.browse }} →</button></div>
   </section>
 </template>
 
@@ -157,6 +157,8 @@ async function resolve(item: (typeof items.value)[number]) {
 .attention-panel__list button:hover { border-color:var(--cue-accent); }
 .attention-panel__list button:disabled { opacity:.4; cursor:wait; }
 .attention-panel__empty { padding:18px; color:var(--cue-muted); font-size:12px; }
+.attention-panel__empty--action { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.attention-panel__empty--action button { border:0; background:transparent; color:var(--cue-accent); cursor:pointer; font:800 9px monospace; text-transform:uppercase; }
 @media (max-width:760px) {
   .attention-panel__list article { grid-template-columns:76px minmax(0,1fr); }
   .attention-panel__list button { grid-column:2; justify-self:start; }
