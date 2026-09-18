@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { CoreBooking, Hold, NextMove } from '../domain/bookingCore'
+import type { Activity, CoreBooking, Hold, NextMove } from '../domain/bookingCore'
+import { deriveBookingAttentionSignals, type BookingAttentionSignalKind } from '../services/bookingAttention'
 
 const props = defineProps<{
   workspaceId: string
@@ -12,6 +13,7 @@ const emit = defineEmits<{ changed: []; openBookings: []; openBooking: [bookingI
 const bookingCore = useBookingCore()
 const nextMoves = ref<NextMove[]>([])
 const holds = ref<Hold[]>([])
+const activities = ref<Activity[]>([])
 const loading = ref(false)
 const workingId = ref('')
 
@@ -26,6 +28,13 @@ const copy = computed(() => props.locale === 'es' ? {
   overdue: 'Vencida',
   expiredHold: 'Hold caducado',
   today: 'Hoy',
+  reply: 'Respuesta',
+  newBooking: 'Nuevo booking',
+  waiting: 'Seguimiento',
+  replyTitle: 'Tienes una respuesta nueva',
+  newBookingTitle: 'Revisar nuevo booking',
+  waitingTitle: 'Lleva 3 días esperando respuesta',
+  openAction: 'Abrir',
   noItems: 'No hay nada urgente ahora mismo.', browse: 'Ver bookings',
   noDate: 'Sin fecha',
   expires: 'Caduca'
@@ -40,6 +49,13 @@ const copy = computed(() => props.locale === 'es' ? {
   overdue: 'Overdue',
   expiredHold: 'Expired hold',
   today: 'Today',
+  reply: 'Reply',
+  newBooking: 'New booking',
+  waiting: 'Follow-up',
+  replyTitle: 'You have a new reply',
+  newBookingTitle: 'Review new booking',
+  waitingTitle: 'Waiting for a reply for 3 days',
+  openAction: 'Open',
   noItems: 'Nothing urgent right now.', browse: 'View bookings',
   noDate: 'No date',
   expires: 'Expires'
@@ -48,13 +64,14 @@ const copy = computed(() => props.locale === 'es' ? {
 const items = computed(() => {
   const rows: Array<{
     id: string
-    kind: 'next' | 'hold'
+    kind: 'next' | 'hold' | BookingAttentionSignalKind
     bookingId: string
     title: string
     meta: string
     sortAt: number
-    actionLabel: string
-    urgency: 'overdue' | 'today' | 'normal'
+    actionLabel: string | null
+    urgency: 'overdue' | 'today' | 'normal' | 'attention'
+    rank: number
   }> = []
 
   for (const move of nextMoves.value) {
@@ -67,7 +84,8 @@ const items = computed(() => {
       meta: [booking?.venue_name || booking?.event_name || copy.value.noDate, move.due_at ? formatDateTime(move.due_at) : ''].filter(Boolean).join(' · '),
       sortAt: move.due_at ? new Date(move.due_at).getTime() : Number.MAX_SAFE_INTEGER - 1,
       actionLabel: copy.value.done,
-      urgency: urgencyFor(move.due_at)
+      urgency: urgencyFor(move.due_at),
+      rank: urgencyFor(move.due_at) === 'overdue' ? 0 : urgencyFor(move.due_at) === 'today' ? 3 : 5
     })
   }
 
@@ -81,11 +99,35 @@ const items = computed(() => {
       meta: [formatDateOnly(hold.event_date), hold.expires_at ? `${copy.value.expires} ${formatDateTime(hold.expires_at)}` : '', hold.priority ? `P${hold.priority}` : ''].filter(Boolean).join(' · '),
       sortAt: hold.expires_at ? new Date(hold.expires_at).getTime() : new Date(`${hold.event_date}T12:00:00`).getTime(),
       actionLabel: copy.value.release,
-      urgency: urgencyFor(hold.expires_at)
+      urgency: urgencyFor(hold.expires_at),
+      rank: urgencyFor(hold.expires_at) === 'overdue' ? 0 : urgencyFor(hold.expires_at) === 'today' ? 3 : 5
     })
   }
 
-  return rows.sort((a, b) => a.sortAt - b.sortAt).slice(0, 8)
+  for (const signal of deriveBookingAttentionSignals(props.bookings, activities.value)) {
+    const booking = props.bookings.find(item => item.id === signal.bookingId)
+    const context = booking?.venue_name || booking?.event_name || copy.value.noDate
+    const labels = {
+      reply_received: { title: copy.value.replyTitle, rank: 1 },
+      new_booking: { title: copy.value.newBookingTitle, rank: 2 },
+      stale_waiting: { title: copy.value.waitingTitle, rank: 4 }
+    } as const
+    rows.push({
+      id: signal.id,
+      kind: signal.kind,
+      bookingId: signal.bookingId,
+      title: labels[signal.kind].title,
+      meta: [context, formatDateTime(signal.occurredAt)].filter(Boolean).join(' · '),
+      sortAt: new Date(signal.occurredAt).getTime(),
+      actionLabel: null,
+      urgency: 'attention',
+      rank: labels[signal.kind].rank
+    })
+  }
+
+  return rows
+    .sort((a, b) => a.rank - b.rank || a.sortAt - b.sortAt)
+    .slice(0, 8)
 })
 
 function urgencyFor(value: string | null) {
@@ -100,6 +142,14 @@ function urgencyFor(value: string | null) {
     && target.getDate() === now.getDate()
   ) return 'today' as const
   return 'normal' as const
+}
+
+function kindLabel(kind: (typeof items.value)[number]['kind']) {
+  if (kind === 'next') return copy.value.next
+  if (kind === 'hold') return copy.value.hold
+  if (kind === 'reply_received') return copy.value.reply
+  if (kind === 'new_booking') return copy.value.newBooking
+  return copy.value.waiting
 }
 
 function urgencyLabel(item: (typeof items.value)[number]) {
@@ -124,12 +174,15 @@ async function load() {
   if (!props.workspaceId) return
   loading.value = true
   try {
-    const [moves, holdRows] = await Promise.all([
+    const bookingIds = props.bookings.map(item => item.id)
+    const [moves, holdRows, activityRows] = await Promise.all([
       bookingCore.listNextMoves(props.workspaceId, undefined, true),
-      bookingCore.listHolds(props.workspaceId, undefined, true)
+      bookingCore.listHolds(props.workspaceId, undefined, true),
+      bookingCore.listWorkspaceActivities(props.workspaceId, bookingIds, 500)
     ])
     nextMoves.value = moves
     holds.value = holdRows
+    activities.value = activityRows
   } finally {
     loading.value = false
   }
@@ -161,13 +214,14 @@ async function resolve(item: (typeof items.value)[number]) {
     <div v-if="loading" class="attention-panel__empty">…</div>
     <div v-else-if="items.length" class="attention-panel__list">
       <article v-for="item in items" :key="`${item.kind}-${item.id}`" :class="{ 'attention-panel__item--overdue': item.urgency === 'overdue' }">
-        <span :class="['attention-panel__type', `attention-panel__type--${item.kind}`]">{{ item.kind === 'next' ? copy.next : copy.hold }}</span>
+        <span :class="['attention-panel__type', `attention-panel__type--${item.kind}`]">{{ kindLabel(item.kind) }}</span>
         <button class="attention-panel__context" type="button" :aria-label="`${copy.open}: ${item.title}`" @click="emit('openBooking', item.bookingId)">
           <strong>{{ item.title }}</strong>
           <small>{{ item.meta }}</small>
           <em v-if="urgencyLabel(item)" :class="`attention-panel__urgency attention-panel__urgency--${item.urgency}`">{{ urgencyLabel(item) }}</em>
         </button>
-        <button class="attention-panel__resolve" type="button" :disabled="workingId === item.id" @click="resolve(item)">{{ item.actionLabel }}</button>
+        <button v-if="item.actionLabel" class="attention-panel__resolve" type="button" :disabled="workingId === item.id" @click="resolve(item)">{{ item.actionLabel }}</button>
+        <button v-else class="attention-panel__resolve" type="button" @click="emit('openBooking', item.bookingId)">{{ copy.openAction }}</button>
       </article>
     </div>
     <div v-else class="attention-panel__empty attention-panel__empty--action"><span>{{ copy.noItems }}</span><button type="button" @click="emit('openBookings')">{{ copy.browse }} →</button></div>
@@ -184,6 +238,9 @@ async function resolve(item: (typeof items.value)[number]) {
 .attention-panel__list article:first-child { border-top:0; }
 .attention-panel__type { font:700 8px monospace; letter-spacing:.08em; text-transform:uppercase; color:var(--cue-muted); }
 .attention-panel__type--next { color:var(--cue-accent); }
+.attention-panel__type--reply_received { color:#73b7ff; }
+.attention-panel__type--new_booking { color:#ceff54; }
+.attention-panel__type--stale_waiting { color:#ffbf5f; }
 .attention-panel__context { position:relative; min-width:0; padding:4px 0; border:0; background:transparent; color:var(--cue-text); text-align:left; cursor:pointer; }
 .attention-panel__context strong, .attention-panel__context small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .attention-panel__context strong { font-size:12px; }
