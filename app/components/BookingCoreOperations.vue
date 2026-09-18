@@ -23,14 +23,14 @@ const holdPriority = ref('')
 const copy = computed(() => props.locale === 'es' ? {
   eyebrow: 'SEGUIMIENTO',
   nextMove: 'Próxima acción',
-  nextHelp: 'Tu recordatorio operativo: qué tienes que hacer después. No cambia el estado del booking.',
+  nextHelp: 'Tu siguiente tarea sobre este booking. Sirve para no perder el hilo; no cambia su estado.',
   noNext: 'No hay ninguna próxima acción definida.',
   nextPlaceholder: 'Ej. Confirmar horario con Héctor',
   due: 'Cuándo',
   saveNext: 'Guardar próxima acción',
   complete: 'Hecho',
   hold: 'Reservar fecha (hold)',
-  holdHelp: 'Úsalo cuando quieras bloquear una fecha de forma provisional mientras se negocia el booking.',
+  holdHelp: 'Bloquea provisionalmente la fecha de este booking mientras se negocia. El hold aparece en Calendario.',
   noHold: 'No hay fechas reservadas provisionalmente.',
   holdDate: 'Fecha',
   expires: 'Caduca',
@@ -45,14 +45,14 @@ const copy = computed(() => props.locale === 'es' ? {
 } : {
   eyebrow: 'FOLLOW-UP',
   nextMove: 'Next action',
-  nextHelp: 'Your operational reminder: what you need to do next. It does not change booking status.',
+  nextHelp: 'Your next task for this booking. It keeps the thread moving without changing booking status.',
   noNext: 'No next action has been defined.',
   nextPlaceholder: 'E.g. Confirm schedule with Hector',
   due: 'When',
   saveNext: 'Save next action',
   complete: 'Done',
   hold: 'Reserve date (hold)',
-  holdHelp: 'Use it when you want to provisionally block a date while the booking is being negotiated.',
+  holdHelp: 'Provisionally blocks this booking date while it is negotiated. The hold appears in Calendar.',
   noHold: 'No dates are provisionally reserved.',
   holdDate: 'Date',
   expires: 'Expires',
@@ -100,7 +100,10 @@ async function load() {
   }
 }
 
-watch(() => [props.workspaceId, props.booking.id], load, { immediate: true })
+watch(() => [props.workspaceId, props.booking.id], () => {
+  if (!holdDate.value && props.booking.event_date) holdDate.value = props.booking.event_date
+  void load()
+}, { immediate: true })
 
 function toIsoOrNull(value: string) {
   if (!value) return null
@@ -210,9 +213,11 @@ async function convertHold(hold: Hold) {
         </div>
         <p v-else class="core-ops__empty">{{ copy.noNext }}</p>
         <form class="core-ops__form" @submit.prevent="setNextMove">
-          <label><span>{{ copy.nextMove }}</span><input v-model="nextLabel" :placeholder="copy.nextPlaceholder" maxlength="240"></label>
-          <label><span>{{ copy.due }}</span><input v-model="nextDue" type="datetime-local"></label>
-          <button type="submit" :disabled="saving">{{ saving ? copy.saving : copy.saveNext }}</button>
+          <label class="core-ops__form-main"><span>{{ copy.nextMove }}</span><input v-model="nextLabel" :placeholder="copy.nextPlaceholder" maxlength="240"></label>
+          <div class="core-ops__form-row">
+            <label><span>{{ copy.due }}</span><input v-model="nextDue" type="datetime-local"></label>
+            <button type="submit" :disabled="saving">{{ saving ? copy.saving : copy.saveNext }}</button>
+          </div>
         </form>
       </section>
 
@@ -225,14 +230,15 @@ async function convertHold(hold: Hold) {
           <article v-for="hold in activeHolds" :key="hold.id">
             <div><strong>{{ dateOnly(hold.event_date) }}</strong><small>{{ hold.expires_at ? `${copy.expires}: ${localDateTime(hold.expires_at)}` : '—' }}</small></div>
             <span v-if="hold.priority">P{{ hold.priority }}</span>
-            <div class="core-ops__hold-actions"><button type="button" :disabled="saving" @click="releaseHold(hold)">{{ copy.release }}</button><button type="button" :disabled="saving" @click="convertHold(hold)">{{ copy.convert }}</button></div>
+            <div class="core-ops__hold-actions"><button type="button" :disabled="saving" @click="releaseHold(hold)">{{ copy.release }}</button></div>
           </article>
         </div>
         <p v-else-if="!loading" class="core-ops__empty">{{ copy.noHold }}</p>
         <form class="core-ops__form core-ops__form--hold" @submit.prevent="createHold">
-          <label><span>{{ copy.holdDate }}</span><input v-model="holdDate" type="date"></label>
-          <label><span>{{ copy.expires }}</span><input v-model="holdExpires" type="datetime-local"></label>
-          <label><span>{{ copy.priority }}</span><input v-model="holdPriority" type="number" min="1" max="9" inputmode="numeric"></label>
+          <div class="core-ops__form-row core-ops__form-row--hold">
+            <label><span>{{ copy.holdDate }}</span><input v-model="holdDate" type="date"></label>
+            <label><span>{{ copy.expires }}</span><input v-model="holdExpires" type="datetime-local"></label>
+          </div>
           <button type="submit" :disabled="saving">{{ saving ? copy.saving : copy.createHold }}</button>
         </form>
       </details>
@@ -262,8 +268,11 @@ async function convertHold(hold: Hold) {
 .core-ops button { min-height:32px; padding:0 10px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); cursor:pointer; font:700 9px monospace; text-transform:uppercase; }
 .core-ops button:hover { border-color:var(--cue-accent); }
 .core-ops button:disabled { opacity:.45; cursor:wait; }
-.core-ops__form { display:grid; grid-template-columns:minmax(0,1fr) 170px auto; gap:8px; padding:10px; }
-.core-ops__form--hold { grid-template-columns:1fr 1fr 80px auto; }
+.core-ops__form { display:grid; gap:10px; padding:12px; }
+.core-ops__form-main { min-width:0; }
+.core-ops__form-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:end; }
+.core-ops__form-row--hold { grid-template-columns:1fr 1fr; }
+.core-ops__form--hold > button { justify-self:start; }
 .core-ops__form label span { display:block; margin-bottom:5px; color:var(--cue-muted); font:700 8px monospace; text-transform:uppercase; }
 .core-ops__form input { width:100%; min-height:34px; box-sizing:border-box; border:1px solid var(--cue-border); background:var(--cue-surface); color:var(--cue-text); padding:0 9px; font-size:11px; }
 .core-ops__form > button { align-self:end; background:var(--cue-accent); color:#080808; border-color:var(--cue-accent); }
@@ -273,10 +282,10 @@ async function convertHold(hold: Hold) {
 .core-ops__error { margin:8px 0 0; color:#ff7c7c; font-size:11px; }
 @media (max-width:900px) {
   .core-ops__grid { grid-template-columns:1fr; }
-  .core-ops__form, .core-ops__form--hold { grid-template-columns:1fr 1fr; }
 }
 @media (max-width:560px) {
-  .core-ops__form, .core-ops__form--hold { grid-template-columns:1fr; }
+  .core-ops__form-row, .core-ops__form-row--hold { grid-template-columns:1fr; }
+  .core-ops__form > button, .core-ops__form-row > button { width:100%; }
   .core-ops__current, .core-ops__holds article { align-items:flex-start; flex-wrap:wrap; }
   .core-ops__hold-actions { width:100%; }
 }
