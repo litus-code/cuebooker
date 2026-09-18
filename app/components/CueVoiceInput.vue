@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { resolveVoiceCaptureMode } from '../services/voiceCaptureMode'
 const props = defineProps<{
   modelValue: string
   locale: 'es' | 'en'
@@ -51,7 +52,7 @@ onMounted(() => {
   const browser = window as any
   const hasSpeech = Boolean(browser.SpeechRecognition || browser.webkitSpeechRecognition)
 
-  mode.value = hasRecorder ? 'recorder' : hasSpeech ? 'speech' : 'none'
+  mode.value = resolveVoiceCaptureMode(hasRecorder, hasSpeech)
   supported.value = mode.value !== 'none'
 })
 
