@@ -65,6 +65,10 @@ function bookingLabel(activity: Activity) {
 }
 
 function activityLabel(activity: Activity) {
+  if (activity.type === 'system' && activity.metadata?.event === 'booking_details_updated') {
+    return props.locale === 'es' ? 'Booking actualizado' : 'Booking updated'
+  }
+
   const es: Record<string, string> = {
     phone: 'Llamada', email: 'Email', whatsapp: 'WhatsApp', instagram: 'Instagram', note: 'Nota',
     status_change: 'Estado', hold_created: 'Hold creado', hold_released: 'Hold liberado', hold_converted: 'Hold confirmado',
@@ -87,7 +91,39 @@ function activityDetail(activity: Activity) {
   }
   if (activity.type === 'system' && activity.metadata?.event === 'booking_details_updated') {
     const fields = Array.isArray(activity.metadata.changed_fields) ? activity.metadata.changed_fields : []
-    return props.locale === 'es' ? `Booking actualizado · ${fields.join(', ')}` : `Booking updated · ${fields.join(', ')}`
+    const es: Record<string, string> = {
+      event_name: 'evento',
+      venue_name: 'sala',
+      city: 'ciudad',
+      country_code: 'país',
+      event_date: 'fecha',
+      start_time: 'hora de inicio',
+      end_time: 'hora de fin',
+      event_timezone: 'zona horaria',
+      offer_amount_minor: 'oferta',
+      currency: 'moneda',
+      fee_basis: 'base del fee'
+    }
+    const en: Record<string, string> = {
+      event_name: 'event',
+      venue_name: 'venue',
+      city: 'city',
+      country_code: 'country',
+      event_date: 'date',
+      start_time: 'start time',
+      end_time: 'end time',
+      event_timezone: 'timezone',
+      offer_amount_minor: 'offer',
+      currency: 'currency',
+      fee_basis: 'fee basis'
+    }
+    const labels = fields
+      .map(field => (props.locale === 'es' ? es : en)[String(field)] || '')
+      .filter(Boolean)
+    if (!labels.length) return props.locale === 'es' ? 'Datos del booking modificados' : 'Booking details changed'
+    return props.locale === 'es'
+      ? `Cambió: ${labels.join(', ')}`
+      : `Changed: ${labels.join(', ')}`
   }
   return ''
 }
