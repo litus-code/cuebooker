@@ -253,44 +253,66 @@ Rules:
 - Current UTC timestamp is ${currentDate}.
 `.trim();
 
-  const body = {
-    model: Deno.env.get("CUEBOOKER_SMART_CAPTURE_MODEL")?.trim() || "gpt-5-mini",
-    input: [
-      { role: "system", content: [{ type: "input_text", text: system }] },
-      { role: "user", content: [{ type: "input_text", text: transcript }] }
-    ],
-    text: {
-      format: {
-        type: "json_schema",
-        name: "cuebooker_smart_capture",
-        strict: true,
-        schema: extractionSchema
-      }
-    }
-  };
+  const configuredModel = Deno.env.get("CUEBOOKER_SMART_CAPTURE_MODEL")?.trim();
+  const models = [...new Set([configuredModel, "gpt-5.6-luna", "gpt-5.6-terra"].filter(Boolean))] as string[];
+  let lastStatus = 0;
 
-  const response = await fetch("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-  });
-  const text = await response.text();
-  if (!response.ok) {
-    console.error("smart-capture extraction provider", response.status);
-    throw new Error(`extraction_provider_${response.status}`);
+  for (const model of models) {
+    const body = {
+      model,
+      input: [
+        { role: "system", content: [{ type: "input_text", text: system }] },
+        { role: "user", content: [{ type: "input_text", text: transcript }] }
+      ],
+      text: {
+        format: {
+          type: "json_schema",
+          name: "cuebooker_smart_capture",
+          strict: true,
+          schema: extractionSchema
+        }
+      }
+    };
+
+    const response = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
+    const text = await response.text();
+    lastStatus = response.status;
+
+    if (!response.ok) {
+      console.warn("smart-capture extraction attempt failed", JSON.stringify({
+        model,
+        status: response.status
+      }));
+      continue;
+    }
+
+    let parsedResponse: any;
+    try { parsedResponse = JSON.parse(text); } catch {
+      console.warn("smart-capture extraction invalid response", model);
+      continue;
+    }
+
+    const structuredText = outputText(parsedResponse);
+    if (!structuredText) {
+      console.warn("smart-capture extraction empty response", model);
+      continue;
+    }
+
+    try {
+      return normalizeEvidence(JSON.parse(structuredText));
+    } catch {
+      console.warn("smart-capture extraction invalid json", model);
+    }
   }
 
-  let parsedResponse: any;
-  try { parsedResponse = JSON.parse(text); } catch { throw new Error("extraction_invalid_response"); }
-  const structuredText = outputText(parsedResponse);
-  if (!structuredText) throw new Error("extraction_empty");
-
-  let structured: any;
-  try { structured = JSON.parse(structuredText); } catch { throw new Error("extraction_invalid_json"); }
-  return normalizeEvidence(structured);
+  throw new Error(`extraction_provider_${lastStatus || 502}`);
 }
 
 async function authorize(accessToken: string, workspaceId: string, artistId: string) {
