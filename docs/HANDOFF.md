@@ -2373,3 +2373,49 @@ After that configuration, send one fresh booking email and verify the same `emai
 
 Production remains untouched.
 
+## 44. Email delivery failure attention — IMPLEMENTED ON BRANCH
+
+Cuebooker now treats real provider delivery failures as derived operational attention rather than leaving them buried inside the Booking conversation.
+
+Current failure states:
+
+```text
+soft_bounce
+hard_bounce
+blocked
+spam
+invalid
+error
+```
+
+Behavior:
+
+```text
+Brevo/provider delivery failure
+-> email_messages delivery state
+-> Overview attention signal for that Booking
+-> artist opens Booking and decides what to do
+```
+
+This follows the automation boundary:
+
+- Cuebooker detects and surfaces the mechanical failure automatically;
+- it does not resend automatically;
+- it does not change Booking commercial status;
+- it does not create or complete user-owned Next Actions;
+- it does not infer a replacement communication channel.
+
+Overview deduplicates delivery failures per Booking and keeps only the latest relevant failure before the existing per-Booking attention budget is applied.
+
+Implementation:
+
+```text
+app/services/bookingAttention.ts
+tests/bookingAttention.test.ts
+app/services/bookingCoreApi.ts
+app/components/BookingCoreAttention.vue
+```
+
+CI for functional HEAD `0492360caded96d022ac6820f3fa14f06552cd0e` passed tests and Nuxt production generation.
+
+Production remains untouched.
