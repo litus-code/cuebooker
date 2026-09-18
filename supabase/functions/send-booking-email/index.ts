@@ -102,10 +102,11 @@ Deno.serve(async (request) => {
 
     const bookings = await rest<Array<{
       id: string;
+      artist_id: string;
       primary_contact_id: string | null;
       archived_at: string | null;
     }>>(
-      `${supabaseUrl}/rest/v1/bookings?workspace_id=eq.${encodeURIComponent(workspaceId)}&id=eq.${encodeURIComponent(bookingId)}&select=id,primary_contact_id,archived_at&limit=1`,
+      `${supabaseUrl}/rest/v1/bookings?workspace_id=eq.${encodeURIComponent(workspaceId)}&id=eq.${encodeURIComponent(bookingId)}&select=id,artist_id,primary_contact_id,archived_at&limit=1`,
       { method: "GET" },
       anonKey,
       accessToken
@@ -201,8 +202,16 @@ Deno.serve(async (request) => {
       return json({ error: "email_reply_domain_not_configured" }, 503);
     }
 
+    const artists = await rest<Array<{ stage_name: string | null }>>(
+      `${supabaseUrl}/rest/v1/artists?id=eq.${encodeURIComponent(booking.artist_id)}&select=stage_name&limit=1`,
+      { method: "GET" },
+      serviceKey,
+      serviceKey
+    );
+    const artistName = artists[0]?.stage_name?.trim() || "";
     const fromEmail = Deno.env.get("CUEBOOKER_FROM_EMAIL")?.trim() || "bookings@cuebooker.com";
-    const fromName = Deno.env.get("CUEBOOKER_FROM_NAME")?.trim() || "Cuebooker";
+    const configuredFromName = Deno.env.get("CUEBOOKER_FROM_NAME")?.trim();
+    const fromName = artistName ? `${artistName} via Cuebooker` : (configuredFromName || "Cuebooker");
     const replyToEmail = `booking+${queued.reply_token}@${configuredReplyDomain}`;
 
     const providerResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
@@ -216,7 +225,8 @@ Deno.serve(async (request) => {
         to: [{ email: toEmail }],
         replyTo: { email: replyToEmail, name: fromName },
         subject,
-        textContent: bodyText
+        textContent: bodyText,
+        tags: ["cuebooker", `cuebooker_email_${queued.id}`]
       })
     });
     const providerText = await providerResponse.text();
@@ -286,7 +296,8 @@ Deno.serve(async (request) => {
             to_email: toEmail,
             reply_to: replyToEmail,
             provider: "brevo",
-            provider_message_id: providerMessageId
+            provider_message_id: providerMessageId,
+            sender_name: fromName
           },
           visibility: "workspace",
           occurred_at: sentAt,
