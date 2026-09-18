@@ -122,15 +122,13 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   overviewEyebrow: 'WORKSPACE / RESUMEN', overviewTitle: 'QUÉ NECESITA TU ATENCIÓN.', overviewBody: 'Una entrada rápida a los bookings y fechas del artista, sin convertir el calendario en todo el producto.', profileCard: 'Ficha profesional', profileCardBody: 'Completa o actualiza los datos del artista.',
   realBookings: 'Bookings reales', realBookingsBody: 'El workspace operativo todavía no está disponible para este artista.', holdsMonth: 'Holds este mes', holdsBody: 'Fechas pendientes de decisión.', confirmed: 'Confirmados', confirmedStatus: 'Confirmado', confirmedBody: 'Horarios confirmados este mes.', occupiedDays: 'Días ocupados', occupiedBody: 'Con al menos un horario registrado.',
   agendaEyebrow: 'AGENDA / ESTE MES', upcoming: 'Próximos horarios', viewCalendar: 'Ver calendario', privateSlot: 'Horario privado', noUpcoming: 'No hay horarios próximos registrados en este mes.', addSlot: 'Añadir horario',
-  sampleEyebrow: 'BOOKINGS / MODO PRUEBA', sampleTitle: 'PRUEBA LA BANDEJA COMPLETA.', sampleBody: 'Las solicitudes reales todavía no están conectadas a esta cuenta. Puedes probar ahora los filtros, ofertas, conversaciones y cambios de estado con datos simulados.', openBookings: 'Abrir Bookings',
   bookingsEyebrow: 'BOOKINGS / BANDEJA', bookingsTitle: 'TODOS TUS BOOKINGS. UN SOLO HILO.',
   bookingsBody: 'Revisa cada propuesta, responde al promotor y decide la fecha sin perder el contexto.',
-  samplesLabel: 'EJEMPLOS INICIALES / DATOS SIMULADOS', samplesActive: 'Tu workspace empieza con solicitudes de muestra.', samplesRemoved: 'Has eliminado las solicitudes de muestra.', samplesBody: 'Los ejemplos pertenecen únicamente a este perfil y navegador. No modifican el calendario privado y puedes retirarlos cuando quieras.', guidedTour: 'Ver recorrido guiado', searchBookings: 'Buscar solicitudes', searchBookingsPlaceholder: 'Sala, promotor, ciudad, evento o ID…', searchResults: 'resultados', searchHistory: 'Buscar en historial', searchHistoryPlaceholder: 'Sala, ciudad, mensaje o estado…', previousPage: 'Anterior', nextPage: 'Siguiente', page: 'Página', collapseSidebar: 'Comprimir menú', expandSidebar: 'Expandir menú', removeSamples: 'Eliminar ejemplos', restoreSamples: 'Restaurar ejemplos', all: 'Todas', noSamples: 'No hay solicitudes de prueba en este estado.',
-  sampleBooking: 'BOOKING DE PRUEBA', automaticStatus: 'Estado automático', eventData: 'Datos del evento', date: 'Fecha', city: 'Ciudad', venue: 'Sala', capacity: 'Aforo', offer: 'Oferta', schedule: 'Horario', contact: 'Contacto', name: 'Nombre', phone: 'Tel.', source: 'Origen', bookingLink: 'Enlace de booking', conversation: 'Conversación', replyPromoter: 'Responder al promotor', replyPlaceholder: 'Escribe condiciones, una pregunta o una propuesta…', localMessage: 'Ejemplo local. El mensaje no se envía por email.', sendSampleReply: 'Enviar respuesta de ejemplo', openPromoter: 'Abrir vista del promotor', confirmDate: 'Confirmar fecha', rejectRequest: 'Rechazar solicitud', openRequest: 'Abre una solicitud para ver sus datos, la oferta y la conversación.',
+  guidedTour: 'Ver recorrido guiado', collapseSidebar: 'Comprimir menú', expandSidebar: 'Expandir menú',
   calendarEyebrow: 'CALENDARIO / AGENDA', calendarTitle: 'FECHAS Y HORARIOS.', calendarBody: 'Los holds y bookings confirmados aparecen aquí automáticamente. Usa “Añadir bloqueo” para viajes, estudio o indisponibilidad que no nacen de un booking.', weekdays: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], unavailable: 'No disponible', dayHours: 'DÍA / 24 HORAS', add: 'Añadir bloqueo', selectedDaySchedule: 'Horario del día seleccionado', addAt: 'Añadir bloqueo a las',
   historyEyebrow: 'WORKSPACE / ACTIVIDAD', historyTitle: 'TODO LO QUE HA PASADO.',
   historyBody: 'Mensajes, cambios de estado, holds y acciones ordenados por tiempo. Los bookings archivados siguen estando en Bookings → Archivados.',
-  historyEmpty: 'Todavía no hay actividad en este perfil.', historyStatus: 'Estado actualizado', historyMessage: 'Mensaje', openTrace: 'Abrir oferta y ver traza', previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente', filterSamples: 'Filtrar bookings de ejemplo',
+  previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente',
   profileEyebrow: 'ARTISTA / FICHA PROFESIONAL', profileTitle: 'TU INFORMACIÓN DE BOOKING.', profileBody: 'Edita lo que verá quien visite tu perfil público. Tus condiciones privadas de booking siguen siendo solo de tu workspace.',
   profileOptional: 'Ficha opcional', profileOptionalBody: 'Tu workspace ya está creado. Puedes completar estos datos ahora o volver desde Perfil cuando quieras.', later: 'Ahora no', previewProfile: 'Vista previa', previewPrivate: 'VISTA PREVIA / PERFIL PÚBLICO', previewClose: 'Cerrar vista previa', previewBioEmpty: 'Tu biografía aparecerá aquí cuando la completes.', previewGenresEmpty: 'Añade géneros para verlos en la ficha.', previewFormats: 'Formatos', previewLinks: 'Escuchar y seguir',
   coverTitle: 'Tu sonido empieza por la imagen.', coverHint: 'Arrastra una foto o elígela. Si no añades ninguna, CueBooker usará esta portada acid y Detroit.', coverChoose: 'Añadir mi portada', coverChange: 'Cambiar portada', coverRemove: 'Usar portada CueBooker', coverPosition: 'Ajustar encuadre vertical', coverUploading: 'Subiendo portada…', coverSaved: 'Portada actualizada.', coverRemoved: 'Portada base restaurada.', coverInvalid: 'Usa JPG, PNG o WebP de hasta 8 MB.', coverError: 'No se pudo guardar la portada.',
@@ -156,15 +154,13 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   overviewEyebrow: 'WORKSPACE / OVERVIEW', overviewTitle: 'WHAT NEEDS YOUR ATTENTION.', overviewBody: 'A quick view of the artist’s bookings and dates without making the calendar the whole product.', profileCard: 'Professional profile', profileCardBody: 'Complete or update the artist details.',
   realBookings: 'Real bookings', realBookingsBody: 'The operational workspace is not available for this artist yet.', holdsMonth: 'Holds this month', holdsBody: 'Dates waiting for a decision.', confirmed: 'Confirmed', confirmedStatus: 'Confirmed', confirmedBody: 'Confirmed slots this month.', occupiedDays: 'Occupied days', occupiedBody: 'With at least one registered slot.',
   agendaEyebrow: 'AGENDA / THIS MONTH', upcoming: 'Upcoming slots', viewCalendar: 'View calendar', privateSlot: 'Private slot', noUpcoming: 'There are no upcoming slots registered this month.', addSlot: 'Add slot',
-  sampleEyebrow: 'BOOKINGS / SAMPLE MODE', sampleTitle: 'TRY THE COMPLETE INBOX.', sampleBody: 'Real requests are not connected to this account yet. You can try filters, offers, conversations and status changes with sample data.', openBookings: 'Open Bookings',
   bookingsEyebrow: 'BOOKINGS / INBOX', bookingsTitle: 'ALL YOUR BOOKINGS. ONE THREAD.',
   bookingsBody: 'Review every proposal, reply to the promoter and decide each date without losing context.',
-  samplesLabel: 'STARTER EXAMPLES / SAMPLE DATA', samplesActive: 'Your workspace starts with sample requests.', samplesRemoved: 'You removed the sample requests.', samplesBody: 'These examples belong only to this profile and browser. They do not change your private calendar and you can remove them whenever you want.', guidedTour: 'View guided tour', searchBookings: 'Search requests', searchBookingsPlaceholder: 'Venue, promoter, city, event or ID…', searchResults: 'results', searchHistory: 'Search history', searchHistoryPlaceholder: 'Venue, city, message or status…', previousPage: 'Previous', nextPage: 'Next', page: 'Page', collapseSidebar: 'Collapse menu', expandSidebar: 'Expand menu', removeSamples: 'Remove examples', restoreSamples: 'Restore examples', all: 'All', noSamples: 'There are no sample requests with this status.',
-  sampleBooking: 'SAMPLE BOOKING', automaticStatus: 'Automatic status', eventData: 'Event details', date: 'Date', city: 'City', venue: 'Venue', capacity: 'Capacity', offer: 'Offer', schedule: 'Schedule', contact: 'Contact', name: 'Name', phone: 'Phone', source: 'Source', bookingLink: 'Booking link', conversation: 'Conversation', replyPromoter: 'Reply to promoter', replyPlaceholder: 'Write conditions, a question or a proposal…', localMessage: 'Local example. This message is not sent by email.', sendSampleReply: 'Send sample reply', openPromoter: 'Open promoter view', confirmDate: 'Confirm date', rejectRequest: 'Reject request', openRequest: 'Open a request to view its details, offer and conversation.',
+  guidedTour: 'View guided tour', collapseSidebar: 'Collapse menu', expandSidebar: 'Expand menu',
   calendarEyebrow: 'CALENDAR / SCHEDULE', calendarTitle: 'DATES AND TIMES.', calendarBody: 'Holds and confirmed bookings appear here automatically. Use “Add block” for travel, studio time or unavailability that does not come from a booking.', weekdays: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], unavailable: 'Unavailable', dayHours: 'DAY / 24 HOURS', add: 'Add block', selectedDaySchedule: 'Selected day schedule', addAt: 'Add block at',
   historyEyebrow: 'WORKSPACE / ACTIVITY', historyTitle: 'EVERYTHING THAT HAPPENED.',
   historyBody: 'Messages, status changes, holds and actions ordered over time. Archived bookings remain under Bookings → Archived.',
-  historyEmpty: 'There is no activity for this profile yet.', historyStatus: 'Status updated', historyMessage: 'Message', openTrace: 'Open offer and view trace', previousMonth: 'Previous month', nextMonth: 'Next month', filterSamples: 'Filter sample bookings',
+  previousMonth: 'Previous month', nextMonth: 'Next month',
   profileEyebrow: 'ARTIST / PROFESSIONAL PROFILE', profileTitle: 'YOUR BOOKING INFORMATION.', profileBody: 'Edit what people will see on your public artist profile. Your private booking terms remain visible only inside your workspace.',
   profileOptional: 'Optional profile', profileOptionalBody: 'Your workspace is ready. Complete these details now or return from Profile whenever you want.', later: 'Not now', previewProfile: 'Preview', previewPrivate: 'PREVIEW / PUBLIC PROFILE', previewClose: 'Close preview', previewBioEmpty: 'Your biography will appear here once completed.', previewGenresEmpty: 'Add genres to see them on the profile.', previewFormats: 'Formats', previewLinks: 'Listen and follow',
   coverTitle: 'Your sound starts with the image.', coverHint: 'Drop a photo or choose one. If you skip it, CueBooker will use this acid and Detroit cover.', coverChoose: 'Add my cover', coverChange: 'Change cover', coverRemove: 'Use CueBooker cover', coverPosition: 'Adjust vertical framing', coverUploading: 'Uploading cover…', coverSaved: 'Cover updated.', coverRemoved: 'Default cover restored.', coverInvalid: 'Use a JPG, PNG or WebP file up to 8 MB.', coverError: 'The cover could not be saved.',
@@ -1621,23 +1617,6 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .next-panel button { margin-top: 28px; color: #090909; }
 .panel-empty { padding: 32px 22px; color: var(--cue-muted); }
 .panel-empty button { padding: 0; color: var(--cue-accent); }
-.demo-launch { display:flex; align-items:center; justify-content:space-between; gap:18px; margin:14px 0 18px; padding:12px 14px; border:1px dashed var(--cue-border); background:transparent; }
-.demo-launch div { min-width:0; }
-.demo-launch span { display:block; color:var(--cue-muted); font:700 8px monospace; letter-spacing:.1em; }
-.demo-launch strong { display:block; margin-top:4px; color:var(--cue-muted); font-size:11px; }
-.demo-launch button { flex:0 0 auto; min-height:34px; padding:0 11px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); cursor:pointer; font:700 9px monospace; text-transform:uppercase; }
-.demo-launch button:hover { border-color:var(--cue-accent); color:var(--cue-accent); }
-.demo-notice { display: flex; justify-content: space-between; align-items: center; gap: 28px; padding: 20px 22px; border: 1px solid #665f18; background: #17170d; }
-.demo-notice span { display: block; margin-bottom: 7px; color: #e8ff2f; font: 700 10px monospace; letter-spacing: .1em; }
-.demo-notice strong { font-size: 17px; }
-.demo-notice p { max-width: 720px; margin: 6px 0 0; color: var(--cue-muted); font-size: 13px; line-height: 1.5; }
-.demo-notice__actions { display: flex; flex: 0 0 auto; gap: 9px; }
-.demo-notice__actions button { min-height: 42px; padding: 0 16px; border: 1px solid #777025; background: transparent; color: #e8ff2f; cursor: pointer; font-weight: 800; }
-.demo-notice__actions .guide-action { background: #e8ff2f; color: #070707; }
-.demo-booking-workspace { padding-bottom: 34px; }
-.demo-action { min-height: 46px; padding: 0 18px; }
-.demo-secondary-action, .demo-danger-action { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid #3a3a3a; background: transparent; color: #f2f0eb; cursor: pointer; font-size: 12px; font-weight: 800; text-decoration: none; }
-.demo-danger-action { border-color: #75404a; color: #ff9dab; }
 .bookings-shell { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 470px; border: 1px solid #292929; background: #0d0d0d; }
 .booking-filters { padding: 10px; border-right: 1px solid #292929; }
 .booking-filters button { display: flex; justify-content: space-between; width: 100%; min-height: 50px; padding: 0 14px; border: 0; background: transparent; color: #848484; cursor: pointer; text-align: left; }
@@ -1796,10 +1775,6 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .password-form { display: grid; gap: 16px; margin-top: 14px; padding-top: 24px; border-top: 1px solid var(--cue-border); }
 
 :global(:root[data-theme='light']) .panel-empty button,
-:global(:root[data-theme='light']) .demo-notice span { color: var(--cue-accent); }
-:global(:root[data-theme='light']) .demo-notice { border-color: color-mix(in srgb, var(--cue-accent) 32%, var(--cue-border)); background: var(--cue-surface); }
-:global(:root[data-theme='light']) .demo-notice__actions button { border-color: color-mix(in srgb, var(--cue-accent) 48%, var(--cue-border)); color: var(--cue-accent); }
-:global(:root[data-theme='light']) .demo-notice__actions .guide-action,
 :global(:root[data-theme='light']) .add-button { border-color: var(--cue-accent); background: var(--cue-accent); color: var(--cue-accent-ink); }
 :global(:root[data-theme='light']) .tone-lime { color: #5127c7 !important; }
 :global(:root[data-theme='light'] .tour-focus) { outline-color: var(--cue-accent); box-shadow: 0 0 18px color-mix(in srgb, var(--cue-accent) 62%, transparent), 0 0 55px color-mix(in srgb, var(--cue-accent) 25%, transparent); animation-name: tour-pulse-light; }
@@ -1840,11 +1815,6 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .bookings-shell { grid-template-columns: 1fr; }
   .booking-filters { display: grid; grid-template-columns: repeat(2, 1fr); border-right: 0; border-bottom: 1px solid #292929; }
   .booking-empty { padding: 34px 20px; }
-  .demo-notice { align-items: flex-start; flex-direction: column; }
-  .demo-notice__actions { display: grid; width: 100%; }
-  .demo-notice__actions button { width: 100%; }
-  .demo-booking-workspace { display: block; }
-  .demo-booking-workspace .booking-list { margin-bottom: 14px; }
   .empty-actions { align-items: flex-start; flex-direction: column; }
   .calendar-toolbar { min-height: 60px; }
   .weekday { padding: 9px 2px; font-size: 8px; }
@@ -1894,8 +1864,6 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .cue-entry-actions .cue-tour-action:disabled { opacity:.42; cursor:not-allowed; }
 .cue-entry-message { margin: -2px 0 14px; padding: 9px 12px; border-left: 2px solid var(--cue-mint); color: var(--cue-muted); font-size: 11px; }
 @media (max-width: 760px) {
-  .demo-launch { align-items:stretch; flex-direction:column; }
-  .demo-launch button { width:100%; }
   .cue-entry-bar { align-items: stretch; gap: 10px; margin-bottom: 10px; padding: 11px 12px; }
   .cue-entry-bar span { font-size: 8px; }
   .cue-entry-bar strong { font-size: 12px; }
