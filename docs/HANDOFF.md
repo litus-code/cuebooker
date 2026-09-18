@@ -1138,7 +1138,90 @@ Smart Capture events track funnel metadata but do not send the transcript, booki
 
 Route page views are standardized through `useAnalytics.trackPageView()`.
 
-## 21. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
+## 21. Product-rounding P0: voice resilience, hero proof, skeletons and list scaling — IMPLEMENTED ON BRANCH / AUDIO EDGE DEPLOYED TO STAGING
+
+Functional commits:
+
+```text
+1015889b44bf9790690b8201ed80e6f6d28d128c
+423040a4abc76849c79b8ee8b3d17455db6daf86
+fbe9235a44fd7b3696e2defe156e62e17eb2185e
+37739ba4f0dc879c19c4417c0257406514819782
+7b4794f4cb54778ae3992a0b1d7174bf2beee7a4
+06852a669cc6e299b484efbe0623162d5523c34e
+5f111c440805c44340198d5ac382468169163ae5
+596cdd535d860d9bee31bcd1587d1fb4c0e5fb87
+```
+
+### Smart Capture audio resilience
+
+The staging Smart Capture Edge Function is now ACTIVE v3.
+
+The audio path no longer depends on one transcription attempt. It:
+
+- normalizes Safari/iPhone MIME types and file extension;
+- accepts common AAC/MP4/M4A/WebM/OGG/WAV/MPEG audio families;
+- tries the configured model first when present;
+- then falls back through `gpt-transcribe` and `gpt-4o-transcribe`;
+- logs only safe operational metadata on failed provider attempts: model, provider status, MIME and byte size;
+- never logs or persists audio/transcript contents in these diagnostics.
+
+A fresh real iPhone smoke is still required.
+
+### Bookings and history scaling
+
+Booking inbox:
+
+```text
+10 initially
+-> Load 10 more
+-> repeat
+```
+
+Filtering/search/archive changes reset the visible window to 10.
+
+Operational history uses the same 10-at-a-time pattern.
+
+This is intentionally progressive loading UX rather than classic numbered pagination. The current client still has the already-loaded collection; true cursor/server pagination can replace the backing query when data volume requires it without changing the UX contract.
+
+### Workspace loading
+
+The previous top-level `Cargando workspace…` text has been removed.
+
+Workspace loading now preserves spatial continuity with:
+
+- heading skeleton;
+- KPI/card skeletons;
+- primary/secondary panel skeletons;
+- mobile responsive skeleton layout;
+- reduced visual jump when real workspace content arrives.
+
+### Commercial hero
+
+The homepage hero was deliberately simplified.
+
+New message:
+
+```text
+NO PIERDAS
+EL BOOKING.
+```
+
+The previous abstract network visualization is no longer the primary hero proof. The hero now demonstrates the product:
+
+```text
+messy WhatsApp booking context
+-> Smart Capture
+-> structured Booking
+-> date / fee / hotel / missing schedule
+-> operational status
+```
+
+The purpose is to show the differentiating workflow before explaining feature vocabulary.
+
+Visual mobile/desktop review remains required after preview deployment.
+
+## 22. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
 
@@ -1156,7 +1239,7 @@ AI/voice limits should not be hard-coded into pricing before real usage/cost evi
 
 No billing, trial enforcement or Stripe integration is implemented yet.
 
-## 22. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
+## 23. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
 
 ### Smart Capture / interpretation
 
@@ -1195,7 +1278,7 @@ Treat human feedback as a cross-product rule:
 - retryable failure -> preserve work and explain next action;
 - technical/provider detail -> logs/admin, not promoter-facing copy.
 
-## 23. Root routing and static deployment
+## 24. Root routing and static deployment
 
 Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. `ASSETS.fetch()` must use the pretty `/200` path rather than `/200.html`.
 
@@ -1207,7 +1290,7 @@ Previously validated:
 
 PR #75 remains the staging preview vehicle.
 
-## 24. Security / operational follow-up
+## 25. Security / operational follow-up
 
 Before production:
 
@@ -1227,7 +1310,7 @@ Leaked Password Protection Disabled
 
 Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to the current Supabase secret-key model as a deliberate infrastructure task, not mixed into a product slice.
 
-## 25. Exact next product work
+## 26. Exact next product work
 
 Current sequencing is intentional:
 
@@ -1245,7 +1328,7 @@ Current sequencing is intentional:
 
 Do not jump ahead because downstream ideas are documented.
 
-## 26. Documentation workflow rule
+## 27. Documentation workflow rule
 
 Every meaningful implementation block must finish by updating this handoff with:
 
@@ -1256,7 +1339,7 @@ Every meaningful implementation block must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-## 27. Production gate
+## 28. Production gate
 
 Production Supabase:
 
