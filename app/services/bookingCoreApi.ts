@@ -36,6 +36,11 @@ export type EnsureBookingWorkspaceInput =
   | { organizationId: string; artistId?: never }
   | { organizationId?: never; artistId: string }
 
+function rpcRow<T>(payload: T | T[] | null | undefined): T | null {
+  if (Array.isArray(payload)) return payload[0] || null
+  return payload || null
+}
+
 function normalizedText(value: string | null | undefined) {
   const trimmed = value?.trim()
   return trimmed ? trimmed : null
@@ -247,7 +252,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
       throw new Error('invalid_offer_amount_minor')
     }
 
-    const rows = await $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/rpc/create_smart_cue_booking`, {
+    const response = await $fetch<CoreBooking | CoreBooking[]>(`${baseUrl}/rest/v1/rpc/create_smart_cue_booking`, {
       method: 'POST',
       headers: authHeaders(),
       body: {
@@ -278,7 +283,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
       }
     })
 
-    const row = rows[0]
+    const row = rpcRow(response)
     if (!row) throw new Error('manual_booking_create_failed')
     return row
   }
@@ -288,7 +293,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
       throw new Error('invalid_offer_amount_minor')
     }
 
-    const rows = await $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/rpc/update_booking_details`, {
+    const response = await $fetch<CoreBooking | CoreBooking[]>(`${baseUrl}/rest/v1/rpc/update_booking_details`, {
       method: 'POST',
       headers: authHeaders(),
       body: {
@@ -307,13 +312,13 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         next_fee_basis: normalizedText(input.feeBasis)
       }
     })
-    const row = rows[0]
+    const row = rpcRow(response)
     if (!row) throw new Error('booking_details_update_failed')
     return row
   }
 
   async function setBookingStatus(workspaceId: string, bookingId: string, status: CoreBookingStatus) {
-    const rows = await $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/rpc/set_booking_status`, {
+    const response = await $fetch<CoreBooking | CoreBooking[]>(`${baseUrl}/rest/v1/rpc/set_booking_status`, {
       method: 'POST',
       headers: authHeaders(),
       body: {
@@ -322,13 +327,13 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         target_status: status
       }
     })
-    const row = rows[0]
+    const row = rpcRow(response)
     if (!row) throw new Error('booking_status_update_failed')
     return row
   }
 
   async function setBookingArchived(workspaceId: string, bookingId: string, archived: boolean) {
-    const rows = await $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/rpc/set_booking_archived`, {
+    const response = await $fetch<CoreBooking | CoreBooking[]>(`${baseUrl}/rest/v1/rpc/set_booking_archived`, {
       method: 'POST',
       headers: authHeaders(),
       body: {
@@ -337,7 +342,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         target_archived: archived
       }
     })
-    const row = rows[0]
+    const row = rpcRow(response)
     if (!row) throw new Error('booking_archive_update_failed')
     return row
   }
@@ -451,7 +456,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     if (input.priority != null && (!Number.isInteger(input.priority) || input.priority < 1 || input.priority > 9)) {
       throw new Error('invalid_hold_priority')
     }
-    const rows = await $fetch<Hold[]>(`${baseUrl}/rest/v1/rpc/create_booking_hold`, {
+    const response = await $fetch<Hold | Hold[]>(`${baseUrl}/rest/v1/rpc/create_booking_hold`, {
       method: 'POST',
       headers: authHeaders(),
       body: {
@@ -465,29 +470,29 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         hold_priority: input.priority ?? null
       }
     })
-    const row = rows[0]
+    const row = rpcRow(response)
     if (!row) throw new Error('hold_create_failed')
     return row
   }
 
   async function releaseHold(workspaceId: string, holdId: string) {
-    const rows = await $fetch<Hold[]>(`${baseUrl}/rest/v1/rpc/release_booking_hold`, {
+    const response = await $fetch<Hold | Hold[]>(`${baseUrl}/rest/v1/rpc/release_booking_hold`, {
       method: 'POST',
       headers: authHeaders(),
       body: { target_workspace_id: workspaceId, target_hold_id: holdId }
     })
-    const row = rows[0]
+    const row = rpcRow(response)
     if (!row) throw new Error('hold_release_failed')
     return row
   }
 
   async function convertHold(workspaceId: string, holdId: string) {
-    const rows = await $fetch<Hold[]>(`${baseUrl}/rest/v1/rpc/convert_booking_hold`, {
+    const response = await $fetch<Hold | Hold[]>(`${baseUrl}/rest/v1/rpc/convert_booking_hold`, {
       method: 'POST',
       headers: authHeaders(),
       body: { target_workspace_id: workspaceId, target_hold_id: holdId }
     })
-    const row = rows[0]
+    const row = rpcRow(response)
     if (!row) throw new Error('hold_convert_failed')
     return row
   }
