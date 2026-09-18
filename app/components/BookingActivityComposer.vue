@@ -5,6 +5,7 @@ const props = defineProps<{
   workspaceId: string
   booking: CoreBooking
   locale: 'es' | 'en'
+  suggestedFollowUp?: { subject: string; body: string } | null
 }>()
 
 const emit = defineEmits<{ created: [] }>()
@@ -32,7 +33,9 @@ const copy = computed(() => props.locale === 'es' ? {
   noContactEmail: 'Este booking necesita un contacto con email antes de poder enviar.',
   providerMissing: 'El proveedor de email todavía no está configurado en staging.',
   replyDomainMissing: 'El dominio de respuestas de email todavía no está configurado en staging.',
-  sendError: 'No se ha podido enviar el email.'
+  sendError: 'No se ha podido enviar el email.',
+  prepareFollowUp: 'Preparar seguimiento',
+  followUpHint: 'Cuebooker ha preparado un borrador. Revísalo antes de enviarlo.'
 } : {
   title: 'Log interaction',
   help: 'Note keeps internal memory. Call, WhatsApp and Instagram log a conversation. Email sends from Cuebooker.',
@@ -47,7 +50,9 @@ const copy = computed(() => props.locale === 'es' ? {
   noContactEmail: 'This booking needs a contact with an email before sending.',
   providerMissing: 'The email provider is not configured in staging yet.',
   replyDomainMissing: 'The email reply domain is not configured in staging yet.',
-  sendError: 'The email could not be sent.'
+  sendError: 'The email could not be sent.',
+  prepareFollowUp: 'Prepare follow-up',
+  followUpHint: 'Cuebooker prepared a draft. Review it before sending.'
 })
 
 const types = computed<Array<{ value: ActivityType; label: string }>>(() => [
@@ -72,6 +77,17 @@ watch(direction, () => {
   successMessage.value = ''
   errorMessage.value = ''
 })
+
+function applySuggestedFollowUp() {
+  const draft = props.suggestedFollowUp
+  if (!draft) return
+  type.value = 'email'
+  direction.value = 'outbound'
+  subject.value = draft.subject
+  body.value = draft.body
+  successMessage.value = ''
+  errorMessage.value = ''
+}
 
 function localEmailError(code: string) {
   if (code === 'contact_email_required' || code === 'booking_contact_required') return copy.value.noContactEmail
@@ -132,6 +148,10 @@ async function submit() {
         <button v-for="item in types" :key="item.value" type="button" :class="{ active: type === item.value }" @click="type = item.value">{{ item.label }}</button>
       </div>
     </div>
+    <div v-if="suggestedFollowUp" class="activity-composer__suggestion">
+      <div><strong>{{ copy.prepareFollowUp }}</strong><small>{{ copy.followUpHint }}</small></div>
+      <button type="button" @click="applySuggestedFollowUp">{{ copy.prepareFollowUp }}</button>
+    </div>
     <div class="activity-composer__body" :class="{ 'activity-composer__body--email': sendsRealEmail }">
       <input v-if="sendsRealEmail" v-model="subject" class="activity-composer__subject" :aria-label="copy.subject" :placeholder="copy.subjectPlaceholder" maxlength="300">
       <textarea v-model="body" rows="2" :placeholder="sendsRealEmail ? copy.emailPlaceholder : copy.placeholder" />
@@ -153,6 +173,11 @@ async function submit() {
 .activity-composer__types { display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; }
 .activity-composer__types button { min-height:28px; padding:0 8px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; }
 .activity-composer__types button.active { border-color:var(--cue-accent); color:var(--cue-accent); }
+.activity-composer__suggestion { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px; border-bottom:1px solid var(--cue-border); background:color-mix(in srgb,var(--cue-accent) 5%,transparent); }
+.activity-composer__suggestion > div { display:grid; gap:3px; }
+.activity-composer__suggestion strong { color:var(--cue-accent); font:800 9px monospace; text-transform:uppercase; }
+.activity-composer__suggestion small { color:var(--cue-muted); font-size:9px; line-height:1.4; }
+.activity-composer__suggestion button { min-height:32px; padding:0 10px; border:1px solid var(--cue-accent); background:transparent; color:var(--cue-accent); cursor:pointer; font:800 8px monospace; text-transform:uppercase; }
 .activity-composer__body { display:grid; grid-template-columns:minmax(0,1fr) 130px 150px; gap:8px; align-items:end; padding:10px; }
 .activity-composer__body--email { grid-template-columns:minmax(0,1fr) 130px 150px; }
 .activity-composer__subject { grid-column:1 / -1; min-height:36px; }
@@ -164,5 +189,5 @@ async function submit() {
 .activity-composer__error, .activity-composer__success { margin:0; padding:0 9px 9px; font-size:10px; }
 .activity-composer__error { color:#ff7c7c; }
 .activity-composer__success { color:var(--cue-accent); }
-@media (max-width:680px) { .activity-composer__top { align-items:flex-start; flex-direction:column; } .activity-composer__types { justify-content:flex-start; } .activity-composer__body, .activity-composer__body--email { grid-template-columns:1fr; } .activity-composer__subject { grid-column:1; } }
+@media (max-width:680px) { .activity-composer__top { align-items:flex-start; flex-direction:column; } .activity-composer__suggestion { align-items:flex-start; flex-direction:column; } .activity-composer__types { justify-content:flex-start; } .activity-composer__body, .activity-composer__body--email { grid-template-columns:1fr; } .activity-composer__subject { grid-column:1; } }
 </style>
