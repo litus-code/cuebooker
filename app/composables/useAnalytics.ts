@@ -56,7 +56,6 @@ export const useAnalytics = () => {
     consent.value = 'granted'
     localStorage.setItem(CONSENT_STORAGE_KEY, 'granted')
     loadGtm()
-    queueMicrotask(() => trackPageView())
   }
 
   const deny = () => {
