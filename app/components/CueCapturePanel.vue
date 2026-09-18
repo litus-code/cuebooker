@@ -55,7 +55,7 @@ const text = computed(() => props.locale === 'es' ? {
   placeName: 'Nombre',
   event: 'Evento', date: 'Fecha', city: 'Ciudad', offer: 'Oferta',
   note: 'Cuéntaselo a Cuebooker', notePlaceholder: 'Ej. Me ha llamado Héctor de Nitsa para el 23 de septiembre. 1.200 €, pendiente confirmar horario.',
-  interpret: 'Interpretar lo que he contado', interpreted: 'He separado lo que parece importante. Revísalo antes de crear el booking.', nothingDetected: 'No he detectado datos claros todavía. Puedes completar el CUE manualmente.', reviewSuggestions: 'Esto es lo que he entendido. Nada se aplicará hasta que lo confirmes.', applySuggestions: 'Aplicar sugerencias', discardSuggestions: 'Descartar', suggestionsApplied: 'Sugerencias aplicadas. Revísalas antes de guardar el CUE.', nextMove: 'Siguiente paso',
+  interpret: 'Detectar datos del texto', interpreted: 'He detectado algunos datos claros. Revísalos antes de crear el booking.', nothingDetected: 'No he detectado datos suficientemente claros. Puedes completar el booking manualmente.', reviewSuggestions: 'Esto es lo que he entendido. Nada se aplicará hasta que lo confirmes.', applySuggestions: 'Aplicar sugerencias', discardSuggestions: 'Descartar', suggestionsApplied: 'Sugerencias aplicadas. Revísalas antes de guardar el CUE.', nextMove: 'Siguiente paso',
   more: 'Añadir más datos', less: 'Ocultar datos extra',
   cancel: 'Cancelar', save: 'Crear booking', saving: 'Creando…',
   minimum: 'Escribe al menos un contacto, una sala/evento o una nota.',
@@ -72,7 +72,7 @@ const text = computed(() => props.locale === 'es' ? {
   placeName: 'Name',
   event: 'Event', date: 'Date', city: 'City', offer: 'Offer',
   note: 'Tell Cuebooker', notePlaceholder: 'E.g. Hector from Nitsa called for September 23. €1,200, pending confirm schedule.',
-  interpret: 'Interpret what I said', interpreted: 'I separated the details that look useful. Review them before creating the booking.', nothingDetected: 'No clear details detected yet. You can complete the CUE manually.', reviewSuggestions: 'This is what I understood. Nothing will be applied until you confirm it.', applySuggestions: 'Apply suggestions', discardSuggestions: 'Discard', suggestionsApplied: 'Suggestions applied. Review them before saving the CUE.', nextMove: 'Next move',
+  interpret: 'Detect details from text', interpreted: 'I found some clear details. Review them before creating the booking.', nothingDetected: 'I could not detect enough clear details. You can complete the booking manually.', reviewSuggestions: 'This is what I understood. Nothing will be applied until you confirm it.', applySuggestions: 'Apply suggestions', discardSuggestions: 'Discard', suggestionsApplied: 'Suggestions applied. Review them before saving the CUE.', nextMove: 'Next move',
   more: 'Add more details', less: 'Hide extra details',
   cancel: 'Cancel', save: 'Create booking', saving: 'Creating…',
   minimum: 'Add at least a contact, venue/event or a note.',
@@ -314,6 +314,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
               <CueVoiceInput v-model="initialNote" :locale="locale" @captured="onVoiceCaptured" />
               <div class="cue-capture__interpret">
                 <button type="button" :disabled="!initialNote.trim()" @click="interpretNote">{{ text.interpret }}</button>
+                <p>{{ locale === 'es' ? 'Detección básica. No sustituye la revisión.' : 'Basic detection. Review before applying.' }}</p>
                 <p v-if="interpretationMessage" aria-live="polite">{{ interpretationMessage }}</p>
               </div>
             </div>
