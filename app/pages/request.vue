@@ -34,6 +34,7 @@ const copy = computed(() => locale.value === 'es' ? {
   noDetail: 'Por definir',
   reply: 'Responder', placeholder: 'Escribe tu respuesta…', send: 'Enviar respuesta', sending: 'Enviando…',
   replyError: 'No se pudo enviar la respuesta. El texto se mantiene para que puedas intentarlo de nuevo.',
+  replyRateLimited: 'Has enviado varios mensajes seguidos. Espera un momento; tu texto se mantiene aquí.',
   archived: 'Este booking está archivado internamente, pero tu conversación sigue conservada.',
   channelBooking: 'Formulario', channelEmail: 'Email', channelSecure: 'Enlace seguro', channelMessage: 'Mensaje',
   you: 'Tú', team: 'Equipo del artista'
@@ -53,6 +54,7 @@ const copy = computed(() => locale.value === 'es' ? {
   noDetail: 'To be agreed',
   reply: 'Reply', placeholder: 'Write your reply…', send: 'Send reply', sending: 'Sending…',
   replyError: 'The reply could not be sent. Your text is kept so you can try again.',
+  replyRateLimited: 'Several messages were sent in a short time. Wait a moment; your text is kept here.',
   archived: 'This booking is archived internally, but your conversation remains preserved.',
   channelBooking: 'Booking form', channelEmail: 'Email', channelSecure: 'Secure link', channelMessage: 'Message',
   you: 'You', team: 'Artist team'
@@ -150,8 +152,9 @@ async function sendReply() {
     followUp.value = result.followUp
     reply.value = ''
     replyRequestId.value = ''
-  } catch {
-    replyError.value = copy.value.replyError
+  } catch (error) {
+    const status = (error as Error & { status?: number }).status
+    replyError.value = status === 429 ? copy.value.replyRateLimited : copy.value.replyError
   } finally {
     replySending.value = false
   }
