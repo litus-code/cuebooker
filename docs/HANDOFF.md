@@ -688,7 +688,86 @@ b4c0e187ee0027311b16c3c689a810d3e6c59595
 88ce55ef3be396d00f48a9cff97908068252e1c5
 ```
 
-## 16. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
+## 16. Automated booking workflow states + mobile UX clarification — IMPLEMENTED ON STAGING / BRANCH
+
+Functional commits:
+
+```text
+62ee0c97fc3690ea4a05b3a8e0b8eac1bc257efd
+318985bbef01465d853c70c298f1fdfb34845720
+16952b1d5c4b755a104bae9725c2aa5db2554bf1
+ea8874c1fafcc219f5b88b8a9b88418e9929c9f8
+6b4d736b6e87bfb5d30fbcda240aa6cac695894d
+```
+
+### Booking state model
+
+Operational states are now derived from Activity instead of being manually selected:
+
+- new: initial state when a Booking is captured;
+- in_conversation: automatic after a later inbound interaction;
+- waiting_response: automatic after a later outbound interaction;
+- confirmed / rejected / cancelled: explicit human decisions only.
+
+Initial capture Activity is excluded using its existing metadata:
+
+```text
+capture=public_form
+capture=cue_manual
+```
+
+Therefore creating a Booking does not immediately move it out of `new`.
+
+Decision states are terminal for automatic transitions. `set_booking_status` now rejects manual writes to operational states with `operational_status_is_automatic`.
+
+Every automatic transition writes an internal `status_change` Activity with:
+
+```text
+automatic=true
+reason=external_activity_received | external_activity_sent
+trigger_activity_id=<activity id>
+```
+
+A transaction/ROLLBACK smoke proved:
+
+```text
+new + outbound whatsapp
+-> waiting_response
+-> automatic status_change Activity written
+-> rollback restored original booking to new
+```
+
+### Inbox UX
+
+- removed manual status select;
+- current state is displayed as an informational semantic-color chip;
+- explicit decision actions are Confirm / Reject / Cancel;
+- filters use semantic colors for New / In conversation / Waiting response / Confirmed / Rejected / Cancelled;
+- mobile state filters are a visible grid instead of a hidden horizontal rail;
+- booking selection restores auto-scroll to the booking detail;
+- Activity section is renamed to Activity history;
+- interaction composer explains that inbound/outbound interactions drive state automatically.
+
+### CUE / capture
+
+CUE now explains its product result explicitly:
+
+```text
+Capture an opportunity
+-> voice or text
+-> interpret details
+-> create a new Booking
+```
+
+The existing functional voice input and interpreter were moved near the top of the flow instead of being hidden below contact/entity fields. CTA is now `Create booking` / `Crear booking`.
+
+### Next action
+
+The ambiguous `Siguiente paso` wording is now `Próxima acción`, with helper copy explaining that it is an operational reminder/to-do and does not change Booking status.
+
+Visual mobile validation is still required after the preview deploy.
+
+## 17. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
 
@@ -706,7 +785,7 @@ AI/voice limits should not be hard-coded into pricing before real usage/cost evi
 
 No billing, trial enforcement or Stripe integration is implemented yet.
 
-## 17. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
+## 18. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
 
 ### Smart Capture / interpretation
 
@@ -745,7 +824,7 @@ Treat human feedback as a cross-product rule:
 - retryable failure -> preserve work and explain next action;
 - technical/provider detail -> logs/admin, not promoter-facing copy.
 
-## 18. Root routing and static deployment
+## 19. Root routing and static deployment
 
 Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. `ASSETS.fetch()` must use the pretty `/200` path rather than `/200.html`.
 
@@ -757,7 +836,7 @@ Previously validated:
 
 PR #75 remains the staging preview vehicle.
 
-## 19. Security / operational follow-up
+## 20. Security / operational follow-up
 
 Before production:
 
@@ -777,7 +856,7 @@ Leaked Password Protection Disabled
 
 Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to the current Supabase secret-key model as a deliberate infrastructure task, not mixed into a product slice.
 
-## 20. Exact next product work
+## 21. Exact next product work
 
 Current sequencing is intentional:
 
@@ -795,7 +874,7 @@ Current sequencing is intentional:
 
 Do not jump ahead because downstream ideas are documented.
 
-## 21. Documentation workflow rule
+## 22. Documentation workflow rule
 
 Every meaningful implementation block must finish by updating this handoff with:
 
@@ -806,7 +885,7 @@ Every meaningful implementation block must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-## 22. Production gate
+## 23. Production gate
 
 Production Supabase:
 
