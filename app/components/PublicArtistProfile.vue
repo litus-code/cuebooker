@@ -90,10 +90,6 @@ async function openBooking() {
     <section class="public-artist-profile__hero">
       <div class="public-artist-profile__cover">
         <img v-if="profile.coverUrl" class="public-artist-profile__cover-image" :src="profile.coverUrl" alt="" :style="{ objectPosition: `50% ${profile.coverPositionY}%` }">
-        <template v-else-if="profile.artistImageUrl">
-          <img class="public-artist-profile__cover-image public-artist-profile__cover-image--portrait-fallback" :src="profile.artistImageUrl" alt="" aria-hidden="true">
-          <div class="public-artist-profile__cover-fallback-overlay" aria-hidden="true" />
-        </template>
         <div v-else class="public-artist-profile__cover-default" aria-hidden="true"><i /><i /><i /></div>
         <div class="public-artist-profile__shade" />
         <img
