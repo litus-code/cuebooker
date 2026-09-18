@@ -1737,7 +1737,7 @@ PR #75 remains the staging preview vehicle.
 Before production:
 
 - rotate Brevo API/webhook secrets exposed during setup;
-- finish direct inbound email webhook smoke;
+- keep the now-verified direct inbound email path covered during production rollout;
 - strengthen anonymous rate/abuse protection for public intake and follow-up;
 - perform visual desktop/mobile smoke of public profile, form, request page, distribution panel and widget;
 - review CSP/frame policy for widget on external origins;
@@ -1837,3 +1837,76 @@ tests/bookingAttention.test.ts
 The 72-hour stale-waiting threshold is an initial product default, not a permanent business rule. It can become workspace/user configurable after beta evidence.
 
 ADR-039 records the automation boundary.
+
+
+## 36. Automatic hold lifecycle — IMPLEMENTED ON STAGING
+
+Functional migration:
+
+```text
+20260918143000_automate_hold_lifecycle.sql
+```
+
+Hold cleanup now follows the automation boundary from ADR-039.
+
+### Explicit expiry
+
+An active Hold with `expires_at` is automatically released after its deadline.
+
+Implementation:
+
+- `private.release_expired_holds(batch_size)` claims expired active Holds with `FOR UPDATE SKIP LOCKED`;
+- release is idempotent because only `status = active` rows are eligible;
+- system Activity is written as `hold_released`;
+- metadata records `automatic = true`, `reason = hold_expired`, the Hold id and original expiry;
+- Booking commercial status is never changed by expiry;
+- cron job `cuebooker-expire-holds` runs every 5 minutes on staging.
+
+### Human terminal decision -> automatic Hold cleanup
+
+When the artist explicitly chooses:
+
+```text
+Rejected
+Cancelled
+```
+
+active Holds for that Booking are automatically released in the same database transaction boundary through a Booking status trigger.
+
+The decision remains human. Cuebooker only performs the mechanical consequence.
+
+Activity metadata records:
+
+```text
+automatic = true
+reason = booking_rejected | booking_cancelled
+```
+
+Confirmed Booking behavior remains unchanged: the matching Hold is converted and remaining active Holds are released by the existing confirmation command.
+
+### Validation
+
+Staging rollback smokes proved both paths without leaving fixture data:
+
+```text
+expired active Hold
+-> private.release_expired_holds()
+-> released
+-> hold_released Activity(reason=hold_expired)
+-> ROLLBACK
+
+in_conversation Booking + active Hold
+-> Booking status rejected
+-> Hold released automatically
+-> hold_released Activity(reason=booking_rejected)
+-> ROLLBACK
+```
+
+Post-smoke verification:
+
+- fixture Holds = 0;
+- fixture Activities = 0;
+- real test Booking restored to `in_conversation`;
+- cron job active every 5 minutes.
+
+No production migration has been applied.
