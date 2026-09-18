@@ -3166,3 +3166,77 @@ Deploy Staging / PR preview run 35386567552 = success
 This SQL smoke starts after Smart Capture has produced structured CUE data. Voice transcription/interpretation remains a separate ingress layer already connected to the same Smart CUE command.
 
 Production remains untouched.
+
+## 56. Static responsive/accessibility smoke — IMPLEMENTED ON BRANCH
+
+A code-level responsive/accessibility smoke was run across the current Booking Core loop because the authenticated Cloudflare preview is not interactable from the current browser tool.
+
+This is explicitly not a substitute for final visual QA in staging.
+
+Reviewed surfaces:
+
+```text
+CUE capture
+Booking list/detail
+Conversation composer
+Follow-up/retry suggestions
+Booking decisions
+Next Action / Hold operations
+Conflict notice
+Workspace mobile navigation
+Calendar controls
+```
+
+### Mobile touch targets
+
+Several important controls were functionally correct but too small for comfortable mobile use:
+
+```text
+conversation type buttons ~28px
+booking decisions ~31px
+booking filters ~36px
+CUE channel buttons ~31px
+workspace nav ~34px
+```
+
+On mobile these key interactive targets now use approximately 44px minimum height while desktop density remains unchanged.
+
+Updated:
+
+```text
+app/components/BookingActivityComposer.vue
+app/components/BookingCoreInbox.vue
+app/components/BookingCoreOperations.vue
+app/components/CueCapturePanel.vue
+app/pages/workspace.vue
+```
+
+### Keyboard focus visibility
+
+Workspace/CUE inputs removed the native outline, but there was no complete replacement focus-visible system.
+
+Keyboard focus is now restored using the Cuebooker accent:
+
+```text
+button:focus-visible
+a:focus-visible
+input:focus-visible
+select:focus-visible
+textarea:focus-visible
+```
+
+Mouse/touch appearance is unchanged; keyboard navigation now has a visible focus indicator.
+
+Functional commits:
+
+```text
+2af7befed0c6ab038e100b4e9c3bd3f445ad4ce2
+9f6171b2249b1f1fbd7cc4fd8adfc510e562421c
+16df001c76ea449a739376e36f155a4c44010776
+04be59e29da9b40dea4a712fe8160858dd606b6c
+5afdc110ed94ce33615c195f387c5529d61424d8
+d9e1508ad05b7454f9a253b5dc58b6e8363cd55c
+5f703fc3ef0d30eb73a87784e41b049da5236031
+```
+
+Production remains untouched.
