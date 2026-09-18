@@ -46,6 +46,7 @@ This register records architecture choices that should not be casually reversed.
 | ADR-036 | Anonymous intake must not impersonate an authenticated workspace user | Accepted | Current `created_by` constraints are incompatible with truthful anonymous provenance; attribution must distinguish internal/system creation from the promoter Contact | A future identity model gives every submitter a verified authenticated identity without adding promoter friction |
 | ADR-037 | Hosted public form and embedded widget share the same intake contract and Booking model | Accepted | Avoids duplicate backends/inboxes and guarantees consistent Contact/Booking/Activity semantics | Embedding requirements prove a separate bounded context is necessary |
 | ADR-038 | `docs/HANDOFF.md` is the living cross-agent baton pass | Accepted | Project continuity must survive chat/model memory loss; implementation truth belongs in the repository | A stronger automated source-of-truth mechanism replaces it and is documented |
+| ADR-039 | Automate derived operational work, keep commercial decisions human | Accepted | Cuebooker should remove repetitive follow-up/admin work without silently deciding whether an artist accepts, rejects, cancels, sends a commercial message or commits a consequential booking choice | Revisit only for narrowly scoped opt-in automation backed by measured safety and explicit user control |
 
 ## Decision process
 
