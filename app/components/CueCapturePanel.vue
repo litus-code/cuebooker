@@ -38,6 +38,7 @@ const counterpartyName = ref('')
 const eventName = ref('')
 const venueName = ref('')
 const city = ref('')
+const countryCode = ref('')
 const eventDate = ref('')
 const startTime = ref('')
 const endTime = ref('')
@@ -121,6 +122,7 @@ function reset() {
   eventName.value = ''
   venueName.value = ''
   city.value = ''
+  countryCode.value = ''
   eventDate.value = ''
   startTime.value = ''
   endTime.value = ''
