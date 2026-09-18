@@ -1534,7 +1534,100 @@ The booking detail displays email/phone when available and exposes an **Editar c
 
 No new database migration was required; current contacts UPDATE RLS already allows workspace editors.
 
-## 27. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
+## 27. Conversation simplification + transactional email delivery tracking — IMPLEMENTED ON BRANCH / STAGING FOUNDATION
+
+Functional commits:
+
+```text
+da97aeca323e2f7e208ec7ffa16d19d71b83e27a
+9b4347512f20d4f1497da95fd717f3d1a5d25e52
+48990c9e7ab1653269752ca689b55720e648787f
+a9140517647386b0ce98bf0e2f65473c5d6891f8
+f313465ad7ea65ad36c4e164546d5067c90107b2
+91b88802b1b961e0b978af6fbf01681090872262
+dd26b74ecd79c9fb15715c1fe0219f4b4600f525
+```
+
+### Interaction composer
+
+The composer now hides transport jargon where it is not useful:
+
+- Note = internal memory, no direction;
+- Email = always sends from Cuebooker, direction fixed outbound;
+- Call / WhatsApp / Instagram = user chooses human wording: "Me contactaron" / "Contacté yo".
+
+Conversation thread direction is rendered as:
+
+```text
+Héctor -> Tú
+Tú -> Héctor
+Nota interna
+```
+
+rather than inbound/outbound labels.
+
+### Outbound sender identity
+
+`send-booking-email` staging is upgraded so sender display name is derived from the booking artist when possible:
+
+```text
+Lits via Cuebooker <bookings@cuebooker.com>
+```
+
+Outbound Brevo requests also carry tags:
+
+```text
+cuebooker
+cuebooker_email_<email_message_id>
+```
+
+to correlate delivery events reliably.
+
+### Delivery tracking foundation
+
+Staging migration `20260918132500_add_email_delivery_tracking.sql` is applied.
+
+`email_messages` now stores:
+
+- delivery_status;
+- delivered_at;
+- bounced_at;
+- opened_at;
+- last_delivery_event_at;
+- delivery_failure_code.
+
+Existing sent outbound messages are backfilled as `accepted` because provider acceptance is all Cuebooker can prove without a delivery webhook.
+
+A new Edge Function `brevo-transactional-events` is ACTIVE in staging with `verify_jwt=false`. It expects a private header:
+
+```text
+x-cuebooker-webhook-secret
+```
+
+matching environment secret:
+
+```text
+BREVO_TRANSACTIONAL_WEBHOOK_SECRET
+```
+
+It maps Brevo delivery events by Cuebooker tag first, then provider_message_id fallback.
+
+The UI reads email delivery state and can show:
+
+- Aceptado;
+- Entregado;
+- En espera;
+- Rebote temporal;
+- Rebotado;
+- Bloqueado;
+- Spam;
+- Email inválido.
+
+### Current real smoke finding
+
+The outbound message sent at 2026-09-18 13:11 local to `litulandio@gmail.com` was successfully accepted by Brevo and received a provider message id. No final delivery event is currently available because the transactional delivery webhook has not yet been registered in Brevo.
+
+## 28. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
 
@@ -1552,7 +1645,7 @@ AI/voice limits should not be hard-coded into pricing before real usage/cost evi
 
 No billing, trial enforcement or Stripe integration is implemented yet.
 
-## 28. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
+## 29. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
 
 ### Smart Capture / interpretation
 
@@ -1591,7 +1684,7 @@ Treat human feedback as a cross-product rule:
 - retryable failure -> preserve work and explain next action;
 - technical/provider detail -> logs/admin, not promoter-facing copy.
 
-## 29. Root routing and static deployment
+## 30. Root routing and static deployment
 
 Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. `ASSETS.fetch()` must use the pretty `/200` path rather than `/200.html`.
 
@@ -1603,7 +1696,7 @@ Previously validated:
 
 PR #75 remains the staging preview vehicle.
 
-## 30. Security / operational follow-up
+## 31. Security / operational follow-up
 
 Before production:
 
@@ -1623,7 +1716,7 @@ Leaked Password Protection Disabled
 
 Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to the current Supabase secret-key model as a deliberate infrastructure task, not mixed into a product slice.
 
-## 31. Exact next product work
+## 32. Exact next product work
 
 Current sequencing is intentional:
 
@@ -1641,7 +1734,7 @@ Current sequencing is intentional:
 
 Do not jump ahead because downstream ideas are documented.
 
-## 32. Documentation workflow rule
+## 33. Documentation workflow rule
 
 Every meaningful implementation block must finish by updating this handoff with:
 
@@ -1652,7 +1745,7 @@ Every meaningful implementation block must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-## 33. Production gate
+## 34. Production gate
 
 Production Supabase:
 
