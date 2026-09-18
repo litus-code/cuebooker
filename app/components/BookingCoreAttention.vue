@@ -196,7 +196,8 @@ async function resolve(item: (typeof items.value)[number]) {
   workingId.value = item.id
   try {
     if (item.kind === 'next') await bookingCore.completeNextMove(props.workspaceId, item.id)
-    else await bookingCore.releaseHold(props.workspaceId, item.id)
+    else if (item.kind === 'hold') await bookingCore.releaseHold(props.workspaceId, item.id)
+    else return
     await load()
     emit('changed')
   } finally {
