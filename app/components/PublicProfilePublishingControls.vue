@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { createBookingQrSvg } from '../services/bookingQr'
 const props = withDefaults(defineProps<{
   slug: string
   published: boolean
@@ -24,6 +25,8 @@ const publicUrl = computed(() => import.meta.client
 const bookingUrl = computed(() => `${publicUrl.value}?booking=1`)
 const widgetUrl = computed(() => `${publicUrl.value}?embed=1&booking=1&src=website`)
 const widgetCode = computed(() => `<iframe src="${widgetUrl.value}" title="Cuebooker booking" loading="lazy" style="width:100%;height:760px;border:0;" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>`)
+const qrUrl = computed(() => attributedBookingUrl('qr'))
+const qrSvg = computed(() => createBookingQrSvg(qrUrl.value))
 
 const copy = computed(() => props.locale === 'es' ? {
   eyebrow: 'PERFIL PÚBLICO', title: 'Tu puerta de entrada.',
@@ -44,10 +47,10 @@ const copy = computed(() => props.locale === 'es' ? {
   websiteDesc: 'Enlace directo desde botones o CTAs de tu web actual.',
   widgetDesc: 'Código para incrustar el formulario de Cuebooker dentro de tu propia web.',
   epkDesc: 'Añádelo a tu EPK para convertir una presentación en una vía directa de booking.',
-  qrDesc: 'Entrada preparada para QR. La generación visual del código llegará en el siguiente bloque.',
+  qrDesc: 'QR listo para carteles, flyers, EPK físico o cualquier punto donde quieras convertir un escaneo en una solicitud atribuida.',
   emailDesc: 'Inclúyelo en firma, propuestas o respuestas de booking por email.',
   linkInBioDesc: 'Para servicios de link-in-bio u otras páginas de enlaces.',
-  copyLink: 'Copiar enlace', copyCode: 'Copiar código', prepared: 'Preparado', attribution: 'Procedencia',
+  copyLink: 'Copiar enlace', copyCode: 'Copiar código', downloadQr: 'Descargar QR', prepared: 'Preparado', attribution: 'Procedencia',
   profileStatus: 'Visible para cualquiera con el enlace', bookingStatus: 'Entra directamente al formulario', widgetStatus: 'Se incrusta en tu web'
 } : {
   eyebrow: 'PUBLIC PROFILE', title: 'Your booking front door.',
@@ -68,10 +71,10 @@ const copy = computed(() => props.locale === 'es' ? {
   websiteDesc: 'Direct booking link for buttons or CTAs on your existing website.',
   widgetDesc: 'Embed code for placing the Cuebooker form inside your own website.',
   epkDesc: 'Add it to your EPK so a presentation can turn directly into a booking enquiry.',
-  qrDesc: 'Entry point prepared for QR. Visual QR generation comes in the next block.',
+  qrDesc: 'A ready-to-use QR for posters, flyers, physical EPKs or any place where a scan should become an attributed enquiry.',
   emailDesc: 'Use it in your signature, proposals or booking email replies.',
   linkInBioDesc: 'For link-in-bio services or other link pages.',
-  copyLink: 'Copy link', copyCode: 'Copy code', prepared: 'Ready', attribution: 'Attribution',
+  copyLink: 'Copy link', copyCode: 'Copy code', downloadQr: 'Download QR', prepared: 'Ready', attribution: 'Attribution',
   profileStatus: 'Visible to anyone with the link', bookingStatus: 'Opens the booking form directly', widgetStatus: 'Embeds inside your website'
 })
 
@@ -166,6 +169,19 @@ async function copyBookingLink() {
   if (!props.acceptingRequests) return
   await copyLink('booking-main', bookingUrl.value)
 }
+
+function downloadQr() {
+  if (!import.meta.client || !props.published || !props.acceptingRequests) return
+  const blob = new Blob([qrSvg.value], { type: 'image/svg+xml;charset=utf-8' })
+  const href = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = href
+  anchor.download = `cuebooker-${props.slug}-booking-qr.svg`
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  URL.revokeObjectURL(href)
+}
 </script>
 
 <template>
@@ -258,7 +274,27 @@ async function copyBookingLink() {
                 <p>{{ link.description }}</p>
                 <small>{{ link.meta }}</small>
               </div>
+              <div v-if="link.key === 'qr'" class="public-profile-controls__qr">
+                <div class="public-profile-controls__qr-preview" aria-hidden="true" v-html="qrSvg" />
+                <div class="public-profile-controls__qr-actions">
+                  <button
+                    type="button"
+                    :disabled="!published || !acceptingRequests"
+                    @click="downloadQr"
+                  >
+                    {{ copy.downloadQr }}
+                  </button>
+                  <button
+                    type="button"
+                    :disabled="!published || !acceptingRequests"
+                    @click="copyLink(link.key, link.value)"
+                  >
+                    {{ copiedKey === link.key ? copy.copied : copy.copyLink }}
+                  </button>
+                </div>
+              </div>
               <button
+                v-else
                 type="button"
                 :disabled="!published || (link.needsBooking && !acceptingRequests)"
                 @click="copyLink(link.key, link.value)"
@@ -306,6 +342,11 @@ async function copyBookingLink() {
 .public-profile-controls__channel small { display: block; color: var(--cue-dim); font: 9px/1.3 monospace; }
 .public-profile-controls__channel button { align-self: flex-start; min-height: 34px; margin-top: 14px; padding: 0 10px; border: 1px solid var(--cue-border); background: transparent; color: var(--cue-text); cursor: pointer; font: 800 9px/1 monospace; text-transform: uppercase; }
 .public-profile-controls__channel button:hover:not(:disabled) { border-color: var(--cue-accent); color: var(--cue-accent); }
+.public-profile-controls__qr { display:grid; grid-template-columns:110px minmax(0,1fr); gap:12px; align-items:end; margin-top:14px; }
+.public-profile-controls__qr-preview { display:grid; place-items:center; width:110px; aspect-ratio:1; padding:8px; box-sizing:border-box; background:#fff; }
+.public-profile-controls__qr-preview :deep(svg) { display:block; width:100%; height:100%; }
+.public-profile-controls__qr-actions { display:grid; gap:7px; align-content:end; }
+.public-profile-controls__qr-actions button { margin-top:0; width:100%; min-height:40px; }
 .public-profile-controls__channel button:disabled { cursor: default; opacity: .4; }
 @media (max-width: 760px) {
   .public-profile-controls { grid-template-columns: 1fr; padding: 16px; }
@@ -315,5 +356,8 @@ async function copyBookingLink() {
 @media (max-width: 520px) {
   .public-profile-controls__share-grid { grid-template-columns: 1fr; }
   .public-profile-controls__channel { min-height: 0; }
+  .public-profile-controls__qr { grid-template-columns:96px minmax(0,1fr); }
+  .public-profile-controls__qr-preview { width:96px; }
+  .public-profile-controls__qr-actions button { min-height:44px; }
 }
 </style>
