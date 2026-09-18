@@ -1,7 +1,7 @@
 # Cuebooker monetization strategy
 
 Updated: 17 September 2026
-Status: PRODUCT HYPOTHESIS — DO NOT IMPLEMENT BILLING YET
+Status: TRIAL FOUNDATION IMPLEMENTED ON STAGING — PAYMENT ENFORCEMENT NOT IMPLEMENTED
 
 ## 1. Principle
 
@@ -108,7 +108,26 @@ Do not optimize conversion before activation and retention signals exist.
 
 Current public competitor pricing is materially higher than the proposed early Cuebooker Solo price. For example, Gigwell publicly lists Artist Essentials around USD 49-50/month billed annually and agency plans around USD 99/month. This supports using EUR 15/month as an intentionally accessible early-adopter entry point, but Cuebooker should not position itself as "the cheaper Gigwell". Its differentiation should remain simplicity, modern capture, public artist entry surfaces, centralized conversation and culture-fit for artists/DJs.
 
-## 8. Billing implementation gate
+## 8. Trial foundation
+
+A non-enforcing 30-day workspace trial foundation now exists on staging.
+
+`public.workspace_billing` records:
+
+- workspace;
+- plan code;
+- trialing / active / past_due / canceled / incomplete / paused status;
+- trial start/end;
+- future Stripe customer/subscription identifiers;
+- current period end and cancel-at-period-end.
+
+New workspaces receive a 30-day `solo` trial automatically. Existing staging workspaces were backfilled with a fresh 30-day trial when the migration was applied.
+
+This does **not** currently block access when the trial ends and does not create Stripe customers or subscriptions.
+
+Stripe is the intended first payment provider. Payment integration should be added after the trial/activation experience is validated.
+
+## 9. Payment implementation gate
 
 Do not build subscription enforcement yet.
 
