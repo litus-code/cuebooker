@@ -2051,3 +2051,71 @@ Current quieting rules:
 The 48-hour window is an initial product default. It should be tuned from beta behavior rather than multiplied into more notifications.
 
 Production remains untouched.
+
+## 39. Conversation/email tracking closure + operational loop smoke — STAGING
+
+Repository hardening commit:
+
+```text
+3917bb92233ce89aea60e5fb9291a845fb69051b
+```
+
+`supabase/config.toml` now explicitly versions:
+
+```toml
+[functions.brevo-transactional-events]
+verify_jwt = false
+```
+
+This matches the already-active staging Edge Function contract and prevents a future repo-driven redeploy from accidentally putting Supabase JWT verification in front of the Brevo webhook's own shared-secret authentication.
+
+Validation for that commit:
+
+```text
+CI run 35371187552: success
+Deploy Staging run 35371187557: success
+```
+
+Staging currently has:
+
+```text
+brevo-transactional-events ACTIVE v2
+verify_jwt = false
+20260918132500_add_email_delivery_tracking applied
+```
+
+The direct Conversation UI already uses human direction language and reads `email_messages.delivery_status` for outbound email delivery labels.
+
+The remaining external delivery-tracking gate is not code: Brevo still needs the transactional-event webhook registered against `brevo-transactional-events` with the same `x-cuebooker-webhook-secret` value as `BREVO_TRANSACTIONAL_WEBHOOK_SECRET`. Until Brevo sends a real callback, Cuebooker can prove provider acceptance but not final Gmail delivery/bounce.
+
+A full deterministic Booking Core loop was exercised on staging inside one transaction and then rolled back:
+
+```text
+Smart CUE booking
+-> edit booking facts/date/schedule/offer
+-> inbound WhatsApp Activity
+-> Hold
+-> Confirm booking
+-> matching Hold converted
+-> Activity trace verified
+-> ROLLBACK
+```
+
+Observed before rollback:
+
+```text
+booking_status = confirmed
+event_date = 2026-12-31
+schedule = 22:00-23:30
+offer = 1200 EUR
+hold_status = converted
+status_change events = 2
+hold_created events = 1
+hold_converted events = 1
+conversation events = 1
+```
+
+No smoke fixture remains.
+
+Production remains untouched.
+
