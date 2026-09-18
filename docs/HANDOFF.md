@@ -3519,3 +3519,69 @@ return_message = 1 row
 Therefore the automation layer is not merely configured; the schedulers are executing successfully in staging.
 
 Production remains untouched.
+
+## 61. Real attributed QR distribution — IMPLEMENTED ON BRANCH
+
+The Distribution panel no longer stops at a QR-attributed URL.
+
+Cuebooker now generates the QR locally from:
+
+```text
+/<artist-slug>?booking=1&src=qr
+```
+
+Behavior:
+
+```text
+Distribution
+-> QR card
+-> real QR preview
+-> Download QR
+-> SVG file generated locally
+-> Copy link remains available
+```
+
+The QR is generated entirely client-side with `qrcode-generator` 1.4.4.
+
+No external QR API receives the artist URL.
+
+Downloaded filename:
+
+```text
+cuebooker-<slug>-booking-qr.svg
+```
+
+The QR keeps the same `src=qr` attribution contract, so scans still converge into the existing public intake / Booking Core pipeline.
+
+Files:
+
+```text
+app/services/bookingQr.ts
+tests/bookingQr.test.ts
+app/components/PublicProfilePublishingControls.vue
+package.json
+package-lock.json
+```
+
+Validation:
+
+```text
+CI run 35400166808 = success
+tests = success
+Nuxt generate = success
+```
+
+Preview publication was still in progress at the time of this documentation commit.
+
+Functional commits:
+
+```text
+51187db7164f95df3637ccbe7ef7b1c4da603935
+d3c68386d189b2cc70c886c2214314cc6a74068e
+726e99133a8e56a987c4c240b0825d7a927bee24
+966242f103e3957bbac7997ac8d88dfb61df2c3d
+fd2ed94f559e35239f8c203fa2cb27d4ed9d40c4
+01c57a48c1389a4d6364774670c6c9522a7e2b94
+```
+
+Production remains untouched.
