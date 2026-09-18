@@ -85,6 +85,7 @@ const cueCoreLoading = ref(false)
 const cueMessage = ref('')
 const bookingCoreOperationsRevision = ref(0)
 const realBookingFocusId = ref('')
+let bookingCoreSyncTimer: ReturnType<typeof setInterval> | null = null
 const tourStep = ref(-1)
 const settingsOpen = ref(false)
 const passwordCurrent = ref('')
@@ -315,6 +316,9 @@ onMounted(async () => {
   if (!auth.profile.value) await auth.fetchProfile()
   if (!auth.profile.value?.onboarding_completed) return navigateTo('/onboarding')
   await loadWorkspaceIdentity()
+  bookingCoreSyncTimer = window.setInterval(() => { void refreshBookingCoreFromExternal() }, 30_000)
+  window.addEventListener('focus', refreshBookingCoreFromExternal)
+  document.addEventListener('visibilitychange', refreshBookingCoreFromExternal)
   if (route.query.setup === 'profile') {
     activeView.value = 'profile'
     profileWelcome.value = true
@@ -352,6 +356,9 @@ onBeforeUnmount(() => {
   if (profileArtistImageUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileArtistImageUrl.value)
   if (profileArtistCutoutUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileArtistCutoutUrl.value)
   if (import.meta.client) window.removeEventListener('resize', handleViewportChange)
+  if (bookingCoreSyncTimer) window.clearInterval(bookingCoreSyncTimer)
+  if (import.meta.client) window.removeEventListener('focus', refreshBookingCoreFromExternal)
+  if (import.meta.client) document.removeEventListener('visibilitychange', refreshBookingCoreFromExternal)
   if (tourPositionTimer) window.clearTimeout(tourPositionTimer)
   document.querySelectorAll<HTMLElement>('.tour-focus').forEach(element => element.classList.remove('tour-focus'))
 })
@@ -547,6 +554,18 @@ async function ensureBookingCoreWorkspace() {
     console.warn('[booking-core] workspace bootstrap unavailable', error?.message || error)
   } finally {
     cueCoreLoading.value = false
+  }
+}
+
+async function refreshBookingCoreFromExternal() {
+  if (!import.meta.client || document.visibilityState !== 'visible') return
+  if (!bookingCoreWorkspaceId.value || !selectedArtistId.value || cueCoreLoading.value) return
+  try {
+    await loadRealBookings()
+    await loadRealHolds()
+    bookingCoreOperationsRevision.value += 1
+  } catch (error: any) {
+    console.warn('[booking-core] background refresh failed', error?.message || error)
   }
 }
 
