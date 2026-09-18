@@ -7,6 +7,7 @@ import type { PublicArtistProfile } from '../domain/publicArtistProfile'
 const auth = useCueAuth()
 const availability = useAvailability()
 const bookingCore = useBookingCore()
+const notifications = useNotifications()
 const artistProfiles = useArtistProfile()
 const publicPublishing = usePublicArtistPublishing()
 const preferences = useCuePreferences()
@@ -584,9 +585,21 @@ async function handleBookingCoreOperationsChanged() {
   await loadRealHolds()
 }
 
+function markBookingNotificationsRead(bookingId: string) {
+  if (!bookingCoreWorkspaceId.value || !bookingId) return
+  void notifications.markBookingRead(bookingCoreWorkspaceId.value, bookingId)
+    .then(() => {
+      if (import.meta.client) window.dispatchEvent(new Event('cuebooker:notifications-changed'))
+    })
+    .catch(() => {
+      // Reviewing the booking must not be blocked by notification read-state sync.
+    })
+}
+
 function openRealBooking(bookingId: string) {
   realBookingFocusId.value = bookingId
   activeView.value = 'bookings'
+  markBookingNotificationsRead(bookingId)
 }
 
 async function openNotificationBooking(notification: CueNotification) {
@@ -1303,6 +1316,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           :focus-booking-id="realBookingFocusId"
           @operations-changed="handleBookingCoreOperationsChanged"
           @cue-requested="cueOpen = true"
+          @booking-opened="markBookingNotificationsRead"
         />
 
       </section>
