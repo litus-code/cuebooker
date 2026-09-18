@@ -12,19 +12,20 @@
     "signup": "Create account"
   },
   "hero": {
-    "eyebrow": "BOOKING OPERATIONS FOR DJS AND AGENCIES",
-    "titleTop": "TELL IT.",
-    "titleBottom": "CUEBOOKER ORGANISES IT.",
-    "body": "A call, a WhatsApp, an email or a conversation. Write it or say it out loud. CueBooker extracts what matters, shows you what it understood and turns that context into a booking you can follow until it is resolved.",
-    "primaryCta": "Try CueBooker",
-    "secondaryCta": "See how it works",
+    "eyebrow": "REAL BOOKINGS. LESS MEMORY. MORE CONTROL.",
+    "titleTop": "DON'T LOSE",
+    "titleBottom": "THE BOOKING.",
+    "body": "WhatsApp, call, email or voice. Cuebooker understands what matters, shows it to you and keeps the thread intact until the date is resolved.",
+    "primaryCta": "Try 30 days",
+    "secondaryCta": "See the flow",
     "networkIdle": "IT HAPPENED · TELL IT",
     "networkSearching": "UNDERSTANDING CONTEXT",
     "networkFound": "BOOKING READY TO FOLLOW",
     "proofs": [
-      "Voice or text → reviewable booking data",
-      "Status follows the conversation",
-      "Context, date and next action in one thread"
+      "CAPTURE",
+      "REVIEW",
+      "FOLLOW",
+      "DECIDE"
     ]
   },
   "problem": {
