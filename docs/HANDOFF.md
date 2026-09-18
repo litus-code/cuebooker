@@ -992,7 +992,96 @@ Before calling Smart Capture production-ready:
 5. add rate/cost protection before production;
 6. keep the old regex parser only as explicit fallback.
 
-## 19. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
+## 19. Smart Capture audio hardening + public profile/home + trial foundation — IMPLEMENTED ON BRANCH / STAGING
+
+Functional commits:
+
+```text
+e23deca061337a1648ea6b395a36c3efca7e07ee
+aad16d916346ebe6fd744a82e9e47c41929c04e7
+d7c1741a76b46ad376c8525aefd5c41043387e78
+594993ff04d5bddb59c6cac420da51f573dc978a
+046583874c20f3e276aa04ec53b4fee648e976a9
+4428a516c927590c755017870ca267a506b597a0
+```
+
+### Smart Capture audio
+
+The real iPhone test proved that text semantic capture worked while recorded audio returned the generic Smart Capture audio failure.
+
+The `smart-capture` Edge Function was hardened and redeployed to staging v2:
+
+- default transcription model is now `gpt-transcribe`;
+- Safari/iPhone MIME types are normalized by stripping codec suffixes;
+- the uploaded recording is rebuilt with a clean filename/MIME combination before provider upload;
+- transcription-provider and extraction-provider failures now return separate safe error codes.
+
+The next required smoke is another real iPhone audio capture. If it still fails, use the new safe failure code to isolate the provider/file issue instead of guessing.
+
+### Public artist profile
+
+The current staging artist `lits` has:
+
+```text
+cover_image_path = null
+artist_image_path = <portrait path>
+```
+
+So the public profile was correctly rendering the fallback cover; no persisted cover existed for that artist.
+
+The public mobile profile hero was redesigned:
+
+- cover + artist + identity are one composition rather than separate tall blocks;
+- if no cover exists, the artist portrait produces a blurred/darkened visual background instead of the empty abstract fallback;
+- the portrait remains a separate foreground layer;
+- stage name, genres and request CTA sit inside the same mobile hero;
+- mobile hero height and downstream spacing are reduced;
+- a real uploaded cover still takes precedence automatically.
+
+### Commercial home messaging
+
+Spanish and English home content was reframed around the core product promise:
+
+```text
+Tell it / Cuéntalo
+-> Cuebooker organises the context
+-> review
+-> follow the booking
+```
+
+The homepage now avoids leading with internal vocabulary such as Activity/Next Move/Hold before the value is understood. Smart Capture, conversation continuity, automatic operational status and date context are the main narrative.
+
+### 30-day trial foundation
+
+Migration:
+
+```text
+20260918035000_add_workspace_trial_foundation.sql
+```
+
+adds non-enforcing `public.workspace_billing`.
+
+New workspaces automatically receive:
+
+```text
+plan_code = solo
+status = trialing
+trial_started_at = now()
+trial_ends_at = now() + 30 days
+```
+
+Existing staging workspaces were backfilled with a fresh 30-day trial. The current Lits workspace has an active trial ending 30 days after migration application.
+
+The table also reserves future Stripe provider/customer/subscription/current-period/cancel-at-period-end fields.
+
+Important:
+
+- no paywall or entitlement enforcement exists yet;
+- no Stripe customer/subscription is created yet;
+- payment integration comes after validating onboarding/trial/activation;
+- production remains untouched.
+
+## 20. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
 
@@ -1010,7 +1099,7 @@ AI/voice limits should not be hard-coded into pricing before real usage/cost evi
 
 No billing, trial enforcement or Stripe integration is implemented yet.
 
-## 20. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
+## 21. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
 
 ### Smart Capture / interpretation
 
@@ -1049,7 +1138,7 @@ Treat human feedback as a cross-product rule:
 - retryable failure -> preserve work and explain next action;
 - technical/provider detail -> logs/admin, not promoter-facing copy.
 
-## 21. Root routing and static deployment
+## 22. Root routing and static deployment
 
 Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. `ASSETS.fetch()` must use the pretty `/200` path rather than `/200.html`.
 
@@ -1061,7 +1150,7 @@ Previously validated:
 
 PR #75 remains the staging preview vehicle.
 
-## 22. Security / operational follow-up
+## 23. Security / operational follow-up
 
 Before production:
 
@@ -1081,7 +1170,7 @@ Leaked Password Protection Disabled
 
 Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to the current Supabase secret-key model as a deliberate infrastructure task, not mixed into a product slice.
 
-## 23. Exact next product work
+## 24. Exact next product work
 
 Current sequencing is intentional:
 
@@ -1099,7 +1188,7 @@ Current sequencing is intentional:
 
 Do not jump ahead because downstream ideas are documented.
 
-## 24. Documentation workflow rule
+## 25. Documentation workflow rule
 
 Every meaningful implementation block must finish by updating this handoff with:
 
@@ -1110,7 +1199,7 @@ Every meaningful implementation block must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-## 25. Production gate
+## 26. Production gate
 
 Production Supabase:
 
