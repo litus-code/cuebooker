@@ -196,10 +196,15 @@ export interface CreateManualBookingInput {
   city?: string | null
   countryCode?: string | null
   eventDate?: string | null
+  startTime?: string | null
+  endTime?: string | null
+  eventTimezone?: string | null
   offerAmountMinor?: number | null
   currency?: string | null
+  feeBasis?: string | null
   initialNote?: string | null
   nextMoveLabel?: string | null
+  nextMoveDueAt?: string | null
 }
 
 export interface UpdateBookingDetailsInput {
