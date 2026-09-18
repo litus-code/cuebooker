@@ -566,12 +566,14 @@ async function refreshBookingCoreFromExternal() {
   }
 }
 
-async function handleCueCreated() {
+async function handleCueCreated(booking: CoreBooking) {
   cueOpen.value = false
   cueMessage.value = cueEntryCopy.value.saved
   await loadRealBookings()
   await loadRealHolds()
   bookingCoreOperationsRevision.value += 1
+  await nextTick()
+  openRealBooking(booking.id)
   window.setTimeout(() => { cueMessage.value = '' }, 4500)
 }
 
