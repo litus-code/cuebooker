@@ -33,7 +33,7 @@ const copy = computed(() => props.locale === 'es' ? {
   confirmQuestion: '¿Confirmar este booking?', rejectQuestion: '¿Rechazar este booking?', cancelQuestion: '¿Cancelar este booking?',
   automaticState: 'Estado automático según la última interacción.',
   noDate: 'Sin fecha', noVenue: 'Sin sala definida', noContact: 'Sin contacto', noOffer: 'Sin oferta',
-  active: 'Activos', archived: 'Archivados', archive: 'Archivar', restore: 'Restaurar', archivedReadOnly: 'Booking archivado. La traza se conserva en modo lectura.'
+  active: 'En curso', archived: 'Archivados', archive: 'Archivar', restore: 'Restaurar', archiveHint: 'En curso es tu trabajo vivo. Archivados conserva bookings fuera de la operativa diaria.', archivedReadOnly: 'Booking archivado. La traza se conserva en modo lectura.'
 } : {
   eyebrow: 'BOOKINGS / REAL',
   title: 'Captured bookings',
@@ -44,7 +44,7 @@ const copy = computed(() => props.locale === 'es' ? {
   confirmQuestion: 'Confirm this booking?', rejectQuestion: 'Reject this booking?', cancelQuestion: 'Cancel this booking?',
   automaticState: 'Automatic state based on the latest interaction.',
   noDate: 'No date', noVenue: 'No venue defined', noContact: 'No contact', noOffer: 'No offer',
-  active: 'Active', archived: 'Archived', archive: 'Archive', restore: 'Restore', archivedReadOnly: 'Archived booking. Its trace is preserved in read-only mode.'
+  active: 'In progress', archived: 'Archived', archive: 'Archive', restore: 'Restore', archiveHint: 'In progress is your live work. Archived keeps bookings outside day-to-day operations.', archivedReadOnly: 'Archived booking. Its trace is preserved in read-only mode.'
 })
 
 const statusLabels = computed<Record<CoreBookingStatus, string>>(() => props.locale === 'es' ? {
@@ -251,9 +251,12 @@ async function selectBooking(bookingId: string) {
 
     <div v-if="bookings.length" id="core-inbox-tools" class="core-inbox__tools">
       <input v-model="realSearch" type="search" :placeholder="locale === 'es' ? 'Buscar booking, sala, contacto…' : 'Search booking, venue, contact…'">
-      <div class="core-inbox__filters core-inbox__filters--archive">
-        <button type="button" :class="{ active: archiveView === 'active' }" @click="archiveView = 'active'">{{ copy.active }} · {{ bookings.filter(item => !item.archived_at).length }}</button>
-        <button type="button" :class="{ active: archiveView === 'archived' }" @click="archiveView = 'archived'">{{ copy.archived }} · {{ bookings.filter(item => !!item.archived_at).length }}</button>
+      <div class="core-inbox__archive-switch">
+        <div class="core-inbox__filters core-inbox__filters--archive">
+          <button type="button" :class="{ active: archiveView === 'active' }" @click="archiveView = 'active'">{{ copy.active }} · {{ bookings.filter(item => !item.archived_at).length }}</button>
+          <button type="button" :class="{ active: archiveView === 'archived' }" @click="archiveView = 'archived'">{{ copy.archived }} · {{ bookings.filter(item => !!item.archived_at).length }}</button>
+        </div>
+        <small>{{ copy.archiveHint }}</small>
       </div>
       <div class="core-inbox__filters">
         <button type="button" :class="['status-filter', 'status-filter--all', { active: realStatusFilter === 'all' }]" @click="realStatusFilter = 'all'">{{ locale === 'es' ? 'Todos' : 'All' }} · {{ visibleBookings.length }}</button>
@@ -409,6 +412,8 @@ async function selectBooking(bookingId: string) {
 .core-inbox__zero > button { margin-top:5px; min-height:40px; padding:0 15px; border:1px solid var(--cue-accent); background:var(--cue-accent); color:#090909; cursor:pointer; font-weight:800; }
 .core-inbox__tools { display:grid; gap:8px; padding:10px; border-bottom:1px solid var(--cue-border); }
 .core-inbox__tools > input { min-height:36px; border:1px solid var(--cue-border); background:var(--cue-raised); color:var(--cue-text); padding:0 10px; }
+.core-inbox__archive-switch { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.core-inbox__archive-switch > small { color:var(--cue-dim); font-size:9px; line-height:1.35; text-align:right; }
 .core-inbox__filters { display:flex; gap:4px; overflow-x:auto; scrollbar-width:thin; }
 .core-inbox__filters button { flex:0 0 auto; min-height:29px; padding:0 8px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; text-transform:uppercase; }
 .core-inbox__filters button.active { border-color:var(--cue-accent); color:var(--cue-accent); }
@@ -484,6 +489,8 @@ async function selectBooking(bookingId: string) {
   .core-inbox__detail { padding:14px; }
   .core-inbox__detail h3 { font-size:22px; }
   .core-inbox__facts { grid-template-columns:1fr 1fr; }
+  .core-inbox__archive-switch { align-items:stretch; flex-direction:column; }
+  .core-inbox__archive-switch > small { text-align:left; }
   .core-inbox__filters:not(.core-inbox__filters--archive) { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); overflow:visible; }
   .core-inbox__filters:not(.core-inbox__filters--archive) button { width:100%; min-height:36px; white-space:normal; }
   .core-inbox__detail > header { flex-direction:column; gap:12px; }
