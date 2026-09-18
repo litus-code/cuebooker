@@ -336,6 +336,7 @@ async function scrollToSelectedBooking() {
   const offset = (header?.getBoundingClientRect().height || 0) + 10
   const top = detail.getBoundingClientRect().top + window.scrollY - offset
   window.scrollTo({ top: Math.max(0, top), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+  detail.focus({ preventScroll: true })
 }
 
 async function selectBooking(bookingId: string) {
