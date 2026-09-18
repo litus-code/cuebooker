@@ -128,21 +128,17 @@ const shareGroups = computed(() => [
   { key: 'embed', title: copy.value.embedGroup, items: shareLinks.value.filter(item => item.group === 'embed') }
 ])
 
-const channelIcons: Record<string, string> = {
-  profile: 'ID',
-  booking: 'REQ',
-  instagram: 'IG',
-  whatsapp: 'WA',
-  email: '@',
-  epk: 'EPK',
-  link_in_bio: 'BIO',
-  qr: 'QR',
-  website: 'WEB',
-  widget: '<>'
-}
-
-function channelIcon(key: string) {
-  return channelIcons[key] || '+'
+function iconLabel(key: string) {
+  return key === 'instagram' ? 'Instagram'
+    : key === 'whatsapp' ? 'WhatsApp'
+      : key === 'email' ? 'Email'
+        : key === 'epk' ? 'EPK'
+          : key === 'link_in_bio' ? 'Link in bio'
+            : key === 'qr' ? 'QR'
+              : key === 'website' ? 'Website'
+                : key === 'widget' ? 'Widget'
+                  : key === 'profile' ? 'Profile'
+                    : 'Booking'
 }
 
 function checkboxValue(event: Event) {
@@ -216,7 +212,49 @@ async function copyBookingLink() {
           <div class="public-profile-controls__share-grid">
             <article v-for="link in group.items" :key="link.key" class="public-profile-controls__channel">
               <div>
-                <span class="public-profile-controls__channel-title"><i aria-hidden="true">{{ channelIcon(link.key) }}</i>{{ link.label }}</span>
+                <span class="public-profile-controls__channel-title">
+                  <svg class="public-profile-controls__channel-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <template v-if="link.key === 'instagram'">
+                      <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
+                      <circle cx="12" cy="12" r="4" />
+                      <circle cx="17.4" cy="6.8" r="1" class="fill" />
+                    </template>
+                    <template v-else-if="link.key === 'whatsapp'">
+                      <path d="M20 11.8a8 8 0 0 1-11.8 7L4 20l1.2-4A8 8 0 1 1 20 11.8Z" />
+                      <path d="M9 8.2c.5 2.3 2.3 4.1 4.7 4.8.5.1 1-.1 1.3-.5l.8-1.1" />
+                    </template>
+                    <template v-else-if="link.key === 'email'">
+                      <rect x="3" y="5" width="18" height="14" rx="2" />
+                      <path d="m4 7 8 6 8-6" />
+                    </template>
+                    <template v-else-if="link.key === 'epk'">
+                      <path d="M6 3h8l4 4v14H6Z" />
+                      <path d="M14 3v5h5M9 12h6M9 16h5" />
+                    </template>
+                    <template v-else-if="link.key === 'link_in_bio'">
+                      <path d="M9.5 14.5 14.5 9M7.5 17.5l-1 1a3.5 3.5 0 0 1-5-5l3-3a3.5 3.5 0 0 1 5 0M16.5 6.5l1-1a3.5 3.5 0 1 1 5 5l-3 3a3.5 3.5 0 0 1-5 0" transform="translate(-1 -1)" />
+                    </template>
+                    <template v-else-if="link.key === 'qr'">
+                      <rect x="3" y="3" width="6" height="6" /><rect x="15" y="3" width="6" height="6" /><rect x="3" y="15" width="6" height="6" />
+                      <path d="M15 15h2v2h-2zM19 15h2v6h-2zM15 19h2v2h-2z" />
+                    </template>
+                    <template v-else-if="link.key === 'website'">
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" />
+                    </template>
+                    <template v-else-if="link.key === 'widget'">
+                      <path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />
+                    </template>
+                    <template v-else-if="link.key === 'profile'">
+                      <circle cx="12" cy="8" r="3" /><path d="M5 20c.8-4 3.1-6 7-6s6.2 2 7 6" />
+                    </template>
+                    <template v-else>
+                      <path d="M7 4h10v16H7zM9 8h6M9 12h6M9 16h4" />
+                    </template>
+                  </svg>
+                  <span class="sr-only">{{ iconLabel(link.key) }}</span>
+                  {{ link.label }}
+                </span>
                 <p>{{ link.description }}</p>
                 <small>{{ link.meta }}</small>
               </div>
@@ -252,16 +290,18 @@ async function copyBookingLink() {
 .public-profile-controls__actions button:disabled { cursor: default; opacity: .4; }
 .public-profile-controls__actions button:hover:not(:disabled), .public-profile-controls__actions a:hover { border-color: var(--cue-accent); color: var(--cue-accent); }
 .public-profile-controls__actions button:focus-visible, .public-profile-controls__actions a:focus-visible, .public-profile-controls__channel button:focus-visible { outline: 2px solid var(--cue-accent); outline-offset: 2px; }
-.public-profile-controls__share { grid-column:1 / -1; display:grid; grid-template-columns:minmax(190px,.22fr) minmax(0,.78fr); gap:18px; padding-top:18px; border-top:1px solid var(--cue-border); }
-.public-profile-controls__share-intro > strong { display: block; font-size: 15px; line-height: 1.15; text-transform: uppercase; }
-.public-profile-controls__share-intro p { margin: 8px 0; color: var(--cue-muted); font-size: 12px; line-height: 1.5; }
+.public-profile-controls__share { grid-column:1 / -1; display:grid; gap:18px; padding-top:18px; border-top:1px solid var(--cue-border); }
+.public-profile-controls__share-intro { display:grid; grid-template-columns:minmax(220px,.3fr) minmax(0,.7fr); gap:18px; align-items:start; padding-bottom:4px; }
+.public-profile-controls__share-intro > strong { display:block; font-size:15px; line-height:1.15; text-transform:uppercase; }
+.public-profile-controls__share-intro p { margin:0; max-width:760px; color:var(--cue-muted); font-size:12px; line-height:1.5; }
 .public-profile-controls__share-intro small { color: var(--cue-dim); font-size: 10px; line-height: 1.4; }
 .public-profile-controls__groups { display: grid; gap: 22px; }
 .public-profile-controls__group h3 { margin:0 0 12px; color:var(--cue-accent); font:900 11px/1.2 monospace; letter-spacing:.12em; text-transform:uppercase; }
 .public-profile-controls__share-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .public-profile-controls__channel { display: flex; flex-direction: column; justify-content: space-between; min-width: 0; min-height: 138px; padding: 14px; border: 1px solid var(--cue-border); background: var(--cue-bg); }
 .public-profile-controls__channel-title { display:flex; align-items:center; gap:9px; font:900 11px/1.2 monospace; text-transform:uppercase; }
-.public-profile-controls__channel-title i { display:grid; place-items:center; min-width:32px; height:32px; padding:0 6px; border:1px solid color-mix(in srgb,var(--cue-accent) 55%,var(--cue-border)); color:var(--cue-accent); font:900 8px/1 monospace; font-style:normal; }
+.public-profile-controls__channel-icon { width:30px; height:30px; padding:6px; box-sizing:border-box; border:1px solid color-mix(in srgb,var(--cue-accent) 55%,var(--cue-border)); color:var(--cue-accent); fill:none; stroke:currentColor; stroke-width:1.55; stroke-linecap:round; stroke-linejoin:round; }
+.public-profile-controls__channel-icon .fill { fill:currentColor; stroke:none; }
 .public-profile-controls__channel p { margin: 8px 0 10px; color: var(--cue-muted); font-size: 11px; line-height: 1.45; }
 .public-profile-controls__channel small { display: block; color: var(--cue-dim); font: 9px/1.3 monospace; }
 .public-profile-controls__channel button { align-self: flex-start; min-height: 34px; margin-top: 14px; padding: 0 10px; border: 1px solid var(--cue-border); background: transparent; color: var(--cue-text); cursor: pointer; font: 800 9px/1 monospace; text-transform: uppercase; }
@@ -270,7 +310,7 @@ async function copyBookingLink() {
 @media (max-width: 760px) {
   .public-profile-controls { grid-template-columns: 1fr; padding: 16px; }
   .public-profile-controls__actions, .public-profile-controls__share { grid-column: 1; }
-  .public-profile-controls__share { grid-template-columns: 1fr; }
+  .public-profile-controls__share-intro { grid-template-columns:1fr; }
 }
 @media (max-width: 520px) {
   .public-profile-controls__share-grid { grid-template-columns: 1fr; }
