@@ -20,12 +20,20 @@ const loading = ref(false)
 const copy = computed(() => props.locale === 'es' ? {
   title: 'Posible solape',
   body: 'Hay otra ocupación para esta fecha. Revísala antes de confirmar.',
+  reviewTitle: 'Revisar agenda',
+  reviewBody: 'Hay un Hold de este booking en otra fecha. Revísalo antes de seguir.',
+  combinedBody: 'Hay un Hold de este booking en otra fecha y además otra ocupación que puede solaparse.',
   booking: 'Booking', hold: 'Hold', availability: 'Disponibilidad',
+  ownHold: 'Hold de este booking',
   allDay: 'Mismo día', loading: 'Comprobando agenda…'
 } : {
   title: 'Possible conflict',
   body: 'There is another commitment on this date. Review it before confirming.',
+  reviewTitle: 'Review schedule',
+  reviewBody: 'This booking has a Hold on a different date. Review it before continuing.',
+  combinedBody: 'This booking has a Hold on a different date and another commitment may also overlap.',
   booking: 'Booking', hold: 'Hold', availability: 'Availability',
+  ownHold: 'This booking Hold',
   allDay: 'Same day', loading: 'Checking schedule…'
 })
 
@@ -49,6 +57,22 @@ function overlapsTimedRange(
   if (!interval) return false
   return intervalsOverlap(ownStart, ownEnd, interval.start, interval.end)
 }
+
+const mismatchedOwnHolds = computed(() => {
+  if (props.booking.archived_at) return []
+  return holds.value.filter(hold =>
+    hold.booking_id === props.booking.id
+    && hold.status === 'active'
+    && hold.event_date !== (props.booking.event_date || '')
+  )
+})
+
+const noticeTitle = computed(() => mismatchedOwnHolds.value.length ? copy.value.reviewTitle : copy.value.title)
+const noticeBody = computed(() => {
+  if (mismatchedOwnHolds.value.length && conflicts.value.length) return copy.value.combinedBody
+  if (mismatchedOwnHolds.value.length) return copy.value.reviewBody
+  return copy.value.body
+})
 
 const conflicts = computed(() => {
   const date = props.booking.event_date
@@ -95,21 +119,25 @@ const conflicts = computed(() => {
 
 async function load() {
   const date = props.booking.event_date
-  if (!date || !props.workspaceId || !props.booking.artist_id) {
+  if (!props.workspaceId || !props.booking.artist_id) {
     holds.value = []
     blocks.value = []
     return
   }
   loading.value = true
   try {
-    const from = `${date}T00:00:00`
-    const next = new Date(`${date}T12:00:00Z`)
-    next.setUTCDate(next.getUTCDate() + 1)
-    const to = `${next.toISOString().slice(0, 10)}T00:00:00`
-    const [holdRows, blockRows] = await Promise.all([
-      bookingCore.listHolds(props.workspaceId, undefined, true),
-      availability.listBlocks(props.booking.artist_id, from, to)
-    ])
+    const holdPromise = bookingCore.listHolds(props.workspaceId, undefined, true)
+    const blockPromise = date
+      ? (() => {
+          const from = `${date}T00:00:00`
+          const next = new Date(`${date}T12:00:00Z`)
+          next.setUTCDate(next.getUTCDate() + 1)
+          const to = `${next.toISOString().slice(0, 10)}T00:00:00`
+          return availability.listBlocks(props.booking.artist_id, from, to)
+        })()
+      : Promise.resolve([] as AvailabilityBlock[])
+
+    const [holdRows, blockRows] = await Promise.all([holdPromise, blockPromise])
     holds.value = holdRows
     blocks.value = blockRows
   } catch {
@@ -128,12 +156,17 @@ watch(
 </script>
 
 <template>
-  <section v-if="loading || conflicts.length" class="booking-conflicts" :class="{ 'booking-conflicts--loading': loading && !conflicts.length }">
+  <section v-if="loading || conflicts.length || mismatchedOwnHolds.length" class="booking-conflicts" :class="{ 'booking-conflicts--loading': loading && !conflicts.length && !mismatchedOwnHolds.length }">
     <div class="booking-conflicts__intro">
-      <strong>{{ loading && !conflicts.length ? copy.loading : copy.title }}</strong>
-      <p v-if="conflicts.length">{{ copy.body }}</p>
+      <strong>{{ loading && !conflicts.length && !mismatchedOwnHolds.length ? copy.loading : noticeTitle }}</strong>
+      <p v-if="conflicts.length || mismatchedOwnHolds.length">{{ noticeBody }}</p>
     </div>
-    <div v-if="conflicts.length" class="booking-conflicts__items">
+    <div v-if="mismatchedOwnHolds.length || conflicts.length" class="booking-conflicts__items">
+      <article v-for="hold in mismatchedOwnHolds" :key="`own-hold-${hold.id}`">
+        <span>{{ copy.ownHold }}</span>
+        <strong>{{ hold.event_date }}</strong>
+        <small>{{ hold.expires_at ? `${props.locale === 'es' ? 'Caduca' : 'Expires'} ${hold.expires_at.slice(0, 16).replace('T', ' ')}` : copy.allDay }}</small>
+      </article>
       <article v-for="conflict in conflicts" :key="conflict.id">
         <span>{{ copy[conflict.kind] }}</span>
         <strong>{{ conflict.label }}</strong>
