@@ -125,7 +125,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   bookingsBody: 'Revisa cada propuesta, responde al promotor y decide la fecha sin perder el contexto.',
   samplesLabel: 'EJEMPLOS INICIALES / DATOS SIMULADOS', samplesActive: 'Tu workspace empieza con solicitudes de muestra.', samplesRemoved: 'Has eliminado las solicitudes de muestra.', samplesBody: 'Los ejemplos pertenecen únicamente a este perfil y navegador. No modifican el calendario privado y puedes retirarlos cuando quieras.', guidedTour: 'Ver recorrido guiado', searchBookings: 'Buscar solicitudes', searchBookingsPlaceholder: 'Sala, promotor, ciudad, evento o ID…', searchResults: 'resultados', searchHistory: 'Buscar en historial', searchHistoryPlaceholder: 'Sala, ciudad, mensaje o estado…', previousPage: 'Anterior', nextPage: 'Siguiente', page: 'Página', collapseSidebar: 'Comprimir menú', expandSidebar: 'Expandir menú', removeSamples: 'Eliminar ejemplos', restoreSamples: 'Restaurar ejemplos', all: 'Todas', noSamples: 'No hay solicitudes de prueba en este estado.',
   sampleBooking: 'BOOKING DE PRUEBA', automaticStatus: 'Estado automático', eventData: 'Datos del evento', date: 'Fecha', city: 'Ciudad', venue: 'Sala', capacity: 'Aforo', offer: 'Oferta', schedule: 'Horario', contact: 'Contacto', name: 'Nombre', phone: 'Tel.', source: 'Origen', bookingLink: 'Enlace de booking', conversation: 'Conversación', replyPromoter: 'Responder al promotor', replyPlaceholder: 'Escribe condiciones, una pregunta o una propuesta…', localMessage: 'Ejemplo local. El mensaje no se envía por email.', sendSampleReply: 'Enviar respuesta de ejemplo', openPromoter: 'Abrir vista del promotor', confirmDate: 'Confirmar fecha', rejectRequest: 'Rechazar solicitud', openRequest: 'Abre una solicitud para ver sus datos, la oferta y la conversación.',
-  calendarEyebrow: 'CALENDARIO / DISPONIBILIDAD', calendarTitle: 'FECHAS Y HORARIOS.', calendarBody: 'Abre un día para ver sus 24 horas. Pulsa una hora vacía para crear un horario o un bloque existente para editarlo.', weekdays: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], unavailable: 'No disponible', dayHours: 'DÍA / 24 HORAS', add: 'Añadir', selectedDaySchedule: 'Horario del día seleccionado', addAt: 'Añadir horario a las',
+  calendarEyebrow: 'CALENDARIO / AGENDA', calendarTitle: 'FECHAS Y HORARIOS.', calendarBody: 'Los holds y bookings confirmados aparecen aquí automáticamente. Usa “Añadir bloqueo” para viajes, estudio o indisponibilidad que no nacen de un booking.', weekdays: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], unavailable: 'No disponible', dayHours: 'DÍA / 24 HORAS', add: 'Añadir bloqueo', selectedDaySchedule: 'Horario del día seleccionado', addAt: 'Añadir bloqueo a las',
   historyEyebrow: 'WORKSPACE / HISTORIAL', historyTitle: 'TODO LO QUE HA PASADO.',
   historyBody: 'Abre cualquier movimiento para volver a la oferta y revisar toda la conversación que originó esa acción.',
   historyEmpty: 'Todavía no hay actividad en este perfil.', historyStatus: 'Estado actualizado', historyMessage: 'Mensaje', openTrace: 'Abrir oferta y ver traza', previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente', filterSamples: 'Filtrar bookings de ejemplo',
@@ -144,7 +144,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   newPassword: 'Nueva contraseña', confirmPassword: 'Repetir contraseña', savePassword: 'Guardar contraseña',
   passwordSaved: 'Contraseña actualizada.', passwordMismatch: 'Las contraseñas nuevas no coinciden.',
   passwordLength: 'La nueva contraseña debe tener al menos 8 caracteres.', close: 'Cerrar', accountPrivate: 'CUENTA / PRIVADO',
-  editSlot: 'EDITAR HORARIO', newSlot: 'NUEVO HORARIO', privateLabel: 'Etiqueta privada', privatePlaceholder: 'Estudio, desplazamiento, evento…', start: 'Inicio', end: 'Fin', invalidTime: 'La hora de fin debe ser posterior a la hora de inicio.', status: 'Estado', saving: 'Guardando…', saveChanges: 'Guardar cambios', createSlot: 'Crear horario', deleteSlot: 'Eliminar horario', finish: 'Terminar', next: 'Siguiente', closeTour: 'Cerrar recorrido'
+  editSlot: 'EDITAR BLOQUEO MANUAL', newSlot: 'NUEVO BLOQUEO MANUAL', privateLabel: 'Qué bloqueas', privatePlaceholder: 'Estudio, viaje, no disponible…', start: 'Inicio', end: 'Fin', invalidTime: 'La hora de fin debe ser posterior a la hora de inicio.', status: 'Estado', saving: 'Guardando…', saveChanges: 'Guardar cambios', createSlot: 'Crear horario', deleteSlot: 'Eliminar horario', finish: 'Terminar', next: 'Siguiente', closeTour: 'Cerrar recorrido'
 } : {
   overview: 'Overview', bookings: 'Bookings', calendar: 'Calendar', history: 'History', profile: 'Profile',
   artist: 'Artist', role: 'DJ', settings: 'Settings', logout: 'Sign out',
@@ -159,7 +159,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   bookingsBody: 'Review every proposal, reply to the promoter and decide each date without losing context.',
   samplesLabel: 'STARTER EXAMPLES / SAMPLE DATA', samplesActive: 'Your workspace starts with sample requests.', samplesRemoved: 'You removed the sample requests.', samplesBody: 'These examples belong only to this profile and browser. They do not change your private calendar and you can remove them whenever you want.', guidedTour: 'View guided tour', searchBookings: 'Search requests', searchBookingsPlaceholder: 'Venue, promoter, city, event or ID…', searchResults: 'results', searchHistory: 'Search history', searchHistoryPlaceholder: 'Venue, city, message or status…', previousPage: 'Previous', nextPage: 'Next', page: 'Page', collapseSidebar: 'Collapse menu', expandSidebar: 'Expand menu', removeSamples: 'Remove examples', restoreSamples: 'Restore examples', all: 'All', noSamples: 'There are no sample requests with this status.',
   sampleBooking: 'SAMPLE BOOKING', automaticStatus: 'Automatic status', eventData: 'Event details', date: 'Date', city: 'City', venue: 'Venue', capacity: 'Capacity', offer: 'Offer', schedule: 'Schedule', contact: 'Contact', name: 'Name', phone: 'Phone', source: 'Source', bookingLink: 'Booking link', conversation: 'Conversation', replyPromoter: 'Reply to promoter', replyPlaceholder: 'Write conditions, a question or a proposal…', localMessage: 'Local example. This message is not sent by email.', sendSampleReply: 'Send sample reply', openPromoter: 'Open promoter view', confirmDate: 'Confirm date', rejectRequest: 'Reject request', openRequest: 'Open a request to view its details, offer and conversation.',
-  calendarEyebrow: 'CALENDAR / AVAILABILITY', calendarTitle: 'DATES AND TIMES.', calendarBody: 'Open a day to see all 24 hours. Select an empty hour to create a slot or an existing block to edit it.', weekdays: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], unavailable: 'Unavailable', dayHours: 'DAY / 24 HOURS', add: 'Add', selectedDaySchedule: 'Selected day schedule', addAt: 'Add slot at',
+  calendarEyebrow: 'CALENDAR / SCHEDULE', calendarTitle: 'DATES AND TIMES.', calendarBody: 'Holds and confirmed bookings appear here automatically. Use “Add block” for travel, studio time or unavailability that does not come from a booking.', weekdays: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], unavailable: 'Unavailable', dayHours: 'DAY / 24 HOURS', add: 'Add block', selectedDaySchedule: 'Selected day schedule', addAt: 'Add block at',
   historyEyebrow: 'WORKSPACE / HISTORY', historyTitle: 'EVERYTHING THAT HAPPENED.',
   historyBody: 'Open any activity to return to its offer and review the full conversation that caused it.',
   historyEmpty: 'There is no activity for this profile yet.', historyStatus: 'Status updated', historyMessage: 'Message', openTrace: 'Open offer and view trace', previousMonth: 'Previous month', nextMonth: 'Next month', filterSamples: 'Filter sample bookings',
@@ -178,7 +178,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   newPassword: 'New password', confirmPassword: 'Repeat password', savePassword: 'Save password',
   passwordSaved: 'Password updated.', passwordMismatch: 'The new passwords do not match.',
   passwordLength: 'The new password must contain at least 8 characters.', close: 'Close', accountPrivate: 'ACCOUNT / PRIVATE',
-  editSlot: 'EDIT SLOT', newSlot: 'NEW SLOT', privateLabel: 'Private label', privatePlaceholder: 'Studio, travel, event…', start: 'Start', end: 'End', invalidTime: 'The end time must be later than the start time.', status: 'Status', saving: 'Saving…', saveChanges: 'Save changes', createSlot: 'Create slot', deleteSlot: 'Delete slot', finish: 'Finish', next: 'Next', closeTour: 'Close tour'
+  editSlot: 'EDIT MANUAL BLOCK', newSlot: 'NEW MANUAL BLOCK', privateLabel: 'What are you blocking?', privatePlaceholder: 'Studio, travel, unavailable…', start: 'Start', end: 'End', invalidTime: 'The end time must be later than the start time.', status: 'Status', saving: 'Saving…', saveChanges: 'Save changes', createSlot: 'Create slot', deleteSlot: 'Delete slot', finish: 'Finish', next: 'Next', closeTour: 'Close tour'
 })
 
 const tourSteps = computed(() => preferences.locale.value === 'es' ? [
@@ -997,11 +997,34 @@ async function saveBlock() {
     && block.starts_at.slice(0, 10) === selectedDate.value
     && toMinutes(time(block.starts_at)) < proposedEnd
     && toMinutes(time(block.ends_at)) > proposedStart)
-  if (blockStatus.value === 'confirmed' && overlap) {
-    const overlapName = overlap.label || statusLabel(overlap.status)
+
+  const confirmedOverlap = realBookings.value.find(booking => !booking.archived_at
+    && booking.status === 'confirmed'
+    && booking.event_date === selectedDate.value
+    && (!booking.start_time || !booking.end_time
+      || (toMinutes(booking.start_time) < proposedEnd && toMinutes(booking.end_time) > proposedStart)))
+
+  const holdOverlap = realHolds.value.find(hold => hold.status === 'active'
+    && hold.event_date === selectedDate.value
+    && (!hold.starts_at || !hold.ends_at || (() => {
+      const start = new Date(hold.starts_at)
+      const end = new Date(hold.ends_at)
+      const holdStart = start.getHours() * 60 + start.getMinutes()
+      const holdEnd = end.getHours() * 60 + end.getMinutes()
+      return holdStart < proposedEnd && holdEnd > proposedStart
+    })()))
+
+  if (overlap || confirmedOverlap || holdOverlap) {
+    const overlapName = overlap
+      ? (overlap.label || statusLabel(overlap.status))
+      : confirmedOverlap
+        ? coreBookingLabel(confirmedOverlap)
+        : holdOverlap
+          ? coreHoldLabel(holdOverlap)
+          : ''
     const warning = preferences.locale.value === 'es'
-      ? `Esta franja se solapa con “${overlapName}” (${time(overlap.starts_at)}–${time(overlap.ends_at)}). ¿Quieres guardarla igualmente?`
-      : `This slot overlaps “${overlapName}” (${time(overlap.starts_at)}–${time(overlap.ends_at)}). Save it anyway?`
+      ? `Esta franja se solapa con “${overlapName}”. ¿Quieres guardar el bloqueo igualmente?`
+      : `This time overlaps “${overlapName}”. Save the block anyway?`
     if (!window.confirm(warning)) { saving.value = false; return }
   }
   try {
@@ -1207,6 +1230,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           :locale="preferences.locale.value"
           :refresh-key="bookingCoreOperationsRevision"
           @changed="handleBookingCoreOperationsChanged"
+          @open-bookings="activeView = 'bookings'"
         />
 
         <div class="overview-grid">
