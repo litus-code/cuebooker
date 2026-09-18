@@ -16,6 +16,7 @@ const contacts = ref<Contact[]>([])
 const counterparties = ref<Counterparty[]>([])
 const activities = ref<Activity[]>([])
 const emailMessages = ref<BookingEmailMessage[]>([])
+const conversationThread = ref<HTMLElement | null>(null)
 const loadingMeta = ref(false)
 const loadingActivity = ref(false)
 const updatingStatus = ref(false)
@@ -124,8 +125,21 @@ watch(() => props.workspaceId, async value => {
   }
 }, { immediate: true })
 
+function threadIsNearBottom() {
+  const element = conversationThread.value
+  if (!element) return true
+  return element.scrollHeight - element.scrollTop - element.clientHeight < 72
+}
+
+async function scrollThreadToLatest() {
+  await nextTick()
+  const element = conversationThread.value
+  if (element) element.scrollTop = element.scrollHeight
+}
+
 async function loadActivity(options: { silent?: boolean } = {}) {
   const bookingId = selectedBooking.value?.id
+  const keepPinnedToLatest = !options.silent || threadIsNearBottom()
   if (!options.silent) {
     activities.value = []
     emailMessages.value = []
@@ -140,6 +154,7 @@ async function loadActivity(options: { silent?: boolean } = {}) {
     if (selectedBooking.value?.id !== bookingId) return
     activities.value = activityRows
     emailMessages.value = emailRows
+    if (keepPinnedToLatest) await scrollThreadToLatest()
   } finally {
     if (!options.silent) loadingActivity.value = false
   }
@@ -415,7 +430,7 @@ async function selectBooking(bookingId: string) {
             </div>
           </div>
 
-          <div class="core-inbox__thread">
+          <div ref="conversationThread" class="core-inbox__thread">
             <p v-if="loadingActivity" class="core-inbox__empty">…</p>
             <p v-else-if="!conversationActivities.length" class="core-inbox__empty">{{ copy.noActivity }}</p>
             <article
@@ -594,7 +609,7 @@ async function selectBooking(bookingId: string) {
 .core-inbox__conversation-heading { padding:12px 14px; border-bottom:1px solid var(--cue-border); }
 .core-inbox__conversation-heading span { display:block; font:800 11px monospace; text-transform:uppercase; letter-spacing:.08em; }
 .core-inbox__conversation-heading small { display:block; margin-top:4px; color:var(--cue-muted); font-size:9px; }
-.core-inbox__thread { padding:10px 12px 2px; }
+.core-inbox__thread { max-height:clamp(280px,42vh,460px); overflow-y:auto; overscroll-behavior:contain; scrollbar-gutter:stable; scrollbar-width:thin; padding:10px 12px 2px; }
 .thread-item { width:min(86%,680px); margin:0 0 9px; padding:10px 11px; border:1px solid var(--cue-border); background:var(--cue-surface); }
 .thread-item--outbound { margin-left:auto; border-color:color-mix(in srgb,#73b7ff 55%,var(--cue-border)); }
 .thread-item--inbound { margin-right:auto; border-color:color-mix(in srgb,var(--cue-accent) 55%,var(--cue-border)); }
@@ -628,6 +643,7 @@ async function selectBooking(bookingId: string) {
   .core-inbox__decisions button { min-width:0; padding-inline:4px; }
   .core-inbox__details-heading { align-items:center; }
   .core-inbox__facts { grid-template-columns:1fr 1fr; }
+  .core-inbox__thread { max-height:min(52vh,380px); }
   .thread-item { width:auto; max-width:92%; }
 }
 
