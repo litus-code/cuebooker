@@ -767,7 +767,66 @@ The ambiguous `Siguiente paso` wording is now `Próxima acción`, with helper co
 
 Visual mobile validation is still required after the preview deploy.
 
-## 17. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
+## 17. Mobile booking-detail simplification + voice capture correction — IMPLEMENTED ON BRANCH
+
+Functional commits:
+
+```text
+73f1ce6bf708e4aa07a7714cce3901828b930352
+3a739cedea0595e3c961f6718fd63a98f665ac0a
+b0ea374a480f2c5d35c322ccea16c4744d8c5284
+618bda23ca12c3c1272aea8bc101af6df96aef46
+bcdd8ec342e774e5c72fa348afc49d6cba06798b
+2c78c2fd5cc53586c76ed1f66b9551d0024ddb79
+```
+
+### Voice
+
+The existing browser SpeechRecognition capture was stopping too early because it used `continuous=false` and rebuilt transcript from each event.
+
+It now:
+
+- uses continuous recognition;
+- keeps committed final chunks separately from interim text;
+- keeps listening until the user presses Stop;
+- attempts to restart recognition after browser-level end events while capture is still active;
+- preserves prior typed text;
+- emits one final captured transcript when stopped.
+
+This remains browser speech recognition, not server-grade transcription. Browser/iOS support and behavior can still vary.
+
+### Text interpretation
+
+The current `cueInterpreter.ts` is a deterministic local parser, not semantic AI. It currently extracts a limited set of patterns for:
+
+- channel;
+- contact/counterparty names in specific phrases;
+- date;
+- money/currency;
+- next action.
+
+The UI no longer presents it as an intelligent semantic interpreter. Copy now says `Detectar datos del texto` / `Detect details from text` and explicitly labels it basic detection. A future Smart Capture block should use a structured semantic extractor with confidence, evidence and missing-field handling before applying suggestions.
+
+### Booking detail hierarchy
+
+Mobile review showed that the booking detail contained too many competing concepts. Changes:
+
+- empty Relationship Memory is hidden completely;
+- relationship history only appears when there is actual prior history with the same counterparty/contact;
+- label becomes `Historial con` instead of `Relación / Memoria`;
+- Hold management is collapsed into a contextual `Reservar fecha (hold)` tool with helper copy;
+- booking detail editing moves next to the facts as pencil + `Editar datos`;
+- missing booking facts are visually marked;
+- Conversation is promoted above follow-up/hold tools;
+- body-bearing external/internal interactions are rendered as a chronological conversation thread;
+- inbound/outbound/internal entries are visually differentiated;
+- technical status/hold system events do not compete in that conversation thread;
+- status filters retain semantic letter + border color even when inactive;
+- mobile booking header/actions stack vertically so long titles/status actions cannot overflow the viewport.
+
+Visual mobile smoke is required after preview deploy.
+
+## 18. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
 
@@ -785,7 +844,7 @@ AI/voice limits should not be hard-coded into pricing before real usage/cost evi
 
 No billing, trial enforcement or Stripe integration is implemented yet.
 
-## 18. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
+## 19. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
 
 ### Smart Capture / interpretation
 
@@ -824,7 +883,7 @@ Treat human feedback as a cross-product rule:
 - retryable failure -> preserve work and explain next action;
 - technical/provider detail -> logs/admin, not promoter-facing copy.
 
-## 19. Root routing and static deployment
+## 20. Root routing and static deployment
 
 Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. `ASSETS.fetch()` must use the pretty `/200` path rather than `/200.html`.
 
@@ -836,7 +895,7 @@ Previously validated:
 
 PR #75 remains the staging preview vehicle.
 
-## 20. Security / operational follow-up
+## 21. Security / operational follow-up
 
 Before production:
 
@@ -856,7 +915,7 @@ Leaked Password Protection Disabled
 
 Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to the current Supabase secret-key model as a deliberate infrastructure task, not mixed into a product slice.
 
-## 21. Exact next product work
+## 22. Exact next product work
 
 Current sequencing is intentional:
 
@@ -874,7 +933,7 @@ Current sequencing is intentional:
 
 Do not jump ahead because downstream ideas are documented.
 
-## 22. Documentation workflow rule
+## 23. Documentation workflow rule
 
 Every meaningful implementation block must finish by updating this handoff with:
 
@@ -885,7 +944,7 @@ Every meaningful implementation block must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-## 23. Production gate
+## 24. Production gate
 
 Production Supabase:
 
