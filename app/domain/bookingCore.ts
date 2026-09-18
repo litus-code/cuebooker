@@ -149,6 +149,16 @@ export interface CreateContactInput {
   notes?: string | null
 }
 
+export interface UpdateContactInput {
+  workspaceId: string
+  contactId: string
+  name: string
+  email?: string | null
+  phone?: string | null
+  roleLabel?: string | null
+  notes?: string | null
+}
+
 export interface CreateCounterpartyInput {
   workspaceId: string
   kind: CounterpartyKind
