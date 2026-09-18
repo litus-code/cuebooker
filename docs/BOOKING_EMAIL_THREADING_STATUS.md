@@ -1,8 +1,8 @@
 # Booking email threading status
 
-Updated: 17 September 2026
+Updated: 18 September 2026
 Branch: `feature/app-visual-system`
-Status: STAGING FOUNDATION DEPLOYED, REAL ROUNDTRIP PENDING
+Status: STAGING FOUNDATION DEPLOYED, OUTBOUND HTML VERIFIED IN CODE, REAL INBOUND ROUNDTRIP STILL PENDING
 
 ## Purpose
 
@@ -27,7 +27,9 @@ booking+<reply_token>@<CUEBOOKER_REPLY_DOMAIN>
 
 The function now fails closed with `email_reply_domain_not_configured` instead of sending an email whose reply cannot be routed.
 
-Staging Edge Function: `send-booking-email` version 2, JWT verification enabled.
+Staging Edge Function: `send-booking-email` version 16, JWT verification enabled.
+
+Direct booking emails now send both `htmlContent` and `textContent`. The HTML uses the Cuebooker dark/lime visual system through `_shared/bookingConversationEmailTemplate.ts`; plain text remains as the fallback.
 
 ## Inbound
 
@@ -144,3 +146,12 @@ Cuebooker outbound email
 ```
 
 Also test a duplicate provider delivery and a reply to an archived booking before production rollout.
+
+
+## 18 September smoke status
+
+The real outbound message created at 13:11 local for `litulandio@gmail.com` is present in staging as an outbound `email_messages` row and outbound Activity. Its Reply-To is the expected tokenized address under `reply.cuebooker.com`.
+
+After the Gmail reply test, staging still contains no corresponding inbound `email_messages` row or inbound email Activity. This proves the Booking UI is not hiding a stored reply; the reply has not completed the provider -> `ingest-booking-email` path.
+
+The inbound function remains ACTIVE with JWT verification disabled and custom webhook authentication enforced through `x-cuebooker-webhook-secret`. The provider-side webhook/header configuration must be validated before the roundtrip can be called complete.
