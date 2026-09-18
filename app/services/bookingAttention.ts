@@ -1,6 +1,6 @@
 import type { Activity, CoreBooking } from '../domain/bookingCore'
 
-export type BookingAttentionSignalKind = 'new_booking' | 'reply_received' | 'stale_waiting'
+export type BookingAttentionSignalKind = 'new_booking' | 'reply_received' | 'stale_waiting' | 'delivery_failed'
 
 export interface BookingAttentionSignal {
   id: string
@@ -80,4 +80,54 @@ export function deriveBookingAttentionSignals(
     if (byPriority !== 0) return byPriority
     return new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime()
   })
+}
+
+
+export type BookingEmailDeliveryAttention = {
+  id: string
+  booking_id: string
+  delivery_status: string | null
+  bounced_at: string | null
+  last_delivery_event_at: string | null
+}
+
+const FAILED_DELIVERY_STATES = new Set(['soft_bounce', 'hard_bounce', 'blocked', 'spam', 'invalid', 'error'])
+
+export function deriveEmailDeliveryAttentionSignals(
+  bookings: CoreBooking[],
+  messages: BookingEmailDeliveryAttention[]
+): BookingAttentionSignal[] {
+  const activeBookingIds = new Set(
+    bookings
+      .filter(booking =>
+        !booking.archived_at
+        && booking.status !== 'rejected'
+        && booking.status !== 'cancelled'
+      )
+      .map(booking => booking.id)
+  )
+
+  const latestFailureByBooking = new Map<string, BookingEmailDeliveryAttention>()
+
+  for (const message of messages) {
+    if (!activeBookingIds.has(message.booking_id)) continue
+    if (!message.delivery_status || !FAILED_DELIVERY_STATES.has(message.delivery_status)) continue
+
+    const current = latestFailureByBooking.get(message.booking_id)
+    const messageTime = new Date(message.bounced_at || message.last_delivery_event_at || 0).getTime()
+    const currentTime = current
+      ? new Date(current.bounced_at || current.last_delivery_event_at || 0).getTime()
+      : Number.NEGATIVE_INFINITY
+
+    if (!current || messageTime > currentTime) latestFailureByBooking.set(message.booking_id, message)
+  }
+
+  return [...latestFailureByBooking.values()]
+    .map(message => ({
+      id: `delivery-${message.id}`,
+      bookingId: message.booking_id,
+      kind: 'delivery_failed' as const,
+      occurredAt: message.bounced_at || message.last_delivery_event_at || new Date(0).toISOString()
+    }))
+    .sort((a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime())
 }
