@@ -140,6 +140,11 @@ function handleVisibilityChange() {
   }
 }
 
+function handleNotificationStateChanged() {
+  if (open.value) void load()
+  else void refreshCount()
+}
+
 onMounted(() => {
   refreshCount()
   refreshTimer = window.setInterval(() => {
@@ -152,6 +157,7 @@ onMounted(() => {
   document.addEventListener('keydown', handleKeydown)
   document.addEventListener('visibilitychange', handleVisibilityChange)
   window.addEventListener('focus', refreshCount)
+  window.addEventListener('cuebooker:notifications-changed', handleNotificationStateChanged)
 })
 
 onBeforeUnmount(() => {
@@ -160,6 +166,7 @@ onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleKeydown)
   document.removeEventListener('visibilitychange', handleVisibilityChange)
   window.removeEventListener('focus', refreshCount)
+  window.removeEventListener('cuebooker:notifications-changed', handleNotificationStateChanged)
 })
 </script>
 
