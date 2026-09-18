@@ -6,6 +6,7 @@ const props = defineProps<{
   booking: CoreBooking
   locale: 'es' | 'en'
   suggestedFollowUp?: { subject: string; body: string } | null
+  suggestedRetryEmail?: { subject: string; body: string } | null
 }>()
 
 const emit = defineEmits<{ created: [] }>()
@@ -35,7 +36,9 @@ const copy = computed(() => props.locale === 'es' ? {
   replyDomainMissing: 'El dominio de respuestas de email todavía no está configurado en staging.',
   sendError: 'No se ha podido enviar el email.',
   prepareFollowUp: 'Preparar seguimiento',
-  followUpHint: 'Cuebooker ha preparado un borrador. Revísalo antes de enviarlo.'
+  followUpHint: 'Cuebooker ha preparado un borrador. Revísalo antes de enviarlo.',
+  prepareRetry: 'Preparar reintento',
+  retryHint: 'El último email falló. Cuebooker puede recuperar el mismo mensaje para que lo revises y decidas si reenviarlo.'
 } : {
   title: 'Log interaction',
   help: 'Note keeps internal memory. Call, WhatsApp and Instagram log a conversation. Email sends from Cuebooker.',
@@ -52,7 +55,9 @@ const copy = computed(() => props.locale === 'es' ? {
   replyDomainMissing: 'The email reply domain is not configured in staging yet.',
   sendError: 'The email could not be sent.',
   prepareFollowUp: 'Prepare follow-up',
-  followUpHint: 'Cuebooker prepared a draft. Review it before sending.'
+  followUpHint: 'Cuebooker prepared a draft. Review it before sending.',
+  prepareRetry: 'Prepare retry',
+  retryHint: 'The latest email failed. Cuebooker can restore the same message so you can review it and decide whether to resend.'
 })
 
 const types = computed<Array<{ value: ActivityType; label: string }>>(() => [
@@ -78,8 +83,7 @@ watch(direction, () => {
   errorMessage.value = ''
 })
 
-function applySuggestedFollowUp() {
-  const draft = props.suggestedFollowUp
+function applyEmailDraft(draft: { subject: string; body: string } | null | undefined) {
   if (!draft) return
   type.value = 'email'
   direction.value = 'outbound'
@@ -87,6 +91,14 @@ function applySuggestedFollowUp() {
   body.value = draft.body
   successMessage.value = ''
   errorMessage.value = ''
+}
+
+function applySuggestedFollowUp() {
+  applyEmailDraft(props.suggestedFollowUp)
+}
+
+function applySuggestedRetry() {
+  applyEmailDraft(props.suggestedRetryEmail)
 }
 
 function localEmailError(code: string) {
@@ -148,7 +160,11 @@ async function submit() {
         <button v-for="item in types" :key="item.value" type="button" :class="{ active: type === item.value }" @click="type = item.value">{{ item.label }}</button>
       </div>
     </div>
-    <div v-if="suggestedFollowUp" class="activity-composer__suggestion">
+    <div v-if="suggestedRetryEmail" class="activity-composer__suggestion activity-composer__suggestion--warning">
+      <div><strong>{{ copy.prepareRetry }}</strong><small>{{ copy.retryHint }}</small></div>
+      <button type="button" @click="applySuggestedRetry">{{ copy.prepareRetry }}</button>
+    </div>
+    <div v-else-if="suggestedFollowUp" class="activity-composer__suggestion">
       <div><strong>{{ copy.prepareFollowUp }}</strong><small>{{ copy.followUpHint }}</small></div>
       <button type="button" @click="applySuggestedFollowUp">{{ copy.prepareFollowUp }}</button>
     </div>
@@ -174,6 +190,9 @@ async function submit() {
 .activity-composer__types button { min-height:28px; padding:0 8px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; }
 .activity-composer__types button.active { border-color:var(--cue-accent); color:var(--cue-accent); }
 .activity-composer__suggestion { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px; border-bottom:1px solid var(--cue-border); background:color-mix(in srgb,var(--cue-accent) 5%,transparent); }
+.activity-composer__suggestion--warning { background:color-mix(in srgb,#ffb84d 7%,transparent); }
+.activity-composer__suggestion--warning strong { color:#ffb84d; }
+.activity-composer__suggestion--warning button { border-color:#ffb84d; color:#ffb84d; }
 .activity-composer__suggestion > div { display:grid; gap:3px; }
 .activity-composer__suggestion strong { color:var(--cue-accent); font:800 9px monospace; text-transform:uppercase; }
 .activity-composer__suggestion small { color:var(--cue-muted); font-size:9px; line-height:1.4; }
