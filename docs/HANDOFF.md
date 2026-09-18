@@ -1507,7 +1507,34 @@ CUEBOOKER_SMART_CAPTURE_MODEL (if explicitly configured)
 
 Terra is the default quality/cost balance. Sol is the high-capability fallback; Luna remains a cost-sensitive fallback.
 
-## 26. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
+## 26. Editable contact details from booking — IMPLEMENTED ON BRANCH
+
+The booking detail now treats contact data as its own reusable entity instead of mixing it into booking-specific fields.
+
+Functional commits:
+
+```text
+b52aa7d0d1216788362356d959d8b5c98384eee4
+af2cf282956c6e7145a362bc50620981d05e1949
+```
+
+### Product model
+
+```text
+Booking data
+-> date / venue / city / schedule / offer / fee basis
+
+Contact data
+-> name / email / phone / role / notes
+```
+
+Contact edits update the shared `contacts` row under existing workspace RLS, so the improved contact is reused by future bookings that reference the same person.
+
+The booking detail displays email/phone when available and exposes an **Editar contacto** action next to the contact summary.
+
+No new database migration was required; current contacts UPDATE RLS already allows workspace editors.
+
+## 27. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
 
@@ -1525,7 +1552,7 @@ AI/voice limits should not be hard-coded into pricing before real usage/cost evi
 
 No billing, trial enforcement or Stripe integration is implemented yet.
 
-## 27. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
+## 28. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
 
 ### Smart Capture / interpretation
 
@@ -1564,7 +1591,7 @@ Treat human feedback as a cross-product rule:
 - retryable failure -> preserve work and explain next action;
 - technical/provider detail -> logs/admin, not promoter-facing copy.
 
-## 28. Root routing and static deployment
+## 29. Root routing and static deployment
 
 Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. `ASSETS.fetch()` must use the pretty `/200` path rather than `/200.html`.
 
@@ -1576,7 +1603,7 @@ Previously validated:
 
 PR #75 remains the staging preview vehicle.
 
-## 29. Security / operational follow-up
+## 30. Security / operational follow-up
 
 Before production:
 
@@ -1596,7 +1623,7 @@ Leaked Password Protection Disabled
 
 Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to the current Supabase secret-key model as a deliberate infrastructure task, not mixed into a product slice.
 
-## 30. Exact next product work
+## 31. Exact next product work
 
 Current sequencing is intentional:
 
@@ -1614,7 +1641,7 @@ Current sequencing is intentional:
 
 Do not jump ahead because downstream ideas are documented.
 
-## 31. Documentation workflow rule
+## 32. Documentation workflow rule
 
 Every meaningful implementation block must finish by updating this handoff with:
 
@@ -1625,7 +1652,7 @@ Every meaningful implementation block must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-## 32. Production gate
+## 33. Production gate
 
 Production Supabase:
 
