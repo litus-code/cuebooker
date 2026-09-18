@@ -124,21 +124,24 @@ watch(() => props.workspaceId, async value => {
   }
 }, { immediate: true })
 
-async function loadActivity() {
+async function loadActivity(options: { silent?: boolean } = {}) {
   const bookingId = selectedBooking.value?.id
-  activities.value = []
-  emailMessages.value = []
+  if (!options.silent) {
+    activities.value = []
+    emailMessages.value = []
+  }
   if (!bookingId || !props.workspaceId) return
-  loadingActivity.value = true
+  if (!options.silent) loadingActivity.value = true
   try {
     const [activityRows, emailRows] = await Promise.all([
       bookingCore.listActivities(props.workspaceId, bookingId),
       bookingCore.listBookingEmailMessages(props.workspaceId, bookingId)
     ])
+    if (selectedBooking.value?.id !== bookingId) return
     activities.value = activityRows
     emailMessages.value = emailRows
   } finally {
-    loadingActivity.value = false
+    if (!options.silent) loadingActivity.value = false
   }
 }
 
@@ -154,7 +157,26 @@ function emailDeliveryLabel(activity: Activity) {
   return labels[status] || status
 }
 
-watch(() => selectedBooking.value?.id, loadActivity, { immediate: true })
+watch(() => selectedBooking.value?.id, () => loadActivity(), { immediate: true })
+
+let activityPollTimer: ReturnType<typeof setInterval> | null = null
+
+function refreshExternalActivity() {
+  if (!import.meta.client || document.visibilityState !== 'visible') return
+  void loadActivity({ silent: true })
+}
+
+onMounted(() => {
+  activityPollTimer = setInterval(refreshExternalActivity, 10_000)
+  window.addEventListener('focus', refreshExternalActivity)
+  document.addEventListener('visibilitychange', refreshExternalActivity)
+})
+
+onBeforeUnmount(() => {
+  if (activityPollTimer) clearInterval(activityPollTimer)
+  window.removeEventListener('focus', refreshExternalActivity)
+  document.removeEventListener('visibilitychange', refreshExternalActivity)
+})
 
 async function handleOperationsChanged() {
   await loadActivity()
