@@ -2419,3 +2419,71 @@ app/components/BookingCoreAttention.vue
 CI for functional HEAD `0492360caded96d022ac6820f3fa14f06552cd0e` passed tests and Nuxt production generation.
 
 Production remains untouched.
+
+## 45. Assisted stale follow-up draft — IMPLEMENTED ON BRANCH
+
+Cuebooker now closes one more repetitive operational gap without crossing the human-decision boundary.
+
+When all of these are true:
+
+```text
+Booking.status = waiting_response
+latest directional Activity = outbound
+72 hours have elapsed
+contact has a real email
+```
+
+the Conversation composer offers:
+
+```text
+Preparar seguimiento
+```
+
+The action is intentionally assistive, not autonomous:
+
+```text
+stale waiting detected
+-> Cuebooker builds contextual draft
+-> artist clicks Preparar seguimiento
+-> Email composer is prefilled
+-> artist reviews/edits
+-> artist explicitly clicks Enviar email
+```
+
+Cuebooker never sends the follow-up automatically.
+
+The deterministic draft reuses existing Booking truth:
+
+- contact name;
+- event or venue context;
+- event date when known;
+- previous outbound email subject when available.
+
+If the previous subject exists, the draft keeps the thread with `Re:`. No generative model is required for this first Booking Core version, so there is no hidden AI decision, latency or extra failure mode in the demo-critical path.
+
+Safety/product boundaries:
+
+- no contact email -> no email follow-up suggestion;
+- a later inbound interaction removes the stale condition;
+- archived/terminal/non-waiting bookings do not get this suggestion;
+- the draft never changes Booking status;
+- it never creates/completes a Next Action;
+- it never chooses another channel automatically;
+- final wording and sending remain human-owned.
+
+Implementation:
+
+```text
+app/services/followUpDraft.ts
+tests/followUpDraft.test.ts
+app/components/BookingActivityComposer.vue
+app/components/BookingCoreInbox.vue
+```
+
+Functional HEAD before this documentation update:
+
+```text
+624aaad9ca4bac4614b171c61bf49db1e5f8545e
+```
+
+CI tests for the functional HEAD passed. Production remains untouched.
