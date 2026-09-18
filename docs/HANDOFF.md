@@ -1910,3 +1910,83 @@ Post-smoke verification:
 - cron job active every 5 minutes.
 
 No production migration has been applied.
+
+
+## 37. Deterministic Next Action completion + calm attention — IMPLEMENTED ON STAGING
+
+Functional migration:
+
+```text
+20260918144500_add_next_move_completion_trigger.sql
+```
+
+Next Actions can now opt into one explicit deterministic completion rule:
+
+```text
+manual
+inbound_activity
+```
+
+The UI exposes this as human language:
+
+```text
+Marcar como hecha cuando llegue una respuesta
+```
+
+When enabled:
+
+```text
+later real inbound Activity
+-> active Next Action completed automatically
+-> next_move_completed Activity written
+-> automatic = true
+-> reason = inbound_activity_received
+-> trigger_activity_id preserved
+```
+
+Safety boundaries:
+
+- the rule is opt-in per Next Action;
+- initial public-form/CUE capture does not count as a reply;
+- only an inbound Activity later than the Next Action creation can complete it;
+- no Booking commercial decision is changed;
+- free-text Next Action content is never guessed/interpreted to decide completion;
+- manual Next Actions remain manual.
+
+A rollback smoke proved:
+
+```text
+auto-enabled Next Action
+-> initial cue_manual inbound Activity
+-> remains active
+
+later inbound email Activity
+-> Next Action completed
+-> traced automatic completion Activity
+-> ROLLBACK
+```
+
+No fixture rows remained and the real Booking state was restored.
+
+### Calm attention rule
+
+Overview attention now deduplicates by Booking and surfaces only the highest-priority current item for each Booking.
+
+This avoids showing the artist multiple simultaneous warnings for the same piece of work. The full Booking still contains all Holds, Next Actions and conversation context.
+
+Current priority shape:
+
+```text
+overdue explicit operation
+-> new reply
+-> new Booking
+-> due today
+-> stale waiting response
+-> normal explicit operation
+```
+
+The intent is an assistant-like triage surface rather than a dashboard that creates notification pressure.
+
+Staging schema and trigger presence were verified after migration. Existing project-level advisor warnings remain unchanged; no new security warning was introduced by this block.
+
+Production remains untouched.
