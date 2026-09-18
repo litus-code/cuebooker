@@ -1081,7 +1081,64 @@ Important:
 - payment integration comes after validating onboarding/trial/activation;
 - production remains untouched.
 
-## 20. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
+## 20. Trial value messaging + analytics instrumentation — IMPLEMENTED ON BRANCH
+
+Functional commits:
+
+```text
+b7eb0f33431004af28e49fbe5979397af4e5cb90
+705b067106bf96466c18bd3fdc7b7bf48163d0a4
+79b05f23fd2376221d6328fbfa1903016b63c083
+57ab3bb54c0c2b34f294a222c149e043b51514d4
+b2a823b4148a4d1194aba67ca81720d0760ebf51
+eea56b5b3112bd04b3e40a652a24950cb8997c02
+5049c3a41a2bb9a165fc350003e0dfc4984270a1
+b9d4d288166aa9ee7861306f7754dc617dda638f
+```
+
+### Home / early-access value
+
+The commercial home now contains a dedicated 30-day trial block that separates:
+
+- value available from day one;
+- coming-next capabilities;
+- the reason to join early.
+
+The 30-day trial is presented as no-card early access and points to the existing signup flow. Stripe/payment is intentionally deferred.
+
+### Analytics
+
+Cuebooker already had a consent-aware GTM/dataLayer foundation. This block instruments it instead of adding another analytics stack.
+
+Tracking remains disabled until optional analytics consent is granted and a GTM ID is configured.
+
+Core events now include:
+
+```text
+page_view
+section_view
+cta_click
+signup_click
+login_click
+role_select
+discovery_simulate
+public_booking_open
+cue_open
+smart_capture_start
+smart_capture_result
+smart_capture_apply
+booking_created
+```
+
+Homepage section views are tracked once per page load when at least 30% visible and consent is granted.
+
+CTA events include placement/destination so hero/header/final/trial conversion can be compared.
+
+Smart Capture events track funnel metadata but do not send the transcript, booking message body, contact data or other captured content to analytics.
+
+Route page views are standardized through `useAnalytics.trackPageView()`.
+
+## 21. Pricing / monetization direction — HYPOTHESIS, NOT IMPLEMENTED
 
 Current launch hypothesis:
 
@@ -1099,7 +1156,7 @@ AI/voice limits should not be hard-coded into pricing before real usage/cost evi
 
 No billing, trial enforcement or Stripe integration is implemented yet.
 
-## 21. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
+## 22. Product direction captured, NOT FOR IMMEDIATE PARALLEL IMPLEMENTATION
 
 ### Smart Capture / interpretation
 
@@ -1138,7 +1195,7 @@ Treat human feedback as a cross-product rule:
 - retryable failure -> preserve work and explain next action;
 - technical/provider detail -> logs/admin, not promoter-facing copy.
 
-## 22. Root routing and static deployment
+## 23. Root routing and static deployment
 
 Root artist URLs under static Nuxt are resolved by `functions/[slug].js` on Cloudflare Pages. `ASSETS.fetch()` must use the pretty `/200` path rather than `/200.html`.
 
@@ -1150,7 +1207,7 @@ Previously validated:
 
 PR #75 remains the staging preview vehicle.
 
-## 23. Security / operational follow-up
+## 24. Security / operational follow-up
 
 Before production:
 
@@ -1170,7 +1227,7 @@ Leaked Password Protection Disabled
 
 Existing Edge Functions still use legacy `SUPABASE_SERVICE_ROLE_KEY`; migrate to the current Supabase secret-key model as a deliberate infrastructure task, not mixed into a product slice.
 
-## 24. Exact next product work
+## 25. Exact next product work
 
 Current sequencing is intentional:
 
@@ -1188,7 +1245,7 @@ Current sequencing is intentional:
 
 Do not jump ahead because downstream ideas are documented.
 
-## 25. Documentation workflow rule
+## 26. Documentation workflow rule
 
 Every meaningful implementation block must finish by updating this handoff with:
 
@@ -1199,7 +1256,7 @@ Every meaningful implementation block must finish by updating this handoff with:
 - exact next step;
 - production state.
 
-## 26. Production gate
+## 27. Production gate
 
 Production Supabase:
 
