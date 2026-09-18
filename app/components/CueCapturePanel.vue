@@ -681,7 +681,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   .cue-capture__header h2 { font-size: 2.35rem; }
   .cue-capture__form { padding: 0 16px 20px; }
   .cue-capture__channel { padding: 16px 0; gap: 5px; }
-  .cue-capture__channel button { min-height: 31px; padding: 0 8px; font-size: 9px; }
+  .cue-capture__channel button { min-height:44px; padding:0 10px; font-size:9px; }
+  .cue-capture__switch button,
+  .cue-capture__interpret button,
+  .cue-capture__preview-actions button { min-height:44px; }
   .cue-capture__section { padding: 15px 0; }
   .cue-capture { height:100dvh; }
   .cue-capture__tell { padding:16px 0; }
