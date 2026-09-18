@@ -20,9 +20,9 @@ const successMessage = ref('')
 
 const copy = computed(() => props.locale === 'es' ? {
   title: 'Registrar interacción',
-  help: 'Guarda lo que ha pasado. Las interacciones entrantes y salientes actualizan el estado del booking automáticamente.',
+  help: 'Nota guarda memoria interna. Llamada, WhatsApp e Instagram registran una conversación. Email envía desde Cuebooker.',
   note: 'Nota', phone: 'Llamada', whatsapp: 'WhatsApp', email: 'Email', instagram: 'Instagram',
-  inbound: 'Recibida', outbound: 'Enviada', internal: 'Interna',
+  inbound: 'Me contactaron', outbound: 'Contacté yo', internal: 'Interna',
   placeholder: 'Ej. Héctor confirma que el horario llega mañana.',
   emailPlaceholder: 'Escribe el email que quieres enviar desde este booking.',
   subject: 'Asunto del email',
@@ -35,9 +35,9 @@ const copy = computed(() => props.locale === 'es' ? {
   sendError: 'No se ha podido enviar el email.'
 } : {
   title: 'Log interaction',
-  help: 'Save what happened. Incoming and outgoing interactions update the booking status automatically.',
+  help: 'Note keeps internal memory. Call, WhatsApp and Instagram log a conversation. Email sends from Cuebooker.',
   note: 'Note', phone: 'Call', whatsapp: 'WhatsApp', email: 'Email', instagram: 'Instagram',
-  inbound: 'Received', outbound: 'Sent', internal: 'Internal',
+  inbound: 'They contacted me', outbound: 'I contacted them', internal: 'Internal',
   placeholder: 'E.g. Hector confirms the schedule arrives tomorrow.',
   emailPlaceholder: 'Write the email you want to send from this booking.',
   subject: 'Email subject',
@@ -58,12 +58,13 @@ const types = computed<Array<{ value: ActivityType; label: string }>>(() => [
   { value: 'instagram', label: copy.value.instagram }
 ])
 
-const sendsRealEmail = computed(() => type.value === 'email' && direction.value === 'outbound')
+const sendsRealEmail = computed(() => type.value === 'email')
 
 watch(type, value => {
   successMessage.value = ''
   errorMessage.value = ''
   if (value === 'note') direction.value = 'internal'
+  else if (value === 'email') direction.value = 'outbound'
   else if (direction.value === 'internal') direction.value = 'inbound'
 })
 
@@ -134,7 +135,8 @@ async function submit() {
     <div class="activity-composer__body" :class="{ 'activity-composer__body--email': sendsRealEmail }">
       <input v-if="sendsRealEmail" v-model="subject" class="activity-composer__subject" :aria-label="copy.subject" :placeholder="copy.subjectPlaceholder" maxlength="300">
       <textarea v-model="body" rows="2" :placeholder="sendsRealEmail ? copy.emailPlaceholder : copy.placeholder" />
-      <select v-if="type !== 'note'" v-model="direction" aria-label="Direction"><option value="inbound">{{ copy.inbound }}</option><option value="outbound">{{ copy.outbound }}</option></select>
+      <select v-if="type !== 'note' && type !== 'email'" v-model="direction" aria-label="Direction"><option value="inbound">{{ copy.inbound }}</option><option value="outbound">{{ copy.outbound }}</option></select>
+      <div v-else-if="type === 'email'" class="activity-composer__email-route">{{ locale === 'es' ? 'Tú → contacto' : 'You → contact' }}</div>
       <button class="activity-composer__save" type="submit" :disabled="saving">{{ saving ? (sendsRealEmail ? copy.sending : copy.saving) : (sendsRealEmail ? copy.sendEmail : copy.save) }}</button>
     </div>
     <p v-if="errorMessage" class="activity-composer__error">{{ errorMessage }}</p>
@@ -155,6 +157,7 @@ async function submit() {
 .activity-composer__body--email { grid-template-columns:minmax(0,1fr) 130px 150px; }
 .activity-composer__subject { grid-column:1 / -1; min-height:36px; }
 .activity-composer textarea, .activity-composer select, .activity-composer__subject { box-sizing:border-box; border:1px solid var(--cue-border); background:var(--cue-surface); color:var(--cue-text); padding:8px 9px; font-size:11px; }
+.activity-composer__email-route { display:grid; place-items:center; min-height:42px; padding:0 10px; border:1px solid var(--cue-border); color:var(--cue-muted); font:800 8px monospace; text-transform:uppercase; }
 .activity-composer textarea { resize:vertical; min-height:58px; }
 .activity-composer select { width:100%; min-height:42px; padding-inline:10px; }
 .activity-composer__save { width:100%; min-height:42px; align-self:end; padding:0 11px; border:1px solid var(--cue-accent); background:var(--cue-accent); color:#080808; cursor:pointer; font:700 8px monospace; text-transform:uppercase; }
