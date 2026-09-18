@@ -3240,3 +3240,55 @@ d9e1508ad05b7454f9a253b5dc58b6e8363cd55c
 ```
 
 Production remains untouched.
+
+## 57. UX navigation closure — IMPLEMENTED ON BRANCH
+
+A final non-visual UX pass focused on interaction semantics rather than further layout changes.
+
+### Conversation zero state is actionable
+
+The empty thread no longer stops at “no activity”. It now tells the artist how to start the operational thread:
+
+```text
+Nota
+Llamada
+WhatsApp
+Instagram
+Email
+```
+
+This matches the composer directly below and avoids a dead empty state.
+
+### Opened Booking receives accessible focus
+
+Opening a Booking from list/Calendar/History/Overview already scrolled the detail into view, but keyboard/screen-reader focus could remain on the previous trigger.
+
+The Booking detail is now programmatically focusable (`tabindex=-1`) and receives focus with `preventScroll` after the normal scroll alignment.
+
+### Booking deep-link state is consistent
+
+Notifications already persisted the opened Booking in the workspace query string, while Calendar/History/Overview did not.
+
+All Booking entry points now converge on:
+
+```text
+openRealBooking(bookingId)
+-> activeView = bookings
+-> notification read sync
+-> ?booking=<id> persisted with router.replace
+```
+
+When navigating away from Bookings, the stale `booking` query parameter is removed so reload cannot unexpectedly force the user back into an old Booking.
+
+Functional commits:
+
+```text
+7d0240cdaced4f45bca316032204fc4b62416144
+b0c7922e4c3a4a1bee365996340ebf11b3340a36
+ff563fa72a92b7ad73b79453fcf7a493069645f0
+6e69be2263d989e6ccda248474bc6c8ec36611c0
+```
+
+Final visual QA on the authenticated staging workspace remains a human/browser-render verification step; no further layout changes should be made without seeing an actual rendering issue.
+
+Production remains untouched.
