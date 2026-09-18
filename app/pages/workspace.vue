@@ -1146,7 +1146,22 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
     </header>
 
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-    <p v-if="loading" class="loading-message">{{ copy.loading }}</p>
+
+    <section v-if="loading" class="workspace-skeleton" aria-busy="true" aria-live="polite">
+      <span class="sr-only">{{ copy.loading }}</span>
+      <div class="workspace-skeleton__heading">
+        <i class="skeleton-line skeleton-line--eyebrow" />
+        <i class="skeleton-line skeleton-line--title" />
+        <i class="skeleton-line skeleton-line--body" />
+      </div>
+      <div class="workspace-skeleton__stats">
+        <i v-for="index in 5" :key="`stat-${index}`" class="skeleton-card" />
+      </div>
+      <div class="workspace-skeleton__body">
+        <i class="skeleton-panel skeleton-panel--main" />
+        <i class="skeleton-panel" />
+      </div>
+    </section>
 
     <section v-else-if="!artists.length" class="empty-card">
       <p class="eyebrow">{{ copy.rosterEyebrow }}</p>
@@ -1622,9 +1637,20 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .empty-card { max-width: 760px; margin: 70px auto; padding: clamp(26px, 6vw, 70px); }
 .empty-card h1 { margin-bottom: 18px; font-size: clamp(2.4rem, 6vw, 5.5rem); line-height: .9; text-transform: uppercase; }
 .roster-form { margin-top: 28px; }
-.error-message, .loading-message { width: min(1440px, 100%); box-sizing: border-box; margin: 18px auto 0; padding: 13px 16px; }
-.error-message { border: 1px solid #8b3434; color: #ffadad; }
-.loading-message { color: #999; }
+.error-message { width:min(1440px,100%); box-sizing:border-box; margin:18px auto 0; padding:13px 16px; border:1px solid #8b3434; color:#ffadad; }
+.workspace-skeleton { width:min(1440px,100%); margin:0 auto; padding:28px 0 24px; }
+.workspace-skeleton__heading { display:grid; gap:12px; max-width:720px; margin-bottom:28px; }
+.workspace-skeleton__stats { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); border-top:1px solid var(--cue-border); border-left:1px solid var(--cue-border); }
+.workspace-skeleton__body { display:grid; grid-template-columns:1.35fr .65fr; gap:16px; margin-top:18px; }
+.skeleton-line, .skeleton-card, .skeleton-panel { display:block; position:relative; overflow:hidden; background:var(--cue-surface); border:1px solid var(--cue-border); }
+.skeleton-line::after, .skeleton-card::after, .skeleton-panel::after { position:absolute; inset:0; background:linear-gradient(100deg,transparent 20%,color-mix(in srgb,var(--cue-text) 7%,transparent) 46%,transparent 72%); transform:translateX(-100%); animation:workspace-shimmer 1.35s ease-in-out infinite; content:''; }
+.skeleton-line { height:12px; border:0; }
+.skeleton-line--eyebrow { width:150px; }
+.skeleton-line--title { width:min(620px,90%); height:58px; }
+.skeleton-line--body { width:min(520px,75%); height:18px; }
+.skeleton-card { min-height:150px; border-top:0; border-left:0; }
+.skeleton-panel { min-height:300px; }
+@keyframes workspace-shimmer { to { transform:translateX(100%); } }
 .history-list { max-width: 1040px; padding-bottom: 64px; }
 .history-list > button { display: grid; grid-template-columns: 145px 12px minmax(0, 1fr); gap: 20px; width: 100%; min-height: 104px; padding: 0; border: 0; background: transparent; color: var(--cue-text); text-align: left; cursor: pointer; }
 .history-list time { padding-top: 4px; color: var(--cue-muted); font: 700 10px/1.4 monospace; text-transform: uppercase; }
@@ -1830,4 +1856,14 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .core-timeline-hold { z-index:3; border-style:dashed !important; }
 .core-calendar-confirmed { border-style:solid !important; }
 .core-timeline-confirmed { z-index:4; }
+
+@media (max-width:760px) {
+  .workspace-skeleton { padding-top:20px; }
+  .workspace-skeleton__stats { grid-template-columns:1fr 1fr; }
+  .workspace-skeleton__stats .skeleton-card:last-child { grid-column:1 / -1; min-height:100px; }
+  .workspace-skeleton__body { grid-template-columns:1fr; }
+  .skeleton-line--title { height:42px; }
+  .skeleton-card { min-height:112px; }
+  .skeleton-panel { min-height:220px; }
+}
 </style>
