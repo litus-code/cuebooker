@@ -24,6 +24,8 @@ const props = withDefaults(defineProps<{
   preview: false
 })
 
+const analytics = useAnalytics()
+
 const emit = defineEmits<{
   submitBooking: [payload: BookingFormSubmission]
 }>()
@@ -68,6 +70,10 @@ const socialLinks = computed(() => [
 
 async function openBooking() {
   if (!props.profile.acceptingRequests && !props.preview) return
+  analytics.track('public_booking_open', {
+    artist_slug: props.profile.slug,
+    preview: props.preview
+  })
   requestOpen.value = true
   await nextTick()
   document.querySelector('#artist-booking-request')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
