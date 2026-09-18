@@ -106,3 +106,21 @@ test('does not fabricate structured data from unrelated text', () => {
 
   assert.deepEqual(result, {})
 })
+
+
+test('extracts venue, time range and verbal EUR amount from spoken Spanish', () => {
+  const result = interpretCueText(
+    'Buenas, hemos hablado con Héctor que nos ha comentado que vamos a poder pinchar en la Sala Apolo. El horario sería de 3 a 4 el 24 de diciembre y la oferta serían tres mil euros.',
+    'es',
+    new Date('2026-09-18T12:00:00+02:00')
+  )
+
+  assert.equal(result.contactName, 'Héctor')
+  assert.equal(result.counterpartyName, 'Apolo')
+  assert.equal(result.venueName, 'Apolo')
+  assert.equal(result.eventDate, '2026-12-24')
+  assert.equal(result.startTime, '03:00')
+  assert.equal(result.endTime, '04:00')
+  assert.equal(result.offerAmountMinor, 300000)
+  assert.equal(result.currency, 'EUR')
+})
