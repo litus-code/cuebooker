@@ -302,11 +302,14 @@ function applyInterpretation() {
   if (!parsed) return
   if (parsed.source) source.value = parsed.source
   applyEntityMatches(parsed.contactName || null, parsed.counterpartyName || null)
+  if (parsed.venueName) venueName.value = parsed.venueName
   if (parsed.eventDate) eventDate.value = parsed.eventDate
+  if (parsed.startTime) startTime.value = parsed.startTime
+  if (parsed.endTime) endTime.value = parsed.endTime
   if (parsed.offerAmountMinor != null) offer.value = String(parsed.offerAmountMinor / 100)
   if (parsed.currency) currency.value = parsed.currency
   if (parsed.nextMoveLabel) nextMoveLabel.value = parsed.nextMoveLabel
-  if (parsed.eventDate || parsed.offerAmountMinor != null) moreOpen.value = true
+  if (parsed.venueName || parsed.eventDate || parsed.startTime || parsed.endTime || parsed.offerAmountMinor != null) moreOpen.value = true
   interpretationPreview.value = null
   interpretationMessage.value = text.value.suggestionsApplied
 }
@@ -524,7 +527,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
                 <span v-if="interpretationPreview.source">{{ text.channel }} · {{ sourceOptions.find(item => item.value === interpretationPreview?.source)?.label }}</span>
                 <span v-if="interpretationPreview.contactName">{{ text.who }} · {{ interpretationPreview.contactName }}</span>
                 <span v-if="interpretationPreview.counterpartyName">{{ text.withWho }} · {{ interpretationPreview.counterpartyName }}</span>
+                <span v-if="interpretationPreview.venueName">{{ text.venue }} · {{ interpretationPreview.venueName }}</span>
                 <span v-if="interpretationPreview.eventDate">{{ text.date }} · {{ interpretationPreview.eventDate }}</span>
+                <span v-if="interpretationPreview.startTime || interpretationPreview.endTime">{{ locale === 'es' ? 'Horario' : 'Schedule' }} · {{ interpretationPreview.startTime || '—' }}–{{ interpretationPreview.endTime || '—' }}</span>
                 <span v-if="interpretationPreview.offerAmountMinor != null">{{ text.offer }} · {{ (interpretationPreview.offerAmountMinor / 100).toLocaleString(locale === 'es' ? 'es-ES' : 'en-GB') }} {{ interpretationPreview.currency || '' }}</span>
                 <span v-if="interpretationPreview.nextMoveLabel">{{ text.nextMove }} · {{ interpretationPreview.nextMoveLabel }}</span>
               </div>
