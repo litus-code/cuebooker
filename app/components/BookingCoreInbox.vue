@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Activity, Contact, CoreBooking, Counterparty, CoreBookingStatus } from '../domain/bookingCore'
 import type { BookingEmailMessage } from '../services/bookingCoreApi'
+import { buildFollowUpDraft, shouldSuggestFollowUp } from '../services/followUpDraft'
 
 const props = defineProps<{
   workspaceId: string
@@ -82,6 +83,12 @@ const hasMoreBookings = computed(() => visibleLimit.value < visibleBookings.valu
 const selectedBooking = computed(() => visibleBookings.value.find(item => item.id === selectedBookingId.value) || visibleBookings.value[0] || null)
 const selectedContact = computed(() => selectedBooking.value?.primary_contact_id ? contacts.value.find(item => item.id === selectedBooking.value?.primary_contact_id) || null : null)
 const selectedCounterparty = computed(() => selectedBooking.value?.counterparty_id ? counterparties.value.find(item => item.id === selectedBooking.value?.counterparty_id) || null : null)
+const suggestedFollowUp = computed(() => {
+  const booking = selectedBooking.value
+  if (!booking || !shouldSuggestFollowUp(booking, activities.value)) return null
+  return buildFollowUpDraft(booking, selectedContact.value, activities.value, props.locale)
+})
+
 const conversationActivities = computed(() => activities.value.filter(activity =>
   Boolean(activity.body?.trim())
   && !['status_change', 'system', 'hold_converted', 'hold_released'].includes(activity.type)
@@ -464,6 +471,7 @@ async function selectBooking(bookingId: string) {
             :workspace-id="workspaceId"
             :booking="selectedBooking"
             :locale="locale"
+            :suggested-follow-up="suggestedFollowUp"
             @created="handleActivityCreated"
           />
         </section>
