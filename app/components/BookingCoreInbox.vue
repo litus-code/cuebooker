@@ -21,6 +21,7 @@ const archiving = ref(false)
 const archiveView = ref<'active' | 'archived'>('active')
 const realSearch = ref('')
 const realStatusFilter = ref<'all' | CoreBookingStatus>('all')
+const visibleLimit = ref(10)
 
 const copy = computed(() => props.locale === 'es' ? {
   eyebrow: 'BOOKINGS / REALES',
@@ -71,6 +72,8 @@ const visibleBookings = computed(() => {
       .filter(Boolean).join(' ').toLowerCase().includes(query)
   })
 })
+const pagedBookings = computed(() => visibleBookings.value.slice(0, visibleLimit.value))
+const hasMoreBookings = computed(() => visibleLimit.value < visibleBookings.value.length)
 const selectedBooking = computed(() => visibleBookings.value.find(item => item.id === selectedBookingId.value) || visibleBookings.value[0] || null)
 const selectedContact = computed(() => selectedBooking.value?.primary_contact_id ? contacts.value.find(item => item.id === selectedBooking.value?.primary_contact_id) || null : null)
 const selectedCounterparty = computed(() => selectedBooking.value?.counterparty_id ? counterparties.value.find(item => item.id === selectedBooking.value?.counterparty_id) || null : null)
@@ -83,6 +86,10 @@ watch(() => props.bookings, value => {
   if (!value.length) selectedBookingId.value = ''
   else if (!value.some(item => item.id === selectedBookingId.value)) selectedBookingId.value = value[0].id
 }, { immediate: true, deep: true })
+
+watch([realSearch, realStatusFilter, archiveView], () => {
+  visibleLimit.value = 10
+})
 
 watch(() => props.focusBookingId, value => {
   if (value && props.bookings.some(item => item.id === value)) {
@@ -259,7 +266,7 @@ async function selectBooking(bookingId: string) {
     <div v-else-if="bookings.length" class="core-inbox__layout">
       <div id="core-inbox-list" class="core-inbox__list">
         <button
-          v-for="booking in visibleBookings"
+          v-for="booking in pagedBookings"
           :key="booking.id"
           type="button"
           :class="{ active: selectedBooking?.id === booking.id }"
@@ -269,6 +276,11 @@ async function selectBooking(bookingId: string) {
           <span><strong>{{ bookingTitle(booking) }}</strong><small>{{ booking.event_name || sourceLabels[booking.source] || booking.source }}</small></span>
           <em :class="`booking-status booking-status--${booking.status}`">{{ statusLabels[booking.status] }}</em>
         </button>
+        <div v-if="hasMoreBookings" class="core-inbox__load-more">
+          <button type="button" @click="visibleLimit += 10">
+            {{ locale === 'es' ? `Cargar 10 más · ${visibleBookings.length - pagedBookings.length} restantes` : `Load 10 more · ${visibleBookings.length - pagedBookings.length} remaining` }}
+          </button>
+        </div>
       </div>
 
       <article v-if="selectedBooking" id="core-inbox-detail" class="core-inbox__detail">
@@ -414,6 +426,9 @@ async function selectBooking(bookingId: string) {
 .core-inbox__list { border-right:1px solid var(--cue-border); }
 .core-inbox__list button { display:grid; grid-template-columns:82px minmax(0,1fr) auto; align-items:center; gap:12px; width:100%; min-height:72px; padding:12px 14px; border:0; border-bottom:1px solid var(--cue-border); background:transparent; color:var(--cue-text); text-align:left; cursor:pointer; }
 .core-inbox__list button.active { background:var(--cue-raised); }
+.core-inbox__load-more { padding:10px; border-top:1px solid var(--cue-border); }
+.core-inbox__load-more > button { display:block; width:100%; min-height:38px; padding:0 12px; border:1px solid var(--cue-border); background:var(--cue-raised); color:var(--cue-text); cursor:pointer; font:800 8px monospace; text-transform:uppercase; }
+.core-inbox__load-more > button:hover { border-color:var(--cue-accent); color:var(--cue-accent); }
 .core-inbox__list time { color:var(--cue-muted); font:700 10px monospace; }
 .core-inbox__list span strong, .core-inbox__list span small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .core-inbox__list span small { margin-top:4px; color:var(--cue-muted); font-size:11px; }
