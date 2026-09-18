@@ -10,10 +10,10 @@ const props = defineProps<{
 }>()
 
 const copy = computed(() => props.locale === 'es' ? {
-  eyebrow: 'RELACIÓN / MEMORIA',
-  first: 'Primera relación registrada',
-  firstBody: 'Cuebooker irá construyendo esta memoria con bookings y actividad real, sin puntuaciones ni rankings.',
-  together: 'Historial juntos',
+  eyebrow: 'HISTORIAL CON',
+  first: '',
+  firstBody: '',
+  together: 'Bookings juntos',
   bookings: 'bookings',
   confirmed: 'confirmados',
   lastDate: 'Última fecha',
@@ -22,10 +22,10 @@ const copy = computed(() => props.locale === 'es' ? {
   noDate: 'Sin fecha previa',
   noFee: 'Sin caché previo'
 } : {
-  eyebrow: 'RELATIONSHIP / MEMORY',
-  first: 'First relationship recorded',
-  firstBody: 'Cuebooker will build this memory from real bookings and activity, without scores or rankings.',
-  together: 'History together',
+  eyebrow: 'HISTORY WITH',
+  first: '',
+  firstBody: '',
+  together: 'Bookings together',
   bookings: 'bookings',
   confirmed: 'confirmed',
   lastDate: 'Last date',
@@ -75,7 +75,7 @@ function formatFee(booking: CoreBooking | null) {
 </script>
 
 <template>
-  <section class="relationship-memory">
+  <section v-if="previousBookings.length" class="relationship-memory">
     <div class="relationship-memory__heading">
       <div>
         <span>{{ copy.eyebrow }}</span>
@@ -84,12 +84,7 @@ function formatFee(booking: CoreBooking | null) {
       <b>{{ relationshipBookings.length }}</b>
     </div>
 
-    <div v-if="!previousBookings.length" class="relationship-memory__first">
-      <strong>{{ copy.first }}</strong>
-      <p>{{ copy.firstBody }}</p>
-    </div>
-
-    <div v-else class="relationship-memory__grid">
+    <div class="relationship-memory__grid">
       <div><span>{{ copy.together }}</span><strong>{{ relationshipBookings.length }} {{ copy.bookings }}</strong></div>
       <div><span>{{ copy.confirmed }}</span><strong>{{ confirmedCount }}</strong></div>
       <div><span>{{ copy.lastDate }}</span><strong>{{ formatDate(lastPreviousBooking) }}</strong></div>
