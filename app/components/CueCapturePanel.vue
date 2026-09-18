@@ -464,7 +464,16 @@ async function submit() {
     emit('created', booking)
     reset()
   } catch (error: any) {
-    errorMessage.value = error?.data?.message || error?.message || text.value.error
+    const code = String(error?.data?.message || error?.data?.error || error?.message || '')
+    errorMessage.value = code.includes('invalid_country_code')
+      ? (props.locale === 'es' ? 'Revisa el país: debe ser un código de dos letras, por ejemplo ES.' : 'Check the country: use a two-letter code, for example ES.')
+      : code.includes('invalid_currency')
+        ? (props.locale === 'es' ? 'Revisa la moneda: debe usar tres letras, por ejemplo EUR.' : 'Check the currency: use three letters, for example EUR.')
+        : code.includes('booking_time_requires_date')
+          ? (props.locale === 'es' ? 'Si indicas un horario, añade también la fecha del booking.' : 'If you set a schedule, add the booking date too.')
+          : code.includes('workspace_access_denied')
+            ? (props.locale === 'es' ? 'No tienes permisos para crear bookings en este workspace.' : 'You do not have permission to create bookings in this workspace.')
+            : (props.locale === 'es' ? 'No he podido crear el booking. Revisa los datos e inténtalo de nuevo.' : 'I could not create the booking. Review the details and try again.')
   } finally {
     submitting.value = false
   }
