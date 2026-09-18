@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { consumePublicRateLimit, publicRateLimitKey } from "../_shared/publicRateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -583,6 +584,22 @@ Deno.serve(async request => {
 
     const supabaseUrl = requiredEnv("SUPABASE_URL").replace(/\/$/, "");
     const serviceKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
+
+    const [clientKey, artistKey, contactKey] = await Promise.all([
+      publicRateLimitKey(request, serviceKey, "public-booking-client"),
+      publicRateLimitKey(request, serviceKey, "public-booking-artist", payload.artistSlug),
+      publicRateLimitKey(request, serviceKey, "public-booking-contact", `${payload.artistSlug}\n${payload.contactEmail}`)
+    ]);
+    const rateDecisions = await Promise.all([
+      consumePublicRateLimit(serviceJson, supabaseUrl, serviceKey, "public_booking_client", clientKey, 20, 600),
+      consumePublicRateLimit(serviceJson, supabaseUrl, serviceKey, "public_booking_artist", artistKey, 120, 3600),
+      consumePublicRateLimit(serviceJson, supabaseUrl, serviceKey, "public_booking_contact", contactKey, 5, 3600)
+    ]);
+    const blocked = rateDecisions.filter(item => !item.allowed);
+    if (blocked.length) {
+      const retryAfter = Math.max(...blocked.map(item => item.retryAfterSeconds), 1);
+      return json({ error: "rate_limited" }, 429, { "Retry-After": String(retryAfter) });
+    }
 
     const rows = await serviceJson<Array<{ booking_id: string; created: boolean }>>(
       `${supabaseUrl}/rest/v1/rpc/create_public_booking`,
