@@ -1792,3 +1792,48 @@ qlocooqfdzehogbwcbhr
 No migration, Edge Function deployment, publication toggle or Cloudflare production release from this public-entry/follow-up work has been performed on production.
 
 Remain staging-only until public-entry UX, direct inbound reply, abuse controls and explicit production review are complete.
+
+
+## 35. Automation boundary + derived attention — IMPLEMENTED ON BRANCH
+
+Product rule:
+
+```text
+facts / derived state / reminders / projections / ingestion
+-> automate
+
+accept / reject / cancel / send consequential communication / commit commercial choice
+-> human decision
+```
+
+Cuebooker should do the repetitive operational work automatically whenever the action can be derived safely from existing truth. The artist should spend attention on decisions, negotiation and creative/professional judgment rather than maintaining system state by hand.
+
+Current examples already following this rule:
+
+- inbound/outbound Activity drives `in_conversation` / `waiting_response`;
+- email replies are ingested and attached to the correct Booking automatically;
+- holds and confirmed bookings project into Calendar automatically;
+- delivery state updates from provider events;
+- Overview derives attention signals from Booking/Activity/Next Move/Hold data.
+
+New derived attention behavior:
+
+- `new` Booking -> automatic **Review new booking** signal;
+- `in_conversation` -> automatic **New reply** signal;
+- `waiting_response` with no reply for 72 hours -> automatic **Follow-up** signal;
+- overdue/today Next Moves and Holds keep their existing attention semantics;
+- derived signals never mutate Booking commercial decisions and only open the relevant Booking;
+- explicit user Next Moves remain first-class user-owned tasks.
+
+The workspace now refreshes Booking Core in the background every 30 seconds while visible, plus immediately on focus/visibility return, so external email/webhook changes can reach Overview and Booking status without requiring a full page reload.
+
+Pure derivation logic lives in:
+
+```text
+app/services/bookingAttention.ts
+tests/bookingAttention.test.ts
+```
+
+The 72-hour stale-waiting threshold is an initial product default, not a permanent business rule. It can become workspace/user configurable after beta evidence.
+
+ADR-039 records the automation boundary.
