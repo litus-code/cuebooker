@@ -125,8 +125,20 @@ const items = computed(() => {
     })
   }
 
-  return rows
-    .sort((a, b) => a.rank - b.rank || a.sortAt - b.sortAt)
+  const sorted = rows.sort((a, b) => {
+    const rankDelta = a.rank - b.rank
+    if (rankDelta !== 0) return rankDelta
+    if (a.kind === 'reply_received' || a.kind === 'new_booking') return b.sortAt - a.sortAt
+    return a.sortAt - b.sortAt
+  })
+
+  const seenBookings = new Set<string>()
+  return sorted
+    .filter(item => {
+      if (seenBookings.has(item.bookingId)) return false
+      seenBookings.add(item.bookingId)
+      return true
+    })
     .slice(0, 8)
 })
 
