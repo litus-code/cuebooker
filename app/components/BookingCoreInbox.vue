@@ -86,7 +86,7 @@ const selectedContact = computed(() => selectedBooking.value?.primary_contact_id
 const selectedCounterparty = computed(() => selectedBooking.value?.counterparty_id ? counterparties.value.find(item => item.id === selectedBooking.value?.counterparty_id) || null : null)
 const suggestedRetryEmail = computed(() => {
   if (!selectedContact.value?.email) return null
-  return buildFailedEmailRetryDraft(activities.value, emailMessages.value)
+  return buildFailedEmailRetryDraft(activities.value, emailMessages.value, selectedContact.value.email)
 })
 
 const suggestedFollowUp = computed(() => {
