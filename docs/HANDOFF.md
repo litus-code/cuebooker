@@ -4451,3 +4451,77 @@ d15b4e9a79b6483974ae5380a620361d95ca12eb
 ```
 
 Production remains untouched.
+
+## 71. CUE ID asset admission pipeline — IMPLEMENTED
+
+The first real 3D asset gate now exists before any GLB is accepted.
+
+New domain file:
+
+```text
+app/domain/cueIdAssets.ts
+```
+
+It defines:
+
+- device tiers (`full`, `reduced`, `static`);
+- per-kind budgets for base/outfit/accessory assets;
+- asset metadata required before admission;
+- validation errors for size, triangles, materials, texture count, texture dimensions and invalid tier targeting;
+- an intentionally empty `CUE_ID_ASSETS` catalogue.
+
+Current base budget:
+
+```text
+compressed GLB <= 1,000,000 bytes
+triangles <= 35,000
+materials <= 4
+textures <= 6
+largest texture dimension <= 2048
+```
+
+Outfit and accessory budgets are stricter.
+
+New tests:
+
+```text
+tests/cueIdAssets.test.ts
+```
+
+The tests prove that:
+
+- a compliant base asset is accepted;
+- oversized bytes/triangles/materials/textures are rejected;
+- oversized textures are rejected;
+- a GLB cannot target the static-only tier.
+
+Research note:
+
+```text
+docs/CUE_ID_ASSET_RESEARCH.md
+```
+
+Technical benchmark candidates were identified from CC0 sources, including a Quaternius Casual Character (~3.35k triangles / ~322 KB) and a very light standing civilian (~1.2k triangles).
+
+These are explicitly NOT accepted as final CUE ID art direction because they read as generic game/low-poly assets.
+
+`CUE_ID_ASSETS` remains empty until a real art-directed humanoid passes both cultural/visual review and the runtime budgets.
+
+Commits:
+
+```text
+324496775579997b704e97042cdcfb0b92f03e64
+38571cca5e174311960ec4b0bb051df5f78f1ccb
+516d64378af613c13c5dfc3bce151725408e0fcc
+04fa9099e0e1fab1511c4b8800eb7c7cb1cf5d82
+```
+
+Next implementation block:
+
+1. wait for CI/staging on this asset-gate slice;
+2. add a real GLB loader only with a correctly regenerated dependency lockfile;
+3. use a CC0 benchmark asset strictly for load/decode/Android measurement;
+4. keep benchmark assets out of the selectable CUE ID catalogue;
+5. replace benchmark with the first original/art-directed humanoid once the loader path is proven.
+
+Production remains untouched.
