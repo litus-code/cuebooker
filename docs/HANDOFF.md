@@ -6706,3 +6706,24 @@ Mobile lab corrections in this pass:
 The screenshot-driven review overrides the previous assumption that extra reduced-tier camera distance improved mobile framing.
 
 Production remains untouched.
+
+## 104. Production asset strategy reset
+
+The real-device rejection from section 103 is now reflected in the formal art documentation.
+
+Changes:
+
+- `CUE_ID_CLUB_MINIMAL_ART_DIRECTION.md` no longer describes the procedural candidate as an approved production contract;
+- `/cue-id` explicitly labels the current model as a technical fixture with rejected visual direction;
+- new `docs/CUE_ID_ASSET_BRIEF_V2.md` defines the next production asset as an authored editorial/sculptural human;
+- the V2 brief establishes head, body, hands, wardrobe, footwear, material, static render, mobile review and geometry requirements;
+- one excellent default tee is prioritised over producing four mediocre outfits in parallel;
+- V2 may use restrained textures and authored morphs/rigging;
+- medium remains the automatic target;
+- visual still review at real product size is now a gate before deep runtime integration.
+
+The procedural generator and generated GLBs remain in the repository only as runtime/performance/semantic fixtures.
+
+`CUE_ID_ASSETS` remains intentionally empty.
+
+Production remains untouched.
