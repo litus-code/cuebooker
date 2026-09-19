@@ -1,3 +1,7 @@
+import type { CueIdConfigV1 } from './cueId'
+
+export type PublicCueIdConfig = Pick<CueIdConfigV1, 'schemaVersion' | 'family' | 'base' | 'build' | 'outfit' | 'accessory' | 'pose' | 'material' | 'accent'>
+
 export type PublicArtistProfile = {
   stageName: string
   slug: string
@@ -24,6 +28,8 @@ export type PublicArtistProfile = {
   artistImagePositionX: number
   artistImagePositionY: number
   artistImageScale: number
+  visualMode?: 'photo' | 'artwork' | 'cue_id'
+  cueId?: PublicCueIdConfig | null
   acceptingRequests: boolean
 }
 
