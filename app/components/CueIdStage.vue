@@ -86,14 +86,21 @@ function handleLabAssetLoaded(metrics: { assetId: string; bytes: number; loadMs:
     totalReadyMs
   }
 
+  const gate = runtimeDecision.value
+    ? evaluateCueIdReadyPerformance(runtimeDecision.value.tier, totalReadyMs)
+    : null
+
   analytics.track('cue_id_glb_lab_asset_loaded', {
     asset_id: metrics.assetId,
+    quality: resolvedLabQuality.value,
     bytes: metrics.bytes,
     load_ms: metrics.loadMs,
     parse_ms: metrics.parseMs,
     first_frame_ms: metrics.firstFrameMs,
     total_ready_ms: totalReadyMs,
-    runtime_tier: runtimeDecision.value?.tier || null
+    runtime_tier: runtimeDecision.value?.tier || null,
+    ready_budget_ms: gate?.budgetMs ?? null,
+    ready_gate: gate?.status ?? 'not_applicable'
   })
 }
 
