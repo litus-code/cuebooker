@@ -5932,3 +5932,44 @@ CI remains appropriate for:
 Temporary capture workflow/scripts were removed after diagnosis.
 
 Production remains untouched.
+
+## 86. WebGL context-loss fallback — TresJS runtime hardened
+
+The TresJS scene now handles runtime WebGL context loss explicitly.
+
+Behavior:
+
+```text
+webglcontextlost
+-> prevent default browser recovery loop
+-> mark renderer not ready
+-> emit failed
+-> CueIdStage returns to the complete static fallback
+```
+
+The listener is removed on unmount.
+
+No automatic retry loop is introduced.
+
+Reason:
+
+- context loss often correlates with GPU/memory pressure;
+- forcing immediate recovery can worsen battery/thermal pressure;
+- the static CUE ID representation is already a valid first-class identity;
+- reliability is preferred over preserving spectacle.
+
+Together with the stricter capability probe, the current runtime policy is:
+
+```text
+stable WebGL -> interactive Tier A/B
+unstable/unavailable WebGL -> Tier C static
+context lost after startup -> static fallback
+```
+
+Tests now lock:
+
+- transient continuous rendering only until first real GLB frame;
+- strict non-experimental WebGL probing;
+- context-loss fallback and listener cleanup.
+
+Production remains untouched.
