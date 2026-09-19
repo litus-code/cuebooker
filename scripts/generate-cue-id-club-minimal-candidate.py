@@ -363,13 +363,13 @@ def build():
     add(scene, "outfit_bomber_accent", bomber_accent, LIME)
 
     arm_specs = [
-        ("left", -0.76, 0.09, -0.11),
-        ("right", 0.76, -0.045, 0.075),
+        ("left", -0.72, 0.085, -0.105),
+        ("right", 0.72, -0.040, 0.070),
     ]
     for side, x, upper_angle, forearm_angle in arm_specs:
-        shoulder = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.165)
-        shoulder.apply_scale([1.0, 0.88, 0.80])
-        shoulder.apply_translation([x, 1.71, 0])
+        shoulder = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.150)
+        shoulder.apply_scale([1.0, 0.86, 0.78])
+        shoulder.apply_translation([x, 1.70, 0])
         add(scene, f"shoulder_{side}", shoulder, DARK)
 
         upper = elliptical_loft([
@@ -400,18 +400,25 @@ def build():
         ])
         add(scene, f"forearm_{side}", forearm, DARK)
 
-        hand = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.13)
-        hand.apply_scale([0.80, 1.05, 0.70])
+        hand = elliptical_loft([
+            (0.14, 0.105, 0.082),
+            (0.02, 0.112, 0.080),
+            (-0.12, 0.085, 0.062),
+        ], radial_sections=PROFILE["radial_sections"])
+        hand.apply_transform(rotation_matrix(
+            -0.055 if side == "left" else 0.045,
+            [0, 0, 1],
+        ))
         hand.apply_translation([
-            elbow_x + (-0.08 if side == "left" else 0.065),
-            0.40,
-            -0.04 if side == "left" else 0.03,
+            elbow_x + (-0.075 if side == "left" else 0.060),
+            0.39,
+            -0.038 if side == "left" else 0.028,
         ])
         add(scene, f"hand_{side}", hand, BODY)
 
     waist = lofted_box([
-        (0.86, 0.52, 0.27),
-        (0.60, 0.46, 0.25),
+        (0.86, 0.50, 0.26),
+        (0.60, 0.445, 0.24),
     ])
     add(scene, "waist", waist, MID)
 
