@@ -81,3 +81,17 @@ test('CUE ID renderer only uses continuous frames until the real asset becomes r
   assert.match(component, /emit\('labAssetLoaded', metrics\)/)
   assert.match(component, /ready\.value = true/)
 })
+
+
+test('CUE ID scene falls back on WebGL context loss', async () => {
+  const source = await import('node:fs/promises')
+  const component = await source.readFile(
+    new URL('../app/components/CueIdScene.client.vue', import.meta.url),
+    'utf8'
+  )
+
+  assert.match(component, /webglcontextlost/)
+  assert.match(component, /event\.preventDefault\(\)/)
+  assert.match(component, /emit\('failed'\)/)
+  assert.match(component, /removeEventListener\('webglcontextlost'/)
+})
