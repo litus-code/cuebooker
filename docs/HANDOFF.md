@@ -6046,3 +6046,33 @@ Automatic quality remains medium for Tier A and Tier B.
 Next visual work should focus on silhouette/authorship and not global subdivision.
 
 Production remains untouched.
+
+## 89. Club Minimal accessory silhouette refinement
+
+The current candidate now refines accessory geometry without increasing material or texture complexity.
+
+Changes:
+
+- headphones: tighter neck band and slimmer ear cups;
+- cap: lower-profile crown and slimmer brim;
+- glasses: narrower editorial oval silhouette instead of generic circular rings;
+- glasses bridge reduced to keep the accessory visually lighter.
+
+Generated metadata:
+
+```text
+light  = 64,216 bytes / 4,240 triangles
+medium = 104,484 bytes / 8,816 triangles
+high   = 194,192 bytes / 20,000 triangles
+```
+
+Cost impact is effectively negligible.
+
+Current visual strategy remains:
+
+- improve authored silhouette first;
+- keep medium as the automatic Tier A/B quality;
+- keep high lab-only until it earns its cost;
+- do not add textures or extra materials merely for detail.
+
+Production remains untouched.
