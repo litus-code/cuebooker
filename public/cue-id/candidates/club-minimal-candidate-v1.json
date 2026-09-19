@@ -1,0 +1,12 @@
+{
+  "id": "club-minimal-candidate-v1",
+  "purpose": "candidate",
+  "generator": "Cuebooker procedural Club Minimal generator",
+  "bytes": 33120,
+  "triangles": 1320,
+  "vertices": 692,
+  "materials": 4,
+  "textures": 0,
+  "artDirection": "club_minimal_v1",
+  "status": "candidate_not_production"
+}
