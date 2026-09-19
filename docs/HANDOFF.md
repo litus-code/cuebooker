@@ -6009,3 +6009,40 @@ high -> lab/manual only
 Next visual work should stay on authored geometry placement and clothing/body silhouette before considering any increase in global subdivision.
 
 Production remains untouched.
+
+## 88. Club Minimal wardrobe silhouette differentiation
+
+The latest candidate pass differentiates the four wardrobe options through authored volume rather than textures or additional materials.
+
+Changes:
+
+- tee: cleaner shoulder-to-hem taper and slightly calmer upper volume;
+- tank: narrower upper opening and more exposed shoulder read;
+- hoodie: fuller chest/upper volume and looser lower silhouette;
+- bomber: broader chest, fuller depth and a more cinched lower body;
+- bomber collar position adjusted slightly.
+
+All four variants still reuse:
+
+```text
+4 shared PBR materials
+0 textures
+same semantic visibility system
+same base GLB per quality
+```
+
+Generated metadata:
+
+```text
+light  = 64,208 bytes / 4,240 triangles
+medium = 104,472 bytes / 8,816 triangles
+high   = 194,180 bytes / 20,000 triangles
+```
+
+Cost impact versus the previous hand refinement is negligible.
+
+Automatic quality remains medium for Tier A and Tier B.
+
+Next visual work should focus on silhouette/authorship and not global subdivision.
+
+Production remains untouched.
