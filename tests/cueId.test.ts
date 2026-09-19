@@ -68,3 +68,16 @@ test('CUE ID performance contract keeps public rendering static-first by default
 
   assert.match(component, /:interactive="false"/)
 })
+
+
+test('CUE ID renderer only uses continuous frames until the real asset becomes ready', async () => {
+  const source = await import('node:fs/promises')
+  const component = await source.readFile(
+    new URL('../app/components/CueIdScene.client.vue', import.meta.url),
+    'utf8'
+  )
+
+  assert.match(component, /:render-mode="ready \? 'on-demand' : 'always'"/)
+  assert.match(component, /emit\('labAssetLoaded', metrics\)/)
+  assert.match(component, /ready\.value = true/)
+})
