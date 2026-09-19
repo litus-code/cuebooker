@@ -13,6 +13,26 @@ DARK = (22, 24, 22, 255)
 MID = (48, 52, 48, 255)
 LIME = (206, 255, 84, 255)
 
+SEMANTIC_NODE_NAMES = {
+    "head",
+    "clavicle",
+    "shoulder_left",
+    "shoulder_right",
+    "upper_arm_left",
+    "upper_arm_right",
+    "elbow_left",
+    "elbow_right",
+    "forearm_left",
+    "forearm_right",
+    "hips",
+    "thigh_left",
+    "thigh_right",
+    "knee_left",
+    "knee_right",
+    "shin_left",
+    "shin_right",
+}
+
 
 def add(scene, name, mesh, color):
     mesh = mesh.copy()
@@ -287,6 +307,12 @@ def build():
         cup.apply_transform(rotation_matrix(np.pi / 2, [0, 1, 0]))
         cup.apply_translation([x, 1.98, 0.02])
         add(scene, f"headphone_cup_{x}", cup, DARK)
+
+    missing_semantic_nodes = SEMANTIC_NODE_NAMES - set(scene.geometry.keys())
+    if missing_semantic_nodes:
+        raise RuntimeError(
+            "Missing semantic CUE ID nodes: " + ", ".join(sorted(missing_semantic_nodes))
+        )
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     scene.export(OUT)
