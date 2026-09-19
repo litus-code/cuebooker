@@ -1,0 +1,65 @@
+name: Inspect CUE ID bundle boundary
+
+on:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - .github/workflows/inspect-cue-id-bundle.yml
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Inspect CueIdScene chunk
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, statSync } from 'node:fs'
+          import { gzipSync } from 'node:zlib'
+          import { resolve } from 'node:path'
+
+          const manifest = JSON.parse(readFileSync('.nuxt/dist/client/manifest.json', 'utf8'))
+          const entries = Object.entries(manifest).filter(([key, value]) => {
+            const src = value?.src || ''
+            return key.includes('CueIdScene') || src.includes('CueIdScene')
+          })
+
+          if (!entries.length) {
+            console.error('CueIdScene manifest entry not found')
+            process.exit(1)
+          }
+
+          for (const [key, value] of entries) {
+            const file = resolve('.nuxt/dist/client', value.file)
+            const bytes = statSync(file).size
+            const gzip = gzipSync(readFileSync(file)).byteLength
+            console.log(JSON.stringify({
+              key,
+              src: value.src || null,
+              file: value.file,
+              bytes,
+              gzipBytes: gzip,
+              imports: value.imports || [],
+              dynamicImports: value.dynamicImports || []
+            }))
+          }
+          NODE
