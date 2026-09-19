@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import type { ArtistVisualMode } from '../composables/useArtistProfile'
 import type { CueIdConfigV1 } from '../domain/cueId'
 import { cloneCueIdConfig, DEFAULT_CUE_ID_CONFIG } from '../domain/cueId'
+import {
+  getArtistPresentationMode,
+  getArtistPresentationSelection,
+  type ArtistPresentationMode
+} from '../domain/artistVisual'
 
 const props = withDefaults(defineProps<{
   artistName?: string
@@ -14,7 +18,7 @@ const props = withDefaults(defineProps<{
 })
 
 const profiles = useArtistProfile()
-const visualMode = ref<ArtistVisualMode>('photo')
+const presentationMode = ref<ArtistPresentationMode>('photo')
 const cueIdConfig = ref<CueIdConfigV1>(cloneCueIdConfig(DEFAULT_CUE_ID_CONFIG))
 const saving = ref(false)
 const message = ref('')
@@ -63,7 +67,10 @@ const modes = computed(() => [
 function syncFromProfile() {
   const artist = profiles.activeProfile.value?.artist
   if (!artist) return
-  visualMode.value = artist.visual_mode || 'photo'
+  presentationMode.value = getArtistPresentationMode(
+    artist.visual_source || 'portrait',
+    artist.artist_image_style || 'artwork'
+  )
   cueIdConfig.value = cloneCueIdConfig(artist.cue_id_config || DEFAULT_CUE_ID_CONFIG)
   dirty.value = false
   message.value = ''
@@ -76,15 +83,20 @@ watch(
 )
 
 watch(
-  () => profiles.activeProfile.value?.artist.visual_mode,
-  value => {
-    if (!dirty.value && value) visualMode.value = value
+  [
+    () => profiles.activeProfile.value?.artist.visual_source,
+    () => profiles.activeProfile.value?.artist.artist_image_style
+  ],
+  ([source, style]) => {
+    if (!dirty.value && source && style) {
+      presentationMode.value = getArtistPresentationMode(source, style)
+    }
   }
 )
 
-function setMode(mode: ArtistVisualMode) {
-  if (props.disabled || visualMode.value === mode) return
-  visualMode.value = mode
+function setMode(mode: ArtistPresentationMode) {
+  if (props.disabled || presentationMode.value === mode) return
+  presentationMode.value = mode
   dirty.value = true
   message.value = ''
 }
@@ -101,7 +113,17 @@ async function save() {
   saving.value = true
   message.value = ''
   try {
-    await profiles.saveCueIdPresentation(artistId, visualMode.value, cueIdConfig.value)
+    const artist = profiles.activeProfile.value?.artist
+    const selection = getArtistPresentationSelection(
+      presentationMode.value,
+      artist?.artist_image_style || 'artwork'
+    )
+    await profiles.saveCueIdPresentation(
+      artistId,
+      selection.visualSource,
+      cueIdConfig.value,
+      selection.artistImageStyle
+    )
     dirty.value = false
     message.value = copy.value.saved
   } catch {
@@ -128,7 +150,7 @@ async function save() {
         v-for="mode in modes"
         :key="mode.id"
         type="button"
-        :class="{ active: visualMode === mode.id }"
+        :class="{ active: presentationMode === mode.id }"
         :disabled="disabled"
         @click="setMode(mode.id)"
       >
@@ -137,7 +159,7 @@ async function save() {
       </button>
     </div>
 
-    <div v-if="visualMode === 'cue_id'" class="cue-id-profile-editor__studio">
+    <div v-if="presentationMode === 'cue_id'" class="cue-id-profile-editor__studio">
       <CueIdStage :config="cueIdConfig" :artist-name="artistName" compact />
       <CueIdControls
         :model-value="cueIdConfig"
