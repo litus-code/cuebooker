@@ -5514,3 +5514,39 @@ status = candidate_not_production
 ```
 
 Production remains untouched.
+
+## 85. CUE ID lab runtime diagnostics
+
+`/cue-id` now exposes an opt-in runtime diagnostics panel through `CueIdStage showDiagnostics`.
+
+Displayed lab-only values:
+
+```text
+runtime tier
+runtime decision reason
+DPR cap
+renderer init ms
+asset id
+asset bytes
+GLB load ms
+GLB parse ms
+first rendered frame ms
+```
+
+The panel is disabled by default and enabled only by the noindex `/cue-id` lab route.
+
+It is not rendered in:
+
+- public Artist Profile;
+- workspace/profile production flows;
+- Booking/Calendar/Activity surfaces.
+
+`tests/cueIdDiagnostics.test.ts` locks this lab-only boundary.
+
+Purpose:
+
+- compare Android / iPhone / desktop empirically;
+- decide how much geometry/asset quality can be spent safely;
+- tune Tier A / Tier B thresholds from measurements instead of assumptions.
+
+Production remains untouched.
