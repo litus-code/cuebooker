@@ -5550,3 +5550,43 @@ Purpose:
 - tune Tier A / Tier B thresholds from measurements instead of assumptions.
 
 Production remains untouched.
+
+## 86. CUE ID ready-time performance gate
+
+The lab now converts raw runtime metrics into an explicit tier gate.
+
+New domain:
+
+```text
+app/domain/cueIdPerformance.ts
+```
+
+Budgets:
+
+```text
+full / Tier A    <= 800 ms
+reduced / Tier B <= 1500 ms
+static / Tier C  N/A
+```
+
+`CueIdStage.vue` measures total_ready_ms from IntersectionObserver preload trigger to first GLB frame and shows:
+
+- total ready time;
+- relevant tier budget;
+- PASS or WARN.
+
+The same technical value is added to the consent-aware `cue_id_glb_lab_asset_loaded` analytics event.
+
+Tests:
+
+```text
+tests/cueIdPerformance.test.ts
+```
+
+Purpose:
+
+Use real Android/iPhone/desktop measurements to decide how much of the remaining quality headroom can be spent.
+
+Do not raise universal asset budgets based only on Tier A results.
+
+Production remains untouched.
