@@ -205,9 +205,10 @@ async function loadLabAsset() {
     const size = bounds.getSize(new Vector3())
     const center = bounds.getCenter(new Vector3())
     const maxDimension = Math.max(size.x, size.y, size.z) || 1
-    const scale = 3.72 / maxDimension
+    const scale = 3.92 / maxDimension
 
     parsed.scale.setScalar(scale)
+    parsed.rotation.y = -0.10
     parsed.position.set(
       -center.x * scale,
       -center.y * scale - 0.25,
@@ -330,11 +331,11 @@ onErrorCaptured(() => {
       @ready="handleReady"
       @render="handleRender"
     >
-      <TresPerspectiveCamera :position="[0, 0.35, 7.4]" :fov="42" />
+      <TresPerspectiveCamera :position="[0, 0.38, 7.25]" :fov="40" />
 
-      <TresAmbientLight :intensity="0.72" />
-      <TresDirectionalLight :position="[3, 5, 4]" :intensity="1.55" />
-      <TresDirectionalLight :position="[-3, 1, 2]" :intensity="0.4" :color="accentColor" />
+      <TresAmbientLight :intensity="0.52" />
+      <TresDirectionalLight :position="[3.2, 5.2, 4.2]" :intensity="1.85" />
+      <TresDirectionalLight :position="[-3.2, 2.1, 1.6]" :intensity="0.55" :color="accentColor" />
 
       <primitive
         v-if="labAsset && labScene"
