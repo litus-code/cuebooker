@@ -1,0 +1,495 @@
+:root {
+  --workspace-rail: 184px;
+  --workspace-gutter: 18px;
+  --workspace-content: 1480px;
+  --workspace-header-max: 760px;
+}
+
+@media (min-width: 961px) {
+  .workspace {
+    padding: 0 22px 68px calc(var(--workspace-rail) + var(--workspace-gutter)) !important;
+  }
+
+  .workspace-header {
+    width: var(--workspace-rail) !important;
+    padding: 18px 12px 16px !important;
+    gap: 18px !important;
+  }
+
+  .workspace-header .brand {
+    width: 100%;
+    min-height: 50px !important;
+    padding: 0 4px !important;
+    overflow: hidden;
+  }
+
+  .workspace-header .brand .cue-brand--wordmark {
+    width: 154px !important;
+    height: 52px !important;
+    max-width: 100%;
+  }
+
+  .workspace-header .brand .cue-brand img {
+    object-position: left center;
+  }
+
+  .workspace-header nav {
+    gap: 3px !important;
+  }
+
+  .workspace-header nav button {
+    min-height: 41px !important;
+    padding: 0 10px 0 14px !important;
+    font-size: 11px !important;
+    border: 0 !important;
+  }
+
+  .workspace-header nav button.active {
+    background: var(--workspace-panel-soft) !important;
+    color: var(--cue-text) !important;
+  }
+
+  .workspace-header nav button.active::before {
+    top: 8px !important;
+    bottom: 8px !important;
+  }
+
+  .workspace-header .account-actions {
+    display: grid !important;
+    grid-template-columns: auto auto !important;
+    align-items: center !important;
+    justify-content: start !important;
+    gap: 8px !important;
+    margin-top: auto !important;
+    padding-top: 14px !important;
+  }
+
+  .workspace-header .account-actions > .cue-preferences-control {
+    grid-column: 1 / -1;
+    display: flex !important;
+    justify-content: flex-start;
+    gap: 8px !important;
+    margin-bottom: 2px;
+  }
+
+  .workspace-header .cue-segmented {
+    padding: 2px !important;
+  }
+
+  .workspace-header .cue-segmented button {
+    min-width: 27px !important;
+    min-height: 27px !important;
+    padding: 0 6px !important;
+    font-size: 8px !important;
+  }
+
+  .workspace-header .cue-theme-toggle,
+  .workspace-header .header-icon-button {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    min-height: 30px !important;
+    padding: 6px !important;
+  }
+
+  .workspace-header .account-actions > .header-icon-button {
+    grid-row: 2;
+  }
+
+  .workspace .view {
+    width: min(var(--workspace-content), 100%) !important;
+    margin: 0 !important;
+  }
+}
+
+/* One internal page-header system for every workspace section. */
+.workspace .view-heading,
+.workspace .calendar-heading {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(160px, 210px) !important;
+  align-items: start !important;
+  gap: clamp(28px, 4vw, 60px) !important;
+  min-height: 0 !important;
+  padding: 30px 0 26px !important;
+  border-bottom: 1px solid var(--workspace-line);
+}
+
+.workspace .view-heading > div:first-child,
+.workspace .calendar-heading > div:first-child {
+  max-width: var(--workspace-header-max);
+}
+
+.workspace .view-heading .eyebrow,
+.workspace .calendar-heading .eyebrow {
+  margin: 0 0 10px !important;
+}
+
+.workspace .view-heading h1,
+.workspace .calendar-heading h1,
+.workspace .empty-card h1 {
+  max-width: 720px !important;
+  margin: 0 0 12px !important;
+  font-size: clamp(2.35rem, 4.1vw, 4rem) !important;
+  line-height: .94 !important;
+  letter-spacing: -.045em !important;
+  text-wrap: balance;
+}
+
+.workspace .view-heading > div:first-child > p:last-child,
+.workspace .calendar-heading > div:first-child > p:last-child {
+  max-width: 620px !important;
+  margin: 0 !important;
+  color: var(--cue-muted) !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+
+.workspace .artist-identity,
+.workspace .artist-select,
+.workspace .profile-heading-actions {
+  min-width: 0 !important;
+  width: 100% !important;
+  align-self: start;
+  justify-self: stretch;
+  margin-top: 5px;
+}
+
+.workspace .artist-identity {
+  padding-top: 10px !important;
+}
+
+.workspace .artist-identity strong {
+  margin-top: 7px !important;
+  font-size: 14px !important;
+}
+
+/* Overview should read like product, not a landing hero. */
+.workspace .overview-view .view-heading h1 {
+  max-width: 620px !important;
+  font-size: clamp(2.35rem, 3.7vw, 3.65rem) !important;
+}
+
+.workspace .summary-grid {
+  margin-top: 18px;
+}
+
+.workspace .summary-card {
+  min-height: 118px !important;
+  padding: 15px 16px !important;
+}
+
+.workspace .summary-card strong {
+  margin: 9px 0 5px !important;
+  font-size: clamp(2rem, 3vw, 3rem) !important;
+}
+
+.workspace .summary-card p {
+  max-width: 200px !important;
+  font-size: 11px !important;
+  line-height: 1.45 !important;
+}
+
+.workspace .overview-grid {
+  gap: 14px !important;
+  margin-top: 14px !important;
+}
+
+.workspace .panel-heading {
+  padding: 18px 20px !important;
+}
+
+.workspace .panel-heading h2 {
+  margin-top: 6px !important;
+  font-size: 20px !important;
+}
+
+.workspace .next-panel {
+  padding: 22px !important;
+}
+
+.workspace .next-panel h2 {
+  margin: 13px 0 12px !important;
+  font-size: clamp(1.55rem, 2.1vw, 2.25rem) !important;
+}
+
+/* Bookings is one continuous operational surface. */
+.workspace .bookings-view .view-heading {
+  padding-bottom: 22px !important;
+}
+
+.workspace .demo-notice {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 24px !important;
+  margin: 16px 0 0 !important;
+  padding: 15px 17px !important;
+}
+
+.workspace .demo-notice strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 14px !important;
+}
+
+.workspace .demo-notice p {
+  max-width: 680px !important;
+  margin: 4px 0 0 !important;
+  font-size: 11px !important;
+  line-height: 1.5 !important;
+}
+
+.workspace .demo-notice__actions {
+  align-items: center;
+  gap: 7px !important;
+}
+
+.workspace .demo-notice__actions button {
+  min-height: 38px !important;
+  padding: 0 13px !important;
+  font-size: 10px !important;
+}
+
+.workspace .status-filters {
+  margin: 0 !important;
+  padding: 10px 0 !important;
+  border-bottom: 0 !important;
+}
+
+.workspace .status-filters button {
+  min-height: 34px !important;
+  padding: 0 11px !important;
+  font-size: 10px !important;
+}
+
+.workspace .booking-workspace {
+  grid-template-columns: minmax(285px, 330px) minmax(0, 1fr) !important;
+  min-height: 620px !important;
+  gap: 0 !important;
+  margin: 0 !important;
+  border: 1px solid var(--workspace-line) !important;
+  overflow: hidden;
+}
+
+.workspace .booking-list {
+  width: 100% !important;
+  border-right: 1px solid var(--workspace-line) !important;
+}
+
+.workspace .booking-list > button {
+  min-height: 84px !important;
+  grid-template-columns: 70px minmax(0, 1fr) !important;
+  align-content: center;
+  row-gap: 5px !important;
+  column-gap: 11px !important;
+  padding: 12px 14px !important;
+}
+
+.workspace .booking-list > button .status-pill {
+  grid-column: 2;
+  justify-self: start;
+  min-height: 23px !important;
+}
+
+.workspace .booking-detail {
+  border-left: 0 !important;
+}
+
+.workspace .booking-detail > header {
+  min-height: 112px;
+  padding: 20px 22px !important;
+}
+
+.workspace .booking-detail > header h2 {
+  margin: 6px 0 4px !important;
+  font-size: clamp(1.9rem, 2.8vw, 2.8rem) !important;
+}
+
+.workspace .booking-status-display {
+  min-width: 142px !important;
+}
+
+.workspace .booking-facts {
+  gap: 10px !important;
+  padding: 15px 22px !important;
+}
+
+.workspace .booking-facts section {
+  padding: 15px !important;
+}
+
+.workspace .message-thread {
+  margin: 0 22px !important;
+  padding: 16px 0 !important;
+}
+
+.workspace .booking-reply {
+  padding: 17px 22px 0 !important;
+}
+
+.workspace .booking-actions {
+  padding: 17px 22px 22px !important;
+}
+
+/* Calendar and history use the same rhythm as the rest of the app. */
+.workspace .calendar-layout {
+  margin-top: 18px;
+  gap: 12px !important;
+}
+
+.workspace .calendar-toolbar {
+  min-height: 62px !important;
+}
+
+.workspace .calendar-toolbar h2 {
+  font-size: 16px !important;
+}
+
+.workspace .day-heading {
+  padding: 16px !important;
+}
+
+.workspace .day-heading h2 {
+  font-size: 18px !important;
+}
+
+.workspace .history-list {
+  margin-top: 18px;
+}
+
+.workspace .history-list > button {
+  min-height: 82px !important;
+  grid-template-columns: 112px 10px minmax(0, 1fr) !important;
+  gap: 16px !important;
+  padding: 15px 17px !important;
+}
+
+/* Profile keeps editorial personality without turning the form header into a hero. */
+.workspace .profile-view .view-heading {
+  padding-bottom: 24px !important;
+}
+
+.workspace .profile-view .view-heading h1 {
+  max-width: 700px !important;
+  font-size: clamp(2.35rem, 3.9vw, 3.85rem) !important;
+}
+
+.workspace .profile-heading-actions {
+  gap: 10px !important;
+}
+
+.workspace .profile-progress > strong {
+  font-size: 24px !important;
+}
+
+.workspace .profile-section:first-of-type {
+  margin-top: 18px;
+}
+
+.workspace .profile-section > header {
+  gap: 28px !important;
+  padding: 19px 20px !important;
+}
+
+.workspace .profile-section > header h2 {
+  font-size: clamp(1.35rem, 2.4vw, 2rem) !important;
+  line-height: 1 !important;
+}
+
+/* Guided tour must feel integrated, not like a floating foreign component. */
+.workspace .tour-card {
+  right: 18px !important;
+  bottom: 18px !important;
+  width: min(360px, calc(100vw - 36px)) !important;
+  padding: 18px !important;
+}
+
+@media (max-width: 1180px) and (min-width: 961px) {
+  :root {
+    --workspace-rail: 172px;
+    --workspace-gutter: 14px;
+  }
+
+  .workspace .view-heading,
+  .workspace .calendar-heading {
+    grid-template-columns: minmax(0, 1fr) 170px !important;
+    gap: 28px !important;
+  }
+
+  .workspace .booking-workspace {
+    grid-template-columns: 285px minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 960px) {
+  .workspace .view-heading,
+  .workspace .calendar-heading {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+    padding: 22px 0 18px !important;
+  }
+
+  .workspace .view-heading h1,
+  .workspace .calendar-heading h1,
+  .workspace .profile-view .view-heading h1,
+  .workspace .overview-view .view-heading h1 {
+    max-width: none !important;
+    font-size: clamp(2rem, 10vw, 3.15rem) !important;
+  }
+
+  .workspace .artist-identity,
+  .workspace .artist-select,
+  .workspace .profile-heading-actions {
+    width: min(100%, 340px) !important;
+    margin-top: 0 !important;
+  }
+
+  .workspace .demo-notice {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .workspace .booking-workspace {
+    grid-template-columns: 1fr !important;
+  }
+
+  .workspace .booking-list {
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--workspace-line) !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .workspace-header .brand .cue-brand--wordmark {
+    width: 126px !important;
+    height: 42px !important;
+  }
+
+  .workspace .view-heading h1,
+  .workspace .calendar-heading h1,
+  .workspace .profile-view .view-heading h1,
+  .workspace .overview-view .view-heading h1 {
+    font-size: clamp(1.9rem, 11.5vw, 2.8rem) !important;
+  }
+
+  .workspace .summary-grid {
+    gap: 0 !important;
+  }
+
+  .workspace .demo-notice__actions {
+    grid-template-columns: 1fr !important;
+  }
+
+  .workspace .booking-detail > header,
+  .workspace .booking-facts,
+  .workspace .booking-reply,
+  .workspace .booking-actions {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  .workspace .message-thread {
+    margin-inline: 14px !important;
+  }
+}

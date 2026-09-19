@@ -1,7 +1,9 @@
 # CueBooker Artist Profile system
 
-Updated: 16 September 2026
+Updated: 19 September 2026
 Status: approved product direction for staged validation
+
+> Implementation contract: read `docs/CUE_ID_FOUNDATION.md` before starting CUE ID UI, persistence or 3D work. It defines the V1 scope, persistence boundary, public/private contract, editor architecture and Definition of Done.
 
 ## Product hierarchy
 
@@ -100,6 +102,8 @@ Technical direction:
 
 Temporary art-direction families for exploration can include Void, Chrome, Translucent and Signal. These are visual families, not music categories.
 
+The first implementation family is now constrained by `docs/CUE_ID_FOUNDATION.md` to one high-quality `Club Minimal` vertical slice before expanding catalogue breadth.
+
 ### Performance contract
 
 Performance is part of the CUE ID product definition, not a later optimisation task.
@@ -128,6 +132,8 @@ Naming remains provisional.
 
 Opening the app, clicking buttons, sharing posts or maintaining daily streaks must not increase SIGNAL. It does not represent talent, popularity or status in the scene.
 
+SIGNAL is not part of the first CUE ID persistence/implementation slice.
+
 ## CUE PASSPORT
 
 CUE PASSPORT is the trajectory section of Artist Profile.
@@ -145,6 +151,8 @@ It can contain, when the artist chooses to include or expose them:
 CueBooker should derive future Passport entries from normalized booking data instead of copying booking history into a second store. The artist may also add meaningful history from before CueBooker.
 
 Private commercial information, contacts, exact fees, negotiations and internal notes never become public Passport data by default.
+
+PASSPORT is not part of the first CUE ID persistence/implementation slice.
 
 ## Sharing
 
@@ -219,13 +227,15 @@ artist_profile: {
 }
 
 cue_id: {
+  schema_version: 1
   enabled: boolean
-  visual_family: string | null
-  body: string | null
-  head: string | null
-  outfit: string | null
+  family: string
+  base: string
+  build: string
+  outfit: string
   accessory: string | null
-  material: string | null
+  pose: string
+  material: string
   accent: string | null
 }
 
@@ -239,6 +249,8 @@ cue_passport: {
 }
 ```
 
+The CUE ID config above is semantic product state. Renderer-specific scene/node/camera state must not be persisted.
+
 Do not migrate every future field now. Add persistence as each vertical slice becomes real.
 
 ## Delivery plan
@@ -249,22 +261,22 @@ Do not migrate every future field now. Add persistence as each vertical slice be
 - keep `/cue-id` as a non-indexed design laboratory;
 - show an Artist Profile / CUE ID teaser during DJ onboarding;
 - keep CUE ID optional;
-- preserve existing booking flows.
+- preserve existing booking flows;
+- use `docs/CUE_ID_FOUNDATION.md` as the implementation contract.
 
-### Phase 1, unified Artist Profile
+### Phase 1, unified Artist Profile + editor shell
 
-- make Artist Profile the single product surface;
-- integrate CUE ID entry inside its identity area;
-- separate music styles, substyles and descriptors after editorial review;
-- expose profile completion from Overview;
-- retain "Do it later" throughout;
+- keep Artist Profile as the single product surface;
+- integrate CUE ID entry inside its identity/visual area;
+- support Photo / Artwork / CUE ID mode without deleting alternatives;
+- build the CUE ID editor shell around semantic controls and a static fallback;
 - keep Share as an action from Preview.
 
-### Phase 2, first 3D identity
+### Phase 2, first persistence + 3D identity
 
+- persist one versioned semantic CUE ID config;
 - introduce client-only, lazy-hydrated TresJS/Three.js;
-- ship one art-directed modular family;
-- allow photography, artwork or CUE ID as presentation modes;
+- ship one `Club Minimal` modular family;
 - create static fallback output;
 - load optional assets only on demand;
 - validate desktop and mobile performance against the documented performance contract;
@@ -312,3 +324,5 @@ Daily active usage is not the primary success metric for a booking tool. CueBook
 ## Explicit non-goals
 
 Do not build global DJ rankings, follower-based levels, daily login streaks, XP for clicks, popularity scores, automatic claims that one artist is more professional or authentic than another, cartoon customisation as the default visual direction, unreviewed genre taxonomy or public commercial history without explicit artist control.
+
+For the first CUE ID slice specifically, also exclude photoreal face scanning, user-uploaded 3D meshes, unlockable cosmetics, avatar economy, PASSPORT/SIGNAL schema and a Sims-like body editor.

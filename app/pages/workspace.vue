@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import { bookingStatuses, statusTone, type BookingStatus } from '../domain/booking'
 import type { FeeBasis } from '../composables/useArtistProfile'
+import type { CoreBooking, Hold } from '../domain/bookingCore'
+import type { CueNotification } from '../domain/notification'
+import { toPublicCueIdConfig, type PublicArtistProfile } from '../domain/publicArtistProfile'
 
 const auth = useCueAuth()
 const availability = useAvailability()
+const bookingCore = useBookingCore()
+const notifications = useNotifications()
 const artistProfiles = useArtistProfile()
+const publicPublishing = usePublicArtistPublishing()
 const preferences = useCuePreferences()
 const route = useRoute()
 const router = useRouter()
@@ -72,9 +77,16 @@ const editingBlockId = ref<string | null>(null)
 const rosterArtistName = ref('')
 const rosterArtistSlug = ref('')
 const rosterSubmitting = ref(false)
-const bookingFilter = ref<'all' | BookingStatus>('all')
-const selectedDemoBookingId = ref('')
-const demoReply = ref('')
+const sidebarCollapsed = ref(false)
+const bookingCoreWorkspaceId = ref('')
+const realBookings = ref<CoreBooking[]>([])
+const realHolds = ref<Hold[]>([])
+const cueOpen = ref(false)
+const cueCoreLoading = ref(false)
+const cueMessage = ref('')
+const bookingCoreOperationsRevision = ref(0)
+const realBookingFocusId = ref('')
+let bookingCoreSyncTimer: ReturnType<typeof setInterval> | null = null
 const tourStep = ref(-1)
 const settingsOpen = ref(false)
 const passwordCurrent = ref('')
@@ -91,29 +103,36 @@ const profilePreviewOpen = ref(false)
 const profileCoverUrl = ref('')
 const profileCoverUploading = ref(false)
 const profileCoverMessage = ref('')
+const profileArtistImageUrl = ref('')
+const profileArtistCutoutUrl = ref('')
+const publicProfilePublished = ref(false)
+const publicProfileAcceptingRequests = ref(false)
+const publicProfileWorkspaceId = ref('')
+const publicPublishingSaving = ref(false)
+const publicPublishingMessage = ref('')
+const tourCardStyle = ref<Record<string, string>>({})
+let tourPositionTimer: ReturnType<typeof setTimeout> | null = null
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
-  overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Historial', profile: 'Perfil',
+  overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Actividad', profile: 'Perfil',
   artist: 'Artista', role: 'DJ', settings: 'Ajustes', logout: 'Cerrar sesión',
   loading: 'Cargando workspace…', rosterEyebrow: 'ROSTER / PRIMER ARTISTA', addFirstArtist: 'Añade el primer artista de',
   rosterBody: 'Quedará asociado al roster y podrás empezar a gestionar su actividad.', artistName: 'Nombre artístico', identifier: 'Identificador', creating: 'Creando…', addArtist: 'Añadir artista',
   noArtist: 'No hay un artista gestionable en esta cuenta.', noArtistBody: 'Tu cuenta todavía no tiene un artista o roster asignado.',
   overviewEyebrow: 'WORKSPACE / RESUMEN', overviewTitle: 'QUÉ NECESITA TU ATENCIÓN.', overviewBody: 'Una entrada rápida a los bookings y fechas del artista, sin convertir el calendario en todo el producto.', profileCard: 'Ficha profesional', profileCardBody: 'Completa o actualiza los datos del artista.',
-  realBookings: 'Bookings reales', realBookingsBody: 'Aún sin conectar. La bandeja completa está disponible con ejemplos.', holdsMonth: 'Holds este mes', holdsBody: 'Fechas pendientes de decisión.', confirmed: 'Confirmados', confirmedStatus: 'Confirmado', confirmedBody: 'Horarios confirmados este mes.', occupiedDays: 'Días ocupados', occupiedBody: 'Con al menos un horario registrado.',
+  realBookings: 'Bookings reales', realBookingsBody: 'El workspace operativo todavía no está disponible para este artista.', holdsMonth: 'Holds este mes', holdsBody: 'Fechas pendientes de decisión.', confirmed: 'Confirmados', confirmedStatus: 'Confirmado', confirmedBody: 'Horarios confirmados este mes.', occupiedDays: 'Días ocupados', occupiedBody: 'Con al menos un horario registrado.',
   agendaEyebrow: 'AGENDA / ESTE MES', upcoming: 'Próximos horarios', viewCalendar: 'Ver calendario', privateSlot: 'Horario privado', noUpcoming: 'No hay horarios próximos registrados en este mes.', addSlot: 'Añadir horario',
-  sampleEyebrow: 'BOOKINGS / MODO PRUEBA', sampleTitle: 'PRUEBA LA BANDEJA COMPLETA.', sampleBody: 'Las solicitudes reales todavía no están conectadas a esta cuenta. Puedes probar ahora los filtros, ofertas, conversaciones y cambios de estado con datos simulados.', openBookings: 'Abrir Bookings',
   bookingsEyebrow: 'BOOKINGS / BANDEJA', bookingsTitle: 'TODOS TUS BOOKINGS. UN SOLO HILO.',
   bookingsBody: 'Revisa cada propuesta, responde al promotor y decide la fecha sin perder el contexto.',
-  samplesLabel: 'EJEMPLOS INICIALES / DATOS SIMULADOS', samplesActive: 'Tu workspace empieza con solicitudes de muestra.', samplesRemoved: 'Has eliminado las solicitudes de muestra.', samplesBody: 'Los ejemplos pertenecen únicamente a este perfil y navegador. No modifican el calendario privado y puedes retirarlos cuando quieras.', guidedTour: 'Ver recorrido guiado', removeSamples: 'Eliminar ejemplos', restoreSamples: 'Restaurar ejemplos', all: 'Todas', noSamples: 'No hay solicitudes de prueba en este estado.',
-  sampleBooking: 'BOOKING DE PRUEBA', automaticStatus: 'Estado automático', eventData: 'Datos del evento', date: 'Fecha', city: 'Ciudad', venue: 'Sala', capacity: 'Aforo', offer: 'Oferta', schedule: 'Horario', contact: 'Contacto', name: 'Nombre', phone: 'Tel.', source: 'Origen', bookingLink: 'Enlace de booking', conversation: 'Conversación', replyPromoter: 'Responder al promotor', replyPlaceholder: 'Escribe condiciones, una pregunta o una propuesta…', localMessage: 'Ejemplo local. El mensaje no se envía por email.', sendSampleReply: 'Enviar respuesta de ejemplo', openPromoter: 'Abrir vista del promotor', confirmDate: 'Confirmar fecha', rejectRequest: 'Rechazar solicitud', openRequest: 'Abre una solicitud para ver sus datos, la oferta y la conversación.',
-  calendarEyebrow: 'CALENDARIO / DISPONIBILIDAD', calendarTitle: 'FECHAS Y HORARIOS.', calendarBody: 'Abre un día para ver sus 24 horas. Pulsa una hora vacía para crear un horario o un bloque existente para editarlo.', weekdays: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], unavailable: 'No disponible', dayHours: 'DÍA / 24 HORAS', add: 'Añadir', selectedDaySchedule: 'Horario del día seleccionado', addAt: 'Añadir horario a las',
-  historyEyebrow: 'WORKSPACE / HISTORIAL', historyTitle: 'TODO LO QUE HA PASADO.',
-  historyBody: 'Abre cualquier movimiento para volver a la oferta y revisar toda la conversación que originó esa acción.',
-  historyEmpty: 'Todavía no hay actividad en este perfil.', historyStatus: 'Estado actualizado', historyMessage: 'Mensaje', openTrace: 'Abrir oferta y ver traza', previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente', filterSamples: 'Filtrar bookings de ejemplo',
-  profileEyebrow: 'ARTISTA / FICHA PROFESIONAL', profileTitle: 'TU INFORMACIÓN DE BOOKING.', profileBody: 'Completa esta ficha a tu ritmo. Hoy es privada y servirá para organizar mejor tus solicitudes y preparar futuras opciones de descubrimiento.',
-  profileOptional: 'Ficha opcional', profileOptionalBody: 'Tu workspace ya está creado. Puedes completar estos datos ahora o volver desde Perfil cuando quieras.', later: 'Ahora no', previewProfile: 'Vista previa', previewPrivate: 'VISTA PRIVADA / NO PUBLICADA', previewClose: 'Cerrar vista previa', previewBioEmpty: 'Tu biografía aparecerá aquí cuando la completes.', previewGenresEmpty: 'Añade géneros para verlos en la ficha.', previewFormats: 'Formatos', previewLinks: 'Escuchar y seguir',
+  guidedTour: 'Ver recorrido guiado', collapseSidebar: 'Comprimir menú', expandSidebar: 'Expandir menú',
+  calendarEyebrow: 'CALENDARIO / AGENDA', calendarTitle: 'FECHAS Y HORARIOS.', calendarBody: 'Los holds y bookings confirmados aparecen aquí automáticamente. Usa “Añadir bloqueo” para viajes, estudio o indisponibilidad que no nacen de un booking.', weekdays: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], unavailable: 'No disponible', dayHours: 'DÍA / 24 HORAS', add: 'Añadir bloqueo', selectedDaySchedule: 'Horario del día seleccionado', addAt: 'Añadir bloqueo a las',
+  historyEyebrow: 'WORKSPACE / ACTIVIDAD', historyTitle: 'TODO LO QUE HA PASADO.',
+  historyBody: 'Mensajes, cambios de estado, holds y acciones ordenados por tiempo. Los bookings archivados siguen estando en Bookings → Archivados.',
+  previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente',
+  profileEyebrow: 'ARTISTA / FICHA PROFESIONAL', profileTitle: 'TU INFORMACIÓN DE BOOKING.', profileBody: 'Edita lo que verá quien visite tu perfil público. Tus condiciones privadas de booking siguen siendo solo de tu workspace.',
+  profileOptional: 'Ficha opcional', profileOptionalBody: 'Tu workspace ya está creado. Puedes completar estos datos ahora o volver desde Perfil cuando quieras.', later: 'Ahora no', previewProfile: 'Vista previa', previewPrivate: 'VISTA PREVIA / PERFIL PÚBLICO', previewClose: 'Cerrar vista previa', previewBioEmpty: 'Tu biografía aparecerá aquí cuando la completes.', previewGenresEmpty: 'Añade géneros para verlos en la ficha.', previewFormats: 'Formatos', previewLinks: 'Escuchar y seguir',
   coverTitle: 'Tu sonido empieza por la imagen.', coverHint: 'Arrastra una foto o elígela. Si no añades ninguna, CueBooker usará esta portada acid y Detroit.', coverChoose: 'Añadir mi portada', coverChange: 'Cambiar portada', coverRemove: 'Usar portada CueBooker', coverPosition: 'Ajustar encuadre vertical', coverUploading: 'Subiendo portada…', coverSaved: 'Portada actualizada.', coverRemoved: 'Portada base restaurada.', coverInvalid: 'Usa JPG, PNG o WebP de hasta 8 MB.', coverError: 'No se pudo guardar la portada.',
-  profilePublicSection: 'Identidad y ubicación', profilePublicHint: 'Información profesional preparada para una futura ficha pública. Todavía no se publica.',
+  profilePublicSection: 'Identidad y ubicación', profilePublicHint: 'Esta información forma parte de tu perfil público cuando decidas publicarlo.',
   profileSoundSection: 'Sonido y formatos', profileBookingSection: 'Condiciones de booking', profileBookingHint: 'Solo tú y las personas autorizadas de tu equipo pueden ver estos datos.', profileLinksSection: 'Enlaces y material',
   stageName: 'Nombre artístico', bio: 'Biografía', bioPlaceholder: 'Describe el proyecto, su sonido y el tipo de directo.', baseCity: 'Ciudad base', countryCode: 'País', timezone: 'Zona horaria', languages: 'Idiomas', commaHint: 'Separa los valores con comas.',
   primaryGenres: 'Géneros principales', primaryGenresHint: 'Máximo 3.', secondaryGenres: 'Géneros secundarios', performanceFormats: 'Formatos', eventTypes: 'Tipos de evento', yearsActive: 'Años en activo',
@@ -125,29 +144,27 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   newPassword: 'Nueva contraseña', confirmPassword: 'Repetir contraseña', savePassword: 'Guardar contraseña',
   passwordSaved: 'Contraseña actualizada.', passwordMismatch: 'Las contraseñas nuevas no coinciden.',
   passwordLength: 'La nueva contraseña debe tener al menos 8 caracteres.', close: 'Cerrar', accountPrivate: 'CUENTA / PRIVADO',
-  editSlot: 'EDITAR HORARIO', newSlot: 'NUEVO HORARIO', privateLabel: 'Etiqueta privada', privatePlaceholder: 'Estudio, desplazamiento, evento…', start: 'Inicio', end: 'Fin', invalidTime: 'La hora de fin debe ser posterior a la hora de inicio.', status: 'Estado', saving: 'Guardando…', saveChanges: 'Guardar cambios', createSlot: 'Crear horario', deleteSlot: 'Eliminar horario', finish: 'Terminar', next: 'Siguiente', closeTour: 'Cerrar recorrido'
+  editSlot: 'EDITAR BLOQUEO MANUAL', newSlot: 'NUEVO BLOQUEO MANUAL', privateLabel: 'Qué bloqueas', privatePlaceholder: 'Estudio, viaje, no disponible…', start: 'Inicio', end: 'Fin', invalidTime: 'La hora de fin debe ser posterior a la hora de inicio.', status: 'Estado', saving: 'Guardando…', saveChanges: 'Guardar cambios', createSlot: 'Crear horario', deleteSlot: 'Eliminar horario', finish: 'Terminar', next: 'Siguiente', closeTour: 'Cerrar recorrido'
 } : {
-  overview: 'Overview', bookings: 'Bookings', calendar: 'Calendar', history: 'History', profile: 'Profile',
+  overview: 'Overview', bookings: 'Bookings', calendar: 'Calendar', history: 'Activity', profile: 'Profile',
   artist: 'Artist', role: 'DJ', settings: 'Settings', logout: 'Sign out',
   loading: 'Loading workspace…', rosterEyebrow: 'ROSTER / FIRST ARTIST', addFirstArtist: 'Add the first artist for',
   rosterBody: 'They will be linked to the roster so you can start managing their activity.', artistName: 'Artist name', identifier: 'Identifier', creating: 'Creating…', addArtist: 'Add artist',
   noArtist: 'There is no manageable artist in this account.', noArtistBody: 'Your account does not have an assigned artist or roster yet.',
   overviewEyebrow: 'WORKSPACE / OVERVIEW', overviewTitle: 'WHAT NEEDS YOUR ATTENTION.', overviewBody: 'A quick view of the artist’s bookings and dates without making the calendar the whole product.', profileCard: 'Professional profile', profileCardBody: 'Complete or update the artist details.',
-  realBookings: 'Real bookings', realBookingsBody: 'Not connected yet. The complete inbox is available with examples.', holdsMonth: 'Holds this month', holdsBody: 'Dates waiting for a decision.', confirmed: 'Confirmed', confirmedStatus: 'Confirmed', confirmedBody: 'Confirmed slots this month.', occupiedDays: 'Occupied days', occupiedBody: 'With at least one registered slot.',
+  realBookings: 'Real bookings', realBookingsBody: 'The operational workspace is not available for this artist yet.', holdsMonth: 'Holds this month', holdsBody: 'Dates waiting for a decision.', confirmed: 'Confirmed', confirmedStatus: 'Confirmed', confirmedBody: 'Confirmed slots this month.', occupiedDays: 'Occupied days', occupiedBody: 'With at least one registered slot.',
   agendaEyebrow: 'AGENDA / THIS MONTH', upcoming: 'Upcoming slots', viewCalendar: 'View calendar', privateSlot: 'Private slot', noUpcoming: 'There are no upcoming slots registered this month.', addSlot: 'Add slot',
-  sampleEyebrow: 'BOOKINGS / SAMPLE MODE', sampleTitle: 'TRY THE COMPLETE INBOX.', sampleBody: 'Real requests are not connected to this account yet. You can try filters, offers, conversations and status changes with sample data.', openBookings: 'Open Bookings',
   bookingsEyebrow: 'BOOKINGS / INBOX', bookingsTitle: 'ALL YOUR BOOKINGS. ONE THREAD.',
   bookingsBody: 'Review every proposal, reply to the promoter and decide each date without losing context.',
-  samplesLabel: 'STARTER EXAMPLES / SAMPLE DATA', samplesActive: 'Your workspace starts with sample requests.', samplesRemoved: 'You removed the sample requests.', samplesBody: 'These examples belong only to this profile and browser. They do not change your private calendar and you can remove them whenever you want.', guidedTour: 'View guided tour', removeSamples: 'Remove examples', restoreSamples: 'Restore examples', all: 'All', noSamples: 'There are no sample requests with this status.',
-  sampleBooking: 'SAMPLE BOOKING', automaticStatus: 'Automatic status', eventData: 'Event details', date: 'Date', city: 'City', venue: 'Venue', capacity: 'Capacity', offer: 'Offer', schedule: 'Schedule', contact: 'Contact', name: 'Name', phone: 'Phone', source: 'Source', bookingLink: 'Booking link', conversation: 'Conversation', replyPromoter: 'Reply to promoter', replyPlaceholder: 'Write conditions, a question or a proposal…', localMessage: 'Local example. This message is not sent by email.', sendSampleReply: 'Send sample reply', openPromoter: 'Open promoter view', confirmDate: 'Confirm date', rejectRequest: 'Reject request', openRequest: 'Open a request to view its details, offer and conversation.',
-  calendarEyebrow: 'CALENDAR / AVAILABILITY', calendarTitle: 'DATES AND TIMES.', calendarBody: 'Open a day to see all 24 hours. Select an empty hour to create a slot or an existing block to edit it.', weekdays: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], unavailable: 'Unavailable', dayHours: 'DAY / 24 HOURS', add: 'Add', selectedDaySchedule: 'Selected day schedule', addAt: 'Add slot at',
-  historyEyebrow: 'WORKSPACE / HISTORY', historyTitle: 'EVERYTHING THAT HAPPENED.',
-  historyBody: 'Open any activity to return to its offer and review the full conversation that caused it.',
-  historyEmpty: 'There is no activity for this profile yet.', historyStatus: 'Status updated', historyMessage: 'Message', openTrace: 'Open offer and view trace', previousMonth: 'Previous month', nextMonth: 'Next month', filterSamples: 'Filter sample bookings',
-  profileEyebrow: 'ARTIST / PROFESSIONAL PROFILE', profileTitle: 'YOUR BOOKING INFORMATION.', profileBody: 'Complete this profile at your own pace. It is private today and will help organise requests and prepare future discovery options.',
-  profileOptional: 'Optional profile', profileOptionalBody: 'Your workspace is ready. Complete these details now or return from Profile whenever you want.', later: 'Not now', previewProfile: 'Preview', previewPrivate: 'PRIVATE PREVIEW / NOT PUBLISHED', previewClose: 'Close preview', previewBioEmpty: 'Your biography will appear here once completed.', previewGenresEmpty: 'Add genres to see them on the profile.', previewFormats: 'Formats', previewLinks: 'Listen and follow',
+  guidedTour: 'View guided tour', collapseSidebar: 'Collapse menu', expandSidebar: 'Expand menu',
+  calendarEyebrow: 'CALENDAR / SCHEDULE', calendarTitle: 'DATES AND TIMES.', calendarBody: 'Holds and confirmed bookings appear here automatically. Use “Add block” for travel, studio time or unavailability that does not come from a booking.', weekdays: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], unavailable: 'Unavailable', dayHours: 'DAY / 24 HOURS', add: 'Add block', selectedDaySchedule: 'Selected day schedule', addAt: 'Add block at',
+  historyEyebrow: 'WORKSPACE / ACTIVITY', historyTitle: 'EVERYTHING THAT HAPPENED.',
+  historyBody: 'Messages, status changes, holds and actions ordered over time. Archived bookings remain under Bookings → Archived.',
+  previousMonth: 'Previous month', nextMonth: 'Next month',
+  profileEyebrow: 'ARTIST / PROFESSIONAL PROFILE', profileTitle: 'YOUR BOOKING INFORMATION.', profileBody: 'Edit what people will see on your public artist profile. Your private booking terms remain visible only inside your workspace.',
+  profileOptional: 'Optional profile', profileOptionalBody: 'Your workspace is ready. Complete these details now or return from Profile whenever you want.', later: 'Not now', previewProfile: 'Preview', previewPrivate: 'PREVIEW / PUBLIC PROFILE', previewClose: 'Close preview', previewBioEmpty: 'Your biography will appear here once completed.', previewGenresEmpty: 'Add genres to see them on the profile.', previewFormats: 'Formats', previewLinks: 'Listen and follow',
   coverTitle: 'Your sound starts with the image.', coverHint: 'Drop a photo or choose one. If you skip it, CueBooker will use this acid and Detroit cover.', coverChoose: 'Add my cover', coverChange: 'Change cover', coverRemove: 'Use CueBooker cover', coverPosition: 'Adjust vertical framing', coverUploading: 'Uploading cover…', coverSaved: 'Cover updated.', coverRemoved: 'Default cover restored.', coverInvalid: 'Use a JPG, PNG or WebP file up to 8 MB.', coverError: 'The cover could not be saved.',
-  profilePublicSection: 'Identity and location', profilePublicHint: 'Professional information prepared for a future public profile. It is not published yet.',
+  profilePublicSection: 'Identity and location', profilePublicHint: 'This information becomes part of your public profile when you choose to publish it.',
   profileSoundSection: 'Sound and formats', profileBookingSection: 'Booking terms', profileBookingHint: 'Only you and authorised team members can see these details.', profileLinksSection: 'Links and material',
   stageName: 'Artist name', bio: 'Biography', bioPlaceholder: 'Describe the project, its sound and performance style.', baseCity: 'Base city', countryCode: 'Country', timezone: 'Time zone', languages: 'Languages', commaHint: 'Separate values with commas.',
   primaryGenres: 'Primary genres', primaryGenresHint: 'Maximum 3.', secondaryGenres: 'Secondary genres', performanceFormats: 'Formats', eventTypes: 'Event types', yearsActive: 'Years active',
@@ -159,35 +176,34 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   newPassword: 'New password', confirmPassword: 'Repeat password', savePassword: 'Save password',
   passwordSaved: 'Password updated.', passwordMismatch: 'The new passwords do not match.',
   passwordLength: 'The new password must contain at least 8 characters.', close: 'Close', accountPrivate: 'ACCOUNT / PRIVATE',
-  editSlot: 'EDIT SLOT', newSlot: 'NEW SLOT', privateLabel: 'Private label', privatePlaceholder: 'Studio, travel, event…', start: 'Start', end: 'End', invalidTime: 'The end time must be later than the start time.', status: 'Status', saving: 'Saving…', saveChanges: 'Save changes', createSlot: 'Create slot', deleteSlot: 'Delete slot', finish: 'Finish', next: 'Next', closeTour: 'Close tour'
+  editSlot: 'EDIT MANUAL BLOCK', newSlot: 'NEW MANUAL BLOCK', privateLabel: 'What are you blocking?', privatePlaceholder: 'Studio, travel, unavailable…', start: 'Start', end: 'End', invalidTime: 'The end time must be later than the start time.', status: 'Status', saving: 'Saving…', saveChanges: 'Save changes', createSlot: 'Create slot', deleteSlot: 'Delete slot', finish: 'Finish', next: 'Next', closeTour: 'Close tour'
 })
 
 const tourSteps = computed(() => preferences.locale.value === 'es' ? [
-  { view: 'bookings' as const, target: 'sample-mode', title: 'Solicitudes de ejemplo', body: 'Cada cuenta empieza con solicitudes simuladas para que puedas entender el flujo antes de recibir la primera real.' },
-  { view: 'bookings' as const, target: 'workspace-filters', title: 'Filtra por estado', body: 'Los colores separan solicitudes nuevas, revisiones, respuestas pendientes y fechas confirmadas.' },
-  { view: 'bookings' as const, target: 'workspace-list', title: 'Abre un booking', body: 'La lista reúne la fecha, sala, artista, ciudad y estado. Selecciona una fila para abrir el detalle.' },
-  { view: 'bookings' as const, target: 'workspace-status', title: 'Estado automático', body: 'Abrir una solicitud la mueve a revisión. Responder actualiza quién tiene la siguiente acción.' },
-  { view: 'bookings' as const, target: 'workspace-details', title: 'Oferta y producción', body: 'Fecha, aforo, horario, oferta y contacto permanecen unidos al mismo booking.' },
-  { view: 'bookings' as const, target: 'workspace-reply', title: 'Conversación continua', body: 'Las respuestas se añaden al hilo. En estos ejemplos permanecen dentro del navegador y no envían emails.' },
-  { view: 'bookings' as const, target: 'workspace-actions', title: 'Decide el resultado', body: 'Confirmar o rechazar son decisiones manuales. Los demás cambios de estado siguen la actividad.' },
-  { view: 'calendar' as const, target: 'workspace-calendar', title: 'Revisa el día completo', body: 'El calendario real de la cuenta muestra el mes y las 24 horas del día seleccionado para evitar solapamientos.' }
+  { view: 'bookings' as const, target: 'workspace-cue', title: 'Captura rápida', body: 'Registra una llamada, un WhatsApp, un email o una conversación en cuanto ocurre. El booking puede empezar con pocos datos.' },
+  { view: 'bookings' as const, target: 'core-inbox-tools', title: 'Busca y filtra', body: 'La bandeja real separa activos y archivados, permite buscar y filtrar por estado sin salir del workspace.' },
+  { view: 'bookings' as const, target: 'core-inbox-list', title: 'Abre un booking', body: 'Cada fila mantiene fecha, entidad, origen y estado. Selecciona una para trabajar sobre su hilo real.' },
+  { view: 'bookings' as const, target: 'core-inbox-detail', title: 'Un hilo por booking', body: 'El booking concentra su contexto, estado, relación, conflictos, operativa y Activity en una sola superficie.' },
+  { view: 'bookings' as const, target: 'core-inbox-facts', title: 'Datos de la propuesta', body: 'Fecha, sala o entidad, contacto y oferta permanecen ligados al booking y se editan sin crear duplicados.' },
+  { view: 'bookings' as const, target: 'core-inbox-operations', title: 'Siguiente paso y holds', body: 'Define qué toca hacer y protege fechas con holds. El calendario los proyecta desde Booking Core.' },
+  { view: 'bookings' as const, target: 'core-inbox-activity-composer', title: 'Activity', body: 'Registra notas, llamadas, WhatsApp, Instagram o email para conservar la traza profesional del booking.' },
+  { view: 'calendar' as const, target: 'workspace-calendar', title: 'Revisa el día completo', body: 'El calendario combina disponibilidad privada, holds y bookings confirmados sin duplicar la fuente de verdad.' }
 ] : [
-  { view: 'bookings' as const, target: 'sample-mode', title: 'Sample requests', body: 'Every account starts with sample requests so you can understand the flow before the first real one arrives.' },
-  { view: 'bookings' as const, target: 'workspace-filters', title: 'Filter by status', body: 'Colours separate new requests, reviews, pending replies and confirmed dates.' },
-  { view: 'bookings' as const, target: 'workspace-list', title: 'Open a booking', body: 'The list brings together date, venue, artist, city and status. Select a row to open its details.' },
-  { view: 'bookings' as const, target: 'workspace-status', title: 'Automatic status', body: 'Opening a request moves it to review. Replying updates who needs to act next.' },
-  { view: 'bookings' as const, target: 'workspace-details', title: 'Offer and production', body: 'Date, capacity, schedule, offer and contact stay attached to the same booking.' },
-  { view: 'bookings' as const, target: 'workspace-reply', title: 'Continuous conversation', body: 'Replies are added to the thread. These examples remain in the browser and do not send email.' },
-  { view: 'bookings' as const, target: 'workspace-actions', title: 'Decide the outcome', body: 'Confirming or rejecting are manual decisions. Other status changes follow activity.' },
-  { view: 'calendar' as const, target: 'workspace-calendar', title: 'Review the full day', body: 'The real account calendar shows the month and all 24 hours of the selected day to prevent overlaps.' }
+  { view: 'bookings' as const, target: 'workspace-cue', title: 'Quick capture', body: 'Log a call, WhatsApp, email or conversation as soon as it happens. A booking can start with only a few details.' },
+  { view: 'bookings' as const, target: 'core-inbox-tools', title: 'Search and filter', body: 'The real inbox separates active and archived work, with search and status filters inside the workspace.' },
+  { view: 'bookings' as const, target: 'core-inbox-list', title: 'Open a booking', body: 'Each row keeps date, entity, source and status together. Select one to work on its real thread.' },
+  { view: 'bookings' as const, target: 'core-inbox-detail', title: 'One thread per booking', body: 'The booking keeps context, status, relationship memory, conflicts, operations and Activity in one surface.' },
+  { view: 'bookings' as const, target: 'core-inbox-facts', title: 'Proposal details', body: 'Date, venue or entity, contact and offer stay attached to the booking and can be edited without duplicates.' },
+  { view: 'bookings' as const, target: 'core-inbox-operations', title: 'Next move and holds', body: 'Define what needs to happen next and protect dates with holds. Calendar projects them from Booking Core.' },
+  { view: 'bookings' as const, target: 'core-inbox-activity-composer', title: 'Activity', body: 'Log notes, calls, WhatsApp, Instagram or email to preserve the professional trace of the booking.' },
+  { view: 'calendar' as const, target: 'workspace-calendar', title: 'Review the full day', body: 'Calendar combines private availability, holds and confirmed bookings without duplicating the source of truth.' }
 ])
 
 const manageableAgency = computed(() => organizations.value.find(item => item.type === 'agency' && ['owner', 'admin'].includes(item.role)))
+const ownerAgency = computed(() => organizations.value.find(item => item.type === 'agency' && item.role === 'owner'))
 const selectedArtist = computed(() => artists.value.find(item => item.id === selectedArtistId.value))
 const canEditSelectedArtist = computed(() => ['owner', 'manager'].includes(selectedArtist.value?.role || ''))
-const sampleNamespace = computed(() => auth.session.value?.user.id && selectedArtistId.value ? `workspace-${auth.session.value.user.id}-${selectedArtistId.value}` : undefined)
-const sampleArtistName = computed(() => selectedArtist.value?.stage_name)
-const demo = useBookingDemo(sampleNamespace, sampleArtistName)
+const tourNamespace = computed(() => auth.session.value?.user.id && selectedArtistId.value ? `workspace-${auth.session.value.user.id}-${selectedArtistId.value}` : undefined)
 const dateLocale = computed(() => preferences.locale.value === 'es' ? 'es-ES' : 'en-GB')
 const monthLabel = computed(() => new Intl.DateTimeFormat(dateLocale.value, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${monthCursor.value}T12:00:00Z`)))
 const selectedDateLabel = computed(() => new Intl.DateTimeFormat(dateLocale.value, { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${selectedDate.value}T12:00:00Z`)))
@@ -213,7 +229,9 @@ const monthCells = computed(() => {
       date,
       number: day.getUTCDate(),
       current: day.getUTCMonth() === cursor.getUTCMonth(),
-      blocks: blocks.value.filter(block => block.starts_at.slice(0, 10) === date)
+      blocks: blocks.value.filter(block => block.starts_at.slice(0, 10) === date),
+      holds: realHolds.value.filter(hold => hold.status === 'active' && hold.event_date === date),
+      confirmedBookings: realBookings.value.filter(booking => !booking.archived_at && booking.status === 'confirmed' && booking.event_date === date)
     }
   })
 })
@@ -221,18 +239,22 @@ const monthCells = computed(() => {
 const dayBlocks = computed(() => blocks.value
   .filter(block => block.starts_at.slice(0, 10) === selectedDate.value)
   .sort((a, b) => a.starts_at.localeCompare(b.starts_at)))
+const selectedDayCoreHolds = computed(() => realHolds.value
+  .filter(hold => hold.status === 'active' && hold.event_date === selectedDate.value)
+  .sort((a, b) => (a.starts_at || a.event_date).localeCompare(b.starts_at || b.event_date)))
+const selectedDayTimedCoreHolds = computed(() => selectedDayCoreHolds.value.filter(hold => hold.starts_at && hold.ends_at))
+const selectedDayDateOnlyCoreHolds = computed(() => selectedDayCoreHolds.value.filter(hold => !hold.starts_at || !hold.ends_at))
+const selectedDayConfirmedBookings = computed(() => realBookings.value.filter(booking => !booking.archived_at && booking.status === 'confirmed' && booking.event_date === selectedDate.value))
+const selectedDayTimedConfirmedBookings = computed(() => selectedDayConfirmedBookings.value.filter(booking => booking.start_time && booking.end_time))
+const selectedDayDateOnlyConfirmedBookings = computed(() => selectedDayConfirmedBookings.value.filter(booking => !booking.start_time || !booking.end_time))
 const upcomingBlocks = computed(() => blocks.value
   .filter(block => block.ends_at >= new Date().toISOString())
   .sort((a, b) => a.starts_at.localeCompare(b.starts_at))
   .slice(0, 4))
-const holdCount = computed(() => blocks.value.filter(block => block.status === 'hold').length)
-const confirmedCount = computed(() => blocks.value.filter(block => block.status === 'confirmed').length)
-const occupiedDays = computed(() => new Set(blocks.value.map(block => block.starts_at.slice(0, 10))).size)
+const holdCount = computed(() => blocks.value.filter(block => block.status === 'hold').length + realHolds.value.filter(hold => hold.status === 'active').length)
+const confirmedCount = computed(() => blocks.value.filter(block => block.status === 'confirmed').length + realBookings.value.filter(booking => !booking.archived_at && booking.status === 'confirmed').length)
+const occupiedDays = computed(() => new Set([...blocks.value.map(block => block.starts_at.slice(0, 10)), ...realHolds.value.filter(hold => hold.status === 'active').map(hold => hold.event_date), ...realBookings.value.filter(booking => !booking.archived_at && booking.status === 'confirmed' && booking.event_date).map(booking => booking.event_date as string)]).size)
 const validTimeRange = computed(() => endTime.value > startTime.value)
-const demoActiveBookings = computed(() => demo.bookings.value.filter(item => !item.archived))
-const demoFilteredBookings = computed(() => demoActiveBookings.value.filter(item => bookingFilter.value === 'all' || item.status === bookingFilter.value))
-const selectedDemoBooking = computed(() => demo.bookings.value.find(item => item.id === selectedDemoBookingId.value))
-const demoCounts = computed(() => Object.fromEntries(bookingStatuses.map(status => [status, demoActiveBookings.value.filter(item => item.status === status).length])))
 const currentTour = computed(() => tourStep.value >= 0 ? tourSteps.value[tourStep.value] : null)
 const hasArtistSelector = computed(() => artists.value.length > 1)
 const profileCompletion = computed(() => {
@@ -251,49 +273,51 @@ const profileCompletion = computed(() => {
   ]
   return Math.round(fields.filter(value => String(value || '').trim()).length / fields.length * 100)
 })
-const profilePreviewGenres = computed(() => [
-  ...splitList(profileForm.value.primaryGenres, 3),
-  ...splitList(profileForm.value.secondaryGenres, 8)
-].slice(0, 8))
-const profilePreviewFormats = computed(() => splitList(profileForm.value.performanceFormats, 6))
-const profilePreviewLocation = computed(() => [profileForm.value.city.trim(), profileForm.value.countryCode.trim().toUpperCase()].filter(Boolean).join(', '))
-const profilePreviewLinks = computed(() => [
-  { label: copy.value.website, url: profileForm.value.websiteUrl },
-  { label: copy.value.instagram, url: profileForm.value.instagramUrl },
-  { label: copy.value.soundcloud, url: profileForm.value.soundcloudUrl },
-  { label: copy.value.mixcloud, url: profileForm.value.mixcloudUrl },
-  { label: copy.value.youtube, url: profileForm.value.youtubeUrl },
-  { label: copy.value.spotify, url: profileForm.value.spotifyUrl }
-]
-  .map(link => ({ ...link, url: link.url.trim() }))
-  .filter(link => /^https?:\/\//i.test(link.url)))
-const profileCoverSource = computed(() => profileCoverUrl.value || '/images/profile/cuebooker-default-cover.webp')
-const historyItems = computed(() => demo.bookings.value.flatMap(booking => [
-  ...booking.messages.map(message => ({
-    id: message.id,
-    bookingId: booking.id,
-    at: message.createdAt,
-    kind: copy.value.historyMessage,
-    title: `${message.actor === 'artist' ? booking.artistName : booking.promoter.name} · ${booking.event.venue}`,
-    detail: message.body
-  })),
-  {
-    id: `status-${booking.id}`,
-    bookingId: booking.id,
-    at: booking.updatedAt,
-    kind: copy.value.historyStatus,
-    title: `${booking.event.venue} · ${demoStatusLabel(booking.status)}`,
-    detail: `${booking.event.city} · ${formatDemoDate(booking.event.date)}`
+const publicProfilePreview = computed<PublicArtistProfile>(() => {
+  const persisted = artistProfiles.activeProfile.value?.artist
+  return {
+    stageName: profileForm.value.stageName.trim() || selectedArtist.value?.stage_name || 'Artist',
+    slug: selectedArtist.value?.slug || persisted?.slug || '',
+    bio: nullableText(profileForm.value.bio),
+    city: nullableText(profileForm.value.city),
+    countryCode: nullableText(profileForm.value.countryCode)?.toUpperCase() || null,
+    languages: splitList(profileForm.value.languages, 8),
+    primaryGenres: splitList(profileForm.value.primaryGenres, 3),
+    secondaryGenres: splitList(profileForm.value.secondaryGenres, 8),
+    performanceFormats: splitList(profileForm.value.performanceFormats, 6),
+    eventTypes: splitList(profileForm.value.eventTypes, 10),
+    yearsActive: nullableNumber(profileForm.value.yearsActive),
+    websiteUrl: nullableText(profileForm.value.websiteUrl),
+    instagramUrl: nullableText(profileForm.value.instagramUrl),
+    soundcloudUrl: nullableText(profileForm.value.soundcloudUrl),
+    mixcloudUrl: nullableText(profileForm.value.mixcloudUrl),
+    youtubeUrl: nullableText(profileForm.value.youtubeUrl),
+    spotifyUrl: nullableText(profileForm.value.spotifyUrl),
+    coverUrl: profileCoverUrl.value || null,
+    coverPositionY: profileForm.value.coverPositionY,
+    artistImageUrl: profileArtistImageUrl.value || null,
+    artistCutoutUrl: profileArtistCutoutUrl.value || null,
+    artistImageStyle: persisted?.artist_image_style || 'photo',
+    artistImagePositionX: persisted?.artist_image_position_x ?? 50,
+    artistImagePositionY: persisted?.artist_image_position_y ?? 50,
+    artistImageScale: persisted?.artist_image_scale ?? 1,
+    visualMode: persisted?.visual_mode || 'photo',
+    cueId: persisted?.cue_id_config ? toPublicCueIdConfig(persisted.cue_id_config) : null,
+    acceptingRequests: publicProfileAcceptingRequests.value
   }
-]).sort((a, b) => b.at.localeCompare(a.at)))
+})
 const hours = Array.from({ length: 24 }, (_, index) => `${String(index).padStart(2, '0')}:00`)
 
 onMounted(async () => {
+  if (import.meta.client) sidebarCollapsed.value = localStorage.getItem('cuebooker.sidebar.collapsed') === 'true'
   await auth.initialize()
   if (!auth.signedIn.value) return navigateTo('/access')
   if (!auth.profile.value) await auth.fetchProfile()
   if (!auth.profile.value?.onboarding_completed) return navigateTo('/onboarding')
   await loadWorkspaceIdentity()
+  bookingCoreSyncTimer = window.setInterval(() => { void refreshBookingCoreFromExternal() }, 30_000)
+  window.addEventListener('focus', refreshBookingCoreFromExternal)
+  document.addEventListener('visibilitychange', refreshBookingCoreFromExternal)
   if (route.query.setup === 'profile') {
     activeView.value = 'profile'
     profileWelcome.value = true
@@ -305,7 +329,11 @@ watch([selectedArtistId, monthCursor], async () => {
   if (selectedArtistId.value) await loadBlocks()
 })
 watch(selectedArtistId, async (artistId) => {
-  if (artistId) await loadArtistProfile()
+  bookingCoreWorkspaceId.value = ''
+  publicProfileWorkspaceId.value = ''
+  if (!artistId) return
+  await loadArtistProfile()
+  await ensureBookingCoreWorkspace()
 })
 watch(activeView, async (view) => {
   await nextTick()
@@ -315,17 +343,7 @@ watch(activeView, async (view) => {
   nav.scrollTo({ left: tab.offsetLeft - (nav.clientWidth - tab.clientWidth) / 2, behavior: 'smooth' })
 })
 watch(rosterArtistName, value => { rosterArtistSlug.value = slugify(value) })
-watch(demo.ready, async (value) => {
-  if (!value) selectedDemoBookingId.value = ''
-  else if (!selectedDemoBookingId.value) {
-    selectedDemoBookingId.value = demoActiveBookings.value[0]?.id || ''
-    if (demoActiveBookings.value.length && import.meta.client && localStorage.getItem(`cuebooker.tour.seen.${sampleNamespace.value}`) !== 'true') {
-      await nextTick()
-      startTour()
-    }
-  }
-}, { immediate: true })
-
+watch(activeView, view => { if (view !== 'profile') profilePreviewOpen.value = false })
 watch(profilePreviewOpen, (open) => {
   if (!import.meta.client) return
   document.body.style.overflow = open ? 'hidden' : ''
@@ -334,22 +352,298 @@ watch(profilePreviewOpen, (open) => {
 onBeforeUnmount(() => {
   if (import.meta.client) document.body.style.overflow = ''
   if (profileCoverUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileCoverUrl.value)
-})
-watch(selectedDemoBookingId, async (id) => {
-  if (id) await demo.markOpened(id)
+  if (profileArtistImageUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileArtistImageUrl.value)
+  if (profileArtistCutoutUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileArtistCutoutUrl.value)
+  if (import.meta.client) window.removeEventListener('resize', handleViewportChange)
+  if (bookingCoreSyncTimer) window.clearInterval(bookingCoreSyncTimer)
+  if (import.meta.client) window.removeEventListener('focus', refreshBookingCoreFromExternal)
+  if (import.meta.client) document.removeEventListener('visibilitychange', refreshBookingCoreFromExternal)
+  if (tourPositionTimer) window.clearTimeout(tourPositionTimer)
+  document.querySelectorAll<HTMLElement>('.tour-focus').forEach(element => element.classList.remove('tour-focus'))
 })
 watch(tourStep, async (step) => {
   const item = tourSteps.value[step]
   if (!item) return
+  settingsOpen.value = false
   activeView.value = item.view
   await nextTick()
-  const target = document.getElementById(item.target)
-  if (!target) return
-  target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  scheduleTourPosition()
 })
+
+function toggleSidebar() {
+  sidebarCollapsed.value = !sidebarCollapsed.value
+  if (import.meta.client) localStorage.setItem('cuebooker.sidebar.collapsed', String(sidebarCollapsed.value))
+  if (currentTour.value) scheduleTourPosition(120)
+}
+
+function prefersReducedMotion() {
+  return import.meta.client && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+async function changeView(view: WorkspaceView) {
+  settingsOpen.value = false
+  activeView.value = view
+
+  if (view !== 'bookings' && route.query.booking) {
+    const { booking: _booking, ...query } = route.query
+    void router.replace({ query }).catch(() => {
+      // View navigation must not be blocked by URL state cleanup.
+    })
+  }
+
+  await nextTick()
+  const target = document.querySelector<HTMLElement>('.workspace .view')
+  if (!target) return
+  const header = document.getElementById('workspace-header')
+  const offset = (header?.getBoundingClientRect().height || 0) + 8
+  const top = target.getBoundingClientRect().top + window.scrollY - offset
+  window.scrollTo({ top: Math.max(0, top), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+}
+
+async function openSettings() {
+  settingsOpen.value = true
+  await nextTick()
+  document.querySelector<HTMLElement>('.settings-panel')?.focus({ preventScroll: true })
+  window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+}
+
+function scheduleTourPosition(delay = 280) {
+  if (!import.meta.client) return
+  if (tourPositionTimer) window.clearTimeout(tourPositionTimer)
+  tourCardStyle.value = {}
+  tourPositionTimer = window.setTimeout(() => void positionTour(), delay)
+}
+
+async function positionTour() {
+  const item = tourSteps.value[tourStep.value]
+  if (!item) return
+  await nextTick()
+
+  document.querySelectorAll<HTMLElement>('.tour-focus').forEach(element => element.classList.remove('tour-focus'))
+  const target = document.getElementById(item.target)
+  const card = document.querySelector<HTMLElement>('.workspace .tour-card')
+  if (!target || !card) return
+  target.classList.add('tour-focus')
+
+  const edge = 12
+  const gap = 12
+  const viewportHeight = window.innerHeight
+  const viewportWidth = window.innerWidth
+  const mobileShell = viewportWidth <= 960
+  const headerBottom = mobileShell
+    ? document.getElementById('workspace-header')?.getBoundingClientRect().bottom || edge
+    : edge
+  let targetRect = target.getBoundingClientRect()
+  const cardRect = card.getBoundingClientRect()
+  const safeTop = Math.max(edge, headerBottom + gap)
+  const safeBottom = viewportHeight - edge
+
+  let top: number
+
+  if (mobileShell) {
+    const isDecisionStep = tourStep.value === tourSteps.value.length - 2
+    const fixedBottomTop = Math.max(safeTop, safeBottom - cardRect.height)
+
+    if (isDecisionStep) {
+      if (targetRect.top < safeTop || targetRect.bottom > safeBottom) {
+        const nextScrollTop = targetRect.top + window.scrollY - safeTop - 8
+        window.scrollTo({ top: Math.max(0, nextScrollTop), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+        if (!prefersReducedMotion()) await new Promise(resolve => window.setTimeout(resolve, 240))
+        targetRect = target.getBoundingClientRect()
+      }
+      top = Math.max(safeTop, targetRect.top - cardRect.height - gap)
+    } else {
+      const targetBottomLimit = fixedBottomTop - gap
+      if (targetRect.top < safeTop || targetRect.bottom > targetBottomLimit) {
+        const desiredTop = Math.max(safeTop, targetBottomLimit - Math.min(targetRect.height, 180))
+        const nextScrollTop = targetRect.top + window.scrollY - desiredTop
+        window.scrollTo({ top: Math.max(0, nextScrollTop), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+        if (!prefersReducedMotion()) await new Promise(resolve => window.setTimeout(resolve, 240))
+      }
+      top = fixedBottomTop
+    }
+  } else {
+    if (targetRect.bottom < safeTop || targetRect.top > safeBottom) {
+      const nextScrollTop = targetRect.top + window.scrollY - safeTop
+      window.scrollTo({ top: Math.max(0, nextScrollTop), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+      if (!prefersReducedMotion()) await new Promise(resolve => window.setTimeout(resolve, 280))
+      targetRect = target.getBoundingClientRect()
+    }
+
+    const spaceBelow = safeBottom - targetRect.bottom
+    const spaceAbove = targetRect.top - safeTop
+    if (spaceBelow >= cardRect.height + gap) top = targetRect.bottom + gap
+    else if (spaceAbove >= cardRect.height + gap) top = targetRect.top - cardRect.height - gap
+    else top = targetRect.top + targetRect.height / 2 < viewportHeight / 2
+      ? safeBottom - cardRect.height
+      : safeTop
+  }
+
+  const left = mobileShell
+    ? edge
+    : Math.min(viewportWidth - cardRect.width - edge, Math.max(edge, targetRect.right - cardRect.width))
+
+  const maxTop = Math.max(edge, safeBottom - cardRect.height)
+  const resolvedTop = Math.max(edge, Math.min(top, maxTop))
+
+  tourCardStyle.value = {
+    '--tour-top': `${resolvedTop}px`,
+    '--tour-left': `${left}px`
+  }
+}
+
+function handleViewportChange() {
+  if (currentTour.value) scheduleTourPosition(80)
+}
+
+onMounted(() => window.addEventListener('resize', handleViewportChange, { passive: true }))
 
 function slugify(value: string) {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+}
+
+const cueEntryCopy = computed(() => preferences.locale.value === 'es' ? {
+  eyebrow: 'CUE / CAPTURA RÁPIDA',
+  title: 'REGISTRA LO QUE ACABA DE PASAR.',
+  body: 'Úsalo para capturar algo que acaba de pasar. CUE crea el booking en segundos; después continúas conversación, próxima acción, hold y decisión dentro del booking.',
+  saved: 'CUE guardado. El booking ya forma parte de tu workspace.'
+} : {
+  eyebrow: 'CUE / QUICK CAPTURE',
+  title: 'SAVE WHAT JUST HAPPENED.',
+  body: 'Use it to capture something that just happened. CUE creates the booking in seconds; then continue the conversation, next action, hold and decision inside the booking.',
+  saved: 'CUE saved. The booking is now part of your workspace.'
+})
+
+async function loadRealBookings() {
+  if (!bookingCoreWorkspaceId.value || !selectedArtistId.value) { realBookings.value = []; return }
+  realBookings.value = await bookingCore.listBookings(bookingCoreWorkspaceId.value, 100, selectedArtistId.value)
+}
+
+async function loadRealHolds() {
+  if (!bookingCoreWorkspaceId.value || !realBookings.value.length) { realHolds.value = []; return }
+  const bookingIds = new Set(realBookings.value.map(item => item.id))
+  const rows = await bookingCore.listHolds(bookingCoreWorkspaceId.value, undefined, true)
+  realHolds.value = rows.filter(hold => bookingIds.has(hold.booking_id))
+}
+
+async function ensureBookingCoreWorkspace() {
+  if (!selectedArtistId.value) return
+  cueCoreLoading.value = true
+  try {
+    const workspaces = await bookingCore.listWorkspaces()
+    let resolvedWorkspaceId = ''
+
+    for (const workspace of workspaces) {
+      const workspaceArtists = await bookingCore.listWorkspaceArtists(workspace.id)
+      if (workspaceArtists.some(item => item.artist_id === selectedArtistId.value)) {
+        resolvedWorkspaceId = workspace.id
+        break
+      }
+    }
+
+    if (!resolvedWorkspaceId) {
+      if (ownerAgency.value) {
+        resolvedWorkspaceId = await bookingCore.ensureBookingWorkspace({ organizationId: ownerAgency.value.id })
+      } else if (selectedArtist.value?.role === 'owner') {
+        resolvedWorkspaceId = await bookingCore.ensureBookingWorkspace({ artistId: selectedArtistId.value })
+      }
+    }
+
+    bookingCoreWorkspaceId.value = resolvedWorkspaceId
+    await loadRealBookings()
+    await loadRealHolds()
+  } catch (error: any) {
+    // Legacy manager/admin accounts may need the owner to bootstrap once.
+    // Do not block the existing workspace while that transition is incomplete.
+    bookingCoreWorkspaceId.value = ''
+    realBookings.value = []
+    realHolds.value = []
+    console.warn('[booking-core] workspace bootstrap unavailable', error?.message || error)
+  } finally {
+    cueCoreLoading.value = false
+  }
+}
+
+async function refreshBookingCoreFromExternal() {
+  if (!import.meta.client || document.visibilityState !== 'visible') return
+  if (!bookingCoreWorkspaceId.value || !selectedArtistId.value || cueCoreLoading.value) return
+  try {
+    await loadRealBookings()
+    await loadRealHolds()
+    bookingCoreOperationsRevision.value += 1
+  } catch (error: any) {
+    console.warn('[booking-core] background refresh failed', error?.message || error)
+  }
+}
+
+async function handleCueCreated(booking: CoreBooking) {
+  cueOpen.value = false
+  cueMessage.value = cueEntryCopy.value.saved
+  await loadRealBookings()
+  await loadRealHolds()
+  bookingCoreOperationsRevision.value += 1
+  await nextTick()
+  openRealBooking(booking.id)
+  window.setTimeout(() => { cueMessage.value = '' }, 4500)
+}
+
+async function handleBookingCoreOperationsChanged() {
+  bookingCoreOperationsRevision.value += 1
+  await loadRealBookings()
+  await loadRealHolds()
+}
+
+function markBookingNotificationsRead(bookingId: string) {
+  if (!bookingCoreWorkspaceId.value || !bookingId) return
+  void notifications.markBookingRead(bookingCoreWorkspaceId.value, bookingId)
+    .then(() => {
+      if (import.meta.client) window.dispatchEvent(new Event('cuebooker:notifications-changed'))
+    })
+    .catch(() => {
+      // Reviewing the booking must not be blocked by notification read-state sync.
+    })
+}
+
+function openRealBooking(bookingId: string) {
+  realBookingFocusId.value = bookingId
+  activeView.value = 'bookings'
+  markBookingNotificationsRead(bookingId)
+
+  if (route.query.booking !== bookingId) {
+    void router.replace({
+      query: {
+        ...route.query,
+        artist: selectedArtistId.value || route.query.artist,
+        booking: bookingId
+      }
+    }).catch(() => {
+      // Opening the Booking must not be blocked by URL state sync.
+    })
+  }
+}
+
+async function openNotificationBooking(notification: CueNotification) {
+  try {
+    const rows = await bookingCore.listBookings(notification.workspace_id, 100)
+    const booking = rows.find(item => item.id === notification.booking_id)
+    if (!booking) throw new Error('notification_booking_not_found')
+
+    bookingCoreWorkspaceId.value = notification.workspace_id
+    if (selectedArtistId.value !== booking.artist_id) {
+      selectedArtistId.value = booking.artist_id
+      await nextTick()
+    }
+
+    realBookings.value = rows.filter(item => item.artist_id === booking.artist_id)
+    await loadRealHolds()
+    openRealBooking(booking.id)
+
+  } catch (error: any) {
+    console.warn('[notifications] booking open failed', error?.message || error)
+    errorMessage.value = preferences.locale.value === 'es'
+      ? 'No se pudo abrir este booking.'
+      : 'This booking could not be opened.'
+  }
 }
 
 async function loadWorkspaceIdentity() {
@@ -357,8 +651,23 @@ async function loadWorkspaceIdentity() {
     const [artistRows, organizationRows] = await Promise.all([availability.listArtists(), availability.listOrganizations()])
     artists.value = artistRows
     organizations.value = organizationRows
-    if (!selectedArtistId.value || !artists.value.some(item => item.id === selectedArtistId.value)) selectedArtistId.value = artists.value[0]?.id || ''
-    if (selectedArtistId.value) await Promise.all([loadBlocks(), loadArtistProfile()])
+
+    const requestedArtistId = typeof route.query.artist === 'string' ? route.query.artist : ''
+    if (requestedArtistId && artists.value.some(item => item.id === requestedArtistId)) {
+      selectedArtistId.value = requestedArtistId
+    } else if (!selectedArtistId.value || !artists.value.some(item => item.id === selectedArtistId.value)) {
+      selectedArtistId.value = artists.value[0]?.id || ''
+    }
+
+    if (selectedArtistId.value) {
+      await Promise.all([loadBlocks(), loadArtistProfile()])
+      await ensureBookingCoreWorkspace()
+
+      const requestedBookingId = typeof route.query.booking === 'string' ? route.query.booking : ''
+      if (requestedBookingId && realBookings.value.some(item => item.id === requestedBookingId)) {
+        openRealBooking(requestedBookingId)
+      }
+    }
   } catch (error: any) {
     errorMessage.value = error?.message || (preferences.locale.value === 'es' ? 'No se pudo cargar el workspace.' : 'The workspace could not be loaded.')
   }
@@ -379,6 +688,45 @@ function nullableText(value: string) {
 function nullableNumber(value: string) {
   const trimmed = value.trim()
   return trimmed ? Number(trimmed) : null
+}
+
+function replaceProfileArtistImageUrl(nextUrl: string) {
+  if (profileArtistImageUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileArtistImageUrl.value)
+  profileArtistImageUrl.value = nextUrl
+}
+
+function replaceProfileArtistCutoutUrl(nextUrl: string) {
+  if (profileArtistCutoutUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileArtistCutoutUrl.value)
+  profileArtistCutoutUrl.value = nextUrl
+}
+
+async function loadProfileVisualMedia(artistImagePath: string | null, artistCutoutPath: string | null) {
+  replaceProfileArtistImageUrl('')
+  replaceProfileArtistCutoutUrl('')
+  if (artistImagePath) {
+    try { replaceProfileArtistImageUrl(await artistProfiles.getArtistImageObjectUrl(artistImagePath)) } catch { /* optional preview media */ }
+  }
+  if (artistCutoutPath) {
+    try { replaceProfileArtistCutoutUrl(await artistProfiles.getArtistCutoutObjectUrl(artistCutoutPath)) } catch { /* optional preview media */ }
+  }
+}
+
+async function loadPublicPublishingState() {
+  publicProfilePublished.value = false
+  publicProfileAcceptingRequests.value = false
+  publicProfileWorkspaceId.value = ''
+  publicPublishingMessage.value = ''
+  if (!selectedArtistId.value) return
+  try {
+    const state = await publicPublishing.load(selectedArtistId.value)
+    publicProfilePublished.value = state.publicProfileEnabled
+    publicProfileAcceptingRequests.value = state.acceptingRequests
+    publicProfileWorkspaceId.value = state.workspaceId || ''
+  } catch (error: any) {
+    publicPublishingMessage.value = error?.message || (preferences.locale.value === 'es'
+      ? 'No se pudo cargar el estado del perfil público.'
+      : 'The public profile state could not be loaded.')
+  }
 }
 
 function replaceProfileCoverUrl(nextUrl: string) {
@@ -478,11 +826,68 @@ async function loadArtistProfile() {
       technicalRiderUrl: booking?.technical_rider_url || '',
       hospitalityRiderUrl: booking?.hospitality_rider_url || ''
     }
-    await loadProfileCover(profileForm.value.coverImagePath)
+    await Promise.all([
+      loadProfileCover(profileForm.value.coverImagePath),
+      loadProfileVisualMedia(record.artist.artist_image_path, record.artist.artist_cutout_path),
+      loadPublicPublishingState()
+    ])
   } catch (error: any) {
     errorMessage.value = error?.data?.message || error?.message || copy.value.profileSaveError
   } finally {
     profileLoading.value = false
+  }
+}
+
+async function updatePublicProfilePublished(enabled: boolean) {
+  if (!selectedArtistId.value || !canEditSelectedArtist.value) return
+  publicPublishingSaving.value = true
+  publicPublishingMessage.value = ''
+  try {
+    if (!enabled && publicProfileAcceptingRequests.value) {
+      const workspaceId = publicProfileWorkspaceId.value || bookingCoreWorkspaceId.value
+      if (workspaceId) {
+        publicProfileAcceptingRequests.value = await publicPublishing.setAcceptingRequests(selectedArtistId.value, workspaceId, false)
+        publicProfileWorkspaceId.value = workspaceId
+      }
+    }
+    publicProfilePublished.value = await publicPublishing.setPublicProfileEnabled(selectedArtistId.value, enabled)
+    if (!publicProfilePublished.value) publicProfileAcceptingRequests.value = false
+    publicPublishingMessage.value = preferences.locale.value === 'es'
+      ? (enabled ? 'Perfil público activado.' : 'Perfil público desactivado.')
+      : (enabled ? 'Public profile enabled.' : 'Public profile disabled.')
+  } catch (error: any) {
+    publicPublishingMessage.value = error?.message || (preferences.locale.value === 'es'
+      ? 'No se pudo actualizar el perfil público.'
+      : 'The public profile could not be updated.')
+    await loadPublicPublishingState()
+  } finally {
+    publicPublishingSaving.value = false
+  }
+}
+
+async function updatePublicAcceptingRequests(enabled: boolean) {
+  if (!selectedArtistId.value || !canEditSelectedArtist.value || (enabled && !publicProfilePublished.value)) return
+  publicPublishingSaving.value = true
+  publicPublishingMessage.value = ''
+  try {
+    let workspaceId = publicProfileWorkspaceId.value || bookingCoreWorkspaceId.value
+    if (!workspaceId) {
+      await ensureBookingCoreWorkspace()
+      workspaceId = bookingCoreWorkspaceId.value
+    }
+    if (!workspaceId) throw new Error('booking_workspace_required')
+    publicProfileAcceptingRequests.value = await publicPublishing.setAcceptingRequests(selectedArtistId.value, workspaceId, enabled)
+    publicProfileWorkspaceId.value = workspaceId
+    publicPublishingMessage.value = preferences.locale.value === 'es'
+      ? (enabled ? 'Solicitudes de booking abiertas.' : 'Solicitudes de booking cerradas.')
+      : (enabled ? 'Booking enquiries opened.' : 'Booking enquiries closed.')
+  } catch (error: any) {
+    publicPublishingMessage.value = error?.message || (preferences.locale.value === 'es'
+      ? 'No se pudo actualizar la recepción de bookings.'
+      : 'Booking enquiry availability could not be updated.')
+    await loadPublicPublishingState()
+  } finally {
+    publicPublishingSaving.value = false
   }
 }
 
@@ -579,10 +984,19 @@ function changeMonth(offset: number) {
   closeEditor()
 }
 
-function selectDay(date: string) {
+async function selectDay(date: string) {
   selectedDate.value = date
   if (date.slice(0, 7) !== monthCursor.value.slice(0, 7)) monthCursor.value = `${date.slice(0, 7)}-01`
   closeEditor()
+  if (!import.meta.client || window.innerWidth > 960) return
+  await nextTick()
+  await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+  const panel = document.getElementById('workspace-day-panel')
+  const header = document.getElementById('workspace-header')
+  if (!panel) return
+  const offset = (header?.getBoundingClientRect().height || 0) + 8
+  const top = panel.getBoundingClientRect().top + window.scrollY - offset
+  window.scrollTo({ top: Math.max(0, top), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
 }
 
 function openCreate(start = '18:00') {
@@ -628,11 +1042,34 @@ async function saveBlock() {
     && block.starts_at.slice(0, 10) === selectedDate.value
     && toMinutes(time(block.starts_at)) < proposedEnd
     && toMinutes(time(block.ends_at)) > proposedStart)
-  if (blockStatus.value === 'confirmed' && overlap) {
-    const overlapName = overlap.label || statusLabel(overlap.status)
+
+  const confirmedOverlap = realBookings.value.find(booking => !booking.archived_at
+    && booking.status === 'confirmed'
+    && booking.event_date === selectedDate.value
+    && (!booking.start_time || !booking.end_time
+      || (toMinutes(booking.start_time) < proposedEnd && toMinutes(booking.end_time) > proposedStart)))
+
+  const holdOverlap = realHolds.value.find(hold => hold.status === 'active'
+    && hold.event_date === selectedDate.value
+    && (!hold.starts_at || !hold.ends_at || (() => {
+      const start = new Date(hold.starts_at)
+      const end = new Date(hold.ends_at)
+      const holdStart = start.getHours() * 60 + start.getMinutes()
+      const holdEnd = end.getHours() * 60 + end.getMinutes()
+      return holdStart < proposedEnd && holdEnd > proposedStart
+    })()))
+
+  if (overlap || confirmedOverlap || holdOverlap) {
+    const overlapName = overlap
+      ? (overlap.label || statusLabel(overlap.status))
+      : confirmedOverlap
+        ? coreBookingLabel(confirmedOverlap)
+        : holdOverlap
+          ? coreHoldLabel(holdOverlap)
+          : ''
     const warning = preferences.locale.value === 'es'
-      ? `Esta franja se solapa con “${overlapName}” (${time(overlap.starts_at)}–${time(overlap.ends_at)}). ¿Quieres guardarla igualmente?`
-      : `This slot overlaps “${overlapName}” (${time(overlap.starts_at)}–${time(overlap.ends_at)}). Save it anyway?`
+      ? `Esta franja se solapa con “${overlapName}”. ¿Quieres guardar el bloqueo igualmente?`
+      : `This time overlaps “${overlapName}”. Save the block anyway?`
     if (!window.confirm(warning)) { saving.value = false; return }
   }
   try {
@@ -668,37 +1105,44 @@ function blockStyle(block: AvailabilityBlock) {
   return { top: `${start * .8}px`, height: `${Math.max((end - start) * .8, 42)}px` }
 }
 
+function coreHoldStyle(hold: Hold) {
+  if (!hold.starts_at || !hold.ends_at) return {}
+  const startDate = new Date(hold.starts_at)
+  const endDate = new Date(hold.ends_at)
+  const start = startDate.getHours() * 60 + startDate.getMinutes()
+  const end = endDate.getHours() * 60 + endDate.getMinutes()
+  return { top: `${start * .8}px`, height: `${Math.max((end - start) * .8, 42)}px` }
+}
+
+function coreHoldLabel(hold: Hold) {
+  const booking = realBookings.value.find(item => item.id === hold.booking_id)
+  return booking?.venue_name || booking?.event_name || (preferences.locale.value === 'es' ? 'Hold de booking' : 'Booking hold')
+}
+
+function coreHoldExpiry(hold: Hold) {
+  if (!hold.expires_at) return ''
+  return new Intl.DateTimeFormat(dateLocale.value, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(hold.expires_at))
+}
+
+function coreBookingLabel(booking: CoreBooking) {
+  return booking.venue_name || booking.event_name || (preferences.locale.value === 'es' ? 'Booking confirmado' : 'Confirmed booking')
+}
+
+function coreBookingTimeStyle(booking: CoreBooking) {
+  if (!booking.start_time || !booking.end_time) return {}
+  const toMinutes = (value: string) => Number(value.slice(0, 2)) * 60 + Number(value.slice(3, 5))
+  const start = toMinutes(booking.start_time)
+  const end = toMinutes(booking.end_time)
+  return { top: `${start * .8}px`, height: `${Math.max((end - start) * .8, 42)}px` }
+}
+
 function openUpcoming(block: AvailabilityBlock) {
   activeView.value = 'calendar'
   startEdit(block)
 }
 
-async function openCalendarBlock(block: AvailabilityBlock) {
-  if (!block.booking_reference) { startEdit(block); return }
-  const booking = demo.bookings.value.find(item => item.id === block.booking_reference)
-  if (!booking) { startEdit(block); return }
-
-  selectedDemoBookingId.value = booking.id
-  activeView.value = booking.archived ? 'history' : 'bookings'
-  await nextTick()
-  document.getElementById(booking.archived ? `history-booking-${booking.id}` : `booking-thread-${booking.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
-
-async function selectDemoBooking(bookingId: string) {
-  const nextId = selectedDemoBookingId.value === bookingId ? '' : bookingId
-  selectedDemoBookingId.value = nextId
-  if (!nextId) return
-
-  await nextTick()
-  await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
-  const detail = document.getElementById(`booking-thread-${nextId}`)
-  if (!detail) return
-  const header = document.getElementById('workspace-header')
-  const headerOffset = header ? Math.ceil(header.getBoundingClientRect().height) + 8 : 16
-  const top = detail.getBoundingClientRect().top + window.scrollY - headerOffset
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  window.scrollTo({ top: Math.max(0, top), behavior: reducedMotion ? 'auto' : 'smooth' })
-  detail.focus({ preventScroll: true })
+function openCalendarBlock(block: AvailabilityBlock) {
+  startEdit(block)
 }
 
 function shortDate(value: string) {
@@ -706,28 +1150,8 @@ function shortDate(value: string) {
 }
 
 function time(value: string) { return value.slice(11, 16) }
-function formatDemoDate(value: string) { return new Intl.DateTimeFormat(dateLocale.value, { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(`${value}T12:00:00`)) }
-function formatDemoTime(value: string) { return new Intl.DateTimeFormat(dateLocale.value, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(value)) }
-function demoStatusLabel(status: BookingStatus) {
-  return preferences.locale.value === 'es'
-    ? { new: 'Nueva', in_review: 'En revisión', waiting_promoter: 'Esperando al promotor', confirmed: 'Confirmada', rejected: 'Rechazada' }[status]
-    : { new: 'New', in_review: 'In review', waiting_promoter: 'Waiting for promoter', confirmed: 'Confirmed', rejected: 'Rejected' }[status]
-}
-async function sendDemoReply() {
-  if (!selectedDemoBooking.value || !demoReply.value.trim()) return
-  await demo.addMessage(selectedDemoBooking.value.id, 'artist', demoReply.value)
-  demoReply.value = ''
-}
-async function confirmDemoBooking() {
-  if (selectedDemoBooking.value) await demo.setStatus(selectedDemoBooking.value.id, 'confirmed')
-}
-async function rejectDemoBooking() {
-  if (!selectedDemoBooking.value) return
-  await demo.setStatus(selectedDemoBooking.value.id, 'rejected')
-  selectedDemoBookingId.value = demoActiveBookings.value[0]?.id || ''
-}
 function startTour() {
-  bookingFilter.value = 'all'
+  if (!realBookings.value.some(item => !item.archived_at)) return
   tourStep.value = 0
 }
 function nextTourStep() {
@@ -735,26 +1159,12 @@ function nextTourStep() {
   else tourStep.value += 1
 }
 function closeTour() {
-  if (import.meta.client && sampleNamespace.value) localStorage.setItem(`cuebooker.tour.seen.${sampleNamespace.value}`, 'true')
+  if (import.meta.client && tourNamespace.value) localStorage.setItem(`cuebooker.tour.seen.${tourNamespace.value}`, 'true')
+  document.querySelectorAll<HTMLElement>('.tour-focus').forEach(element => element.classList.remove('tour-focus'))
   tourStep.value = -1
-}
-async function clearSampleBookings() {
-  await demo.clearSamples()
-  selectedDemoBookingId.value = ''
-}
-async function restoreSampleBookings() {
-  await demo.restoreSamples()
-  selectedDemoBookingId.value = demoActiveBookings.value[0]?.id || ''
+  tourCardStyle.value = {}
 }
 function statusLabel(status: AvailabilityStatus) { return status === 'confirmed' ? copy.value.confirmedStatus : status === 'hold' ? 'Hold' : copy.value.unavailable }
-async function openHistoryItem(bookingId: string) {
-  const booking = demo.bookings.value.find(item => item.id === bookingId)
-  if (!booking) return
-  selectedDemoBookingId.value = booking.id
-  activeView.value = 'bookings'
-  await nextTick()
-  document.getElementById(`booking-thread-${booking.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
 async function logout() { await auth.signOut(); await navigateTo('/access') }
 async function savePassword() {
   passwordMessage.value = ''
@@ -777,25 +1187,49 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 </script>
 
 <template>
-  <main class="workspace">
+  <main class="workspace" :class="{ 'workspace--sidebar-collapsed': sidebarCollapsed }">
     <header id="workspace-header" class="workspace-header">
-      <NuxtLink class="brand" to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink>
+      <div class="workspace-brand-row">
+        <NuxtLink class="brand" to="/" aria-label="Cuebooker">
+          <CueBrand class="workspace-brand-wordmark" />
+          <CueBrand class="workspace-brand-icon" variant="icon" />
+        </NuxtLink>
+        <button class="sidebar-collapse-button" type="button" :aria-label="sidebarCollapsed ? copy.expandSidebar : copy.collapseSidebar" :title="sidebarCollapsed ? copy.expandSidebar : copy.collapseSidebar" @click="toggleSidebar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 4 12l5 7M20 5v14"/></svg>
+        </button>
+      </div>
       <nav id="workspace-navigation" aria-label="Workspace">
-        <button data-workspace-view="overview" :class="{ active: activeView === 'overview' }" type="button" @click="activeView = 'overview'">{{ copy.overview }}</button>
-        <button data-workspace-view="bookings" :class="{ active: activeView === 'bookings' }" type="button" @click="activeView = 'bookings'">{{ copy.bookings }}</button>
-        <button data-workspace-view="calendar" :class="{ active: activeView === 'calendar' }" type="button" @click="activeView = 'calendar'">{{ copy.calendar }}</button>
-        <button data-workspace-view="history" :class="{ active: activeView === 'history' }" type="button" @click="activeView = 'history'">{{ copy.history }}</button>
-        <button data-workspace-view="profile" :class="{ active: activeView === 'profile' }" type="button" @click="activeView = 'profile'">{{ copy.profile }}</button>
+        <button :title="copy.overview" data-workspace-view="overview" :class="{ active: activeView === 'overview' && !settingsOpen }" type="button" @click="changeView('overview')">{{ copy.overview }}</button>
+        <button :title="copy.bookings" data-workspace-view="bookings" :class="{ active: activeView === 'bookings' && !settingsOpen }" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
+        <button :title="copy.calendar" data-workspace-view="calendar" :class="{ active: activeView === 'calendar' && !settingsOpen }" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
+        <button :title="copy.history" data-workspace-view="history" :class="{ active: activeView === 'history' && !settingsOpen }" type="button" @click="changeView('history')">{{ copy.history }}</button>
+        <button :title="copy.profile" data-workspace-view="profile" :class="{ active: activeView === 'profile' && !settingsOpen }" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
+        <button :title="copy.settings" data-workspace-view="settings" :class="{ active: settingsOpen }" type="button" @click="openSettings">{{ copy.settings }}</button>
       </nav>
       <div class="account-actions">
+        <WorkspaceNotifications :locale="preferences.locale.value" @open-booking="openNotificationBooking" />
         <CuePreferencesControl compact />
-        <button class="header-icon-button" type="button" :aria-label="copy.settings" :title="copy.settings" @click="settingsOpen = true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5v.2h-4v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5v-.2h4v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg></button>
         <button class="header-icon-button" type="button" :aria-label="copy.logout" :title="copy.logout" @click="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/></svg></button>
       </div>
     </header>
 
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-    <p v-if="loading" class="loading-message">{{ copy.loading }}</p>
+
+    <section v-if="loading" class="workspace-skeleton" aria-busy="true" aria-live="polite">
+      <span class="sr-only">{{ copy.loading }}</span>
+      <div class="workspace-skeleton__heading">
+        <i class="skeleton-line skeleton-line--eyebrow" />
+        <i class="skeleton-line skeleton-line--title" />
+        <i class="skeleton-line skeleton-line--body" />
+      </div>
+      <div class="workspace-skeleton__stats">
+        <i v-for="index in 5" :key="`stat-${index}`" class="skeleton-card" />
+      </div>
+      <div class="workspace-skeleton__body">
+        <i class="skeleton-panel skeleton-panel--main" />
+        <i class="skeleton-panel" />
+      </div>
+    </section>
 
     <section v-else-if="!artists.length" class="empty-card">
       <p class="eyebrow">{{ copy.rosterEyebrow }}</p>
@@ -827,12 +1261,23 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         </div>
 
         <div class="summary-grid">
-          <article class="summary-card summary-card--pending"><span>{{ copy.realBookings }}</span><strong>—</strong><p>{{ copy.realBookingsBody }}</p></article>
+          <article class="summary-card summary-card--pending"><span>{{ copy.realBookings }}</span><strong>{{ cueCoreLoading ? '…' : realBookings.filter(item => !item.archived_at).length }}</strong><p>{{ bookingCoreWorkspaceId ? (preferences.locale.value === 'es' ? 'Bookings guardados en tu workspace.' : 'Bookings saved in your workspace.') : copy.realBookingsBody }}</p></article>
           <article class="summary-card"><span>{{ copy.holdsMonth }}</span><strong>{{ holdCount }}</strong><p>{{ copy.holdsBody }}</p></article>
           <article class="summary-card"><span>{{ copy.confirmed }}</span><strong>{{ confirmedCount }}</strong><p>{{ copy.confirmedBody }}</p></article>
           <article class="summary-card"><span>{{ copy.occupiedDays }}</span><strong>{{ occupiedDays }}</strong><p>{{ copy.occupiedBody }}</p></article>
           <button class="summary-card summary-card--profile" type="button" @click="activeView = 'profile'"><span>{{ copy.profileCard }}</span><strong>{{ profileCompletion }}%</strong><p>{{ copy.profileCardBody }} →</p></button>
         </div>
+
+        <BookingCoreAttention
+          v-if="bookingCoreWorkspaceId"
+          :workspace-id="bookingCoreWorkspaceId"
+          :bookings="realBookings.filter(item => !item.archived_at)"
+          :locale="preferences.locale.value"
+          :refresh-key="bookingCoreOperationsRevision"
+          @changed="handleBookingCoreOperationsChanged"
+          @open-bookings="activeView = 'bookings'"
+          @open-booking="openRealBooking"
+        />
 
         <div class="overview-grid">
           <section class="panel agenda-panel">
@@ -848,10 +1293,10 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           </section>
 
           <aside class="panel next-panel">
-            <p class="eyebrow">{{ copy.sampleEyebrow }}</p>
-            <h2>{{ copy.sampleTitle }}</h2>
-            <p>{{ copy.sampleBody }}</p>
-            <button type="button" @click="activeView = 'bookings'">{{ copy.openBookings }}</button>
+            <p class="eyebrow">{{ cueEntryCopy.eyebrow }}</p>
+            <h2>{{ preferences.locale.value === 'es' ? '¿HA PASADO ALGO?' : 'DID SOMETHING HAPPEN?' }}</h2>
+            <p>{{ cueEntryCopy.body }}</p>
+            <button type="button" :disabled="!bookingCoreWorkspaceId" @click="cueOpen = true">+ CUE</button>
           </aside>
         </div>
       </section>
@@ -862,45 +1307,31 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
           <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
-        <aside id="sample-mode" class="demo-notice" :class="{ 'tour-focus': tourStep === 0 }">
-          <div><span>{{ copy.samplesLabel }}</span><strong>{{ demoActiveBookings.length ? copy.samplesActive : copy.samplesRemoved }}</strong><p>{{ copy.samplesBody }}</p></div>
-          <div class="demo-notice__actions"><button class="guide-action" type="button" @click="startTour">{{ copy.guidedTour }}</button><button v-if="demoActiveBookings.length" type="button" @click="clearSampleBookings">{{ copy.removeSamples }}</button><button v-else type="button" @click="restoreSampleBookings">{{ copy.restoreSamples }}</button></div>
-        </aside>
 
-        <div id="workspace-filters" class="status-filters" :class="{ 'tour-focus': tourStep === 1 }" :aria-label="copy.filterSamples">
-          <button :class="{ active: bookingFilter === 'all' }" type="button" @click="bookingFilter = 'all'">{{ copy.all }} <strong>{{ demoActiveBookings.length }}</strong></button>
-          <button v-for="status in bookingStatuses.filter(item => item !== 'rejected')" :key="status" type="button" :class="[{ active: bookingFilter === status }, `tone-${statusTone[status]}`]" @click="bookingFilter = status"><i />{{ demoStatusLabel(status) }} <strong>{{ demoCounts[status] }}</strong></button>
-        </div>
-
-        <div class="booking-workspace demo-booking-workspace">
-          <div id="workspace-list" class="booking-list" :class="{ 'tour-focus': tourStep === 2 }">
-            <button v-for="booking in demoFilteredBookings" :key="booking.id" type="button" :class="{ active: selectedDemoBookingId === booking.id }" @click="selectDemoBooking(booking.id)">
-              <span class="booking-list__date">{{ formatDemoDate(booking.event.date) }}</span>
-              <span><strong>{{ booking.event.venue }}</strong><small>{{ booking.artistName }} · {{ booking.event.city }}</small></span>
-              <span :class="`status-pill tone-${statusTone[booking.status]}`"><i />{{ demoStatusLabel(booking.status) }}</span>
-            </button>
-            <p v-if="!demoFilteredBookings.length" class="workspace-empty">{{ copy.noSamples }}</p>
+        <section v-if="bookingCoreWorkspaceId" id="workspace-cue" class="cue-entry-bar">
+          <div>
+            <span>{{ cueEntryCopy.eyebrow }}</span>
+            <strong>{{ cueEntryCopy.title }}</strong>
+            <p>{{ cueEntryCopy.body }}</p>
           </div>
+          <div class="cue-entry-actions">
+            <button class="cue-tour-action" type="button" :disabled="!realBookings.some(item => !item.archived_at)" @click="startTour">{{ copy.guidedTour }}</button>
+            <button type="button" @click="cueOpen = true">+ CUE</button>
+          </div>
+        </section>
+        <p v-if="cueMessage" class="cue-entry-message">{{ cueMessage }}</p>
 
-          <article v-if="selectedDemoBooking" :id="`booking-thread-${selectedDemoBooking.id}`" class="booking-detail" tabindex="-1">
-            <header>
-              <div><p class="eyebrow">{{ copy.sampleBooking }} / {{ selectedDemoBooking.id.slice(-8).toUpperCase() }}</p><h2>{{ selectedDemoBooking.event.venue }}</h2><p>{{ selectedDemoBooking.event.name }} · {{ selectedDemoBooking.artistName }}</p></div>
-              <div id="workspace-status" class="booking-status-display" :class="[{ 'tour-focus': tourStep === 3 }, `tone-${statusTone[selectedDemoBooking.status]}`]"><span>{{ copy.automaticStatus }}</span><strong><i />{{ demoStatusLabel(selectedDemoBooking.status) }}</strong></div>
-            </header>
+        <BookingCoreInbox
+          v-if="bookingCoreWorkspaceId"
+          :workspace-id="bookingCoreWorkspaceId"
+          :bookings="realBookings"
+          :locale="preferences.locale.value"
+          :focus-booking-id="realBookingFocusId"
+          @operations-changed="handleBookingCoreOperationsChanged"
+          @cue-requested="cueOpen = true"
+          @booking-opened="markBookingNotificationsRead"
+        />
 
-            <div id="workspace-details" class="booking-facts" :class="{ 'tour-focus': tourStep === 4 }">
-              <section><h3>{{ copy.eventData }}</h3><dl><div><dt>{{ copy.date }}</dt><dd>{{ formatDemoDate(selectedDemoBooking.event.date) }}</dd></div><div><dt>{{ copy.city }}</dt><dd>{{ selectedDemoBooking.event.city }}</dd></div><div><dt>{{ copy.venue }}</dt><dd>{{ selectedDemoBooking.event.venue }}</dd></div><div><dt>{{ copy.capacity }}</dt><dd>{{ selectedDemoBooking.event.capacity }}</dd></div><div><dt>{{ copy.offer }}</dt><dd>{{ selectedDemoBooking.event.offer }}</dd></div><div><dt>{{ copy.schedule }}</dt><dd>{{ selectedDemoBooking.event.schedule || '—' }}</dd></div></dl></section>
-              <section><h3>{{ copy.contact }}</h3><dl><div><dt>{{ copy.name }}</dt><dd>{{ selectedDemoBooking.promoter.name }}</dd></div><div><dt>Email</dt><dd>{{ selectedDemoBooking.promoter.email }}</dd></div><div v-if="selectedDemoBooking.promoter.phone"><dt>{{ copy.phone }}</dt><dd>{{ selectedDemoBooking.promoter.phone }}</dd></div><div><dt>{{ copy.source }}</dt><dd>{{ copy.bookingLink }}</dd></div></dl></section>
-            </div>
-
-            <section class="message-thread"><h3>{{ copy.conversation }}</h3><article v-for="message in selectedDemoBooking.messages" :key="message.id" :class="`message message--${message.actor}`"><header><strong>{{ message.actor === 'artist' ? selectedDemoBooking.artistName : selectedDemoBooking.promoter.name }}</strong><time>{{ formatDemoTime(message.createdAt) }}</time></header><p>{{ message.body }}</p></article></section>
-
-            <form id="workspace-reply" class="booking-reply" :class="{ 'tour-focus': tourStep === 5 }" @submit.prevent="sendDemoReply"><label>{{ copy.replyPromoter }}<textarea v-model="demoReply" rows="5" :placeholder="copy.replyPlaceholder" /></label><p>{{ copy.localMessage }}</p><button class="primary-button demo-action" type="submit" :disabled="!demoReply.trim()">{{ copy.sendSampleReply }}</button></form>
-
-            <footer id="workspace-actions" class="booking-actions" :class="{ 'tour-focus': tourStep === 6 }"><NuxtLink class="demo-secondary-action" :to="`/request?id=${selectedDemoBooking.id}`">{{ copy.openPromoter }}</NuxtLink><button v-if="selectedDemoBooking.status !== 'confirmed'" class="primary-button demo-action" type="button" @click="confirmDemoBooking">{{ copy.confirmDate }}</button><button v-if="selectedDemoBooking.status !== 'confirmed'" class="demo-danger-action" type="button" @click="rejectDemoBooking">{{ copy.rejectRequest }}</button></footer>
-          </article>
-          <div v-else class="booking-placeholder"><span>→</span><p>{{ copy.openRequest }}</p></div>
-        </div>
       </section>
 
       <section v-else-if="activeView === 'calendar'" class="view calendar-view">
@@ -917,19 +1348,35 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               <div v-for="label in copy.weekdays" :key="label" class="weekday">{{ label }}</div>
               <button v-for="cell in monthCells" :key="cell.date" type="button" class="day" :class="{ muted: !cell.current, selected: selectedDate === cell.date }" @click="selectDay(cell.date)">
                 <span>{{ cell.number }}</span>
-                <small v-if="cell.blocks.length">{{ cell.blocks.length }}</small>
-                <span v-if="cell.blocks.length" class="day-statuses"><i v-for="block in cell.blocks.slice(0, 3)" :key="block.id" :class="`status-dot status-dot--${block.status}`" /></span>
+                <small v-if="cell.blocks.length || cell.holds.length || cell.confirmedBookings.length">{{ cell.blocks.length + cell.holds.length + cell.confirmedBookings.length }}</small>
+                <span v-if="cell.blocks.length || cell.holds.length || cell.confirmedBookings.length" class="day-statuses"><i v-for="block in cell.blocks.slice(0, 1)" :key="block.id" :class="`status-dot status-dot--${block.status}`" /><i v-if="cell.holds.length" class="status-dot status-dot--hold" /><i v-if="cell.confirmedBookings.length" class="status-dot status-dot--confirmed" /></span>
               </button>
             </div>
             <div class="legend"><span><i class="status-dot status-dot--hold" />Hold</span><span><i class="status-dot status-dot--confirmed" />{{ copy.confirmedStatus }}</span><span><i class="status-dot status-dot--unavailable" />{{ copy.unavailable }}</span></div>
           </section>
 
-          <section class="day-panel panel">
+          <section id="workspace-day-panel" class="day-panel panel">
             <div class="day-heading"><div><p class="eyebrow">{{ copy.dayHours }}</p><h2>{{ selectedDateLabel }}</h2></div><button class="add-button" type="button" @click="openCreate()">{{ copy.add }}</button></div>
+            <div v-if="selectedDayDateOnlyCoreHolds.length || selectedDayDateOnlyConfirmedBookings.length" class="core-calendar-holds">
+              <article v-for="booking in selectedDayDateOnlyConfirmedBookings" :key="`confirmed-${booking.id}`" class="core-calendar-confirmed">
+                <i class="status-dot status-dot--confirmed" />
+                <div><strong>{{ coreBookingLabel(booking) }}</strong><span>{{ preferences.locale.value === 'es' ? 'Confirmado · horario pendiente' : 'Confirmed · schedule pending' }}</span></div>
+              </article>
+              <article v-for="hold in selectedDayDateOnlyCoreHolds" :key="hold.id">
+                <i class="status-dot status-dot--hold" />
+                <div><strong>{{ coreHoldLabel(hold) }}</strong><span>Hold · {{ hold.priority ? `P${hold.priority}` : (preferences.locale.value === 'es' ? 'Sin prioridad' : 'No priority') }}<template v-if="hold.expires_at"> · {{ preferences.locale.value === 'es' ? 'Caduca' : 'Expires' }} {{ coreHoldExpiry(hold) }}</template></span></div>
+              </article>
+            </div>
             <div class="timeline" :aria-label="copy.selectedDaySchedule">
               <button v-for="hour in hours" :key="hour" class="hour-row" type="button" :aria-label="`${copy.addAt} ${hour}`" @click="openCreate(hour)"><span>{{ hour }}</span></button>
               <button v-for="block in dayBlocks" :key="block.id" class="timeline-block" :class="`timeline-block--${block.status}`" :style="blockStyle(block)" type="button" @click.stop="openCalendarBlock(block)">
                 <strong>{{ block.label || statusLabel(block.status) }}</strong><span>{{ time(block.starts_at) }}–{{ time(block.ends_at) }}</span>
+              </button>
+              <button v-for="hold in selectedDayTimedCoreHolds" :key="`core-hold-${hold.id}`" class="timeline-block timeline-block--hold core-timeline-hold" :style="coreHoldStyle(hold)" type="button" @click.stop="openRealBooking(hold.booking_id)">
+                <strong>{{ coreHoldLabel(hold) }}</strong><span>{{ hold.starts_at ? new Date(hold.starts_at).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' }) : '' }}–{{ hold.ends_at ? new Date(hold.ends_at).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' }) : '' }}</span>
+              </button>
+              <button v-for="booking in selectedDayTimedConfirmedBookings" :key="`core-confirmed-${booking.id}`" class="timeline-block timeline-block--confirmed core-timeline-confirmed" :style="coreBookingTimeStyle(booking)" type="button" @click.stop="openRealBooking(booking.id)">
+                <strong>{{ coreBookingLabel(booking) }}</strong><span>{{ booking.start_time?.slice(0, 5) }}–{{ booking.end_time?.slice(0, 5) }}</span>
               </button>
             </div>
           </section>
@@ -942,10 +1389,14 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
           <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
-        <div v-if="historyItems.length" class="history-list">
-          <button v-for="item in historyItems" :id="item.id === `status-${item.bookingId}` ? `history-booking-${item.bookingId}` : undefined" :key="item.id" type="button" :aria-label="`${copy.openTrace}: ${item.title}`" @click="openHistoryItem(item.bookingId)"><time>{{ formatDemoTime(item.at) }}</time><i /><div><span>{{ item.kind }}</span><strong>{{ item.title }}</strong><p>{{ item.detail }}</p><small>{{ copy.openTrace }} →</small></div></button>
-        </div>
-        <p v-else class="workspace-empty">{{ copy.historyEmpty }}</p>
+        <BookingCoreHistory
+          v-if="bookingCoreWorkspaceId"
+          :workspace-id="bookingCoreWorkspaceId"
+          :bookings="realBookings"
+          :locale="preferences.locale.value"
+          :refresh-key="bookingCoreOperationsRevision"
+          @open-booking="openRealBooking"
+        />
       </section>
 
       <section v-else class="view profile-view">
@@ -954,9 +1405,22 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <div class="profile-heading-actions">
             <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
             <div v-else class="profile-progress"><span>{{ copy.profileCompletion }}</span><strong>{{ profileCompletion }}%</strong><i><b :style="{ width: `${profileCompletion}%` }" /></i></div>
-            <button class="profile-preview-button" type="button" @click="profilePreviewOpen = true">{{ copy.previewProfile }} ↗</button>
+            <button v-if="!canEditSelectedArtist" class="profile-preview-button" type="button" @click="profilePreviewOpen = true"><span>{{ copy.previewProfile }}</span><svg class="external-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></button>
           </div>
         </div>
+
+        <PublicProfilePublishingControls
+          v-if="selectedArtist && canEditSelectedArtist"
+          :slug="selectedArtist.slug"
+          :published="publicProfilePublished"
+          :accepting-requests="publicProfileAcceptingRequests"
+          :saving="publicPublishingSaving"
+          :locale="preferences.locale.value"
+          @preview="profilePreviewOpen = true"
+          @update-published="updatePublicProfilePublished"
+          @update-accepting-requests="updatePublicAcceptingRequests"
+        />
+        <p v-if="publicPublishingMessage" class="public-publishing-message">{{ publicPublishingMessage }}</p>
 
         <aside v-if="profileWelcome" class="profile-welcome">
           <div><span>{{ copy.profileOptional }}</span><strong>{{ copy.profileOptionalBody }}</strong></div>
@@ -987,6 +1451,12 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               @update:position-y="profileForm.coverPositionY = $event"
             />
             <p v-if="profileCoverMessage" class="profile-cover-message" :class="{ success: profileCoverMessage === copy.coverSaved || profileCoverMessage === copy.coverRemoved }">{{ profileCoverMessage }}</p>
+            <CueIdProfileEditor
+              class="profile-cue-id-field"
+              :artist-name="profileForm.stageName || selectedArtist?.stage_name || 'Artist'"
+              :locale="preferences.locale.value"
+              :disabled="!canEditSelectedArtist"
+            />
             <div class="profile-fields">
               <label class="field-wide"><span>{{ copy.stageName }}</span><input v-model="profileForm.stageName" maxlength="120" required></label>
               <label class="field-wide"><span>{{ copy.bio }}</span><textarea v-model="profileForm.bio" rows="5" maxlength="2000" :placeholder="copy.bioPlaceholder" /></label>
@@ -1049,27 +1519,19 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
     <div v-if="profilePreviewOpen" class="profile-preview-backdrop" @click.self="profilePreviewOpen = false">
       <article class="profile-preview" role="dialog" aria-modal="true" aria-labelledby="profile-preview-title">
         <header>
-          <p>{{ copy.previewPrivate }}</p>
+          <p id="profile-preview-title">{{ copy.previewPrivate }}</p>
           <button type="button" :aria-label="copy.previewClose" @click="profilePreviewOpen = false">×</button>
         </header>
-        <section class="profile-preview-hero">
-          <img :src="profileCoverSource" alt="" :style="{ objectPosition: `50% ${profileForm.coverPositionY}%` }">
-          <div class="profile-preview-hero-shade" />
-          <p v-if="profilePreviewLocation">{{ profilePreviewLocation }}</p>
-          <h2 id="profile-preview-title">{{ profileForm.stageName || selectedArtist?.stage_name }}</h2>
-          <div v-if="profilePreviewGenres.length" class="profile-preview-chips"><span v-for="genre in profilePreviewGenres" :key="genre">{{ genre }}</span></div>
-          <p v-else class="profile-preview-empty">{{ copy.previewGenresEmpty }}</p>
-        </section>
-        <section class="profile-preview-body">
-          <p class="profile-preview-bio">{{ profileForm.bio || copy.previewBioEmpty }}</p>
-          <div v-if="profilePreviewFormats.length" class="profile-preview-block"><span>{{ copy.previewFormats }}</span><strong>{{ profilePreviewFormats.join(' · ') }}</strong></div>
-          <div v-if="profilePreviewLinks.length" class="profile-preview-block"><span>{{ copy.previewLinks }}</span><nav><a v-for="link in profilePreviewLinks" :key="link.label" :href="link.url" target="_blank" rel="noopener noreferrer">{{ link.label }} ↗</a></nav></div>
-        </section>
+        <PublicArtistProfile
+          :profile="publicProfilePreview"
+          :locale="preferences.locale.value"
+          preview
+        />
       </article>
     </div>
 
     <div v-if="settingsOpen" class="editor-backdrop" @click.self="settingsOpen = false">
-      <aside class="editor-panel settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <aside class="editor-panel settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title" tabindex="-1">
         <div class="editor-heading"><div><p class="eyebrow">{{ copy.accountPrivate }}</p><h2 id="settings-title">{{ copy.settingsTitle }}</h2></div><button type="button" :aria-label="copy.close" @click="settingsOpen = false">×</button></div>
         <section class="settings-group"><span>{{ copy.language }}</span><div class="settings-options"><button :class="{ active: preferences.locale.value === 'es' }" type="button" @click="preferences.setLocale('es')">ES</button><button :class="{ active: preferences.locale.value === 'en' }" type="button" @click="preferences.setLocale('en')">EN</button></div></section>
         <section class="settings-group"><span>{{ copy.appearance }}</span><div class="settings-options"><button :class="{ active: preferences.theme.value === 'dark' }" type="button" @click="preferences.setTheme('dark')">{{ copy.dark }}</button><button :class="{ active: preferences.theme.value === 'light' }" type="button" @click="preferences.setTheme('light')">{{ copy.light }}</button></div></section>
@@ -1098,13 +1560,22 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       </aside>
     </div>
 
-    <aside v-if="currentTour" class="tour-card" role="dialog" aria-live="polite">
+    <aside v-if="currentTour" class="tour-card" role="dialog" aria-live="polite" aria-labelledby="tour-card-title" :style="tourCardStyle">
       <button class="tour-card__close" type="button" :aria-label="copy.closeTour" @click="closeTour">×</button>
       <span>{{ String(tourStep + 1).padStart(2, '0') }} / {{ String(tourSteps.length).padStart(2, '0') }}</span>
-      <strong>{{ currentTour.title }}</strong>
+      <strong id="tour-card-title">{{ currentTour.title }}</strong>
       <p>{{ currentTour.body }}</p>
       <button class="primary-button" type="button" @click="nextTourStep">{{ tourStep === tourSteps.length - 1 ? copy.finish : copy.next }}</button>
     </aside>
+    <CueCapturePanel
+      :open="cueOpen"
+      :workspace-id="bookingCoreWorkspaceId"
+      :artist-id="selectedArtistId"
+      :locale="preferences.locale.value"
+      @close="cueOpen = false"
+      @created="handleCueCreated"
+    />
+
   </main>
 </template>
 
@@ -1136,6 +1607,14 @@ h1 { max-width: 900px; margin: 10px 0 14px; font-size: clamp(3rem, 7vw, 7.2rem);
 .artist-select span, .roster-form label span, .editor-panel label span { color: #858585; font: 700 10px/1.2 monospace; letter-spacing: .08em; text-transform: uppercase; }
 select, input { min-height: 46px; box-sizing: border-box; padding: 0 13px; border: 1px solid var(--cue-border); border-radius: 0; outline: none; background: var(--cue-surface); color: var(--cue-text); }
 textarea { box-sizing: border-box; width: 100%; padding: 13px; resize: vertical; border: 1px solid var(--cue-border); border-radius: 0; outline: none; background: var(--cue-surface); color: var(--cue-text); }
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline:2px solid var(--cue-accent);
+  outline-offset:2px;
+}
 select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .artist-select select { min-width: 220px; }
 .artist-identity { display: grid; min-width: 220px; padding: 12px 0 3px; border-top: 1px solid var(--cue-border); }
@@ -1168,18 +1647,7 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .next-panel h2 { max-width: 360px; margin: 18px 0; font-size: clamp(1.8rem, 3vw, 3.2rem); line-height: .95; text-transform: uppercase; }
 .next-panel button { margin-top: 28px; color: #090909; }
 .panel-empty { padding: 32px 22px; color: var(--cue-muted); }
-.panel-empty button { padding: 0; color: #e8ff2f; }
-.demo-notice { display: flex; justify-content: space-between; align-items: center; gap: 28px; padding: 20px 22px; border: 1px solid #665f18; background: #17170d; }
-.demo-notice span { display: block; margin-bottom: 7px; color: #e8ff2f; font: 700 10px monospace; letter-spacing: .1em; }
-.demo-notice strong { font-size: 17px; }
-.demo-notice p { max-width: 720px; margin: 6px 0 0; color: var(--cue-muted); font-size: 13px; line-height: 1.5; }
-.demo-notice__actions { display: flex; flex: 0 0 auto; gap: 9px; }
-.demo-notice__actions button { min-height: 42px; padding: 0 16px; border: 1px solid #777025; background: transparent; color: #e8ff2f; cursor: pointer; font-weight: 800; }
-.demo-notice__actions .guide-action { background: #e8ff2f; color: #070707; }
-.demo-booking-workspace { padding-bottom: 34px; }
-.demo-action { min-height: 46px; padding: 0 18px; }
-.demo-secondary-action, .demo-danger-action { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid #3a3a3a; background: transparent; color: #f2f0eb; cursor: pointer; font-size: 12px; font-weight: 800; text-decoration: none; }
-.demo-danger-action { border-color: #75404a; color: #ff9dab; }
+.panel-empty button { padding: 0; color: var(--cue-accent); }
 .bookings-shell { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 470px; border: 1px solid #292929; background: #0d0d0d; }
 .booking-filters { padding: 10px; border-right: 1px solid #292929; }
 .booking-filters button { display: flex; justify-content: space-between; width: 100%; min-height: 50px; padding: 0 14px; border: 0; background: transparent; color: #848484; cursor: pointer; text-align: left; }
@@ -1205,14 +1673,14 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #777; }
 .agenda-list .status-dot, .legend .status-dot { margin: 0; }
 .status-dot--hold { background: #e8ff2f; }
-.status-dot--confirmed { background: var(--cue-mint); }
+.status-dot--confirmed { background:#57e389; box-shadow:0 0 0 1px color-mix(in srgb,#57e389 24%,transparent); }
 .status-dot--unavailable { background: #ff8585; }
 .legend { display: flex; flex-wrap: wrap; gap: 16px; padding: 16px; color: var(--cue-muted); font-size: 11px; }
 .legend span { display: flex; align-items: center; gap: 7px; }
 .day-panel { position: sticky; top: 92px; overflow: hidden; }
 .day-heading { align-items: center; padding: 18px; border-bottom: 1px solid var(--cue-border); }
 .day-heading h2 { font-size: 20px; text-transform: capitalize; }
-.add-button { min-height: 40px; padding: 0 16px; border: 0; background: #e8ff2f; color: #070707; cursor: pointer; font-weight: 800; }
+.add-button { min-height:38px; padding:0 14px; border:1px solid var(--cue-accent); background:var(--cue-accent); color:#070707; cursor:pointer; font-size:11px; font-weight:850; }
 .timeline { position: relative; height: 590px; overflow-y: auto; }
 .hour-row { display: block; width: 100%; height: 48px; padding: 0 12px; border: 0; border-bottom: 1px solid var(--cue-border); background: transparent; color: var(--cue-muted); text-align: left; cursor: crosshair; }
 .hour-row:hover { background: var(--cue-raised); color: var(--cue-accent); }
@@ -1237,9 +1705,20 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .empty-card { max-width: 760px; margin: 70px auto; padding: clamp(26px, 6vw, 70px); }
 .empty-card h1 { margin-bottom: 18px; font-size: clamp(2.4rem, 6vw, 5.5rem); line-height: .9; text-transform: uppercase; }
 .roster-form { margin-top: 28px; }
-.error-message, .loading-message { width: min(1440px, 100%); box-sizing: border-box; margin: 18px auto 0; padding: 13px 16px; }
-.error-message { border: 1px solid #8b3434; color: #ffadad; }
-.loading-message { color: #999; }
+.error-message { width:min(1440px,100%); box-sizing:border-box; margin:18px auto 0; padding:13px 16px; border:1px solid #8b3434; color:#ffadad; }
+.workspace-skeleton { width:min(1440px,100%); margin:0 auto; padding:28px 0 24px; }
+.workspace-skeleton__heading { display:grid; gap:12px; max-width:720px; margin-bottom:28px; }
+.workspace-skeleton__stats { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); border-top:1px solid var(--cue-border); border-left:1px solid var(--cue-border); }
+.workspace-skeleton__body { display:grid; grid-template-columns:1.35fr .65fr; gap:16px; margin-top:18px; }
+.skeleton-line, .skeleton-card, .skeleton-panel { display:block; position:relative; overflow:hidden; background:var(--cue-surface); border:1px solid var(--cue-border); }
+.skeleton-line::after, .skeleton-card::after, .skeleton-panel::after { position:absolute; inset:0; background:linear-gradient(100deg,transparent 20%,color-mix(in srgb,var(--cue-text) 7%,transparent) 46%,transparent 72%); transform:translateX(-100%); animation:workspace-shimmer 1.35s ease-in-out infinite; content:''; }
+.skeleton-line { height:12px; border:0; }
+.skeleton-line--eyebrow { width:150px; }
+.skeleton-line--title { width:min(620px,90%); height:58px; }
+.skeleton-line--body { width:min(520px,75%); height:18px; }
+.skeleton-card { min-height:150px; border-top:0; border-left:0; }
+.skeleton-panel { min-height:300px; }
+@keyframes workspace-shimmer { to { transform:translateX(100%); } }
 .history-list { max-width: 1040px; padding-bottom: 64px; }
 .history-list > button { display: grid; grid-template-columns: 145px 12px minmax(0, 1fr); gap: 20px; width: 100%; min-height: 104px; padding: 0; border: 0; background: transparent; color: var(--cue-text); text-align: left; cursor: pointer; }
 .history-list time { padding-top: 4px; color: var(--cue-muted); font: 700 10px/1.4 monospace; text-transform: uppercase; }
@@ -1296,8 +1775,9 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-savebar > p { margin: 0; color: #ff9b9b; font-size: 12px; }
 .profile-savebar > p.success { color: #8ce99a; }
 .profile-savebar .primary-button { min-width: 180px; padding: 0 18px; }
+.public-publishing-message { margin: -12px 0 24px; color: var(--cue-muted); font-size: 12px; }
 .profile-preview-backdrop { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 24px; overflow-y: auto; background: rgba(0,0,0,.82); backdrop-filter: blur(9px); }
-.profile-preview { width: min(980px, 100%); max-height: calc(100dvh - 48px); overflow-y: auto; border: 1px solid #343434; background: #0b0b0b; color: #f4f2ed; box-shadow: 0 30px 100px #000; }
+.profile-preview { width: min(1280px, 100%); max-height: calc(100dvh - 48px); overflow-y: auto; border: 1px solid #343434; background: #0b0b0b; color: #f4f2ed; box-shadow: 0 30px 100px #000; }
 .profile-preview > header { position: sticky; z-index: 2; top: 0; display: flex; justify-content: space-between; align-items: center; min-height: 58px; padding: 0 22px; border-bottom: 1px solid #343434; background: rgba(11,11,11,.95); }
 .profile-preview > header p { margin: 0; color: #cfff57; font: 700 10px/1.3 monospace; letter-spacing: .12em; }
 .profile-preview > header button { width: 38px; height: 38px; border: 1px solid #343434; border-radius: 50%; background: transparent; color: #f4f2ed; cursor: pointer; font-size: 25px; }
@@ -1326,23 +1806,19 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .password-form { display: grid; gap: 16px; margin-top: 14px; padding-top: 24px; border-top: 1px solid var(--cue-border); }
 
 :global(:root[data-theme='light']) .panel-empty button,
-:global(:root[data-theme='light']) .demo-notice span { color: var(--cue-accent); }
-:global(:root[data-theme='light']) .demo-notice { border-color: color-mix(in srgb, var(--cue-accent) 32%, var(--cue-border)); background: var(--cue-surface); }
-:global(:root[data-theme='light']) .demo-notice__actions button { border-color: color-mix(in srgb, var(--cue-accent) 48%, var(--cue-border)); color: var(--cue-accent); }
-:global(:root[data-theme='light']) .demo-notice__actions .guide-action,
 :global(:root[data-theme='light']) .add-button { border-color: var(--cue-accent); background: var(--cue-accent); color: var(--cue-accent-ink); }
 :global(:root[data-theme='light']) .tone-lime { color: #5127c7 !important; }
-:global(:root[data-theme='light']) .tour-focus { outline-color: var(--cue-accent); box-shadow: 0 0 18px color-mix(in srgb, var(--cue-accent) 62%, transparent), 0 0 55px color-mix(in srgb, var(--cue-accent) 25%, transparent); animation-name: tour-pulse-light; }
+:global(:root[data-theme='light'] .tour-focus) { outline-color: var(--cue-accent); box-shadow: 0 0 18px color-mix(in srgb, var(--cue-accent) 62%, transparent), 0 0 55px color-mix(in srgb, var(--cue-accent) 25%, transparent); animation-name: tour-pulse-light; }
 :global(:root[data-theme='light']) .tour-card { border-color: var(--cue-accent); box-shadow: 0 0 32px color-mix(in srgb, var(--cue-accent) 22%, transparent), 0 24px 80px var(--cue-shadow); }
 :global(:root[data-theme='light']) .tour-card > span { color: var(--cue-accent); }
-.tour-focus { position: relative; z-index: 32; outline: 2px solid #e8ff2f; outline-offset: 5px; box-shadow: 0 0 18px rgba(232, 255, 47, .7), 0 0 55px rgba(232, 255, 47, .28); animation: tour-pulse 1.5s ease-in-out infinite alternate; }
-.tour-card { position: fixed; right: 24px; bottom: 24px; z-index: 60; width: min(390px, calc(100vw - 32px)); box-sizing: border-box; padding: 24px; border: 1px solid #e8ff2f; background: #111; color: #f2f0eb; box-shadow: 0 0 32px rgba(232, 255, 47, .25), 0 24px 80px #000; }
-.tour-card > span { color: #e8ff2f; font: 700 10px monospace; letter-spacing: .12em; }
+:global(.tour-focus) { position: relative; z-index: 32; outline: 2px solid var(--cue-accent); outline-offset: 5px; box-shadow: 0 0 18px color-mix(in srgb, var(--cue-accent) 70%, transparent), 0 0 55px color-mix(in srgb, var(--cue-accent) 28%, transparent); animation: tour-pulse 1.5s ease-in-out infinite alternate; }
+.tour-card { position: fixed; right: 24px; bottom: 24px; z-index: 60; width: min(390px, calc(100vw - 32px)); box-sizing: border-box; padding: 24px; border: 1px solid var(--cue-accent); background: var(--cue-surface); color: var(--cue-text); box-shadow: 0 0 32px color-mix(in srgb, var(--cue-accent) 25%, transparent), 0 24px 80px var(--cue-shadow); }
+.tour-card > span { color: var(--cue-accent); font: 700 10px monospace; letter-spacing: .12em; }
 .tour-card > strong { display: block; margin: 17px 0 9px; font-size: 24px; text-transform: uppercase; }
 .tour-card > p { margin: 0 0 20px; color: #aaa; font-size: 14px; line-height: 1.55; }
 .tour-card .primary-button { width: 100%; }
 .tour-card__close { position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; border: 0; background: transparent; color: #999; cursor: pointer; font-size: 25px; }
-@keyframes tour-pulse { from { box-shadow: 0 0 12px rgba(232, 255, 47, .55), 0 0 35px rgba(232, 255, 47, .2); } to { box-shadow: 0 0 25px rgba(232, 255, 47, .9), 0 0 70px rgba(232, 255, 47, .36); } }
+@keyframes tour-pulse { from { box-shadow: 0 0 12px color-mix(in srgb, var(--cue-accent) 55%, transparent), 0 0 35px color-mix(in srgb, var(--cue-accent) 20%, transparent); } to { box-shadow: 0 0 25px color-mix(in srgb, var(--cue-accent) 90%, transparent), 0 0 70px color-mix(in srgb, var(--cue-accent) 36%, transparent); } }
 @keyframes tour-pulse-light { from { box-shadow: 0 0 12px color-mix(in srgb, var(--cue-accent) 48%, transparent), 0 0 35px color-mix(in srgb, var(--cue-accent) 18%, transparent); } to { box-shadow: 0 0 25px color-mix(in srgb, var(--cue-accent) 74%, transparent), 0 0 70px color-mix(in srgb, var(--cue-accent) 31%, transparent); } }
 
 @media (max-width: 1040px) {
@@ -1370,11 +1846,6 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .bookings-shell { grid-template-columns: 1fr; }
   .booking-filters { display: grid; grid-template-columns: repeat(2, 1fr); border-right: 0; border-bottom: 1px solid #292929; }
   .booking-empty { padding: 34px 20px; }
-  .demo-notice { align-items: flex-start; flex-direction: column; }
-  .demo-notice__actions { display: grid; width: 100%; }
-  .demo-notice__actions button { width: 100%; }
-  .demo-booking-workspace { display: block; }
-  .demo-booking-workspace .booking-list { margin-bottom: 14px; }
   .empty-actions { align-items: flex-start; flex-direction: column; }
   .calendar-toolbar { min-height: 60px; }
   .weekday { padding: 9px 2px; font-size: 8px; }
@@ -1409,5 +1880,47 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .profile-preview-hero { min-height: 280px; padding: 42px 22px; }
   .profile-preview-hero h2 { font-size: clamp(3.6rem,19vw,6rem); }
   .profile-preview-body { grid-template-columns: 1fr; gap: 34px; padding: 30px 22px 46px; }
+}
+
+.cue-entry-bar { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 14px; padding: 16px 18px; border: 1px solid color-mix(in srgb, var(--cue-accent) 48%, var(--cue-border)); background: color-mix(in srgb, var(--cue-accent) 5%, var(--cue-surface)); }
+.cue-entry-bar > div { min-width: 0; }
+.cue-entry-bar span { display: block; margin-bottom: 5px; color: var(--cue-accent); font: 700 9px/1.2 monospace; letter-spacing: .12em; }
+.cue-entry-bar strong { display: block; font-size: 15px; }
+.cue-entry-bar p { margin: 4px 0 0; max-width: 760px; color: var(--cue-muted); font-size: 12px; line-height: 1.4; }
+.cue-entry-actions { display:flex; align-items:center; gap:8px; flex:0 0 auto; }
+.cue-entry-actions > button { min-height:44px; padding:0 14px; cursor:pointer; font-weight:900; letter-spacing:.04em; }
+.cue-entry-actions > button:last-child { min-width:104px; padding-inline:18px; border:0; background:var(--cue-accent); color:#090909; }
+.cue-entry-actions .cue-tour-action { border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); font:700 9px monospace; text-transform:uppercase; }
+.cue-entry-actions .cue-tour-action:hover:not(:disabled) { border-color:var(--cue-accent); color:var(--cue-accent); }
+.cue-entry-actions .cue-tour-action:disabled { opacity:.42; cursor:not-allowed; }
+.cue-entry-message { margin: -2px 0 14px; padding: 9px 12px; border-left: 2px solid var(--cue-mint); color: var(--cue-muted); font-size: 11px; }
+@media (max-width: 760px) {
+  .cue-entry-bar { align-items: stretch; gap: 10px; margin-bottom: 10px; padding: 11px 12px; }
+  .cue-entry-bar span { font-size: 8px; }
+  .cue-entry-bar strong { font-size: 12px; }
+  .cue-entry-bar p { display: none; }
+  .cue-entry-actions { align-self:center; }
+  .cue-entry-actions > button { min-height:38px; padding:0 10px; }
+  .cue-entry-actions > button:last-child { min-width:82px; padding-inline:12px; }
+}
+
+.core-calendar-holds { display:grid; gap:7px; padding:10px 12px; border-bottom:1px solid var(--cue-border); background:color-mix(in srgb, var(--cue-accent) 4%, var(--cue-surface)); }
+.core-calendar-holds article { display:flex; align-items:flex-start; gap:9px; padding:9px 10px; border:1px solid color-mix(in srgb, var(--cue-accent) 32%, var(--cue-border)); }
+.core-calendar-holds article > i { flex:0 0 auto; margin-top:4px; }
+.core-calendar-holds strong, .core-calendar-holds span { display:block; }
+.core-calendar-holds strong { font-size:11px; }
+.core-calendar-holds span { margin-top:3px; color:var(--cue-muted); font-size:9px; }
+.core-timeline-hold { z-index:3; border-style:dashed !important; }
+.core-calendar-confirmed { border-style:solid !important; }
+.core-timeline-confirmed { z-index:4; }
+
+@media (max-width:760px) {
+  .workspace-skeleton { padding-top:20px; }
+  .workspace-skeleton__stats { grid-template-columns:1fr 1fr; }
+  .workspace-skeleton__stats .skeleton-card:last-child { grid-column:1 / -1; min-height:100px; }
+  .workspace-skeleton__body { grid-template-columns:1fr; }
+  .skeleton-line--title { height:42px; }
+  .skeleton-card { min-height:112px; }
+  .skeleton-panel { min-height:220px; }
 }
 </style>

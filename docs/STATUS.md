@@ -189,3 +189,20 @@ The application uses separate raster assets for each appearance rather than reco
 - the mobile menu keeps account actions in normal document flow and locks background scrolling while open.
 
 Production deployment remains manual and is not part of theme or staging pull requests.
+
+## 2026-09-16 app-shell stabilisation
+
+Block A of `WORK_HANDOFF_2026-09-16.md` has entered staging validation on `feature/app-visual-system`.
+
+The mobile workspace stylesheet now loads server-side, Settings is a normal navigation destination, and the old client DOM patch plugins have been removed. Guided Tour positioning is owned by the Vue page and measures the active target so the card can sit above or below it without hiding the content. The Artist Profile save control stays sticky on compact screens without leaving a large empty region below the form.
+
+Logo inspection confirmed equal source canvases and only minor transparent-bound differences between the final dark and light packages. The application keeps the final package rather than adding another asset variant.
+
+Validation for this pass:
+
+- `npm run generate`: passed;
+- `git diff --check`: passed;
+- production and Supabase production: untouched;
+- `nuxi typecheck`: unavailable because this branch does not install `typescript`/`vue-tsc`; Nuxt client and server compilation passed.
+
+Next gate: deploy the branch to staging and complete the Dark/Light × ES/EN smoke pass at desktop and phone widths. Continue to the humanoid CUE ID only after that gate passes.

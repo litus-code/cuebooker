@@ -20,3 +20,21 @@ additional_redirect_urls = ["http://localhost:3000/**"]
 [auth.email]
 enable_signup = true
 enable_confirmations = true
+
+[functions.get-public-artist-profile]
+verify_jwt = false
+
+[functions.submit-booking-request]
+verify_jwt = false
+
+[functions.booking-follow-up]
+verify_jwt = false
+
+[functions.ingest-booking-email]
+verify_jwt = false
+
+[functions.dispatch-notification-emails]
+verify_jwt = false
+
+[functions.brevo-transactional-events]
+verify_jwt = false

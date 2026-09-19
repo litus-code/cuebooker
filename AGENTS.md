@@ -1,56 +1,177 @@
-# CueBooker agent guide
+# Cuebooker agent guide
 
-Read this file before changing the project. Then read the documents in `docs/`.
+Updated: 17 September 2026
+Status: CANONICAL ENTRY POINT
 
-## Product in one sentence
+Read this file before changing Cuebooker.
 
-CueBooker is a booking workspace for independent DJs, managers and agencies. It turns enquiries from Instagram, WhatsApp, email, phone calls or a website into trackable bookings with one conversation, one status and one calendar entry.
+A chat transcript is not project memory. Repository documentation is the source of continuity between agents.
 
-## Product boundaries
+## 1. Read order
 
-The initial product manages demand that a DJ or agency already receives. It does not promise to find gigs.
+For any significant product/engineering task, read in this order:
 
-DJs and agencies have accounts and private workspaces. A promoter can send the first enquiry without creating an account. Follow-up happens through email and a secure booking link.
+1. `AGENTS.md`
+2. `docs/HANDOFF.md`
+3. `docs/AGENT_WORKFLOW.md`
+4. `docs/AGENT_ARCHITECTURE.md`
+5. the product-specific document for the feature
+6. `docs/ARCHITECTURE_REFERENCE.md`
+7. `docs/ARCHITECTURE_DECISION_REGISTER.md`
+8. implementation status docs relevant to the area
 
-A public DJ directory and availability search may become a later network layer. Keep private fees and private calendar details hidden. Artists decide whether their availability is discoverable.
+For the current Booking ingress/public-profile block, also read:
 
-## Current public experience
+- `docs/BOOKING_INGRESS_PRODUCT.md`
+- `docs/BOOKING_CORE_PRODUCT_VISION.md`
+- `docs/BOOKING_CORE_IMPLEMENTATION_STATUS.md`
+- `docs/BOOKING_EMAIL_THREADING_STATUS.md` when email/follow-up is involved
 
-The landing page explains the problem, the workflow, integrations, user roles, access model, demo boundaries, future discovery and early access.
+## 2. Product in one sentence
 
-The public demo opens the DJ workspace directly without registration. A separate promoter simulation explains how a request reaches that workspace. Demo records are fictional and remain local to the browser until the persistence block is connected.
+Cuebooker is an operational booking workspace for independent DJs, managers and agencies that turns opportunities arriving through many real-world channels into one trackable Booking Core.
 
-## Working rules
+The product does not require bookings to start inside Cuebooker. It prevents booking context, relationships and next actions from being lost between Instagram, WhatsApp, email, phone, websites and offline conversations.
 
-- Keep Spanish and English copy aligned.
-- Preserve the visual system: dark editorial interface, fluorescent yellow accent, compact mono labels and CSS-drawn arrows.
-- Never use emoji arrows.
-- Mobile is a first-class layout. Check 390 px width and desktop before merging.
-- Do not claim a simulated feature is connected.
-- Do not expose artist fees or private calendar details in discovery.
+## 3. Product boundaries
+
+The initial product manages demand an artist/agency already receives. It does not promise to find gigs.
+
+A promoter can send the first booking enquiry without creating a Cuebooker account.
+
+Private fees, contacts, negotiation history, notes, Holds, Next Moves and private calendar details stay private unless an explicit product decision publishes something.
+
+A public artist/network/discovery layer may grow later. Operational truth comes first.
+
+CUE ID / Passport / identity/gamification concepts remain downstream of real Booking Core truth.
+
+## 4. Current public-entry product direction
+
+The canonical public artist surface is intended to be:
+
+```text
+https://cuebooker.com/<artist-slug>
+```
+
+The workspace's “Vista previa de mi perfil” should preview the same public Artist Profile, not a separate mock product.
+
+The booking form/capability lives inside this public profile. Focused/deep links can open it directly, for example:
+
+```text
+/<artist-slug>?booking=1&src=instagram
+```
+
+Artists without a personal website can use the Cuebooker profile as their professional booking entry point. Artists with a website may later embed a widget that uses the exact same public intake backend.
+
+Everything converges into the same Booking Core. There is no separate widget/Instagram/public-form inbox model.
+
+See `docs/BOOKING_INGRESS_PRODUCT.md` for the canonical definition.
+
+## 5. Current operational product loop
+
+```text
+Ingress / + CUE
+ -> Contact / Counterparty
+ -> Booking
+ -> Activity
+ -> Next Move
+ -> Hold
+ -> Calendar
+ -> History
+```
+
+Keep `origin_channel`, `capture_method` and public entry attribution conceptually separate.
+
+Examples:
+
+```text
+WhatsApp + manual CUE
+origin_channel = whatsapp
+capture_method = manual
+
+Instagram bio -> Cuebooker public form
+origin_channel = booking_form
+capture_method = public_form
+entry attribution = instagram
+```
+
+## 6. Working rules
+
+- Follow `docs/AGENT_WORKFLOW.md` for significant changes.
+- Follow `docs/AGENT_ARCHITECTURE.md` for Cuebooker-specific architecture.
+- Do not import rules, terminology or implementation patterns from Radisson/Tridion/SDL or any unrelated codebase.
+- Architecture is created by necessity, not ceremony.
+- Preserve a single Booking model across ingress channels.
 - Do not require promoter registration for the first enquiry.
+- Do not claim a simulated/demo feature is connected.
+- Do not seed fake product data to hide real empty states.
 - Apply database changes through versioned Supabase migrations.
-- Enable RLS on every exposed table and grant only the required operations.
-- Use exact package versions for security-sensitive clients.
-- Run `npm ci`, `npm run typecheck`, `npm run generate` and `npm audit --omit=dev --audit-level=high` before merging.
+- RLS remains enabled/enforced for private exposed tenant data.
+- Service-role/private keys never reach browser code.
+- Privileged/webhook/public anonymous operations belong server/edge-side.
+- Staging and production are separate environments and separate decisions.
+- Mobile is first-class. Check around 390 px plus desktop for meaningful UI work.
+- Preserve accessibility, keyboard/focus basics and readable contrast/density.
+- Do not use emoji arrows as interface replacements; use the established Cuebooker visual system.
+- Do not introduce vanity rankings, follower scoring or synthetic DJ credibility metrics into core product decisions.
 
-## Repository map
+## 7. Git and deployment safety
 
-- `app/pages/index.vue`: landing page and product explanation.
-- `app/pages/app.vue`: DJ and manager workspace demo.
-- `app/pages/artist.vue`: public artist entry point.
-- `app/pages/request.vue`: promoter-side request flow.
-- `app/composables/useBookingDemo.ts`: current browser-local demo state.
-- `app/domain/booking.ts`: booking statuses and transition rules.
-- `app/components/BrevoPilotForm.vue`: early-access lead form.
-- `content/es/home.json` and `content/en/home.json`: landing copy.
-- `assets/css/main.css`: shared visual system and responsive rules.
-- `supabase/migrations/`: identity, memberships, permissions and future product data.
-- `.github/workflows/`: CI, staging and production deployments.
+Default rule: agents do not commit/push unless the user explicitly asks the current agent to apply the agreed changes directly to the connected repository.
 
-## Documentation
+Direct-repository authorization is scoped to the current agreed work. It is not blanket permission to merge PRs or deploy production.
 
-- `docs/PRODUCT.md`: audience, problem, product model and decisions.
-- `docs/ARCHITECTURE.md`: technical structure, security and deployment.
-- `docs/STATUS.md`: implemented, prepared and pending work.
-- `docs/ROADMAP.md`: recommended implementation order.
+Never:
+
+- force-push/rewrite history casually;
+- merge production work merely because CI is green;
+- apply production database migrations because staging passed;
+- call a PR preview `staging.cuebooker.com` unless it actually is that deployment;
+- assume a repository Edge Function is deployed because its file exists.
+
+## 8. Repository map
+
+Important current areas:
+
+- `app/pages/workspace.vue`: authenticated operational workspace shell.
+- `app/components/BookingCoreInbox.vue`: real Booking Core inbox/detail surface.
+- `app/components/BookingCoreOperations.vue`: Next Move + Hold operations.
+- `app/components/BookingActivityComposer.vue`: operational Activity capture/outbound email path.
+- `app/components/CueCapturePanel.vue`: private low-friction `+ CUE` capture.
+- `app/pages/artist.vue`: current fictional/demo artist public entry surface; not yet the final real public slug implementation.
+- `app/pages/request.vue`: current promoter-side demo/follow-up surface.
+- `app/composables/useBookingDemo.ts`: browser-local demo support only; must not become production truth.
+- `app/domain/bookingCore.ts`: Booking Core application types.
+- `app/services/bookingCoreApi.ts`: Booking Core application API boundary.
+- `app/services/bookingEmailApi.ts`: booking email boundary.
+- `supabase/migrations/`: versioned schema/RLS/domain commands.
+- `supabase/functions/`: privileged integration/webhook functions.
+- `.github/workflows/`: CI and environment deployment workflows.
+
+## 9. Current source-of-truth docs
+
+- `docs/HANDOFF.md`: current baton pass and exact next step.
+- `docs/AGENT_WORKFLOW.md`: how agents should work.
+- `docs/AGENT_ARCHITECTURE.md`: Cuebooker-specific engineering rules.
+- `docs/BOOKING_INGRESS_PRODUCT.md`: public Artist Profile + all booking ingress routes.
+- `docs/BOOKING_CORE_PRODUCT_VISION.md`: operational Booking Core product semantics.
+- `docs/ARCHITECTURE_REFERENCE.md`: complete reference architecture.
+- `docs/ARCHITECTURE_DECISION_REGISTER.md`: accepted structural decisions.
+- `docs/BOOKING_CORE_IMPLEMENTATION_STATUS.md`: detailed Booking Core implementation state; check `HANDOFF.md` for newer corrections.
+- `docs/BOOKING_EMAIL_THREADING_STATUS.md`: email threading state.
+
+## 10. Handoff is mandatory
+
+After a significant block, update `docs/HANDOFF.md` with:
+
+- date;
+- branch + exact HEAD;
+- what changed;
+- what was actually validated;
+- which environment was validated;
+- known caveats;
+- schema/migrations/functions introduced;
+- production status;
+- exact next implementation block.
+
+Future agents must be able to resume from repository docs without relying on previous chat memory.

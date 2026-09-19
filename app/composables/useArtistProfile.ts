@@ -1,5 +1,9 @@
+import type { CueIdConfigV1 } from '../domain/cueId'
+import type { ArtistImageStyle, ArtistVisualSource } from '../domain/artistVisual'
+
+export type { ArtistImageStyle, ArtistVisualSource } from '../domain/artistVisual'
+
 export type FeeBasis = 'event' | 'set' | 'hour'
-export type ArtistImageStyle = 'photo' | 'artwork' | 'duotone'
 
 export type ArtistProfessionalProfile = {
   id: string
@@ -29,6 +33,8 @@ export type ArtistProfessionalProfile = {
   artist_image_position_x: number
   artist_image_position_y: number
   artist_image_scale: number
+  visual_source: ArtistVisualSource
+  cue_id_config: CueIdConfigV1
 }
 
 export type ArtistBookingProfile = {
@@ -60,6 +66,8 @@ export type ArtistProfileInput = {
     | 'artist_image_position_x'
     | 'artist_image_position_y'
     | 'artist_image_scale'
+    | 'visual_source'
+    | 'cue_id_config'
   >
   booking: Omit<ArtistBookingProfile, 'artist_id'>
 }
@@ -73,7 +81,7 @@ export type ArtistVisualInput = {
   artist_image_scale: number
 }
 
-const artistSelect = 'id,stage_name,slug,bio,city,country_code,timezone,languages,primary_genres,secondary_genres,performance_formats,event_types,years_active,website_url,instagram_url,soundcloud_url,mixcloud_url,youtube_url,spotify_url,cover_image_path,cover_position_y,artist_image_path,artist_cutout_path,artist_image_style,artist_image_position_x,artist_image_position_y,artist_image_scale'
+const artistSelect = 'id,stage_name,slug,bio,city,country_code,timezone,languages,primary_genres,secondary_genres,performance_formats,event_types,years_active,website_url,instagram_url,soundcloud_url,mixcloud_url,youtube_url,spotify_url,cover_image_path,cover_position_y,artist_image_path,artist_cutout_path,artist_image_style,artist_image_position_x,artist_image_position_y,artist_image_scale,visual_source,cue_id_config'
 
 export function useArtistProfile() {
   const config = useRuntimeConfig()
@@ -245,6 +253,30 @@ export function useArtistProfile() {
     return rows[0]
   }
 
+  async function saveCueIdPresentation(
+    artistId: string,
+    visualSource: ArtistVisualSource,
+    cueIdConfig: CueIdConfigV1,
+    artistImageStyle?: ArtistImageStyle
+  ) {
+    const rows = await $fetch<ArtistProfessionalProfile[]>(`${supabaseUrl.value}/rest/v1/artists`, {
+      method: 'PATCH',
+      headers: { ...headers(), Prefer: 'return=representation' },
+      query: {
+        id: `eq.${artistId}`,
+        select: artistSelect
+      },
+      body: {
+        visual_source: visualSource,
+        cue_id_config: cueIdConfig,
+        ...(artistImageStyle ? { artist_image_style: artistImageStyle } : {})
+      }
+    })
+    if (!rows[0]) throw new Error('cue_id_not_saved')
+    const record = syncActiveProfile({ artist: rows[0], booking: activeProfile.value?.booking || null })
+    return record.artist
+  }
+
   async function saveArtistVisual(artistId: string, visual: ArtistVisualInput) {
     const rows = await $fetch<ArtistProfessionalProfile[]>(`${supabaseUrl.value}/rest/v1/artists`, {
       method: 'PATCH',
@@ -276,6 +308,7 @@ export function useArtistProfile() {
     deleteArtistImage,
     deleteArtistCutout,
     saveCover,
-    saveArtistVisual
+    saveArtistVisual,
+    saveCueIdPresentation
   }
 }

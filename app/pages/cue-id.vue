@@ -1,5 +1,10 @@
 <script setup lang="ts">
+import { cloneCueIdConfig, DEFAULT_CUE_ID_CONFIG } from '../domain/cueId'
+import type { CueIdQualityMode } from '../domain/cueIdQuality'
+
 const preferences = useCuePreferences()
+const cueIdConfig = ref(cloneCueIdConfig(DEFAULT_CUE_ID_CONFIG))
+const labQuality = ref<CueIdQualityMode>('auto')
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
   eyebrow: 'PROTOTIPO / CUE ID',
@@ -16,7 +21,11 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   booking: 'Primer booking',
   cities: 'Ciudades',
   venues: 'Venues',
-  returnHome: 'Volver'
+  returnHome: 'Volver',
+  editorEyebrow: 'CUE ID / TECHNICAL FIXTURE',
+  editorTitle: 'FIXTURE TÉCNICO. DIRECCIÓN VISUAL NO APROBADA.',
+  editorBody: 'Este laboratorio mantiene el candidato procedural únicamente para validar runtime, semántica y performance. La dirección visual ha sido rechazada tras revisión en dispositivo real y no se promoverá a producción.',
+  reset: 'Restablecer'
 } : {
   eyebrow: 'PROTOTYPE / CUE ID',
   title: 'IDENTITY, TRAJECTORY AND CLUB CULTURE.',
@@ -32,7 +41,11 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   booking: 'First booking',
   cities: 'Cities',
   venues: 'Venues',
-  returnHome: 'Back'
+  returnHome: 'Back',
+  editorEyebrow: 'CUE ID / TECHNICAL FIXTURE',
+  editorTitle: 'TECHNICAL FIXTURE. VISUAL DIRECTION NOT APPROVED.',
+  editorBody: 'This lab keeps the procedural candidate only to validate runtime, semantics and performance. The visual direction was rejected after real-device review and will not be promoted to production.',
+  reset: 'Reset'
 })
 
 useHead(() => ({
@@ -58,7 +71,38 @@ useHead(() => ({
       <span>{{ copy.body }}</span>
     </section>
 
-    <CueIdTeaser artist-name="LITUS" :preview-href="''" />
+    <section class="cue-id-editor-lab">
+      <header class="cue-id-editor-lab__intro">
+        <div>
+          <p>{{ copy.editorEyebrow }}</p>
+          <h2>{{ copy.editorTitle }}</h2>
+          <span>{{ copy.editorBody }}</span>
+        </div>
+        <button type="button" @click="cueIdConfig = cloneCueIdConfig(DEFAULT_CUE_ID_CONFIG)">{{ copy.reset }}</button>
+      </header>
+      <div class="cue-id-editor-lab__quality" aria-label="CUE ID lab quality">
+        <span>QUALITY TEST</span>
+        <button
+          v-for="quality in (['auto', 'light', 'medium', 'high'] as const)"
+          :key="quality"
+          type="button"
+          :aria-pressed="labQuality === quality"
+          @click="labQuality = quality"
+        >
+          {{ quality }}
+        </button>
+      </div>
+      <div class="cue-id-editor-lab__stage">
+        <CueIdStage
+          :config="cueIdConfig"
+          artist-name="LITUS"
+          lab-asset="candidate"
+          :lab-quality="labQuality"
+          show-diagnostics
+        />
+      </div>
+      <CueIdControls v-model="cueIdConfig" :locale="preferences.locale.value" />
+    </section>
 
     <section class="cue-id-system">
       <article class="cue-id-system__passport">
@@ -148,4 +192,19 @@ useHead(() => ({
 .share-formats small { color: var(--cue-muted); font: 700 8px/1.3 monospace; letter-spacing: .06em; text-transform: uppercase; }
 @media (max-width: 980px) { .cue-id-system { grid-template-columns: 1fr; } .cue-id-system > article > p { min-height: 0; } }
 @media (max-width: 680px) { .cue-id-page { padding: 0 14px 40px; } .cue-id-page__header { min-height: 62px; } .cue-id-page__intro { padding-top: 46px; } .share-formats { grid-template-columns: 1fr; } .share-formats > span { min-height: 100px; } }
+.cue-id-editor-lab { margin-top: 10px; }
+.cue-id-editor-lab__intro { display:grid; grid-template-columns:1fr auto; gap:28px; align-items:end; padding:28px 0 20px; }
+.cue-id-editor-lab__intro > div { max-width:820px; }
+.cue-id-editor-lab__intro p { margin:0 0 12px; color:var(--cue-accent); font:700 10px/1.2 monospace; letter-spacing:.12em; }
+.cue-id-editor-lab__intro h2 { margin:0; max-width:780px; font-size:clamp(2.4rem,5vw,5.3rem); line-height:.88; letter-spacing:-.055em; text-transform:uppercase; }
+.cue-id-editor-lab__intro span { display:block; max-width:720px; margin-top:18px; color:var(--cue-muted); font-size:14px; line-height:1.6; }
+.cue-id-editor-lab__intro button { min-height:44px; padding:0 15px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); cursor:pointer; font-weight:800; }
+.cue-id-editor-lab__intro button:focus-visible { outline:2px solid var(--cue-accent); outline-offset:3px; }
+.cue-id-editor-lab__quality { display:flex; align-items:center; gap:8px; margin:0 0 12px; }
+.cue-id-editor-lab__quality > span { margin-right:4px; color:var(--cue-muted); font:700 9px/1 monospace; letter-spacing:.1em; }
+.cue-id-editor-lab__quality button { min-height:44px; padding:0 12px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); font:700 9px/1 monospace; text-transform:uppercase; cursor:pointer; }
+.cue-id-editor-lab__quality button[aria-pressed="true"] { border-color:var(--cue-accent); color:var(--cue-accent); background:color-mix(in srgb,var(--cue-accent) 7%,transparent); }
+.cue-id-editor-lab__quality button:focus-visible { outline:2px solid var(--cue-accent); outline-offset:2px; }
+.cue-id-editor-lab__stage { margin-bottom:14px; }
+@media (max-width:680px) { .cue-id-editor-lab__intro { grid-template-columns:1fr; align-items:start; } .cue-id-editor-lab__intro button { width:100%; } .cue-id-editor-lab__quality { overflow-x:auto; padding-bottom:4px; scrollbar-width:thin; } .cue-id-editor-lab__quality > span,.cue-id-editor-lab__quality button { flex:0 0 auto; } }
 </style>
