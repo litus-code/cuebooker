@@ -5590,3 +5590,87 @@ Use real Android/iPhone/desktop measurements to decide how much of the remaining
 Do not raise universal asset budgets based only on Tier A results.
 
 Production remains untouched.
+
+## 82. Quality ladder + embedded PBR consolidation
+
+The Club Minimal candidate pipeline is now consolidated around one semantic material path and an automatic quality policy.
+
+### Quality ladder
+
+Generated candidate assets:
+
+```text
+light  = 54,540 bytes / 3,364 triangles
+medium = 90,908 bytes / 7,804 triangles
+high   = 191,256 bytes / 21,180 triangles
+```
+
+All three remain below the universal base ceiling:
+
+```text
+<= 1,000,000 bytes
+<= 35,000 triangles
+<= 4 materials
+<= 6 textures
+```
+
+### Automatic quality policy
+
+New domain helper:
+
+```text
+app/domain/cueIdQuality.ts
+```
+
+Default mapping:
+
+```text
+full    -> high
+reduced -> medium
+static  -> no interactive renderer; light only as fallback value
+```
+
+The `/cue-id` lab now defaults to `auto` but still allows forcing light / medium / high for comparison.
+
+### Material consolidation
+
+The generator now embeds exactly four named PBR materials in every quality GLB:
+
+```text
+body
+mid
+dark
+accent
+```
+
+Each candidate GLB contains:
+
+```text
+embeddedMaterials = 4
+runtimeMaterials = 4
+materialStrategy = embedded_shared_pbr_mutated_runtime
+textures = 0
+```
+
+`CueIdScene.client.vue` uses the single semantic material path driven by:
+
+```text
+app/domain/cueIdMaterial.ts
+```
+
+Matte / satin and accent changes mutate those four shared embedded PBR materials in place.
+
+No duplicate runtime material system remains.
+
+### Tests
+
+Tests now verify:
+
+- full -> high automatic quality;
+- reduced -> medium automatic quality;
+- all three GLBs contain the same four named PBR materials;
+- all three GLBs contain zero textures;
+- generated JSON metadata matches embedded/runtime material strategy;
+- every quality descriptor stays inside the universal asset budget.
+
+Production remains untouched.
