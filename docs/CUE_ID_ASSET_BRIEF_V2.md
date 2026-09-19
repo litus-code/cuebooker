@@ -269,3 +269,144 @@ Application code must map semantic names through the asset catalogue rather than
 A production CUE ID V2 candidate is done when visual acceptance passes on real mobile, medium stays within budget, the semantic config drives it, static matches interactive identity, runtime stays lazy/isolated, operational bundles do not regress, and CUE_ID_ASSETS can receive it without caveats.
 
 Until then the production catalogue remains empty.
+## 22. Three first-class bases
+
+CUE ID V2 launches with three first-class bases:
+
+- feminine
+- masculine
+- neutral
+
+These are not cosmetic variants and not a later extension. They are part of the core identity system.
+
+All three bases must share the same art-direction quality level, product status, default outfit availability, pose set, accessory catalogue, material language and review criteria.
+
+No base may feel secondary, experimental or fallback-like.
+
+## 23. Base design principles
+
+The base system defines structural reading, not stereotype.
+
+The feminine base must avoid sexualised or reductive cues. No exaggerated chest, hyper-narrow waist, over-designed lips or glamour-avatar styling.
+
+The masculine base must avoid heroic exaggeration. No bodybuilder shoulders, oversized jaw, comic-book chest or power-fantasy posture.
+
+The neutral base must be a complete authored identity. It must not read as an unfinished midpoint or a masculine default with reduced features.
+
+All three bases must read as credible professional artist identities within club culture.
+
+## 24. Where base differentiation is allowed
+
+Base differentiation should stay focused and restrained.
+
+Primary differentiation zones:
+
+- head structure;
+- jaw and cheek planes;
+- neck thickness;
+- shoulder and upper torso width;
+- ribcage to waist transition;
+- pelvis and hip proportion;
+- hand scale nuance.
+
+Differences must remain legible without pushing caricature.
+
+Hair, makeup, accessories or clothing should not be required to communicate base identity.
+
+## 25. Head requirements across bases
+
+Head authorship remains the highest-priority area for every base.
+
+The three bases must share one visual family while allowing distinct structural reading.
+
+Expected tendencies:
+
+- feminine: slightly finer facial plane transitions, cleaner jaw taper and restrained softness without generic beauty-avatar cues;
+- masculine: slightly firmer jaw, brow and cheek structure without hardening into aggression;
+- neutral: balanced plane language with its own presence, not a diluted copy of either extreme.
+
+All three must avoid blank placeholder heads, oversized eyes, fixed smiles and game-avatar facial clichés.
+
+## 26. Clothing parity across bases
+
+The first production outfit remains the editorial club tee.
+
+This outfit must be reviewed on feminine, masculine and neutral before any wardrobe expansion.
+
+The garment must preserve believable fit, readable silhouette, consistent shoulder treatment, credible sleeve behaviour and visible but restrained body identity under clothing.
+
+If the first tee only works on one base, the asset is not ready.
+
+## 27. Pose parity across bases
+
+Every base must support the same pose set:
+
+- neutral
+- relaxed
+- focused
+- editorial
+
+Pose language must remain equally professional across bases.
+
+Do not encode gender stereotypes through pose. The feminine base must not become softer or more performative by default. The masculine base must not become more dominant by default. The neutral base must not become static or lifeless by default.
+
+The pose system should express artistic presence, not social cliché.
+
+## 28. Base x build interaction
+
+The semantic API remains:
+
+base: feminine | masculine | neutral
+build: slim | regular | strong
+
+Base and build must remain independent.
+
+Expected reading rules:
+
+- feminine + strong must still read feminine;
+- masculine + slim must still read masculine;
+- neutral + strong must still read neutral;
+- changing build must not collapse one base into another.
+
+The final asset should ideally implement this through authored morphs, shape keys or equivalent rig-compatible deformation rather than coarse node scaling.
+
+## 29. Minimum review matrix
+
+Before the production candidate can pass visual review, the following matrix must be checked at product size.
+
+Bases:
+
+- feminine
+- masculine
+- neutral
+
+Builds:
+
+- regular for all three bases
+- slim and strong spot checks for all three bases
+
+Outfit:
+
+- editorial club tee
+
+Poses:
+
+- neutral
+- editorial
+
+This is the minimum acceptance matrix needed to validate whether the base system survives clothing and pose.
+
+## 30. Rejection criteria for the base system
+
+Reject the candidate if any of the following is true:
+
+- the feminine base reads as a generic girl avatar;
+- the masculine base reads as a heroic caricature;
+- the neutral base reads as incomplete or default-male-lite;
+- clothing erases base identity;
+- accessories are needed to distinguish bases;
+- the differences only appear in labels and not in the figure;
+- one base looks materially weaker than the others;
+- one base feels more production-ready than the others.
+
+A pass requires all three bases to feel intentionally designed, equally credible and part of the same identity family.
