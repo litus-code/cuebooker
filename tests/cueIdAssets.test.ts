@@ -3,6 +3,8 @@ import test from 'node:test'
 
 import {
   CUE_ID_ASSET_BUDGETS,
+  CUE_ID_ASSETS,
+  CUE_ID_BENCHMARK_ASSET,
   assertCueIdAsset,
   validateCueIdAsset,
   type CueIdAssetDescriptor
@@ -56,4 +58,11 @@ test('GLB catalogue entries never target the static-only device tier', () => {
   })
 
   assert.ok(issues.some(issue => issue.field === 'supportedTiers'))
+})
+
+
+test('benchmark GLB stays outside the selectable CUE ID product catalogue', () => {
+  assert.equal(CUE_ID_BENCHMARK_ASSET.id, 'khronos-rigged-figure-benchmark')
+  assert.equal(CUE_ID_BENCHMARK_ASSET.compressedBytes, 50_116)
+  assert.equal(CUE_ID_ASSETS.some(asset => asset.id === CUE_ID_BENCHMARK_ASSET.id), false)
 })
