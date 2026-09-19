@@ -468,8 +468,15 @@ def build():
         )
         add(scene, f"outfit_bomber_forearm_sleeve_{side}", bomber_forearm_sleeve, DARK)
 
-        shoulder = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.150)
-        shoulder.apply_scale([1.0, 0.86, 0.78])
+        shoulder = elliptical_loft([
+            (0.13, 0.145, 0.122),
+            (0.03, 0.158, 0.132),
+            (-0.13, 0.142, 0.118),
+        ], radial_sections=PROFILE["radial_sections"])
+        shoulder.apply_transform(rotation_matrix(
+            upper_angle * 0.22,
+            [0, 0, 1],
+        ))
         shoulder.apply_translation([x, 1.70, 0])
         add(scene, f"shoulder_{side}", shoulder, DARK)
 
