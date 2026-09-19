@@ -4,14 +4,36 @@ from pathlib import Path
 import numpy as np
 import trimesh
 from trimesh.transformations import rotation_matrix
+from trimesh.visual.material import PBRMaterial
+from trimesh.visual.texture import TextureVisuals
 
 OUT = Path("public/cue-id/candidates/club-minimal-candidate-v1.glb")
 META = Path("public/cue-id/candidates/club-minimal-candidate-v1.json")
 
-BODY = (70, 76, 70, 255)
-DARK = (22, 24, 22, 255)
-MID = (48, 52, 48, 255)
-LIME = (206, 255, 84, 255)
+BODY = PBRMaterial(
+    name="body",
+    baseColorFactor=[70, 76, 70, 255],
+    metallicFactor=0.02,
+    roughnessFactor=0.82,
+)
+DARK = PBRMaterial(
+    name="dark",
+    baseColorFactor=[22, 24, 22, 255],
+    metallicFactor=0.02,
+    roughnessFactor=0.86,
+)
+MID = PBRMaterial(
+    name="mid",
+    baseColorFactor=[48, 52, 48, 255],
+    metallicFactor=0.03,
+    roughnessFactor=0.80,
+)
+LIME = PBRMaterial(
+    name="accent",
+    baseColorFactor=[206, 255, 84, 255],
+    metallicFactor=0.02,
+    roughnessFactor=0.72,
+)
 
 SEMANTIC_NODE_NAMES = {
     "head",
@@ -34,10 +56,9 @@ SEMANTIC_NODE_NAMES = {
 }
 
 
-def add(scene, name, mesh, color):
+def add(scene, name, mesh, material):
     mesh = mesh.copy()
-    vertex_colors = np.tile(np.array(color, dtype=np.uint8), (len(mesh.vertices), 1))
-    mesh.visual.vertex_colors = vertex_colors
+    mesh.visual = TextureVisuals(material=material)
     scene.add_geometry(mesh, node_name=name, geom_name=name)
 
 
@@ -289,7 +310,7 @@ def build():
 
         boot = trimesh.creation.box(extents=[0.31, 0.21, 0.52])
         boot.apply_translation([x + (-0.03 if index == 0 else 0.035), -1.33, -0.055])
-        add(scene, f"boot_{index}", boot, (18, 19, 18, 255))
+        add(scene, f"boot_{index}", boot, DARK)
 
     # restrained DJ cue: headphones around the neck, not gaming-headset styling
     band = trimesh.creation.torus(
