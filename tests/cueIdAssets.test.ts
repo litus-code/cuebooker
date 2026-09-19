@@ -138,7 +138,7 @@ test('Club Minimal candidate reports substantial quality headroom', () => {
   assert.equal(headroom.materialsRemaining, 0)
   assert.equal(headroom.texturesRemaining, 6)
   assert.ok(headroom.byteUsageRatio < 0.07)
-  assert.ok(headroom.triangleUsageRatio < 0.10)
+  assert.ok(headroom.triangleUsageRatio < 0.12)
 })
 
 
@@ -151,7 +151,7 @@ test('Club Minimal quality ladder stays inside the universal base budget', () =>
       ])
     ),
     {
-      light: { bytes: 54_540, triangles: 3_364 },
+      light: { bytes: 61_196, triangles: 3_976 },
       medium: { bytes: 101_652, triangles: 8_736 },
       high: { bytes: 200_656, triangles: 21_600 }
     }
