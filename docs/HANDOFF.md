@@ -6598,3 +6598,36 @@ reduced camera z = 7.7
 No camera change was required in this pass.
 
 Production remains untouched.
+
+
+## 100. Static / interactive semantic silhouette parity
+
+Product-level review found a real semantic mismatch between the CSS static fallback and the interactive candidate.
+
+Problem:
+
+- the static fallback applies base/build silhouette differences regardless of outfit;
+- the interactive candidate applied most torso base/build scaling to `tee_volume`;
+- `tank`, `hoodie` and `bomber` body volumes could therefore mask part of the selected base/build identity.
+
+Correction:
+
+- masculine/feminine base semantics now include `outfit_tank`, `outfit_hoodie` and `outfit_bomber`;
+- slim/strong build semantics now include the same three outfit body nodes;
+- values remain deliberately restrained and within existing non-caricature limits;
+- sleeve scaling remains as previously authored;
+- no GLB regeneration is required because this is runtime semantic transform data;
+- no renderer/runtime infrastructure change was made.
+
+Regression coverage now explicitly requires every non-neutral base and non-regular build to include all four outfit body nodes:
+
+```text
+tee_volume
+outfit_tank
+outfit_hoodie
+outfit_bomber
+```
+
+This brings the interactive identity model closer to the static-first contract instead of allowing outfit choice to erase body semantics.
+
+Production remains untouched.
