@@ -4,6 +4,18 @@ async function capture({ width, height, name }) {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width, height } });
 
+  page.on('console', msg => {
+    console.log('[browser-console]', msg.type(), msg.text());
+  });
+  page.on('pageerror', error => {
+    console.log('[page-error]', error.message);
+  });
+  page.on('response', response => {
+    if (response.url().includes('.glb')) {
+      console.log('[glb-response]', response.status(), response.url(), response.headers()['content-length'] || 'no-length');
+    }
+  });
+
   await page.goto('https://pr-75.cuebooker-staging.pages.dev/cue-id', {
     waitUntil: 'networkidle'
   });
@@ -15,17 +27,11 @@ async function capture({ width, height, name }) {
 
   const stage = page.locator('.cue-id-stage');
   await stage.scrollIntoViewIfNeeded();
-  await page.waitForTimeout(700);
+  await page.waitForTimeout(6500);
 
-  await page.waitForFunction(() => {
-    const diagnostic = document.querySelector('.cue-id-stage__diagnostics');
-    if (!diagnostic) return false;
-    const text = diagnostic.textContent || '';
-    return /asset\s+club-minimal-candidate-medium-v1/i.test(text)
-      && /ready\s+\d+ms/i.test(text);
-  }, { timeout: 15000 });
+  const diagnostic = page.locator('.cue-id-stage__diagnostics');
+  console.log('[diagnostics]', (await diagnostic.textContent().catch(() => null)) || 'missing');
 
-  await page.waitForTimeout(600);
   await stage.screenshot({ path: name });
   await browser.close();
 }
