@@ -1,0 +1,53 @@
+name: Import CUE ID benchmark GLB
+
+on:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - .github/workflows/import-cue-id-benchmark.yml
+
+permissions:
+  contents: write
+
+jobs:
+  import-benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Download pinned Khronos benchmark
+        run: |
+          mkdir -p public/cue-id/benchmarks
+          curl --fail --location --silent --show-error \
+            https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/RiggedFigure/glTF-Binary/RiggedFigure.glb \
+            --output public/cue-id/benchmarks/rigged-figure.glb
+          test "$(wc -c < public/cue-id/benchmarks/rigged-figure.glb)" -eq 50116
+
+      - name: Add attribution
+        run: |
+          cat > public/cue-id/benchmarks/README.md <<'EOF'
+          # CUE ID benchmark asset
+
+          rigged-figure.glb is a development-only GLB benchmark copied from KhronosGroup/glTF-Sample-Assets.
+
+          - Model: RiggedFigure
+          - Source path: Models/RiggedFigure/glTF-Binary/RiggedFigure.glb
+          - Upstream blob SHA: c505a33dfa5ba84bd5f3dd0a85f74ee4c9978322
+          - Size: 50,116 bytes
+          - Copyright: 2017 Cesium
+          - License: Creative Commons Attribution 4.0 International
+          - Upstream: https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/RiggedFigure
+
+          This file is for loader/rendering/performance validation only. It is not a selectable CUE ID visual asset and must never be represented as Cuebooker artwork.
+          EOF
+
+      - name: Commit benchmark
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/cue-id/benchmarks/rigged-figure.glb public/cue-id/benchmarks/README.md
+          git commit -m "test: add pinned CUE ID GLB benchmark"
+          git push origin HEAD:feature/app-visual-system
