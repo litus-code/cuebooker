@@ -44,3 +44,14 @@ test('build node names map to generated Club Minimal geometry names', async () =
     )
   }
 })
+
+
+test('non-regular builds preserve body semantics across all outfits', () => {
+  const outfitBodyNodes = ['tee_volume', 'outfit_tank', 'outfit_hoodie', 'outfit_bomber']
+
+  for (const build of [CUE_ID_BUILDS.slim, CUE_ID_BUILDS.strong]) {
+    for (const node of outfitBodyNodes) {
+      assert.ok(build.nodes[node], `build semantics must include outfit body "${node}"`)
+    }
+  }
+})
