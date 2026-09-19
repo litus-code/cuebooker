@@ -5674,3 +5674,73 @@ Tests now verify:
 - every quality descriptor stays inside the universal asset budget.
 
 Production remains untouched.
+
+## 83. Real medium vs high visual/performance comparison
+
+The automatic quality decision has now been validated with real PR-preview captures of the GLB renderer.
+
+Measured desktop/full-tier high:
+
+```text
+quality = high
+asset = club-minimal-candidate-high-v1
+bytes = 206,172
+load = 362 ms
+parse = 11 ms
+first frame = 417 ms
+total ready = 1,040 ms
+budget = 800 ms
+gate = WARN
+```
+
+Measured mobile/reduced-tier medium at 390x844:
+
+```text
+quality = medium
+asset = club-minimal-candidate-medium-v1
+bytes = 105,812
+load = 140 ms
+parse = 10 ms
+first frame = 16 ms
+total ready = 415 ms
+budget = 1,500 ms
+gate = PASS
+```
+
+Visual review at real stage size showed only a small perceived quality difference between medium (~9.1k triangles) and high (~22.1k triangles).
+
+Decision:
+
+```text
+auto full    -> medium
+auto reduced -> medium
+static       -> no interactive renderer
+high         -> lab/manual comparison only
+```
+
+Reason:
+
+High currently costs roughly 2x the bytes and more than 2x the geometry while failing the desktop ready-time gate, without enough visible improvement at actual profile size.
+
+This is not a permanent ban on high quality.
+
+High can return to automatic Tier A only when:
+
+1. the visual improvement is clearly visible at product size;
+2. total ready time passes the Tier A 800 ms gate on representative hardware;
+3. the additional geometry is spent on silhouette/anatomy/clothing quality rather than uniform subdivision.
+
+### Readiness fix
+
+The TresJS scene previously emitted `ready` when the canvas initialized, before the requested GLB had necessarily loaded.
+
+This was corrected so that:
+
+- candidate mode does not show the procedural Tres placeholder;
+- `ready` is emitted only after the real GLB produces its first frame;
+- GLB load failures emit `failed` instead of being silently swallowed;
+- diagnostics therefore represent actual asset load/parse/frame readiness.
+
+Temporary visual-capture workflow/script were removed after validation.
+
+Production remains untouched.
