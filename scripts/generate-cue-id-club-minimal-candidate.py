@@ -62,40 +62,51 @@ def build():
     torso = trimesh.Trimesh(vertices=torso_vertices, faces=torso_faces, process=False)
     add(scene, "torso", torso, BODY)
 
-    tee = trimesh.creation.box(extents=[1.45, 1.15, 0.08])
-    tee.apply_translation([0, 1.36, -0.36])
-    add(scene, "tee_front", tee, DARK)
+    tee = trimesh.creation.box(extents=[1.34, 1.10, 0.66])
+    tee.apply_translation([0, 1.36, 0])
+    add(scene, "tee_volume", tee, DARK)
 
-    seam = trimesh.creation.box(extents=[0.9, 0.035, 0.045])
-    seam.apply_translation([0, 1.55, -0.415])
+    seam = trimesh.creation.box(extents=[0.82, 0.028, 0.036])
+    seam.apply_translation([0, 1.53, -0.348])
     add(scene, "accent_seam", seam, LIME)
 
-    for side, x, angle in [("left", -0.93, 0.08), ("right", 0.93, -0.04)]:
-        upper = y_cylinder(radius=0.16, height=1.20, sections=14)
+    for side, x, angle in [("left", -0.83, 0.10), ("right", 0.83, -0.05)]:
+        shoulder = trimesh.creation.icosphere(subdivisions=1, radius=0.24)
+        shoulder.apply_scale([1.0, 0.9, 0.88])
+        shoulder.apply_translation([x, 1.73, 0])
+        add(scene, f"shoulder_{side}", shoulder, DARK)
+
+        upper = y_cylinder(radius=0.155, height=1.08, sections=14)
         upper.apply_transform(rotation_matrix(angle, [0, 0, 1]))
-        upper.apply_translation([x, 1.27, 0])
+        upper.apply_translation([x + (-0.025 if side == "left" else 0.015), 1.18, 0])
         add(scene, f"arm_{side}", upper, DARK)
 
-        hand = trimesh.creation.icosphere(subdivisions=1, radius=0.19)
-        hand.apply_scale([0.8, 1.0, 0.7])
-        hand.apply_translation([x + (-0.05 if side == "left" else 0.04), 0.60, 0])
+        hand = trimesh.creation.icosphere(subdivisions=1, radius=0.145)
+        hand.apply_scale([0.82, 1.08, 0.72])
+        hand.apply_translation([x + (-0.075 if side == "left" else 0.055), 0.57, 0])
         add(scene, f"hand_{side}", hand, BODY)
 
-    hips = trimesh.creation.box(extents=[1.02, 0.38, 0.54])
-    hips.apply_translation([0, 0.47, 0])
+    hips = trimesh.creation.icosphere(subdivisions=1, radius=0.58)
+    hips.apply_scale([1.0, 0.40, 0.50])
+    hips.apply_translation([0, 0.48, 0])
     add(scene, "hips", hips, MID)
 
     for index, (x, y, z, angle) in enumerate([
-        (-0.34, -0.52, 0.02, -0.02),
-        (0.36, -0.54, -0.03, 0.03),
+        (-0.30, -0.47, 0.03, -0.035),
+        (0.31, -0.52, -0.025, 0.045),
     ]):
-        leg = y_cylinder(radius=0.19, height=1.55, sections=14)
+        hip_joint = trimesh.creation.icosphere(subdivisions=1, radius=0.23)
+        hip_joint.apply_scale([0.9, 1.0, 0.9])
+        hip_joint.apply_translation([x, 0.27, z])
+        add(scene, f"hip_joint_{index}", hip_joint, DARK)
+
+        leg = y_cylinder(radius=0.18, height=1.48, sections=14)
         leg.apply_transform(rotation_matrix(angle, [0, 0, 1]))
         leg.apply_translation([x, y, z])
         add(scene, f"leg_{index}", leg, DARK)
 
-        boot = trimesh.creation.box(extents=[0.39, 0.28, 0.68])
-        boot.apply_translation([x, -1.42, -0.10])
+        boot = trimesh.creation.box(extents=[0.34, 0.24, 0.58])
+        boot.apply_translation([x + (-0.02 if index == 0 else 0.02), -1.34, -0.08])
         add(scene, f"boot_{index}", boot, (18, 19, 18, 255))
 
     # restrained DJ cue: headphones around the neck, not gaming-headset styling
