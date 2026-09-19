@@ -21,20 +21,26 @@ def add(scene, name, mesh, color):
     scene.add_geometry(mesh, node_name=name, geom_name=name)
 
 
+def y_cylinder(radius, height, sections=14):
+    mesh = trimesh.creation.cylinder(radius=radius, height=height, sections=sections)
+    mesh.apply_transform(rotation_matrix(np.pi / 2, [1, 0, 0]))
+    return mesh
+
+
 def build():
     scene = trimesh.Scene()
 
-    head = trimesh.creation.icosphere(subdivisions=2, radius=0.46)
-    head.apply_scale([0.82, 1.0, 0.78])
-    head.apply_translation([0, 2.62, 0])
+    head = trimesh.creation.icosphere(subdivisions=2, radius=0.40)
+    head.apply_scale([0.84, 1.0, 0.78])
+    head.apply_translation([0, 2.48, 0])
     add(scene, "head", head, BODY)
 
-    neck = trimesh.creation.cylinder(radius=0.18, height=0.34, sections=16)
-    neck.apply_translation([0, 2.18, 0])
+    neck = y_cylinder(radius=0.16, height=0.34, sections=16)
+    neck.apply_translation([0, 2.03, 0])
     add(scene, "neck", neck, MID)
 
-    top_y, top_w, top_d = 1.95, 0.78, 0.34
-    bottom_y, bottom_w, bottom_d = 0.75, 0.58, 0.30
+    top_y, top_w, top_d = 1.90, 0.72, 0.32
+    bottom_y, bottom_w, bottom_d = 0.72, 0.55, 0.28
     torso_vertices = np.array([
         [-top_w, top_y, -top_d],
         [ top_w, top_y, -top_d],
@@ -65,31 +71,31 @@ def build():
     add(scene, "accent_seam", seam, LIME)
 
     for side, x, angle in [("left", -0.93, 0.08), ("right", 0.93, -0.04)]:
-        upper = trimesh.creation.cylinder(radius=0.18, height=1.15, sections=14)
+        upper = y_cylinder(radius=0.16, height=1.20, sections=14)
         upper.apply_transform(rotation_matrix(angle, [0, 0, 1]))
-        upper.apply_translation([x, 1.35, 0])
+        upper.apply_translation([x, 1.27, 0])
         add(scene, f"arm_{side}", upper, DARK)
 
         hand = trimesh.creation.icosphere(subdivisions=1, radius=0.19)
         hand.apply_scale([0.8, 1.0, 0.7])
-        hand.apply_translation([x + (-0.05 if side == "left" else 0.04), 0.72, 0])
+        hand.apply_translation([x + (-0.05 if side == "left" else 0.04), 0.60, 0])
         add(scene, f"hand_{side}", hand, BODY)
 
-    hips = trimesh.creation.box(extents=[1.05, 0.42, 0.58])
-    hips.apply_translation([0, 0.48, 0])
+    hips = trimesh.creation.box(extents=[1.02, 0.38, 0.54])
+    hips.apply_translation([0, 0.47, 0])
     add(scene, "hips", hips, MID)
 
     for index, (x, y, z, angle) in enumerate([
         (-0.34, -0.52, 0.02, -0.02),
         (0.36, -0.54, -0.03, 0.03),
     ]):
-        leg = trimesh.creation.cylinder(radius=0.21, height=1.55, sections=14)
+        leg = y_cylinder(radius=0.19, height=1.55, sections=14)
         leg.apply_transform(rotation_matrix(angle, [0, 0, 1]))
         leg.apply_translation([x, y, z])
         add(scene, f"leg_{index}", leg, DARK)
 
-        boot = trimesh.creation.box(extents=[0.43, 0.28, 0.75])
-        boot.apply_translation([x, -1.42, -0.12])
+        boot = trimesh.creation.box(extents=[0.39, 0.28, 0.68])
+        boot.apply_translation([x, -1.42, -0.10])
         add(scene, f"boot_{index}", boot, (18, 19, 18, 255))
 
     # restrained DJ cue: headphones around the neck, not gaming-headset styling
@@ -104,7 +110,7 @@ def build():
     add(scene, "headphone_band", band, DARK)
 
     for x in (-0.35, 0.35):
-        cup = trimesh.creation.cylinder(radius=0.13, height=0.09, sections=12)
+        cup = trimesh.creation.cylinder(radius=0.12, height=0.08, sections=12)
         cup.apply_transform(rotation_matrix(np.pi / 2, [0, 1, 0]))
         cup.apply_translation([x, 1.98, 0.02])
         add(scene, f"headphone_cup_{x}", cup, DARK)
