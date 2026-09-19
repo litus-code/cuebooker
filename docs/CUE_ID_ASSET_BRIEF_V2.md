@@ -410,3 +410,48 @@ Reject the candidate if any of the following is true:
 - one base feels more production-ready than the others.
 
 A pass requires all three bases to feel intentionally designed, equally credible and part of the same identity family.
+
+## 31. Sculpt turnaround requirement
+
+Before production modelling begins, the three bases must be reviewed in a no-styling turnaround.
+
+Required bases:
+
+- feminine
+- neutral
+- masculine
+
+Required views per base:
+
+- front;
+- front 3/4;
+- profile;
+- optional back if shoulder/pelvis construction needs review.
+
+Review conditions must remain constant:
+
+- same neutral pose;
+- same camera focal character;
+- same neutral studio lighting;
+- same editorial tee;
+- no glasses;
+- no headphones;
+- no cap;
+- no jewelry required for identity;
+- minimal/no hair treatment;
+- matte neutral material.
+
+The purpose is to judge structure only:
+
+- skull/head planes;
+- jaw and cheek language;
+- neck;
+- shoulder width;
+- ribcage/waist;
+- pelvis/hip relationship;
+- hand proportion;
+- leg/foot silhouette.
+
+The turnaround fails if styling is necessary to make a base feel complete.
+
+Production modelling should start only after the turnaround establishes one coherent family with three distinct but restrained bases.
