@@ -18,9 +18,10 @@ const stageRoot = ref<HTMLElement | null>(null)
 const runtimeWanted = ref(false)
 const runtimeReady = ref(false)
 const runtimeDecision = ref<CueIdRuntimeDecision | null>(null)
+let runtimeLoadStartedAt = 0
 let runtimeObserver: IntersectionObserver | null = null
 
-const LazyCueIdRuntime = defineAsyncComponent(() => import('./CueIdRuntime.client.vue'))
+const LazyCueIdScene = defineAsyncComponent(() => import('./CueIdScene.client.vue'))
 
 onMounted(() => {
   if (!props.interactive) return
@@ -36,11 +37,36 @@ onMounted(() => {
 
   runtimeObserver = new IntersectionObserver(entries => {
     if (!entries[0]?.isIntersecting) return
+    runtimeLoadStartedAt = performance.now()
     runtimeWanted.value = true
     runtimeObserver?.disconnect()
   }, { rootMargin: '220px 0px', threshold: .01 })
   if (stageRoot.value) runtimeObserver.observe(stageRoot.value)
 })
+
+function handleRuntimeReady() {
+  runtimeReady.value = true
+  analytics.track('cue_id_renderer_ready', {
+    renderer: 'tresjs_procedural',
+    runtime_tier: runtimeDecision.value?.tier || null,
+    init_ms: runtimeLoadStartedAt
+      ? Math.max(0, Math.round(performance.now() - runtimeLoadStartedAt))
+      : null,
+    dpr_cap: runtimeDecision.value?.dprCap || null
+  })
+}
+
+function handleRuntimeFailed() {
+  runtimeReady.value = false
+  analytics.track('cue_id_renderer_failed', {
+    renderer: 'tresjs_procedural',
+    reason: 'scene_failed',
+    runtime_tier: runtimeDecision.value?.tier || null
+  })
+  analytics.track('cue_id_static_fallback_used', {
+    reason: 'scene_failed'
+  })
+}
 
 onBeforeUnmount(() => runtimeObserver?.disconnect())
 
@@ -74,12 +100,12 @@ const accentClass = computed(() => props.config.accent ? `cue-id-stage--accent-$
     <div class="cue-id-stage__scan" aria-hidden="true" />
 
     <ClientOnly>
-      <LazyCueIdRuntime
+      <LazyCueIdScene
         v-if="interactive && runtimeWanted && runtimeDecision"
         :config="config"
         :decision="runtimeDecision"
-        @ready="runtimeReady = true"
-        @failed="runtimeReady = false"
+        @ready="handleRuntimeReady"
+        @failed="handleRuntimeFailed"
       />
     </ClientOnly>
 
