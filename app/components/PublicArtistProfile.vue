@@ -59,6 +59,8 @@ const copy = computed(() => props.locale === 'es' ? {
 const genres = computed(() => [...props.profile.primaryGenres, ...props.profile.secondaryGenres].filter(Boolean).slice(0, 7))
 const location = computed(() => [props.profile.city, props.profile.countryCode].filter(Boolean).join(' · '))
 const portrait = computed(() => props.profile.artistCutoutUrl || props.profile.artistImageUrl)
+const visualMode = computed(() => props.profile.visualMode || 'photo')
+const showCueId = computed(() => visualMode.value === 'cue_id' && Boolean(props.profile.cueId))
 const socialLinks = computed(() => [
   ['Website', props.profile.websiteUrl],
   ['Instagram', props.profile.instagramUrl],
@@ -91,10 +93,18 @@ async function openBooking() {
       <div class="public-artist-profile__cover">
         <img v-if="profile.coverUrl" class="public-artist-profile__cover-image" :src="profile.coverUrl" alt="" :style="{ objectPosition: `50% ${profile.coverPositionY}%` }">
         <div v-else class="public-artist-profile__cover-default" aria-hidden="true"><i /><i /><i /></div>
+        <CueIdStage
+          v-if="showCueId && profile.cueId"
+          class="public-artist-profile__cue-id"
+          :config="{ ...profile.cueId, enabled: true }"
+          :artist-name="profile.stageName"
+          compact
+        />
         <div class="public-artist-profile__shade" />
         <img
-          v-if="portrait"
-          class="public-artist-profile__portrait"
+          v-if="portrait && !showCueId"
+          :class="['public-artist-profile__portrait', { 'public-artist-profile__portrait--artwork': visualMode === 'artwork' }]"
+
           :src="portrait"
           :alt="profile.stageName"
           :style="{
@@ -177,8 +187,11 @@ async function openBooking() {
 .public-artist-profile__cover-default i:nth-child(1) { top: -32%; left: -15%; }
 .public-artist-profile__cover-default i:nth-child(2) { right: -25%; bottom: -40%; }
 .public-artist-profile__cover-default i:nth-child(3) { top: 35%; left: 38%; width: 12vw; height: 12vw; background: var(--cue-accent, #e8ff2f); filter: blur(1px); opacity: .8; }
-.public-artist-profile__shade { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.5)); pointer-events: none; }
-.public-artist-profile__portrait { position: absolute; z-index: 2; width: min(56%, 520px); max-height: 88%; object-fit: contain; transform-origin: center; filter: drop-shadow(0 24px 28px rgba(0,0,0,.5)); }
+.public-artist-profile__cue-id { position:absolute; inset:0; z-index:1; width:100%; height:100%; min-height:100%; border:0; }
+.public-artist-profile__cue-id :deep(.cue-id-stage__meta) { bottom:28px; }
+.public-artist-profile__shade { position: absolute; z-index:2; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.5)); pointer-events: none; }
+.public-artist-profile__portrait { position: absolute; z-index: 3; width: min(56%, 520px); max-height: 88%; object-fit: contain; transform-origin: center; filter: drop-shadow(0 24px 28px rgba(0,0,0,.5)); }
+.public-artist-profile__portrait--artwork { filter: grayscale(1) contrast(1.75) brightness(1.1) drop-shadow(2px 0 0 rgba(206,255,84,.7)) drop-shadow(-2px 0 0 rgba(206,255,84,.25)) drop-shadow(0 24px 36px rgba(0,0,0,.6)); }
 .public-artist-profile__identity { display: flex; flex-direction: column; justify-content: flex-end; padding: clamp(32px, 5vw, 76px); background: var(--cue-surface, #101010); }
 .public-artist-profile__identity > p { margin: 0 0 14px; color: var(--cue-accent, #e8ff2f); font: 700 10px/1.2 monospace; letter-spacing: .12em; text-transform: uppercase; }
 .public-artist-profile__identity h1 { margin: 0; font-size: clamp(4rem, 9vw, 9.5rem); line-height: .76; letter-spacing: -.07em; text-transform: uppercase; overflow-wrap: anywhere; }
