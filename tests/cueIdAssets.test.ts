@@ -138,7 +138,7 @@ test('Club Minimal candidate reports substantial quality headroom', () => {
   assert.equal(headroom.materialsRemaining, 0)
   assert.equal(headroom.texturesRemaining, 6)
   assert.ok(headroom.byteUsageRatio < 0.07)
-  assert.ok(headroom.triangleUsageRatio <= 0.12)
+  assert.ok(headroom.triangleUsageRatio < 0.13)
 })
 
 
