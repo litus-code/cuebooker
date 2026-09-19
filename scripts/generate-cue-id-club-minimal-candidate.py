@@ -27,6 +27,72 @@ def y_cylinder(radius, height, sections=14):
     return mesh
 
 
+def y_frustum(radius_top, radius_bottom, height, sections=14):
+    angles = np.linspace(0, 2 * np.pi, sections, endpoint=False)
+    y_top = height / 2
+    y_bottom = -height / 2
+    vertices = []
+    for y, radius in ((y_top, radius_top), (y_bottom, radius_bottom)):
+        for angle in angles:
+            vertices.append([radius * np.cos(angle), y, radius * np.sin(angle)])
+
+    faces = []
+    for i in range(sections):
+        nxt = (i + 1) % sections
+        faces.extend([
+            [i, nxt, sections + nxt],
+            [i, sections + nxt, sections + i],
+        ])
+
+    top_center = len(vertices)
+    bottom_center = top_center + 1
+    vertices.extend([[0, y_top, 0], [0, y_bottom, 0]])
+
+    for i in range(sections):
+        nxt = (i + 1) % sections
+        faces.append([top_center, i, nxt])
+        faces.append([bottom_center, sections + nxt, sections + i])
+
+    return trimesh.Trimesh(
+        vertices=np.array(vertices),
+        faces=np.array(faces),
+        process=False,
+    )
+
+
+def lofted_box(sections):
+    vertices = []
+    for y, width, depth in sections:
+        vertices.extend([
+            [-width, y, -depth],
+            [ width, y, -depth],
+            [ width, y,  depth],
+            [-width, y,  depth],
+        ])
+
+    faces = []
+    count = len(sections)
+    for level in range(count - 1):
+        a = level * 4
+        b = (level + 1) * 4
+        for edge in range(4):
+            nxt = (edge + 1) % 4
+            faces.extend([
+                [a + edge, a + nxt, b + nxt],
+                [a + edge, b + nxt, b + edge],
+            ])
+
+    faces.extend([[0, 2, 1], [0, 3, 2]])
+    last = (count - 1) * 4
+    faces.extend([[last, last + 1, last + 2], [last, last + 2, last + 3]])
+
+    return trimesh.Trimesh(
+        vertices=np.array(vertices),
+        faces=np.array(faces),
+        process=False,
+    )
+
+
 def build():
     scene = trimesh.Scene()
 
@@ -62,8 +128,11 @@ def build():
     torso = trimesh.Trimesh(vertices=torso_vertices, faces=torso_faces, process=False)
     add(scene, "torso", torso, BODY)
 
-    tee = trimesh.creation.box(extents=[1.34, 1.10, 0.66])
-    tee.apply_translation([0, 1.36, 0])
+    tee = lofted_box([
+        (1.86, 0.75, 0.35),
+        (1.55, 0.69, 0.34),
+        (0.82, 0.57, 0.30),
+    ])
     add(scene, "tee_volume", tee, DARK)
 
     seam = trimesh.creation.box(extents=[0.82, 0.028, 0.036])
@@ -76,7 +145,7 @@ def build():
         shoulder.apply_translation([x, 1.73, 0])
         add(scene, f"shoulder_{side}", shoulder, DARK)
 
-        upper = y_cylinder(radius=0.155, height=1.08, sections=14)
+        upper = y_frustum(radius_top=0.17, radius_bottom=0.135, height=1.08, sections=14)
         upper.apply_transform(rotation_matrix(angle, [0, 0, 1]))
         upper.apply_translation([x + (-0.025 if side == "left" else 0.015), 1.18, 0])
         add(scene, f"arm_{side}", upper, DARK)
@@ -100,13 +169,13 @@ def build():
         hip_joint.apply_translation([x, 0.27, z])
         add(scene, f"hip_joint_{index}", hip_joint, DARK)
 
-        leg = y_cylinder(radius=0.18, height=1.48, sections=14)
+        leg = y_frustum(radius_top=0.21, radius_bottom=0.145, height=1.48, sections=14)
         leg.apply_transform(rotation_matrix(angle, [0, 0, 1]))
         leg.apply_translation([x, y, z])
         add(scene, f"leg_{index}", leg, DARK)
 
-        boot = trimesh.creation.box(extents=[0.34, 0.24, 0.58])
-        boot.apply_translation([x + (-0.02 if index == 0 else 0.02), -1.34, -0.08])
+        boot = trimesh.creation.box(extents=[0.32, 0.22, 0.54])
+        boot.apply_translation([x + (-0.02 if index == 0 else 0.02), -1.33, -0.06])
         add(scene, f"boot_{index}", boot, (18, 19, 18, 255))
 
     # restrained DJ cue: headphones around the neck, not gaming-headset styling
