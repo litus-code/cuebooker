@@ -284,28 +284,33 @@ def build():
     neck.apply_translation([0, 2.02, 0])
     add(scene, "neck", neck, MID)
 
-    clavicle = lofted_box([
-        (2.00, 0.30, 0.20),
-        (1.88, 0.64, 0.30),
-        (1.78, 0.70, 0.32),
-    ])
+    clavicle = elliptical_loft([
+        (2.00, 0.28, 0.19),
+        (1.94, 0.46, 0.245),
+        (1.86, 0.62, 0.292),
+        (1.76, 0.695, 0.315),
+    ], radial_sections=PROFILE["radial_sections"])
     add(scene, "clavicle", clavicle, DARK)
 
     torso = elliptical_loft([
-        (1.92, 0.66, 0.30),
-        (1.78, 0.72, 0.33),
-        (1.52, 0.69, 0.34),
-        (1.16, 0.62, 0.32),
-        (0.78, 0.53, 0.28),
+        (1.93, 0.63, 0.285),
+        (1.82, 0.69, 0.318),
+        (1.66, 0.715, 0.338),
+        (1.48, 0.695, 0.345),
+        (1.24, 0.655, 0.332),
+        (1.02, 0.595, 0.305),
+        (0.78, 0.515, 0.276),
     ], radial_sections=PROFILE["radial_sections"])
     add(scene, "torso", torso, BODY)
 
     tee = elliptical_loft([
-        (1.90, 0.73, 0.35),
-        (1.76, 0.78, 0.37),
-        (1.50, 0.73, 0.36),
-        (1.14, 0.65, 0.34),
-        (0.82, 0.60, 0.315),
+        (1.92, 0.67, 0.325),
+        (1.84, 0.75, 0.355),
+        (1.70, 0.785, 0.372),
+        (1.50, 0.75, 0.365),
+        (1.20, 0.675, 0.345),
+        (0.98, 0.625, 0.325),
+        (0.82, 0.585, 0.305),
     ], radial_sections=PROFILE["radial_sections"])
     add(scene, "tee_volume", tee, DARK)
 
@@ -314,10 +319,12 @@ def build():
     add(scene, "accent_seam", seam, LIME)
 
     tank = elliptical_loft([
-        (1.76, 0.46, 0.30),
-        (1.56, 0.53, 0.315),
-        (1.20, 0.57, 0.31),
-        (0.82, 0.54, 0.285),
+        (1.79, 0.43, 0.285),
+        (1.67, 0.49, 0.305),
+        (1.48, 0.545, 0.322),
+        (1.20, 0.575, 0.315),
+        (0.96, 0.555, 0.300),
+        (0.82, 0.525, 0.282),
     ], radial_sections=PROFILE["radial_sections"])
     add(scene, "outfit_tank", tank, DARK)
 
@@ -326,11 +333,13 @@ def build():
     add(scene, "outfit_tank_accent", tank_accent, LIME)
 
     hoodie = elliptical_loft([
-        (1.96, 0.77, 0.395),
-        (1.78, 0.84, 0.42),
-        (1.50, 0.80, 0.405),
-        (1.10, 0.72, 0.37),
-        (0.76, 0.66, 0.345),
+        (1.97, 0.72, 0.370),
+        (1.88, 0.79, 0.405),
+        (1.74, 0.845, 0.425),
+        (1.52, 0.825, 0.418),
+        (1.22, 0.765, 0.395),
+        (0.98, 0.705, 0.365),
+        (0.76, 0.655, 0.340),
     ], radial_sections=PROFILE["radial_sections"])
     add(scene, "outfit_hoodie", hoodie, DARK)
 
@@ -349,11 +358,13 @@ def build():
     add(scene, "outfit_hoodie_accent", hoodie_accent, LIME)
 
     bomber = elliptical_loft([
-        (1.90, 0.79, 0.405),
-        (1.72, 0.88, 0.435),
-        (1.46, 0.84, 0.425),
-        (1.14, 0.73, 0.38),
-        (0.96, 0.61, 0.335),
+        (1.91, 0.70, 0.365),
+        (1.83, 0.80, 0.410),
+        (1.69, 0.885, 0.442),
+        (1.48, 0.855, 0.432),
+        (1.24, 0.785, 0.405),
+        (1.06, 0.705, 0.368),
+        (0.96, 0.605, 0.330),
     ], radial_sections=PROFILE["radial_sections"])
     add(scene, "outfit_bomber", bomber, DARK)
 
