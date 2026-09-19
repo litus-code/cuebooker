@@ -326,7 +326,7 @@ onErrorCaptured(() => {
       :dpr="decision.dprCap"
       :fail-if-major-performance-caveat="true"
       :power-preference="decision.tier === 'full' ? 'default' : 'low-power'"
-      render-mode="on-demand"
+      :render-mode="ready ? 'on-demand' : 'always'"
       :clear-alpha="0"
       @ready="handleReady"
       @render="handleRender"
