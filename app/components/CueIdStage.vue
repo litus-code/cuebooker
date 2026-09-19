@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CueIdConfigV1 } from '../domain/cueId'
 import { decideCueIdRuntime, getCueIdRuntimeSignals, type CueIdRuntimeDecision } from '../domain/cueIdRuntime'
+import { evaluateCueIdReadyPerformance } from '../domain/cueIdPerformance'
 
 const props = withDefaults(defineProps<{
   config: CueIdConfigV1
@@ -29,6 +30,7 @@ const latestLabMetrics = ref<{
   loadMs: number
   parseMs: number
   firstFrameMs: number
+  totalReadyMs: number | null
 } | null>(null)
 let runtimeLoadStartedAt = 0
 let runtimeObserver: IntersectionObserver | null = null
@@ -71,13 +73,22 @@ function handleRuntimeReady() {
 }
 
 function handleLabAssetLoaded(metrics: { assetId: string; bytes: number; loadMs: number; parseMs: number; firstFrameMs: number }) {
-  latestLabMetrics.value = metrics
+  const totalReadyMs = runtimeLoadStartedAt
+    ? Math.max(0, Math.round(performance.now() - runtimeLoadStartedAt))
+    : null
+
+  latestLabMetrics.value = {
+    ...metrics,
+    totalReadyMs
+  }
+
   analytics.track('cue_id_glb_lab_asset_loaded', {
     asset_id: metrics.assetId,
     bytes: metrics.bytes,
     load_ms: metrics.loadMs,
     parse_ms: metrics.parseMs,
     first_frame_ms: metrics.firstFrameMs,
+    total_ready_ms: totalReadyMs,
     runtime_tier: runtimeDecision.value?.tier || null
   })
 }
@@ -102,6 +113,13 @@ const baseClass = computed(() => `cue-id-stage--base-${props.config.base}`)
 const outfitClass = computed(() => `cue-id-stage--outfit-${props.config.outfit}`)
 const materialClass = computed(() => `cue-id-stage--material-${props.config.material}`)
 const accentClass = computed(() => props.config.accent ? `cue-id-stage--accent-${props.config.accent}` : '')
+const performanceGate = computed(() => {
+  if (!runtimeDecision.value) return null
+  return evaluateCueIdReadyPerformance(
+    runtimeDecision.value.tier,
+    latestLabMetrics.value?.totalReadyMs ?? null
+  )
+})
 </script>
 
 <template>
@@ -152,6 +170,14 @@ const accentClass = computed(() => props.config.accent ? `cue-id-stage--accent-$
       <span>load <b>{{ latestLabMetrics ? latestLabMetrics.loadMs + 'ms' : '—' }}</b></span>
       <span>parse <b>{{ latestLabMetrics ? latestLabMetrics.parseMs + 'ms' : '—' }}</b></span>
       <span>frame <b>{{ latestLabMetrics ? latestLabMetrics.firstFrameMs + 'ms' : '—' }}</b></span>
+      <span>ready <b>{{ latestLabMetrics?.totalReadyMs == null ? '—' : latestLabMetrics.totalReadyMs + 'ms' }}</b></span>
+      <span>budget <b>{{ performanceGate?.budgetMs == null ? '—' : performanceGate.budgetMs + 'ms' }}</b></span>
+      <span class="cue-id-stage__diagnostic-gate">
+        gate
+        <b :data-status="performanceGate?.status || 'not_applicable'">
+          {{ performanceGate?.status === 'pass' ? 'PASS' : performanceGate?.status === 'warn' ? 'WARN' : '—' }}
+        </b>
+      </span>
     </aside>
 
     <footer class="cue-id-stage__meta">
@@ -204,6 +230,7 @@ const accentClass = computed(() => props.config.accent ? `cue-id-stage--accent-$
 }
 .cue-id-stage__diagnostics strong{grid-column:1/-1;color:#dfe2dc;letter-spacing:.12em}
 .cue-id-stage__diagnostics span{display:contents}.cue-id-stage__diagnostics b{color:#d5ff67;font-weight:700;text-align:right;overflow:hidden;text-overflow:ellipsis}
+.cue-id-stage__diagnostics b[data-status="warn"]{color:#ffb64d}.cue-id-stage__diagnostics b[data-status="pass"]{color:#d5ff67}
 
 .cue-id-stage__head {
   left:57px; top:0; width:76px; height:88px; border-radius:45% 45% 40% 40%;
