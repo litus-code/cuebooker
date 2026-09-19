@@ -6883,3 +6883,36 @@ Important:
 - this is only the compatibility gate for the future authored V2 asset.
 
 Production remains untouched.
+
+## 109. V2 source asset package specification
+
+The authored V2 model now has a concrete production handoff package specification.
+
+New document:
+
+`docs/CUE_ID_SOURCE_ASSET_PACKAGE_V2.md`
+
+It defines:
+
+- required source DCC deliverable;
+- GLB export package;
+- shared rig requirements;
+- feminine / masculine / neutral base morph expectations;
+- slim / regular / strong build expectations;
+- first editorial tee requirements;
+- head, hand and footwear quality requirements;
+- pose clip delivery;
+- material/texture limits;
+- static review render set;
+- mobile review framing;
+- metadata and binding handoff;
+- ownership/license confirmation;
+- acceptance sequence.
+
+Important scope control:
+
+- the first authored package requires one excellent tee, not four outfits;
+- no hair catalogue, facial rig, physics cloth or finger animation is required;
+- no production integration starts before still-image and mobile review pass.
+
+Production remains untouched.
