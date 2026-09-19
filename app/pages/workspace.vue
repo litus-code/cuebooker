@@ -1449,6 +1449,12 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               @update:position-y="profileForm.coverPositionY = $event"
             />
             <p v-if="profileCoverMessage" class="profile-cover-message" :class="{ success: profileCoverMessage === copy.coverSaved || profileCoverMessage === copy.coverRemoved }">{{ profileCoverMessage }}</p>
+            <CueIdProfileEditor
+              class="profile-cue-id-field"
+              :artist-name="profileForm.stageName || selectedArtist?.stage_name || 'Artist'"
+              :locale="preferences.locale.value"
+              :disabled="!canEditSelectedArtist"
+            />
             <div class="profile-fields">
               <label class="field-wide"><span>{{ copy.stageName }}</span><input v-model="profileForm.stageName" maxlength="120" required></label>
               <label class="field-wide"><span>{{ copy.bio }}</span><textarea v-model="profileForm.bio" rows="5" maxlength="2000" :placeholder="copy.bioPlaceholder" /></label>
