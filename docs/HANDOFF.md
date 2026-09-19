@@ -6916,3 +6916,30 @@ Important scope control:
 - no production integration starts before still-image and mobile review pass.
 
 Production remains untouched.
+
+## 110. V2 sculpt turnaround gate
+
+The final pre-modelling visual checkpoint is now explicit.
+
+The authored V2 asset must first pass a structural turnaround review for:
+
+- feminine;
+- neutral;
+- masculine.
+
+Each base is reviewed under the same neutral conditions in front, 3/4 and profile views.
+
+No hair/accessory styling may be used to rescue identity.
+
+The turnaround judges:
+
+- head structure;
+- shoulder/torso proportion;
+- pelvis/hip relationship;
+- hands;
+- lower-body/foot silhouette;
+- family coherence across all three bases.
+
+Production modelling should not begin until this checkpoint passes.
+
+Production remains untouched.
