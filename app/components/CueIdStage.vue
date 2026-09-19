@@ -58,11 +58,12 @@ function handleRuntimeReady() {
   })
 }
 
-function handleBenchmarkLoaded(metrics: { bytes: number; loadMs: number; parseMs: number }) {
+function handleBenchmarkLoaded(metrics: { bytes: number; loadMs: number; parseMs: number; firstFrameMs: number }) {
   analytics.track('cue_id_glb_benchmark_loaded', {
     bytes: metrics.bytes,
     load_ms: metrics.loadMs,
     parse_ms: metrics.parseMs,
+    first_frame_ms: metrics.firstFrameMs,
     runtime_tier: runtimeDecision.value?.tier || null
   })
 }
