@@ -7,10 +7,12 @@ const props = withDefaults(defineProps<{
   artistName?: string
   compact?: boolean
   interactive?: boolean
+  benchmark?: boolean
 }>(), {
   artistName: 'ARTIST',
   compact: false,
-  interactive: true
+  interactive: true,
+  benchmark: false
 })
 
 const analytics = useAnalytics()
@@ -53,6 +55,15 @@ function handleRuntimeReady() {
       ? Math.max(0, Math.round(performance.now() - runtimeLoadStartedAt))
       : null,
     dpr_cap: runtimeDecision.value?.dprCap || null
+  })
+}
+
+function handleBenchmarkLoaded(metrics: { bytes: number; loadMs: number; parseMs: number }) {
+  analytics.track('cue_id_glb_benchmark_loaded', {
+    bytes: metrics.bytes,
+    load_ms: metrics.loadMs,
+    parse_ms: metrics.parseMs,
+    runtime_tier: runtimeDecision.value?.tier || null
   })
 }
 
@@ -104,8 +115,10 @@ const accentClass = computed(() => props.config.accent ? `cue-id-stage--accent-$
         v-if="interactive && runtimeWanted && runtimeDecision"
         :config="config"
         :decision="runtimeDecision"
+        :benchmark="benchmark"
         @ready="handleRuntimeReady"
         @failed="handleRuntimeFailed"
+        @benchmark-loaded="handleBenchmarkLoaded"
       />
     </ClientOnly>
 
