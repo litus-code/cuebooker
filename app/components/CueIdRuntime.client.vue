@@ -5,6 +5,11 @@ const props = defineProps<{
   config: CueIdConfigV1
 }>()
 
+const emit = defineEmits<{
+  ready: []
+  failed: []
+}>()
+
 const canvas = ref<HTMLCanvasElement | null>(null)
 const host = ref<HTMLElement | null>(null)
 const ready = ref(false)
@@ -135,6 +140,7 @@ function init() {
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
   ready.value = true
+  emit('ready')
   resize()
   return true
 }
@@ -235,6 +241,7 @@ onMounted(() => {
   reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   if (!init()) {
     failed.value = true
+    emit('failed')
     return
   }
 
