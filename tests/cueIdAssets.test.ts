@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import { readFile, stat } from 'node:fs/promises'
 
 import {
   CUE_ID_ASSET_BUDGETS,
@@ -96,4 +97,32 @@ test('original Club Minimal candidate remains outside production catalogue until
   assert.equal(CUE_ID_CANDIDATE_ASSET.triangles, 1_320)
   assert.equal(CUE_ID_ASSETS.some(asset => asset.id === CUE_ID_CANDIDATE_ASSET.id), false)
   assert.deepEqual(validateCueIdAsset(CUE_ID_CANDIDATE_ASSET), [])
+})
+
+
+test('Club Minimal candidate descriptor matches generated artifact metadata', async () => {
+  const metadataRaw = await readFile(
+    new URL('../public/cue-id/candidates/club-minimal-candidate-v1.json', import.meta.url),
+    'utf8'
+  )
+  const metadata = JSON.parse(metadataRaw) as {
+    bytes: number
+    triangles: number
+    materials: number
+    textures: number
+    artDirection: string
+    status: string
+  }
+
+  const file = await stat(
+    new URL('../public/cue-id/candidates/club-minimal-candidate-v1.glb', import.meta.url)
+  )
+
+  assert.equal(file.size, CUE_ID_CANDIDATE_ASSET.compressedBytes)
+  assert.equal(metadata.bytes, CUE_ID_CANDIDATE_ASSET.compressedBytes)
+  assert.equal(metadata.triangles, CUE_ID_CANDIDATE_ASSET.triangles)
+  assert.equal(metadata.materials, CUE_ID_CANDIDATE_ASSET.materials)
+  assert.equal(metadata.textures, CUE_ID_CANDIDATE_ASSET.textures.length)
+  assert.equal(metadata.artDirection, CUE_ID_CANDIDATE_ASSET.artDirection)
+  assert.equal(metadata.status, 'candidate_not_production')
 })
