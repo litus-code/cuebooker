@@ -55,6 +55,30 @@ SEMANTIC_NODE_NAMES = {
     "shin_right",
 }
 
+SEMANTIC_OUTFIT_NODE_NAMES = {
+    "tee_volume",
+    "accent_seam",
+    "outfit_tank",
+    "outfit_tank_accent",
+    "outfit_hoodie",
+    "outfit_hood",
+    "outfit_hoodie_accent",
+    "outfit_bomber",
+    "outfit_bomber_collar",
+    "outfit_bomber_accent",
+}
+
+SEMANTIC_ACCESSORY_NODE_NAMES = {
+    "accessory_headphones_band",
+    "accessory_headphones_cup_left",
+    "accessory_headphones_cup_right",
+    "accessory_cap_crown",
+    "accessory_cap_brim",
+    "accessory_glasses_left",
+    "accessory_glasses_right",
+    "accessory_glasses_bridge",
+}
+
 
 def add(scene, name, mesh, material):
     mesh = mesh.copy()
@@ -234,6 +258,59 @@ def build():
     seam.apply_translation([0, 1.53, -0.348])
     add(scene, "accent_seam", seam, LIME)
 
+    tank = lofted_box([
+        (1.72, 0.52, 0.31),
+        (1.46, 0.56, 0.31),
+        (0.82, 0.55, 0.29),
+    ])
+    add(scene, "outfit_tank", tank, DARK)
+
+    tank_accent = trimesh.creation.box(extents=[0.62, 0.026, 0.034])
+    tank_accent.apply_translation([0, 1.40, -0.328])
+    add(scene, "outfit_tank_accent", tank_accent, LIME)
+
+    hoodie = lofted_box([
+        (1.91, 0.78, 0.38),
+        (1.52, 0.73, 0.37),
+        (0.78, 0.62, 0.33),
+    ])
+    add(scene, "outfit_hoodie", hoodie, DARK)
+
+    hood = trimesh.creation.torus(
+        major_radius=0.29,
+        minor_radius=0.085,
+        major_sections=20,
+        minor_sections=8,
+    )
+    hood.apply_transform(rotation_matrix(np.pi / 2, [1, 0, 0]))
+    hood.apply_translation([0, 1.99, 0.11])
+    add(scene, "outfit_hood", hood, DARK)
+
+    hoodie_accent = trimesh.creation.box(extents=[0.70, 0.028, 0.036])
+    hoodie_accent.apply_translation([0, 1.35, -0.392])
+    add(scene, "outfit_hoodie_accent", hoodie_accent, LIME)
+
+    bomber = lofted_box([
+        (1.88, 0.80, 0.39),
+        (1.50, 0.78, 0.39),
+        (0.92, 0.63, 0.34),
+    ])
+    add(scene, "outfit_bomber", bomber, DARK)
+
+    bomber_collar = trimesh.creation.torus(
+        major_radius=0.25,
+        minor_radius=0.060,
+        major_sections=20,
+        minor_sections=8,
+    )
+    bomber_collar.apply_transform(rotation_matrix(np.pi / 2, [1, 0, 0]))
+    bomber_collar.apply_translation([0, 1.91, 0.01])
+    add(scene, "outfit_bomber_collar", bomber_collar, MID)
+
+    bomber_accent = trimesh.creation.box(extents=[0.74, 0.028, 0.036])
+    bomber_accent.apply_translation([0, 1.32, -0.402])
+    add(scene, "outfit_bomber_accent", bomber_accent, LIME)
+
     arm_specs = [
         ("left", -0.83, 0.10, -0.12),
         ("right", 0.83, -0.05, 0.08),
@@ -321,15 +398,43 @@ def build():
     )
     band.apply_transform(rotation_matrix(np.pi / 2, [1, 0, 0]))
     band.apply_translation([0, 2.05, 0.02])
-    add(scene, "headphone_band", band, DARK)
+    add(scene, "accessory_headphones_band", band, DARK)
 
-    for x in (-0.35, 0.35):
+    for side, x in (("left", -0.35), ("right", 0.35)):
         cup = trimesh.creation.cylinder(radius=0.12, height=0.08, sections=12)
         cup.apply_transform(rotation_matrix(np.pi / 2, [0, 1, 0]))
         cup.apply_translation([x, 1.98, 0.02])
-        add(scene, f"headphone_cup_{x}", cup, DARK)
+        add(scene, f"accessory_headphones_cup_{side}", cup, DARK)
 
-    missing_semantic_nodes = SEMANTIC_NODE_NAMES - set(scene.geometry.keys())
+    cap = trimesh.creation.icosphere(subdivisions=1, radius=0.34)
+    cap.apply_scale([1.05, 0.34, 0.95])
+    cap.apply_translation([0, 2.79, 0])
+    add(scene, "accessory_cap_crown", cap, DARK)
+
+    cap_brim = trimesh.creation.box(extents=[0.42, 0.05, 0.28])
+    cap_brim.apply_translation([0, 2.71, -0.26])
+    add(scene, "accessory_cap_brim", cap_brim, DARK)
+
+    for side, x in (("left", -0.17), ("right", 0.17)):
+        lens = trimesh.creation.torus(
+            major_radius=0.14,
+            minor_radius=0.018,
+            major_sections=18,
+            minor_sections=6,
+        )
+        lens.apply_translation([x, 2.49, -0.295])
+        add(scene, f"accessory_glasses_{side}", lens, DARK)
+
+    bridge = trimesh.creation.box(extents=[0.12, 0.025, 0.025])
+    bridge.apply_translation([0, 2.49, -0.295])
+    add(scene, "accessory_glasses_bridge", bridge, DARK)
+
+    required_nodes = (
+        SEMANTIC_NODE_NAMES
+        | SEMANTIC_OUTFIT_NODE_NAMES
+        | SEMANTIC_ACCESSORY_NODE_NAMES
+    )
+    missing_semantic_nodes = required_nodes - set(scene.geometry.keys())
     if missing_semantic_nodes:
         raise RuntimeError(
             "Missing semantic CUE ID nodes: " + ", ".join(sorted(missing_semantic_nodes))
