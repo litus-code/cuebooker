@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { cloneCueIdConfig, DEFAULT_CUE_ID_CONFIG } from '../domain/cueId'
+
 const preferences = useCuePreferences()
+const cueIdConfig = ref(cloneCueIdConfig(DEFAULT_CUE_ID_CONFIG))
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
   eyebrow: 'PROTOTIPO / CUE ID',
@@ -16,7 +19,11 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   booking: 'Primer booking',
   cities: 'Ciudades',
   venues: 'Venues',
-  returnHome: 'Volver'
+  returnHome: 'Volver',
+  editorEyebrow: 'CUE ID / FOUNDATION',
+  editorTitle: 'PRIMERA IDENTIDAD. SIN JUGAR A SER UN JUEGO.',
+  editorBody: 'Este editor valida las decisiones semánticas de la primera familia Club Minimal. Todavía no guarda datos ni carga 3D: primero cerramos experiencia, jerarquía y lenguaje visual.',
+  reset: 'Restablecer'
 } : {
   eyebrow: 'PROTOTYPE / CUE ID',
   title: 'IDENTITY, TRAJECTORY AND CLUB CULTURE.',
@@ -32,7 +39,11 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   booking: 'First booking',
   cities: 'Cities',
   venues: 'Venues',
-  returnHome: 'Back'
+  returnHome: 'Back',
+  editorEyebrow: 'CUE ID / FOUNDATION',
+  editorTitle: 'FIRST IDENTITY. WITHOUT TURNING IT INTO A GAME.',
+  editorBody: 'This editor validates the semantic choices for the first Club Minimal family. It does not persist data or load 3D yet: experience, hierarchy and visual language come first.',
+  reset: 'Reset'
 })
 
 useHead(() => ({
@@ -58,7 +69,20 @@ useHead(() => ({
       <span>{{ copy.body }}</span>
     </section>
 
-    <CueIdTeaser artist-name="LITUS" :preview-href="''" />
+    <section class="cue-id-editor-lab">
+      <header class="cue-id-editor-lab__intro">
+        <div>
+          <p>{{ copy.editorEyebrow }}</p>
+          <h2>{{ copy.editorTitle }}</h2>
+          <span>{{ copy.editorBody }}</span>
+        </div>
+        <button type="button" @click="cueIdConfig = cloneCueIdConfig(DEFAULT_CUE_ID_CONFIG)">{{ copy.reset }}</button>
+      </header>
+      <div class="cue-id-editor-lab__stage">
+        <CueIdStage :config="cueIdConfig" artist-name="LITUS" />
+      </div>
+      <CueIdControls v-model="cueIdConfig" :locale="preferences.locale.value" />
+    </section>
 
     <section class="cue-id-system">
       <article class="cue-id-system__passport">
@@ -148,4 +172,14 @@ useHead(() => ({
 .share-formats small { color: var(--cue-muted); font: 700 8px/1.3 monospace; letter-spacing: .06em; text-transform: uppercase; }
 @media (max-width: 980px) { .cue-id-system { grid-template-columns: 1fr; } .cue-id-system > article > p { min-height: 0; } }
 @media (max-width: 680px) { .cue-id-page { padding: 0 14px 40px; } .cue-id-page__header { min-height: 62px; } .cue-id-page__intro { padding-top: 46px; } .share-formats { grid-template-columns: 1fr; } .share-formats > span { min-height: 100px; } }
+.cue-id-editor-lab { margin-top: 10px; }
+.cue-id-editor-lab__intro { display:grid; grid-template-columns:1fr auto; gap:28px; align-items:end; padding:28px 0 20px; }
+.cue-id-editor-lab__intro > div { max-width:820px; }
+.cue-id-editor-lab__intro p { margin:0 0 12px; color:var(--cue-accent); font:700 10px/1.2 monospace; letter-spacing:.12em; }
+.cue-id-editor-lab__intro h2 { margin:0; max-width:780px; font-size:clamp(2.4rem,5vw,5.3rem); line-height:.88; letter-spacing:-.055em; text-transform:uppercase; }
+.cue-id-editor-lab__intro span { display:block; max-width:720px; margin-top:18px; color:var(--cue-muted); font-size:14px; line-height:1.6; }
+.cue-id-editor-lab__intro button { min-height:44px; padding:0 15px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); cursor:pointer; font-weight:800; }
+.cue-id-editor-lab__intro button:focus-visible { outline:2px solid var(--cue-accent); outline-offset:3px; }
+.cue-id-editor-lab__stage { margin-bottom:14px; }
+@media (max-width:680px) { .cue-id-editor-lab__intro { grid-template-columns:1fr; align-items:start; } .cue-id-editor-lab__intro button { width:100%; } }
 </style>
