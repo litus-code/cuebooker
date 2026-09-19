@@ -1,19 +1,28 @@
 <script setup lang="ts">
 import { TresCanvas } from '@tresjs/core'
+import { Box3, Object3D, Vector3 } from 'three'
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import type { CueIdConfigV1 } from '../domain/cueId'
+import { CUE_ID_BENCHMARK_ASSET } from '../domain/cueIdAssets'
 import type { CueIdRuntimeDecision } from '../domain/cueIdRuntime'
+import { loadCueIdGlbBuffer } from '../services/cueIdAssetLoader'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   config: CueIdConfigV1
   decision: CueIdRuntimeDecision
-}>()
+  benchmark?: boolean
+}>(), {
+  benchmark: false
+})
 
 const emit = defineEmits<{
   ready: []
   failed: []
+  benchmarkLoaded: [metrics: { bytes: number; loadMs: number; parseMs: number }]
 }>()
 
 const ready = ref(false)
+const benchmarkScene = shallowRef<Object3D | null>(null)
 
 const buildScale = computed(() =>
   props.config.build === 'strong' ? 1.12 : props.config.build === 'slim' ? 0.9 : 1
@@ -40,6 +49,65 @@ const accentColor = computed(() =>
       ? '#ceff54'
       : '#737a72'
 )
+
+
+async function loadBenchmark() {
+  if (!props.benchmark) return
+
+  try {
+    const result = await loadCueIdGlbBuffer(CUE_ID_BENCHMARK_ASSET)
+    const parseStartedAt = performance.now()
+    const loader = new GLTFLoader()
+    const gltf = await loader.parseAsync(result.buffer, '/cue-id/benchmarks/')
+    const parsed = gltf.scene
+
+    const bounds = new Box3().setFromObject(parsed)
+    const size = bounds.getSize(new Vector3())
+    const center = bounds.getCenter(new Vector3())
+    const maxDimension = Math.max(size.x, size.y, size.z) || 1
+    const scale = 3.4 / maxDimension
+
+    parsed.scale.setScalar(scale)
+    parsed.position.set(
+      -center.x * scale,
+      -center.y * scale - 0.25,
+      -center.z * scale
+    )
+
+    benchmarkScene.value = parsed
+    emit('benchmarkLoaded', {
+      bytes: result.bytes,
+      loadMs: result.loadMs,
+      parseMs: Math.max(0, Math.round(performance.now() - parseStartedAt))
+    })
+  } catch {
+    benchmarkScene.value = null
+  }
+}
+
+function disposeObject(object: Object3D | null) {
+  if (!object) return
+  object.traverse(child => {
+    const mesh = child as Object3D & {
+      geometry?: { dispose?: () => void }
+      material?: unknown
+    }
+    mesh.geometry?.dispose?.()
+    const materials = Array.isArray(mesh.material) ? mesh.material : mesh.material ? [mesh.material] : []
+    for (const material of materials) {
+      const disposable = material as { dispose?: () => void; [key: string]: unknown }
+      for (const value of Object.values(disposable)) {
+        if (value && typeof value === 'object' && 'dispose' in value) {
+          ;(value as { dispose?: () => void }).dispose?.()
+        }
+      }
+      disposable.dispose?.()
+    }
+  })
+}
+
+onMounted(loadBenchmark)
+onBeforeUnmount(() => disposeObject(benchmarkScene.value))
 
 function handleReady() {
   ready.value = true
@@ -71,7 +139,13 @@ onErrorCaptured(() => {
       <TresDirectionalLight :position="[3, 5, 4]" :intensity="2.2" />
       <TresDirectionalLight :position="[-3, 1, 2]" :intensity="0.65" :color="accentColor" />
 
+      <primitive
+        v-if="benchmark && benchmarkScene"
+        :object="benchmarkScene"
+      />
+
       <TresGroup
+        v-else
         :rotation="poseRotation"
         :scale="[buildScale, 1, 1]"
         :position="[0, -0.15, 0]"
