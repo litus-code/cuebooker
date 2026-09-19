@@ -5,6 +5,8 @@ const props = defineProps<{
   config: CueIdConfigV1
 }>()
 
+const analytics = useAnalytics()
+
 const emit = defineEmits<{
   ready: []
   failed: []
@@ -140,6 +142,10 @@ function init() {
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
   ready.value = true
+  analytics.track('cue_id_renderer_ready', {
+    renderer: 'webgl_procedural',
+    reduced_motion: reducedMotion
+  })
   emit('ready')
   resize()
   return true
@@ -241,6 +247,13 @@ onMounted(() => {
   reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   if (!init()) {
     failed.value = true
+    analytics.track('cue_id_renderer_failed', {
+      renderer: 'webgl_procedural',
+      reason: 'webgl_init_failed'
+    })
+    analytics.track('cue_id_static_fallback_used', {
+      reason: 'webgl_init_failed'
+    })
     emit('failed')
     return
   }
