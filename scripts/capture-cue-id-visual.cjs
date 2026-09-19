@@ -1,4 +1,5 @@
 const { chromium } = require('playwright');
+// capture refined Club Minimal head
 
 async function capture({ width, height, name }) {
   const browser = await chromium.launch({
