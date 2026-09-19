@@ -63,6 +63,52 @@ async function signArtistMedia(supabaseUrl: string, serviceKey: string, path: st
   }
 }
 
+
+type PublicCueIdConfig = {
+  schemaVersion: 1;
+  family: "club_minimal";
+  base: "masculine" | "feminine" | "neutral";
+  build: "slim" | "regular" | "strong";
+  outfit: "tank" | "tee" | "hoodie" | "bomber";
+  accessory: "headphones" | "cap" | "glasses" | null;
+  pose: "neutral" | "relaxed" | "focused" | "editorial";
+  material: "matte" | "satin";
+  accent: "lime" | "red" | null;
+};
+
+function sanitizeCueIdConfig(value: unknown): PublicCueIdConfig | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const config = value as Record<string, unknown>;
+  const bases = new Set(["masculine", "feminine", "neutral"]);
+  const builds = new Set(["slim", "regular", "strong"]);
+  const outfits = new Set(["tank", "tee", "hoodie", "bomber"]);
+  const accessories = new Set(["headphones", "cap", "glasses"]);
+  const poses = new Set(["neutral", "relaxed", "focused", "editorial"]);
+  const materials = new Set(["matte", "satin"]);
+  const accents = new Set(["lime", "red"]);
+
+  if (config.schemaVersion !== 1 || config.family !== "club_minimal") return null;
+  if (typeof config.base !== "string" || !bases.has(config.base)) return null;
+  if (typeof config.build !== "string" || !builds.has(config.build)) return null;
+  if (typeof config.outfit !== "string" || !outfits.has(config.outfit)) return null;
+  if (config.accessory !== null && (typeof config.accessory !== "string" || !accessories.has(config.accessory))) return null;
+  if (typeof config.pose !== "string" || !poses.has(config.pose)) return null;
+  if (typeof config.material !== "string" || !materials.has(config.material)) return null;
+  if (config.accent !== null && (typeof config.accent !== "string" || !accents.has(config.accent))) return null;
+
+  return {
+    schemaVersion: 1,
+    family: "club_minimal",
+    base: config.base as PublicCueIdConfig["base"],
+    build: config.build as PublicCueIdConfig["build"],
+    outfit: config.outfit as PublicCueIdConfig["outfit"],
+    accessory: config.accessory as PublicCueIdConfig["accessory"],
+    pose: config.pose as PublicCueIdConfig["pose"],
+    material: config.material as PublicCueIdConfig["material"],
+    accent: config.accent as PublicCueIdConfig["accent"]
+  };
+}
+
 type ArtistRow = {
   id: string;
   stage_name: string;
@@ -90,6 +136,8 @@ type ArtistRow = {
   artist_image_position_x: number;
   artist_image_position_y: number;
   artist_image_scale: number;
+  visual_mode: 'photo' | 'artwork' | 'cue_id';
+  cue_id_config: unknown;
 };
 
 Deno.serve(async request => {
@@ -131,7 +179,9 @@ Deno.serve(async request => {
       "artist_image_style",
       "artist_image_position_x",
       "artist_image_position_y",
-      "artist_image_scale"
+      "artist_image_scale",
+      "visual_mode",
+      "cue_id_config"
     ].join(",");
 
     const artists = await serviceJson<ArtistRow[]>(
@@ -148,6 +198,14 @@ Deno.serve(async request => {
       { method: "GET" },
       serviceKey
     );
+
+    const cueId = sanitizeCueIdConfig(artist.cue_id_config);
+    const visualMode =
+      artist.visual_mode === "cue_id"
+        ? (cueId ? "cue_id" : "photo")
+        : artist.visual_mode === "artwork"
+          ? "artwork"
+          : "photo";
 
     const [coverUrl, artistImageUrl, artistCutoutUrl] = await Promise.all([
       signArtistMedia(supabaseUrl, serviceKey, artist.cover_image_path),
@@ -182,6 +240,8 @@ Deno.serve(async request => {
         artistImagePositionX: artist.artist_image_position_x,
         artistImagePositionY: artist.artist_image_position_y,
         artistImageScale: artist.artist_image_scale,
+        visualMode,
+        cueId: visualMode === "cue_id" ? cueId : null,
         acceptingRequests: Boolean(routes[0]?.accepting_requests)
       }
     }, 200, { "Cache-Control": "public, max-age=60, s-maxage=300" });
