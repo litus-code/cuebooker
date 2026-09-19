@@ -4988,3 +4988,47 @@ Next gate:
 4. otherwise do another shape pass before any animation work.
 
 Production remains untouched.
+
+## 78. Club Minimal candidate — pose/continuity pass 4
+
+The candidate now has authored body articulation without introducing a rig.
+
+Changes:
+
+- waist bridge added between tee and hips;
+- arms split into upper arm / elbow / forearm / hand;
+- left/right arm pose uses restrained asymmetry;
+- legs split into thigh / knee / shin / boot;
+- stance asymmetry preserved;
+- no textures, shadows or post-processing added.
+
+Generated metadata:
+
+```text
+bytes = 45,904
+triangles = 2,272
+vertices = 1,194
+materials = 4
+textures = 0
+```
+
+The asset remains dramatically below production ceilings.
+
+This pass is intended to improve human/editorial read before any rigging work.
+
+Status remains:
+
+```text
+purpose = candidate
+status = candidate_not_production
+```
+
+Next decision:
+
+1. validate CI/staging;
+2. review head/shoulder/pose silhouette at actual mobile scale;
+3. if silhouette is credible, begin a minimal semantic rig/pose strategy;
+4. if not, refine static geometry first;
+5. do not add facial rig, post-processing or texture complexity yet.
+
+Production remains untouched.
