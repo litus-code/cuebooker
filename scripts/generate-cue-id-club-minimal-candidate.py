@@ -182,12 +182,14 @@ def y_frustum(radius_top, radius_bottom, height, sections=None):
 def elliptical_loft(rings, radial_sections=None):
     radial_sections = radial_sections or PROFILE["head_sections"]
     vertices = []
-    for y, width, depth in rings:
+    for ring in rings:
+        y, width, depth = ring[:3]
+        z_offset = ring[3] if len(ring) > 3 else 0.0
         for angle in np.linspace(0, 2 * np.pi, radial_sections, endpoint=False):
             vertices.append([
                 width * np.cos(angle),
                 y,
-                depth * np.sin(angle),
+                z_offset + depth * np.sin(angle),
             ])
 
     faces = []
@@ -259,12 +261,13 @@ def build():
     scene = trimesh.Scene()
 
     head = elliptical_loft([
-        (2.78, 0.22, 0.22),
-        (2.66, 0.32, 0.27),
-        (2.49, 0.35, 0.29),
-        (2.34, 0.32, 0.27),
-        (2.22, 0.26, 0.24),
-        (2.15, 0.18, 0.20),
+        (2.82, 0.18, 0.19,  0.005),
+        (2.72, 0.285, 0.235, 0.000),
+        (2.57, 0.335, 0.275, -0.015),
+        (2.43, 0.34, 0.285, -0.030),
+        (2.31, 0.295, 0.255, -0.040),
+        (2.20, 0.235, 0.215, -0.050),
+        (2.13, 0.165, 0.180, -0.055),
     ], radial_sections=PROFILE["head_sections"])
     add(scene, "head", head, BODY)
 
@@ -360,13 +363,13 @@ def build():
     add(scene, "outfit_bomber_accent", bomber_accent, LIME)
 
     arm_specs = [
-        ("left", -0.83, 0.10, -0.12),
-        ("right", 0.83, -0.05, 0.08),
+        ("left", -0.76, 0.09, -0.11),
+        ("right", 0.76, -0.045, 0.075),
     ]
     for side, x, upper_angle, forearm_angle in arm_specs:
-        shoulder = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.205)
-        shoulder.apply_scale([1.0, 0.92, 0.86])
-        shoulder.apply_translation([x, 1.73, 0])
+        shoulder = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.19)
+        shoulder.apply_scale([1.0, 0.90, 0.84])
+        shoulder.apply_translation([x, 1.71, 0])
         add(scene, f"shoulder_{side}", shoulder, DARK)
 
         upper = elliptical_loft([
@@ -375,10 +378,10 @@ def build():
             (-0.29, 0.14, 0.12),
         ], radial_sections=PROFILE["radial_sections"])
         upper.apply_transform(rotation_matrix(upper_angle, [0, 0, 1]))
-        upper.apply_translation([x + (-0.018 if side == "left" else 0.012), 1.39, 0])
+        upper.apply_translation([x + (-0.015 if side == "left" else 0.010), 1.37, 0])
         add(scene, f"upper_arm_{side}", upper, DARK)
 
-        elbow_x = x + (-0.055 if side == "left" else 0.04)
+        elbow_x = x + (-0.045 if side == "left" else 0.035)
         elbow = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.132)
         elbow.apply_scale([0.92, 0.88, 0.86])
         elbow.apply_translation([elbow_x, 1.05, 0])
@@ -426,34 +429,34 @@ def build():
     ]:
         hip_joint = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.185)
         hip_joint.apply_scale([0.88, 1.0, 0.88])
-        hip_joint.apply_translation([x, 0.24, depth])
+        hip_joint.apply_translation([x, 0.23, depth])
         add(scene, f"hip_joint_{side}", hip_joint, DARK)
 
         thigh = elliptical_loft([
-            (0.36, 0.205, 0.18),
-            (0.08, 0.195, 0.17),
-            (-0.36, 0.165, 0.145),
+            (0.42, 0.205, 0.18),
+            (0.10, 0.192, 0.168),
+            (-0.42, 0.158, 0.140),
         ], radial_sections=PROFILE["radial_sections"])
         thigh.apply_transform(rotation_matrix(angle, [0, 0, 1]))
-        thigh.apply_translation([x, -0.11, depth])
+        thigh.apply_translation([x, -0.18, depth])
         add(scene, f"thigh_{side}", thigh, DARK)
 
         knee = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.15)
         knee.apply_scale([0.90, 0.82, 0.88])
-        knee.apply_translation([x + 0.012 * lateral, -0.49, depth])
+        knee.apply_translation([x + 0.012 * lateral, -0.62, depth])
         add(scene, f"knee_{side}", knee, DARK)
 
         shin = elliptical_loft([
-            (0.37, 0.165, 0.15),
-            (0.08, 0.155, 0.14),
-            (-0.37, 0.128, 0.115),
+            (0.44, 0.160, 0.145),
+            (0.10, 0.148, 0.135),
+            (-0.44, 0.122, 0.108),
         ], radial_sections=PROFILE["radial_sections"])
         shin.apply_transform(rotation_matrix(angle * 0.6, [0, 0, 1]))
-        shin.apply_translation([x + 0.018 * lateral, -0.91, depth])
+        shin.apply_translation([x + 0.018 * lateral, -1.10, depth])
         add(scene, f"shin_{side}", shin, DARK)
 
-        boot = trimesh.creation.box(extents=[0.31, 0.21, 0.52])
-        boot.apply_translation([x + 0.032 * lateral, -1.33, -0.055])
+        boot = trimesh.creation.box(extents=[0.30, 0.22, 0.50])
+        boot.apply_translation([x + 0.032 * lateral, -1.64, -0.050])
         add(scene, f"boot_{side}", boot, DARK)
 
     # restrained DJ cue: headphones around the neck, not gaming-headset styling
