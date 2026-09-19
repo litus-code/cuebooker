@@ -56,6 +56,28 @@ export const CUE_ID_ASSET_BUDGETS: Record<'base' | 'outfit' | 'accessory', CueId
   }
 }
 
+export type CueIdAssetHeadroom = {
+  bytesRemaining: number
+  trianglesRemaining: number
+  materialsRemaining: number
+  texturesRemaining: number
+  byteUsageRatio: number
+  triangleUsageRatio: number
+}
+
+export function getCueIdAssetHeadroom(asset: CueIdAssetDescriptor): CueIdAssetHeadroom {
+  const budget = CUE_ID_ASSET_BUDGETS[asset.kind]
+
+  return {
+    bytesRemaining: Math.max(0, budget.maxCompressedBytes - asset.compressedBytes),
+    trianglesRemaining: Math.max(0, budget.maxTriangles - asset.triangles),
+    materialsRemaining: Math.max(0, budget.maxMaterials - asset.materials),
+    texturesRemaining: Math.max(0, budget.maxTextures - asset.textures.length),
+    byteUsageRatio: asset.compressedBytes / budget.maxCompressedBytes,
+    triangleUsageRatio: asset.triangles / budget.maxTriangles
+  }
+}
+
 export type CueIdAssetValidationIssue = {
   field: 'compressedBytes' | 'triangles' | 'materials' | 'textures' | 'textureDimension' | 'supportedTiers'
   message: string
