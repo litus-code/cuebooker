@@ -3916,3 +3916,181 @@ After CI/build succeeds:
 6. only then introduce the first real GLB/TresJS renderer.
 
 Production remains untouched.
+
+
+## 66. CUE ID V1 persistence + Artist Profile editor — IMPLEMENTED ON STAGING / BRANCH
+
+CUE ID now has a persisted V1 contract on staging and an integrated editor inside Artist Profile.
+
+### Database
+
+Staging migrations applied:
+
+```text
+20260919105051_add_cue_id_v1_persistence
+20260919105231_harden_cue_id_v1_config
+```
+
+Repository files:
+
+```text
+supabase/migrations/20260919105051_add_cue_id_v1_persistence.sql
+supabase/migrations/20260919105231_harden_cue_id_v1_config.sql
+```
+
+New `public.artists` columns:
+
+```text
+visual_mode
+  photo
+  artwork
+  cue_id
+
+cue_id_config jsonb
+```
+
+The JSON contract is versioned and constrained to the first `club_minimal` family.
+
+Required V1 keys:
+
+```text
+schemaVersion
+enabled
+family
+base
+build
+outfit
+accessory
+pose
+material
+accent
+```
+
+The database validates allowed V1 values and nullability for optional accessory/accent.
+
+Authorization:
+
+- existing `artists` RLS remains authoritative;
+- existing artist membership/manage policies are reused;
+- authenticated users receive UPDATE grant only for the new columns in addition to existing column grants;
+- no new authorization model or public table was introduced.
+
+Supabase advisors after migration reported no CUE ID-specific security/performance regression. Existing project advisories remain unchanged.
+
+### Client persistence
+
+`app/composables/useArtistProfile.ts` now:
+
+- loads `visual_mode` and `cue_id_config`;
+- keeps those fields out of the general Artist Profile form input;
+- exposes `saveCueIdPresentation()` as the dedicated CUE ID persistence operation.
+
+This keeps professional-profile editing and visual-identity persistence separate.
+
+### Artist Profile editor
+
+New component:
+
+```text
+app/components/CueIdProfileEditor.vue
+```
+
+Integrated into:
+
+```text
+app/pages/workspace.vue
+-> Perfil
+-> Identidad y ubicación
+-> visual presentation editor
+```
+
+Current behavior:
+
+```text
+Photo
+Artwork
+CUE ID
+```
+
+Photo/Artwork remain available and their existing media configuration is not deleted.
+
+When CUE ID is selected:
+
+```text
+CueIdStage
+-> CueIdControls
+-> explicit Save visual identity
+-> public.artists.visual_mode + cue_id_config
+```
+
+The editor clearly states that CUE ID config remains private until the public projection is intentionally enabled.
+
+No public Artist Profile behavior has been changed yet.
+
+### Domain tests
+
+Added:
+
+```text
+tests/cueId.test.ts
+```
+
+Coverage currently locks:
+
+- V1 default config belongs to the typed Club Minimal catalogue;
+- config cloning does not mutate the default contract;
+- first catalogue breadth remains deliberately bounded.
+
+### Current implementation commits
+
+```text
+288b0f91179b4bfd63d085a22474d6715eca48c5
+1423f8bddac565a48712801748554473938f94b0
+eb882fe4326dd862857e86efe9efb2b669f9214c
+87704e861118464a905ddcceb2de5392a76e1988
+a1792e4b5e227f79c2c140c0064c589bbbfe496f
+9d0b8228b1fb24ba08ced79f1c6ca6ec9a6d9484
+d868ac6c55ea48b2ce7a271ad08fa7e75df7dca5
+```
+
+Current branch HEAD at handoff:
+
+```text
+d868ac6c55ea48b2ce7a271ad08fa7e75df7dca5
+```
+
+Validation at documentation time:
+
+```text
+CI = in progress
+Deploy Staging / PR preview = in progress
+```
+
+Do not call this slice fully validated until those runs finish successfully and the authenticated Artist Profile + `/cue-id` lab are visually checked.
+
+### Important boundary
+
+The public profile Edge Function currently projects only the existing photo/artwork fields.
+
+It does NOT yet expose:
+
+```text
+visual_mode
+cue_id_config
+```
+
+This is deliberate. Do not silently expose the raw private JSON config.
+
+### Next CUE ID slice
+
+After CI/build is green:
+
+1. visually verify Artist Profile editor on desktop/mobile;
+2. define the sanitized public CUE ID projection;
+3. decide whether public rendering receives a sanitized semantic config or a pre-rendered static asset;
+4. update `get-public-artist-profile` only with explicitly public fields;
+5. make `PublicArtistProfile` honor Photo / Artwork / CUE ID;
+6. keep static-first rendering;
+7. only after that introduce the first real GLB/Tres renderer.
+
+Production remains untouched.
