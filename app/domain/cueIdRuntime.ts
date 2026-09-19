@@ -85,11 +85,23 @@ export function decideCueIdRuntime(signals: CueIdRuntimeSignals): CueIdRuntimeDe
 
 export function canUseWebGl() {
   if (typeof document === 'undefined') return false
+
   const canvas = document.createElement('canvas')
-  return Boolean(
-    canvas.getContext('webgl', { failIfMajorPerformanceCaveat: true })
-    || canvas.getContext('experimental-webgl')
-  )
+  const attributes: WebGLContextAttributes = {
+    alpha: true,
+    antialias: false,
+    failIfMajorPerformanceCaveat: true,
+    powerPreference: 'low-power'
+  }
+
+  const context =
+    canvas.getContext('webgl2', attributes)
+    || canvas.getContext('webgl', attributes)
+
+  if (!context) return false
+
+  context.getExtension('WEBGL_lose_context')?.loseContext()
+  return true
 }
 
 export function getCueIdRuntimeSignals(): CueIdRuntimeSignals {
