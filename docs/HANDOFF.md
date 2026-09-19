@@ -5973,3 +5973,39 @@ Tests now lock:
 - context-loss fallback and listener cleanup.
 
 Production remains untouched.
+
+## 87. Club Minimal hand/shoulder refinement + reduced-tier framing
+
+The latest visual pass keeps the medium candidate as the automatic quality target and improves authored silhouette without increasing subdivision.
+
+Changes:
+
+- shoulders moved slightly inward and reduced in radius;
+- upper-arm chain moved inward with the shoulders;
+- spherical hands replaced by tapered authored loft volumes;
+- hands receive a subtle left/right wrist angle instead of reading as balls;
+- waist narrowed slightly for cleaner torso-to-pelvis transition;
+- reduced-tier camera moved back slightly to add mobile breathing room.
+
+Generated metadata after regeneration:
+
+```text
+light  = 64,196 bytes / 4,240 triangles
+medium = 104,456 bytes / 8,816 triangles
+high   = 194,160 bytes / 20,000 triangles
+```
+
+Notably, the medium/high variants became cheaper while improving hand shape because the new hand topology is more efficient than subdivided spheres.
+
+Automatic quality remains:
+
+```text
+full -> medium
+reduced -> medium
+static -> no interactive renderer
+high -> lab/manual only
+```
+
+Next visual work should stay on authored geometry placement and clothing/body silhouette before considering any increase in global subdivision.
+
+Production remains untouched.
