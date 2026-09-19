@@ -24,7 +24,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   returnHome: 'Volver',
   editorEyebrow: 'CUE ID / TECHNICAL FIXTURE',
   editorTitle: 'FIXTURE TÉCNICO. DIRECCIÓN VISUAL NO APROBADA.',
-  editorBody: 'Este laboratorio mantiene el candidato procedural únicamente para validar runtime, semántica y performance. La dirección visual ha sido rechazada tras revisión en dispositivo real y no se promoverá a producción.'
+  editorBody: 'Este laboratorio mantiene el candidato procedural únicamente para validar runtime, semántica y performance. La dirección visual ha sido rechazada tras revisión en dispositivo real y no se promoverá a producción.',
   reset: 'Restablecer'
 } : {
   eyebrow: 'PROTOTYPE / CUE ID',
@@ -44,7 +44,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   returnHome: 'Back',
   editorEyebrow: 'CUE ID / TECHNICAL FIXTURE',
   editorTitle: 'TECHNICAL FIXTURE. VISUAL DIRECTION NOT APPROVED.',
-  editorBody: 'This lab keeps the procedural candidate only to validate runtime, semantics and performance. The visual direction was rejected after real-device review and will not be promoted to production.'
+  editorBody: 'This lab keeps the procedural candidate only to validate runtime, semantics and performance. The visual direction was rejected after real-device review and will not be promoted to production.',
   reset: 'Reset'
 })
 
