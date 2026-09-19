@@ -16,8 +16,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Install Playwright browser
-        run: |
-          npx -y playwright@1.55.0 install --with-deps chromium
+        run: npx -y playwright@1.55.0 install --with-deps chromium
 
       - name: Capture real GLB desktop/mobile stages
         run: |
@@ -25,44 +24,7 @@ jobs:
           cd /tmp/cue-id-visual
           npm init -y >/dev/null 2>&1
           npm install playwright@1.55.0 >/dev/null 2>&1
-          cat > capture.cjs <<'EOF'
-const { chromium } = require('playwright');
-
-async function capture({ width, height, name }) {
-  const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage({ viewport: { width, height } });
-  await page.goto('https://pr-75.cuebooker-staging.pages.dev/cue-id', { waitUntil: 'networkidle' });
-
-  const accept = page.getByRole('button', { name: /Aceptar cookies|Accept cookies/i });
-  if (await accept.count()) {
-    await accept.first().click().catch(() => {});
-  }
-
-  const stage = page.locator('.cue-id-stage');
-  await stage.scrollIntoViewIfNeeded();
-  await page.waitForTimeout(500);
-
-  await page.waitForFunction(() => {
-    const diagnostic = document.querySelector('.cue-id-stage__diagnostics');
-    if (!diagnostic) return false;
-    const text = diagnostic.textContent || '';
-    return /asset\s+club-minimal-candidate/i.test(text) && !/ready\s+—/.test(text);
-  }, { timeout: 15000 }).catch(() => {});
-
-  await page.waitForTimeout(1200);
-  await stage.screenshot({ path: name });
-  await browser.close();
-}
-
-(async () => {
-  await capture({ width: 1440, height: 1000, name: 'cue-id-desktop-auto.png' });
-  await capture({ width: 390, height: 844, name: 'cue-id-mobile-auto.png' });
-})().catch(error => {
-  console.error(error);
-  process.exit(1);
-});
-
-          EOF
+          echo 'Y29uc3QgeyBjaHJvbWl1bSB9ID0gcmVxdWlyZSgncGxheXdyaWdodCcpOwoKYXN5bmMgZnVuY3Rpb24gY2FwdHVyZSh7IHdpZHRoLCBoZWlnaHQsIG5hbWUgfSkgewogIGNvbnN0IGJyb3dzZXIgPSBhd2FpdCBjaHJvbWl1bS5sYXVuY2goeyBoZWFkbGVzczogdHJ1ZSB9KTsKICBjb25zdCBwYWdlID0gYXdhaXQgYnJvd3Nlci5uZXdQYWdlKHsgdmlld3BvcnQ6IHsgd2lkdGgsIGhlaWdodCB9IH0pOwogIGF3YWl0IHBhZ2UuZ290bygnaHR0cHM6Ly9wci03NS5jdWVib29rZXItc3RhZ2luZy5wYWdlcy5kZXYvY3VlLWlkJywgeyB3YWl0VW50aWw6ICduZXR3b3JraWRsZScgfSk7CgogIGNvbnN0IGFjY2VwdCA9IHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6IC9BY2VwdGFyIGNvb2tpZXN8QWNjZXB0IGNvb2tpZXMvaSB9KTsKICBpZiAoYXdhaXQgYWNjZXB0LmNvdW50KCkpIHsKICAgIGF3YWl0IGFjY2VwdC5maXJzdCgpLmNsaWNrKCkuY2F0Y2goKCkgPT4ge30pOwogIH0KCiAgY29uc3Qgc3RhZ2UgPSBwYWdlLmxvY2F0b3IoJy5jdWUtaWQtc3RhZ2UnKTsKICBhd2FpdCBzdGFnZS5zY3JvbGxJbnRvVmlld0lmTmVlZGVkKCk7CiAgYXdhaXQgcGFnZS53YWl0Rm9yVGltZW91dCg1MDApOwoKICBhd2FpdCBwYWdlLndhaXRGb3JGdW5jdGlvbigpID0+IHsKICAgIGNvbnN0IGRpYWdub3N0aWMgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKCcuY3VlLWlkLXN0YWdlX19kaWFnbm9zdGljcycpOwogICAgaWYgKCFkaWFnbm9zdGljKSByZXR1cm4gZmFsc2U7CiAgICBjb25zdCB0ZXh0ID0gZGlhZ25vc3RpYy50ZXh0Q29udGVudCB8fCAnJzsKICAgIHJldHVyIC9hc3NldFxzK2NsdWItbWluaW1hbC1jYW5kaWRhdGUvaS50ZXN0KHRleHQpICYmICEvcmVhZHlcc+KAlC8udGVzdCh0ZXh0KTsKICB9LCB7IHRpbWVvdXQ6IDE1MDAwIH0pLmNhdGNoKCgpID0+IHt9KTsKCiAgYXdhaXQgcGFnZS53YWl0Rm9yVGltZW91dCgxMjAwKTsKICBhd2FpdCBzdGFnZS5zY3JlZW5zaG90KHsgcGF0aDogbmFtZSB9KTsKICBhd2FpdCBicm93c2VyLmNsb3NlKCk7Cn0KCiBhc3luYyAoKSA9PiB7CiAgYXdhaXQgY2FwdHVyZSh7IHdpZHRoOiAxNDQwLCBoZWlnaHQ6IDEwMDAsIG5hbWU6ICdjdWUtaWQtZGVza3RvcC1hdXRvLnBuZycgfSk7CiAgYXdhaXQgY2FwdHVyZSh7IHdpZHRoOiAzOTAsIGhlaWdodDogODQ0LCBuYW1lOiAnY3VlLWlkLW1vYmlsZS1hdXRvLnBuZycgfSk7Cn0pKCkuY2F0Y2goZXJyb3IgPT4gewogIGNvbnNvbGUuZXJyb3IoZXJyb3IpOwogIHByb2Nlc3MuZXhpdCgxKTsKfSk7Cg==' | base64 -d > capture.cjs
           node capture.cjs
           mv cue-id-desktop-auto.png "$GITHUB_WORKSPACE/"
           mv cue-id-mobile-auto.png "$GITHUB_WORKSPACE/"
