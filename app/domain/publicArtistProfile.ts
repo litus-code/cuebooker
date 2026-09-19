@@ -2,6 +2,20 @@ import type { CueIdConfigV1 } from './cueId'
 
 export type PublicCueIdConfig = Pick<CueIdConfigV1, 'schemaVersion' | 'family' | 'base' | 'build' | 'outfit' | 'accessory' | 'pose' | 'material' | 'accent'>
 
+export function toPublicCueIdConfig(config: CueIdConfigV1): PublicCueIdConfig {
+  return {
+    schemaVersion: config.schemaVersion,
+    family: config.family,
+    base: config.base,
+    build: config.build,
+    outfit: config.outfit,
+    accessory: config.accessory,
+    pose: config.pose,
+    material: config.material,
+    accent: config.accent
+  }
+}
+
 export type PublicArtistProfile = {
   stageName: string
   slug: string
