@@ -27,8 +27,16 @@ export const CUE_ID_MATERIAL_PRESETS: Record<CueIdConfigV1['material'], CueIdMat
   }
 }
 
-export const CUE_ID_ACCENT_COLORS: Record<CueIdConfigV1['accent'], string> = {
+export const CUE_ID_ACCENT_COLORS = {
   lime: '#ceff54',
   red: '#ff4545',
   none: '#737a72'
+} as const
+
+export function getCueIdAccentColor(accent: CueIdConfigV1['accent']) {
+  return accent === 'lime'
+    ? CUE_ID_ACCENT_COLORS.lime
+    : accent === 'red'
+      ? CUE_ID_ACCENT_COLORS.red
+      : CUE_ID_ACCENT_COLORS.none
 }
