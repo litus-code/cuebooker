@@ -6838,3 +6838,48 @@ This preserves the existing product API while allowing the production asset to b
 `CUE_ID_ASSETS` remains empty.
 
 Production remains untouched.
+
+## 108. Production manifest domain foundation
+
+The V2 asset contract now has a minimal application-domain implementation without admitting any production asset.
+
+New domain:
+
+`app/domain/cueIdProductionManifest.ts`
+
+It defines:
+
+- production manifest identity/version;
+- application-owned GLB/static paths;
+- geometry/material/texture metrics;
+- supported interactive tiers;
+- semantic capabilities;
+- semantic bindings for morphs, poses, outfits, accessories and material slots;
+- validation/assertion helpers.
+
+Validation currently enforces:
+
+- manifestVersion 1;
+- non-empty assetVersion;
+- application-owned paths;
+- base asset budget <= 1 MB / 35k triangles / 4 materials / 6 textures / 2048 max texture dimension;
+- interactive tiers only;
+- all three first-class bases;
+- slim / regular / strong builds;
+- neutral / relaxed / focused / editorial poses;
+- tee and matte as minimum V2 capabilities.
+
+Regression coverage:
+
+`tests/cueIdProductionManifest.test.ts`
+
+The tests verify a valid V2 manifest, three-base requirement, budget rejection and rejection of external asset URLs.
+
+Important:
+
+- this does not add anything to `CUE_ID_ASSETS`;
+- no real production GLB has been admitted;
+- the existing fixture runtime remains unchanged;
+- this is only the compatibility gate for the future authored V2 asset.
+
+Production remains untouched.
