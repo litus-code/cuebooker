@@ -16,7 +16,8 @@ LIME = (206, 255, 84, 255)
 
 def add(scene, name, mesh, color):
     mesh = mesh.copy()
-    mesh.visual.face_colors = np.array(color, dtype=np.uint8)
+    vertex_colors = np.tile(np.array(color, dtype=np.uint8), (len(mesh.vertices), 1))
+    mesh.visual.vertex_colors = vertex_colors
     scene.add_geometry(mesh, node_name=name, geom_name=name)
 
 
