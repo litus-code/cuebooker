@@ -1,7 +1,14 @@
 const { chromium } = require('playwright');
 
 async function capture({ width, height, name }) {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    args: [
+      '--enable-unsafe-swiftshader',
+      '--use-gl=angle',
+      '--use-angle=swiftshader'
+    ]
+  });
   const page = await browser.newPage({ viewport: { width, height } });
 
   page.on('console', msg => {
