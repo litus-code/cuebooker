@@ -1,3 +1,4 @@
+import argparse
 import json
 from pathlib import Path
 
@@ -7,8 +8,59 @@ from trimesh.transformations import rotation_matrix
 from trimesh.visual.material import PBRMaterial
 from trimesh.visual.texture import TextureVisuals
 
-OUT = Path("public/cue-id/candidates/club-minimal-candidate-v1.glb")
-META = Path("public/cue-id/candidates/club-minimal-candidate-v1.json")
+QUALITY_PROFILES = {
+    "light": {
+        "suffix": "",
+        "radial_sections": 14,
+        "head_sections": 16,
+        "sphere_subdivisions": 1,
+        "torus_major": 20,
+        "torus_minor": 8,
+        "glasses_major": 18,
+        "glasses_minor": 6,
+        "cup_sections": 12,
+    },
+    "medium": {
+        "suffix": "-medium",
+        "radial_sections": 24,
+        "head_sections": 24,
+        "sphere_subdivisions": 2,
+        "torus_major": 28,
+        "torus_minor": 10,
+        "glasses_major": 24,
+        "glasses_minor": 8,
+        "cup_sections": 18,
+    },
+    "high": {
+        "suffix": "-high",
+        "radial_sections": 32,
+        "head_sections": 32,
+        "sphere_subdivisions": 3,
+        "torus_major": 36,
+        "torus_minor": 12,
+        "glasses_major": 32,
+        "glasses_minor": 10,
+        "cup_sections": 24,
+    },
+}
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--quality",
+        choices=tuple(QUALITY_PROFILES),
+        default="light",
+    )
+    return parser.parse_args()
+
+
+ARGS = parse_args()
+QUALITY = ARGS.quality
+PROFILE = QUALITY_PROFILES[QUALITY]
+SUFFIX = PROFILE["suffix"]
+OUT = Path(f"public/cue-id/candidates/club-minimal-candidate{SUFFIX}-v1.glb")
+META = Path(f"public/cue-id/candidates/club-minimal-candidate{SUFFIX}-v1.json")
 
 BODY = PBRMaterial(
     name="body",
@@ -86,13 +138,15 @@ def add(scene, name, mesh, material):
     scene.add_geometry(mesh, node_name=name, geom_name=name)
 
 
-def y_cylinder(radius, height, sections=14):
+def y_cylinder(radius, height, sections=None):
+    sections = sections or PROFILE["radial_sections"]
     mesh = trimesh.creation.cylinder(radius=radius, height=height, sections=sections)
     mesh.apply_transform(rotation_matrix(np.pi / 2, [1, 0, 0]))
     return mesh
 
 
-def y_frustum(radius_top, radius_bottom, height, sections=14):
+def y_frustum(radius_top, radius_bottom, height, sections=None):
+    sections = sections or PROFILE["radial_sections"]
     angles = np.linspace(0, 2 * np.pi, sections, endpoint=False)
     y_top = height / 2
     y_bottom = -height / 2
@@ -125,7 +179,8 @@ def y_frustum(radius_top, radius_bottom, height, sections=14):
     )
 
 
-def elliptical_loft(rings, radial_sections=16):
+def elliptical_loft(rings, radial_sections=None):
+    radial_sections = radial_sections or PROFILE["head_sections"]
     vertices = []
     for y, width, depth in rings:
         for angle in np.linspace(0, 2 * np.pi, radial_sections, endpoint=False):
@@ -210,10 +265,10 @@ def build():
         (2.34, 0.32, 0.27),
         (2.22, 0.26, 0.24),
         (2.15, 0.18, 0.20),
-    ], radial_sections=16)
+    ], radial_sections=PROFILE["head_sections"])
     add(scene, "head", head, BODY)
 
-    neck = y_frustum(radius_top=0.145, radius_bottom=0.18, height=0.32, sections=16)
+    neck = y_frustum(radius_top=0.145, radius_bottom=0.18, height=0.32, sections=PROFILE["radial_sections"])
     neck.apply_translation([0, 2.02, 0])
     add(scene, "neck", neck, MID)
 
@@ -279,8 +334,8 @@ def build():
     hood = trimesh.creation.torus(
         major_radius=0.29,
         minor_radius=0.085,
-        major_sections=20,
-        minor_sections=8,
+        major_sections=PROFILE["torus_major"],
+        minor_sections=PROFILE["torus_minor"],
     )
     hood.apply_transform(rotation_matrix(np.pi / 2, [1, 0, 0]))
     hood.apply_translation([0, 1.99, 0.11])
@@ -300,8 +355,8 @@ def build():
     bomber_collar = trimesh.creation.torus(
         major_radius=0.25,
         minor_radius=0.060,
-        major_sections=20,
-        minor_sections=8,
+        major_sections=PROFILE["torus_major"],
+        minor_sections=PROFILE["torus_minor"],
     )
     bomber_collar.apply_transform(rotation_matrix(np.pi / 2, [1, 0, 0]))
     bomber_collar.apply_translation([0, 1.91, 0.01])
@@ -316,23 +371,23 @@ def build():
         ("right", 0.83, -0.05, 0.08),
     ]
     for side, x, upper_angle, forearm_angle in arm_specs:
-        shoulder = trimesh.creation.icosphere(subdivisions=1, radius=0.235)
+        shoulder = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.235)
         shoulder.apply_scale([1.0, 0.9, 0.86])
         shoulder.apply_translation([x, 1.73, 0])
         add(scene, f"shoulder_{side}", shoulder, DARK)
 
-        upper = y_frustum(radius_top=0.17, radius_bottom=0.145, height=0.58, sections=14)
+        upper = y_frustum(radius_top=0.17, radius_bottom=0.145, height=0.58, sections=PROFILE["radial_sections"])
         upper.apply_transform(rotation_matrix(upper_angle, [0, 0, 1]))
         upper.apply_translation([x + (-0.018 if side == "left" else 0.012), 1.39, 0])
         add(scene, f"upper_arm_{side}", upper, DARK)
 
         elbow_x = x + (-0.055 if side == "left" else 0.04)
-        elbow = trimesh.creation.icosphere(subdivisions=1, radius=0.155)
+        elbow = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.155)
         elbow.apply_scale([0.9, 0.9, 0.86])
         elbow.apply_translation([elbow_x, 1.05, 0])
         add(scene, f"elbow_{side}", elbow, DARK)
 
-        forearm = y_frustum(radius_top=0.14, radius_bottom=0.115, height=0.56, sections=14)
+        forearm = y_frustum(radius_top=0.14, radius_bottom=0.115, height=0.56, sections=PROFILE["radial_sections"])
         forearm.apply_transform(rotation_matrix(forearm_angle, [0, 0, 1]))
         forearm.apply_translation([
             elbow_x + (-0.025 if side == "left" else 0.02),
@@ -341,7 +396,7 @@ def build():
         ])
         add(scene, f"forearm_{side}", forearm, DARK)
 
-        hand = trimesh.creation.icosphere(subdivisions=1, radius=0.13)
+        hand = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.13)
         hand.apply_scale([0.80, 1.05, 0.70])
         hand.apply_translation([
             elbow_x + (-0.08 if side == "left" else 0.065),
@@ -356,7 +411,7 @@ def build():
     ])
     add(scene, "waist", waist, MID)
 
-    hips = trimesh.creation.icosphere(subdivisions=1, radius=0.56)
+    hips = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.56)
     hips.apply_scale([1.0, 0.38, 0.48])
     hips.apply_translation([0, 0.45, 0])
     add(scene, "hips", hips, MID)
@@ -365,22 +420,22 @@ def build():
         ("left", -0.29, -0.035, 0.03, -1),
         ("right", 0.30, 0.045, -0.025, 1),
     ]:
-        hip_joint = trimesh.creation.icosphere(subdivisions=1, radius=0.22)
+        hip_joint = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.22)
         hip_joint.apply_scale([0.9, 1.0, 0.9])
         hip_joint.apply_translation([x, 0.24, depth])
         add(scene, f"hip_joint_{side}", hip_joint, DARK)
 
-        thigh = y_frustum(radius_top=0.205, radius_bottom=0.17, height=0.72, sections=14)
+        thigh = y_frustum(radius_top=0.205, radius_bottom=0.17, height=0.72, sections=PROFILE["radial_sections"])
         thigh.apply_transform(rotation_matrix(angle, [0, 0, 1]))
         thigh.apply_translation([x, -0.11, depth])
         add(scene, f"thigh_{side}", thigh, DARK)
 
-        knee = trimesh.creation.icosphere(subdivisions=1, radius=0.18)
+        knee = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.18)
         knee.apply_scale([0.9, 0.82, 0.9])
         knee.apply_translation([x + 0.012 * lateral, -0.49, depth])
         add(scene, f"knee_{side}", knee, DARK)
 
-        shin = y_frustum(radius_top=0.165, radius_bottom=0.135, height=0.74, sections=14)
+        shin = y_frustum(radius_top=0.165, radius_bottom=0.135, height=0.74, sections=PROFILE["radial_sections"])
         shin.apply_transform(rotation_matrix(angle * 0.6, [0, 0, 1]))
         shin.apply_translation([x + 0.018 * lateral, -0.91, depth])
         add(scene, f"shin_{side}", shin, DARK)
@@ -393,20 +448,24 @@ def build():
     band = trimesh.creation.torus(
         major_radius=0.36,
         minor_radius=0.045,
-        major_sections=24,
-        minor_sections=8,
+        major_sections=PROFILE["torus_major"],
+        minor_sections=PROFILE["torus_minor"],
     )
     band.apply_transform(rotation_matrix(np.pi / 2, [1, 0, 0]))
     band.apply_translation([0, 2.05, 0.02])
     add(scene, "accessory_headphones_band", band, DARK)
 
     for side, x in (("left", -0.35), ("right", 0.35)):
-        cup = trimesh.creation.cylinder(radius=0.12, height=0.08, sections=12)
+        cup = trimesh.creation.cylinder(
+            radius=0.12,
+            height=0.08,
+            sections=PROFILE["cup_sections"],
+        )
         cup.apply_transform(rotation_matrix(np.pi / 2, [0, 1, 0]))
         cup.apply_translation([x, 1.98, 0.02])
         add(scene, f"accessory_headphones_cup_{side}", cup, DARK)
 
-    cap = trimesh.creation.icosphere(subdivisions=1, radius=0.34)
+    cap = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.34)
     cap.apply_scale([1.05, 0.34, 0.95])
     cap.apply_translation([0, 2.79, 0])
     add(scene, "accessory_cap_crown", cap, DARK)
@@ -419,8 +478,8 @@ def build():
         lens = trimesh.creation.torus(
             major_radius=0.14,
             minor_radius=0.018,
-            major_sections=18,
-            minor_sections=6,
+            major_sections=PROFILE["glasses_major"],
+            minor_sections=PROFILE["glasses_minor"],
         )
         lens.apply_translation([x, 2.49, -0.295])
         add(scene, f"accessory_glasses_{side}", lens, DARK)
@@ -447,8 +506,9 @@ def build():
     vertices = sum(len(geometry.vertices) for geometry in scene.geometry.values())
 
     metadata = {
-        "id": "club-minimal-candidate-v1",
+        "id": f"club-minimal-candidate-{QUALITY}-v1",
         "purpose": "candidate",
+        "quality": QUALITY,
         "generator": "Cuebooker procedural Club Minimal generator",
         "bytes": OUT.stat().st_size,
         "triangles": triangles,
