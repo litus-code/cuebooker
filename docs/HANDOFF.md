@@ -6631,3 +6631,29 @@ outfit_bomber
 This brings the interactive identity model closer to the static-first contract instead of allowing outfit choice to erase body semantics.
 
 Production remains untouched.
+
+
+## 101. Garment sleeve / pose semantic alignment
+
+Product review found that garment sleeves were modeled as independent semantic nodes but pose transforms only targeted the anatomy arm nodes.
+
+Risk:
+
+- upper-arm and forearm geometry could rotate for relaxed / focused / editorial poses;
+- tee, hoodie and bomber sleeve nodes could remain at their authored neutral orientation;
+- this could produce visible arm-through-sleeve or detached garment alignment.
+
+Correction:
+
+- tee short sleeves now inherit the corresponding upper-arm pose rotation;
+- hoodie upper sleeves inherit upper-arm pose rotation;
+- hoodie forearm sleeves inherit forearm pose rotation;
+- bomber upper sleeves inherit upper-arm pose rotation;
+- bomber forearm sleeves inherit forearm pose rotation;
+- neutral pose remains the zero-transform reference;
+- no GLB regeneration is needed;
+- no runtime infrastructure change is needed.
+
+Regression coverage now asserts sleeve / limb rotation equality across relaxed, focused and editorial poses.
+
+Production remains untouched.
