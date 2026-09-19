@@ -4781,3 +4781,111 @@ Next block:
 7. only after both visual and performance acceptance add it to `CUE_ID_ASSETS`.
 
 Production remains untouched.
+
+## 75. First original Club Minimal candidate — GENERATED / LAB ONLY
+
+The first original Cuebooker humanoid candidate now exists as a reproducible GLB.
+
+Generator:
+
+```text
+scripts/generate-cue-id-club-minimal-candidate.py
+```
+
+Generated files:
+
+```text
+public/cue-id/candidates/club-minimal-candidate-v1.glb
+public/cue-id/candidates/club-minimal-candidate-v1.json
+```
+
+Current generated metadata:
+
+```text
+bytes = 33,164
+triangles = 1,320
+vertices = 692
+materials = 4
+textures = 0
+artDirection = club_minimal_v1
+status = candidate_not_production
+```
+
+The candidate is intentionally far below the hard mobile budget. This leaves headroom for future art-direction refinement, rigging and higher-quality geometry.
+
+### Visual review correction
+
+The first generator iteration revealed an axis error: trimesh cylinders are Z-axis by default while the CUE ID scene uses Y-up.
+
+This caused disconnected-looking arms/legs/neck in the first internal silhouette review.
+
+The generator was corrected to:
+
+- rotate cylindrical limbs to Y-up;
+- reduce head scale;
+- tighten torso proportions;
+- reconnect arm/leg silhouette;
+- retain restrained headphones-around-neck cue;
+- preserve the lime seam as a small signal rather than costume.
+
+The corrected asset was regenerated and passed the automated budget gate.
+
+### Product status
+
+The candidate is registered as:
+
+```text
+purpose = candidate
+artDirection = club_minimal_v1
+```
+
+It is NOT present in `CUE_ID_ASSETS` and is NOT production-approved.
+
+`/cue-id` now previews this candidate through the same bounded GLB loader + TresJS pipeline used for the benchmark.
+
+The Khronos benchmark remains available as technical reference but the lab defaults to the original Club Minimal candidate.
+
+### Runtime telemetry
+
+Lab asset metrics now use a generalized event:
+
+```text
+cue_id_glb_lab_asset_loaded
+```
+
+with:
+
+```text
+asset_id
+bytes
+load_ms
+parse_ms
+first_frame_ms
+runtime_tier
+```
+
+### Tests
+
+`tests/cueIdAssets.test.ts` now also verifies:
+
+- candidate remains outside the production catalogue;
+- candidate passes the asset budget validator;
+- generated JSON metadata matches the TS descriptor;
+- real GLB file size matches the descriptor;
+- status remains `candidate_not_production`.
+
+### Next visual block
+
+Do not promote this candidate yet.
+
+Next work should be:
+
+1. visually review the corrected candidate on staging desktop/mobile;
+2. inspect silhouette at real profile sizes;
+3. decide whether to increase geometry toward the 18k–28k preferred production range or keep a deliberately low-poly sculptural direction;
+4. refine head/shoulder/hand/leg continuity and wardrobe volumes;
+5. introduce rig/pose only after the static silhouette feels credible;
+6. benchmark Tier A and Tier B after each meaningful geometry increase;
+7. only then consider moving the asset from `candidate` to `production` and adding it to `CUE_ID_ASSETS`.
+
+Production remains untouched.
