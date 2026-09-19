@@ -5184,3 +5184,66 @@ Only introduce bones/skinning if visual review shows clear limitations in:
 - future motion/animation requirements.
 
 Production remains untouched.
+
+## 81. Semantic build transforms — one GLB, three body reads
+
+The Club Minimal candidate now supports the semantic build dimension without duplicating assets.
+
+New domain file:
+
+```text
+app/domain/cueIdBuild.ts
+```
+
+Builds:
+
+```text
+slim
+regular
+strong
+```
+
+Strategy:
+
+- preserve the same GLB;
+- scale only selected named nodes;
+- keep Y/height largely stable;
+- alter width/depth subtly;
+- keep all scale multipliers in the 0.90–1.12 range;
+- avoid caricature or status implication.
+
+`CueIdScene.client.vue` now stores base scale in addition to base rotation/position and combines:
+
+```text
+base transform
++ semantic pose
+x semantic build
+```
+
+from the original transform on every update.
+
+This prevents cumulative drift when users switch between builds/poses.
+
+Tests:
+
+```text
+tests/cueIdBuild.test.ts
+```
+
+They verify:
+
+- exactly three builds;
+- regular is the neutral scale reference;
+- scales remain restrained;
+- every referenced node maps to the generated candidate source.
+
+Network/runtime cost:
+
+```text
+additional GLB bytes = 0
+additional textures = 0
+additional materials = 0
+continuous render loop = 0
+```
+
+Production remains untouched.
