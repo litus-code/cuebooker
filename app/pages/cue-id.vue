@@ -22,7 +22,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   returnHome: 'Volver',
   editorEyebrow: 'CUE ID / FOUNDATION',
   editorTitle: 'PRIMERA IDENTIDAD. SIN JUGAR A SER UN JUEGO.',
-  editorBody: 'Este laboratorio valida el runtime 3D y el presupuesto mobile con un GLB técnico de benchmark. No representa el arte final de CUE ID ni se ofrece como identidad seleccionable.',
+  editorBody: 'Este laboratorio muestra el primer candidato original Club Minimal y valida su runtime en mobile/desktop. Sigue siendo un candidate: no entra al catálogo de producción hasta pasar revisión visual y performance.',
   reset: 'Restablecer'
 } : {
   eyebrow: 'PROTOTYPE / CUE ID',
@@ -42,7 +42,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   returnHome: 'Back',
   editorEyebrow: 'CUE ID / FOUNDATION',
   editorTitle: 'FIRST IDENTITY. WITHOUT TURNING IT INTO A GAME.',
-  editorBody: 'This lab validates the 3D runtime and mobile budget with a technical benchmark GLB. It is not final CUE ID artwork and is not offered as a selectable identity.',
+  editorBody: 'This lab shows the first original Club Minimal candidate and validates its runtime on mobile/desktop. It remains a candidate until it passes visual and performance review.'
   reset: 'Reset'
 })
 
@@ -79,7 +79,7 @@ useHead(() => ({
         <button type="button" @click="cueIdConfig = cloneCueIdConfig(DEFAULT_CUE_ID_CONFIG)">{{ copy.reset }}</button>
       </header>
       <div class="cue-id-editor-lab__stage">
-        <CueIdStage :config="cueIdConfig" artist-name="LITUS" benchmark />
+        <CueIdStage :config="cueIdConfig" artist-name="LITUS" lab-asset="candidate" />
       </div>
       <CueIdControls v-model="cueIdConfig" :locale="preferences.locale.value" />
     </section>
