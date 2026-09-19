@@ -5804,3 +5804,65 @@ Cost increase versus the previous sculpted set is negligible.
 This is the desired optimization pattern: improve visible authorship through geometry placement and proportion, not indiscriminate polygon density.
 
 Production remains untouched.
+
+## 85. Editorial joint refinement + headless WebGL diagnosis
+
+The current Club Minimal candidate received a final low-cost silhouette cleanup after real GLB review.
+
+### Joint / pelvis refinement
+
+Changes:
+
+- shoulder joint radius reduced and moved closer into the torso;
+- elbow joints reduced;
+- hip joints reduced;
+- knee joints reduced;
+- waist narrowed;
+- pelvis width/depth reduced;
+- editorial 3/4 presentation added at runtime;
+- camera tightened slightly;
+- ambient light reduced while key/rim contrast increased.
+
+Generated metadata after refinement:
+
+```text
+light  = 64,236 bytes / 4,232 triangles
+medium = 106,660 bytes / 9,168 triangles
+high   = 207,308 bytes / 22,176 triangles
+```
+
+Triangle counts are unchanged from the previous editorial pass; byte size moved only marginally.
+
+### Real runtime validation
+
+Temporary headless capture initially failed because Chromium could not create a WebGL context under its default software-rendering policy.
+
+Network diagnostics confirmed:
+
+```text
+GET /cue-id/candidates/club-minimal-candidate-medium-v1.glb -> 200
+content-length = 106,688 before the final joint-byte regeneration
+```
+
+The capture workflow was then run with explicit SwiftShader flags only for CI visual validation.
+
+That produced a real GLB render and runtime diagnostics.
+
+Important measurement caveat:
+
+- desktop capture was a cold network load;
+- mobile capture ran after the same asset had been fetched and therefore benefited from cache;
+- those two timings must NOT be interpreted as a fair desktop-vs-mobile performance comparison.
+
+The valid product conclusion remains based on the earlier controlled quality comparison:
+
+```text
+medium -> visually close to high at product size
+medium -> substantially cheaper
+high -> remains manual/lab only
+auto -> medium
+```
+
+Temporary capture/diagnostic scripts and workflows were removed after validation.
+
+Production remains untouched.
