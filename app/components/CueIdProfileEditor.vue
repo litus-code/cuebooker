@@ -33,12 +33,12 @@ const copy = computed(() => props.locale === 'es' ? {
   artwork: 'Artwork',
   artworkBody: 'Usa tu retrato con tratamiento visual Cuebooker.',
   cueId: 'CUE ID',
-  cueIdBody: 'Construye una identidad visual modular. La primera familia es Club Minimal.',
+  cueIdBody: 'Construye una identidad visual modular. En público se muestra una versión optimizada de la misma identidad Club Minimal.',
   save: 'Guardar identidad visual',
   saving: 'Guardando…',
   saved: 'Identidad visual guardada.',
   error: 'No se pudo guardar la identidad visual.',
-  privateHint: 'Esta configuración sigue siendo privada hasta que la proyección pública de CUE ID esté activada.',
+  privateHint: 'Si tu perfil público está activo, esta será tu representación visible. Tus datos de booking y operación siguen siendo privados.',
   unsaved: 'Cambios sin guardar'
 } : {
   eyebrow: 'VISUAL PRESENTATION',
@@ -49,12 +49,12 @@ const copy = computed(() => props.locale === 'es' ? {
   artwork: 'Artwork',
   artworkBody: 'Use your portrait with Cuebooker visual treatment.',
   cueId: 'CUE ID',
-  cueIdBody: 'Build a modular visual identity. The first family is Club Minimal.',
+  cueIdBody: 'Build a modular visual identity. Public profiles use an optimized version of the same Club Minimal identity.',
   save: 'Save visual identity',
   saving: 'Saving…',
   saved: 'Visual identity saved.',
   error: 'The visual identity could not be saved.',
-  privateHint: 'This configuration stays private until the public CUE ID projection is enabled.',
+  privateHint: 'If your public profile is active, this becomes your visible representation. Booking and operational data remain private.',
   unsaved: 'Unsaved changes'
 })
 
@@ -151,6 +151,7 @@ async function save() {
         :key="mode.id"
         type="button"
         :class="{ active: presentationMode === mode.id }"
+        :aria-pressed="presentationMode === mode.id"
         :disabled="disabled"
         @click="setMode(mode.id)"
       >
