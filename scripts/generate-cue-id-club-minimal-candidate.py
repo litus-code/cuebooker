@@ -60,6 +60,48 @@ def y_frustum(radius_top, radius_bottom, height, sections=14):
     )
 
 
+def elliptical_loft(rings, radial_sections=16):
+    vertices = []
+    for y, width, depth in rings:
+        for angle in np.linspace(0, 2 * np.pi, radial_sections, endpoint=False):
+            vertices.append([
+                width * np.cos(angle),
+                y,
+                depth * np.sin(angle),
+            ])
+
+    faces = []
+    ring_count = len(rings)
+    for ring in range(ring_count - 1):
+        a = ring * radial_sections
+        b = (ring + 1) * radial_sections
+        for i in range(radial_sections):
+            nxt = (i + 1) % radial_sections
+            faces.extend([
+                [a + i, a + nxt, b + nxt],
+                [a + i, b + nxt, b + i],
+            ])
+
+    top_center = len(vertices)
+    bottom_center = top_center + 1
+    vertices.extend([
+        [0, rings[0][0] + 0.03, 0],
+        [0, rings[-1][0] - 0.03, 0],
+    ])
+
+    for i in range(radial_sections):
+        nxt = (i + 1) % radial_sections
+        faces.append([top_center, i, nxt])
+        last = (ring_count - 1) * radial_sections
+        faces.append([bottom_center, last + nxt, last + i])
+
+    return trimesh.Trimesh(
+        vertices=np.array(vertices),
+        faces=np.array(faces),
+        process=False,
+    )
+
+
 def lofted_box(sections):
     vertices = []
     for y, width, depth in sections:
@@ -96,14 +138,26 @@ def lofted_box(sections):
 def build():
     scene = trimesh.Scene()
 
-    head = trimesh.creation.icosphere(subdivisions=2, radius=0.40)
-    head.apply_scale([0.84, 1.0, 0.78])
-    head.apply_translation([0, 2.48, 0])
+    head = elliptical_loft([
+        (2.78, 0.22, 0.22),
+        (2.66, 0.32, 0.27),
+        (2.49, 0.35, 0.29),
+        (2.34, 0.32, 0.27),
+        (2.22, 0.26, 0.24),
+        (2.15, 0.18, 0.20),
+    ], radial_sections=16)
     add(scene, "head", head, BODY)
 
-    neck = y_cylinder(radius=0.16, height=0.34, sections=16)
-    neck.apply_translation([0, 2.03, 0])
+    neck = y_frustum(radius_top=0.145, radius_bottom=0.18, height=0.32, sections=16)
+    neck.apply_translation([0, 2.02, 0])
     add(scene, "neck", neck, MID)
+
+    clavicle = lofted_box([
+        (2.00, 0.30, 0.20),
+        (1.88, 0.64, 0.30),
+        (1.78, 0.70, 0.32),
+    ])
+    add(scene, "clavicle", clavicle, DARK)
 
     top_y, top_w, top_d = 1.90, 0.72, 0.32
     bottom_y, bottom_w, bottom_d = 0.72, 0.55, 0.28
