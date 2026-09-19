@@ -18,11 +18,13 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   ready: []
   failed: []
-  benchmarkLoaded: [metrics: { bytes: number; loadMs: number; parseMs: number }]
+  benchmarkLoaded: [metrics: { bytes: number; loadMs: number; parseMs: number; firstFrameMs: number }]
 }>()
 
 const ready = ref(false)
 const benchmarkScene = shallowRef<Object3D | null>(null)
+let benchmarkFrameStartedAt = 0
+let benchmarkMetrics: { bytes: number; loadMs: number; parseMs: number } | null = null
 
 const buildScale = computed(() =>
   props.config.build === 'strong' ? 1.12 : props.config.build === 'slim' ? 0.9 : 1
@@ -74,12 +76,13 @@ async function loadBenchmark() {
       -center.z * scale
     )
 
-    benchmarkScene.value = parsed
-    emit('benchmarkLoaded', {
+    benchmarkMetrics = {
       bytes: result.bytes,
       loadMs: result.loadMs,
       parseMs: Math.max(0, Math.round(performance.now() - parseStartedAt))
-    })
+    }
+    benchmarkFrameStartedAt = performance.now()
+    benchmarkScene.value = parsed
   } catch {
     benchmarkScene.value = null
   }
@@ -114,6 +117,18 @@ function handleReady() {
   emit('ready')
 }
 
+function handleRender() {
+  if (!benchmarkScene.value || !benchmarkMetrics || !benchmarkFrameStartedAt) return
+
+  emit('benchmarkLoaded', {
+    ...benchmarkMetrics,
+    firstFrameMs: Math.max(0, Math.round(performance.now() - benchmarkFrameStartedAt))
+  })
+
+  benchmarkFrameStartedAt = 0
+  benchmarkMetrics = null
+}
+
 onErrorCaptured(() => {
   ready.value = false
   emit('failed')
@@ -132,6 +147,7 @@ onErrorCaptured(() => {
       render-mode="on-demand"
       :clear-alpha="0"
       @ready="handleReady"
+      @render="handleRender"
     >
       <TresPerspectiveCamera :position="[0, 0.35, 7.4]" :fov="42" />
 
