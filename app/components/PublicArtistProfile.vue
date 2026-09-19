@@ -98,6 +98,7 @@ async function openBooking() {
           class="public-artist-profile__cue-id"
           :config="{ ...profile.cueId, enabled: true }"
           :artist-name="profile.stageName"
+          :interactive="false"
           compact
         />
         <div class="public-artist-profile__shade" />
