@@ -22,9 +22,9 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   cities: 'Ciudades',
   venues: 'Venues',
   returnHome: 'Volver',
-  editorEyebrow: 'CUE ID / FOUNDATION',
-  editorTitle: 'PRIMERA IDENTIDAD. SIN JUGAR A SER UN JUEGO.',
-  editorBody: 'Este laboratorio muestra el primer candidato original Club Minimal y valida su runtime en mobile/desktop. Sigue siendo un candidate: no entra al catálogo de producción hasta pasar revisión visual y performance.',
+  editorEyebrow: 'CUE ID / TECHNICAL FIXTURE',
+  editorTitle: 'FIXTURE TÉCNICO. DIRECCIÓN VISUAL NO APROBADA.',
+  editorBody: 'Este laboratorio mantiene el candidato procedural únicamente para validar runtime, semántica y performance. La dirección visual ha sido rechazada tras revisión en dispositivo real y no se promoverá a producción.'
   reset: 'Restablecer'
 } : {
   eyebrow: 'PROTOTYPE / CUE ID',
@@ -42,9 +42,9 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   cities: 'Cities',
   venues: 'Venues',
   returnHome: 'Back',
-  editorEyebrow: 'CUE ID / FOUNDATION',
-  editorTitle: 'FIRST IDENTITY. WITHOUT TURNING IT INTO A GAME.',
-  editorBody: 'This lab shows the first original Club Minimal candidate and validates its runtime on mobile/desktop. It remains a candidate until it passes visual and performance review.',
+  editorEyebrow: 'CUE ID / TECHNICAL FIXTURE',
+  editorTitle: 'TECHNICAL FIXTURE. VISUAL DIRECTION NOT APPROVED.',
+  editorBody: 'This lab keeps the procedural candidate only to validate runtime, semantics and performance. The visual direction was rejected after real-device review and will not be promoted to production.'
   reset: 'Reset'
 })
 
