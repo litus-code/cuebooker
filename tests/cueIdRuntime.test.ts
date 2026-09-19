@@ -67,3 +67,17 @@ test('reduced motion disables continuous idle without disabling full tier', () =
   assert.equal(result.shouldLoadRuntime, true)
   assert.equal(result.continuousIdle, false)
 })
+
+
+test('WebGL capability probe rejects experimental fallback paths', async () => {
+  const source = await import('node:fs/promises')
+  const runtime = await source.readFile(
+    new URL('../app/domain/cueIdRuntime.ts', import.meta.url),
+    'utf8'
+  )
+
+  assert.match(runtime, /failIfMajorPerformanceCaveat:\s*true/)
+  assert.match(runtime, /getContext\('webgl2'/)
+  assert.match(runtime, /getContext\('webgl'/)
+  assert.doesNotMatch(runtime, /experimental-webgl/)
+})
