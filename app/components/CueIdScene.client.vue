@@ -225,8 +225,11 @@ async function loadLabAsset() {
     }
     labFrameStartedAt = performance.now()
     labScene.value = parsed
-  } catch {
+  } catch (error) {
     labScene.value = null
+    ready.value = false
+    console.error('[CUE ID] GLB load failed', error)
+    emit('failed')
   }
 }
 
@@ -285,17 +288,23 @@ onBeforeUnmount(() => {
 })
 
 function handleReady() {
-  ready.value = true
-  emit('ready')
+  if (!props.labAsset) {
+    ready.value = true
+    emit('ready')
+  }
 }
 
 function handleRender() {
   if (!labScene.value || !labMetrics || !labFrameStartedAt) return
 
-  emit('labAssetLoaded', {
+  const metrics = {
     ...labMetrics,
     firstFrameMs: Math.max(0, Math.round(performance.now() - labFrameStartedAt))
-  })
+  }
+
+  ready.value = true
+  emit('ready')
+  emit('labAssetLoaded', metrics)
 
   labFrameStartedAt = 0
   labMetrics = null
@@ -334,7 +343,7 @@ onErrorCaptured(() => {
       />
 
       <TresGroup
-        v-else
+        v-else-if="!labAsset"
         :rotation="poseRotation"
         :scale="[buildScale, 1, 1]"
         :position="[0, -0.15, 0]"
