@@ -6657,3 +6657,18 @@ Correction:
 Regression coverage now asserts sleeve / limb rotation equality across relaxed, focused and editorial poses.
 
 Production remains untouched.
+
+
+## 102. CUE ID lab mobile / accessibility cleanup
+
+Product review found two small lab-only UX inconsistencies.
+
+Changes:
+
+- quality controls now use a 44 px minimum touch target instead of 36 px;
+- on narrow screens the quality row can scroll horizontally without compressing controls below their intended target size;
+- the CUE ID stage accessibility label is now neutral (`CUE ID preview`) instead of incorrectly announcing an interactive stage as a static preview;
+- primary CUE ID editor controls already used 44 px touch targets and required no change;
+- no runtime, asset or production behavior changed.
+
+Production remains untouched.
