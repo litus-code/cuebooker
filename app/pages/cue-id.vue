@@ -42,7 +42,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   returnHome: 'Back',
   editorEyebrow: 'CUE ID / FOUNDATION',
   editorTitle: 'FIRST IDENTITY. WITHOUT TURNING IT INTO A GAME.',
-  editorBody: 'This lab shows the first original Club Minimal candidate and validates its runtime on mobile/desktop. It remains a candidate until it passes visual and performance review.'
+  editorBody: 'This lab shows the first original Club Minimal candidate and validates its runtime on mobile/desktop. It remains a candidate until it passes visual and performance review.',
   reset: 'Reset'
 })
 
