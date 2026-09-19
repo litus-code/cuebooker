@@ -1,0 +1,16 @@
+{
+  "id": "club-minimal-candidate-high-v1",
+  "purpose": "candidate",
+  "quality": "high",
+  "generator": "Cuebooker procedural Club Minimal generator",
+  "bytes": 186180,
+  "triangles": 16992,
+  "vertices": 8598,
+  "materials": 4,
+  "embeddedMaterials": 4,
+  "runtimeMaterials": 4,
+  "materialStrategy": "embedded_shared_pbr_mutated_runtime",
+  "textures": 0,
+  "artDirection": "club_minimal_v1",
+  "status": "candidate_not_production"
+}

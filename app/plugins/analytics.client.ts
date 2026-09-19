@@ -3,9 +3,7 @@ export default defineNuxtPlugin(() => {
   const router = useRouter()
 
   const trackCurrentPage = () => {
-    analytics.track('page_view', {
-      page_path: router.currentRoute.value.fullPath
-    })
+    analytics.trackPageView(router.currentRoute.value.fullPath)
   }
 
   analytics.init()
@@ -14,7 +12,7 @@ export default defineNuxtPlugin(() => {
     () => analytics.consent.value,
     (value, previousValue) => {
       if (value === 'granted' && previousValue !== 'granted') {
-        trackCurrentPage()
+        queueMicrotask(trackCurrentPage)
       }
     }
   )
@@ -25,9 +23,8 @@ export default defineNuxtPlugin(() => {
     }
   })
 
-  router.afterEach((to) => {
-    analytics.track('page_view', {
-      page_path: to.fullPath
-    })
+  router.afterEach((to, from) => {
+    if (to.fullPath === from.fullPath) return
+    queueMicrotask(() => analytics.trackPageView(to.fullPath))
   })
 })
