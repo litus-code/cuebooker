@@ -3,28 +3,28 @@ import { TresCanvas } from '@tresjs/core'
 import { Box3, Object3D, Vector3 } from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import type { CueIdConfigV1 } from '../domain/cueId'
-import { CUE_ID_BENCHMARK_ASSET } from '../domain/cueIdAssets'
+import { CUE_ID_BENCHMARK_ASSET, CUE_ID_CANDIDATE_ASSET } from '../domain/cueIdAssets'
 import type { CueIdRuntimeDecision } from '../domain/cueIdRuntime'
 import { loadCueIdGlbBuffer } from '../services/cueIdAssetLoader'
 
 const props = withDefaults(defineProps<{
   config: CueIdConfigV1
   decision: CueIdRuntimeDecision
-  benchmark?: boolean
+  labAsset?: 'benchmark' | 'candidate' | null
 }>(), {
-  benchmark: false
+  labAsset: null
 })
 
 const emit = defineEmits<{
   ready: []
   failed: []
-  benchmarkLoaded: [metrics: { bytes: number; loadMs: number; parseMs: number; firstFrameMs: number }]
+  labAssetLoaded: [metrics: { assetId: string; bytes: number; loadMs: number; parseMs: number; firstFrameMs: number }]
 }>()
 
 const ready = ref(false)
-const benchmarkScene = shallowRef<Object3D | null>(null)
-let benchmarkFrameStartedAt = 0
-let benchmarkMetrics: { bytes: number; loadMs: number; parseMs: number } | null = null
+const labScene = shallowRef<Object3D | null>(null)
+let labFrameStartedAt = 0
+let labMetrics: { assetId: string; bytes: number; loadMs: number; parseMs: number } | null = null
 
 const buildScale = computed(() =>
   props.config.build === 'strong' ? 1.12 : props.config.build === 'slim' ? 0.9 : 1
@@ -53,11 +53,15 @@ const accentColor = computed(() =>
 )
 
 
-async function loadBenchmark() {
-  if (!props.benchmark) return
+async function loadLabAsset() {
+  if (!props.labAsset) return
+
+  const asset = props.labAsset === 'candidate'
+    ? CUE_ID_CANDIDATE_ASSET
+    : CUE_ID_BENCHMARK_ASSET
 
   try {
-    const result = await loadCueIdGlbBuffer(CUE_ID_BENCHMARK_ASSET)
+    const result = await loadCueIdGlbBuffer(asset)
     const parseStartedAt = performance.now()
     const loader = new GLTFLoader()
     const gltf = await loader.parseAsync(result.buffer, '/cue-id/benchmarks/')
@@ -76,15 +80,16 @@ async function loadBenchmark() {
       -center.z * scale
     )
 
-    benchmarkMetrics = {
+    labMetrics = {
+      assetId: asset.id,
       bytes: result.bytes,
       loadMs: result.loadMs,
       parseMs: Math.max(0, Math.round(performance.now() - parseStartedAt))
     }
-    benchmarkFrameStartedAt = performance.now()
-    benchmarkScene.value = parsed
+    labFrameStartedAt = performance.now()
+    labScene.value = parsed
   } catch {
-    benchmarkScene.value = null
+    labScene.value = null
   }
 }
 
@@ -109,8 +114,8 @@ function disposeObject(object: Object3D | null) {
   })
 }
 
-onMounted(loadBenchmark)
-onBeforeUnmount(() => disposeObject(benchmarkScene.value))
+onMounted(loadLabAsset)
+onBeforeUnmount(() => disposeObject(labScene.value))
 
 function handleReady() {
   ready.value = true
@@ -118,15 +123,15 @@ function handleReady() {
 }
 
 function handleRender() {
-  if (!benchmarkScene.value || !benchmarkMetrics || !benchmarkFrameStartedAt) return
+  if (!labScene.value || !labMetrics || !labFrameStartedAt) return
 
-  emit('benchmarkLoaded', {
-    ...benchmarkMetrics,
-    firstFrameMs: Math.max(0, Math.round(performance.now() - benchmarkFrameStartedAt))
+  emit('labAssetLoaded', {
+    ...labMetrics,
+    firstFrameMs: Math.max(0, Math.round(performance.now() - labFrameStartedAt))
   })
 
-  benchmarkFrameStartedAt = 0
-  benchmarkMetrics = null
+  labFrameStartedAt = 0
+  labMetrics = null
 }
 
 onErrorCaptured(() => {
@@ -156,8 +161,8 @@ onErrorCaptured(() => {
       <TresDirectionalLight :position="[-3, 1, 2]" :intensity="0.65" :color="accentColor" />
 
       <primitive
-        v-if="benchmark && benchmarkScene"
-        :object="benchmarkScene"
+        v-if="labAsset && labScene"
+        :object="labScene"
       />
 
       <TresGroup
