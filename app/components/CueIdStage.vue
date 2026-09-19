@@ -12,6 +12,7 @@ const props = withDefaults(defineProps<{
   interactive: true
 })
 
+const analytics = useAnalytics()
 const stageRoot = ref<HTMLElement | null>(null)
 const runtimeWanted = ref(false)
 const runtimeReady = ref(false)
@@ -21,6 +22,17 @@ const LazyCueIdRuntime = defineAsyncComponent(() => import('./CueIdRuntime.clien
 
 onMounted(() => {
   if (!props.interactive) return
+  const nav = navigator as Navigator & {
+    deviceMemory?: number
+    connection?: { saveData?: boolean }
+  }
+  const constrainedDevice = Boolean(nav.connection?.saveData || (nav.deviceMemory && nav.deviceMemory <= 2))
+  if (constrainedDevice) {
+    analytics.track('cue_id_static_fallback_used', {
+      reason: nav.connection?.saveData ? 'save_data' : 'low_device_memory'
+    })
+    return
+  }
   runtimeObserver = new IntersectionObserver(entries => {
     if (!entries[0]?.isIntersecting) return
     runtimeWanted.value = true
