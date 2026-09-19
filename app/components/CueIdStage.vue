@@ -8,11 +8,13 @@ const props = withDefaults(defineProps<{
   compact?: boolean
   interactive?: boolean
   labAsset?: 'benchmark' | 'candidate' | null
+  showDiagnostics?: boolean
 }>(), {
   artistName: 'ARTIST',
   compact: false,
   interactive: true,
-  labAsset: null
+  labAsset: null,
+  showDiagnostics: false
 })
 
 const analytics = useAnalytics()
@@ -20,6 +22,14 @@ const stageRoot = ref<HTMLElement | null>(null)
 const runtimeWanted = ref(false)
 const runtimeReady = ref(false)
 const runtimeDecision = ref<CueIdRuntimeDecision | null>(null)
+const runtimeInitMs = ref<number | null>(null)
+const latestLabMetrics = ref<{
+  assetId: string
+  bytes: number
+  loadMs: number
+  parseMs: number
+  firstFrameMs: number
+} | null>(null)
 let runtimeLoadStartedAt = 0
 let runtimeObserver: IntersectionObserver | null = null
 
@@ -48,17 +58,20 @@ onMounted(() => {
 
 function handleRuntimeReady() {
   runtimeReady.value = true
+  runtimeInitMs.value = runtimeLoadStartedAt
+    ? Math.max(0, Math.round(performance.now() - runtimeLoadStartedAt))
+    : null
+
   analytics.track('cue_id_renderer_ready', {
     renderer: 'tresjs_procedural',
     runtime_tier: runtimeDecision.value?.tier || null,
-    init_ms: runtimeLoadStartedAt
-      ? Math.max(0, Math.round(performance.now() - runtimeLoadStartedAt))
-      : null,
+    init_ms: runtimeInitMs.value,
     dpr_cap: runtimeDecision.value?.dprCap || null
   })
 }
 
 function handleLabAssetLoaded(metrics: { assetId: string; bytes: number; loadMs: number; parseMs: number; firstFrameMs: number }) {
+  latestLabMetrics.value = metrics
   analytics.track('cue_id_glb_lab_asset_loaded', {
     asset_id: metrics.assetId,
     bytes: metrics.bytes,
@@ -124,6 +137,23 @@ const accentClass = computed(() => props.config.accent ? `cue-id-stage--accent-$
       />
     </ClientOnly>
 
+    <aside
+      v-if="showDiagnostics"
+      class="cue-id-stage__diagnostics"
+      aria-label="CUE ID runtime diagnostics"
+    >
+      <strong>RUNTIME</strong>
+      <span>tier <b>{{ runtimeDecision?.tier || '—' }}</b></span>
+      <span>reason <b>{{ runtimeDecision?.reason || '—' }}</b></span>
+      <span>dpr <b>{{ runtimeDecision?.dprCap ?? '—' }}</b></span>
+      <span>init <b>{{ runtimeInitMs === null ? '—' : runtimeInitMs + 'ms' }}</b></span>
+      <span>asset <b>{{ latestLabMetrics?.assetId || '—' }}</b></span>
+      <span>bytes <b>{{ latestLabMetrics?.bytes?.toLocaleString?.() || '—' }}</b></span>
+      <span>load <b>{{ latestLabMetrics ? latestLabMetrics.loadMs + 'ms' : '—' }}</b></span>
+      <span>parse <b>{{ latestLabMetrics ? latestLabMetrics.parseMs + 'ms' : '—' }}</b></span>
+      <span>frame <b>{{ latestLabMetrics ? latestLabMetrics.firstFrameMs + 'ms' : '—' }}</b></span>
+    </aside>
+
     <footer class="cue-id-stage__meta">
       <span>CUE ID / CLUB MINIMAL</span>
       <strong>{{ artistName }}</strong>
@@ -166,6 +196,15 @@ const accentClass = computed(() => props.config.accent ? `cue-id-stage--accent-$
 .cue-id-stage--runtime-ready .cue-id-stage__figure{opacity:0;transition:opacity .28s ease}
 .cue-id-stage--runtime-ready .cue-id-stage__scan{opacity:.32}
 .cue-id-stage__meta{z-index:5}
+.cue-id-stage__diagnostics{
+  position:absolute;z-index:7;left:16px;top:16px;display:grid;grid-template-columns:auto auto;gap:4px 12px;
+  max-width:min(320px,calc(100% - 32px));padding:10px 12px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(5,6,5,.82);backdrop-filter:blur(8px);font:600 9px/1.35 monospace;letter-spacing:.04em;
+  color:#858b83;pointer-events:none
+}
+.cue-id-stage__diagnostics strong{grid-column:1/-1;color:#dfe2dc;letter-spacing:.12em}
+.cue-id-stage__diagnostics span{display:contents}.cue-id-stage__diagnostics b{color:#d5ff67;font-weight:700;text-align:right;overflow:hidden;text-overflow:ellipsis}
+
 .cue-id-stage__head {
   left:57px; top:0; width:76px; height:88px; border-radius:45% 45% 40% 40%;
   background:linear-gradient(120deg,#4b5149 0%,#151815 46%,#969d90 49%,#242924 57%,#090a09 100%);
@@ -205,5 +244,5 @@ const accentClass = computed(() => props.config.accent ? `cue-id-stage--accent-$
 @media(prefers-reduced-motion:reduce){.cue-id-stage--runtime-ready .cue-id-stage__figure{transition:none}}
 @media(prefers-reduced-motion:no-preference){.cue-id-stage__figure{animation:cue-id-float 5.8s ease-in-out infinite}.cue-id-stage__scan{animation:cue-id-scan 4.4s ease-in-out infinite}}
 @keyframes cue-id-float{0%,100%{translate:0 0}50%{translate:0 -8px}}@keyframes cue-id-scan{0%,100%{transform:translateY(-80px);opacity:.2}50%{transform:translateY(95px);opacity:.9}}
-@media(max-width:680px){.cue-id-stage{min-height:430px}.cue-id-stage__halo--one{width:300px;height:300px}.cue-id-stage__halo--two{width:410px;height:410px}.cue-id-stage__figure{transform:translate(-50%,-52%) scale(.88) rotateY(-12deg)}.cue-id-stage__meta{left:16px;right:16px;bottom:16px}.cue-id-stage__meta small{display:none}}
+@media(max-width:680px){.cue-id-stage{min-height:430px}.cue-id-stage__diagnostics{left:10px;top:10px;padding:8px 10px;gap:3px 8px;font-size:8px;max-width:230px}.cue-id-stage__halo--one{width:300px;height:300px}.cue-id-stage__halo--two{width:410px;height:410px}.cue-id-stage__figure{transform:translate(-50%,-52%) scale(.88) rotateY(-12deg)}.cue-id-stage__meta{left:16px;right:16px;bottom:16px}.cue-id-stage__meta small{display:none}}
 </style>
