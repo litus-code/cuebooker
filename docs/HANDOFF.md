@@ -1,6 +1,6 @@
 # Cuebooker living handoff
 
-Updated: 17 September 2026  
+Updated: 19 September 2026  
 Branch: `feature/app-visual-system`  
 Status: ACTIVE BATON PASS
 
@@ -3665,3 +3665,70 @@ The home should sell benefits and operational relief before internal product ter
 Visual direction should feel distinctive, credible and culturally connected to electronic music / club work without becoming a superficial nightlife caricature.
 
 Do not implement the redesigned home in Nuxt until the prototype itself feels convincing.
+
+
+## 64. CUE ID foundation — PRODUCT/ARCHITECTURE CONTRACT ADDED
+
+CUE ID has now moved from broad product direction into a concrete V1 foundation before implementation.
+
+New document:
+
+```text
+docs/CUE_ID_FOUNDATION.md
+```
+
+Foundation decisions:
+
+- CUE ID remains inside the single Artist Profile;
+- Photo / Artwork / CUE ID are presentation modes, not separate profiles;
+- first family is deliberately constrained to `Club Minimal`;
+- V1 persists semantic identity choices, never Three.js scene internals;
+- static representation is first-class for immediate render, low-power devices, WebGL failure and future sharing;
+- Three/Tres stays behind a lazy client boundary;
+- booking/calendar/CUE capture critical paths must never depend on 3D;
+- first editor is a bounded identity studio, not a Sims/game inventory;
+- no XP, rarity, unlocks, genre-to-costume mapping or popularity mechanics;
+- PASSPORT and SIGNAL are architecturally considered but explicitly excluded from the first CUE ID schema/slice;
+- public/private boundaries inherit Artist Profile publication and artist-management permissions;
+- appearance configuration should not be sent wholesale to generic analytics;
+- first credible humanoid is downstream of editor-shell and persistence inspection, not the first implementation step.
+
+`docs/CUE_ID_PRODUCT_VISION.md` was aligned with this V1 contract and now references the foundation explicitly.
+
+Documentation commits:
+
+```text
+a1e4c1b890ce9f91ed2e18cd5b17a4d3fdb964f3
+85b7379d9b0331e165fb6bed128c18ea7787d6ef
+```
+
+### Immediate next CUE ID task
+
+Do not select/buy/build a humanoid asset yet.
+
+First inspect actual current code/schema for:
+
+```text
+Artist Profile tables/fields
+Artist Profile editor
+PublicArtistProfile / Preview
+/cue-id visual lab
+artist-media storage + RLS
+current visual-mode assumptions
+```
+
+Then define the smallest versioned persistence contract and typed asset catalogue that can support:
+
+```text
+Artist Profile
+-> Photo / Artwork / CUE ID selector
+-> CueIdStage static-first shell
+-> semantic CUE ID config
+-> later one Club Minimal humanoid family
+```
+
+Only after that foundation is proven should the real GLB/Tres renderer be integrated.
+
+Commercial-home prototyping remains separate from production code. Its emerging visual language may anticipate CUE ID / PASSPORT / SIGNAL, but the website must not present those future layers as already available.
+
+Production remains untouched.
