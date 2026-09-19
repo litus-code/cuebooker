@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CueIdConfigV1 } from '../domain/cueId'
+import type { CueIdCandidateQuality } from '../domain/cueIdAssets'
 import { decideCueIdRuntime, getCueIdRuntimeSignals, type CueIdRuntimeDecision } from '../domain/cueIdRuntime'
 import { evaluateCueIdReadyPerformance } from '../domain/cueIdPerformance'
 
@@ -9,12 +10,14 @@ const props = withDefaults(defineProps<{
   compact?: boolean
   interactive?: boolean
   labAsset?: 'benchmark' | 'candidate' | null
+  labQuality?: CueIdCandidateQuality
   showDiagnostics?: boolean
 }>(), {
   artistName: 'ARTIST',
   compact: false,
   interactive: true,
   labAsset: null,
+  labQuality: 'light',
   showDiagnostics: false
 })
 
@@ -149,6 +152,7 @@ const performanceGate = computed(() => {
         :config="config"
         :decision="runtimeDecision"
         :lab-asset="labAsset"
+        :lab-quality="labQuality"
         @ready="handleRuntimeReady"
         @failed="handleRuntimeFailed"
         @lab-asset-loaded="handleLabAssetLoaded"
