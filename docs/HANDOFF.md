@@ -6292,3 +6292,49 @@ Accessibility refinements:
 Tests lock the updated public copy, selected-state semantics and 44px touch target.
 
 Production remains untouched.
+
+
+## 94. Club Minimal torso / garment integration refinement
+
+This pass continues the medium-first visual strategy after the head, accessory and static-fallback work.
+
+Changes:
+
+- the previous block-like clavicle bridge was replaced by a tapered elliptical volume;
+- neck-to-shoulder-to-chest continuity is smoother and less mannequin-like;
+- torso shaping now has more authored chest, ribcage and waist progression;
+- tee, tank, hoodie and bomber use additional profile rings to create more believable garment volume;
+- hoodie and bomber keep fuller upper volume while tapering with a cleaner lower silhouette;
+- no global subdivision increase was introduced;
+- no textures or additional materials were added.
+
+Generated candidate metadata:
+
+```text
+light  = 70,792 bytes / 4,772 triangles
+medium = 113,372 bytes / 10,108 triangles
+high   = 216,140 bytes / 23,436 triangles
+```
+
+All variants remain:
+
+```text
+4 shared PBR materials
+0 textures
+candidate_not_production
+```
+
+Automatic quality remains:
+
+```text
+full -> medium
+reduced -> medium
+static -> no interactive renderer
+high -> lab/manual only
+```
+
+The increased geometry is concentrated in visible torso and clothing silhouette. Medium remains comfortably within the universal budget and remains the automatic Tier A/B target.
+
+Next visual review should judge the result at real profile size before spending more geometry. If the torso still reads too procedural, the next step should be localized garment construction around sleeve/shoulder transitions rather than higher global subdivision.
+
+Production remains untouched.
