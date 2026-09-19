@@ -54,16 +54,22 @@ test('CUE ID accent palette keeps lime red and neutral options distinct', () => 
   assert.equal(new Set(Object.values(CUE_ID_ACCENT_COLORS)).size, 3)
 })
 
-test('generated Club Minimal GLB contains exactly four named PBR materials and no textures', async () => {
-  const buffer = await readFile(
-    new URL('../public/cue-id/candidates/club-minimal-candidate-v1.glb', import.meta.url)
-  )
-  const json = parseGlbJson(buffer)
+test('all Club Minimal quality GLBs contain the same four PBR materials and no textures', async () => {
+  const files = [
+    '../public/cue-id/candidates/club-minimal-candidate-v1.glb',
+    '../public/cue-id/candidates/club-minimal-candidate-medium-v1.glb',
+    '../public/cue-id/candidates/club-minimal-candidate-high-v1.glb'
+  ]
 
-  assert.deepEqual(
-    (json.materials || []).map(material => material.name).sort(),
-    ['accent', 'body', 'dark', 'mid']
-  )
-  assert.equal(json.materials?.length, 4)
-  assert.equal(json.textures?.length || 0, 0)
+  for (const file of files) {
+    const buffer = await readFile(new URL(file, import.meta.url))
+    const json = parseGlbJson(buffer)
+
+    assert.deepEqual(
+      (json.materials || []).map(material => material.name).sort(),
+      ['accent', 'body', 'dark', 'mid']
+    )
+    assert.equal(json.materials?.length, 4)
+    assert.equal(json.textures?.length || 0, 0)
+  }
 })
