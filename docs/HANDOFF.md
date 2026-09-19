@@ -6338,3 +6338,51 @@ The increased geometry is concentrated in visible torso and clothing silhouette.
 Next visual review should judge the result at real profile size before spending more geometry. If the torso still reads too procedural, the next step should be localized garment construction around sleeve/shoulder transitions rather than higher global subdivision.
 
 Production remains untouched.
+
+
+## 95. Club Minimal garment sleeve / shoulder integration
+
+This pass targets the remaining mannequin read around the shoulder-to-arm transition.
+
+Changes:
+
+- tee now has dedicated short-sleeve volumes on both arms;
+- hoodie now has separate upper-arm and forearm sleeve volumes;
+- bomber now has separate upper-arm and forearm sleeve volumes with slightly fuller proportions;
+- tank intentionally keeps the shoulder exposed;
+- sleeves follow the existing authored arm angles instead of using generic straight cylinders;
+- sleeve nodes are part of the semantic outfit visibility contract;
+- sleeve scale follows slim / regular / strong build semantics so clothing and anatomy stay coherent;
+- no textures or additional materials were introduced;
+- no global subdivision increase was introduced.
+
+Generated candidate metadata:
+
+```text
+light  = 80,592 bytes / 5,612 triangles
+medium = 126,752 bytes / 11,548 triangles
+high   = 232,416 bytes / 25,356 triangles
+```
+
+All variants remain:
+
+```text
+4 shared PBR materials
+0 textures
+candidate_not_production
+```
+
+Automatic quality remains:
+
+```text
+full -> medium
+reduced -> medium
+static -> no interactive renderer
+high -> lab/manual only
+```
+
+The medium cost increase is localized to visible garment construction and remains comfortably inside the base budget.
+
+Next visual review should focus on whether tee / hoodie / bomber now read as actual garments at profile size. Do not add more torso density unless a visible defect remains.
+
+Production remains untouched.
