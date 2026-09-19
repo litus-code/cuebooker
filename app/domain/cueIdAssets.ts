@@ -177,18 +177,54 @@ export const CUE_ID_BENCHMARK_ASSET: CueIdAssetDescriptor = {
 }
 
 
-export const CUE_ID_CANDIDATE_ASSET: CueIdAssetDescriptor = {
-  id: 'club-minimal-candidate-v1',
-  family: 'club_minimal',
-  purpose: 'candidate',
-  artDirection: 'club_minimal_v1',
-  kind: 'base',
-  glbPath: '/cue-id/candidates/club-minimal-candidate-v1.glb',
-  fallbackPath: null,
-  compressedBytes: 60_632,
-  triangles: 3_436,
-  materials: 4,
-  textures: [],
-  supportedTiers: ['full', 'reduced'],
-  attribution: null
+export type CueIdCandidateQuality = 'light' | 'medium' | 'high'
+
+export const CUE_ID_CANDIDATE_ASSETS: Record<CueIdCandidateQuality, CueIdAssetDescriptor> = {
+  light: {
+    id: 'club-minimal-candidate-light-v1',
+    family: 'club_minimal',
+    purpose: 'candidate',
+    artDirection: 'club_minimal_v1',
+    kind: 'base',
+    glbPath: '/cue-id/candidates/club-minimal-candidate-v1.glb',
+    fallbackPath: null,
+    compressedBytes: 54_540,
+    triangles: 3_364,
+    materials: 4,
+    textures: [],
+    supportedTiers: ['full', 'reduced'],
+    attribution: null
+  },
+  medium: {
+    id: 'club-minimal-candidate-medium-v1',
+    family: 'club_minimal',
+    purpose: 'candidate',
+    artDirection: 'club_minimal_v1',
+    kind: 'base',
+    glbPath: '/cue-id/candidates/club-minimal-candidate-medium-v1.glb',
+    fallbackPath: null,
+    compressedBytes: 90_908,
+    triangles: 7_804,
+    materials: 4,
+    textures: [],
+    supportedTiers: ['full', 'reduced'],
+    attribution: null
+  },
+  high: {
+    id: 'club-minimal-candidate-high-v1',
+    family: 'club_minimal',
+    purpose: 'candidate',
+    artDirection: 'club_minimal_v1',
+    kind: 'base',
+    glbPath: '/cue-id/candidates/club-minimal-candidate-high-v1.glb',
+    fallbackPath: null,
+    compressedBytes: 191_256,
+    triangles: 21_180,
+    materials: 4,
+    textures: [],
+    supportedTiers: ['full', 'reduced'],
+    attribution: null
+  }
 }
+
+export const CUE_ID_CANDIDATE_ASSET = CUE_ID_CANDIDATE_ASSETS.light
