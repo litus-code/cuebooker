@@ -5,6 +5,7 @@ import {
   CUE_ID_ASSET_BUDGETS,
   CUE_ID_ASSETS,
   CUE_ID_BENCHMARK_ASSET,
+  CUE_ID_CANDIDATE_ASSET,
   assertCueIdAsset,
   validateCueIdAsset,
   type CueIdAssetDescriptor
@@ -85,4 +86,14 @@ test('benchmark metadata remains explicit and attributed', () => {
   assert.equal(CUE_ID_BENCHMARK_ASSET.artDirection, 'external_benchmark')
   assert.equal(CUE_ID_BENCHMARK_ASSET.attribution?.creator, 'Cesium')
   assert.equal(CUE_ID_BENCHMARK_ASSET.attribution?.license, 'CC-BY-4.0')
+})
+
+
+test('original Club Minimal candidate remains outside production catalogue until approved', () => {
+  assert.equal(CUE_ID_CANDIDATE_ASSET.purpose, 'candidate')
+  assert.equal(CUE_ID_CANDIDATE_ASSET.artDirection, 'club_minimal_v1')
+  assert.equal(CUE_ID_CANDIDATE_ASSET.compressedBytes, 33_120)
+  assert.equal(CUE_ID_CANDIDATE_ASSET.triangles, 1_320)
+  assert.equal(CUE_ID_ASSETS.some(asset => asset.id === CUE_ID_CANDIDATE_ASSET.id), false)
+  assert.deepEqual(validateCueIdAsset(CUE_ID_CANDIDATE_ASSET), [])
 })
