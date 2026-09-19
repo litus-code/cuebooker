@@ -190,6 +190,9 @@ test('Club Minimal quality descriptors match generated GLB and metadata files', 
       bytes: number
       triangles: number
       materials: number
+      embeddedMaterials: number
+      runtimeMaterials: number
+      materialStrategy: string
       textures: number
       status: string
     }
@@ -202,6 +205,9 @@ test('Club Minimal quality descriptors match generated GLB and metadata files', 
     assert.equal(metadata.bytes, descriptor.compressedBytes)
     assert.equal(metadata.triangles, descriptor.triangles)
     assert.equal(metadata.materials, descriptor.materials)
+    assert.equal(metadata.embeddedMaterials, 4)
+    assert.equal(metadata.runtimeMaterials, 4)
+    assert.equal(metadata.materialStrategy, 'embedded_shared_pbr_mutated_runtime')
     assert.equal(metadata.textures, descriptor.textures.length)
     assert.equal(metadata.status, 'candidate_not_production')
   }
