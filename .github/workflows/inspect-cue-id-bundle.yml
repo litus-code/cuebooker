@@ -30,36 +30,65 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Inspect CueIdScene chunk
+      - name: Inspect final lazy 3D chunks
         run: |
           node --input-type=module <<'NODE'
-          import { readFileSync, statSync } from 'node:fs'
+          import { readdirSync, readFileSync, statSync } from 'node:fs'
           import { gzipSync } from 'node:zlib'
-          import { resolve } from 'node:path'
+          import { resolve, basename } from 'node:path'
 
-          const manifest = JSON.parse(readFileSync('.nuxt/dist/client/manifest.json', 'utf8'))
-          const entries = Object.entries(manifest).filter(([key, value]) => {
-            const src = value?.src || ''
-            return key.includes('CueIdScene') || src.includes('CueIdScene')
-          })
+          const dir = resolve('.output/public/_nuxt')
+          const files = readdirSync(dir)
+            .filter(name => name.endsWith('.js'))
+            .map(name => {
+              const path = resolve(dir, name)
+              const source = readFileSync(path, 'utf8')
+              return {
+                name,
+                path,
+                source,
+                bytes: statSync(path).size,
+                gzipBytes: gzipSync(source).byteLength
+              }
+            })
 
-          if (!entries.length) {
-            console.error('CueIdScene manifest entry not found')
-            process.exit(1)
+          const markers = [
+            'THREE.WebGLRenderer',
+            'WebGLRenderer',
+            'GLTFLoader',
+            'failIfMajorPerformanceCaveat',
+            'KHR_draco_mesh_compression',
+            'CueIdScene'
+          ]
+
+          const matches = files
+            .map(file => ({
+              ...file,
+              markers: markers.filter(marker => file.source.includes(marker))
+            }))
+            .filter(file => file.markers.length)
+
+          console.log('CUE_ID_3D_MATCHES')
+          for (const file of matches) {
+            console.log(JSON.stringify({
+              file: file.name,
+              bytes: file.bytes,
+              gzipBytes: file.gzipBytes,
+              markers: file.markers
+            }))
           }
 
-          for (const [key, value] of entries) {
-            const file = resolve('.nuxt/dist/client', value.file)
-            const bytes = statSync(file).size
-            const gzip = gzipSync(readFileSync(file)).byteLength
+          console.log('TOP_CLIENT_JS')
+          for (const file of [...files].sort((a, b) => b.bytes - a.bytes).slice(0, 12)) {
             console.log(JSON.stringify({
-              key,
-              src: value.src || null,
-              file: value.file,
-              bytes,
-              gzipBytes: gzip,
-              imports: value.imports || [],
-              dynamicImports: value.dynamicImports || []
+              file: file.name,
+              bytes: file.bytes,
+              gzipBytes: file.gzipBytes
             }))
+          }
+
+          if (!matches.length) {
+            console.error('No final client chunk containing 3D runtime markers was found')
+            process.exit(1)
           }
           NODE
