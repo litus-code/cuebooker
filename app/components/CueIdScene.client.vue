@@ -8,6 +8,8 @@ import { CUE_ID_POSES } from '../domain/cueIdPose'
 import { CUE_ID_BUILDS } from '../domain/cueIdBuild'
 import { CUE_ID_BASES } from '../domain/cueIdBase'
 import { CUE_ID_MATERIAL_PRESETS, getCueIdAccentColor } from '../domain/cueIdMaterial'
+import { CUE_ID_OUTFITS, CUE_ID_OUTFIT_NODES } from '../domain/cueIdOutfit'
+import { CUE_ID_ACCESSORY_NODES, getCueIdAccessoryNodes } from '../domain/cueIdAccessory'
 import type { CueIdRuntimeDecision } from '../domain/cueIdRuntime'
 import { loadCueIdGlbBuffer } from '../services/cueIdAssetLoader'
 
@@ -109,6 +111,22 @@ function applySemanticMaterials(root: Object3D) {
   })
 }
 
+function applySemanticVisibility(root: Object3D) {
+  const selectedOutfitNodes = new Set(CUE_ID_OUTFITS[props.config.outfit].nodes)
+  const selectedAccessoryNodes = new Set(getCueIdAccessoryNodes(props.config.accessory))
+  const outfitNodes = new Set(CUE_ID_OUTFIT_NODES)
+  const accessoryNodes = new Set(CUE_ID_ACCESSORY_NODES)
+
+  root.traverse(node => {
+    if (outfitNodes.has(node.name)) {
+      node.visible = selectedOutfitNodes.has(node.name)
+    }
+    if (accessoryNodes.has(node.name)) {
+      node.visible = selectedAccessoryNodes.has(node.name)
+    }
+  })
+}
+
 function applySemanticAppearance(root: Object3D) {
   if (props.labAsset !== 'candidate') return
 
@@ -157,6 +175,7 @@ function applySemanticAppearance(root: Object3D) {
   })
 
   applySemanticMaterials(root)
+  applySemanticVisibility(root)
   labSceneVersion.value += 1
 }
 
@@ -231,6 +250,8 @@ watch(
     props.config.pose,
     props.config.build,
     props.config.base,
+    props.config.outfit,
+    props.config.accessory,
     props.config.material,
     props.config.accent
   ],
