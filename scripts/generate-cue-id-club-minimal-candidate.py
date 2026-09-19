@@ -64,7 +64,7 @@ META = Path(f"public/cue-id/candidates/club-minimal-candidate{SUFFIX}-v1.json")
 
 BODY = PBRMaterial(
     name="body",
-    baseColorFactor=[70 / 255, 76 / 255, 70 / 255, 1.0],
+    baseColorFactor=[58 / 255, 64 / 255, 58 / 255, 1.0],
     metallicFactor=0.02,
     roughnessFactor=0.82,
 )
@@ -76,7 +76,7 @@ DARK = PBRMaterial(
 )
 MID = PBRMaterial(
     name="mid",
-    baseColorFactor=[48 / 255, 52 / 255, 48 / 255, 1.0],
+    baseColorFactor=[38 / 255, 42 / 255, 38 / 255, 1.0],
     metallicFactor=0.03,
     roughnessFactor=0.80,
 )
@@ -369,7 +369,11 @@ def build():
         shoulder.apply_translation([x, 1.73, 0])
         add(scene, f"shoulder_{side}", shoulder, DARK)
 
-        upper = y_frustum(radius_top=0.17, radius_bottom=0.145, height=0.58, sections=PROFILE["radial_sections"])
+        upper = elliptical_loft([
+            (0.29, 0.17, 0.15),
+            (0.02, 0.16, 0.14),
+            (-0.29, 0.14, 0.12),
+        ], radial_sections=PROFILE["radial_sections"])
         upper.apply_transform(rotation_matrix(upper_angle, [0, 0, 1]))
         upper.apply_translation([x + (-0.018 if side == "left" else 0.012), 1.39, 0])
         add(scene, f"upper_arm_{side}", upper, DARK)
@@ -380,7 +384,11 @@ def build():
         elbow.apply_translation([elbow_x, 1.05, 0])
         add(scene, f"elbow_{side}", elbow, DARK)
 
-        forearm = y_frustum(radius_top=0.14, radius_bottom=0.115, height=0.56, sections=PROFILE["radial_sections"])
+        forearm = elliptical_loft([
+            (0.28, 0.14, 0.125),
+            (0.02, 0.13, 0.115),
+            (-0.28, 0.108, 0.10),
+        ], radial_sections=PROFILE["radial_sections"])
         forearm.apply_transform(rotation_matrix(forearm_angle, [0, 0, 1]))
         forearm.apply_translation([
             elbow_x + (-0.025 if side == "left" else 0.02),
@@ -421,7 +429,11 @@ def build():
         hip_joint.apply_translation([x, 0.24, depth])
         add(scene, f"hip_joint_{side}", hip_joint, DARK)
 
-        thigh = y_frustum(radius_top=0.205, radius_bottom=0.17, height=0.72, sections=PROFILE["radial_sections"])
+        thigh = elliptical_loft([
+            (0.36, 0.205, 0.18),
+            (0.08, 0.195, 0.17),
+            (-0.36, 0.165, 0.145),
+        ], radial_sections=PROFILE["radial_sections"])
         thigh.apply_transform(rotation_matrix(angle, [0, 0, 1]))
         thigh.apply_translation([x, -0.11, depth])
         add(scene, f"thigh_{side}", thigh, DARK)
@@ -431,7 +443,11 @@ def build():
         knee.apply_translation([x + 0.012 * lateral, -0.49, depth])
         add(scene, f"knee_{side}", knee, DARK)
 
-        shin = y_frustum(radius_top=0.165, radius_bottom=0.135, height=0.74, sections=PROFILE["radial_sections"])
+        shin = elliptical_loft([
+            (0.37, 0.165, 0.15),
+            (0.08, 0.155, 0.14),
+            (-0.37, 0.128, 0.115),
+        ], radial_sections=PROFILE["radial_sections"])
         shin.apply_transform(rotation_matrix(angle * 0.6, [0, 0, 1]))
         shin.apply_translation([x + 0.018 * lateral, -0.91, depth])
         add(scene, f"shin_{side}", shin, DARK)
