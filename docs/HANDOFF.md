@@ -6263,3 +6263,32 @@ artist.artistImageStyle = photo
 This resolves the architecture risk identified during the original CUE ID persistence work.
 
 Production remains untouched.
+
+## 93. CUE ID profile editor — public-state copy + accessibility pass
+
+The profile editor copy now matches the product's actual public behavior.
+
+Previous obsolete message:
+
+```text
+CUE ID stays private until public projection is enabled.
+```
+
+Current behavior:
+
+- if the artist's public profile is active and CUE ID is the selected source, CUE ID is the visible representation;
+- booking/operational data remains private;
+- the public profile uses an optimized/static-first representation of the same Club Minimal identity;
+- switching visual source does not delete portrait media or portrait treatment.
+
+Accessibility refinements:
+
+- presentation mode buttons expose `aria-pressed`;
+- all CUE ID option buttons expose selected state through `aria-pressed`;
+- touch targets are at least 44px high;
+- controls use `touch-action: manipulation`;
+- existing keyboard focus styles remain.
+
+Tests lock the updated public copy, selected-state semantics and 44px touch target.
+
+Production remains untouched.
