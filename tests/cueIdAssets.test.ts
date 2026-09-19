@@ -95,8 +95,8 @@ test('benchmark metadata remains explicit and attributed', () => {
 test('original Club Minimal candidate remains outside production catalogue until approved', () => {
   assert.equal(CUE_ID_CANDIDATE_ASSET.purpose, 'candidate')
   assert.equal(CUE_ID_CANDIDATE_ASSET.artDirection, 'club_minimal_v1')
-  assert.equal(CUE_ID_CANDIDATE_ASSET.compressedBytes, 54_540)
-  assert.equal(CUE_ID_CANDIDATE_ASSET.triangles, 3_364)
+  assert.equal(CUE_ID_CANDIDATE_ASSET.compressedBytes, 61_196)
+  assert.equal(CUE_ID_CANDIDATE_ASSET.triangles, 3_976)
   assert.equal(CUE_ID_ASSETS.some(asset => asset.id === CUE_ID_CANDIDATE_ASSET.id), false)
   assert.deepEqual(validateCueIdAsset(CUE_ID_CANDIDATE_ASSET), [])
 })
@@ -133,8 +133,8 @@ test('Club Minimal candidate descriptor matches generated artifact metadata', as
 test('Club Minimal candidate reports substantial quality headroom', () => {
   const headroom = getCueIdAssetHeadroom(CUE_ID_CANDIDATE_ASSET)
 
-  assert.equal(headroom.bytesRemaining, 945_460)
-  assert.equal(headroom.trianglesRemaining, 31_636)
+  assert.equal(headroom.bytesRemaining, 938_804)
+  assert.equal(headroom.trianglesRemaining, 31_024)
   assert.equal(headroom.materialsRemaining, 0)
   assert.equal(headroom.texturesRemaining, 6)
   assert.ok(headroom.byteUsageRatio < 0.07)
@@ -152,8 +152,8 @@ test('Club Minimal quality ladder stays inside the universal base budget', () =>
     ),
     {
       light: { bytes: 54_540, triangles: 3_364 },
-      medium: { bytes: 90_908, triangles: 7_804 },
-      high: { bytes: 191_256, triangles: 21_180 }
+      medium: { bytes: 101_652, triangles: 8_736 },
+      high: { bytes: 200_656, triangles: 21_600 }
     }
   )
 
