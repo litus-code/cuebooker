@@ -163,7 +163,7 @@ export const CUE_ID_CANDIDATE_ASSET: CueIdAssetDescriptor = {
   kind: 'base',
   glbPath: '/cue-id/candidates/club-minimal-candidate-v1.glb',
   fallbackPath: null,
-  compressedBytes: 33_120,
+  compressedBytes: 33_164,
   triangles: 1_320,
   materials: 4,
   textures: [],
