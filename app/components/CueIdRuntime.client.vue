@@ -29,6 +29,7 @@ let colorLocation: WebGLUniformLocation | null = null
 let vertexCount = 0
 let resizeObserver: ResizeObserver | null = null
 let reducedMotion = false
+let reducedQuality = false
 let initStartedAt = 0
 
 const cubeVertices = new Float32Array([
@@ -146,8 +147,9 @@ function init() {
   analytics.track('cue_id_renderer_ready', {
     renderer: 'webgl_procedural',
     reduced_motion: reducedMotion,
+    reduced_quality: reducedQuality,
     init_ms: Math.max(0, Math.round(performance.now() - initStartedAt)),
-    dpr_cap: Math.min(window.devicePixelRatio || 1, 1.5)
+    dpr_cap: Math.min(window.devicePixelRatio || 1, reducedQuality ? 1 : 1.5)
   })
   emit('ready')
   resize()
@@ -157,7 +159,7 @@ function init() {
 function resize() {
   if (!canvas.value || !gl) return
   const rect = canvas.value.getBoundingClientRect()
-  const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
+  const dpr = Math.min(window.devicePixelRatio || 1, reducedQuality ? 1 : 1.5)
   const width = Math.max(1, Math.round(rect.width * dpr))
   const height = Math.max(1, Math.round(rect.height * dpr))
   if (canvas.value.width !== width || canvas.value.height !== height) {
@@ -196,7 +198,7 @@ function render(time = 0) {
 
   const projection = mat4Perspective(Math.PI / 4.2, aspect, .1, 100)
   const camera = mat4Translate(0, .1, -7.2)
-  const idle = reducedMotion ? 0 : Math.sin(time * .00045) * .08
+  const idle = (reducedMotion || reducedQuality) ? 0 : Math.sin(time * .00045) * .08
   const poseRotation = props.config.pose === 'editorial' ? .28 : props.config.pose === 'focused' ? -.08 : props.config.pose === 'relaxed' ? .14 : 0
   const world = mat4Multiply(projection, mat4Multiply(camera, mat4RotateY(-.22 + idle + poseRotation)))
 
@@ -230,13 +232,13 @@ function render(time = 0) {
 
   drawCube(world, [0,.6,-.67], [.82 * buildX,.035,.04], accent)
 
-  if (!reducedMotion) frame = requestAnimationFrame(render)
+  if (!reducedMotion && !reducedQuality) frame = requestAnimationFrame(render)
 }
 
 function start() {
   cancelAnimationFrame(frame)
   if (visible.value && ready.value) {
-    if (reducedMotion) render(0)
+    if (reducedMotion || reducedQuality) render(0)
     else frame = requestAnimationFrame(render)
   }
 }
@@ -264,6 +266,11 @@ function handleContextLost(event: Event) {
 onMounted(() => {
   initStartedAt = performance.now()
   reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const nav = navigator as Navigator & { deviceMemory?: number }
+  reducedQuality = Boolean(
+    (nav.deviceMemory && nav.deviceMemory <= 4)
+    || window.innerWidth <= 900
+  )
   canvas.value?.addEventListener('webglcontextlost', handleContextLost)
   if (!init()) {
     failed.value = true
