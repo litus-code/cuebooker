@@ -120,3 +120,23 @@ test('CUE ID static fallback keeps a complete editorial body silhouette', async 
   assert.match(component, /cue-id-stage--outfit-bomber/)
   assert.match(component, /cue-id-stage--outfit-tank/)
 })
+
+
+test('CUE ID editor copy reflects the active public projection and accessible selections', async () => {
+  const source = await import('node:fs/promises')
+  const editor = await source.readFile(
+    new URL('../app/components/CueIdProfileEditor.vue', import.meta.url),
+    'utf8'
+  )
+  const controls = await source.readFile(
+    new URL('../app/components/CueIdControls.vue', import.meta.url),
+    'utf8'
+  )
+
+  assert.doesNotMatch(editor, /sigue siendo privada hasta que la proyección pública/i)
+  assert.match(editor, /perfil público está activo/)
+  assert.match(editor, /:aria-pressed="presentationMode === mode\.id"/)
+  assert.match(controls, /aria-pressed/)
+  assert.match(controls, /min-height:44px/)
+  assert.match(controls, /touch-action:manipulation/)
+})
