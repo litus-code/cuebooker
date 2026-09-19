@@ -5109,3 +5109,78 @@ status = candidate_not_production
 ```
 
 Production remains untouched.
+
+## 80. Semantic pose rig — node transforms before skeletal skinning
+
+The first rigging layer is now implemented without bones or skinning.
+
+New domain file:
+
+```text
+app/domain/cueIdPose.ts
+```
+
+It defines the four semantic poses:
+
+```text
+neutral
+relaxed
+focused
+editorial
+```
+
+Each pose contains restrained root transforms plus named-node deltas for the generated candidate.
+
+Current strategy:
+
+```text
+generated named GLB parts
+-> remember base transforms
+-> apply semantic pose deltas
+-> redraw on demand
+```
+
+This avoids:
+
+- continuous animation loops;
+- skeletal overhead before it is necessary;
+- pose drift from cumulative transforms;
+- additional GLB weight;
+- introducing a rig before the static identity is visually proven.
+
+`CueIdScene.client.vue` now:
+
+- stores original node transforms after GLB normalization;
+- applies pose deltas from the original base every time;
+- updates the candidate when `config.pose` changes;
+- keeps benchmark assets untouched;
+- keeps TresJS in `renderMode=on-demand`.
+
+Tests:
+
+```text
+tests/cueIdPose.test.ts
+```
+
+They verify:
+
+- exactly four semantic poses;
+- neutral is zero-delta;
+- pose transforms remain restrained;
+- all referenced node names exist in the candidate generator.
+
+Decision rule:
+
+Do not add skeletal skinning merely because it is more sophisticated.
+
+Keep semantic node posing if it delivers credible editorial silhouettes.
+
+Only introduce bones/skinning if visual review shows clear limitations in:
+
+- elbow/knee continuity;
+- shoulder deformation;
+- clothing deformation;
+- pose naturalism;
+- future motion/animation requirements.
+
+Production remains untouched.
