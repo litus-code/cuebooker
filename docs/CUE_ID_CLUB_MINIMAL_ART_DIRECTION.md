@@ -1,11 +1,11 @@
 # CUE ID — Club Minimal V1 art direction
 
 Updated: 19 September 2026
-Status: production art-direction contract for the first shippable humanoid
+Status: visual principles retained; current procedural candidate rejected for production
 
 ## Objective
 
-The first CUE ID humanoid must read as a professional artist identity object, not as a game avatar.
+Any production CUE ID humanoid must read as a professional artist identity object, not as a game avatar.
 
 It should sit naturally beside:
 
