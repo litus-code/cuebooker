@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { cloneCueIdConfig, DEFAULT_CUE_ID_CONFIG } from '../domain/cueId'
-import type { CueIdCandidateQuality } from '../domain/cueIdAssets'
+import type { CueIdQualityMode } from '../domain/cueIdQuality'
 
 const preferences = useCuePreferences()
 const cueIdConfig = ref(cloneCueIdConfig(DEFAULT_CUE_ID_CONFIG))
-const labQuality = ref<CueIdCandidateQuality>('light')
+const labQuality = ref<CueIdQualityMode>('auto')
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
   eyebrow: 'PROTOTIPO / CUE ID',
@@ -83,7 +83,7 @@ useHead(() => ({
       <div class="cue-id-editor-lab__quality" aria-label="CUE ID lab quality">
         <span>QUALITY TEST</span>
         <button
-          v-for="quality in (['light', 'medium', 'high'] as const)"
+          v-for="quality in (['auto', 'light', 'medium', 'high'] as const)"
           :key="quality"
           type="button"
           :aria-pressed="labQuality === quality"
