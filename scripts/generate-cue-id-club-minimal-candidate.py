@@ -482,8 +482,15 @@ def build():
         upper.apply_translation([x + (-0.015 if side == "left" else 0.010), 1.37, 0])
         add(scene, f"upper_arm_{side}", upper, DARK)
 
-        elbow = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.105)
-        elbow.apply_scale([0.90, 0.84, 0.82])
+        elbow = elliptical_loft([
+            (0.10, 0.095, 0.088),
+            (0.02, 0.102, 0.092),
+            (-0.09, 0.090, 0.082),
+        ], radial_sections=PROFILE["radial_sections"])
+        elbow.apply_transform(rotation_matrix(
+            upper_angle * 0.35,
+            [0, 0, 1],
+        ))
         elbow.apply_translation([elbow_x, 1.05, 0])
         add(scene, f"elbow_{side}", elbow, DARK)
 
@@ -548,8 +555,15 @@ def build():
         thigh.apply_translation([x, -0.18, depth])
         add(scene, f"thigh_{side}", thigh, DARK)
 
-        knee = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.112)
-        knee.apply_scale([0.88, 0.80, 0.84])
+        knee = elliptical_loft([
+            (0.105, 0.112, 0.100),
+            (0.018, 0.118, 0.106),
+            (-0.105, 0.106, 0.094),
+        ], radial_sections=PROFILE["radial_sections"])
+        knee.apply_transform(rotation_matrix(
+            angle * 0.35,
+            [0, 0, 1],
+        ))
         knee.apply_translation([x + 0.012 * lateral, -0.62, depth])
         add(scene, f"knee_{side}", knee, DARK)
 
