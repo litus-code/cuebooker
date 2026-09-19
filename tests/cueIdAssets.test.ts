@@ -161,3 +161,48 @@ test('Club Minimal quality ladder stays inside the universal base budget', () =>
     assert.deepEqual(validateCueIdAsset(asset), [])
   }
 })
+
+
+test('Club Minimal quality descriptors match generated GLB and metadata files', async () => {
+  const files = {
+    light: {
+      json: '../public/cue-id/candidates/club-minimal-candidate-v1.json',
+      glb: '../public/cue-id/candidates/club-minimal-candidate-v1.glb'
+    },
+    medium: {
+      json: '../public/cue-id/candidates/club-minimal-candidate-medium-v1.json',
+      glb: '../public/cue-id/candidates/club-minimal-candidate-medium-v1.glb'
+    },
+    high: {
+      json: '../public/cue-id/candidates/club-minimal-candidate-high-v1.json',
+      glb: '../public/cue-id/candidates/club-minimal-candidate-high-v1.glb'
+    }
+  } as const
+
+  for (const [quality, paths] of Object.entries(files) as Array<
+    [keyof typeof files, (typeof files)[keyof typeof files]]
+  >) {
+    const metadata = JSON.parse(
+      await readFile(new URL(paths.json, import.meta.url), 'utf8')
+    ) as {
+      id: string
+      quality: string
+      bytes: number
+      triangles: number
+      materials: number
+      textures: number
+      status: string
+    }
+    const glb = await stat(new URL(paths.glb, import.meta.url))
+    const descriptor = CUE_ID_CANDIDATE_ASSETS[quality]
+
+    assert.equal(metadata.quality, quality)
+    assert.equal(metadata.id, descriptor.id)
+    assert.equal(glb.size, descriptor.compressedBytes)
+    assert.equal(metadata.bytes, descriptor.compressedBytes)
+    assert.equal(metadata.triangles, descriptor.triangles)
+    assert.equal(metadata.materials, descriptor.materials)
+    assert.equal(metadata.textures, descriptor.textures.length)
+    assert.equal(metadata.status, 'candidate_not_production')
+  }
+})
