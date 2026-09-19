@@ -4206,3 +4206,97 @@ After CI/build is green:
 Current research confirms the official TresJS Nuxt integration exists and is the preferred Vue/Nuxt-native route, but no 3D dependencies have been added yet.
 
 Production remains untouched.
+
+## 68. CUE ID interactive runtime proof — IMPLEMENTED
+
+The first real interactive 3D runtime proof now exists without adding Three/Tres dependencies.
+
+New runtime component:
+
+```text
+app/components/CueIdRuntime.client.vue
+```
+
+Integrated through:
+
+```text
+CueIdStage.vue
+-> static fallback
+-> preload-margin IntersectionObserver
+-> dynamic client-only runtime import
+-> native WebGL procedural Club Minimal figure
+```
+
+### Why native WebGL first
+
+`package-lock.json` contains neither `three`, `@tresjs/core` nor `@tresjs/nuxt`.
+
+Instead of editing package metadata without a correctly regenerated lockfile, the first runtime proof validates lifecycle and performance boundaries with browser-native WebGL.
+
+This procedural figure is NOT final art direction and is explicitly replaceable.
+
+### Runtime behavior
+
+- static CUE ID renders immediately;
+- runtime chunk is requested only near the viewport;
+- CSS fallback disappears only after WebGL emits ready;
+- render work pauses while offscreen or document is hidden;
+- reduced-motion renders a still frame instead of a permanent idle loop;
+- DPR is capped at 1.5;
+- low-power context preference is requested;
+- WebGL creation failure leaves static fallback active;
+- `webglcontextlost` restores static fallback;
+- runtime responds to semantic config (build, pose, outfit, accessory, material, accent);
+- no booking/profile persistence logic exists inside the renderer.
+
+### Renderer analytics
+
+Consent-aware technical events:
+
+```text
+cue_id_renderer_ready
+cue_id_renderer_failed
+cue_id_static_fallback_used
+```
+
+`cue_id_renderer_ready` includes only:
+
+```text
+renderer
+reduced_motion
+init_ms
+dpr_cap
+```
+
+No body/base/outfit/accessory/pose or appearance selections are sent.
+
+### Current commits
+
+```text
+143889c4ff9a00dd3f7661a3904b1d30d23105a1
+d1caf2df714737ad6ac4194324647ff9fccdf846
+755bddf3098ab8aafcd71fe0b9e2daf6531205e8
+1952b3deccb08836449b6743cd6dd1b643f68eb9
+be180deaa69716a55a5d44bb12a8e2b65d11fd0a
+9a94dfc25b51b96f9e69d7472cb4ccae038e18a1
+```
+
+`docs/CUE_ID_PERFORMANCE.md` now records this runtime proof and its replacement contract.
+
+### Next runtime decision
+
+Do not expand the procedural renderer into a custom engine.
+
+Once this proof is visually/performance validated, replace the interactive implementation behind `CueIdStage` with the real TresJS/Three renderer and first GLB asset family.
+
+Required next checks:
+
+1. CI/build green;
+2. `/cue-id` desktop and mobile visual review;
+3. Artist Profile CUE ID editor review;
+4. public profile with CUE ID selected on a staging test artist;
+5. collect first `init_ms` data / local device observations;
+6. then add TresJS using a correctly regenerated lockfile;
+7. preserve all current fallback/lifecycle behavior.
+
+Production remains untouched.
