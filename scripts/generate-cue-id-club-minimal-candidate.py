@@ -284,33 +284,33 @@ def build():
     hips.apply_translation([0, 0.45, 0])
     add(scene, "hips", hips, MID)
 
-    for index, (x, angle, depth) in enumerate([
-        (-0.29, -0.035, 0.03),
-        (0.30, 0.045, -0.025),
-    ]):
+    for side, x, angle, depth, lateral in [
+        ("left", -0.29, -0.035, 0.03, -1),
+        ("right", 0.30, 0.045, -0.025, 1),
+    ]:
         hip_joint = trimesh.creation.icosphere(subdivisions=1, radius=0.22)
         hip_joint.apply_scale([0.9, 1.0, 0.9])
         hip_joint.apply_translation([x, 0.24, depth])
-        add(scene, f"hip_joint_{index}", hip_joint, DARK)
+        add(scene, f"hip_joint_{side}", hip_joint, DARK)
 
         thigh = y_frustum(radius_top=0.205, radius_bottom=0.17, height=0.72, sections=14)
         thigh.apply_transform(rotation_matrix(angle, [0, 0, 1]))
         thigh.apply_translation([x, -0.11, depth])
-        add(scene, f"thigh_{index}", thigh, DARK)
+        add(scene, f"thigh_{side}", thigh, DARK)
 
         knee = trimesh.creation.icosphere(subdivisions=1, radius=0.18)
         knee.apply_scale([0.9, 0.82, 0.9])
-        knee.apply_translation([x + (-0.01 if index == 0 else 0.015), -0.49, depth])
-        add(scene, f"knee_{index}", knee, DARK)
+        knee.apply_translation([x + 0.012 * lateral, -0.49, depth])
+        add(scene, f"knee_{side}", knee, DARK)
 
         shin = y_frustum(radius_top=0.165, radius_bottom=0.135, height=0.74, sections=14)
         shin.apply_transform(rotation_matrix(angle * 0.6, [0, 0, 1]))
-        shin.apply_translation([x + (-0.015 if index == 0 else 0.02), -0.91, depth])
-        add(scene, f"shin_{index}", shin, DARK)
+        shin.apply_translation([x + 0.018 * lateral, -0.91, depth])
+        add(scene, f"shin_{side}", shin, DARK)
 
         boot = trimesh.creation.box(extents=[0.31, 0.21, 0.52])
-        boot.apply_translation([x + (-0.03 if index == 0 else 0.035), -1.33, -0.055])
-        add(scene, f"boot_{index}", boot, DARK)
+        boot.apply_translation([x + 0.032 * lateral, -1.33, -0.055])
+        add(scene, f"boot_{side}", boot, DARK)
 
     # restrained DJ cue: headphones around the neck, not gaming-headset styling
     band = trimesh.creation.torus(
