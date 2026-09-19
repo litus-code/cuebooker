@@ -523,17 +523,20 @@ def build():
         ])
         add(scene, f"hand_{side}", hand, BODY)
 
-    waist = lofted_box([
-        (0.86, 0.50, 0.26),
-        (0.60, 0.445, 0.24),
-    ])
+    waist = elliptical_loft([
+        (0.86, 0.505, 0.265),
+        (0.76, 0.480, 0.255),
+        (0.66, 0.455, 0.248),
+        (0.58, 0.445, 0.242),
+    ], radial_sections=PROFILE["radial_sections"])
     add(scene, "waist", waist, MID)
 
     hips = elliptical_loft([
-        (0.66, 0.46, 0.25),
-        (0.52, 0.50, 0.27),
-        (0.38, 0.49, 0.27),
-        (0.24, 0.44, 0.25),
+        (0.68, 0.455, 0.248),
+        (0.58, 0.485, 0.265),
+        (0.46, 0.505, 0.278),
+        (0.34, 0.490, 0.272),
+        (0.22, 0.445, 0.252),
     ], radial_sections=PROFILE["radial_sections"])
     add(scene, "hips", hips, MID)
 
@@ -541,8 +544,15 @@ def build():
         ("left", -0.29, -0.035, 0.03, -1),
         ("right", 0.30, 0.045, -0.025, 1),
     ]:
-        hip_joint = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.145)
-        hip_joint.apply_scale([0.86, 0.96, 0.84])
+        hip_joint = elliptical_loft([
+            (0.14, 0.138, 0.126),
+            (0.03, 0.148, 0.132),
+            (-0.14, 0.132, 0.118),
+        ], radial_sections=PROFILE["radial_sections"])
+        hip_joint.apply_transform(rotation_matrix(
+            angle * 0.30,
+            [0, 0, 1],
+        ))
         hip_joint.apply_translation([x, 0.23, depth])
         add(scene, f"hip_joint_{side}", hip_joint, DARK)
 
