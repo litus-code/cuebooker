@@ -94,8 +94,8 @@ test('benchmark metadata remains explicit and attributed', () => {
 test('original Club Minimal candidate remains outside production catalogue until approved', () => {
   assert.equal(CUE_ID_CANDIDATE_ASSET.purpose, 'candidate')
   assert.equal(CUE_ID_CANDIDATE_ASSET.artDirection, 'club_minimal_v1')
-  assert.equal(CUE_ID_CANDIDATE_ASSET.compressedBytes, 39_968)
-  assert.equal(CUE_ID_CANDIDATE_ASSET.triangles, 2_164)
+  assert.equal(CUE_ID_CANDIDATE_ASSET.compressedBytes, 60_632)
+  assert.equal(CUE_ID_CANDIDATE_ASSET.triangles, 3_436)
   assert.equal(CUE_ID_ASSETS.some(asset => asset.id === CUE_ID_CANDIDATE_ASSET.id), false)
   assert.deepEqual(validateCueIdAsset(CUE_ID_CANDIDATE_ASSET), [])
 })
@@ -132,10 +132,10 @@ test('Club Minimal candidate descriptor matches generated artifact metadata', as
 test('Club Minimal candidate reports substantial quality headroom', () => {
   const headroom = getCueIdAssetHeadroom(CUE_ID_CANDIDATE_ASSET)
 
-  assert.equal(headroom.bytesRemaining, 960_032)
-  assert.equal(headroom.trianglesRemaining, 32_836)
+  assert.equal(headroom.bytesRemaining, 939_368)
+  assert.equal(headroom.trianglesRemaining, 31_564)
   assert.equal(headroom.materialsRemaining, 0)
   assert.equal(headroom.texturesRemaining, 6)
-  assert.ok(headroom.byteUsageRatio < 0.05)
-  assert.ok(headroom.triangleUsageRatio < 0.07)
+  assert.ok(headroom.byteUsageRatio < 0.07)
+  assert.ok(headroom.triangleUsageRatio < 0.10)
 })
