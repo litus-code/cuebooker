@@ -1,0 +1,23 @@
+name: Smoke public artist after visual mode drop
+
+on:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - .github/workflows/smoke-public-artist-after-visual-drop.yml
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify public artist projection
+        run: |
+          body="$(curl --fail --silent --show-error 'https://lycprjeuuynfzwskycwv.supabase.co/functions/v1/get-public-artist-profile?slug=lits')"
+          echo "$body" | jq -e '.artist.visualMode == "cue_id"'
+          echo "$body" | jq -e '.artist.cueId.family == "club_minimal"'
+          echo "$body" | jq -e '.artist.artistImageStyle == "photo"'
