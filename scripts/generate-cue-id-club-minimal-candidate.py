@@ -261,15 +261,24 @@ def build():
     scene = trimesh.Scene()
 
     head = elliptical_loft([
-        (2.82, 0.18, 0.19,  0.005),
-        (2.72, 0.285, 0.235, 0.000),
-        (2.57, 0.335, 0.275, -0.015),
-        (2.43, 0.34, 0.285, -0.030),
-        (2.31, 0.295, 0.255, -0.040),
-        (2.20, 0.235, 0.215, -0.050),
-        (2.13, 0.165, 0.180, -0.055),
+        (2.84, 0.17, 0.185,  0.010),
+        (2.74, 0.275, 0.230, 0.004),
+        (2.59, 0.325, 0.270, -0.010),
+        (2.45, 0.335, 0.282, -0.026),
+        (2.32, 0.292, 0.252, -0.040),
+        (2.20, 0.222, 0.205, -0.052),
+        (2.10, 0.148, 0.168, -0.060),
     ], radial_sections=PROFILE["head_sections"])
     add(scene, "head", head, BODY)
+
+    for side, x in (("left", -0.335), ("right", 0.335)):
+        ear = trimesh.creation.icosphere(
+            subdivisions=PROFILE["sphere_subdivisions"],
+            radius=0.085,
+        )
+        ear.apply_scale([0.42, 0.95, 0.55])
+        ear.apply_translation([x, 2.43, -0.028])
+        add(scene, f"ear_{side}", ear, BODY)
 
     neck = y_frustum(radius_top=0.145, radius_bottom=0.18, height=0.32, sections=PROFILE["radial_sections"])
     neck.apply_translation([0, 2.02, 0])
