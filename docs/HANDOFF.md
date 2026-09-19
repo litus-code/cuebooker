@@ -6803,3 +6803,38 @@ Next visual checkpoint:
 Do not start production 3D modelling until that no-accessory concept direction passes.
 
 Production remains untouched.
+
+## 107. V2 production asset contract
+
+The next authored CUE ID asset now has an explicit renderer/DCC boundary.
+
+New document:
+
+`docs/CUE_ID_ASSET_CONTRACT_V2.md`
+
+Core decision:
+
+- persisted CUE ID state remains semantic;
+- Blender/GLB/Three-specific names never become product meaning;
+- an application-owned manifest maps semantic choices to morphs, rig clips, mesh visibility and material slots;
+- V2 should prefer authored morphs/shape keys and a shared rig over fixture-style arbitrary node scaling;
+- clothing must deform/pose with the same rig rather than requiring parallel manual sleeve transforms;
+- static renders are versioned against the same assetVersion;
+- production promotion requires visual, compatibility and performance validation.
+
+The current procedural model is exempt only because it remains a technical fixture.
+
+Target architecture:
+
+```text
+CueIdConfigV1
+  -> resolveCueIdAsset(...)
+  -> production manifest + semantic bindings
+  -> CueIdScene.client.vue
+```
+
+This preserves the existing product API while allowing the production asset to be authored properly.
+
+`CUE_ID_ASSETS` remains empty.
+
+Production remains untouched.
