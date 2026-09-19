@@ -64,7 +64,9 @@ const focused: CueIdPoseDefinition = {
     forearm_left: { rotation: [-0.10, 0.02, -0.11] },
     outfit_hoodie_forearm_sleeve_left: { rotation: [-0.10, 0.02, -0.11] },
     outfit_bomber_forearm_sleeve_left: { rotation: [-0.10, 0.02, -0.11] },
-    forearm_right: { rotation: [-0.10, -0.02, 0.11] }
+    forearm_right: { rotation: [-0.10, -0.02, 0.11] },
+    outfit_hoodie_forearm_sleeve_right: { rotation: [-0.10, -0.02, 0.11] },
+    outfit_bomber_forearm_sleeve_right: { rotation: [-0.10, -0.02, 0.11] }
   }
 }
 
