@@ -4,6 +4,13 @@ async function capture({ width, height, name }) {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width, height } });
 
+  page.on('console', message => {
+    console.log('[browser-console]', message.type(), message.text());
+  });
+  page.on('pageerror', error => {
+    console.log('[page-error]', error?.stack || error?.message || String(error));
+  });
+
   await page.goto('https://pr-75.cuebooker-staging.pages.dev/cue-id', {
     waitUntil: 'networkidle'
   });
@@ -18,7 +25,12 @@ async function capture({ width, height, name }) {
 
   const stage = page.locator('.cue-id-stage');
   await stage.scrollIntoViewIfNeeded();
-  await page.waitForTimeout(700);
+  await page.evaluate(() => window.scrollBy(0, 1));
+  await page.waitForTimeout(1200);
+
+  console.log('[capture]', name, 'stage-visible=', await stage.isVisible());
+  console.log('[capture]', name, 'canvas-before=', await page.locator('.cue-id-stage canvas').count());
+  console.log('[capture]', name, 'diagnostics-before=', await page.locator('.cue-id-stage__diagnostics').innerText().catch(() => 'missing'));
 
   await page.waitForFunction(() => {
     const diagnostic = document.querySelector('.cue-id-stage__diagnostics');
@@ -28,6 +40,8 @@ async function capture({ width, height, name }) {
   }, { timeout: 15000 }).catch(() => {});
 
   await page.waitForTimeout(1500);
+  console.log('[capture]', name, 'canvas-after=', await page.locator('.cue-id-stage canvas').count());
+  console.log('[capture]', name, 'diagnostics-after=', await page.locator('.cue-id-stage__diagnostics').innerText().catch(() => 'missing'));
   await stage.screenshot({ path: name });
   await browser.close();
 }
