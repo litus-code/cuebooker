@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { cloneCueIdConfig, DEFAULT_CUE_ID_CONFIG } from '../domain/cueId'
+import type { CueIdCandidateQuality } from '../domain/cueIdAssets'
 
 const preferences = useCuePreferences()
 const cueIdConfig = ref(cloneCueIdConfig(DEFAULT_CUE_ID_CONFIG))
+const labQuality = ref<CueIdCandidateQuality>('light')
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
   eyebrow: 'PROTOTIPO / CUE ID',
@@ -78,11 +80,24 @@ useHead(() => ({
         </div>
         <button type="button" @click="cueIdConfig = cloneCueIdConfig(DEFAULT_CUE_ID_CONFIG)">{{ copy.reset }}</button>
       </header>
+      <div class="cue-id-editor-lab__quality" aria-label="CUE ID lab quality">
+        <span>QUALITY TEST</span>
+        <button
+          v-for="quality in (['light', 'medium', 'high'] as const)"
+          :key="quality"
+          type="button"
+          :aria-pressed="labQuality === quality"
+          @click="labQuality = quality"
+        >
+          {{ quality }}
+        </button>
+      </div>
       <div class="cue-id-editor-lab__stage">
         <CueIdStage
           :config="cueIdConfig"
           artist-name="LITUS"
           lab-asset="candidate"
+          :lab-quality="labQuality"
           show-diagnostics
         />
       </div>
@@ -185,6 +200,11 @@ useHead(() => ({
 .cue-id-editor-lab__intro span { display:block; max-width:720px; margin-top:18px; color:var(--cue-muted); font-size:14px; line-height:1.6; }
 .cue-id-editor-lab__intro button { min-height:44px; padding:0 15px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); cursor:pointer; font-weight:800; }
 .cue-id-editor-lab__intro button:focus-visible { outline:2px solid var(--cue-accent); outline-offset:3px; }
+.cue-id-editor-lab__quality { display:flex; align-items:center; gap:8px; margin:0 0 12px; }
+.cue-id-editor-lab__quality > span { margin-right:4px; color:var(--cue-muted); font:700 9px/1 monospace; letter-spacing:.1em; }
+.cue-id-editor-lab__quality button { min-height:36px; padding:0 12px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); font:700 9px/1 monospace; text-transform:uppercase; cursor:pointer; }
+.cue-id-editor-lab__quality button[aria-pressed="true"] { border-color:var(--cue-accent); color:var(--cue-accent); background:color-mix(in srgb,var(--cue-accent) 7%,transparent); }
+.cue-id-editor-lab__quality button:focus-visible { outline:2px solid var(--cue-accent); outline-offset:2px; }
 .cue-id-editor-lab__stage { margin-bottom:14px; }
 @media (max-width:680px) { .cue-id-editor-lab__intro { grid-template-columns:1fr; align-items:start; } .cue-id-editor-lab__intro button { width:100%; } }
 </style>
