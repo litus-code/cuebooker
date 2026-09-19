@@ -4696,3 +4696,88 @@ Next step after CI/staging validation:
 4. then integrate the first original/art-directed humanoid behind the same loader and scene boundary.
 
 Production remains untouched.
+
+## 74. Club Minimal V1 production art-direction contract
+
+The first shippable CUE ID humanoid now has an explicit visual and technical acceptance contract.
+
+New document:
+
+```text
+docs/CUE_ID_CLUB_MINIMAL_ART_DIRECTION.md
+```
+
+It defines:
+
+- silhouette and proportion rules;
+- restrained head/face treatment;
+- slim / regular / strong body semantics;
+- masculine / feminine / neutral bases as visual starting points only;
+- V1 tank / tee / hoodie / bomber wardrobe direction;
+- professional DJ headphone / cap / glasses rules;
+- neutral / relaxed / focused / editorial poses;
+- matte / satin material language;
+- lime / red / none accents as signals, not costume;
+- low-cost lighting and camera rules;
+- mobile-first geometry/texture targets;
+- Tier A / B / C behavior;
+- a 12-point visual/product acceptance checklist.
+
+Preferred production target is intentionally stricter than the hard performance ceiling:
+
+```text
+triangles: 18k–28k preferred / 35k hard ceiling
+materials: 2–4
+textures: 2–4 preferred / 6 max
+texture dimension: 1024 preferred / 2048 max
+compressed GLB: 450–850 KB preferred / 1 MB max
+```
+
+### Asset descriptor hardening
+
+`app/domain/cueIdAssets.ts` now requires every asset to declare:
+
+```text
+purpose: production | benchmark
+artDirection: club_minimal_v1 | external_benchmark
+optional attribution metadata
+```
+
+Production assets must use `club_minimal_v1`.
+
+The Khronos RiggedFigure remains explicitly:
+
+```text
+purpose = benchmark
+artDirection = external_benchmark
+creator = Cesium
+license = CC-BY-4.0
+```
+
+and remains outside `CUE_ID_ASSETS`.
+
+Tests now prevent:
+
+- an external benchmark from being treated as production art direction;
+- benchmark attribution from becoming implicit/undocumented;
+- the benchmark asset entering the selectable catalogue.
+
+Commits:
+
+```text
+e7ad8c8975df69f329d302d16674562b5ae5f4b5
+3d4b0c21e733c3f1c89adc71f7bf050def988731
+533d6805dc3dbfbd49af576aa5be3b395c0e14fd
+```
+
+Next block:
+
+1. wait for CI/staging on this contract slice;
+2. create/select the first genuinely art-directed Club Minimal humanoid candidate;
+3. record real geometry/material/texture/GLB metadata;
+4. run the asset gate;
+5. benchmark Tier A and Tier B;
+6. reject it if it reads as game/avatar/metaverse even when technically compliant;
+7. only after both visual and performance acceptance add it to `CUE_ID_ASSETS`.
+
+Production remains untouched.
