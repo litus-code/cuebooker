@@ -99,6 +99,8 @@ SEMANTIC_NODE_NAMES = {
     "forearm_left",
     "forearm_right",
     "hips",
+    "hip_joint_left",
+    "hip_joint_right",
     "thigh_left",
     "thigh_right",
     "knee_left",
