@@ -65,6 +65,8 @@ export type ArtistProfileInput = {
     | 'artist_image_position_x'
     | 'artist_image_position_y'
     | 'artist_image_scale'
+    | 'visual_mode'
+    | 'cue_id_config'
   >
   booking: Omit<ArtistBookingProfile, 'artist_id'>
 }
