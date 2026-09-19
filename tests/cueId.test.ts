@@ -60,3 +60,23 @@ test('public CUE ID projection excludes private/editor-only flags', () => {
     'schemaVersion'
   ].sort())
 })
+
+
+test('CUE ID performance contract keeps public rendering static-first by default', async () => {
+  const source = await import('node:fs/promises')
+  const component = await source.readFile(new URL('../app/components/PublicArtistProfile.vue', import.meta.url), 'utf8')
+
+  assert.match(component, /:interactive="false"/)
+})
+
+test('CUE ID runtime contains constrained and reduced-quality device gates', async () => {
+  const source = await import('node:fs/promises')
+  const stage = await source.readFile(new URL('../app/components/CueIdStage.vue', import.meta.url), 'utf8')
+  const runtime = await source.readFile(new URL('../app/components/CueIdRuntime.client.vue', import.meta.url), 'utf8')
+
+  assert.match(stage, /saveData/)
+  assert.match(stage, /deviceMemory <= 2/)
+  assert.match(runtime, /deviceMemory <= 4/)
+  assert.match(runtime, /window\.innerWidth <= 900/)
+  assert.match(runtime, /reducedQuality \? 1 : 1\.5/)
+})
