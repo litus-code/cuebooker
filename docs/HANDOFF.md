@@ -3732,3 +3732,187 @@ Only after that foundation is proven should the real GLB/Tres renderer be integr
 Commercial-home prototyping remains separate from production code. Its emerging visual language may anticipate CUE ID / PASSPORT / SIGNAL, but the website must not present those future layers as already available.
 
 Production remains untouched.
+
+
+## 65. CUE ID static editor shell — IMPLEMENTED ON BRANCH
+
+The first implementation block now exists without persistence or Three.js.
+
+Implemented:
+
+```text
+app/domain/cueId.ts
+app/components/CueIdStage.vue
+app/components/CueIdControls.vue
+app/pages/cue-id.vue
+```
+
+### Domain contract
+
+`app/domain/cueId.ts` defines the versioned semantic V1 config and the first typed catalogue.
+
+Current first family:
+
+```text
+club_minimal
+```
+
+Current bounded choices:
+
+```text
+base
+  masculine
+  feminine
+  neutral
+
+build
+  slim
+  regular
+  strong
+
+outfit
+  tank
+  tee
+  hoodie
+  bomber
+
+accessory
+  none
+  headphones
+  cap
+  glasses
+
+pose
+  neutral
+  relaxed
+  focused
+  editorial
+
+material
+  matte
+  satin
+
+accent
+  lime
+  red
+  none
+```
+
+This is intentionally small. It is a semantic product catalogue, not a renderer asset manifest yet.
+
+### Static-first stage
+
+`CueIdStage.vue` provides the immediate non-WebGL representation and already responds to the semantic config.
+
+It supports:
+
+- base/body differences;
+- build differences;
+- outfit treatment;
+- accessory cues;
+- pose;
+- matte/satin treatment;
+- lime/red accent;
+- reduced-motion-aware animation;
+- responsive mobile composition.
+
+This remains a CSS/static foundation. It is not being presented as final 3D.
+
+### Semantic controls
+
+`CueIdControls.vue` exposes the same config through accessible buttons with visible selected state and keyboard focus.
+
+The editor currently runs only in the non-indexed `/cue-id` laboratory.
+
+The laboratory now shows:
+
+```text
+CueIdStage
+-> CueIdControls
+-> immediate local preview
+```
+
+Reset restores `DEFAULT_CUE_ID_CONFIG`.
+
+Important:
+
+- configuration is NOT persisted yet;
+- no database migration has been added;
+- no GLB/TresJS dependency has been added;
+- no production/public Artist Profile is using CUE ID yet;
+- PASSPORT/SIGNAL remain conceptual/future layers.
+
+This is deliberate. The shell validates semantic choices, hierarchy and visual language before DB and renderer integration.
+
+### Existing Artist Profile facts confirmed before implementation
+
+Current profile persistence already lives on `public.artists` plus `artist_booking_profiles`.
+
+Current visual profile fields include:
+
+```text
+cover_image_path
+cover_position_y
+artist_image_path
+artist_cutout_path
+artist_image_style
+artist_image_position_x
+artist_image_position_y
+artist_image_scale
+```
+
+Current private media bucket:
+
+```text
+artist-media
+```
+
+with artist-scoped Storage policies.
+
+Current authorization helpers:
+
+```text
+private.is_artist_member(artist_id)
+private.can_manage_artist(artist_id)
+```
+
+Therefore CUE ID should reuse the existing artist permission boundary rather than invent a parallel authorization model.
+
+### Validation state
+
+Current branch HEAD:
+
+```text
+c7d171f36af97b8c082c335c581ad4c88cf71610
+```
+
+GitHub Actions at documentation time:
+
+```text
+CI = pending
+Deploy Staging = in progress
+```
+
+Do not call the editor validated until CI/build finishes successfully and the rendered `/cue-id` lab is visually reviewed.
+
+Implementation commits:
+
+```text
+6fa580b1d6f180381da7bfe44961c0d583a09352
+ad4bc7cf855a39b00de0ae0f8f60a4146a475077
+45f0265d1bd1a3710ec046ed48687f646bf6cfaf
+c7d171f36af97b8c082c335c581ad4c88cf71610
+```
+
+### Next CUE ID block
+
+After CI/build succeeds:
+
+1. visually inspect `/cue-id` desktop + mobile;
+2. refine semantic controls only if the lab exposes a UX problem;
+3. define persistence against the existing artist boundary;
+4. add RLS/grants tests before exposing persistence through the Data API;
+5. integrate CUE ID presentation mode into Artist Profile;
+6. only then introduce the first real GLB/TresJS renderer.
+
+Production remains untouched.
