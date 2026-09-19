@@ -1,8 +1,14 @@
 import { resolve } from 'node:path'
+import { templateCompilerOptions } from '@tresjs/core'
 
 export default defineNuxtConfig({
   compatibilityDate: '2026-09-13',
   devtools: { enabled: false },
+  vite: {
+    vue: {
+      ...templateCompilerOptions
+    }
+  },
   css: [resolve('./assets/css/main.css'), resolve('./assets/css/mobile-polish.css'), resolve('./assets/css/final-mobile-fixes.css'), resolve('./assets/css/workspace-light-final.css'), resolve('./assets/css/light-headline-polish.css'), resolve('./assets/css/profile-preview-fix.css'), resolve('./assets/css/workspace-v2.css'), resolve('./assets/css/workspace-v2-polish.css'), resolve('./assets/css/workspace-v3-system.css'), resolve('./assets/css/workspace-v4-structure.css'), resolve('./assets/css/workspace-v5-navigation-settings.css'), resolve('./assets/css/workspace-v6-profile-polish.css'), resolve('./assets/css/workspace-v7-mobile-system.css'), resolve('./assets/css/workspace-responsive-final.css'), resolve('./assets/css/workspace-mobile-ux.css')],
   runtimeConfig: {
     public: {
