@@ -6433,3 +6433,51 @@ All variants remain candidate_not_production with 4 shared PBR materials and 0 t
 Next visual review should focus on pelvis / hip continuity and overall silhouette only if those areas still visibly read as assembled parts at product size.
 
 Production remains untouched.
+
+
+## 97. Club Minimal waist / hip continuity refinement
+
+This pass removes the remaining block-like waist and spherical hip-joint construction.
+
+Changes:
+
+- waist changed from a box loft to a multi-ring elliptical loft;
+- waist-to-pelvis taper is now continuous;
+- pelvis profile uses an additional authored ring for a smoother transition into the upper legs;
+- spherical hip joints were replaced by compact elliptical loft transitions;
+- hip transitions inherit a small amount of each leg angle;
+- hip-joint scale now follows slim / regular / strong build semantics;
+- no textures or additional materials were introduced;
+- no global subdivision increase was introduced.
+
+Generated candidate metadata:
+
+```text
+light  = 82,936 bytes / 5,764 triangles
+medium = 124,404 bytes / 10,720 triangles
+high   = 198,684 bytes / 19,136 triangles
+```
+
+Compared with the previous joint-refinement pass:
+
+```text
+medium: 122,404 bytes / 10,844 tris -> 124,404 bytes / 10,720 tris
+high:   206,184 bytes / 21,004 tris -> 198,684 bytes / 19,136 tris
+```
+
+The small medium byte increase comes from the more continuous waist profile, while triangle count still falls. High becomes materially cheaper because another pair of subdivided icospheres has been removed.
+
+Automatic quality remains:
+
+```text
+full -> medium
+reduced -> medium
+static -> no interactive renderer
+high -> lab/manual only
+```
+
+All variants remain candidate_not_production with 4 shared PBR materials and 0 textures.
+
+Next visual work should avoid broad geometry changes. The remaining review should be silhouette-led at real product size, with shoulder integration or footwear considered only if a visible defect remains.
+
+Production remains untouched.
