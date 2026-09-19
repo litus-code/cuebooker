@@ -64,25 +64,25 @@ META = Path(f"public/cue-id/candidates/club-minimal-candidate{SUFFIX}-v1.json")
 
 BODY = PBRMaterial(
     name="body",
-    baseColorFactor=[70, 76, 70, 255],
+    baseColorFactor=[70 / 255, 76 / 255, 70 / 255, 1.0],
     metallicFactor=0.02,
     roughnessFactor=0.82,
 )
 DARK = PBRMaterial(
     name="dark",
-    baseColorFactor=[22, 24, 22, 255],
+    baseColorFactor=[22 / 255, 24 / 255, 22 / 255, 1.0],
     metallicFactor=0.02,
     roughnessFactor=0.86,
 )
 MID = PBRMaterial(
     name="mid",
-    baseColorFactor=[48, 52, 48, 255],
+    baseColorFactor=[48 / 255, 52 / 255, 48 / 255, 1.0],
     metallicFactor=0.03,
     roughnessFactor=0.80,
 )
 LIME = PBRMaterial(
     name="accent",
-    baseColorFactor=[206, 255, 84, 255],
+    baseColorFactor=[206 / 255, 1.0, 84 / 255, 1.0],
     metallicFactor=0.02,
     roughnessFactor=0.72,
 )
@@ -279,56 +279,47 @@ def build():
     ])
     add(scene, "clavicle", clavicle, DARK)
 
-    top_y, top_w, top_d = 1.90, 0.72, 0.32
-    bottom_y, bottom_w, bottom_d = 0.72, 0.55, 0.28
-    torso_vertices = np.array([
-        [-top_w, top_y, -top_d],
-        [ top_w, top_y, -top_d],
-        [ top_w, top_y,  top_d],
-        [-top_w, top_y,  top_d],
-        [-bottom_w, bottom_y, -bottom_d],
-        [ bottom_w, bottom_y, -bottom_d],
-        [ bottom_w, bottom_y,  bottom_d],
-        [-bottom_w, bottom_y,  bottom_d],
-    ])
-    torso_faces = np.array([
-        [0, 1, 2], [0, 2, 3],
-        [4, 6, 5], [4, 7, 6],
-        [0, 4, 5], [0, 5, 1],
-        [1, 5, 6], [1, 6, 2],
-        [2, 6, 7], [2, 7, 3],
-        [3, 7, 4], [3, 4, 0],
-    ])
-    torso = trimesh.Trimesh(vertices=torso_vertices, faces=torso_faces, process=False)
+    torso = elliptical_loft([
+        (1.92, 0.66, 0.30),
+        (1.78, 0.72, 0.33),
+        (1.52, 0.69, 0.34),
+        (1.16, 0.62, 0.32),
+        (0.78, 0.53, 0.28),
+    ], radial_sections=PROFILE["radial_sections"])
     add(scene, "torso", torso, BODY)
 
-    tee = lofted_box([
-        (1.86, 0.75, 0.35),
-        (1.55, 0.69, 0.34),
-        (0.82, 0.57, 0.30),
-    ])
+    tee = elliptical_loft([
+        (1.91, 0.76, 0.36),
+        (1.74, 0.79, 0.37),
+        (1.48, 0.72, 0.36),
+        (1.12, 0.65, 0.34),
+        (0.82, 0.58, 0.31),
+    ], radial_sections=PROFILE["radial_sections"])
     add(scene, "tee_volume", tee, DARK)
 
     seam = trimesh.creation.box(extents=[0.82, 0.028, 0.036])
     seam.apply_translation([0, 1.53, -0.348])
     add(scene, "accent_seam", seam, LIME)
 
-    tank = lofted_box([
-        (1.72, 0.52, 0.31),
-        (1.46, 0.56, 0.31),
+    tank = elliptical_loft([
+        (1.74, 0.54, 0.32),
+        (1.52, 0.58, 0.32),
+        (1.16, 0.58, 0.31),
         (0.82, 0.55, 0.29),
-    ])
+    ], radial_sections=PROFILE["radial_sections"])
     add(scene, "outfit_tank", tank, DARK)
 
     tank_accent = trimesh.creation.box(extents=[0.62, 0.026, 0.034])
     tank_accent.apply_translation([0, 1.40, -0.328])
     add(scene, "outfit_tank_accent", tank_accent, LIME)
 
-    hoodie = lofted_box([
-        (1.91, 0.78, 0.38),
-        (1.52, 0.73, 0.37),
+    hoodie = elliptical_loft([
+        (1.94, 0.80, 0.39),
+        (1.72, 0.82, 0.40),
+        (1.48, 0.76, 0.38),
+        (1.10, 0.68, 0.35),
         (0.78, 0.62, 0.33),
-    ])
+    ], radial_sections=PROFILE["radial_sections"])
     add(scene, "outfit_hoodie", hoodie, DARK)
 
     hood = trimesh.creation.torus(
@@ -345,11 +336,13 @@ def build():
     hoodie_accent.apply_translation([0, 1.35, -0.392])
     add(scene, "outfit_hoodie_accent", hoodie_accent, LIME)
 
-    bomber = lofted_box([
-        (1.88, 0.80, 0.39),
-        (1.50, 0.78, 0.39),
+    bomber = elliptical_loft([
+        (1.90, 0.82, 0.40),
+        (1.72, 0.85, 0.41),
+        (1.46, 0.80, 0.40),
+        (1.12, 0.71, 0.36),
         (0.92, 0.63, 0.34),
-    ])
+    ], radial_sections=PROFILE["radial_sections"])
     add(scene, "outfit_bomber", bomber, DARK)
 
     bomber_collar = trimesh.creation.torus(
@@ -371,8 +364,8 @@ def build():
         ("right", 0.83, -0.05, 0.08),
     ]
     for side, x, upper_angle, forearm_angle in arm_specs:
-        shoulder = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.235)
-        shoulder.apply_scale([1.0, 0.9, 0.86])
+        shoulder = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.205)
+        shoulder.apply_scale([1.0, 0.92, 0.86])
         shoulder.apply_translation([x, 1.73, 0])
         add(scene, f"shoulder_{side}", shoulder, DARK)
 
@@ -382,8 +375,8 @@ def build():
         add(scene, f"upper_arm_{side}", upper, DARK)
 
         elbow_x = x + (-0.055 if side == "left" else 0.04)
-        elbow = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.155)
-        elbow.apply_scale([0.9, 0.9, 0.86])
+        elbow = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.132)
+        elbow.apply_scale([0.92, 0.88, 0.86])
         elbow.apply_translation([elbow_x, 1.05, 0])
         add(scene, f"elbow_{side}", elbow, DARK)
 
@@ -411,17 +404,20 @@ def build():
     ])
     add(scene, "waist", waist, MID)
 
-    hips = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.56)
-    hips.apply_scale([1.0, 0.38, 0.48])
-    hips.apply_translation([0, 0.45, 0])
+    hips = elliptical_loft([
+        (0.66, 0.50, 0.27),
+        (0.52, 0.56, 0.30),
+        (0.38, 0.55, 0.30),
+        (0.24, 0.48, 0.27),
+    ], radial_sections=PROFILE["radial_sections"])
     add(scene, "hips", hips, MID)
 
     for side, x, angle, depth, lateral in [
         ("left", -0.29, -0.035, 0.03, -1),
         ("right", 0.30, 0.045, -0.025, 1),
     ]:
-        hip_joint = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.22)
-        hip_joint.apply_scale([0.9, 1.0, 0.9])
+        hip_joint = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.185)
+        hip_joint.apply_scale([0.88, 1.0, 0.88])
         hip_joint.apply_translation([x, 0.24, depth])
         add(scene, f"hip_joint_{side}", hip_joint, DARK)
 
@@ -430,8 +426,8 @@ def build():
         thigh.apply_translation([x, -0.11, depth])
         add(scene, f"thigh_{side}", thigh, DARK)
 
-        knee = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.18)
-        knee.apply_scale([0.9, 0.82, 0.9])
+        knee = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.15)
+        knee.apply_scale([0.90, 0.82, 0.88])
         knee.apply_translation([x + 0.012 * lateral, -0.49, depth])
         add(scene, f"knee_{side}", knee, DARK)
 
