@@ -118,3 +118,17 @@ export function assertCueIdAsset(asset: CueIdAssetDescriptor) {
 // Intentionally empty until a real art-directed asset is accepted.
 // Do not add placeholders here just to make the catalogue look populated.
 export const CUE_ID_ASSETS: CueIdAssetDescriptor[] = []
+
+
+export const CUE_ID_BENCHMARK_ASSET: CueIdAssetDescriptor = {
+  id: 'khronos-rigged-figure-benchmark',
+  family: 'club_minimal',
+  kind: 'base',
+  glbPath: '/cue-id/benchmarks/rigged-figure.glb',
+  fallbackPath: null,
+  compressedBytes: 50_116,
+  triangles: 0,
+  materials: 0,
+  textures: [],
+  supportedTiers: ['full', 'reduced']
+}
