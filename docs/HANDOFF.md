@@ -6768,3 +6768,38 @@ The next block is:
 No production asset work should proceed without still-image approval of the three bases.
 
 Production remains untouched.
+
+## 106. V2 concept checkpoint: professional yes, photoreal no
+
+The first three-base V2 concept moved the product in the correct direction but is not yet the final production art direction.
+
+Positive signals:
+
+- credible human proportions;
+- professional club/editorial presence;
+- feminine / neutral / masculine shown as equal first-class bases;
+- shared wardrobe and pose language;
+- much stronger product credibility than the procedural fixture.
+
+Remaining issue:
+
+- the concept leans too far toward fashion-model / photoreal digital-human language;
+- hair and glasses currently contribute too much identity;
+- CUE ID needs a more authored sculptural head and must work with no accessories.
+
+New document:
+
+`docs/CUE_ID_CONCEPT_V2.md`
+
+Next visual checkpoint:
+
+- three bases;
+- no accessories;
+- same tee;
+- same neutral pose;
+- sculptural facial planes;
+- structural base identity visible without styling aids.
+
+Do not start production 3D modelling until that no-accessory concept direction passes.
+
+Production remains untouched.
