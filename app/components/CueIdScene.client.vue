@@ -36,10 +36,6 @@ const emit = defineEmits<{
 const ready = ref(false)
 const labScene = shallowRef<Object3D | null>(null)
 
-const bodyMaterial = new MeshStandardMaterial({ color: '#464c46', roughness: 0.78, metalness: 0.03 })
-const darkMaterial = new MeshStandardMaterial({ color: '#161816', roughness: 0.86, metalness: 0.02 })
-const midMaterial = new MeshStandardMaterial({ color: '#303430', roughness: 0.82, metalness: 0.03 })
-const accentMaterial = new MeshStandardMaterial({ color: '#ceff54', roughness: 0.62, metalness: 0.05 })
 const labSceneVersion = ref(0)
 const baseNodeTransforms = new Map<string, {
   rotation: [number, number, number]
@@ -191,75 +187,6 @@ function applySemanticAppearance(root: Object3D) {
 }
 
 
-const BODY_NODES = new Set([
-  'head', 'neck', 'hand_left', 'hand_right'
-])
-
-const MID_NODES = new Set([
-  'waist', 'hips'
-])
-
-const ACCENT_NODES = new Set([
-  'accent_seam'
-])
-
-function updateSharedMaterials() {
-  const satin = props.config.material === 'satin'
-
-  bodyMaterial.roughness = satin ? 0.44 : 0.78
-  bodyMaterial.metalness = satin ? 0.12 : 0.03
-
-  darkMaterial.roughness = satin ? 0.50 : 0.86
-  darkMaterial.metalness = satin ? 0.10 : 0.02
-
-  midMaterial.roughness = satin ? 0.46 : 0.82
-  midMaterial.metalness = satin ? 0.12 : 0.03
-
-  accentMaterial.roughness = satin ? 0.38 : 0.62
-  accentMaterial.metalness = satin ? 0.14 : 0.05
-  accentMaterial.color.set(
-    props.config.accent === 'red'
-      ? '#ff4545'
-      : props.config.accent === 'lime'
-        ? '#ceff54'
-        : '#737a72'
-  )
-
-  for (const material of [bodyMaterial, darkMaterial, midMaterial, accentMaterial]) {
-    material.needsUpdate = true
-  }
-}
-
-function applySharedMaterials(root: Object3D) {
-  updateSharedMaterials()
-
-  root.traverse(node => {
-    if (!(node instanceof Mesh)) return
-
-    const previous = Array.isArray(node.material) ? node.material : [node.material]
-    for (const material of previous) {
-      if (
-        material !== bodyMaterial &&
-        material !== darkMaterial &&
-        material !== midMaterial &&
-        material !== accentMaterial
-      ) {
-        material.dispose()
-      }
-    }
-
-    if (ACCENT_NODES.has(node.name)) {
-      node.material = accentMaterial
-    } else if (BODY_NODES.has(node.name)) {
-      node.material = bodyMaterial
-    } else if (MID_NODES.has(node.name)) {
-      node.material = midMaterial
-    } else {
-      node.material = darkMaterial
-    }
-  })
-}
-
 async function loadLabAsset() {
   if (!props.labAsset) return
 
@@ -289,9 +216,6 @@ async function loadLabAsset() {
 
     rememberBaseTransforms(parsed)
     applySemanticAppearance(parsed)
-    if (props.labAsset === 'candidate') {
-      applySharedMaterials(parsed)
-    }
 
     labMetrics = {
       assetId: asset.id,
@@ -358,10 +282,6 @@ watch(
 
 onBeforeUnmount(() => {
   disposeObject(labScene.value)
-  bodyMaterial.dispose()
-  darkMaterial.dispose()
-  midMaterial.dispose()
-  accentMaterial.dispose()
 })
 
 function handleReady() {
