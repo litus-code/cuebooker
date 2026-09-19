@@ -6107,3 +6107,46 @@ Art-direction rule remains:
 - silhouette and material do the identity work first.
 
 Production remains untouched.
+
+## 91. Static-first CUE ID silhouette aligned with Club Minimal
+
+The static CUE ID representation has been upgraded so public profiles and Tier C devices do not show a simplified bust that diverges from the interactive identity.
+
+Static fallback now includes:
+
+- editorial faceted head;
+- neck;
+- full torso;
+- articulated-looking arms;
+- tapered hands;
+- pelvis;
+- full legs;
+- accessory layer;
+- outfit-specific silhouette differences.
+
+Outfit static reads are now intentionally distinct:
+
+```text
+tee -> clean neutral taper
+tank -> narrower shoulder/upper-body read
+hoodie -> fuller upper/lower volume + hood cue
+bomber -> broader chest + cinched lower shape
+```
+
+Mobile fallback framing was reduced slightly to preserve breathing room.
+
+This representation remains:
+
+- CSS/static;
+- zero WebGL;
+- zero Three/TresJS runtime;
+- valid under reduced motion;
+- the first-class representation for public profile and unsupported/constrained devices.
+
+Important product rule:
+
+The static representation must feel like the same CUE ID identity, not like an error placeholder.
+
+Tests now lock a complete head/neck/torso/arms/hands/pelvis/legs silhouette and outfit variants.
+
+Production remains untouched.
