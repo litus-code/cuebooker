@@ -4613,3 +4613,86 @@ The old `CueIdRuntime.client.vue` native WebGL proof is temporarily retained onl
 Do not extend the native renderer further.
 
 Production remains untouched.
+
+## 73. Real GLB benchmark path — IMPLEMENTED IN LAB ONLY
+
+The CUE ID lab now exercises a real GLB through the bounded asset pipeline.
+
+Benchmark asset:
+
+```text
+public/cue-id/benchmarks/rigged-figure.glb
+size = 50,116 bytes
+source = KhronosGroup/glTF-Sample-Assets / RiggedFigure
+copyright = 2017 Cesium
+license = CC BY 4.0
+```
+
+Attribution is stored next to the benchmark asset in:
+
+```text
+public/cue-id/benchmarks/README.md
+```
+
+The benchmark is intentionally excluded from `CUE_ID_ASSETS` and is not selectable by users.
+
+### Runtime path
+
+```text
+/cue-id lab
+-> CueIdStage benchmark mode
+-> device tier decision
+-> lazy CueIdScene.client.vue
+-> loadCueIdGlbBuffer()
+-> byte ceiling + GLB v2 validation
+-> GLTFLoader.parseAsync(ArrayBuffer)
+-> normalize scene bounds
+-> TresJS primitive
+-> first rendered frame metric
+```
+
+The renderer does NOT bypass the bounded loader with a direct Three.js URL fetch.
+
+### Metrics
+
+`cue_id_glb_benchmark_loaded` now records only technical data:
+
+```text
+bytes
+load_ms
+parse_ms
+first_frame_ms
+runtime_tier
+```
+
+No appearance choices or user-identifying data are included.
+
+### Isolation
+
+- benchmark mode is enabled only on `/cue-id`;
+- Artist Profile editor does not request the benchmark asset;
+- public Artist Profile remains static-first;
+- the benchmark is not a product catalogue entry;
+- the native WebGL proof component has been removed.
+
+### Purpose
+
+This benchmark exists only to validate:
+
+- real GLB transfer;
+- binary budget enforcement;
+- Three GLTF parsing;
+- TresJS scene insertion;
+- first-frame timing;
+- Android/mobile/desktop device-tier behavior.
+
+It is NOT the final CUE ID visual language.
+
+Next step after CI/staging validation:
+
+1. record benchmark timings on representative desktop/mobile/Android devices;
+2. compare Tier A vs Tier B;
+3. refine thresholds if required;
+4. then integrate the first original/art-directed humanoid behind the same loader and scene boundary.
+
+Production remains untouched.
