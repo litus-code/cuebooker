@@ -95,3 +95,28 @@ test('CUE ID scene falls back on WebGL context loss', async () => {
   assert.match(component, /emit\('failed'\)/)
   assert.match(component, /removeEventListener\('webglcontextlost'/)
 })
+
+
+test('CUE ID static fallback keeps a complete editorial body silhouette', async () => {
+  const source = await import('node:fs/promises')
+  const component = await source.readFile(
+    new URL('../app/components/CueIdStage.vue', import.meta.url),
+    'utf8'
+  )
+
+  for (const className of [
+    'cue-id-stage__head',
+    'cue-id-stage__neck',
+    'cue-id-stage__torso',
+    'cue-id-stage__arm',
+    'cue-id-stage__hand',
+    'cue-id-stage__pelvis',
+    'cue-id-stage__leg'
+  ]) {
+    assert.match(component, new RegExp(className))
+  }
+
+  assert.match(component, /cue-id-stage--outfit-hoodie/)
+  assert.match(component, /cue-id-stage--outfit-bomber/)
+  assert.match(component, /cue-id-stage--outfit-tank/)
+})
