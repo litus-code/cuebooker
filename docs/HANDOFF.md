@@ -4300,3 +4300,69 @@ Required next checks:
 7. preserve all current fallback/lifecycle behavior.
 
 Production remains untouched.
+
+## 69. CUE ID runtime boundary hardening
+
+Two runtime-boundary corrections were added after the first WebGL proof.
+
+### Public profile remains static-first
+
+`PublicArtistProfile.vue` now passes:
+
+```text
+:interactive="false"
+```
+
+to `CueIdStage`.
+
+This means selecting `visual_mode = cue_id` on a published profile does NOT yet load the WebGL runtime.
+
+Public rendering remains:
+
+```text
+sanitized public config
+-> static CUE ID representation
+-> no WebGL dependency
+```
+
+Interactive WebGL remains limited to controlled CUE ID editor/lab surfaces until runtime cost and visual quality are validated.
+
+### Constrained-device gate
+
+`CueIdStage.vue` now skips the interactive runtime when the browser reports:
+
+```text
+Save-Data enabled
+or
+deviceMemory <= 2 GB
+```
+
+In those cases the static fallback remains the full product representation.
+
+A consent-aware technical event is emitted:
+
+```text
+cue_id_static_fallback_used
+reason = save_data | low_device_memory
+```
+
+No appearance configuration is included.
+
+### Commits
+
+```text
+3264719ff34c71d669aadc043f853f0ee3458cfd
+5b6e5f438d1d204d858bd318341a995bb94ad036
+```
+
+### Next step
+
+Do not make the public profile interactive until:
+
+1. editor/lab runtime passes CI and staging;
+2. desktop/mobile visual QA is complete;
+3. runtime init and device behaviour are measured;
+4. a real art-directed GLB/Tres renderer replaces the procedural proof;
+5. public-profile performance comparison shows no unacceptable regression.
+
+Production remains untouched.
