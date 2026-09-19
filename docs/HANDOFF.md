@@ -6528,3 +6528,73 @@ All variants remain candidate_not_production with 4 shared PBR materials and 0 t
 At this point broad anatomy cleanup should stop. Further geometry work should be triggered only by a visible defect found in representative product-size review. The next sensible review area is footwear / lower-leg termination or real-device framing, not another global shape pass.
 
 Production remains untouched.
+
+
+## 99. Club Minimal footwear termination + semantic CI fix
+
+The final broad geometry cleanup is now complete.
+
+### Footwear
+
+Changes:
+
+- rectangular boot boxes replaced by a four-section lofted footwear silhouette;
+- ankle, mid-foot and toe volumes now progress instead of ending as a cuboid;
+- left/right footwear receives a restrained opposing angle;
+- lower-leg termination remains intentionally minimal and editorial;
+- no textures or additional materials were introduced;
+- no global subdivision increase was introduced.
+
+Generated candidate metadata:
+
+```text
+light  = 83,540 bytes / 5,804 triangles
+medium = 122,848 bytes / 10,400 triangles
+high   = 186,180 bytes / 16,992 triangles
+```
+
+Cost versus the previous shoulder pass is negligible.
+
+### Semantic CI correction
+
+After hip build scaling was introduced, CI correctly detected that `hip_joint_left` and `hip_joint_right` existed as generated f-string nodes but were not declared literally in `SEMANTIC_NODE_NAMES`.
+
+The generator now declares both semantic hip-joint node names explicitly.
+
+The test was not weakened.
+
+Validation on commit `5c8879d9a08e5ac220b80e3a5c37749053c4a4a9`:
+
+```text
+CI = success
+```
+
+### Current automatic policy
+
+```text
+full -> medium
+reduced -> medium
+static -> no interactive renderer
+high -> lab/manual only
+```
+
+All assets remain:
+
+```text
+candidate_not_production
+4 shared PBR materials
+0 textures
+```
+
+Broad anatomy / silhouette iteration should now stop. Further CUE ID geometry changes require a concrete defect observed at real product size or on representative hardware.
+
+Reduced-tier framing remains intentionally farther back than full tier:
+
+```text
+full camera z = 7.25
+reduced camera z = 7.7
+```
+
+No camera change was required in this pass.
+
+Production remains untouched.
