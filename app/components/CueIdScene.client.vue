@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { TresCanvas } from '@tresjs/core'
-import { Box3, Object3D, Vector3 } from 'three'
+import { Box3, MeshStandardMaterial, Object3D, Vector3 } from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import type { CueIdConfigV1 } from '../domain/cueId'
 import { CUE_ID_BENCHMARK_ASSET, CUE_ID_CANDIDATE_ASSET } from '../domain/cueIdAssets'
 import { CUE_ID_POSES } from '../domain/cueIdPose'
 import { CUE_ID_BUILDS } from '../domain/cueIdBuild'
+import { CUE_ID_ACCENT_COLORS, CUE_ID_MATERIAL_PRESETS } from '../domain/cueIdMaterial'
 import type { CueIdRuntimeDecision } from '../domain/cueIdRuntime'
 import { loadCueIdGlbBuffer } from '../services/cueIdAssetLoader'
 
@@ -79,6 +80,40 @@ function rememberBaseTransforms(root: Object3D) {
   baseRootScale = [root.scale.x, root.scale.y, root.scale.z]
 }
 
+function applySemanticMaterials(root: Object3D) {
+  const preset = CUE_ID_MATERIAL_PRESETS[props.config.material]
+  const seen = new Set<string>()
+
+  root.traverse(node => {
+    const materialValue = (node as Object3D & {
+      material?: MeshStandardMaterial | MeshStandardMaterial[]
+    }).material
+    const materials = Array.isArray(materialValue)
+      ? materialValue
+      : materialValue
+        ? [materialValue]
+        : []
+
+    for (const material of materials) {
+      if (!material.isMeshStandardMaterial || seen.has(material.uuid)) continue
+      seen.add(material.uuid)
+
+      const key = material.name as keyof typeof preset
+      const surface = preset[key]
+      if (!surface) continue
+
+      material.roughness = surface.roughness
+      material.metalness = surface.metalness
+
+      if (material.name === 'accent') {
+        material.color.set(CUE_ID_ACCENT_COLORS[props.config.accent])
+      }
+
+      material.needsUpdate = true
+    }
+  })
+}
+
 function applySemanticAppearance(root: Object3D) {
   if (props.labAsset !== 'candidate') return
 
@@ -124,6 +159,7 @@ function applySemanticAppearance(root: Object3D) {
     )
   })
 
+  applySemanticMaterials(root)
   labSceneVersion.value += 1
 }
 
@@ -194,7 +230,7 @@ function disposeObject(object: Object3D | null) {
 onMounted(loadLabAsset)
 
 watch(
-  () => [props.config.pose, props.config.build],
+  () => [props.config.pose, props.config.build, props.config.material, props.config.accent],
   () => {
     if (!labScene.value || props.labAsset !== 'candidate') return
     applySemanticAppearance(labScene.value)
