@@ -468,46 +468,47 @@ def build():
 
     # restrained DJ cue: headphones around the neck, not gaming-headset styling
     band = trimesh.creation.torus(
-        major_radius=0.36,
-        minor_radius=0.045,
+        major_radius=0.335,
+        minor_radius=0.038,
         major_sections=PROFILE["torus_major"],
         minor_sections=PROFILE["torus_minor"],
     )
     band.apply_transform(rotation_matrix(np.pi / 2, [1, 0, 0]))
-    band.apply_translation([0, 2.05, 0.02])
+    band.apply_translation([0, 2.035, 0.015])
     add(scene, "accessory_headphones_band", band, DARK)
 
     for side, x in (("left", -0.35), ("right", 0.35)):
         cup = trimesh.creation.cylinder(
-            radius=0.12,
-            height=0.08,
+            radius=0.105,
+            height=0.072,
             sections=PROFILE["cup_sections"],
         )
         cup.apply_transform(rotation_matrix(np.pi / 2, [0, 1, 0]))
-        cup.apply_translation([x, 1.98, 0.02])
+        cup.apply_translation([x * 0.94, 1.965, 0.018])
         add(scene, f"accessory_headphones_cup_{side}", cup, DARK)
 
-    cap = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.34)
-    cap.apply_scale([1.05, 0.34, 0.95])
-    cap.apply_translation([0, 2.79, 0])
+    cap = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.33)
+    cap.apply_scale([1.02, 0.30, 0.92])
+    cap.apply_translation([0, 2.785, 0.015])
     add(scene, "accessory_cap_crown", cap, DARK)
 
-    cap_brim = trimesh.creation.box(extents=[0.42, 0.05, 0.28])
-    cap_brim.apply_translation([0, 2.71, -0.26])
+    cap_brim = trimesh.creation.box(extents=[0.40, 0.038, 0.25])
+    cap_brim.apply_translation([0, 2.705, -0.255])
     add(scene, "accessory_cap_brim", cap_brim, DARK)
 
     for side, x in (("left", -0.17), ("right", 0.17)):
         lens = trimesh.creation.torus(
-            major_radius=0.14,
-            minor_radius=0.018,
+            major_radius=0.135,
+            minor_radius=0.015,
             major_sections=PROFILE["glasses_major"],
             minor_sections=PROFILE["glasses_minor"],
         )
-        lens.apply_translation([x, 2.49, -0.295])
+        lens.apply_scale([1.12, 0.74, 1.0])
+        lens.apply_translation([x, 2.485, -0.292])
         add(scene, f"accessory_glasses_{side}", lens, DARK)
 
-    bridge = trimesh.creation.box(extents=[0.12, 0.025, 0.025])
-    bridge.apply_translation([0, 2.49, -0.295])
+    bridge = trimesh.creation.box(extents=[0.10, 0.018, 0.020])
+    bridge.apply_translation([0, 2.485, -0.292])
     add(scene, "accessory_glasses_bridge", bridge, DARK)
 
     required_nodes = (
