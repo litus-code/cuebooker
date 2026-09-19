@@ -32,12 +32,27 @@ def build():
     neck.apply_translation([0, 2.18, 0])
     add(scene, "neck", neck, MID)
 
-    points = []
-    for y, width, depth in [(1.95, 0.78, 0.34), (0.75, 0.58, 0.30)]:
-        for x in (-width, width):
-            for z in (-depth, depth):
-                points.append([x, y, z])
-    torso = trimesh.Trimesh(vertices=np.array(points), faces=[]).convex_hull
+    top_y, top_w, top_d = 1.95, 0.78, 0.34
+    bottom_y, bottom_w, bottom_d = 0.75, 0.58, 0.30
+    torso_vertices = np.array([
+        [-top_w, top_y, -top_d],
+        [ top_w, top_y, -top_d],
+        [ top_w, top_y,  top_d],
+        [-top_w, top_y,  top_d],
+        [-bottom_w, bottom_y, -bottom_d],
+        [ bottom_w, bottom_y, -bottom_d],
+        [ bottom_w, bottom_y,  bottom_d],
+        [-bottom_w, bottom_y,  bottom_d],
+    ])
+    torso_faces = np.array([
+        [0, 1, 2], [0, 2, 3],
+        [4, 6, 5], [4, 7, 6],
+        [0, 4, 5], [0, 5, 1],
+        [1, 5, 6], [1, 6, 2],
+        [2, 6, 7], [2, 7, 3],
+        [3, 7, 4], [3, 4, 0],
+    ])
+    torso = trimesh.Trimesh(vertices=torso_vertices, faces=torso_faces, process=False)
     add(scene, "torso", torso, BODY)
 
     tee = trimesh.creation.box(extents=[1.45, 1.15, 0.08])
