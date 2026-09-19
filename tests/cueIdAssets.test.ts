@@ -8,6 +8,7 @@ import {
   CUE_ID_BENCHMARK_ASSET,
   CUE_ID_CANDIDATE_ASSET,
   assertCueIdAsset,
+  getCueIdAssetHeadroom,
   validateCueIdAsset,
   type CueIdAssetDescriptor
 } from '../app/domain/cueIdAssets.ts'
@@ -125,4 +126,16 @@ test('Club Minimal candidate descriptor matches generated artifact metadata', as
   assert.equal(metadata.textures, CUE_ID_CANDIDATE_ASSET.textures.length)
   assert.equal(metadata.artDirection, CUE_ID_CANDIDATE_ASSET.artDirection)
   assert.equal(metadata.status, 'candidate_not_production')
+})
+
+
+test('Club Minimal candidate reports substantial quality headroom', () => {
+  const headroom = getCueIdAssetHeadroom(CUE_ID_CANDIDATE_ASSET)
+
+  assert.equal(headroom.bytesRemaining, 954_096)
+  assert.equal(headroom.trianglesRemaining, 32_728)
+  assert.equal(headroom.materialsRemaining, 0)
+  assert.equal(headroom.texturesRemaining, 6)
+  assert.ok(headroom.byteUsageRatio < 0.05)
+  assert.ok(headroom.triangleUsageRatio < 0.07)
 })
