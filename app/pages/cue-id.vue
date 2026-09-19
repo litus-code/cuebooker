@@ -22,7 +22,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   returnHome: 'Volver',
   editorEyebrow: 'CUE ID / FOUNDATION',
   editorTitle: 'PRIMERA IDENTIDAD. SIN JUGAR A SER UN JUEGO.',
-  editorBody: 'Este editor valida las decisiones semánticas de la primera familia Club Minimal. Todavía no guarda datos ni carga 3D: primero cerramos experiencia, jerarquía y lenguaje visual.',
+  editorBody: 'Este laboratorio valida el runtime 3D y el presupuesto mobile con un GLB técnico de benchmark. No representa el arte final de CUE ID ni se ofrece como identidad seleccionable.',
   reset: 'Restablecer'
 } : {
   eyebrow: 'PROTOTYPE / CUE ID',
@@ -42,7 +42,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   returnHome: 'Back',
   editorEyebrow: 'CUE ID / FOUNDATION',
   editorTitle: 'FIRST IDENTITY. WITHOUT TURNING IT INTO A GAME.',
-  editorBody: 'This editor validates the semantic choices for the first Club Minimal family. It does not persist data or load 3D yet: experience, hierarchy and visual language come first.',
+  editorBody: 'This lab validates the 3D runtime and mobile budget with a technical benchmark GLB. It is not final CUE ID artwork and is not offered as a selectable identity.',
   reset: 'Reset'
 })
 
@@ -79,7 +79,7 @@ useHead(() => ({
         <button type="button" @click="cueIdConfig = cloneCueIdConfig(DEFAULT_CUE_ID_CONFIG)">{{ copy.reset }}</button>
       </header>
       <div class="cue-id-editor-lab__stage">
-        <CueIdStage :config="cueIdConfig" artist-name="LITUS" />
+        <CueIdStage :config="cueIdConfig" artist-name="LITUS" benchmark />
       </div>
       <CueIdControls v-model="cueIdConfig" :locale="preferences.locale.value" />
     </section>
