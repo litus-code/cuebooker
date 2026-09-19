@@ -22,7 +22,7 @@ async function capture({ width, height, name }) {
     if (!diagnostic) return false;
     const text = diagnostic.textContent || '';
     return /asset\s+club-minimal-candidate-medium-v1/i.test(text)
-      && /gate\s+PASS/i.test(text);
+      && /ready\s+\d+ms/i.test(text);
   }, { timeout: 15000 });
 
   await page.waitForTimeout(600);
