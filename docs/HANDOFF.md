@@ -6076,3 +6076,34 @@ Current visual strategy remains:
 - do not add textures or extra materials merely for detail.
 
 Production remains untouched.
+
+## 90. Club Minimal head silhouette refinement
+
+The latest pass refines recognizably human head geometry without adding facial realism or avatar-style features.
+
+Changes:
+
+- crown/forehead/cheek/jaw/chin rings adjusted;
+- jaw and chin narrowed for a cleaner editorial profile;
+- cranium depth shifted subtly to improve the 3/4 silhouette;
+- small restrained ear volumes added on both sides;
+- no facial texture, eyes, mouth or realism layer introduced.
+
+Generated metadata:
+
+```text
+light  = 66,100 bytes / 4,400 triangles
+medium = 109,260 bytes / 9,456 triangles
+high   = 210,488 bytes / 22,560 triangles
+```
+
+Medium remains comfortably inside the mobile-safe envelope and stays the automatic Tier A/B quality.
+
+Art-direction rule remains:
+
+- human and editorial;
+- no Sims/Bitmoji/metaverse read;
+- no facial realism requirement;
+- silhouette and material do the identity work first.
+
+Production remains untouched.
