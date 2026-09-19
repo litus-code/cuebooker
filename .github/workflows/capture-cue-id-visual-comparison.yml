@@ -33,7 +33,7 @@ jobs:
         run: |
           npx -y playwright@1.55.0 screenshot \
             --browser chromium \
-            --device "iPhone 13" \
+            --viewport-size "390,844" \
             --wait-for-timeout 4000 \
             --full-page \
             https://pr-75.cuebooker-staging.pages.dev/cue-id \
