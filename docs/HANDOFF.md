@@ -5405,3 +5405,112 @@ accessory
 ```
 
 Production remains untouched.
+
+## 84. Full semantic Club Minimal candidate — outfits + accessories
+
+The lab candidate now covers all persisted CUE ID semantic dimensions:
+
+```text
+base
+build
+outfit
+accessory
+pose
+material
+accent
+```
+
+### Outfit visibility
+
+New domain:
+
+```text
+app/domain/cueIdOutfit.ts
+```
+
+Outfits:
+
+```text
+tee
+tank
+hoodie
+bomber
+```
+
+Each outfit maps to an isolated set of GLB node names. Only the selected outfit is visible before the candidate is presented.
+
+### Accessory visibility
+
+New domain:
+
+```text
+app/domain/cueIdAccessory.ts
+```
+
+Accessories:
+
+```text
+none
+headphones
+cap
+glasses
+```
+
+`null` remains the persisted value for no accessory.
+
+### Generated candidate after full variant coverage
+
+```text
+bytes = 60,632
+triangles = 3,436
+vertices = 1,796
+materials = 4
+textures = 0
+```
+
+Current approximate base-budget usage:
+
+```text
+bytes ~6.1%
+triangles ~9.8%
+materials 100%
+textures 0%
+```
+
+This is still extremely light for the lab candidate.
+
+### Performance architecture
+
+The current lab keeps all outfit/accessory geometry in one GLB because the full file is only ~60 KB.
+
+This is NOT a requirement for production art.
+
+When art-directed production variants become materially heavier, prefer:
+
+```text
+base GLB
++ selected outfit asset loaded on demand
++ selected accessory asset loaded on demand
+```
+
+especially for Tier B.
+
+Do not force mobile users to download unused high-detail wardrobe/accessory geometry simply because the proof-of-concept candidate can afford it.
+
+### Tests
+
+`tests/cueIdVisibility.test.ts` now verifies:
+
+- four outfit visibility groups;
+- three accessory groups plus null;
+- no accidental node sharing;
+- every mapped visibility node exists in the generated GLB binary itself.
+
+Current candidate remains:
+
+```text
+purpose = candidate
+status = candidate_not_production
+```
+
+Production remains untouched.
