@@ -5032,3 +5032,80 @@ Next decision:
 5. do not add facial rig, post-processing or texture complexity yet.
 
 Production remains untouched.
+
+## 79. Club Minimal candidate — quality headroom + head/clavicle pass 5
+
+The quality strategy was clarified: do not optimize for the smallest possible asset if additional budget materially improves the identity.
+
+Current universal production ceiling remains:
+
+```text
+base GLB <= 1,000,000 bytes
+triangles <= 35,000
+materials <= 4
+textures <= 6
+```
+
+Assets may approach the upper geometry range when the visual gain is measurable and Tier B remains healthy.
+
+### Runtime headroom helper
+
+`getCueIdAssetHeadroom()` now reports remaining bytes/triangles/materials/textures and usage ratios.
+
+For candidate v5:
+
+```text
+bytes = 43,776
+triangles = 2,164
+vertices = 1,142
+materials = 4
+textures = 0
+```
+
+Approximate current usage:
+
+```text
+bytes: ~4.4% of base ceiling
+triangles: ~6.2% of base ceiling
+materials: 100% of material ceiling
+textures: 0% of texture ceiling
+```
+
+Therefore the current constraint is NOT geometry. Future visual refinement should spend geometry budget freely when useful, while avoiding additional materials unless the contract is deliberately revised.
+
+### Visual pass 5
+
+Changes:
+
+- generic icosphere head replaced with an authored elliptical loft;
+- head now includes distinct crown / forehead / cheek / jaw / chin planes;
+- neck changed to tapered frustum;
+- clavicle bridge added between neck and shoulders;
+- this increased visual authorship while reducing asset cost versus v4.
+
+v4 -> v5:
+
+```text
+45,904 -> 43,776 bytes
+2,272 -> 2,164 triangles
+1,194 -> 1,142 vertices
+```
+
+This is the desired direction: use topology more intelligently before brute-force subdivision.
+
+### Maximum-quality policy
+
+If future refinement genuinely needs 30k–35k triangles, use them.
+
+Do NOT exceed the universal ceiling merely because desktop can handle it.
+
+If measured desktop quality eventually requires substantially more geometry, introduce explicit Tier A / Tier B LOD assets rather than increasing the mobile-safe default.
+
+Status remains:
+
+```text
+purpose = candidate
+status = candidate_not_production
+```
+
+Production remains untouched.
