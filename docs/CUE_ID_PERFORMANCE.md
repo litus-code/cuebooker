@@ -398,3 +398,52 @@ No GLB enters the initial production catalogue unless it has recorded:
 - memory/thermal observations on representative mobile hardware.
 
 A visually stronger asset can be rejected if its runtime cost is disproportionate.
+
+
+## GLB loader boundary
+
+The binary asset loading boundary now exists independently from the renderer.
+
+Implementation:
+
+```text
+app/services/cueIdAssetLoader.ts
+```
+
+Responsibilities:
+
+1. fetch the selected GLB lazily;
+2. enforce the catalogue-declared compressed byte ceiling;
+3. abort/timeout stalled requests;
+4. reject HTTP failures with stable error codes;
+5. validate the GLB v2 header before renderer handoff;
+6. verify the GLB-declared byte length matches the received payload;
+7. report transfer bytes and load time.
+
+The renderer must not bypass this service with arbitrary asset fetches.
+
+Current stable loader errors:
+
+```text
+asset_timeout
+asset_http_error
+asset_too_large
+asset_invalid_glb
+asset_length_mismatch
+```
+
+The loader intentionally stops at validated binary delivery. It does not parse meshes, materials or animation itself.
+
+That responsibility belongs to the future Three/Tres GLB loader after the binary has passed the Cuebooker budget boundary.
+
+This preserves the architecture:
+
+```text
+catalogue
+-> runtime tier decision
+-> bounded binary loader
+-> renderer adapter
+-> visual scene
+```
+
+and avoids growing the native WebGL proof into a custom 3D engine.
