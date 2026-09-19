@@ -71,6 +71,11 @@ const surfaceColor = computed(() =>
 )
 
 const accentColor = computed(() => getCueIdAccentColor(props.config.accent))
+const cameraPosition = computed(() =>
+  props.decision.tier === 'reduced'
+    ? [0, 0.34, 7.7]
+    : [0, 0.38, 7.25]
+)
 
 
 
@@ -365,7 +370,7 @@ onErrorCaptured(() => {
       @ready="handleReady"
       @render="handleRender"
     >
-      <TresPerspectiveCamera :position="[0, 0.38, 7.25]" :fov="40" />
+      <TresPerspectiveCamera :position="cameraPosition" :fov="40" />
 
       <TresAmbientLight :intensity="0.52" />
       <TresDirectionalLight :position="[3.2, 5.2, 4.2]" :intensity="1.85" />
