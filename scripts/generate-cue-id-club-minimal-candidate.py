@@ -367,8 +367,8 @@ def build():
         ("right", 0.76, -0.045, 0.075),
     ]
     for side, x, upper_angle, forearm_angle in arm_specs:
-        shoulder = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.19)
-        shoulder.apply_scale([1.0, 0.90, 0.84])
+        shoulder = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.165)
+        shoulder.apply_scale([1.0, 0.88, 0.80])
         shoulder.apply_translation([x, 1.71, 0])
         add(scene, f"shoulder_{side}", shoulder, DARK)
 
@@ -382,8 +382,8 @@ def build():
         add(scene, f"upper_arm_{side}", upper, DARK)
 
         elbow_x = x + (-0.045 if side == "left" else 0.035)
-        elbow = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.132)
-        elbow.apply_scale([0.92, 0.88, 0.86])
+        elbow = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.105)
+        elbow.apply_scale([0.90, 0.84, 0.82])
         elbow.apply_translation([elbow_x, 1.05, 0])
         add(scene, f"elbow_{side}", elbow, DARK)
 
@@ -410,16 +410,16 @@ def build():
         add(scene, f"hand_{side}", hand, BODY)
 
     waist = lofted_box([
-        (0.86, 0.56, 0.29),
-        (0.60, 0.50, 0.27),
+        (0.86, 0.52, 0.27),
+        (0.60, 0.46, 0.25),
     ])
     add(scene, "waist", waist, MID)
 
     hips = elliptical_loft([
-        (0.66, 0.50, 0.27),
-        (0.52, 0.56, 0.30),
-        (0.38, 0.55, 0.30),
-        (0.24, 0.48, 0.27),
+        (0.66, 0.46, 0.25),
+        (0.52, 0.50, 0.27),
+        (0.38, 0.49, 0.27),
+        (0.24, 0.44, 0.25),
     ], radial_sections=PROFILE["radial_sections"])
     add(scene, "hips", hips, MID)
 
@@ -427,8 +427,8 @@ def build():
         ("left", -0.29, -0.035, 0.03, -1),
         ("right", 0.30, 0.045, -0.025, 1),
     ]:
-        hip_joint = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.185)
-        hip_joint.apply_scale([0.88, 1.0, 0.88])
+        hip_joint = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.145)
+        hip_joint.apply_scale([0.86, 0.96, 0.84])
         hip_joint.apply_translation([x, 0.23, depth])
         add(scene, f"hip_joint_{side}", hip_joint, DARK)
 
@@ -441,8 +441,8 @@ def build():
         thigh.apply_translation([x, -0.18, depth])
         add(scene, f"thigh_{side}", thigh, DARK)
 
-        knee = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.15)
-        knee.apply_scale([0.90, 0.82, 0.88])
+        knee = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.112)
+        knee.apply_scale([0.88, 0.80, 0.84])
         knee.apply_translation([x + 0.012 * lateral, -0.62, depth])
         add(scene, f"knee_{side}", knee, DARK)
 
