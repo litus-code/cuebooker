@@ -6,6 +6,7 @@ import {
   DEFAULT_CUE_ID_CONFIG,
   cloneCueIdConfig
 } from '../app/domain/cueId.ts'
+import { toPublicCueIdConfig } from '../app/domain/publicArtistProfile.ts'
 
 test('CUE ID default config stays inside the Club Minimal V1 catalogue', () => {
   const config = DEFAULT_CUE_ID_CONFIG
@@ -38,4 +39,24 @@ test('Club Minimal keeps the first catalogue intentionally bounded', () => {
   assert.ok(CLUB_MINIMAL_CATALOGUE.accessories.length <= 4)
   assert.ok(CLUB_MINIMAL_CATALOGUE.poses.length <= 4)
   assert.ok(CLUB_MINIMAL_CATALOGUE.materials.length <= 2)
+})
+
+
+test('public CUE ID projection excludes private/editor-only flags', () => {
+  const publicConfig = toPublicCueIdConfig(DEFAULT_CUE_ID_CONFIG)
+
+  assert.equal(publicConfig.schemaVersion, 1)
+  assert.equal(publicConfig.family, 'club_minimal')
+  assert.equal('enabled' in publicConfig, false)
+  assert.deepEqual(Object.keys(publicConfig).sort(), [
+    'accent',
+    'accessory',
+    'base',
+    'build',
+    'family',
+    'material',
+    'outfit',
+    'pose',
+    'schemaVersion'
+  ].sort())
 })
