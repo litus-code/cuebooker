@@ -4889,3 +4889,58 @@ Next work should be:
 7. only then consider moving the asset from `candidate` to `production` and adding it to `CUE_ID_ASSETS`.
 
 Production remains untouched.
+
+## 76. Club Minimal candidate — silhouette refinement pass 2
+
+The original candidate has been refined without materially increasing runtime cost.
+
+Main visual changes:
+
+- tee changed from a front plate into a full torso volume;
+- shoulder joint volumes added to connect arms to torso;
+- hand scale reduced;
+- hips changed from box to rounded sculptural volume;
+- hip joint volumes added to connect legs;
+- boots reduced;
+- stance gained mild left/right asymmetry;
+- lime accent remains a narrow seam rather than costume.
+
+Generated metadata after refinement:
+
+```text
+bytes = 37,840
+triangles = 1,708
+vertices = 894
+materials = 4
+textures = 0
+```
+
+Compared with previous candidate:
+
+```text
+33,164 -> 37,840 bytes
+1,320 -> 1,708 triangles
+692 -> 894 vertices
+```
+
+The increase is intentionally small and remains far below mobile budgets.
+
+Status remains:
+
+```text
+purpose = candidate
+status = candidate_not_production
+```
+
+Do not promote yet.
+
+Next review should focus on:
+
+1. silhouette at real mobile profile size;
+2. head/neck editorial proportions;
+3. shoulder-to-arm continuity;
+4. leg taper and foot proportion;
+5. whether the low-poly sculptural direction feels authored rather than primitive;
+6. only then consider rigging or additional geometry.
+
+Production remains untouched.
