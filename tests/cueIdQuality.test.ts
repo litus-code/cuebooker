@@ -3,10 +3,10 @@ import test from 'node:test'
 
 import { selectCueIdCandidateQuality } from '../app/domain/cueIdQuality.ts'
 
-test('full runtime tier selects high quality', () => {
+test('full runtime tier selects medium until high quality passes the desktop gate', () => {
   assert.equal(
     selectCueIdCandidateQuality({ tier: 'full', reason: 'full_capability' }),
-    'high'
+    'medium'
   )
 })
 
