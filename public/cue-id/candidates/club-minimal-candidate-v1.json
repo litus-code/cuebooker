@@ -7,10 +7,10 @@
   "triangles": 3364,
   "vertices": 1760,
   "materials": 4,
+  "embeddedMaterials": 4,
+  "runtimeMaterials": 4,
+  "materialStrategy": "embedded_shared_pbr_mutated_runtime",
   "textures": 0,
   "artDirection": "club_minimal_v1",
-  "status": "candidate_not_production",
-  "embeddedMaterials": 0,
-  "runtimeMaterials": 4,
-  "materialStrategy": "runtime_shared_pbr"
+  "status": "candidate_not_production"
 }
