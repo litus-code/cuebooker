@@ -595,8 +595,17 @@ def build():
         shin.apply_translation([x + 0.018 * lateral, -1.10, depth])
         add(scene, f"shin_{side}", shin, DARK)
 
-        boot = trimesh.creation.box(extents=[0.30, 0.22, 0.50])
-        boot.apply_translation([x + 0.032 * lateral, -1.64, -0.050])
+        boot = lofted_box([
+            (0.12, 0.145, 0.155),
+            (0.02, 0.150, 0.170),
+            (-0.08, 0.155, 0.205),
+            (-0.14, 0.148, 0.245),
+        ])
+        boot.apply_transform(rotation_matrix(
+            -0.015 * lateral,
+            [0, 0, 1],
+        ))
+        boot.apply_translation([x + 0.032 * lateral, -1.60, -0.050])
         add(scene, f"boot_{side}", boot, DARK)
 
     # restrained DJ cue: headphones around the neck, not gaming-headset styling
