@@ -292,11 +292,11 @@ def build():
     add(scene, "torso", torso, BODY)
 
     tee = elliptical_loft([
-        (1.91, 0.76, 0.36),
-        (1.74, 0.79, 0.37),
-        (1.48, 0.72, 0.36),
-        (1.12, 0.65, 0.34),
-        (0.82, 0.58, 0.31),
+        (1.90, 0.73, 0.35),
+        (1.76, 0.78, 0.37),
+        (1.50, 0.73, 0.36),
+        (1.14, 0.65, 0.34),
+        (0.82, 0.60, 0.315),
     ], radial_sections=PROFILE["radial_sections"])
     add(scene, "tee_volume", tee, DARK)
 
@@ -305,10 +305,10 @@ def build():
     add(scene, "accent_seam", seam, LIME)
 
     tank = elliptical_loft([
-        (1.74, 0.54, 0.32),
-        (1.52, 0.58, 0.32),
-        (1.16, 0.58, 0.31),
-        (0.82, 0.55, 0.29),
+        (1.76, 0.46, 0.30),
+        (1.56, 0.53, 0.315),
+        (1.20, 0.57, 0.31),
+        (0.82, 0.54, 0.285),
     ], radial_sections=PROFILE["radial_sections"])
     add(scene, "outfit_tank", tank, DARK)
 
@@ -317,11 +317,11 @@ def build():
     add(scene, "outfit_tank_accent", tank_accent, LIME)
 
     hoodie = elliptical_loft([
-        (1.94, 0.80, 0.39),
-        (1.72, 0.82, 0.40),
-        (1.48, 0.76, 0.38),
-        (1.10, 0.68, 0.35),
-        (0.78, 0.62, 0.33),
+        (1.96, 0.77, 0.395),
+        (1.78, 0.84, 0.42),
+        (1.50, 0.80, 0.405),
+        (1.10, 0.72, 0.37),
+        (0.76, 0.66, 0.345),
     ], radial_sections=PROFILE["radial_sections"])
     add(scene, "outfit_hoodie", hoodie, DARK)
 
@@ -340,11 +340,11 @@ def build():
     add(scene, "outfit_hoodie_accent", hoodie_accent, LIME)
 
     bomber = elliptical_loft([
-        (1.90, 0.82, 0.40),
-        (1.72, 0.85, 0.41),
-        (1.46, 0.80, 0.40),
-        (1.12, 0.71, 0.36),
-        (0.92, 0.63, 0.34),
+        (1.90, 0.79, 0.405),
+        (1.72, 0.88, 0.435),
+        (1.46, 0.84, 0.425),
+        (1.14, 0.73, 0.38),
+        (0.96, 0.61, 0.335),
     ], radial_sections=PROFILE["radial_sections"])
     add(scene, "outfit_bomber", bomber, DARK)
 
@@ -355,7 +355,7 @@ def build():
         minor_sections=PROFILE["torus_minor"],
     )
     bomber_collar.apply_transform(rotation_matrix(np.pi / 2, [1, 0, 0]))
-    bomber_collar.apply_translation([0, 1.91, 0.01])
+    bomber_collar.apply_translation([0, 1.90, 0.015])
     add(scene, "outfit_bomber_collar", bomber_collar, MID)
 
     bomber_accent = trimesh.creation.box(extents=[0.74, 0.028, 0.036])
