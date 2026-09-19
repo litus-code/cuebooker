@@ -11,6 +11,8 @@ export type CueIdAssetBudget = {
 export type CueIdAssetDescriptor = {
   id: string
   family: 'club_minimal'
+  purpose: 'production' | 'benchmark'
+  artDirection: 'club_minimal_v1' | 'external_benchmark'
   kind: 'base' | 'outfit' | 'accessory'
   glbPath: string
   fallbackPath?: string | null
@@ -23,6 +25,11 @@ export type CueIdAssetDescriptor = {
     format: 'webp' | 'ktx2' | 'png' | 'jpg'
   }>
   supportedTiers: CueIdDeviceTier[]
+  attribution?: {
+    creator: string
+    license: string
+    source: string
+  } | null
 }
 
 export const CUE_ID_ASSET_BUDGETS: Record<'base' | 'outfit' | 'accessory', CueIdAssetBudget> = {
@@ -97,6 +104,13 @@ export function validateCueIdAsset(asset: CueIdAssetDescriptor): CueIdAssetValid
     })
   }
 
+  if (asset.purpose === 'production' && asset.artDirection !== 'club_minimal_v1') {
+    issues.push({
+      field: 'supportedTiers',
+      message: `${asset.id}: production assets must use club_minimal_v1 art direction`
+    })
+  }
+
   if (!asset.supportedTiers.length || asset.supportedTiers.includes('static')) {
     issues.push({
       field: 'supportedTiers',
@@ -123,6 +137,8 @@ export const CUE_ID_ASSETS: CueIdAssetDescriptor[] = []
 export const CUE_ID_BENCHMARK_ASSET: CueIdAssetDescriptor = {
   id: 'khronos-rigged-figure-benchmark',
   family: 'club_minimal',
+  purpose: 'benchmark',
+  artDirection: 'external_benchmark',
   kind: 'base',
   glbPath: '/cue-id/benchmarks/rigged-figure.glb',
   fallbackPath: null,
@@ -130,5 +146,10 @@ export const CUE_ID_BENCHMARK_ASSET: CueIdAssetDescriptor = {
   triangles: 0,
   materials: 0,
   textures: [],
-  supportedTiers: ['full', 'reduced']
+  supportedTiers: ['full', 'reduced'],
+  attribution: {
+    creator: 'Cesium',
+    license: 'CC-BY-4.0',
+    source: 'KhronosGroup/glTF-Sample-Assets/Models/RiggedFigure'
+  }
 }
