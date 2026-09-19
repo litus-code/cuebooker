@@ -5866,3 +5866,69 @@ auto -> medium
 Temporary capture/diagnostic scripts and workflows were removed after validation.
 
 Production remains untouched.
+
+## 85. WebGL capability hardening after real CI diagnosis
+
+Headless Chromium visual diagnostics exposed a capability-probe edge case.
+
+Observed in GitHub Actions:
+
+```text
+GLB request = HTTP 200
+content-length = 106,660 bytes
+canvas mounted = yes
+CueIdScene loaded = yes
+Three WebGLRenderer = failed to create WebGL context
+renderer = ANGLE / SwiftShader software path
+```
+
+The previous capability probe was too permissive because it allowed an `experimental-webgl` fallback.
+
+That allowed the runtime to classify the environment as interactive even though Three could not create a stable renderer.
+
+Correction:
+
+`canUseWebGl()` now:
+
+- tests WebGL2, then standard WebGL only;
+- uses `failIfMajorPerformanceCaveat: true`;
+- uses a conservative low-power context probe;
+- does NOT use `experimental-webgl`;
+- releases the probe context immediately;
+- falls back to Tier C/static when no stable context is available.
+
+This behavior is intentional: software/unstable WebGL should never be forced merely to preserve the 3D effect.
+
+The transient first-frame strategy remains:
+
+```text
+not ready -> temporary renderMode = always
+first real GLB frame -> ready
+ready -> renderMode = on-demand
+```
+
+This guarantees asynchronous scene insertion can produce a first frame while avoiding a permanent render loop.
+
+Important validation rule:
+
+GitHub Actions headless Chromium is not a valid visual-quality benchmark for CUE ID 3D because its software WebGL path can be unavailable or unstable.
+
+Visual acceptance must therefore use representative real hardware:
+
+- Android Chrome low/mid/high;
+- iPhone Safari;
+- Apple Silicon / Intel integrated desktop;
+- Windows Chrome/Edge integrated GPU.
+
+CI remains appropriate for:
+
+- asset budget validation;
+- GLB binary/header checks;
+- build/tests;
+- lazy bundle boundary;
+- static fallback behavior;
+- semantic contracts.
+
+Temporary capture workflow/scripts were removed after diagnosis.
+
+Production remains untouched.
