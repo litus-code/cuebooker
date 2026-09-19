@@ -1,0 +1,50 @@
+name: Capture CUE ID visual comparison
+
+on:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - .github/workflows/capture-cue-id-visual-comparison.yml
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Install Playwright browser
+        run: |
+          npx -y playwright@1.55.0 install --with-deps chromium
+
+      - name: Capture desktop auto quality
+        run: |
+          npx -y playwright@1.55.0 screenshot \
+            --browser chromium \
+            --viewport-size "1440,1000" \
+            --wait-for-timeout 4000 \
+            --full-page \
+            https://pr-75.cuebooker-staging.pages.dev/cue-id \
+            cue-id-desktop-auto.png
+
+      - name: Capture mobile auto quality
+        run: |
+          npx -y playwright@1.55.0 screenshot \
+            --browser chromium \
+            --device "iPhone 13" \
+            --wait-for-timeout 4000 \
+            --full-page \
+            https://pr-75.cuebooker-staging.pages.dev/cue-id \
+            cue-id-mobile-auto.png
+
+      - name: Upload visual comparison
+        uses: actions/upload-artifact@v4
+        with:
+          name: cue-id-visual-comparison
+          path: |
+            cue-id-desktop-auto.png
+            cue-id-mobile-auto.png
+          if-no-files-found: error
+          retention-days: 1
