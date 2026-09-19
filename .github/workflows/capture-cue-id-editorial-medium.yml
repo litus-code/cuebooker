@@ -1,0 +1,38 @@
+name: Capture CUE ID editorial medium
+
+on:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - .github/workflows/capture-cue-id-editorial-medium.yml
+      - scripts/capture-cue-id-editorial-medium.cjs
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Playwright browser
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Capture editorial medium
+        run: node scripts/capture-cue-id-editorial-medium.cjs
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: cue-id-editorial-medium
+          path: |
+            cue-id-desktop-medium-editorial.png
+            cue-id-mobile-medium-editorial.png
+          if-no-files-found: error
+          retention-days: 1
