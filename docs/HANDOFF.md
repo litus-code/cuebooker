@@ -4094,3 +4094,115 @@ After CI/build is green:
 7. only after that introduce the first real GLB/Tres renderer.
 
 Production remains untouched.
+
+## 67. Public CUE ID projection — IMPLEMENTED / EDGE FUNCTION V15
+
+CUE ID now has an explicit public projection contract.
+
+### Public domain
+
+`app/domain/publicArtistProfile.ts` now exposes:
+
+```text
+visualMode?: 'photo' | 'artwork' | 'cue_id'
+cueId?: PublicCueIdConfig | null
+```
+
+`PublicCueIdConfig` deliberately contains only:
+
+```text
+schemaVersion
+family
+base
+build
+outfit
+accessory
+pose
+material
+accent
+```
+
+It does NOT expose `enabled`, editor-only flags, renderer internals, private profile fields or booking/commercial data.
+
+A shared `toPublicCueIdConfig()` helper is used by authenticated preview code so private preview and the public contract stay aligned.
+
+### Public profile rendering
+
+`PublicArtistProfile.vue` now supports `photo`, `artwork` and `cue_id`.
+
+- missing `visualMode` stays backward-compatible and renders photo;
+- `artwork` applies the Cuebooker portrait treatment;
+- `cue_id` renders `CueIdStage` as the static-first identity;
+- existing booking CTA, story and links remain unchanged;
+- portrait and CUE ID are mutually exclusive inside the hero;
+- no WebGL/Three renderer is loaded by this public path yet.
+
+### Public Edge Function
+
+`supabase/functions/get-public-artist-profile/index.ts` now reads `visual_mode` and `cue_id_config` but never returns raw `cue_id_config`.
+
+The function sanitizes every public CUE ID field against the V1 catalogue before returning it.
+
+If `visual_mode = cue_id` but the stored config is invalid, the public endpoint degrades to:
+
+```text
+visualMode = photo
+cueId = null
+```
+
+Staging Edge Function:
+
+```text
+get-public-artist-profile
+version 15
+status ACTIVE
+verify_jwt false
+```
+
+`verify_jwt=false` remains intentional because this is the existing public profile endpoint. Publication remains gated by `public_profile_enabled=true` inside the function.
+
+At implementation time the published staging artist remains:
+
+```text
+slug = lits
+visual_mode = photo
+cue family = club_minimal
+```
+
+No artist data was modified to force a CUE ID smoke test.
+
+### Tests
+
+`tests/cueId.test.ts` now also verifies that the application-side public projection excludes `enabled` and contains only the intended safe keys.
+
+### Implementation commits
+
+```text
+fa7aecf0a5de0223593e980c13c38721e40957c7
+90b14ad47b9f5d06616b44e2881cc1d395492dff
+d0b25964919c0183481b8b5feeebd4d828d7f0b5
+71220346aabfb38a2129c81aba9c08537cc1e5d5
+c0542543c8b6d8fb3146a786d9a64c53977c4e52
+f1ec27a0d23f2d34a8ade4961b6d8744d2403326
+```
+
+### Validation boundary
+
+The Edge Function deployment succeeded.
+
+The available runtime could not directly curl the staging Supabase hostname, so a real HTTP payload smoke has not been claimed here.
+
+### Next CUE ID block
+
+After CI/build is green:
+
+1. visually validate private preview and public profile on desktop/mobile;
+2. choose the first real 3D runtime integration;
+3. preserve `CueIdStage` as immediate/static fallback;
+4. introduce a lazy client-only renderer;
+5. begin with one procedural/placeholder 3D scene before committing to final humanoid assets;
+6. measure bundle/runtime cost before adding GLB catalogue breadth.
+
+Current research confirms the official TresJS Nuxt integration exists and is the preferred Vue/Nuxt-native route, but no 3D dependencies have been added yet.
+
+Production remains untouched.
