@@ -6,6 +6,7 @@ on:
       - feature/app-visual-system
     paths:
       - .github/workflows/generate-club-minimal-candidate.yml
+      - scripts/generate-cue-id-club-minimal-candidate.py
 
 permissions:
   contents: write
