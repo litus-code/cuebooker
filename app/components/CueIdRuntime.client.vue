@@ -29,6 +29,7 @@ let colorLocation: WebGLUniformLocation | null = null
 let vertexCount = 0
 let resizeObserver: ResizeObserver | null = null
 let reducedMotion = false
+let initStartedAt = 0
 
 const cubeVertices = new Float32Array([
   -0.5,-0.5,-0.5,  0.5,-0.5,-0.5,  0.5, 0.5,-0.5,
@@ -144,7 +145,9 @@ function init() {
   ready.value = true
   analytics.track('cue_id_renderer_ready', {
     renderer: 'webgl_procedural',
-    reduced_motion: reducedMotion
+    reduced_motion: reducedMotion,
+    init_ms: Math.max(0, Math.round(performance.now() - initStartedAt)),
+    dpr_cap: Math.min(window.devicePixelRatio || 1, 1.5)
   })
   emit('ready')
   resize()
@@ -243,8 +246,25 @@ function handleVisibility() {
   else start()
 }
 
+function handleContextLost(event: Event) {
+  event.preventDefault()
+  cancelAnimationFrame(frame)
+  ready.value = false
+  failed.value = true
+  analytics.track('cue_id_renderer_failed', {
+    renderer: 'webgl_procedural',
+    reason: 'webgl_context_lost'
+  })
+  analytics.track('cue_id_static_fallback_used', {
+    reason: 'webgl_context_lost'
+  })
+  emit('failed')
+}
+
 onMounted(() => {
+  initStartedAt = performance.now()
   reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  canvas.value?.addEventListener('webglcontextlost', handleContextLost)
   if (!init()) {
     failed.value = true
     analytics.track('cue_id_renderer_failed', {
@@ -278,6 +298,7 @@ onBeforeUnmount(() => {
   observer?.disconnect()
   resizeObserver?.disconnect()
   document.removeEventListener('visibilitychange', handleVisibility)
+  canvas.value?.removeEventListener('webglcontextlost', handleContextLost)
   if (gl && buffer) gl.deleteBuffer(buffer)
   if (gl && program) gl.deleteProgram(program)
   gl = null
