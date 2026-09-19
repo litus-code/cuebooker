@@ -6150,3 +6150,116 @@ The static representation must feel like the same CUE ID identity, not like an e
 Tests now lock a complete head/neck/torso/arms/hands/pelvis/legs silhouette and outfit variants.
 
 Production remains untouched.
+
+## 92. Artist visual source — duplicate source of truth removed
+
+The CUE ID persistence model no longer stores Photo / Artwork / CUE ID in a second overlapping column.
+
+Previous overlap:
+
+```text
+visual_mode = photo | artwork | cue_id
+artist_image_style = photo | artwork | duotone
+```
+
+This allowed Photo/Artwork to diverge across two persisted fields.
+
+### Final model
+
+Authoritative source:
+
+```text
+visual_source = portrait | cue_id
+```
+
+Portrait treatment remains:
+
+```text
+artist_image_style = photo | artwork | duotone
+```
+
+UI/public presentation is derived:
+
+```text
+cue_id source -> CUE ID
+portrait + photo -> Photo
+portrait + artwork/duotone -> Artwork
+```
+
+New domain:
+
+```text
+app/domain/artistVisual.ts
+```
+
+It owns:
+
+- ArtistVisualSource;
+- ArtistPresentationMode;
+- getArtistPresentationMode();
+- getArtistPresentationSelection().
+
+Selecting CUE ID does not destroy the saved portrait treatment.
+
+Selecting Artwork preserves an existing duotone treatment.
+
+### Staging migrations
+
+Applied:
+
+```text
+20260919155114 add_artist_visual_source
+20260919155556 drop_legacy_artist_visual_mode
+```
+
+Repository migration files use the same versions.
+
+Staging verification after migration:
+
+```text
+artists columns include visual_source + artist_image_style
+visual_mode no longer exists
+visual_source constraint = portrait | cue_id
+existing profile = cue_id source + photo treatment
+authenticated SELECT/INSERT/UPDATE grants present on visual_source
+RLS policies unchanged
+```
+
+No new security advisory was introduced.
+
+Existing advisories remain:
+
+- leaked-password protection disabled;
+- service-role operational tables with RLS and no end-user policies;
+- development-stage unused-index informational findings.
+
+### Public projection
+
+`get-public-artist-profile` staging version 16 now reads `visual_source` and derives the existing public `visualMode` response for compatibility.
+
+Public response smoke was executed twice:
+
+1. after deploying the new function while legacy column still existed;
+2. after physically dropping `visual_mode`.
+
+Both verified:
+
+```text
+artist.visualMode = cue_id
+artist.cueId.family = club_minimal
+artist.artistImageStyle = photo
+```
+
+### Application
+
+`useArtistProfile.ts` now selects and persists `visual_source`.
+
+`CueIdProfileEditor.vue` derives Photo / Artwork / CUE ID from source + treatment.
+
+`ProfileCoverUploader.vue` imports the portrait treatment type from the visual domain.
+
+`tests/artistVisual.test.ts` locks the new model and asserts application/public-function code no longer reads `visual_mode`.
+
+This resolves the architecture risk identified during the original CUE ID persistence work.
+
+Production remains untouched.
