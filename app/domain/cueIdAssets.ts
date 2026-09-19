@@ -11,7 +11,7 @@ export type CueIdAssetBudget = {
 export type CueIdAssetDescriptor = {
   id: string
   family: 'club_minimal'
-  purpose: 'production' | 'benchmark'
+  purpose: 'production' | 'candidate' | 'benchmark'
   artDirection: 'club_minimal_v1' | 'external_benchmark'
   kind: 'base' | 'outfit' | 'accessory'
   glbPath: string
@@ -152,4 +152,21 @@ export const CUE_ID_BENCHMARK_ASSET: CueIdAssetDescriptor = {
     license: 'CC-BY-4.0',
     source: 'KhronosGroup/glTF-Sample-Assets/Models/RiggedFigure'
   }
+}
+
+
+export const CUE_ID_CANDIDATE_ASSET: CueIdAssetDescriptor = {
+  id: 'club-minimal-candidate-v1',
+  family: 'club_minimal',
+  purpose: 'candidate',
+  artDirection: 'club_minimal_v1',
+  kind: 'base',
+  glbPath: '/cue-id/candidates/club-minimal-candidate-v1.glb',
+  fallbackPath: null,
+  compressedBytes: 33_120,
+  triangles: 1_320,
+  materials: 4,
+  textures: [],
+  supportedTiers: ['full', 'reduced'],
+  attribution: null
 }
