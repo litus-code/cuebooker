@@ -5,10 +5,31 @@ const props = withDefaults(defineProps<{
   config: CueIdConfigV1
   artistName?: string
   compact?: boolean
+  interactive?: boolean
 }>(), {
   artistName: 'ARTIST',
-  compact: false
+  compact: false,
+  interactive: true
 })
+
+const stageRoot = ref<HTMLElement | null>(null)
+const runtimeWanted = ref(false)
+const runtimeReady = ref(false)
+let runtimeObserver: IntersectionObserver | null = null
+
+const LazyCueIdRuntime = defineAsyncComponent(() => import('./CueIdRuntime.client.vue'))
+
+onMounted(() => {
+  if (!props.interactive) return
+  runtimeObserver = new IntersectionObserver(entries => {
+    if (!entries[0]?.isIntersecting) return
+    runtimeWanted.value = true
+    runtimeObserver?.disconnect()
+  }, { rootMargin: '220px 0px', threshold: .01 })
+  if (stageRoot.value) runtimeObserver.observe(stageRoot.value)
+})
+
+onBeforeUnmount(() => runtimeObserver?.disconnect())
 
 const poseClass = computed(() => `cue-id-stage--pose-${props.config.pose}`)
 const buildClass = computed(() => `cue-id-stage--build-${props.config.build}`)
@@ -20,8 +41,9 @@ const accentClass = computed(() => props.config.accent ? `cue-id-stage--accent-$
 
 <template>
   <section
+    ref="stageRoot"
     class="cue-id-stage"
-    :class="[poseClass, buildClass, baseClass, outfitClass, materialClass, accentClass, { 'cue-id-stage--compact': compact }]"
+    :class="[poseClass, buildClass, baseClass, outfitClass, materialClass, accentClass, { 'cue-id-stage--compact': compact, 'cue-id-stage--runtime-ready': runtimeReady }]"
     aria-label="CUE ID static preview"
   >
     <div class="cue-id-stage__grid" aria-hidden="true" />
@@ -37,6 +59,15 @@ const accentClass = computed(() => props.config.accent ? `cue-id-stage--accent-$
     </div>
 
     <div class="cue-id-stage__scan" aria-hidden="true" />
+
+    <ClientOnly>
+      <LazyCueIdRuntime
+        v-if="interactive && runtimeWanted"
+        :config="config"
+        @ready="runtimeReady = true"
+        @failed="runtimeReady = false"
+      />
+    </ClientOnly>
 
     <footer class="cue-id-stage__meta">
       <span>CUE ID / CLUB MINIMAL</span>
@@ -77,6 +108,9 @@ const accentClass = computed(() => props.config.accent ? `cue-id-stage--accent-$
   transform-style:preserve-3d; filter:drop-shadow(0 38px 46px rgba(0,0,0,.8))
 }
 .cue-id-stage__figure i{position:absolute;display:block}
+.cue-id-stage--runtime-ready .cue-id-stage__figure{opacity:0;transition:opacity .28s ease}
+.cue-id-stage--runtime-ready .cue-id-stage__scan{opacity:.32}
+.cue-id-stage__meta{z-index:5}
 .cue-id-stage__head {
   left:57px; top:0; width:76px; height:88px; border-radius:45% 45% 40% 40%;
   background:linear-gradient(120deg,#4b5149 0%,#151815 46%,#969d90 49%,#242924 57%,#090a09 100%);
@@ -113,6 +147,7 @@ const accentClass = computed(() => props.config.accent ? `cue-id-stage--accent-$
 .cue-id-stage__accessory[data-accessory="headphones"]{left:48px;top:18px;width:94px;height:76px;border:5px solid #252a24;border-bottom:0;border-radius:50% 50% 0 0}
 .cue-id-stage__accessory[data-accessory="none"]{display:none}
 .cue-id-stage--compact{min-height:360px}
+@media(prefers-reduced-motion:reduce){.cue-id-stage--runtime-ready .cue-id-stage__figure{transition:none}}
 @media(prefers-reduced-motion:no-preference){.cue-id-stage__figure{animation:cue-id-float 5.8s ease-in-out infinite}.cue-id-stage__scan{animation:cue-id-scan 4.4s ease-in-out infinite}}
 @keyframes cue-id-float{0%,100%{translate:0 0}50%{translate:0 -8px}}@keyframes cue-id-scan{0%,100%{transform:translateY(-80px);opacity:.2}50%{transform:translateY(95px);opacity:.9}}
 @media(max-width:680px){.cue-id-stage{min-height:430px}.cue-id-stage__halo--one{width:300px;height:300px}.cue-id-stage__halo--two{width:410px;height:410px}.cue-id-stage__figure{transform:translate(-50%,-52%) scale(.88) rotateY(-12deg)}.cue-id-stage__meta{left:16px;right:16px;bottom:16px}.cue-id-stage__meta small{display:none}}
