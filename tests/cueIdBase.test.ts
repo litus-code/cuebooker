@@ -42,3 +42,14 @@ test('base node names map to generated Club Minimal geometry names', async () =>
     )
   }
 })
+
+
+test('non-neutral bases preserve silhouette semantics across all outfit bodies', () => {
+  const outfitBodyNodes = ['tee_volume', 'outfit_tank', 'outfit_hoodie', 'outfit_bomber']
+
+  for (const base of [CUE_ID_BASES.masculine, CUE_ID_BASES.feminine]) {
+    for (const node of outfitBodyNodes) {
+      assert.ok(base.nodes[node], `base semantics must include outfit body "${node}"`)
+    }
+  }
+})
