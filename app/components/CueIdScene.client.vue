@@ -4,6 +4,7 @@ import { Box3, Object3D, Vector3 } from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import type { CueIdConfigV1 } from '../domain/cueId'
 import { CUE_ID_BENCHMARK_ASSET, CUE_ID_CANDIDATE_ASSET } from '../domain/cueIdAssets'
+import { CUE_ID_POSES } from '../domain/cueIdPose'
 import type { CueIdRuntimeDecision } from '../domain/cueIdRuntime'
 import { loadCueIdGlbBuffer } from '../services/cueIdAssetLoader'
 
@@ -23,6 +24,13 @@ const emit = defineEmits<{
 
 const ready = ref(false)
 const labScene = shallowRef<Object3D | null>(null)
+const labSceneVersion = ref(0)
+const baseNodeTransforms = new Map<string, {
+  rotation: [number, number, number]
+  position: [number, number, number]
+}>()
+let baseRootRotation: [number, number, number] = [0, 0, 0]
+let baseRootPosition: [number, number, number] = [0, 0, 0]
 let labFrameStartedAt = 0
 let labMetrics: { assetId: string; bytes: number; loadMs: number; parseMs: number } | null = null
 
@@ -53,6 +61,55 @@ const accentColor = computed(() =>
 )
 
 
+
+function rememberBaseTransforms(root: Object3D) {
+  baseNodeTransforms.clear()
+  root.traverse(node => {
+    baseNodeTransforms.set(node.name, {
+      rotation: [node.rotation.x, node.rotation.y, node.rotation.z],
+      position: [node.position.x, node.position.y, node.position.z]
+    })
+  })
+  baseRootRotation = [root.rotation.x, root.rotation.y, root.rotation.z]
+  baseRootPosition = [root.position.x, root.position.y, root.position.z]
+}
+
+function applySemanticPose(root: Object3D) {
+  if (props.labAsset !== 'candidate') return
+
+  const pose = CUE_ID_POSES[props.config.pose]
+
+  root.rotation.set(
+    baseRootRotation[0] + pose.rootRotation[0],
+    baseRootRotation[1] + pose.rootRotation[1],
+    baseRootRotation[2] + pose.rootRotation[2]
+  )
+  root.position.set(
+    baseRootPosition[0] + pose.rootPosition[0],
+    baseRootPosition[1] + pose.rootPosition[1],
+    baseRootPosition[2] + pose.rootPosition[2]
+  )
+
+  root.traverse(node => {
+    const base = baseNodeTransforms.get(node.name)
+    if (!base) return
+    const transform = pose.nodes[node.name]
+
+    node.rotation.set(
+      base.rotation[0] + (transform?.rotation?.[0] || 0),
+      base.rotation[1] + (transform?.rotation?.[1] || 0),
+      base.rotation[2] + (transform?.rotation?.[2] || 0)
+    )
+    node.position.set(
+      base.position[0] + (transform?.position?.[0] || 0),
+      base.position[1] + (transform?.position?.[1] || 0),
+      base.position[2] + (transform?.position?.[2] || 0)
+    )
+  })
+
+  labSceneVersion.value += 1
+}
+
 async function loadLabAsset() {
   if (!props.labAsset) return
 
@@ -79,6 +136,9 @@ async function loadLabAsset() {
       -center.y * scale - 0.25,
       -center.z * scale
     )
+
+    rememberBaseTransforms(parsed)
+    applySemanticPose(parsed)
 
     labMetrics = {
       assetId: asset.id,
@@ -115,6 +175,15 @@ function disposeObject(object: Object3D | null) {
 }
 
 onMounted(loadLabAsset)
+
+watch(
+  () => props.config.pose,
+  () => {
+    if (!labScene.value || props.labAsset !== 'candidate') return
+    applySemanticPose(labScene.value)
+  }
+)
+
 onBeforeUnmount(() => disposeObject(labScene.value))
 
 function handleReady() {
@@ -162,6 +231,7 @@ onErrorCaptured(() => {
 
       <primitive
         v-if="labAsset && labScene"
+        :key="labSceneVersion"
         :object="labScene"
       />
 
