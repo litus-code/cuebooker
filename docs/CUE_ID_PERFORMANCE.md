@@ -447,3 +447,75 @@ catalogue
 ```
 
 and avoids growing the native WebGL proof into a custom 3D engine.
+
+
+## Quality headroom policy
+
+The performance budget is a ceiling, not a target to stay artificially far below.
+
+Cuebooker should spend additional 3D budget when it creates a visible improvement in:
+
+- silhouette continuity;
+- head/shoulder anatomy;
+- clothing volume;
+- hand/foot readability;
+- deformation quality;
+- rigging quality;
+- profile-size legibility.
+
+Do not optimize for the smallest possible triangle count if that makes CUE ID look primitive.
+
+### Universal base ceiling
+
+Until representative Android measurements justify a tier-specific LOD strategy, the default production base keeps the current universal ceiling:
+
+```text
+compressed GLB <= 1,000,000 bytes
+triangles <= 35,000
+materials <= 4
+textures <= 6
+texture dimension <= 2048
+```
+
+A production candidate may approach the 30k–35k triangle range if the added geometry creates a material visual improvement and Tier B remains within the runtime gates.
+
+### Current candidate headroom
+
+For Club Minimal candidate v1 pass 4:
+
+```text
+bytes used: 45,904 / 1,000,000 (~4.6%)
+triangles used: 2,272 / 35,000 (~6.5%)
+materials used: 4 / 4
+textures used: 0 / 6
+```
+
+This means the candidate is currently geometry-light, not budget-constrained.
+
+The next refinements should therefore prefer geometry/topology improvements over new materials.
+
+### Maximum-quality rule
+
+Use as much of the available budget as is visibly justified, stopping at the first point where one of these regresses:
+
+- Tier B first-frame target;
+- scroll responsiveness;
+- interaction latency;
+- memory stability;
+- thermal/battery behavior;
+- context stability;
+- page load or route transition performance.
+
+### Future high-detail Tier A
+
+Do not raise the universal base ceiling merely because desktop can handle more.
+
+If measured visual quality eventually requires substantially more than the universal budget, introduce explicit Tier A / Tier B LOD assets instead:
+
+```text
+Tier A -> high-detail visual variant
+Tier B -> mobile-safe reduced variant
+Tier C -> static fallback
+```
+
+Only add LOD complexity after measurements prove that a single production asset cannot deliver the desired visual quality efficiently.
