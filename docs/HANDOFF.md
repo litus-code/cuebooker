@@ -6727,3 +6727,44 @@ The procedural generator and generated GLBs remain in the repository only as run
 `CUE_ID_ASSETS` remains intentionally empty.
 
 Production remains untouched.
+
+## 105. V2 brief update: three first-class bases
+
+The V2 production asset brief now treats feminine, masculine and neutral as first-class bases from day one.
+
+Decision:
+
+- the next authored CUE ID asset must be designed around three real bases, not one default base plus later variants;
+- the base system is part of the core product contract, not an optional expansion;
+- all three bases must share the same quality level, pose set, wardrobe availability, accessory support and review bar.
+
+Design rules added to the brief:
+
+- feminine must avoid sexualised or cliché avatar cues;
+- masculine must avoid heroic exaggeration;
+- neutral must remain a complete authored identity, not an unfinished midpoint;
+- base semantics must remain readable through silhouette, head structure and clothing fit;
+- build semantics must remain independent from base semantics.
+
+Product implication:
+
+- the first production outfit remains a single excellent editorial club tee;
+- that tee must be validated on feminine, masculine and neutral before any wardrobe expansion;
+- the minimum visual review matrix now includes all three bases in regular build, with slim and strong spot checks.
+
+The procedural generator remains a technical fixture only and is not upgraded to satisfy this requirement.
+
+### Next execution block
+
+The next concrete step is not more procedural refinement.
+
+The next block is:
+
+1. concept stills for feminine / masculine / neutral;
+2. one approved visual family;
+3. one production-quality editorial tee applied to all three bases;
+4. mobile product-size review before deeper runtime integration.
+
+No production asset work should proceed without still-image approval of the three bases.
+
+Production remains untouched.
