@@ -131,6 +131,13 @@ const resolvedLabQuality = computed<CueIdCandidateQuality>(() => {
     : 'light'
 })
 
+watch(resolvedLabQuality, () => {
+  latestLabMetrics.value = null
+  runtimeReady.value = false
+  runtimeInitMs.value = null
+  runtimeLoadStartedAt = performance.now()
+})
+
 const performanceGate = computed(() => {
   if (!runtimeDecision.value) return null
   return evaluateCueIdReadyPerformance(
@@ -307,5 +314,5 @@ const performanceGate = computed(() => {
 @media(prefers-reduced-motion:reduce){.cue-id-stage--runtime-ready .cue-id-stage__figure{transition:none}}
 @media(prefers-reduced-motion:no-preference){.cue-id-stage__figure{animation:cue-id-float 5.8s ease-in-out infinite}.cue-id-stage__scan{animation:cue-id-scan 4.4s ease-in-out infinite}}
 @keyframes cue-id-float{0%,100%{translate:0 0}50%{translate:0 -8px}}@keyframes cue-id-scan{0%,100%{transform:translateY(-80px);opacity:.2}50%{transform:translateY(95px);opacity:.9}}
-@media(max-width:680px){.cue-id-stage{min-height:430px}.cue-id-stage__diagnostics{left:10px;top:10px;padding:8px 10px;gap:3px 8px;font-size:8px;max-width:230px}.cue-id-stage__halo--one{width:300px;height:300px}.cue-id-stage__halo--two{width:410px;height:410px}.cue-id-stage__figure{transform:translate(-50%,-50%) scale(.82) rotateY(-12deg)}.cue-id-stage__meta{left:16px;right:16px;bottom:16px}.cue-id-stage__meta small{display:none}}
+@media(max-width:680px){.cue-id-stage{min-height:500px}.cue-id-stage__diagnostics{display:none}.cue-id-stage__halo--one{width:300px;height:300px}.cue-id-stage__halo--two{width:410px;height:410px}.cue-id-stage__figure{transform:translate(-50%,-50%) scale(.82) rotateY(-12deg)}.cue-id-stage__meta{left:16px;right:16px;bottom:16px}.cue-id-stage__meta small{display:none}}
 </style>
