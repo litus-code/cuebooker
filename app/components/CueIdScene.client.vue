@@ -6,6 +6,7 @@ import type { CueIdConfigV1 } from '../domain/cueId'
 import { CUE_ID_BENCHMARK_ASSET, CUE_ID_CANDIDATE_ASSET } from '../domain/cueIdAssets'
 import { CUE_ID_POSES } from '../domain/cueIdPose'
 import { CUE_ID_BUILDS } from '../domain/cueIdBuild'
+import { CUE_ID_BASES } from '../domain/cueIdBase'
 import { CUE_ID_MATERIAL_PRESETS, getCueIdAccentColor } from '../domain/cueIdMaterial'
 import type { CueIdRuntimeDecision } from '../domain/cueIdRuntime'
 import { loadCueIdGlbBuffer } from '../services/cueIdAssetLoader'
@@ -113,6 +114,7 @@ function applySemanticAppearance(root: Object3D) {
 
   const pose = CUE_ID_POSES[props.config.pose]
   const build = CUE_ID_BUILDS[props.config.build]
+  const baseVariant = CUE_ID_BASES[props.config.base]
 
   root.rotation.set(
     baseRootRotation[0] + pose.rootRotation[0],
@@ -125,9 +127,9 @@ function applySemanticAppearance(root: Object3D) {
     baseRootPosition[2] + pose.rootPosition[2]
   )
   root.scale.set(
-    baseRootScale[0] * build.rootScale[0],
-    baseRootScale[1] * build.rootScale[1],
-    baseRootScale[2] * build.rootScale[2]
+    baseRootScale[0] * build.rootScale[0] * baseVariant.rootScale[0],
+    baseRootScale[1] * build.rootScale[1] * baseVariant.rootScale[1],
+    baseRootScale[2] * build.rootScale[2] * baseVariant.rootScale[2]
   )
 
   root.traverse(node => {
@@ -135,6 +137,7 @@ function applySemanticAppearance(root: Object3D) {
     if (!base) return
     const transform = pose.nodes[node.name]
     const buildScale = build.nodes[node.name] || [1, 1, 1]
+    const baseScale = baseVariant.nodes[node.name] || [1, 1, 1]
 
     node.rotation.set(
       base.rotation[0] + (transform?.rotation?.[0] || 0),
@@ -147,9 +150,9 @@ function applySemanticAppearance(root: Object3D) {
       base.position[2] + (transform?.position?.[2] || 0)
     )
     node.scale.set(
-      base.scale[0] * buildScale[0],
-      base.scale[1] * buildScale[1],
-      base.scale[2] * buildScale[2]
+      base.scale[0] * buildScale[0] * baseScale[0],
+      base.scale[1] * buildScale[1] * baseScale[1],
+      base.scale[2] * buildScale[2] * baseScale[2]
     )
   })
 
@@ -224,7 +227,13 @@ function disposeObject(object: Object3D | null) {
 onMounted(loadLabAsset)
 
 watch(
-  () => [props.config.pose, props.config.build, props.config.material, props.config.accent],
+  () => [
+    props.config.pose,
+    props.config.build,
+    props.config.base,
+    props.config.material,
+    props.config.accent
+  ],
   () => {
     if (!labScene.value || props.labAsset !== 'candidate') return
     applySemanticAppearance(labScene.value)
