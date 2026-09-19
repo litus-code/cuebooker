@@ -118,6 +118,16 @@ SEMANTIC_OUTFIT_NODE_NAMES = {
     "outfit_bomber",
     "outfit_bomber_collar",
     "outfit_bomber_accent",
+    "outfit_tee_sleeve_left",
+    "outfit_tee_sleeve_right",
+    "outfit_hoodie_upper_sleeve_left",
+    "outfit_hoodie_upper_sleeve_right",
+    "outfit_hoodie_forearm_sleeve_left",
+    "outfit_hoodie_forearm_sleeve_right",
+    "outfit_bomber_upper_sleeve_left",
+    "outfit_bomber_upper_sleeve_right",
+    "outfit_bomber_forearm_sleeve_left",
+    "outfit_bomber_forearm_sleeve_right",
 }
 
 SEMANTIC_ACCESSORY_NODE_NAMES = {
@@ -257,6 +267,16 @@ def lofted_box(sections):
     )
 
 
+def garment_sleeve(rings, angle, translation):
+    sleeve = elliptical_loft(
+        rings,
+        radial_sections=PROFILE["radial_sections"],
+    )
+    sleeve.apply_transform(rotation_matrix(angle, [0, 0, 1]))
+    sleeve.apply_translation(translation)
+    return sleeve
+
+
 def build():
     scene = trimesh.Scene()
 
@@ -386,7 +406,68 @@ def build():
         ("left", -0.72, 0.085, -0.105),
         ("right", 0.72, -0.040, 0.070),
     ]
+
     for side, x, upper_angle, forearm_angle in arm_specs:
+        lateral_upper = -0.015 if side == "left" else 0.010
+        elbow_x = x + (-0.045 if side == "left" else 0.035)
+        lateral_forearm = -0.025 if side == "left" else 0.020
+        forearm_depth = -0.035 if side == "left" else 0.025
+
+        tee_sleeve = garment_sleeve(
+            [
+                (0.16, 0.205, 0.180),
+                (0.00, 0.195, 0.172),
+                (-0.16, 0.178, 0.158),
+            ],
+            upper_angle,
+            [x + lateral_upper, 1.55, 0],
+        )
+        add(scene, f"outfit_tee_sleeve_{side}", tee_sleeve, DARK)
+
+        hoodie_upper_sleeve = garment_sleeve(
+            [
+                (0.31, 0.205, 0.185),
+                (0.02, 0.195, 0.175),
+                (-0.31, 0.170, 0.150),
+            ],
+            upper_angle,
+            [x + lateral_upper, 1.37, 0],
+        )
+        add(scene, f"outfit_hoodie_upper_sleeve_{side}", hoodie_upper_sleeve, DARK)
+
+        hoodie_forearm_sleeve = garment_sleeve(
+            [
+                (0.29, 0.170, 0.150),
+                (0.02, 0.158, 0.142),
+                (-0.29, 0.128, 0.116),
+            ],
+            forearm_angle,
+            [elbow_x + lateral_forearm, 0.73, forearm_depth],
+        )
+        add(scene, f"outfit_hoodie_forearm_sleeve_{side}", hoodie_forearm_sleeve, DARK)
+
+        bomber_upper_sleeve = garment_sleeve(
+            [
+                (0.31, 0.220, 0.198),
+                (0.02, 0.210, 0.190),
+                (-0.31, 0.178, 0.160),
+            ],
+            upper_angle,
+            [x + lateral_upper, 1.37, 0],
+        )
+        add(scene, f"outfit_bomber_upper_sleeve_{side}", bomber_upper_sleeve, DARK)
+
+        bomber_forearm_sleeve = garment_sleeve(
+            [
+                (0.29, 0.180, 0.162),
+                (0.02, 0.168, 0.150),
+                (-0.29, 0.136, 0.122),
+            ],
+            forearm_angle,
+            [elbow_x + lateral_forearm, 0.73, forearm_depth],
+        )
+        add(scene, f"outfit_bomber_forearm_sleeve_{side}", bomber_forearm_sleeve, DARK)
+
         shoulder = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.150)
         shoulder.apply_scale([1.0, 0.86, 0.78])
         shoulder.apply_translation([x, 1.70, 0])
@@ -401,7 +482,6 @@ def build():
         upper.apply_translation([x + (-0.015 if side == "left" else 0.010), 1.37, 0])
         add(scene, f"upper_arm_{side}", upper, DARK)
 
-        elbow_x = x + (-0.045 if side == "left" else 0.035)
         elbow = trimesh.creation.icosphere(subdivisions=PROFILE["sphere_subdivisions"], radius=0.105)
         elbow.apply_scale([0.90, 0.84, 0.82])
         elbow.apply_translation([elbow_x, 1.05, 0])
@@ -414,9 +494,9 @@ def build():
         ], radial_sections=PROFILE["radial_sections"])
         forearm.apply_transform(rotation_matrix(forearm_angle, [0, 0, 1]))
         forearm.apply_translation([
-            elbow_x + (-0.025 if side == "left" else 0.02),
+            elbow_x + lateral_forearm,
             0.73,
-            -0.035 if side == "left" else 0.025,
+            forearm_depth,
         ])
         add(scene, f"forearm_{side}", forearm, DARK)
 
