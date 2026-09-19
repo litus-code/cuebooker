@@ -6481,3 +6481,50 @@ All variants remain candidate_not_production with 4 shared PBR materials and 0 t
 Next visual work should avoid broad geometry changes. The remaining review should be silhouette-led at real product size, with shoulder integration or footwear considered only if a visible defect remains.
 
 Production remains untouched.
+
+
+## 98. Club Minimal shoulder transition refinement
+
+This pass removes the last prominent spherical shoulder construction, especially visible with the tank outfit.
+
+Changes:
+
+- shoulder icospheres replaced by compact elliptical loft transitions;
+- shoulder volumes inherit a restrained amount of the authored upper-arm angle;
+- tee / hoodie / bomber sleeve geometry remains unchanged;
+- tank benefits most because the shoulder remains intentionally exposed;
+- build semantics continue to scale shoulder nodes as before;
+- no textures or additional materials were introduced;
+- no global subdivision increase was introduced.
+
+Generated candidate metadata:
+
+```text
+light  = 82,924 bytes / 5,772 triangles
+medium = 122,228 bytes / 10,368 triangles
+high   = 185,560 bytes / 16,960 triangles
+```
+
+Compared with the previous waist / hip pass:
+
+```text
+medium: 124,404 bytes / 10,720 tris -> 122,228 bytes / 10,368 tris
+high:   198,684 bytes / 19,136 tris -> 185,560 bytes / 16,960 tris
+```
+
+The refinement improves shoulder-to-arm continuity while again reducing the cost of high-density icospheres.
+
+Automatic quality remains:
+
+```text
+full -> medium
+reduced -> medium
+static -> no interactive renderer
+high -> lab/manual only
+```
+
+All variants remain candidate_not_production with 4 shared PBR materials and 0 textures.
+
+At this point broad anatomy cleanup should stop. Further geometry work should be triggered only by a visible defect found in representative product-size review. The next sensible review area is footwear / lower-leg termination or real-device framing, not another global shape pass.
+
+Production remains untouched.
