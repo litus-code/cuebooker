@@ -6386,3 +6386,50 @@ The medium cost increase is localized to visible garment construction and remain
 Next visual review should focus on whether tee / hoodie / bomber now read as actual garments at profile size. Do not add more torso density unless a visible defect remains.
 
 Production remains untouched.
+
+
+## 96. Club Minimal elbow / knee transition refinement
+
+This pass removes two remaining spherical articulation cues that still read as procedural joints.
+
+Changes:
+
+- elbow spheres replaced by compact authored elliptical loft transitions;
+- knee spheres replaced by tapered elliptical loft transitions;
+- joint volumes inherit a small amount of the existing limb angle;
+- hand refinement remains untouched;
+- garment sleeve semantics remain unchanged;
+- no textures or additional materials were introduced;
+- no global subdivision increase was introduced.
+
+Generated candidate metadata:
+
+```text
+light  = 80,572 bytes / 5,628 triangles
+medium = 122,404 bytes / 10,844 triangles
+high   = 206,184 bytes / 21,004 triangles
+```
+
+Compared with the previous garment-sleeve pass:
+
+```text
+medium: 126,752 bytes / 11,548 tris -> 122,404 bytes / 10,844 tris
+high:   232,416 bytes / 25,356 tris -> 206,184 bytes / 21,004 tris
+```
+
+The change improves articulation authorship while reducing geometry, especially in high where subdivided icospheres were disproportionately expensive.
+
+Automatic quality remains:
+
+```text
+full -> medium
+reduced -> medium
+static -> no interactive renderer
+high -> lab/manual only
+```
+
+All variants remain candidate_not_production with 4 shared PBR materials and 0 textures.
+
+Next visual review should focus on pelvis / hip continuity and overall silhouette only if those areas still visibly read as assembled parts at product size.
+
+Production remains untouched.
