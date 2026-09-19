@@ -5311,3 +5311,97 @@ They inspect the real GLB binary and verify:
 - distinct lime/red/neutral accent options.
 
 Production remains untouched.
+
+## 83. Semantic base silhouettes + completed appearance stack
+
+The Club Minimal candidate now applies five semantic dimensions on the same GLB:
+
+```text
+base
+build
+pose
+material
+accent
+```
+
+### Base strategy
+
+New domain file:
+
+```text
+app/domain/cueIdBase.ts
+```
+
+Supported bases:
+
+```text
+masculine
+feminine
+neutral
+```
+
+`neutral` remains the exact scale reference.
+
+Masculine/feminine variants use intentionally small clavicle / shoulder / torso / waist / hip scale changes only.
+
+Current scale variation stays within approximately 0.98–1.035 for authored nodes. It is not a separate body-rating system and should not be made more stereotyped without explicit visual review.
+
+`CueIdScene.client.vue` now combines from original transforms:
+
+```text
+base node scale
+x build node scale
++ pose rotation/position
++ material PBR preset
++ accent color
+```
+
+Every change is reapplied from remembered original GLB transforms to prevent cumulative drift.
+
+### Nullable accent contract
+
+The persisted config remains:
+
+```text
+accent = lime | red | null
+```
+
+`null` maps to the neutral graphite accent through `getCueIdAccentColor()`; no artificial `none` value was added to the persisted schema.
+
+### Tests
+
+New/updated tests cover:
+
+```text
+tests/cueIdBase.test.ts
+tests/cueIdBuild.test.ts
+tests/cueIdPose.test.ts
+tests/cueIdMaterial.test.ts
+tests/cueIdAssets.test.ts
+```
+
+The material test inspects the real GLB JSON chunk and locks:
+
+- four named PBR materials;
+- zero textures;
+- material preset limits.
+
+Current candidate remains:
+
+```text
+bytes = 39,968
+triangles = 2,164
+materials = 4
+textures = 0
+purpose = candidate
+status = candidate_not_production
+```
+
+Remaining semantic dimensions still not fully implemented on the real candidate:
+
+```text
+outfit
+accessory
+```
+
+Production remains untouched.
