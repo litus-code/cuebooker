@@ -8,7 +8,7 @@ on:
       - .github/workflows/generate-cue-id-3d-lock.yml
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   generate-lock:
@@ -32,6 +32,14 @@ jobs:
         run: |
           git diff -- package.json package-lock.json > cue-id-3d-deps.patch
           test -s cue-id-3d-deps.patch
+
+      - name: Commit generated dependency files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git commit -m "chore: add minimal TresJS runtime dependencies"
+          git push origin HEAD:feature/app-visual-system
 
       - name: Upload generated files
         uses: actions/upload-artifact@v4
