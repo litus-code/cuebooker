@@ -26,7 +26,7 @@ jobs:
           cache: npm
 
       - name: Generate dependency lock
-        run: npm install --package-lock-only --save @tresjs/core @tresjs/nuxt three
+        run: npm install --package-lock-only --save @tresjs/core three
 
       - name: Capture dependency patch
         run: |
@@ -36,7 +36,7 @@ jobs:
       - name: Upload generated files
         uses: actions/upload-artifact@v4
         with:
-          name: cue-id-3d-lock
+          name: cue-id-3d-lock-core
           path: |
             package.json
             package-lock.json
