@@ -6,7 +6,7 @@ import type { CueIdConfigV1 } from '../domain/cueId'
 import { CUE_ID_BENCHMARK_ASSET, CUE_ID_CANDIDATE_ASSET } from '../domain/cueIdAssets'
 import { CUE_ID_POSES } from '../domain/cueIdPose'
 import { CUE_ID_BUILDS } from '../domain/cueIdBuild'
-import { CUE_ID_ACCENT_COLORS, CUE_ID_MATERIAL_PRESETS } from '../domain/cueIdMaterial'
+import { CUE_ID_MATERIAL_PRESETS, getCueIdAccentColor } from '../domain/cueIdMaterial'
 import type { CueIdRuntimeDecision } from '../domain/cueIdRuntime'
 import { loadCueIdGlbBuffer } from '../services/cueIdAssetLoader'
 
@@ -56,13 +56,7 @@ const surfaceColor = computed(() =>
   props.config.material === 'satin' ? '#555c53' : '#303630'
 )
 
-const accentColor = computed(() =>
-  props.config.accent === 'red'
-    ? '#ff4545'
-    : props.config.accent === 'lime'
-      ? '#ceff54'
-      : '#737a72'
-)
+const accentColor = computed(() => getCueIdAccentColor(props.config.accent))
 
 
 
@@ -106,7 +100,7 @@ function applySemanticMaterials(root: Object3D) {
       material.metalness = surface.metalness
 
       if (material.name === 'accent') {
-        material.color.set(CUE_ID_ACCENT_COLORS[props.config.accent])
+        material.color.set(getCueIdAccentColor(props.config.accent))
       }
 
       material.needsUpdate = true
