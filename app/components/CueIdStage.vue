@@ -145,7 +145,7 @@ const performanceGate = computed(() => {
     ref="stageRoot"
     class="cue-id-stage"
     :class="[poseClass, buildClass, baseClass, outfitClass, materialClass, accentClass, { 'cue-id-stage--compact': compact, 'cue-id-stage--runtime-ready': runtimeReady }]"
-    aria-label="CUE ID static preview"
+    aria-label="CUE ID preview"
   >
     <div class="cue-id-stage__grid" aria-hidden="true" />
     <div class="cue-id-stage__halo cue-id-stage__halo--one" aria-hidden="true" />
