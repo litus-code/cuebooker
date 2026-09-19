@@ -3,7 +3,11 @@ import { TresCanvas } from '@tresjs/core'
 import { Box3, MeshStandardMaterial, Object3D, Vector3 } from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import type { CueIdConfigV1 } from '../domain/cueId'
-import { CUE_ID_BENCHMARK_ASSET, CUE_ID_CANDIDATE_ASSET } from '../domain/cueIdAssets'
+import {
+  CUE_ID_BENCHMARK_ASSET,
+  CUE_ID_CANDIDATE_ASSETS,
+  type CueIdCandidateQuality
+} from '../domain/cueIdAssets'
 import { CUE_ID_POSES } from '../domain/cueIdPose'
 import { CUE_ID_BUILDS } from '../domain/cueIdBuild'
 import { CUE_ID_BASES } from '../domain/cueIdBase'
@@ -17,8 +21,10 @@ const props = withDefaults(defineProps<{
   config: CueIdConfigV1
   decision: CueIdRuntimeDecision
   labAsset?: 'benchmark' | 'candidate' | null
+  labQuality?: CueIdCandidateQuality
 }>(), {
-  labAsset: null
+  labAsset: null,
+  labQuality: 'light'
 })
 
 const emit = defineEmits<{
@@ -183,7 +189,7 @@ async function loadLabAsset() {
   if (!props.labAsset) return
 
   const asset = props.labAsset === 'candidate'
-    ? CUE_ID_CANDIDATE_ASSET
+    ? CUE_ID_CANDIDATE_ASSETS[props.labQuality]
     : CUE_ID_BENCHMARK_ASSET
 
   try {
@@ -244,6 +250,17 @@ function disposeObject(object: Object3D | null) {
 }
 
 onMounted(loadLabAsset)
+
+watch(
+  () => props.labQuality,
+  async (next, previous) => {
+    if (next === previous || props.labAsset !== 'candidate') return
+    disposeObject(labScene.value)
+    labScene.value = null
+    baseNodeTransforms.clear()
+    await loadLabAsset()
+  }
+)
 
 watch(
   () => [
