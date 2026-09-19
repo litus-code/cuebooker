@@ -519,3 +519,45 @@ Tier C -> static fallback
 ```
 
 Only add LOD complexity after measurements prove that a single production asset cannot deliver the desired visual quality efficiently.
+
+## Lab ready-time gate
+
+The `/cue-id` lab now measures end-to-end interactive readiness from the moment the stage enters the preload window until the selected GLB has rendered its first frame.
+
+Budgets:
+
+```text
+Tier A / full:    <= 800 ms  => PASS
+Tier B / reduced: <= 1500 ms => PASS
+Tier C / static:  not applicable
+```
+
+Anything above the relevant interactive budget is shown as WARN.
+
+Individual technical timings remain visible:
+
+```text
+init_ms
+load_ms
+parse_ms
+first_frame_ms
+total_ready_ms
+```
+
+`total_ready_ms` is the product-facing performance signal because it covers the complete path experienced after the preload trigger.
+
+The lab panel also shows:
+
+```text
+runtime tier
+runtime decision reason
+DPR cap
+asset id
+asset bytes
+budget
+PASS / WARN
+```
+
+These diagnostics are lab-only and must never appear on the public Artist Profile or normal workspace flows.
+
+Use the gate to decide whether additional geometry/art quality can be spent safely. Do not interpret one desktop measurement as evidence that Tier B can absorb the same cost.
