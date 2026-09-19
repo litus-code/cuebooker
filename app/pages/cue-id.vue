@@ -79,7 +79,12 @@ useHead(() => ({
         <button type="button" @click="cueIdConfig = cloneCueIdConfig(DEFAULT_CUE_ID_CONFIG)">{{ copy.reset }}</button>
       </header>
       <div class="cue-id-editor-lab__stage">
-        <CueIdStage :config="cueIdConfig" artist-name="LITUS" lab-asset="candidate" />
+        <CueIdStage
+          :config="cueIdConfig"
+          artist-name="LITUS"
+          lab-asset="candidate"
+          show-diagnostics
+        />
       </div>
       <CueIdControls v-model="cueIdConfig" :locale="preferences.locale.value" />
     </section>
