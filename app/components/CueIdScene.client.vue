@@ -73,7 +73,7 @@ const surfaceColor = computed(() =>
 const accentColor = computed(() => getCueIdAccentColor(props.config.accent))
 const cameraPosition = computed(() =>
   props.decision.tier === 'reduced'
-    ? [0, 0.34, 7.7]
+    ? [0, 0.42, 7.25]
     : [0, 0.38, 7.25]
 )
 
@@ -220,7 +220,7 @@ async function loadLabAsset() {
     parsed.rotation.y = -0.10
     parsed.position.set(
       -center.x * scale,
-      -center.y * scale - 0.25,
+      -center.y * scale + (props.decision.tier === 'reduced' ? 0.12 : -0.04),
       -center.z * scale
     )
 
@@ -270,6 +270,9 @@ watch(
   () => props.labQuality,
   async (next, previous) => {
     if (next === previous || props.labAsset !== 'candidate') return
+    ready.value = false
+    labMetrics = null
+    labFrameStartedAt = 0
     disposeObject(labScene.value)
     labScene.value = null
     baseNodeTransforms.clear()
