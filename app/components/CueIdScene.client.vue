@@ -34,7 +34,11 @@ const emit = defineEmits<{
 }>()
 
 const ready = ref(false)
+const sceneRoot = ref<HTMLElement | null>(null)
 const labScene = shallowRef<Object3D | null>(null)
+
+let contextCanvas: HTMLCanvasElement | null = null
+let contextLostHandler: ((event: Event) => void) | null = null
 
 const labSceneVersion = ref(0)
 const baseNodeTransforms = new Map<string, {
@@ -285,10 +289,40 @@ watch(
 )
 
 onBeforeUnmount(() => {
+  unbindWebGlContextLifecycle()
   disposeObject(labScene.value)
 })
 
+
+function bindWebGlContextLifecycle() {
+  const canvas = sceneRoot.value?.querySelector('canvas')
+  if (!(canvas instanceof HTMLCanvasElement) || contextCanvas === canvas) return
+
+  if (contextCanvas && contextLostHandler) {
+    contextCanvas.removeEventListener('webglcontextlost', contextLostHandler)
+  }
+
+  contextCanvas = canvas
+  contextLostHandler = (event: Event) => {
+    event.preventDefault()
+    ready.value = false
+    emit('failed')
+  }
+
+  contextCanvas.addEventListener('webglcontextlost', contextLostHandler, { passive: false })
+}
+
+function unbindWebGlContextLifecycle() {
+  if (contextCanvas && contextLostHandler) {
+    contextCanvas.removeEventListener('webglcontextlost', contextLostHandler)
+  }
+  contextCanvas = null
+  contextLostHandler = null
+}
+
 function handleReady() {
+  bindWebGlContextLifecycle()
+
   if (!props.labAsset) {
     ready.value = true
     emit('ready')
@@ -319,7 +353,7 @@ onErrorCaptured(() => {
 </script>
 
 <template>
-  <div class="cue-id-scene" :class="{ ready }">
+  <div ref="sceneRoot" class="cue-id-scene" :class="{ ready }">
     <TresCanvas
       alpha
       :antialias="decision.tier === 'full'"
