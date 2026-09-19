@@ -4,7 +4,8 @@ import { readFile } from 'node:fs/promises'
 
 import {
   CUE_ID_ACCENT_COLORS,
-  CUE_ID_MATERIAL_PRESETS
+  CUE_ID_MATERIAL_PRESETS,
+  getCueIdAccentColor
 } from '../app/domain/cueIdMaterial.ts'
 
 function parseGlbJson(buffer: Buffer) {
@@ -47,6 +48,9 @@ test('CUE ID accent palette keeps lime red and neutral options distinct', () => 
   assert.equal(CUE_ID_ACCENT_COLORS.lime, '#ceff54')
   assert.equal(CUE_ID_ACCENT_COLORS.red, '#ff4545')
   assert.equal(CUE_ID_ACCENT_COLORS.none, '#737a72')
+  assert.equal(getCueIdAccentColor('lime'), '#ceff54')
+  assert.equal(getCueIdAccentColor('red'), '#ff4545')
+  assert.equal(getCueIdAccentColor(null), '#737a72')
   assert.equal(new Set(Object.values(CUE_ID_ACCENT_COLORS)).size, 3)
 })
 
