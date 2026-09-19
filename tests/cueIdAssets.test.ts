@@ -92,7 +92,7 @@ test('benchmark metadata remains explicit and attributed', () => {
 test('original Club Minimal candidate remains outside production catalogue until approved', () => {
   assert.equal(CUE_ID_CANDIDATE_ASSET.purpose, 'candidate')
   assert.equal(CUE_ID_CANDIDATE_ASSET.artDirection, 'club_minimal_v1')
-  assert.equal(CUE_ID_CANDIDATE_ASSET.compressedBytes, 33_120)
+  assert.equal(CUE_ID_CANDIDATE_ASSET.compressedBytes, 33_164)
   assert.equal(CUE_ID_CANDIDATE_ASSET.triangles, 1_320)
   assert.equal(CUE_ID_ASSETS.some(asset => asset.id === CUE_ID_CANDIDATE_ASSET.id), false)
   assert.deepEqual(validateCueIdAsset(CUE_ID_CANDIDATE_ASSET), [])
