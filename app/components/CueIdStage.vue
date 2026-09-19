@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CueIdConfigV1 } from '../domain/cueId'
+import { decideCueIdRuntime, getCueIdRuntimeSignals, type CueIdRuntimeDecision } from '../domain/cueIdRuntime'
 
 const props = withDefaults(defineProps<{
   config: CueIdConfigV1
@@ -16,23 +17,23 @@ const analytics = useAnalytics()
 const stageRoot = ref<HTMLElement | null>(null)
 const runtimeWanted = ref(false)
 const runtimeReady = ref(false)
+const runtimeDecision = ref<CueIdRuntimeDecision | null>(null)
 let runtimeObserver: IntersectionObserver | null = null
 
 const LazyCueIdRuntime = defineAsyncComponent(() => import('./CueIdRuntime.client.vue'))
 
 onMounted(() => {
   if (!props.interactive) return
-  const nav = navigator as Navigator & {
-    deviceMemory?: number
-    connection?: { saveData?: boolean }
-  }
-  const constrainedDevice = Boolean(nav.connection?.saveData || (nav.deviceMemory && nav.deviceMemory <= 2))
-  if (constrainedDevice) {
+  runtimeDecision.value = decideCueIdRuntime(getCueIdRuntimeSignals())
+
+  if (!runtimeDecision.value.shouldLoadRuntime) {
     analytics.track('cue_id_static_fallback_used', {
-      reason: nav.connection?.saveData ? 'save_data' : 'low_device_memory'
+      reason: runtimeDecision.value.reason,
+      tier: runtimeDecision.value.tier
     })
     return
   }
+
   runtimeObserver = new IntersectionObserver(entries => {
     if (!entries[0]?.isIntersecting) return
     runtimeWanted.value = true
@@ -74,8 +75,9 @@ const accentClass = computed(() => props.config.accent ? `cue-id-stage--accent-$
 
     <ClientOnly>
       <LazyCueIdRuntime
-        v-if="interactive && runtimeWanted"
+        v-if="interactive && runtimeWanted && runtimeDecision"
         :config="config"
+        :decision="runtimeDecision"
         @ready="runtimeReady = true"
         @failed="runtimeReady = false"
       />
