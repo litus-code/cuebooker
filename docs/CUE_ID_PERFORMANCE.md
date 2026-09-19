@@ -1,6 +1,6 @@
 # CUE ID performance contract
 
-Updated: 16 September 2026
+Updated: 19 September 2026
 Status: architectural constraint for the 3D implementation
 
 ## Principle
@@ -136,3 +136,96 @@ Every new 3D feature must answer four questions before acceptance:
 4. What happens on a device that cannot afford that cost?
 
 If the visual gain does not justify the runtime cost, do not ship it.
+
+
+## Runtime proof status — 19 September 2026
+
+A dependency-free WebGL runtime proof now exists before TresJS/Three adoption.
+
+Current implementation:
+
+```text
+CueIdStage.vue
+-> static CSS fallback renders immediately
+-> IntersectionObserver preload margin
+-> dynamic client-only import
+-> CueIdRuntime.client.vue
+-> native WebGL procedural Club Minimal figure
+```
+
+Current runtime safeguards:
+
+- the WebGL chunk is requested only when the stage approaches the viewport;
+- static fallback remains visible until the runtime emits `ready`;
+- no WebGL dependency is present in the initial app package graph;
+- render loop runs only while the stage is visible and the document is active;
+- `prefers-reduced-motion` disables the continuous idle loop and renders a still frame;
+- device pixel ratio is capped at 1.5;
+- canvas uses a low-power WebGL preference;
+- `webglcontextlost` immediately restores the static fallback;
+- renderer setup failure also keeps the static fallback;
+- renderer lifecycle analytics record only technical state:
+  - `cue_id_renderer_ready`
+  - `cue_id_renderer_failed`
+  - `cue_id_static_fallback_used`
+- analytics does not include body/base/outfit/accessory/pose or other visual choices.
+
+The current procedural renderer is intentionally not the final art direction and does not establish a permanent rendering API.
+
+Its purpose is to validate:
+
+```text
+lazy runtime boundary
+fallback transition
+device lifecycle
+reduced motion
+visibility pause
+context-loss recovery
+measurement hooks
+```
+
+before adding:
+
+```text
+@tresjs/core
+@tresjs/nuxt
+three
+GLB/glTF assets
+```
+
+### Replacement rule
+
+The future TresJS/Three renderer must remain behind the same product boundary.
+
+`CueIdStage.vue` should not know whether the interactive implementation is:
+
+- native WebGL;
+- TresJS;
+- Three.js;
+- a future renderer.
+
+The semantic `CueIdConfigV1` contract and static fallback remain stable while the renderer is replaceable.
+
+### Current measurement hooks
+
+`cue_id_renderer_ready` records:
+
+```text
+renderer = webgl_procedural
+reduced_motion
+init_ms
+dpr_cap
+```
+
+No appearance configuration is sent.
+
+Before adding the first GLB, compare:
+
+1. route JS without CUE ID visibility;
+2. lazy runtime chunk transfer;
+3. `init_ms` on desktop and representative mobile;
+4. main-thread/GPU behaviour while visible;
+5. runtime behaviour after tab hiding / stage leaving viewport;
+6. fallback behaviour with WebGL disabled or context lost.
+
+The procedural proof should be removed or replaced once the TresJS/GLB path has demonstrated equal or better resilience within budget.
