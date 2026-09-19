@@ -13,6 +13,8 @@ import {
 const validBase: CueIdAssetDescriptor = {
   id: 'club-minimal-base-neutral-v1',
   family: 'club_minimal',
+  purpose: 'production',
+  artDirection: 'club_minimal_v1',
   kind: 'base',
   glbPath: '/cue-id/club-minimal/base-neutral-v1.glb',
   fallbackPath: '/cue-id/club-minimal/base-neutral-v1.webp',
@@ -23,7 +25,8 @@ const validBase: CueIdAssetDescriptor = {
     { width: 1024, height: 1024, format: 'ktx2' },
     { width: 1024, height: 1024, format: 'ktx2' }
   ],
-  supportedTiers: ['full', 'reduced']
+  supportedTiers: ['full', 'reduced'],
+  attribution: null
 }
 
 test('accepts a CUE ID base asset within the mobile performance budget', () => {
@@ -65,4 +68,21 @@ test('benchmark GLB stays outside the selectable CUE ID product catalogue', () =
   assert.equal(CUE_ID_BENCHMARK_ASSET.id, 'khronos-rigged-figure-benchmark')
   assert.equal(CUE_ID_BENCHMARK_ASSET.compressedBytes, 50_116)
   assert.equal(CUE_ID_ASSETS.some(asset => asset.id === CUE_ID_BENCHMARK_ASSET.id), false)
+})
+
+
+test('production assets must declare Club Minimal V1 art direction', () => {
+  const issues = validateCueIdAsset({
+    ...validBase,
+    artDirection: 'external_benchmark'
+  })
+
+  assert.ok(issues.some(issue => issue.message.includes('production assets must use club_minimal_v1')))
+})
+
+test('benchmark metadata remains explicit and attributed', () => {
+  assert.equal(CUE_ID_BENCHMARK_ASSET.purpose, 'benchmark')
+  assert.equal(CUE_ID_BENCHMARK_ASSET.artDirection, 'external_benchmark')
+  assert.equal(CUE_ID_BENCHMARK_ASSET.attribution?.creator, 'Cesium')
+  assert.equal(CUE_ID_BENCHMARK_ASSET.attribution?.license, 'CC-BY-4.0')
 })
