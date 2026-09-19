@@ -4944,3 +4944,47 @@ Next review should focus on:
 6. only then consider rigging or additional geometry.
 
 Production remains untouched.
+
+## 77. Club Minimal candidate — silhouette refinement pass 3
+
+The candidate received a third shape pass focused on authored silhouette rather than polygon count.
+
+Changes:
+
+- tee is now a lofted shoulder/chest/waist volume instead of a simple box;
+- arms use tapered frustums instead of cylinders;
+- legs use tapered frustums instead of cylinders;
+- feet were reduced again;
+- stance asymmetry was preserved;
+- no new textures or expensive material features were introduced.
+
+Generated metadata:
+
+```text
+bytes = 37,992
+triangles = 1,716
+vertices = 898
+materials = 4
+textures = 0
+```
+
+Performance impact versus pass 2 is negligible:
+
+```text
+37,840 -> 37,992 bytes
+1,708 -> 1,716 triangles
+894 -> 898 vertices
+```
+
+This confirms that the current improvements are shape/topology improvements rather than brute-force geometry increases.
+
+Status remains candidate-only.
+
+Next gate:
+
+1. CI + staging must remain green;
+2. review the v3 silhouette at mobile and desktop sizes;
+3. only if the static silhouette reads as authored/editorial should rigging begin;
+4. otherwise do another shape pass before any animation work.
+
+Production remains untouched.
