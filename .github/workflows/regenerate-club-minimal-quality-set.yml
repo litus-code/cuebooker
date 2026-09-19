@@ -1,0 +1,63 @@
+name: Regenerate Club Minimal quality set
+
+on:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - .github/workflows/regenerate-club-minimal-quality-set.yml
+      - scripts/generate-cue-id-club-minimal-candidate.py
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install generator dependencies
+        run: pip install trimesh numpy
+
+      - name: Generate all qualities
+        run: |
+          python scripts/generate-cue-id-club-minimal-candidate.py --quality light
+          python scripts/generate-cue-id-club-minimal-candidate.py --quality medium
+          python scripts/generate-cue-id-club-minimal-candidate.py --quality high
+
+      - name: Verify generated metadata
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          files = [
+              Path('public/cue-id/candidates/club-minimal-candidate-v1.json'),
+              Path('public/cue-id/candidates/club-minimal-candidate-medium-v1.json'),
+              Path('public/cue-id/candidates/club-minimal-candidate-high-v1.json'),
+          ]
+          for path in files:
+              data = json.loads(path.read_text())
+              assert data['materials'] == 4
+              assert data['embeddedMaterials'] == 4
+              assert data['runtimeMaterials'] == 4
+              assert data['materialStrategy'] == 'embedded_shared_pbr_mutated_runtime'
+              assert data['triangles'] <= 35000
+              assert data['bytes'] <= 1000000
+          PY
+
+      - name: Commit generated quality set
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/cue-id/candidates/
+          git commit -m "test: regenerate Club Minimal quality set with embedded PBR"
+          git push origin HEAD:feature/app-visual-system
