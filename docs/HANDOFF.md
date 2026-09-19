@@ -5247,3 +5247,67 @@ continuous render loop = 0
 ```
 
 Production remains untouched.
+
+## 82. Club Minimal PBR material contract + semantic surface controls
+
+The generated Club Minimal candidate now exports real shared PBR materials instead of vertex colors.
+
+Verified GLB material names:
+
+```text
+body
+mid
+dark
+accent
+```
+
+Verified asset facts:
+
+```text
+bytes = 39,968
+triangles = 2,164
+vertices = 1,142
+materials = 4
+textures = 0
+```
+
+Leg nodes were also normalized to semantic left/right names (`thigh_left`, `knee_left`, `shin_left`, etc.) so the generated GLB now matches the semantic rig exactly.
+
+New domain file:
+
+```text
+app/domain/cueIdMaterial.ts
+```
+
+It defines:
+
+- matte PBR preset;
+- satin PBR preset;
+- lime / red / neutral accent colors.
+
+`CueIdScene.client.vue` now combines, on the same GLB:
+
+```text
+semantic pose
+semantic build
+semantic material
+semantic accent
+```
+
+Material changes reuse the four existing GLB materials. They do not create textures, do not add GLB bytes, and keep TresJS in on-demand rendering.
+
+New tests:
+
+```text
+tests/cueIdMaterial.test.ts
+```
+
+They inspect the real GLB binary and verify:
+
+- GLB v2;
+- exactly four named materials;
+- zero textures;
+- restrained PBR roughness/metalness ranges;
+- distinct lime/red/neutral accent options.
+
+Production remains untouched.
