@@ -202,9 +202,9 @@ useHead(() => ({
 .cue-id-editor-lab__intro button:focus-visible { outline:2px solid var(--cue-accent); outline-offset:3px; }
 .cue-id-editor-lab__quality { display:flex; align-items:center; gap:8px; margin:0 0 12px; }
 .cue-id-editor-lab__quality > span { margin-right:4px; color:var(--cue-muted); font:700 9px/1 monospace; letter-spacing:.1em; }
-.cue-id-editor-lab__quality button { min-height:36px; padding:0 12px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); font:700 9px/1 monospace; text-transform:uppercase; cursor:pointer; }
+.cue-id-editor-lab__quality button { min-height:44px; padding:0 12px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); font:700 9px/1 monospace; text-transform:uppercase; cursor:pointer; }
 .cue-id-editor-lab__quality button[aria-pressed="true"] { border-color:var(--cue-accent); color:var(--cue-accent); background:color-mix(in srgb,var(--cue-accent) 7%,transparent); }
 .cue-id-editor-lab__quality button:focus-visible { outline:2px solid var(--cue-accent); outline-offset:2px; }
 .cue-id-editor-lab__stage { margin-bottom:14px; }
-@media (max-width:680px) { .cue-id-editor-lab__intro { grid-template-columns:1fr; align-items:start; } .cue-id-editor-lab__intro button { width:100%; } }
+@media (max-width:680px) { .cue-id-editor-lab__intro { grid-template-columns:1fr; align-items:start; } .cue-id-editor-lab__intro button { width:100%; } .cue-id-editor-lab__quality { overflow-x:auto; padding-bottom:4px; scrollbar-width:thin; } .cue-id-editor-lab__quality > span,.cue-id-editor-lab__quality button { flex:0 0 auto; } }
 </style>
