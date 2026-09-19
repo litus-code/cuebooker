@@ -139,43 +139,82 @@ def build():
     seam.apply_translation([0, 1.53, -0.348])
     add(scene, "accent_seam", seam, LIME)
 
-    for side, x, angle in [("left", -0.83, 0.10), ("right", 0.83, -0.05)]:
-        shoulder = trimesh.creation.icosphere(subdivisions=1, radius=0.24)
-        shoulder.apply_scale([1.0, 0.9, 0.88])
+    arm_specs = [
+        ("left", -0.83, 0.10, -0.12),
+        ("right", 0.83, -0.05, 0.08),
+    ]
+    for side, x, upper_angle, forearm_angle in arm_specs:
+        shoulder = trimesh.creation.icosphere(subdivisions=1, radius=0.235)
+        shoulder.apply_scale([1.0, 0.9, 0.86])
         shoulder.apply_translation([x, 1.73, 0])
         add(scene, f"shoulder_{side}", shoulder, DARK)
 
-        upper = y_frustum(radius_top=0.17, radius_bottom=0.135, height=1.08, sections=14)
-        upper.apply_transform(rotation_matrix(angle, [0, 0, 1]))
-        upper.apply_translation([x + (-0.025 if side == "left" else 0.015), 1.18, 0])
-        add(scene, f"arm_{side}", upper, DARK)
+        upper = y_frustum(radius_top=0.17, radius_bottom=0.145, height=0.58, sections=14)
+        upper.apply_transform(rotation_matrix(upper_angle, [0, 0, 1]))
+        upper.apply_translation([x + (-0.018 if side == "left" else 0.012), 1.39, 0])
+        add(scene, f"upper_arm_{side}", upper, DARK)
 
-        hand = trimesh.creation.icosphere(subdivisions=1, radius=0.145)
-        hand.apply_scale([0.82, 1.08, 0.72])
-        hand.apply_translation([x + (-0.075 if side == "left" else 0.055), 0.57, 0])
+        elbow_x = x + (-0.055 if side == "left" else 0.04)
+        elbow = trimesh.creation.icosphere(subdivisions=1, radius=0.155)
+        elbow.apply_scale([0.9, 0.9, 0.86])
+        elbow.apply_translation([elbow_x, 1.05, 0])
+        add(scene, f"elbow_{side}", elbow, DARK)
+
+        forearm = y_frustum(radius_top=0.14, radius_bottom=0.115, height=0.56, sections=14)
+        forearm.apply_transform(rotation_matrix(forearm_angle, [0, 0, 1]))
+        forearm.apply_translation([
+            elbow_x + (-0.025 if side == "left" else 0.02),
+            0.73,
+            -0.035 if side == "left" else 0.025,
+        ])
+        add(scene, f"forearm_{side}", forearm, DARK)
+
+        hand = trimesh.creation.icosphere(subdivisions=1, radius=0.13)
+        hand.apply_scale([0.80, 1.05, 0.70])
+        hand.apply_translation([
+            elbow_x + (-0.08 if side == "left" else 0.065),
+            0.40,
+            -0.04 if side == "left" else 0.03,
+        ])
         add(scene, f"hand_{side}", hand, BODY)
 
-    hips = trimesh.creation.icosphere(subdivisions=1, radius=0.58)
-    hips.apply_scale([1.0, 0.40, 0.50])
-    hips.apply_translation([0, 0.48, 0])
+    waist = lofted_box([
+        (0.86, 0.56, 0.29),
+        (0.60, 0.50, 0.27),
+    ])
+    add(scene, "waist", waist, MID)
+
+    hips = trimesh.creation.icosphere(subdivisions=1, radius=0.56)
+    hips.apply_scale([1.0, 0.38, 0.48])
+    hips.apply_translation([0, 0.45, 0])
     add(scene, "hips", hips, MID)
 
-    for index, (x, y, z, angle) in enumerate([
-        (-0.30, -0.47, 0.03, -0.035),
-        (0.31, -0.52, -0.025, 0.045),
+    for index, (x, angle, depth) in enumerate([
+        (-0.29, -0.035, 0.03),
+        (0.30, 0.045, -0.025),
     ]):
-        hip_joint = trimesh.creation.icosphere(subdivisions=1, radius=0.23)
+        hip_joint = trimesh.creation.icosphere(subdivisions=1, radius=0.22)
         hip_joint.apply_scale([0.9, 1.0, 0.9])
-        hip_joint.apply_translation([x, 0.27, z])
+        hip_joint.apply_translation([x, 0.24, depth])
         add(scene, f"hip_joint_{index}", hip_joint, DARK)
 
-        leg = y_frustum(radius_top=0.21, radius_bottom=0.145, height=1.48, sections=14)
-        leg.apply_transform(rotation_matrix(angle, [0, 0, 1]))
-        leg.apply_translation([x, y, z])
-        add(scene, f"leg_{index}", leg, DARK)
+        thigh = y_frustum(radius_top=0.205, radius_bottom=0.17, height=0.72, sections=14)
+        thigh.apply_transform(rotation_matrix(angle, [0, 0, 1]))
+        thigh.apply_translation([x, -0.11, depth])
+        add(scene, f"thigh_{index}", thigh, DARK)
 
-        boot = trimesh.creation.box(extents=[0.32, 0.22, 0.54])
-        boot.apply_translation([x + (-0.02 if index == 0 else 0.02), -1.33, -0.06])
+        knee = trimesh.creation.icosphere(subdivisions=1, radius=0.18)
+        knee.apply_scale([0.9, 0.82, 0.9])
+        knee.apply_translation([x + (-0.01 if index == 0 else 0.015), -0.49, depth])
+        add(scene, f"knee_{index}", knee, DARK)
+
+        shin = y_frustum(radius_top=0.165, radius_bottom=0.135, height=0.74, sections=14)
+        shin.apply_transform(rotation_matrix(angle * 0.6, [0, 0, 1]))
+        shin.apply_translation([x + (-0.015 if index == 0 else 0.02), -0.91, depth])
+        add(scene, f"shin_{index}", shin, DARK)
+
+        boot = trimesh.creation.box(extents=[0.31, 0.21, 0.52])
+        boot.apply_translation([x + (-0.03 if index == 0 else 0.035), -1.33, -0.055])
         add(scene, f"boot_{index}", boot, (18, 19, 18, 255))
 
     # restrained DJ cue: headphones around the neck, not gaming-headset styling
