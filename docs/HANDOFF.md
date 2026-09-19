@@ -6672,3 +6672,37 @@ Changes:
 - no runtime, asset or production behavior changed.
 
 Production remains untouched.
+
+
+## 103. Real-device visual review: procedural candidate rejected
+
+A real iPhone review exposed an important distinction between technical validity and visual acceptability.
+
+Observed on reduced/mobile tier:
+
+- diagnostics obscured a large part of the figure;
+- the figure framed too low and too small for the available stage;
+- quality UI could show the newly selected quality while diagnostics still displayed metrics from the previously loaded asset;
+- most importantly, the procedural Club Minimal candidate still reads as a low-poly assembled mannequin rather than a credible editorial artist identity.
+
+Decision:
+
+- the current procedural candidate is **rejected as a production visual direction**;
+- it remains useful as a runtime/performance/semantic test fixture only;
+- do not continue broad anatomy micro-refinement on this generator;
+- do not promote any of the candidate GLBs into `CUE_ID_ASSETS`;
+- the next visual asset must be genuinely art-directed and reviewed at product size before integration.
+
+Mobile lab corrections in this pass:
+
+- quality changes now reset ready/metrics state before loading the next candidate;
+- stale metrics are cleared when resolved quality changes;
+- reduced-tier camera moves from z 7.7 to z 7.25 after real-device evidence showed excessive distance;
+- reduced-tier model gets a small upward framing offset;
+- mobile stage min-height increases to 500px;
+- diagnostics are hidden on <=680px so the visual itself can be reviewed unobstructed;
+- desktop diagnostics remain available for lab measurement.
+
+The screenshot-driven review overrides the previous assumption that extra reduced-tier camera distance improved mobile framing.
+
+Production remains untouched.
