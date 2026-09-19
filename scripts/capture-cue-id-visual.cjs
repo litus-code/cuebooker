@@ -67,3 +67,5 @@ async function capture({ width, height, name }) {
   console.error(error);
   process.exit(1);
 });
+
+// readiness-gated capture
