@@ -2,7 +2,7 @@
 import type { FeeBasis } from '../composables/useArtistProfile'
 import type { CoreBooking, Hold } from '../domain/bookingCore'
 import type { CueNotification } from '../domain/notification'
-import type { PublicArtistProfile } from '../domain/publicArtistProfile'
+import { toPublicCueIdConfig, type PublicArtistProfile } from '../domain/publicArtistProfile'
 
 const auth = useCueAuth()
 const availability = useAvailability()
@@ -301,6 +301,8 @@ const publicProfilePreview = computed<PublicArtistProfile>(() => {
     artistImagePositionX: persisted?.artist_image_position_x ?? 50,
     artistImagePositionY: persisted?.artist_image_position_y ?? 50,
     artistImageScale: persisted?.artist_image_scale ?? 1,
+    visualMode: persisted?.visual_mode || 'photo',
+    cueId: persisted?.cue_id_config ? toPublicCueIdConfig(persisted.cue_id_config) : null,
     acceptingRequests: publicProfileAcceptingRequests.value
   }
 })
