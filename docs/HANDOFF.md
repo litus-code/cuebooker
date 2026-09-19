@@ -5744,3 +5744,63 @@ This was corrected so that:
 Temporary visual-capture workflow/script were removed after validation.
 
 Production remains untouched.
+
+## 84. Editorial proportion pass after real medium/high comparison
+
+After validating real GLB captures, the next refinement moved away from uniform subdivision and into shared silhouette changes.
+
+Measured comparison before this pass:
+
+```text
+high desktop:
+206,172 bytes
+22,112 triangles
+ready = 1,040 ms
+Tier A budget = 800 ms
+gate = WARN
+
+medium mobile:
+105,812 bytes
+9,120 triangles
+ready = 415 ms
+Tier B budget = 1,500 ms
+gate = PASS
+```
+
+Visual difference between medium and high at product size was small.
+
+Therefore automatic quality remains:
+
+```text
+full -> medium
+reduced -> medium
+static -> no interactive renderer
+```
+
+### Shared editorial proportion changes
+
+The generator now improves all quality levels with the same authored silhouette:
+
+- head rings can include Z offsets, giving the cranium/jaw a forward facial axis instead of a symmetric sphere;
+- head crown/forehead/cheek/jaw/chin proportions were refined;
+- shoulders moved inward and slightly down to connect better with the torso;
+- shoulder radius reduced;
+- arm chain moved inward to reduce puppet-like separation;
+- thighs and shins were lengthened;
+- knees and boots moved down accordingly;
+- feet were slightly reduced;
+- overall body now has a more elongated editorial proportion.
+
+New generated metadata:
+
+```text
+light  = 64,264 bytes / 4,232 triangles
+medium = 106,688 bytes / 9,168 triangles
+high   = 207,336 bytes / 22,176 triangles
+```
+
+Cost increase versus the previous sculpted set is negligible.
+
+This is the desired optimization pattern: improve visible authorship through geometry placement and proportion, not indiscriminate polygon density.
+
+Production remains untouched.
