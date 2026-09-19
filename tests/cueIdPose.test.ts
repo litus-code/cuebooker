@@ -51,3 +51,21 @@ test('pose node names map to generated Club Minimal geometry names', async () =>
     )
   }
 })
+
+
+test('posed garment sleeves follow their corresponding arm segments', () => {
+  const posed = [CUE_ID_POSES.relaxed, CUE_ID_POSES.focused, CUE_ID_POSES.editorial]
+
+  for (const pose of posed) {
+    assert.deepEqual(pose.nodes.outfit_tee_sleeve_left?.rotation, pose.nodes.upper_arm_left?.rotation)
+    assert.deepEqual(pose.nodes.outfit_tee_sleeve_right?.rotation, pose.nodes.upper_arm_right?.rotation)
+    assert.deepEqual(pose.nodes.outfit_hoodie_upper_sleeve_left?.rotation, pose.nodes.upper_arm_left?.rotation)
+    assert.deepEqual(pose.nodes.outfit_hoodie_upper_sleeve_right?.rotation, pose.nodes.upper_arm_right?.rotation)
+    assert.deepEqual(pose.nodes.outfit_bomber_upper_sleeve_left?.rotation, pose.nodes.upper_arm_left?.rotation)
+    assert.deepEqual(pose.nodes.outfit_bomber_upper_sleeve_right?.rotation, pose.nodes.upper_arm_right?.rotation)
+    assert.deepEqual(pose.nodes.outfit_hoodie_forearm_sleeve_left?.rotation, pose.nodes.forearm_left?.rotation)
+    assert.deepEqual(pose.nodes.outfit_hoodie_forearm_sleeve_right?.rotation, pose.nodes.forearm_right?.rotation)
+    assert.deepEqual(pose.nodes.outfit_bomber_forearm_sleeve_left?.rotation, pose.nodes.forearm_left?.rotation)
+    assert.deepEqual(pose.nodes.outfit_bomber_forearm_sleeve_right?.rotation, pose.nodes.forearm_right?.rotation)
+  }
+})
