@@ -602,3 +602,84 @@ existing artist-media storage/RLS
 ```
 
 Then define the smallest persistence contract that can support the editor shell and one future humanoid family without binding product data to Three.js.
+
+
+## First humanoid asset acceptance contract
+
+The first real humanoid must satisfy both visual credibility and runtime constraints.
+
+### Visual direction
+
+The first accepted base must feel:
+
+- recognisably human;
+- sculptural/editorial rather than game-avatar;
+- credible next to professional artist photography;
+- grounded in club culture without genre costume;
+- neutral enough to support multiple electronic scenes;
+- expressive through silhouette, pose, material and styling rather than exaggerated facial detail.
+
+Reject assets that read as:
+
+- Sims/Bitmoji;
+- metaverse mascot;
+- superhero/fantasy armor;
+- generic stock mannequin;
+- cyberpunk cliché by default;
+- hypersexualized body template;
+- obvious male/female stereotype beyond the selected base;
+- fashion render disconnected from working DJ culture.
+
+### Geometry and materials
+
+The first base asset should:
+
+- use one coherent humanoid body;
+- keep deformation/pose structure simple;
+- avoid unnecessary facial topology;
+- reuse materials across body parts;
+- avoid transparent hair/fabric layers unless measurement proves they are affordable;
+- prefer baked/material-driven depth over dynamic lighting complexity;
+- use physically plausible but restrained materials.
+
+### V1 performance gate
+
+Before admission to `CUE_ID_ASSETS`, record:
+
+```text
+compressed GLB bytes
+triangle count
+material count
+texture count
+largest texture dimension
+supported device tiers
+fallback image path
+```
+
+Current base budget:
+
+```text
+compressed GLB <= 1,000,000 bytes
+triangles <= 35,000
+materials <= 4
+textures <= 6
+largest texture dimension <= 2048
+```
+
+Outfit and accessory budgets are stricter and live in:
+
+```text
+app/domain/cueIdAssets.ts
+```
+
+### Mobile rule
+
+A visually stronger model that exceeds the Android/mobile budget is not accepted as the default base.
+
+If an art direction requires a higher-cost asset, it must be an optional Tier A enhancement with a Tier B-safe representation, never the only identity asset.
+
+### Catalogue rule
+
+`CUE_ID_ASSETS` remains intentionally empty until a real art-directed asset passes review.
+
+Do not add placeholder GLBs to make implementation appear further along than it is.
