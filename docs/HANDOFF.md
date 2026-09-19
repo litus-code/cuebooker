@@ -4366,3 +4366,88 @@ Do not make the public profile interactive until:
 5. public-profile performance comparison shows no unacceptable regression.
 
 Production remains untouched.
+
+## 70. CUE ID device tiers — ANDROID / MOBILE / DESKTOP
+
+Performance policy is now explicit in both documentation and runtime code.
+
+### Device tiers
+
+Tier A — full interactive:
+- capable recent mobile/desktop hardware;
+- DPR cap up to 1.5;
+- idle animation allowed;
+- restrained effects only.
+
+Tier B — reduced interactive:
+- representative mobile / moderate-memory hardware;
+- DPR cap 1.0;
+- continuous idle animation disabled;
+- event-driven / still rendering preferred;
+- no heavy post-processing.
+
+Tier C — static-first only:
+- Save-Data enabled;
+- deviceMemory <= 2 GB;
+- WebGL unavailable/context lost;
+- future measured threshold breach.
+
+### Current runtime behavior
+
+`CueIdStage.vue` blocks runtime import for Tier C detection before WebGL initialization.
+
+`CueIdRuntime.client.vue` currently marks reduced quality when:
+
+```text
+deviceMemory <= 4 GB
+or
+viewport width <= 900px
+```
+
+In reduced quality:
+
+```text
+DPR cap = 1
+idle loop = off
+still/event-driven render = on
+```
+
+Public Artist Profile remains explicitly static-first with `:interactive="false"`.
+
+### Android acceptance rule
+
+Android is a first-class target. Before GLB/Tres production acceptance, validate:
+
+- low/constrained Android;
+- representative mid-range Android;
+- recent high-end Android;
+- Chrome;
+- Samsung Internet where practical;
+- DPR behavior;
+- scroll responsiveness;
+- background/screen-lock recovery;
+- context loss;
+- portrait/landscape canvas resize;
+- memory pressure behavior.
+
+If mid-range Android cannot maintain acceptable product interaction, quality must degrade before shipping.
+
+### Tests
+
+`tests/cueId.test.ts` now locks:
+
+- public profile static-first behavior;
+- Save-Data gate;
+- <= 2 GB static-only gate;
+- <= 4 GB / <= 900px reduced-quality gate;
+- DPR reduction from 1.5 to 1.0.
+
+### Commits
+
+```text
+270b6f4563d821b10dc6ecbac7ccf2ce8feace75
+aa4ed5e7ecc1b76cdf480e5205e81529820ebeef
+d15b4e9a79b6483974ae5380a620361d95ca12eb
+```
+
+Production remains untouched.
