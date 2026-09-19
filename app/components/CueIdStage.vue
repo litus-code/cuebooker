@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CueIdConfigV1 } from '../domain/cueId'
 import type { CueIdCandidateQuality } from '../domain/cueIdAssets'
+import { selectCueIdCandidateQuality, type CueIdQualityMode } from '../domain/cueIdQuality'
 import { decideCueIdRuntime, getCueIdRuntimeSignals, type CueIdRuntimeDecision } from '../domain/cueIdRuntime'
 import { evaluateCueIdReadyPerformance } from '../domain/cueIdPerformance'
 
@@ -10,14 +11,14 @@ const props = withDefaults(defineProps<{
   compact?: boolean
   interactive?: boolean
   labAsset?: 'benchmark' | 'candidate' | null
-  labQuality?: CueIdCandidateQuality
+  labQuality?: CueIdQualityMode
   showDiagnostics?: boolean
 }>(), {
   artistName: 'ARTIST',
   compact: false,
   interactive: true,
   labAsset: null,
-  labQuality: 'light',
+  labQuality: 'auto',
   showDiagnostics: false
 })
 
@@ -116,6 +117,13 @@ const baseClass = computed(() => `cue-id-stage--base-${props.config.base}`)
 const outfitClass = computed(() => `cue-id-stage--outfit-${props.config.outfit}`)
 const materialClass = computed(() => `cue-id-stage--material-${props.config.material}`)
 const accentClass = computed(() => props.config.accent ? `cue-id-stage--accent-${props.config.accent}` : '')
+const resolvedLabQuality = computed<CueIdCandidateQuality>(() => {
+  if (props.labQuality !== 'auto') return props.labQuality
+  return runtimeDecision.value
+    ? selectCueIdCandidateQuality(runtimeDecision.value)
+    : 'light'
+})
+
 const performanceGate = computed(() => {
   if (!runtimeDecision.value) return null
   return evaluateCueIdReadyPerformance(
@@ -152,7 +160,7 @@ const performanceGate = computed(() => {
         :config="config"
         :decision="runtimeDecision"
         :lab-asset="labAsset"
-        :lab-quality="labQuality"
+        :lab-quality="resolvedLabQuality"
         @ready="handleRuntimeReady"
         @failed="handleRuntimeFailed"
         @lab-asset-loaded="handleLabAssetLoaded"
@@ -169,6 +177,7 @@ const performanceGate = computed(() => {
       <span>reason <b>{{ runtimeDecision?.reason || '—' }}</b></span>
       <span>dpr <b>{{ runtimeDecision?.dprCap ?? '—' }}</b></span>
       <span>init <b>{{ runtimeInitMs === null ? '—' : runtimeInitMs + 'ms' }}</b></span>
+      <span>quality <b>{{ resolvedLabQuality }}</b></span>
       <span>asset <b>{{ latestLabMetrics?.assetId || '—' }}</b></span>
       <span>bytes <b>{{ latestLabMetrics?.bytes?.toLocaleString?.() || '—' }}</b></span>
       <span>load <b>{{ latestLabMetrics ? latestLabMetrics.loadMs + 'ms' : '—' }}</b></span>
