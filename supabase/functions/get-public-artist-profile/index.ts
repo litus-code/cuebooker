@@ -136,7 +136,7 @@ type ArtistRow = {
   artist_image_position_x: number;
   artist_image_position_y: number;
   artist_image_scale: number;
-  visual_mode: 'photo' | 'artwork' | 'cue_id';
+  visual_source: 'portrait' | 'cue_id';
   cue_id_config: unknown;
 };
 
@@ -180,7 +180,7 @@ Deno.serve(async request => {
       "artist_image_position_x",
       "artist_image_position_y",
       "artist_image_scale",
-      "visual_mode",
+      "visual_source",
       "cue_id_config"
     ].join(",");
 
@@ -201,11 +201,11 @@ Deno.serve(async request => {
 
     const cueId = sanitizeCueIdConfig(artist.cue_id_config);
     const visualMode =
-      artist.visual_mode === "cue_id"
+      artist.visual_source === "cue_id"
         ? (cueId ? "cue_id" : "photo")
-        : artist.visual_mode === "artwork"
-          ? "artwork"
-          : "photo";
+        : artist.artist_image_style === "photo"
+          ? "photo"
+          : "artwork";
 
     const [coverUrl, artistImageUrl, artistCutoutUrl] = await Promise.all([
       signArtistMedia(supabaseUrl, serviceKey, artist.cover_image_path),
