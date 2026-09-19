@@ -229,3 +229,172 @@ Before adding the first GLB, compare:
 6. fallback behaviour with WebGL disabled or context lost.
 
 The procedural proof should be removed or replaced once the TresJS/GLB path has demonstrated equal or better resilience within budget.
+
+
+## Device capability tiers
+
+CUE ID must behave predictably across Android, iPhone and desktop. Device adaptation is part of the product contract.
+
+### Tier A — full interactive
+
+Typical examples:
+
+- recent iPhone / iPad;
+- recent Android flagship;
+- Apple Silicon desktop/laptop;
+- modern discrete or capable integrated desktop GPU.
+
+Target behavior:
+
+- interactive 3D enabled;
+- DPR cap up to 1.5;
+- idle animation enabled unless reduced motion;
+- selected accessory/model assets may lazy-load;
+- restrained lighting/material effects allowed;
+- no heavy post-processing by default.
+
+### Tier B — reduced interactive
+
+Typical examples:
+
+- Android mid-range;
+- older iPhone;
+- older Intel/AMD integrated graphics;
+- devices reporting moderate memory constraints.
+
+Target behavior:
+
+- interactive 3D may run;
+- DPR cap 1.0;
+- no expensive post-processing;
+- simplified materials;
+- reduced idle animation;
+- one main light + ambient/environment approximation;
+- accessories load only after explicit selection;
+- scene should prefer event-driven redraw over continuous animation.
+
+### Tier C — static-first only
+
+Triggers include:
+
+- Save-Data enabled;
+- browser-reported device memory <= 2 GB;
+- WebGL unavailable;
+- WebGL context loss;
+- repeated renderer/model failure;
+- future measured runtime threshold breach on a known device class.
+
+Target behavior:
+
+- no 3D runtime download where detection happens before import;
+- static CUE ID remains the complete representation;
+- Artist Profile remains fully usable;
+- no warning/error language that makes the user feel their device is unsupported.
+
+### Browser support matrix
+
+The first production-ready renderer must be tested on:
+
+| Platform | Minimum validation |
+| --- | --- |
+| Android | Current Chrome on low/mid/high tier hardware |
+| Android | Samsung Internet on representative Samsung hardware |
+| iOS | Safari on one current and one older supported iPhone |
+| macOS | Safari + Chrome |
+| Windows | Chrome + Edge on integrated graphics |
+| Firefox | Current desktop Firefox sanity pass |
+
+Browser support is behavioral, not user-agent based. Prefer feature/capability detection over hardcoded model lists.
+
+## Performance budgets by surface
+
+### Booking / Calendar / Activity
+
+CUE ID renderer cost:
+
+```text
+0 bytes
+0 renderer initialization
+0 GPU work
+```
+
+These surfaces must never import the renderer.
+
+### Artist Profile editor before CUE ID approaches viewport
+
+Target:
+
+```text
+renderer chunk not requested
+no canvas
+no WebGL context
+static/profile UI fully interactive
+```
+
+### CUE ID editor after activation
+
+Initial engineering targets:
+
+- runtime JS lazy chunk: target <= 180 KB gzip before final measurement;
+- base GLB: target <= 1 MB compressed;
+- initial textures: target <= 1 MB compressed;
+- first meaningful 3D frame after preload trigger:
+  - Tier A: target <= 800 ms on warm-ish network/device conditions;
+  - Tier B: target <= 1500 ms;
+- steady idle frame rate:
+  - Tier A: target 50–60 fps;
+  - Tier B: target >= 30 fps or switch to event-driven/still mode;
+- no main-thread task > 200 ms attributable to CUE ID during profile interaction;
+- no visible layout shift when static fallback transitions to 3D.
+
+These are engineering gates, not user-facing promises.
+
+## Android-specific acceptance criteria
+
+Android is not a secondary platform.
+
+Before the first GLB renderer can be considered production-ready:
+
+1. test at least one low-end or emulated constrained Android profile;
+2. test one representative mid-range Android device;
+3. test one recent high-end Android device;
+4. verify Chrome and Samsung Internet where practical;
+5. test DPR 1 / 2 / 3 behavior and confirm the renderer cap wins;
+6. verify scrolling remains responsive while CUE ID is visible;
+7. verify tab/background and screen-lock recovery;
+8. verify WebGL context-loss fallback;
+9. verify no reload loop or blank canvas after memory pressure;
+10. verify portrait/landscape transitions do not create runaway canvas resolution.
+
+If mid-range Android cannot keep acceptable interaction/scroll performance, Tier B must reduce quality before shipping.
+
+## Mobile thermal/battery rule
+
+CUE ID must not maintain an unnecessary render loop.
+
+When:
+
+- the scene is static;
+- reduced motion is active;
+- the editor is not being manipulated;
+- the stage is offscreen;
+- the document is hidden;
+
+rendering should stop or become event-driven.
+
+A visually subtle idle animation is never more important than battery and thermal behavior.
+
+## 3D asset acceptance gate
+
+No GLB enters the initial production catalogue unless it has recorded:
+
+- compressed file size;
+- triangle count;
+- material count;
+- texture count and dimensions;
+- decode/load time on Tier A and Tier B;
+- first-frame time;
+- approximate steady-state frame rate;
+- memory/thermal observations on representative mobile hardware.
+
+A visually stronger asset can be rejected if its runtime cost is disproportionate.
