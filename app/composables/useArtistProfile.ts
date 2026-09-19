@@ -1,5 +1,8 @@
+import type { CueIdConfigV1 } from '../domain/cueId'
+
 export type FeeBasis = 'event' | 'set' | 'hour'
 export type ArtistImageStyle = 'photo' | 'artwork' | 'duotone'
+export type ArtistVisualMode = 'photo' | 'artwork' | 'cue_id'
 
 export type ArtistProfessionalProfile = {
   id: string
@@ -29,6 +32,8 @@ export type ArtistProfessionalProfile = {
   artist_image_position_x: number
   artist_image_position_y: number
   artist_image_scale: number
+  visual_mode: ArtistVisualMode
+  cue_id_config: CueIdConfigV1
 }
 
 export type ArtistBookingProfile = {
@@ -73,7 +78,7 @@ export type ArtistVisualInput = {
   artist_image_scale: number
 }
 
-const artistSelect = 'id,stage_name,slug,bio,city,country_code,timezone,languages,primary_genres,secondary_genres,performance_formats,event_types,years_active,website_url,instagram_url,soundcloud_url,mixcloud_url,youtube_url,spotify_url,cover_image_path,cover_position_y,artist_image_path,artist_cutout_path,artist_image_style,artist_image_position_x,artist_image_position_y,artist_image_scale'
+const artistSelect = 'id,stage_name,slug,bio,city,country_code,timezone,languages,primary_genres,secondary_genres,performance_formats,event_types,years_active,website_url,instagram_url,soundcloud_url,mixcloud_url,youtube_url,spotify_url,cover_image_path,cover_position_y,artist_image_path,artist_cutout_path,artist_image_style,artist_image_position_x,artist_image_position_y,artist_image_scale,visual_mode,cue_id_config'
 
 export function useArtistProfile() {
   const config = useRuntimeConfig()
@@ -245,6 +250,24 @@ export function useArtistProfile() {
     return rows[0]
   }
 
+  async function saveCueIdPresentation(artistId: string, visualMode: ArtistVisualMode, cueIdConfig: CueIdConfigV1) {
+    const rows = await $fetch<ArtistProfessionalProfile[]>(`${supabaseUrl.value}/rest/v1/artists`, {
+      method: 'PATCH',
+      headers: { ...headers(), Prefer: 'return=representation' },
+      query: {
+        id: `eq.${artistId}`,
+        select: artistSelect
+      },
+      body: {
+        visual_mode: visualMode,
+        cue_id_config: cueIdConfig
+      }
+    })
+    if (!rows[0]) throw new Error('cue_id_not_saved')
+    const record = syncActiveProfile({ artist: rows[0], booking: activeProfile.value?.booking || null })
+    return record.artist
+  }
+
   async function saveArtistVisual(artistId: string, visual: ArtistVisualInput) {
     const rows = await $fetch<ArtistProfessionalProfile[]>(`${supabaseUrl.value}/rest/v1/artists`, {
       method: 'PATCH',
@@ -276,6 +299,7 @@ export function useArtistProfile() {
     deleteArtistImage,
     deleteArtistCutout,
     saveCover,
-    saveArtistVisual
+    saveArtistVisual,
+    saveCueIdPresentation
   }
 }
