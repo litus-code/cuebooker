@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ArtistImageStyle } from '../composables/useArtistProfile'
+import type { ArtistImageStyle } from '../domain/artistVisual'
 
 const props = withDefaults(defineProps<{
   imageUrl?: string
