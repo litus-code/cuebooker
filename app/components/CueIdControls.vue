@@ -64,13 +64,13 @@ function set<K extends keyof CueIdConfigV1>(key: K, value: CueIdConfigV1[K]) {
       <div class="cue-id-controls__group">
         <label>{{ copy.base }}</label>
         <div class="cue-id-controls__choices">
-          <button v-for="item in CLUB_MINIMAL_CATALOGUE.bases" :key="String(item.id)" type="button" :class="{ active: modelValue.base === item.id }" :disabled="disabled" @click="set('base', item.id)">{{ label(item) }}</button>
+          <button v-for="item in CLUB_MINIMAL_CATALOGUE.bases" :key="String(item.id)" type="button" :class="{ active: modelValue.base === item.id }" :aria-pressed="modelValue.base === item.id" :disabled="disabled" @click="set('base', item.id)">{{ label(item) }}</button>
         </div>
       </div>
       <div class="cue-id-controls__group">
         <label>{{ copy.build }}</label>
         <div class="cue-id-controls__choices">
-          <button v-for="item in CLUB_MINIMAL_CATALOGUE.builds" :key="String(item.id)" type="button" :class="{ active: modelValue.build === item.id }" :disabled="disabled" @click="set('build', item.id)">{{ label(item) }}</button>
+          <button v-for="item in CLUB_MINIMAL_CATALOGUE.builds" :key="String(item.id)" type="button" :class="{ active: modelValue.build === item.id }" :aria-pressed="modelValue.build === item.id" :disabled="disabled" @click="set('build', item.id)">{{ label(item) }}</button>
         </div>
       </div>
     </section>
@@ -80,13 +80,13 @@ function set<K extends keyof CueIdConfigV1>(key: K, value: CueIdConfigV1[K]) {
       <div class="cue-id-controls__group">
         <label>{{ copy.outfit }}</label>
         <div class="cue-id-controls__choices">
-          <button v-for="item in CLUB_MINIMAL_CATALOGUE.outfits" :key="String(item.id)" type="button" :class="{ active: modelValue.outfit === item.id }" :disabled="disabled" @click="set('outfit', item.id)">{{ label(item) }}</button>
+          <button v-for="item in CLUB_MINIMAL_CATALOGUE.outfits" :key="String(item.id)" type="button" :class="{ active: modelValue.outfit === item.id }" :aria-pressed="modelValue.outfit === item.id" :disabled="disabled" @click="set('outfit', item.id)">{{ label(item) }}</button>
         </div>
       </div>
       <div class="cue-id-controls__group">
         <label>{{ copy.accessory }}</label>
         <div class="cue-id-controls__choices">
-          <button v-for="item in CLUB_MINIMAL_CATALOGUE.accessories" :key="String(item.id)" type="button" :class="{ active: modelValue.accessory === item.id }" :disabled="disabled" @click="set('accessory', item.id)">{{ label(item) }}</button>
+          <button v-for="item in CLUB_MINIMAL_CATALOGUE.accessories" :key="String(item.id)" type="button" :class="{ active: modelValue.accessory === item.id }" :aria-pressed="modelValue.accessory === item.id" :disabled="disabled" @click="set('accessory', item.id)">{{ label(item) }}</button>
         </div>
       </div>
     </section>
@@ -96,7 +96,7 @@ function set<K extends keyof CueIdConfigV1>(key: K, value: CueIdConfigV1[K]) {
       <div class="cue-id-controls__group">
         <label>{{ copy.pose }}</label>
         <div class="cue-id-controls__choices">
-          <button v-for="item in CLUB_MINIMAL_CATALOGUE.poses" :key="String(item.id)" type="button" :class="{ active: modelValue.pose === item.id }" :disabled="disabled" @click="set('pose', item.id)">{{ label(item) }}</button>
+          <button v-for="item in CLUB_MINIMAL_CATALOGUE.poses" :key="String(item.id)" type="button" :class="{ active: modelValue.pose === item.id }" :aria-pressed="modelValue.pose === item.id" :disabled="disabled" @click="set('pose', item.id)">{{ label(item) }}</button>
         </div>
       </div>
     </section>
@@ -106,15 +106,15 @@ function set<K extends keyof CueIdConfigV1>(key: K, value: CueIdConfigV1[K]) {
       <div class="cue-id-controls__group">
         <label>{{ copy.material }}</label>
         <div class="cue-id-controls__choices">
-          <button v-for="item in CLUB_MINIMAL_CATALOGUE.materials" :key="String(item.id)" type="button" :class="{ active: modelValue.material === item.id }" :disabled="disabled" @click="set('material', item.id)">{{ label(item) }}</button>
+          <button v-for="item in CLUB_MINIMAL_CATALOGUE.materials" :key="String(item.id)" type="button" :class="{ active: modelValue.material === item.id }" :aria-pressed="modelValue.material === item.id" :disabled="disabled" @click="set('material', item.id)">{{ label(item) }}</button>
         </div>
       </div>
       <div class="cue-id-controls__group">
         <label>{{ copy.accent }}</label>
         <div class="cue-id-controls__choices">
-          <button type="button" :class="{ active: modelValue.accent === 'lime' }" :disabled="disabled" @click="set('accent', 'lime')">{{ copy.lime }}</button>
-          <button type="button" :class="{ active: modelValue.accent === 'red' }" :disabled="disabled" @click="set('accent', 'red')">{{ copy.red }}</button>
-          <button type="button" :class="{ active: modelValue.accent === null }" :disabled="disabled" @click="set('accent', null)">{{ copy.none }}</button>
+          <button type="button" :class="{ active: modelValue.accent === 'lime' }" :aria-pressed="modelValue.accent === 'lime'" :disabled="disabled" @click="set('accent', 'lime')">{{ copy.lime }}</button>
+          <button type="button" :class="{ active: modelValue.accent === 'red' }" :aria-pressed="modelValue.accent === 'red'" :disabled="disabled" @click="set('accent', 'red')">{{ copy.red }}</button>
+          <button type="button" :class="{ active: modelValue.accent === null }" :aria-pressed="modelValue.accent === null" :disabled="disabled" @click="set('accent', null)">{{ copy.none }}</button>
         </div>
       </div>
     </section>
@@ -127,7 +127,7 @@ function set<K extends keyof CueIdConfigV1>(key: K, value: CueIdConfigV1[K]) {
 .cue-id-controls header{display:flex;justify-content:space-between;gap:18px;padding-bottom:14px;border-bottom:1px solid var(--cue-border)}
 .cue-id-controls header span{color:var(--cue-accent);font:700 9px/1.2 monospace}.cue-id-controls header strong{font-size:12px;letter-spacing:.05em;text-transform:uppercase}
 .cue-id-controls__group{display:grid;gap:8px;margin-top:16px}.cue-id-controls__group label{color:var(--cue-muted);font:700 9px/1.2 monospace;letter-spacing:.1em;text-transform:uppercase}
-.cue-id-controls__choices{display:flex;flex-wrap:wrap;gap:7px}.cue-id-controls__choices button{min-height:42px;padding:0 12px;border:1px solid var(--cue-border);background:var(--cue-bg);color:var(--cue-text);cursor:pointer;font-size:11px;font-weight:800}
+.cue-id-controls__choices{display:flex;flex-wrap:wrap;gap:7px}.cue-id-controls__choices button{min-height:44px;touch-action:manipulation;padding:0 12px;border:1px solid var(--cue-border);background:var(--cue-bg);color:var(--cue-text);cursor:pointer;font-size:11px;font-weight:800}
 .cue-id-controls__choices button.active{border-color:var(--cue-accent);background:var(--cue-accent);color:#080808}.cue-id-controls__choices button:focus-visible{outline:2px solid var(--cue-accent);outline-offset:2px}.cue-id-controls__choices button:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:760px){.cue-id-controls{grid-template-columns:1fr}}
 </style>
