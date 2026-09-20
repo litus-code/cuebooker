@@ -8009,3 +8009,24 @@ No runtime behavior changed.
 The production catalogue remains empty.
 
 Production remains untouched.
+
+## 141. Production asset contract synchronized with implementation
+
+The authored V2 technical contract has been aligned with the current production implementation.
+
+Corrections in `docs/CUE_ID_ASSET_CONTRACT_V2.md`:
+
+- removed the obsolete generic `static.portrait/static.square` manifest shape;
+- documented semantic `static.variants` keyed by complete visible CUE ID state;
+- documented portrait + square coverage for every declared capability combination;
+- documented that no semantic fallback is allowed between base/build/pose/accessory/material/accent;
+- aligned catalogue terminology with `static_approved` / `interactive_approved` admission stages;
+- removed stale `CUE_ID_ASSETS` wording from the promotion contract.
+
+`docs/CUE_ID_SOURCE_ASSET_PACKAGE_V2.md` also had a duplicated performance-review section left by concurrent commits. The duplicate was removed and following sections renumbered.
+
+No runtime behavior changed.
+
+The production catalogue remains empty.
+
+Production remains untouched.
