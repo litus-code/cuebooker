@@ -3,7 +3,6 @@ import { join } from 'node:path'
 import { createCueIdSculptReviewDraft } from './cue-id-sculpt-review.mjs'
 import { createCueIdMobileReviewDraft } from './cue-id-mobile-review.mjs'
 import { createCueIdPerformanceReviewDraft } from './cue-id-performance-review.mjs'
-import { createCueIdPerformanceReviewDraft } from './cue-id-performance-review.mjs'
 
 function ensureVersion(version) {
   if (!version || !/^[0-9]+\.[0-9]+\.[0-9]+$/.test(version)) {
