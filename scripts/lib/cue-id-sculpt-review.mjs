@@ -3,7 +3,7 @@ const GATE_ORDER = [
   'B_builds',
   'C_tee',
   'D_poses',
-  'E_mobile'
+  'E_productSize'
 ]
 
 const REQUIRED_CHECKS = {
@@ -42,16 +42,14 @@ const REQUIRED_CHECKS = {
     'noBodyGarmentIntersections',
     'sameIntentAcrossBases'
   ],
-  E_mobile: [
-    'iphoneClass',
-    'androidMidRange',
-    'viewport430OrLess',
-    'dpr1Equivalent',
+  E_productSize: [
+    'viewport390Approx',
     'headReads',
     'shouldersRead',
     'handsRead',
     'teeReads',
-    'fullSilhouetteReads'
+    'fullSilhouetteReads',
+    'noDesktopZoomDependency'
   ]
 }
 
