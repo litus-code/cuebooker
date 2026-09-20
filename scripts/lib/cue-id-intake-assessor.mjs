@@ -30,6 +30,10 @@ function admissionFor(stage, manifest, evidence, packageValid) {
 
 export function assessCueIdV2Intake(buffer, manifest, evidence = {}) {
   const packageResult = validateCueIdPackage(buffer, manifest)
+  const evidenceVersionValid =
+    typeof evidence.assetVersion === 'string'
+    && evidence.assetVersion.length > 0
+    && evidence.assetVersion === manifest.assetVersion
   const staticAdmission = admissionFor(
     'static_approved',
     manifest,
@@ -45,6 +49,19 @@ export function assessCueIdV2Intake(buffer, manifest, evidence = {}) {
 
   const staticIssues = validateCueIdProductionAdmission(staticAdmission)
   const interactiveIssues = validateCueIdProductionAdmission(interactiveAdmission)
+
+  if (!evidenceVersionValid) {
+    const versionIssue = {
+      assetVersion: manifest.assetVersion || 'unknown',
+      field: 'evidenceVersion',
+      message: evidence.assetVersion
+        ? `Evidence assetVersion ${evidence.assetVersion} does not match manifest assetVersion ${manifest.assetVersion || 'unknown'}`
+        : 'Intake evidence requires assetVersion matching the manifest'
+    }
+
+    staticIssues.push(versionIssue)
+    interactiveIssues.push({ ...versionIssue })
+  }
 
   return {
     assetVersion: manifest.assetVersion || null,
