@@ -45,6 +45,37 @@ test('accepts a V2-ready production manifest inside the asset budget', () => {
   assert.equal(assertCueIdProductionManifest(manifest), manifest)
 })
 
+test('separates static-valid manifests from interactive binding readiness', async () => {
+  const { isCueIdProductionInteractiveReady } = await import('../app/domain/cueIdProductionManifest.ts')
+  const manifest = createManifest()
+
+  assert.equal(isCueIdProductionInteractiveReady(manifest), false)
+
+  manifest.bindings = {
+    morphs: {
+      'base.feminine': 'base_feminine',
+      'base.masculine': 'base_masculine',
+      'build.slim': 'build_slim',
+      'build.strong': 'build_strong'
+    },
+    poses: {
+      neutral: 'pose_neutral',
+      relaxed: 'pose_relaxed',
+      focused: 'pose_focused',
+      editorial: 'pose_editorial'
+    },
+    outfits: {
+      tee: ['outfit_tee']
+    },
+    materials: {
+      body: 'material_body',
+      textile: 'material_textile'
+    }
+  }
+
+  assert.equal(isCueIdProductionInteractiveReady(manifest), true)
+})
+
 test('rejects manifests that do not expose all three first-class bases', () => {
   const manifest = createManifest()
   manifest.capabilities.bases = ['masculine', 'neutral']
