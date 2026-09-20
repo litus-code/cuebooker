@@ -100,6 +100,34 @@ export async function scaffoldCueIdV2Package(rootDir, version) {
 
 Do not fill bindings from naming convention alone. Confirm every target against the authored asset.
 
+Canonical reference:
+- base: neutral
+- build: regular
+- outfit: tee
+- accessory: none
+- pose: neutral
+- material: matte
+
+Recommended export aliases are optional but preferred:
+- cue_base_feminine
+- cue_base_masculine
+- cue_build_slim
+- cue_build_strong
+- cue_pose_neutral
+- cue_pose_relaxed
+- cue_pose_focused
+- cue_pose_editorial
+- cue_body
+- cue_outfit_tee
+- cue_footwear
+- cue_mat_body
+- cue_mat_textile
+- cue_mat_technical
+- cue_mat_accent
+
+Full binding contract:
+docs/CUE_ID_AUTHORED_BINDINGS_V2.md
+
 ## Bases
 - feminine -> 
 - neutral -> reference/default
@@ -223,8 +251,9 @@ Hard reject if:
 - tee hides anatomy rather than fitting it
 - mobile-size still reads as mannequin/game avatar
 
-Full production reference:
+Full production references:
 docs/CUE_ID_SCULPT_SPEC_V2.md
+docs/CUE_ID_AUTHORED_BINDINGS_V2.md
 `
 
   const readme = `# CUE ID V2 asset package ${version}
