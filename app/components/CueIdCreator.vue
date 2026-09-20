@@ -5,6 +5,7 @@ import {
   cueIdCreatorToRuntimeConfig
 } from '../domain/cueIdCreator'
 import { CUE_ID_PRODUCTION_CATALOGUE } from '../domain/cueIdProductionCatalogue'
+import { getCueIdCreatorAssetStatus } from '../domain/cueIdCreatorAssetStatus'
 
 type Locale = 'es' | 'en'
 type CreatorStep = keyof Pick<
@@ -42,6 +43,7 @@ const saveState = ref<'idle' | 'saved'>('idle')
 const DRAFT_STORAGE_KEY = 'cuebooker:cue-id:creator-draft:v1'
 const runtimeConfig = computed(() => cueIdCreatorToRuntimeConfig(props.modelValue))
 const creatorUsesLabFixture = computed(() => CUE_ID_PRODUCTION_CATALOGUE.length === 0)
+const assetStatus = computed(() => getCueIdCreatorAssetStatus())
 
 const previewClasses = computed(() => [
   `creator__preview--skin-${props.modelValue.skin}`,
@@ -80,6 +82,16 @@ const copy = computed(() => props.locale === 'es' ? {
   authored: 'Asset authored pendiente',
   authoredBody: 'Esta vista valida el creator y su modelo semántico. El fixture actual no representa el resultado visual final.',
   productionBody: 'Esta vista ya usa el asset CUE ID admitido por el catálogo de producción.',
+  assetSource: 'Fuente visual',
+  sourceLab: 'Candidate de laboratorio',
+  sourceStatic: 'Producción estática',
+  sourceInteractive: 'Producción interactiva',
+  gateVisual: 'Visual',
+  gateMobile: 'Mobile',
+  gatePackage: 'Paquete',
+  gatePerformance: 'Performance',
+  pending: 'Pendiente',
+  passed: 'OK',
   previous: 'Anterior',
   next: 'Siguiente',
   saved: 'Guardado',
@@ -115,6 +127,16 @@ const copy = computed(() => props.locale === 'es' ? {
   authored: 'Authored asset pending',
   authoredBody: 'This view validates the creator and its semantic model. The current fixture does not represent the final visual result.',
   productionBody: 'This view now uses the CUE ID asset admitted by the production catalogue.',
+  assetSource: 'Visual source',
+  sourceLab: 'Lab candidate',
+  sourceStatic: 'Production static',
+  sourceInteractive: 'Production interactive',
+  gateVisual: 'Visual',
+  gateMobile: 'Mobile',
+  gatePackage: 'Package',
+  gatePerformance: 'Performance',
+  pending: 'Pending',
+  passed: 'OK',
   previous: 'Previous',
   next: 'Next',
   saved: 'Saved',
@@ -142,6 +164,12 @@ const steps = computed(() => ([
   { id: 'material' as const, label: copy.value.material },
   { id: 'accent' as const, label: copy.value.accent }
 ]))
+
+const assetSourceLabel = computed(() => {
+  if (assetStatus.value.source === 'production_interactive') return copy.value.sourceInteractive
+  if (assetStatus.value.source === 'production_static') return copy.value.sourceStatic
+  return copy.value.sourceLab
+})
 
 const activeStepIndex = computed(() => Math.max(0, steps.value.findIndex(step => step.id === activeStep.value)))
 const progress = computed(() => ((activeStepIndex.value + 1) / steps.value.length) * 100)
@@ -335,8 +363,22 @@ onMounted(() => {
       <div class="creator__stage" :class="previewClasses">
         <div class="creator__stage-label">
           <span>{{ copy.preview }}</span>
-          <strong>{{ copy.authored }}</strong>
+          <strong>{{ creatorUsesLabFixture ? copy.authored : assetSourceLabel }}</strong>
         </div>
+
+        <aside class="creator__asset-status" aria-label="CUE ID asset status">
+          <div>
+            <span>{{ copy.assetSource }}</span>
+            <strong>{{ assetSourceLabel }}</strong>
+            <small v-if="assetStatus.assetVersion">v{{ assetStatus.assetVersion }}</small>
+          </div>
+          <ul>
+            <li :data-pass="assetStatus.visualReview"><span>{{ copy.gateVisual }}</span><b>{{ assetStatus.visualReview ? copy.passed : copy.pending }}</b></li>
+            <li :data-pass="assetStatus.mobileReview"><span>{{ copy.gateMobile }}</span><b>{{ assetStatus.mobileReview ? copy.passed : copy.pending }}</b></li>
+            <li :data-pass="assetStatus.packageValidation"><span>{{ copy.gatePackage }}</span><b>{{ assetStatus.packageValidation ? copy.passed : copy.pending }}</b></li>
+            <li :data-pass="assetStatus.performanceReady"><span>{{ copy.gatePerformance }}</span><b>{{ assetStatus.performanceReady ? copy.passed : copy.pending }}</b></li>
+          </ul>
+        </aside>
 
         <CueIdStage
           :config="runtimeConfig"
@@ -518,6 +560,14 @@ onMounted(() => {
 .creator__stage-label{position:absolute;z-index:8;top:34px;left:36px;display:grid;gap:5px;pointer-events:none}
 .creator__stage-label span{color:var(--cue-muted);font:700 9px/1 monospace;letter-spacing:.12em;text-transform:uppercase}
 .creator__stage-label strong{font-size:11px;text-transform:uppercase}
+.creator__asset-status{position:absolute;z-index:8;top:34px;right:36px;width:190px;padding:11px;border:1px solid rgba(255,255,255,.11);background:rgba(5,7,6,.78);backdrop-filter:blur(8px)}
+.creator__asset-status>div{display:grid;gap:4px;padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,.09)}
+.creator__asset-status>div span,.creator__asset-status small{color:var(--cue-muted);font:700 8px/1.2 monospace;letter-spacing:.08em;text-transform:uppercase}
+.creator__asset-status>div strong{font-size:10px;text-transform:uppercase}
+.creator__asset-status ul{display:grid;gap:5px;margin:9px 0 0;padding:0;list-style:none}
+.creator__asset-status li{display:flex;justify-content:space-between;gap:8px;color:var(--cue-muted);font:700 8px/1.2 monospace;text-transform:uppercase}
+.creator__asset-status li b{color:#8d928b}
+.creator__asset-status li[data-pass="true"] b{color:var(--cue-accent)}
 .creator__semantic-preview{position:absolute;z-index:6;left:50%;top:47%;width:150px;height:330px;transform:translate(-50%,-50%);pointer-events:none;opacity:.42;mix-blend-mode:screen}
 .creator__semantic-preview i{position:absolute;display:block}
 .creator__semantic-head{left:49px;top:4px;width:52px;height:66px;border-radius:46% 46% 42% 42%;background:var(--creator-skin,#b9805f);transition:clip-path .2s ease,border-radius .2s ease}
@@ -723,6 +773,8 @@ button:focus-visible{outline:2px solid var(--cue-accent);outline-offset:2px}
   .creator__stage{padding:0}
   .creator__stage :deep(.cue-id-stage){min-height:470px;border:0}
   .creator__stage-label{top:16px;left:16px}
+  .creator__asset-status{top:14px;right:12px;width:150px;padding:8px}
+  .creator__asset-status ul{display:none}
   .creator__semantic-preview{top:46%;transform:translate(-50%,-50%) scale(.86)}
   .creator__preview--pose-relaxed .creator__semantic-preview{transform:translate(-50%,-50%) scale(.86) rotate(-2deg)}
   .creator__preview--pose-focused .creator__semantic-preview{transform:translate(-50%,-50%) scale(.84) rotate(1deg)}
