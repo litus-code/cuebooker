@@ -1,10 +1,8 @@
 import type { CueIdConfigV1 } from './cueId'
 import type { CueIdDeviceTier } from './cueIdAssets'
+import type { CueIdProductionAdmission } from './cueIdProductionAdmission.ts'
+import { validateCueIdProductionAdmission } from './cueIdProductionAdmission.ts'
 import type { CueIdProductionManifest } from './cueIdProductionManifest.ts'
-import {
-  isCueIdProductionInteractiveReady,
-  validateCueIdProductionManifest
-} from './cueIdProductionManifest.ts'
 
 export type CueIdResolvedProductionAsset = {
   manifest: CueIdProductionManifest
@@ -26,16 +24,24 @@ function supportsConfig(manifest: CueIdProductionManifest, config: CueIdConfigV1
 export function resolveCueIdAsset(
   config: CueIdConfigV1,
   tier: CueIdDeviceTier,
-  manifests: CueIdProductionManifest[]
+  admissions: CueIdProductionAdmission[]
 ): CueIdResolvedProductionAsset | null {
   if (!config.enabled) return null
 
-  const candidates = manifests
-    .filter(manifest => validateCueIdProductionManifest(manifest).length === 0)
-    .filter(manifest => supportsConfig(manifest, config))
-    .sort((a, b) => b.assetVersion.localeCompare(a.assetVersion, undefined, { numeric: true }))
+  const candidates = admissions
+    .filter(admission => validateCueIdProductionAdmission(admission).length === 0)
+    .filter(admission => supportsConfig(admission.manifest, config))
+    .sort((a, b) =>
+      b.manifest.assetVersion.localeCompare(
+        a.manifest.assetVersion,
+        undefined,
+        { numeric: true }
+      )
+    )
 
-  for (const manifest of candidates) {
+  for (const admission of candidates) {
+    const manifest = admission.manifest
+
     if (tier === 'static') {
       return {
         manifest,
@@ -44,14 +50,14 @@ export function resolveCueIdAsset(
       }
     }
 
-    if (manifest.supportedTiers.includes(tier)) {
-      return {
-        manifest,
-        representation: isCueIdProductionInteractiveReady(manifest)
-          ? 'interactive'
-          : 'static',
-        staticPath: manifest.static.portrait
-      }
+    const canRenderInteractively =
+      admission.stage === 'interactive_approved'
+      && manifest.supportedTiers.includes(tier)
+
+    return {
+      manifest,
+      representation: canRenderInteractively ? 'interactive' : 'static',
+      staticPath: manifest.static.portrait
     }
   }
 
