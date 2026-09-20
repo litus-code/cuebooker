@@ -79,7 +79,6 @@ export async function scaffoldCueIdV2Package(rootDir, version) {
   const sculptReview = createCueIdSculptReviewDraft(version)
   const mobileReview = createCueIdMobileReviewDraft(version)
   const performanceReview = createCueIdPerformanceReviewDraft(version)
-  const performanceReview = createCueIdPerformanceReviewDraft(version)
 
   const metadata = {
     assetVersion: version,
