@@ -150,6 +150,14 @@ function isSelected(value: unknown) {
   return props.modelValue[activeStep.value] === value
 }
 
+function optionVisualClass(optionId: string) {
+  return [
+    'creator__option-visual',
+    `creator__option-visual--${activeStep.value}`,
+    `creator__option-visual--${optionId.replace(/[^a-z0-9-]/gi, '-').toLowerCase()}`
+  ]
+}
+
 function select(value: unknown) {
   update(activeStep.value, value as never)
 }
@@ -215,7 +223,10 @@ function select(value: unknown) {
             :aria-pressed="isSelected(option.value)"
             @click="select(option.value)"
           >
-            <i aria-hidden="true" />
+            <i :class="optionVisualClass(option.id)" aria-hidden="true">
+              <b />
+              <em />
+            </i>
             <span>{{ option.label }}</span>
           </button>
         </div>
@@ -279,10 +290,90 @@ function select(value: unknown) {
 .creator__panel-head strong{font-size:20px}
 .creator__options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:14px;max-height:370px;overflow:auto}
 .creator__options button{display:grid;gap:10px;min-height:94px;padding:10px;border:1px solid var(--cue-border);background:#0d100e;color:var(--cue-text);text-align:left;cursor:pointer}
-.creator__options button i{display:block;height:38px;border-radius:3px;background:linear-gradient(135deg,#171b18,#2a302a)}
+.creator__option-visual{position:relative;display:block;height:54px;overflow:hidden;border-radius:4px;background:linear-gradient(135deg,#171b18,#2a302a);isolation:isolate}
+.creator__option-visual b,.creator__option-visual em{position:absolute;display:block;content:''}
 .creator__options button span{font-size:10px;font-weight:800}
 .creator__options button.selected{border-color:var(--cue-accent);box-shadow:inset 0 0 0 1px var(--cue-accent)}
-.creator__options button.selected i{background:linear-gradient(135deg,color-mix(in srgb,var(--cue-accent) 24%,#171b18),#252b25)}
+.creator__options button.selected .creator__option-visual{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--cue-accent) 45%,transparent)}
+
+.creator__option-visual--skin{background:var(--skin-tone,#9f7359)}
+.creator__option-visual--skin-01{--skin-tone:#f1d1bb}
+.creator__option-visual--skin-02{--skin-tone:#d9aa88}
+.creator__option-visual--skin-03{--skin-tone:#b9805f}
+.creator__option-visual--skin-04{--skin-tone:#8f5d45}
+.creator__option-visual--skin-05{--skin-tone:#67402f}
+.creator__option-visual--skin-06{--skin-tone:#3d261d}
+
+.creator__option-visual--base::before,.creator__option-visual--build::before,.creator__option-visual--face::before,.creator__option-visual--hair::before,.creator__option-visual--facialhair::before,.creator__option-visual--pose::before{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#7d847c}
+.creator__option-visual--base::before{width:24px;height:38px;border-radius:44% 44% 36% 36%}
+.creator__option-visual--feminine::before{width:22px}
+.creator__option-visual--neutral::before{width:24px}
+.creator__option-visual--masculine::before{width:27px}
+.creator__option-visual--build-slim::before{width:19px}
+.creator__option-visual--build-regular::before{width:24px}
+.creator__option-visual--build-strong::before{width:29px}
+
+.creator__option-visual--face::before{width:30px;height:38px;border-radius:46% 46% 42% 42%}
+.creator__option-visual--face-01::before{border-radius:48% 48% 44% 44%}
+.creator__option-visual--face-02::before{border-radius:42% 42% 50% 50%}
+.creator__option-visual--face-03::before{clip-path:polygon(18% 0,82% 0,100% 40%,76% 100%,24% 100%,0 40%)}
+.creator__option-visual--face-04::before{clip-path:polygon(24% 0,76% 0,94% 30%,82% 82%,50% 100%,18% 82%,6% 30%)}
+.creator__option-visual--face-05::before{border-radius:40%}
+.creator__option-visual--face-06::before{clip-path:polygon(10% 8%,90% 8%,100% 42%,72% 100%,28% 100%,0 42%)}
+
+.creator__option-visual--hair::before{width:32px;height:34px;top:58%;border-radius:46% 46% 40% 40%;background:#777f76}
+.creator__option-visual--hair b{left:50%;top:6px;transform:translateX(-50%);background:#171a17}
+.creator__option-visual--buzz b{width:30px;height:12px;border-radius:50% 50% 28% 28%}
+.creator__option-visual--textured-crop b{width:34px;height:16px;border-radius:60% 45% 30% 28%;transform:translateX(-50%) rotate(-4deg)}
+.creator__option-visual--curly-crop b{width:36px;height:18px;border-radius:50%;box-shadow:-8px 2px 0 -3px #171a17,8px 2px 0 -3px #171a17}
+.creator__option-visual--curtains b{width:38px;height:20px;border-radius:55% 55% 32% 32%;clip-path:polygon(0 0,46% 0,50% 55%,54% 0,100% 0,90% 100%,10% 100%)}
+.creator__option-visual--bob b{width:42px;height:31px;border-radius:50% 50% 36% 36%}
+.creator__option-visual--tied-back b{width:32px;height:17px;border-radius:50%}
+.creator__option-visual--tied-back em{right:16px;top:13px;width:10px;height:22px;border-radius:50%;background:#171a17}
+.creator__option-visual--locs b{width:38px;height:28px;background:repeating-linear-gradient(90deg,#171a17 0 4px,transparent 4px 7px)}
+.creator__option-visual--long-natural b{width:44px;height:44px;border-radius:48% 48% 32% 32%}
+
+.creator__option-visual--facialhair::before{width:29px;height:36px;border-radius:45%;background:#7d847c}
+.creator__option-visual--facialhair b{left:50%;bottom:7px;transform:translateX(-50%);background:#181b18}
+.creator__option-visual--stubble b{width:21px;height:8px;border-radius:0 0 50% 50%;opacity:.55}
+.creator__option-visual--short-beard b{width:23px;height:13px;border-radius:0 0 48% 48%}
+.creator__option-visual--moustache b{width:19px;height:4px;bottom:18px;border-radius:50%}
+
+.creator__option-visual--top::before{content:'';position:absolute;left:50%;top:8px;transform:translateX(-50%);width:44px;height:38px;background:#252a26;clip-path:polygon(18% 0,82% 0,100% 18%,86% 100%,14% 100%,0 18%)}
+.creator__option-visual--fitted-tee::before{width:36px}
+.creator__option-visual--tank::before{width:32px;clip-path:polygon(30% 0,70% 0,88% 12%,82% 100%,18% 100%,12% 12%)}
+.creator__option-visual--hoodie::after{content:'';position:absolute;left:50%;top:5px;transform:translateX(-50%);width:22px;height:12px;border:3px solid #3a403a;border-bottom:0;border-radius:50% 50% 0 0}
+.creator__option-visual--bomber::before{width:48px;border-radius:6px}
+
+.creator__option-visual--bottom::before{content:'';position:absolute;left:50%;top:8px;transform:translateX(-50%);width:34px;height:40px;background:#252a26;clip-path:polygon(8% 0,92% 0,82% 100%,56% 100%,50% 48%,44% 100%,18% 100%)}
+.creator__option-visual--wide-trouser::before{width:42px}
+.creator__option-visual--straight-trouser::before{width:34px}
+.creator__option-visual--cargo::after{content:'';position:absolute;left:19px;right:19px;top:24px;height:8px;border-left:8px solid #343a34;border-right:8px solid #343a34}
+.creator__option-visual--denim::before{background:#303943}
+
+.creator__option-visual--footwear::before,.creator__option-visual--footwear::after{content:'';position:absolute;bottom:10px;width:33px;height:16px;background:#d8d8d3;border-radius:8px 14px 5px 5px}
+.creator__option-visual--footwear::before{left:15px}
+.creator__option-visual--footwear::after{right:15px;transform:scaleX(-1)}
+.creator__option-visual--minimal-sneaker::before,.creator__option-visual--minimal-sneaker::after{height:12px}
+.creator__option-visual--boot::before,.creator__option-visual--boot::after{height:25px;border-radius:4px 10px 4px 4px;background:#252825}
+
+.creator__option-visual--accessory::before{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#4c524c}
+.creator__option-visual--glasses::before{width:42px;height:12px;border:3px solid #aab0a9;background:transparent;border-radius:7px}
+.creator__option-visual--cap::before{width:34px;height:16px;border-radius:50% 50% 20% 20%}
+.creator__option-visual--headphones::before{width:36px;height:32px;border:5px solid #4c524c;border-bottom:0;background:transparent;border-radius:50% 50% 0 0}
+.creator__option-visual--none::before{content:'×';position:absolute;inset:0;display:grid;place-items:center;color:#697068;font:700 24px/1 monospace}
+
+.creator__option-visual--pose::before{width:12px;height:34px;border-radius:7px;background:#777f76}
+.creator__option-visual--pose::after{content:'';position:absolute;left:50%;top:10px;width:20px;height:20px;border:4px solid #777f76;border-bottom:0;border-radius:50%;transform:translateX(-50%)}
+.creator__option-visual--relaxed{transform:rotate(-3deg)}
+.creator__option-visual--focused::before{transform:translate(-50%,-50%) rotate(3deg)}
+.creator__option-visual--editorial::before{transform:translate(-50%,-50%) rotate(10deg)}
+
+.creator__option-visual--material{background:linear-gradient(135deg,#303530,#111411)}
+.creator__option-visual--satin{background:linear-gradient(115deg,#111411 0%,#626b61 38%,#1a1e1a 54%,#737c70 72%,#111411 100%)}
+.creator__option-visual--accent{background:#181b18}
+.creator__option-visual--lime{background:#ceff54}
+.creator__option-visual--red{background:#ff4545}
 .creator__summary{display:grid;gap:0;margin:4px 14px 14px;border-top:1px solid var(--cue-border);max-height:220px;overflow:auto}
 .creator__summary div{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--cue-border)}
 .creator__summary span{color:var(--cue-muted);font:700 9px/1 monospace;text-transform:uppercase}
