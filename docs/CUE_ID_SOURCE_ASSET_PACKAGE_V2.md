@@ -755,3 +755,44 @@ That proposal:
 - preserves performance evidence;
 - stores mobile evidence references;
 - never mutates the source evidence file.
+
+## 36. Structured performance review
+
+Performance evidence now has its own versioned review artifact:
+
+`manifest/performance-review.draft.json`
+
+Assess it with:
+
+```bash
+npm run cue-id:assess-performance -- path/to/performance-review.json
+```
+
+The review records one accepted `totalReadyMs` measurement for each interactive tier:
+
+- full;
+- reduced.
+
+Each measured tier requires at least one evidence reference.
+
+The assessor uses the same runtime budgets as product code:
+
+- full: <= 800 ms;
+- reduced: <= 1500 ms.
+
+After both tiers pass, generate a non-destructive evidence proposal:
+
+```bash
+npm run cue-id:propose-performance-evidence -- performance-review.json evidence.json
+```
+
+The proposal:
+
+- requires matching `assetVersion`;
+- writes only `performance.full` and `performance.reduced`;
+- preserves visual review state;
+- preserves mobile review state;
+- stores measured timings, budgets and evidence refs;
+- never mutates source evidence.
+
+This keeps runtime measurement criteria aligned with `evaluateCueIdReadyPerformance(...)` rather than duplicating threshold logic in handoff documentation.
