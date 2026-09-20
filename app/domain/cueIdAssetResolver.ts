@@ -1,7 +1,7 @@
 import type { CueIdConfigV1 } from './cueId'
 import type { CueIdDeviceTier } from './cueIdAssets'
-import type { CueIdProductionManifest } from './cueIdProductionManifest'
-import { validateCueIdProductionManifest } from './cueIdProductionManifest'
+import type { CueIdProductionManifest } from './cueIdProductionManifest.ts'
+import { validateCueIdProductionManifest } from './cueIdProductionManifest.ts'
 
 export type CueIdResolvedProductionAsset = {
   manifest: CueIdProductionManifest
