@@ -18,8 +18,10 @@ function performanceReady(admission: CueIdProductionAdmission) {
   return Boolean(performance?.full !== undefined && performance?.reduced !== undefined)
 }
 
-export function getCueIdCreatorAssetStatus(): CueIdCreatorAssetStatus {
-  const latest = [...CUE_ID_PRODUCTION_CATALOGUE]
+export function getCueIdCreatorAssetStatus(
+  admissions: CueIdProductionAdmission[] = CUE_ID_PRODUCTION_CATALOGUE
+): CueIdCreatorAssetStatus {
+  const latest = [...admissions]
     .sort((a, b) =>
       b.manifest.assetVersion.localeCompare(
         a.manifest.assetVersion,
