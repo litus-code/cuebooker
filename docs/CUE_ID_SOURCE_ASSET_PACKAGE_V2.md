@@ -551,3 +551,39 @@ cue-id:plan-static
   -> cue-id:finalize-static
   -> cue-id:validate-package
 ```
+
+## 30. Unified intake assessment
+
+Once GLB, finalized manifest and review/performance evidence exist, run:
+
+```bash
+npm run cue-id:assess -- path/to/asset.glb path/to/manifest.json --evidence path/to/evidence.json
+```
+
+Evidence example:
+
+```json
+{
+  "visualReview": true,
+  "mobileReview": true,
+  "performance": {
+    "full": 790,
+    "reduced": 1210
+  }
+}
+```
+
+The assessor reports three independent readiness states:
+
+- package ready;
+- static ready;
+- interactive ready.
+
+Possible summary states:
+
+- `package_invalid`;
+- `package_valid_review_pending`;
+- `static_ready_interactive_pending`;
+- `interactive_ready`.
+
+The assessor does not mutate catalogue state. It is a pre-admission report only.
