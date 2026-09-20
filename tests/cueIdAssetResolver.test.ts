@@ -3,6 +3,7 @@ import test from 'node:test'
 
 import { DEFAULT_CUE_ID_CONFIG } from '../app/domain/cueId.ts'
 import { resolveCueIdAsset } from '../app/domain/cueIdAssetResolver.ts'
+import type { CueIdProductionAdmission } from '../app/domain/cueIdProductionAdmission.ts'
 import type { CueIdProductionManifest } from '../app/domain/cueIdProductionManifest.ts'
 
 function manifest(overrides: Partial<CueIdProductionManifest> = {}): CueIdProductionManifest {
@@ -57,12 +58,35 @@ function manifest(overrides: Partial<CueIdProductionManifest> = {}): CueIdProduc
   }
 }
 
+function admission(
+  stage: CueIdProductionAdmission['stage'] = 'interactive_approved',
+  manifestOverrides: Partial<CueIdProductionManifest> = {}
+): CueIdProductionAdmission {
+  return {
+    stage,
+    manifest: manifest(manifestOverrides),
+    evidence: {
+      visualReview: true,
+      mobileReview: true,
+      packageValidation: true,
+      ...(stage === 'interactive_approved'
+        ? {
+            performance: {
+              full: 800,
+              reduced: 1500
+            }
+          }
+        : {})
+    }
+  }
+}
+
 test('returns null while no production manifests exist', () => {
   assert.equal(resolveCueIdAsset(DEFAULT_CUE_ID_CONFIG, 'full', []), null)
 })
 
-test('resolves an interactive manifest for a supported full tier config', () => {
-  const result = resolveCueIdAsset(DEFAULT_CUE_ID_CONFIG, 'full', [manifest()])
+test('resolves an interactive-approved asset for a supported full tier config', () => {
+  const result = resolveCueIdAsset(DEFAULT_CUE_ID_CONFIG, 'full', [admission()])
 
   assert.equal(result?.representation, 'interactive')
   assert.equal(result?.manifest.assetVersion, '2.0.0')
@@ -70,14 +94,14 @@ test('resolves an interactive manifest for a supported full tier config', () => 
 })
 
 test('resolves the same identity as static representation for static tier', () => {
-  const result = resolveCueIdAsset(DEFAULT_CUE_ID_CONFIG, 'static', [manifest()])
+  const result = resolveCueIdAsset(DEFAULT_CUE_ID_CONFIG, 'static', [admission()])
 
   assert.equal(result?.representation, 'static')
   assert.equal(result?.staticPath, '/cue-id/production/club-minimal-v2-portrait.webp')
 })
 
 test('rejects manifests that do not support the selected semantic config', () => {
-  const unsupported = manifest({
+  const unsupported = admission('interactive_approved', {
     capabilities: {
       ...manifest().capabilities,
       bases: ['masculine', 'neutral']
@@ -90,7 +114,7 @@ test('rejects manifests that do not support the selected semantic config', () =>
 })
 
 test('ignores invalid manifests even when semantic capabilities match', () => {
-  const invalid = manifest({
+  const invalid = admission('interactive_approved', {
     metrics: {
       ...manifest().metrics,
       triangles: 40_000
@@ -102,21 +126,31 @@ test('ignores invalid manifests even when semantic capabilities match', () => {
 
 test('prefers the newest compatible assetVersion', () => {
   const result = resolveCueIdAsset(DEFAULT_CUE_ID_CONFIG, 'full', [
-    manifest({ assetVersion: '2.0.0' }),
-    manifest({ assetVersion: '2.1.0', glbPath: '/cue-id/production/club-minimal-v2-1.glb' })
+    admission('interactive_approved', { assetVersion: '2.0.0' }),
+    admission('interactive_approved', { assetVersion: '2.1.0', glbPath: '/cue-id/production/club-minimal-v2-1.glb' })
   ])
 
   assert.equal(result?.manifest.assetVersion, '2.1.0')
 })
 
 
-test('degrades a valid manifest to static when interactive bindings are incomplete', () => {
+test('keeps static-approved assets static even when their bindings are complete', () => {
   const result = resolveCueIdAsset(
     DEFAULT_CUE_ID_CONFIG,
     'full',
-    [manifest({ bindings: {} })]
+    [admission('static_approved')]
   )
 
   assert.equal(result?.representation, 'static')
   assert.equal(result?.staticPath, '/cue-id/production/club-minimal-v2-portrait.webp')
+})
+
+test('ignores invalid interactive admissions', () => {
+  const invalid = admission('interactive_approved')
+  invalid.evidence.performance = {
+    full: 801,
+    reduced: 1500
+  }
+
+  assert.equal(resolveCueIdAsset(DEFAULT_CUE_ID_CONFIG, 'full', [invalid]), null)
 })
