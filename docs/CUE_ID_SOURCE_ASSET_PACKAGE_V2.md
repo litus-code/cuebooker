@@ -385,3 +385,37 @@ Required semantic clips remain:
 - editorial.
 
 Do not depend on continuous animation for identity correctness.
+
+## 25. GLB inspection workflow
+
+Every authored GLB should be inspected before manifest bindings are authored.
+
+Command:
+
+```bash
+npm run cue-id:inspect -- path/to/cue-id-v2.glb
+```
+
+To also create a manifest draft:
+
+```bash
+npm run cue-id:inspect -- path/to/cue-id-v2.glb --manifest-draft /tmp/cue-id-manifest.json --asset-version 2.0.0
+```
+
+The inspector reports:
+
+- GLB version and byte size;
+- triangle count derived from accessors;
+- scene/node/mesh/skin counts;
+- discovered node names;
+- discovered morph target names;
+- animation clip names;
+- material names;
+- texture/image counts;
+- per-mesh morph target inventory.
+
+The manifest draft intentionally leaves semantic bindings empty.
+
+Do not auto-map names such as `base_feminine` or `pose_editorial` into production bindings purely by naming convention. A human review must confirm that each discovered target/clip/node actually represents the intended product semantic.
+
+The inspector is an audit aid, not an asset-approval shortcut.
