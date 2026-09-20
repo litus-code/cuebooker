@@ -15,6 +15,7 @@ test('product CUE ID stage can render a versioned production static asset', asyn
   const source = await readFile(stagePath, 'utf8')
 
   assert.match(source, /const productionStaticPath = computed/)
+  assert.match(source, /v-if="!productionStaticPath" class="cue-id-stage__figure"/)
   assert.match(source, /class="cue-id-stage__production-static"/)
   assert.match(source, /@error="productionStaticFailed = true"/)
 })
