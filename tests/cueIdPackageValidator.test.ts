@@ -75,9 +75,50 @@ function createSyntheticGlb() {
 }
 
 function manifest(bytes) {
+  const capabilities = {
+    bases: ['feminine', 'masculine', 'neutral'],
+    builds: ['slim', 'regular', 'strong'],
+    outfits: ['tee'],
+    accessories: [null, 'glasses'],
+    poses: ['neutral', 'relaxed', 'focused', 'editorial'],
+    materials: ['matte'],
+    accents: ['lime', 'red', null]
+  }
+
+  const variants = {}
+  for (const base of capabilities.bases) {
+    for (const build of capabilities.builds) {
+      for (const outfit of capabilities.outfits) {
+        for (const accessory of capabilities.accessories) {
+          for (const pose of capabilities.poses) {
+            for (const material of capabilities.materials) {
+              for (const accent of capabilities.accents) {
+                const key = [
+                  base,
+                  build,
+                  outfit,
+                  accessory ?? 'none',
+                  pose,
+                  material,
+                  accent ?? 'none'
+                ].join('__')
+                variants[key] = {
+                  portrait: `/cue-id/production/static/${key}-portrait.webp`,
+                  square: `/cue-id/production/static/${key}-square.webp`
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   return {
     manifestVersion: 1,
     assetVersion: '2.0.0',
+    static: { variants },
+    capabilities,
     metrics: {
       compressedBytes: bytes,
       triangles: 2,
@@ -157,4 +198,17 @@ test('rejects visibility node reuse across outfit/accessory bindings', () => {
   const result = validateCueIdPackage(glb, invalid)
 
   assert.ok(result.issues.some(issue => issue.field === 'bindings.visibility'))
+})
+
+
+test('rejects missing semantic static coverage', () => {
+  const glb = createSyntheticGlb()
+  const invalid = manifest(glb.length)
+  const [firstKey] = Object.keys(invalid.static.variants)
+
+  delete invalid.static.variants[firstKey]
+
+  const result = validateCueIdPackage(glb, invalid)
+
+  assert.ok(result.issues.some(issue => issue.field === 'static.variants'))
 })
