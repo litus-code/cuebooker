@@ -19,7 +19,8 @@
     "cue-id:assess": "node --experimental-strip-types scripts/assess-cue-id-v2.mjs",
     "cue-id:propose-promotion": "node --experimental-strip-types scripts/propose-cue-id-promotion.mjs",
     "cue-id:scaffold-package": "node scripts/scaffold-cue-id-v2-package.mjs",
-    "cue-id:assess-sculpt": "node scripts/assess-cue-id-sculpt-review.mjs"
+    "cue-id:assess-sculpt": "node scripts/assess-cue-id-sculpt-review.mjs",
+    "cue-id:propose-visual-evidence": "node scripts/propose-cue-id-visual-evidence.mjs"
   },
   "dependencies": {
     "@nuxtjs/i18n": "^10.1.0",
