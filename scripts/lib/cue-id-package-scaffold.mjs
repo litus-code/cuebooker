@@ -139,7 +139,9 @@ Do not fill bindings from naming convention alone. Confirm every target against 
 - [ ] tee deformation reviewed on all bases/builds
 - [ ] no-accessory identity reads correctly
 - [ ] neutral / relaxed / focused / editorial poses reviewed
-- [ ] mobile still reviewed at ~390 px
+- [ ] product-size still reviewed at ~390 px
+- [ ] real-device iPhone-class review completed
+- [ ] real-device Android mid-range review completed
 - [ ] package inspector run
 - [ ] static render plan generated
 - [ ] static renders exported and reviewed
