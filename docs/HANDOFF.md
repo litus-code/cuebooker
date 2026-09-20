@@ -7215,3 +7215,44 @@ The source asset package now documents the pose-clip final-frame convention.
 `CueIdStage.vue` still does not mount the production renderer. Activation remains blocked until the first authored V2 GLB and its real bindings pass validation.
 
 Production remains untouched.
+
+## 119. V2 GLB inspection and manifest-draft tooling
+
+The repository now includes a dependency-free inspection path for the first authored V2 GLB.
+
+New files:
+
+`scripts/lib/cue-id-glb-inspector.mjs`
+`scripts/inspect-cue-id-v2-glb.mjs`
+`tests/cueIdGlbInspector.test.ts`
+
+New command:
+
+```bash
+npm run cue-id:inspect -- <asset.glb>
+```
+
+Optional manifest draft:
+
+```bash
+npm run cue-id:inspect -- <asset.glb> --manifest-draft <output.json> --asset-version <version>
+```
+
+The inspector validates the GLB container and extracts:
+
+- bytes;
+- triangle count;
+- node names;
+- mesh inventory;
+- morph target names;
+- animation clip names;
+- material names;
+- texture/image counts.
+
+The generated manifest draft intentionally does not guess semantic bindings.
+
+Human review remains required to map discovered DCC/export names to Cuebooker semantics.
+
+This gives the V2 intake flow an objective first step before catalogue admission or renderer activation.
+
+Production remains untouched.
