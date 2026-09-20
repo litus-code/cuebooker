@@ -211,3 +211,33 @@ export function cueIdCreatorToRuntimeConfig(config: CueIdCreatorConfigV1): CueId
     accent: config.accent
   }
 }
+
+
+function catalogueHas<T extends string | null>(
+  options: ReadonlyArray<CueIdCreatorOption<T>>,
+  value: unknown
+): value is T {
+  return options.some(option => option.id === value)
+}
+
+export function isCueIdCreatorConfigV1(value: unknown): value is CueIdCreatorConfigV1 {
+  if (!value || typeof value !== 'object') return false
+
+  const config = value as Partial<Record<keyof CueIdCreatorConfigV1, unknown>>
+
+  return config.schemaVersion === 1
+    && typeof config.enabled === 'boolean'
+    && catalogueHas(CUE_ID_CREATOR_CATALOGUE.bases, config.base)
+    && catalogueHas(CUE_ID_CREATOR_CATALOGUE.builds, config.build)
+    && catalogueHas(CUE_ID_CREATOR_CATALOGUE.skins, config.skin)
+    && catalogueHas(CUE_ID_CREATOR_CATALOGUE.faces, config.face)
+    && catalogueHas(CUE_ID_CREATOR_CATALOGUE.hairs, config.hair)
+    && catalogueHas(CUE_ID_CREATOR_CATALOGUE.facialHair, config.facialHair)
+    && catalogueHas(CUE_ID_CREATOR_CATALOGUE.tops, config.top)
+    && catalogueHas(CUE_ID_CREATOR_CATALOGUE.bottoms, config.bottom)
+    && catalogueHas(CUE_ID_CREATOR_CATALOGUE.footwear, config.footwear)
+    && catalogueHas(CUE_ID_CREATOR_CATALOGUE.accessories, config.accessory)
+    && catalogueHas(CUE_ID_CREATOR_CATALOGUE.poses, config.pose)
+    && catalogueHas(CUE_ID_CREATOR_CATALOGUE.materials, config.material)
+    && catalogueHas(CUE_ID_CREATOR_CATALOGUE.accents, config.accent)
+}
