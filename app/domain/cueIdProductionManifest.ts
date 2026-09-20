@@ -8,6 +8,11 @@ import type {
   CueIdPoseId
 } from './cueId'
 import type { CueIdDeviceTier } from './cueIdAssets'
+import {
+  listCueIdRequiredStaticVariantKeys,
+  type CueIdStaticVariant,
+  type CueIdStaticVariantKey
+} from './cueIdStaticVariants.ts'
 
 export type CueIdProductionManifestMetrics = {
   compressedBytes: number
@@ -18,8 +23,7 @@ export type CueIdProductionManifestMetrics = {
 }
 
 export type CueIdProductionStaticAssets = {
-  portrait: string
-  square: string
+  variants: Partial<Record<CueIdStaticVariantKey, CueIdStaticVariant>>
   editorialTransparent?: string | null
 }
 
@@ -103,10 +107,20 @@ export function validateCueIdProductionManifest(
     })
   }
 
-  if (!manifest.static.portrait.startsWith('/') || !manifest.static.square.startsWith('/')) {
+  const requiredStaticKeys = listCueIdRequiredStaticVariantKeys(manifest.capabilities)
+  const missingStaticKeys = requiredStaticKeys.filter(key => !manifest.static.variants[key])
+  const invalidStaticPath = Object.values(manifest.static.variants).some(variant =>
+    !variant
+    || !variant.portrait.startsWith('/')
+    || !variant.square.startsWith('/')
+  )
+
+  if (missingStaticKeys.length || invalidStaticPath) {
     issues.push({
       field: 'static',
-      message: 'CUE ID static paths must be application-owned'
+      message: missingStaticKeys.length
+        ? `CUE ID static variants are missing ${missingStaticKeys.length} supported semantic configurations`
+        : 'CUE ID static variant paths must be application-owned'
     })
   }
 
