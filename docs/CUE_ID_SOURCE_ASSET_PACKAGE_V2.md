@@ -368,3 +368,20 @@ Do not require:
 - procedural body editor.
 
 The first source package exists to prove one excellent authored identity family.
+
+## 24. Pose clip evaluation convention
+
+For V2 semantic pose clips, the final frame of each named clip is the authored target pose.
+
+The production renderer resolves the semantic clip name through the manifest and evaluates that clip at its final frame.
+
+This convention allows clips to contain a short authored transition if useful while keeping the product stage deterministic and on-demand after the pose has been applied.
+
+Required semantic clips remain:
+
+- neutral;
+- relaxed;
+- focused;
+- editorial.
+
+Do not depend on continuous animation for identity correctness.
