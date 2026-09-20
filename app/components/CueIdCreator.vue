@@ -40,10 +40,14 @@ const runtimeConfig = computed(() => cueIdCreatorToRuntimeConfig(props.modelValu
 
 const previewClasses = computed(() => [
   `creator__preview--skin-${props.modelValue.skin}`,
+  `creator__preview--face-${props.modelValue.face}`,
   `creator__preview--hair-${props.modelValue.hair}`,
+  `creator__preview--facial-hair-${props.modelValue.facialHair}`,
   `creator__preview--top-${props.modelValue.top}`,
   `creator__preview--bottom-${props.modelValue.bottom}`,
-  `creator__preview--footwear-${props.modelValue.footwear}`
+  `creator__preview--footwear-${props.modelValue.footwear}`,
+  `creator__preview--accessory-${props.modelValue.accessory || 'none'}`,
+  `creator__preview--pose-${props.modelValue.pose}`
 ])
 
 const copy = computed(() => props.locale === 'es' ? {
@@ -215,7 +219,10 @@ function select(value: unknown) {
 
         <div class="creator__semantic-preview" aria-hidden="true">
           <i class="creator__semantic-head" />
+          <i class="creator__semantic-face" />
           <i class="creator__semantic-hair" />
+          <i class="creator__semantic-facial-hair" />
+          <i class="creator__semantic-accessory" />
           <i class="creator__semantic-top" />
           <i class="creator__semantic-bottom" />
           <i class="creator__semantic-footwear creator__semantic-footwear--left" />
@@ -302,8 +309,11 @@ function select(value: unknown) {
 .creator__stage-label strong{font-size:11px;text-transform:uppercase}
 .creator__semantic-preview{position:absolute;z-index:6;left:50%;top:47%;width:150px;height:330px;transform:translate(-50%,-50%);pointer-events:none;opacity:.42;mix-blend-mode:screen}
 .creator__semantic-preview i{position:absolute;display:block}
-.creator__semantic-head{left:49px;top:4px;width:52px;height:66px;border-radius:46% 46% 42% 42%;background:var(--creator-skin,#b9805f)}
+.creator__semantic-head{left:49px;top:4px;width:52px;height:66px;border-radius:46% 46% 42% 42%;background:var(--creator-skin,#b9805f);transition:clip-path .2s ease,border-radius .2s ease}
+.creator__semantic-face{left:59px;top:31px;width:32px;height:2px;background:rgba(20,20,20,.55);box-shadow:0 12px 0 rgba(20,20,20,.38)}
 .creator__semantic-hair{left:46px;top:-1px;width:58px;height:25px;background:#151815;border-radius:55% 55% 28% 28%}
+.creator__semantic-facial-hair{left:58px;top:49px;width:34px;height:0;background:#181a18;border-radius:0 0 50% 50%;opacity:0}
+.creator__semantic-accessory{display:none}
 .creator__semantic-top{left:27px;top:76px;width:96px;height:112px;background:#272c27;clip-path:polygon(18% 0,82% 0,100% 17%,86% 100%,14% 100%,0 17%)}
 .creator__semantic-bottom{left:38px;top:184px;width:74px;height:118px;background:#202420;clip-path:polygon(5% 0,95% 0,82% 100%,58% 100%,50% 48%,42% 100%,18% 100%)}
 .creator__semantic-footwear{bottom:0;width:37px;height:17px;background:#d7d8d4;border-radius:7px 12px 4px 4px}
@@ -317,6 +327,13 @@ function select(value: unknown) {
 .creator__preview--skin-skin-05{--creator-skin:#67402f}
 .creator__preview--skin-skin-06{--creator-skin:#3d261d}
 
+.creator__preview--face-face-01 .creator__semantic-head{border-radius:48% 48% 44% 44%}
+.creator__preview--face-face-02 .creator__semantic-head{border-radius:42% 42% 50% 50%}
+.creator__preview--face-face-03 .creator__semantic-head{clip-path:polygon(18% 0,82% 0,100% 40%,76% 100%,24% 100%,0 40%)}
+.creator__preview--face-face-04 .creator__semantic-head{clip-path:polygon(24% 0,76% 0,94% 30%,82% 82%,50% 100%,18% 82%,6% 30%)}
+.creator__preview--face-face-05 .creator__semantic-head{border-radius:40%}
+.creator__preview--face-face-06 .creator__semantic-head{clip-path:polygon(10% 8%,90% 8%,100% 42%,72% 100%,28% 100%,0 42%)}
+
 .creator__preview--hair-buzz .creator__semantic-hair{height:12px}
 .creator__preview--hair-textured-crop .creator__semantic-hair{height:20px;transform:rotate(-3deg)}
 .creator__preview--hair-curly-crop .creator__semantic-hair{height:27px;border-radius:50%;box-shadow:-10px 2px 0 -4px #151815,10px 2px 0 -4px #151815}
@@ -326,6 +343,14 @@ function select(value: unknown) {
 .creator__preview--hair-tied-back .creator__semantic-hair::after{content:'';position:absolute;right:-13px;top:3px;width:18px;height:34px;border-radius:50%;background:#151815}
 .creator__preview--hair-locs .creator__semantic-hair{height:50px;background:repeating-linear-gradient(90deg,#151815 0 5px,transparent 5px 8px)}
 .creator__preview--hair-long-natural .creator__semantic-hair{left:37px;width:76px;height:83px;border-radius:48% 48% 30% 30%}
+
+.creator__preview--facial-hair-stubble .creator__semantic-facial-hair{height:9px;opacity:.52}
+.creator__preview--facial-hair-short-beard .creator__semantic-facial-hair{height:18px;opacity:1}
+.creator__preview--facial-hair-moustache .creator__semantic-facial-hair{top:43px;left:63px;width:24px;height:4px;opacity:1;border-radius:50%}
+
+.creator__preview--accessory-glasses .creator__semantic-accessory{display:block;left:53px;top:27px;width:44px;height:12px;border:3px solid #c7cac4;border-radius:7px;background:transparent}
+.creator__preview--accessory-cap .creator__semantic-accessory{display:block;left:46px;top:-6px;width:59px;height:20px;border-radius:50% 50% 20% 20%;background:#242824}
+.creator__preview--accessory-headphones .creator__semantic-accessory{display:block;left:40px;top:8px;width:70px;height:61px;border:5px solid #353a35;border-bottom:0;border-radius:50% 50% 0 0;background:transparent}
 
 .creator__preview--top-fitted-tee .creator__semantic-top{left:33px;width:84px}
 .creator__preview--top-tank .creator__semantic-top{left:38px;width:74px;clip-path:polygon(28% 0,72% 0,91% 14%,82% 100%,18% 100%,9% 14%)}
@@ -341,6 +366,10 @@ function select(value: unknown) {
 
 .creator__preview--footwear-minimal-sneaker .creator__semantic-footwear{height:12px}
 .creator__preview--footwear-boot .creator__semantic-footwear{height:29px;border-radius:5px 10px 4px 4px;background:#222522}
+
+.creator__preview--pose-relaxed .creator__semantic-preview{transform:translate(-50%,-50%) rotate(-2deg)}
+.creator__preview--pose-focused .creator__semantic-preview{transform:translate(-50%,-50%) rotate(1deg) scale(.98)}
+.creator__preview--pose-editorial .creator__semantic-preview{transform:translate(-50%,-50%) rotate(5deg) skewY(-1deg)}
 
 .creator__asset-note{position:absolute;z-index:8;left:36px;right:36px;bottom:34px;max-width:520px;margin:0;padding:10px 12px;border:1px solid rgba(255,255,255,.11);background:rgba(5,7,6,.82);backdrop-filter:blur(8px);color:#92978f;font-size:11px;line-height:1.45}
 .creator__panel{display:flex;flex-direction:column;min-width:0;border-left:1px solid var(--cue-border);background:#0a0c0b}
@@ -454,6 +483,9 @@ button:focus-visible{outline:2px solid var(--cue-accent);outline-offset:2px}
   .creator__stage :deep(.cue-id-stage){min-height:540px;border:0}
   .creator__stage-label{top:18px;left:18px}
   .creator__semantic-preview{top:46%;transform:translate(-50%,-50%) scale(.86)}
+  .creator__preview--pose-relaxed .creator__semantic-preview{transform:translate(-50%,-50%) scale(.86) rotate(-2deg)}
+  .creator__preview--pose-focused .creator__semantic-preview{transform:translate(-50%,-50%) scale(.84) rotate(1deg)}
+  .creator__preview--pose-editorial .creator__semantic-preview{transform:translate(-50%,-50%) scale(.86) rotate(5deg)}
   .creator__asset-note{left:16px;right:16px;bottom:18px}
   .creator__panel{border-left:0;border-top:1px solid var(--cue-border)}
   .creator__panel-head{padding:16px}
