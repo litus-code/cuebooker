@@ -1,5 +1,6 @@
 import { mkdir, writeFile, access } from 'node:fs/promises'
 import { join } from 'node:path'
+import { createCueIdSculptReviewDraft } from './cue-id-sculpt-review.mjs'
 
 function ensureVersion(version) {
   if (!version || !/^[0-9]+\.[0-9]+\.[0-9]+$/.test(version)) {
@@ -71,6 +72,8 @@ export async function scaffoldCueIdV2Package(rootDir, version) {
       reduced: null
     }
   }
+
+  const sculptReview = createCueIdSculptReviewDraft(version)
 
   const metadata = {
     assetVersion: version,
@@ -227,16 +230,17 @@ Expected flow:
 2. Export the authored GLB into export/
 3. Put approved texture files in textures/
 4. Follow SCULPT_SPEC.md for base/build/rig/pose production
-5. Run cue-id:inspect
-6. Review and fill manifest/bindings.md
-7. Run cue-id:plan-static
-8. Export static renders into renders/ and the app public target path
-9. Run cue-id:finalize-static
-10. Run cue-id:validate-package
-11. Complete visual/mobile/performance evidence
-12. Run cue-id:assess
-13. Run cue-id:propose-promotion
-14. Human review before catalogue admission
+5. Complete sculpt-review.draft.json gate by gate
+6. Run cue-id:inspect
+7. Review and fill manifest/bindings.md
+8. Run cue-id:plan-static
+9. Export static renders into renders/ and the app public target path
+10. Run cue-id:finalize-static
+11. Run cue-id:validate-package
+12. Complete visual/mobile/performance evidence
+13. Run cue-id:assess
+14. Run cue-id:propose-promotion
+15. Human review before catalogue admission
 
 The production catalogue must never be modified automatically.
 `
@@ -245,6 +249,7 @@ The production catalogue must never be modified automatically.
     writeNew(join(dirs.manifest, 'manifest.draft.json'), JSON.stringify(manifest, null, 2) + '\n'),
     writeNew(join(dirs.manifest, 'evidence.draft.json'), JSON.stringify(evidence, null, 2) + '\n'),
     writeNew(join(dirs.manifest, 'asset-metadata.draft.json'), JSON.stringify(metadata, null, 2) + '\n'),
+    writeNew(join(dirs.manifest, 'sculpt-review.draft.json'), JSON.stringify(sculptReview, null, 2) + '\n'),
     writeNew(join(dirs.manifest, 'bindings.md'), bindings),
     writeNew(join(root, 'SCULPT_SPEC.md'), sculptSpec),
     writeNew(join(root, 'README.md'), readme)
