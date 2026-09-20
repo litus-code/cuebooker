@@ -142,6 +142,81 @@ Do not fill bindings from naming convention alone. Confirm every target against 
 - [ ] intake assessor run
 `
 
+  const sculptSpec = `# CUE ID V2 sculpt / rig production spec — ${version}
+
+## Canonical baseline
+- base: neutral
+- build: regular
+- outfit: tee
+- accessory: none
+- pose: neutral
+- material: matte
+
+Base and build are independent semantic dimensions.
+
+Required regular-base gate:
+- feminine + regular
+- neutral + regular
+- masculine + regular
+
+All three must use the same apparent height, camera, lighting, tee, shoes and neutral pose.
+
+Do not use:
+- feminine = slim shorthand
+- masculine = strong shorthand
+- hairstyle/accessories to rescue base identity
+- uniform object scale for build
+- gender-coded pose variants
+
+Build review matrix:
+- feminine: slim / regular / strong
+- neutral: slim / regular / strong
+- masculine: slim / regular / strong
+
+Sculpt priorities:
+1. head / jaw / neck
+2. shoulder / clavicle
+3. tee shoulder / sleeve
+4. hand / thumb / wrist
+5. pelvis / hip
+6. knee / ankle
+7. footwear
+
+Head:
+- sculptural facial planes
+- shallow eye sockets
+- restrained nose and mouth planes
+- shaved/minimal scalp for baseline review
+- no photoreal skin dependency
+
+Rig:
+- one shared skeleton preferred
+- root/pelvis, spine, neck/head
+- clavicle, upper arm, forearm, hand L/R
+- thigh, lower leg, foot L/R
+- finger bones optional
+
+Required pose clips:
+- neutral
+- relaxed
+- focused
+- editorial
+
+Final frame of each clip is the product target.
+
+Hard reject if:
+- feminine regular reads slim by construction
+- masculine regular reads strong by construction
+- neutral reads unfinished
+- base identity collapses across build morphs
+- head needs styling to work
+- tee hides anatomy rather than fitting it
+- mobile-size still reads as mannequin/game avatar
+
+Full production reference:
+docs/CUE_ID_SCULPT_SPEC_V2.md
+`
+
   const readme = `# CUE ID V2 asset package ${version}
 
 This folder is a working handoff scaffold, not an approved production asset.
@@ -151,16 +226,17 @@ Expected flow:
 1. Put the editable DCC source in source/
 2. Export the authored GLB into export/
 3. Put approved texture files in textures/
-4. Run cue-id:inspect
-5. Review and fill manifest/bindings.md
-6. Run cue-id:plan-static
-7. Export static renders into renders/ and the app public target path
-8. Run cue-id:finalize-static
-9. Run cue-id:validate-package
-10. Complete visual/mobile/performance evidence
-11. Run cue-id:assess
-12. Run cue-id:propose-promotion
-13. Human review before catalogue admission
+4. Follow SCULPT_SPEC.md for base/build/rig/pose production
+5. Run cue-id:inspect
+6. Review and fill manifest/bindings.md
+7. Run cue-id:plan-static
+8. Export static renders into renders/ and the app public target path
+9. Run cue-id:finalize-static
+10. Run cue-id:validate-package
+11. Complete visual/mobile/performance evidence
+12. Run cue-id:assess
+13. Run cue-id:propose-promotion
+14. Human review before catalogue admission
 
 The production catalogue must never be modified automatically.
 `
@@ -170,6 +246,7 @@ The production catalogue must never be modified automatically.
     writeNew(join(dirs.manifest, 'evidence.draft.json'), JSON.stringify(evidence, null, 2) + '\n'),
     writeNew(join(dirs.manifest, 'asset-metadata.draft.json'), JSON.stringify(metadata, null, 2) + '\n'),
     writeNew(join(dirs.manifest, 'bindings.md'), bindings),
+    writeNew(join(root, 'SCULPT_SPEC.md'), sculptSpec),
     writeNew(join(root, 'README.md'), readme)
   ])
 
