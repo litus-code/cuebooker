@@ -1,8 +1,13 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { getCueIdCreatorAssetStatus } from '../app/domain/cueIdCreatorAssetStatus.ts'
+import { DEFAULT_CUE_ID_CONFIG } from '../app/domain/cueId.ts'
+import {
+  getCueIdCreatorAssetStatus,
+  getCueIdCreatorAssetStatusForConfig
+} from '../app/domain/cueIdCreatorAssetStatus.ts'
 import type { CueIdProductionAdmission } from '../app/domain/cueIdProductionAdmission.ts'
+import { listCueIdRequiredStaticVariantKeys } from '../app/domain/cueIdStaticVariants.ts'
 
 function admission(
   stage: CueIdProductionAdmission['stage'],
@@ -70,4 +75,79 @@ test('creator asset status uses the latest semantic asset version', () => {
 
   assert.equal(status.assetVersion, '2.10.0')
   assert.equal(status.source, 'production_interactive')
+})
+
+
+function staticTeeAdmission(): CueIdProductionAdmission {
+  const capabilities = {
+    bases: ['feminine', 'masculine', 'neutral'],
+    builds: ['slim', 'regular', 'strong'],
+    outfits: ['tee'],
+    accessories: [null],
+    poses: ['neutral', 'relaxed', 'focused', 'editorial'],
+    materials: ['matte'],
+    accents: ['lime']
+  } as const
+
+  const variants = Object.fromEntries(
+    listCueIdRequiredStaticVariantKeys({
+      bases: [...capabilities.bases],
+      builds: [...capabilities.builds],
+      outfits: [...capabilities.outfits],
+      accessories: [...capabilities.accessories],
+      poses: [...capabilities.poses],
+      materials: [...capabilities.materials],
+      accents: [...capabilities.accents]
+    }).map(key => [
+      key,
+      {
+        portrait: `/cue-id/production/static/2.0.0/${key}-portrait.webp`,
+        square: `/cue-id/production/static/2.0.0/${key}-square.webp`
+      }
+    ])
+  )
+
+  return {
+    stage: 'static_approved',
+    manifest: {
+      manifestVersion: 1,
+      family: 'club_minimal',
+      assetVersion: '2.0.0',
+      glbPath: '/cue-id/production/cue-id-club-minimal-2.0.0.glb',
+      static: { variants },
+      metrics: {
+        compressedBytes: 650_000,
+        triangles: 24_000,
+        materials: 4,
+        textures: 3,
+        largestTextureDimension: 1024
+      },
+      supportedTiers: ['full', 'reduced'],
+      capabilities,
+      bindings: {}
+    },
+    evidence: {
+      visualReview: true,
+      mobileReview: true,
+      packageValidation: true
+    }
+  } as CueIdProductionAdmission
+}
+
+test('creator uses production only when the selected configuration is actually covered', () => {
+  const admission = staticTeeAdmission()
+
+  const teeStatus = getCueIdCreatorAssetStatusForConfig(
+    DEFAULT_CUE_ID_CONFIG,
+    [admission]
+  )
+  const hoodieStatus = getCueIdCreatorAssetStatusForConfig(
+    { ...DEFAULT_CUE_ID_CONFIG, outfit: 'hoodie' },
+    [admission]
+  )
+
+  assert.equal(teeStatus.source, 'production_static')
+  assert.equal(teeStatus.assetVersion, '2.0.0')
+  assert.equal(hoodieStatus.source, 'lab_candidate')
+  assert.equal(hoodieStatus.assetVersion, null)
 })
