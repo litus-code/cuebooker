@@ -7304,3 +7304,40 @@ authored source asset
 No production asset has been admitted.
 
 Production remains untouched.
+
+## 121. Manifest-gated production renderer activation
+
+`CueIdStage.vue` now knows how to activate the V2 production renderer without changing current product behavior while the production catalogue is empty.
+
+Activation contract:
+
+- lab GLB renderer remains available only when `labAsset` is explicitly set;
+- production renderer is lazy-loaded separately;
+- production renderer mounts only when `resolveCueIdAsset(...)` returns `representation: 'interactive'`;
+- static-only manifests never mount WebGL;
+- when no approved production manifest exists, Artist Profile remains static-first;
+- when an interactive-ready manifest exists, the production static render stays visible until the first real GLB frame is ready;
+- if production rendering fails, the static representation becomes visible again automatically.
+
+Analytics now distinguishes:
+
+- `tresjs_lab`;
+- `tresjs_production_v2`.
+
+Production asset load analytics record asset version, bytes, load/parse/first-frame/total-ready timings and the existing runtime performance gate.
+
+Bundle guarantees:
+
+- both lab and production renderers stay behind `defineAsyncComponent(...)`;
+- Three/Tres remains isolated to the two `.client.vue` renderers;
+- operational routes keep their existing no-renderer boundary.
+
+Regression coverage updated in:
+
+`tests/cueIdProductionSceneBoundary.test.ts`
+`tests/cueIdProductStageBoundary.test.ts`
+`tests/cueIdBundleBoundary.test.ts`
+
+Because `CUE_ID_PRODUCTION_MANIFESTS` is still empty, this block does not activate any new production visual or download any production GLB today.
+
+Production remains untouched.
