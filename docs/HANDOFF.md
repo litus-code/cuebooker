@@ -7823,3 +7823,56 @@ This makes the sculpt approval auditable without collapsing visual, mobile and p
 The production catalogue remains empty.
 
 Production remains untouched.
+
+## 136. Separate product-size and real-device mobile gates
+
+A review-boundary inconsistency was corrected.
+
+Before this block, sculpt Gate E required iPhone/Android device checks while `mobileReview` remained a separate production evidence field. That duplicated the same acceptance concern in two places.
+
+Correction:
+
+- sculpt Gate E is now `E_productSize`;
+- it validates visual readability at approximately 390 px only;
+- real-device validation has its own independent review artifact.
+
+New files:
+
+`scripts/lib/cue-id-mobile-review.mjs`
+`scripts/assess-cue-id-mobile-review.mjs`
+`scripts/lib/cue-id-mobile-evidence-proposal.mjs`
+`scripts/propose-cue-id-mobile-evidence.mjs`
+`tests/cueIdMobileReview.test.ts`
+
+New scaffold artifact:
+
+`manifest/mobile-review.draft.json`
+
+New commands:
+
+```bash
+npm run cue-id:assess-mobile -- <mobile-review.json>
+npm run cue-id:propose-mobile-evidence -- <mobile-review.json> <evidence.json>
+```
+
+Mobile pass requires both iPhone-class and representative Android mid-range evidence plus the reduced-tier/product-read checks.
+
+The mobile evidence bridge:
+
+- requires matching asset versions;
+- sets only `mobileReview: true`;
+- preserves visual/performance evidence;
+- stores device evidence refs;
+- never edits source evidence automatically.
+
+This restores a clean evidence model:
+
+```text
+sculpt/product-size review -> visualReview
+real-device review         -> mobileReview
+runtime measurements       -> performance
+```
+
+The production catalogue remains empty.
+
+Production remains untouched.
