@@ -639,6 +639,9 @@ cue-id-v2-2.0.0/
 │   ├── manifest.draft.json
 │   ├── evidence.draft.json
 │   ├── asset-metadata.draft.json
+│   ├── sculpt-review.draft.json
+│   ├── mobile-review.draft.json
+│   ├── performance-review.draft.json
 │   └── bindings.md
 └── README.md
 ```
@@ -670,7 +673,7 @@ The review is ordered through:
 - Gate B: independent slim/regular/strong builds across all bases;
 - Gate C: tee fit/deformation;
 - Gate D: pose parity and grounding;
-- Gate E: real-device mobile/product-size read.
+- Gate E: product-size visual readability only.
 
 A gate marked `pass` must:
 
@@ -798,7 +801,7 @@ The proposal:
 
 This keeps runtime measurement criteria aligned with `evaluateCueIdReadyPerformance(...)` rather than duplicating threshold logic in handoff documentation.
 
-## 36. Separate performance review evidence
+## 37. Separate performance review evidence
 
 Runtime performance measurements are now tracked in their own versioned review artifact:
 
@@ -834,7 +837,7 @@ That proposal:
 
 This keeps visual, mobile and runtime acceptance independent while feeding the same final intake evidence model.
 
-## 37. Evidence version integrity
+## 38. Evidence version integrity
 
 Every intake evidence file must declare the asset version it belongs to:
 
@@ -853,7 +856,7 @@ This guard applies even if visual, mobile and performance fields are otherwise p
 
 The review-specific proposal commands already enforce this boundary before producing evidence candidates; the unified assessor now enforces it again at the final intake boundary.
 
-## 37. Combined intake evidence proposal
+## 39. Combined intake evidence proposal
 
 Once sculpt, mobile and performance reviews are all ready, combine them into one versioned evidence proposal:
 
