@@ -32,7 +32,27 @@ function manifest(overrides: Partial<CueIdProductionManifest> = {}): CueIdProduc
       materials: ['matte', 'satin'],
       accents: ['lime', 'red', null]
     },
-    bindings: {},
+    bindings: {
+      morphs: {
+        'base.feminine': 'base_feminine',
+        'base.masculine': 'base_masculine',
+        'build.slim': 'build_slim',
+        'build.strong': 'build_strong'
+      },
+      poses: {
+        neutral: 'pose_neutral',
+        relaxed: 'pose_relaxed',
+        focused: 'pose_focused',
+        editorial: 'pose_editorial'
+      },
+      outfits: {
+        tee: ['outfit_tee']
+      },
+      materials: {
+        body: 'material_body',
+        textile: 'material_textile'
+      }
+    },
     ...overrides
   }
 }
@@ -87,4 +107,16 @@ test('prefers the newest compatible assetVersion', () => {
   ])
 
   assert.equal(result?.manifest.assetVersion, '2.1.0')
+})
+
+
+test('degrades a valid manifest to static when interactive bindings are incomplete', () => {
+  const result = resolveCueIdAsset(
+    DEFAULT_CUE_ID_CONFIG,
+    'full',
+    [manifest({ bindings: {} })]
+  )
+
+  assert.equal(result?.representation, 'static')
+  assert.equal(result?.staticPath, '/cue-id/production/club-minimal-v2-portrait.webp')
 })
