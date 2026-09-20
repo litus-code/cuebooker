@@ -156,7 +156,7 @@ test('reports package invalid before review/admission status matters', () => {
   const manifest = createManifest(glb.length)
   manifest.metrics.triangles = 99
 
-  const result = assessCueIdV2Intake(glb, manifest, {})
+  const result = assessCueIdV2Intake(glb, manifest, { assetVersion: '2.0.0' })
 
   assert.equal(result.summary, 'package_invalid')
   assert.equal(result.package.ready, false)
@@ -168,7 +168,7 @@ test('reports review pending for a valid package without human evidence', () => 
   const glb = createSyntheticGlb()
   const manifest = createManifest(glb.length)
 
-  const result = assessCueIdV2Intake(glb, manifest, {})
+  const result = assessCueIdV2Intake(glb, manifest, { assetVersion: '2.0.0' })
 
   assert.equal(result.summary, 'package_valid_review_pending')
   assert.equal(result.package.ready, true)
@@ -180,6 +180,7 @@ test('reports static ready while interactive performance evidence is pending', (
   const manifest = createManifest(glb.length)
 
   const result = assessCueIdV2Intake(glb, manifest, {
+    assetVersion: '2.0.0',
     visualReview: true,
     mobileReview: true
   })
@@ -194,6 +195,7 @@ test('reports interactive ready only with passing review and performance evidenc
   const manifest = createManifest(glb.length)
 
   const result = assessCueIdV2Intake(glb, manifest, {
+    assetVersion: '2.0.0',
     visualReview: true,
     mobileReview: true,
     performance: {
@@ -206,4 +208,25 @@ test('reports interactive ready only with passing review and performance evidenc
   assert.equal(result.package.ready, true)
   assert.equal(result.static.ready, true)
   assert.equal(result.interactive.ready, true)
+})
+
+
+test('rejects review evidence from another asset version', () => {
+  const glb = createSyntheticGlb()
+  const manifest = createManifest(glb.length)
+
+  const result = assessCueIdV2Intake(glb, manifest, {
+    assetVersion: '2.1.0',
+    visualReview: true,
+    mobileReview: true,
+    performance: {
+      full: 800,
+      reduced: 1500
+    }
+  })
+
+  assert.equal(result.static.ready, false)
+  assert.equal(result.interactive.ready, false)
+  assert.ok(result.static.issues.some(issue => issue.field === 'evidenceVersion'))
+  assert.ok(result.interactive.issues.some(issue => issue.field === 'evidenceVersion'))
 })
