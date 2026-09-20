@@ -6986,3 +6986,36 @@ Important architecture rule:
 This is the final domain boundary needed before an authored V2 asset can be introduced without coupling persistence to GLB internals.
 
 Production remains untouched.
+
+## 112. Product stage / fixture separation
+
+A remaining architecture leak was found in `CueIdStage.vue`: when Artist Profile used the stage without `labAsset`, `CueIdScene.client.vue` could still render its internal procedural box placeholder.
+
+This contradicted the decision to reject procedural visual direction outside the lab.
+
+Correction:
+
+- `/cue-id` remains the only path allowed to opt into the fixture renderer through explicit `labAsset`;
+- Artist Profile no longer starts the 3D renderer while the production manifest catalogue is empty;
+- product stage resolves production manifests through `resolveCueIdAsset(...)`;
+- when no approved production manifest exists, the stage stays static-first;
+- when a future manifest exists, its versioned static portrait can render immediately;
+- interactive production rendering remains intentionally disabled until `CueIdScene.client.vue` supports the V2 manifest/binding contract;
+- failed production static images fall back to the existing CSS static identity rather than breaking the stage.
+
+New catalogue:
+
+`app/domain/cueIdProductionCatalogue.ts`
+
+It is intentionally empty.
+
+New regression coverage:
+
+`tests/cueIdProductionCatalogue.test.ts`
+`tests/cueIdProductStageBoundary.test.ts`
+
+Important result:
+
+The rejected procedural fixture can no longer leak into Artist Profile simply because interactive runtime is available.
+
+Production remains untouched.
