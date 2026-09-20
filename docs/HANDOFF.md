@@ -7744,3 +7744,48 @@ Critical rule preserved:
 The production catalogue remains empty.
 
 Production remains untouched.
+
+## 134. Machine-readable sculpt review gates
+
+The authored V2 handoff now contains an operational review artifact for the sculpt itself.
+
+New files:
+
+`scripts/lib/cue-id-sculpt-review.mjs`
+`scripts/assess-cue-id-sculpt-review.mjs`
+`tests/cueIdSculptReview.test.ts`
+
+New command:
+
+```bash
+npm run cue-id:assess-sculpt -- <sculpt-review.json>
+```
+
+`cue-id:scaffold-package` now also creates:
+
+`manifest/sculpt-review.draft.json`
+
+Review order is enforced:
+
+- A: regular feminine/neutral/masculine structural gate;
+- B: independent build matrix;
+- C: tee fit/deformation;
+- D: pose parity/grounding;
+- E: mobile/product-size read.
+
+Passing a gate requires:
+
+- every required check true;
+- at least one evidence reference;
+- all previous gates already passed.
+
+The assessor returns readiness, issues, failed/pending gates and the next unresolved gate.
+
+Important boundary:
+
+- this tool does not automatically set production `visualReview` evidence;
+- final admission still requires an explicit human approval decision.
+
+The production catalogue remains empty.
+
+Production remains untouched.
