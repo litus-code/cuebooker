@@ -22,6 +22,9 @@ test('scaffolds the complete CUE ID V2 working package', async () => {
   const sculptReview = JSON.parse(
     await readFile(join(result.dirs.manifest, 'sculpt-review.draft.json'), 'utf8')
   )
+  const mobileReview = JSON.parse(
+    await readFile(join(result.dirs.manifest, 'mobile-review.draft.json'), 'utf8')
+  )
   const bindings = await readFile(join(result.dirs.manifest, 'bindings.md'), 'utf8')
   const sculptSpec = await readFile(join(result.root, 'SCULPT_SPEC.md'), 'utf8')
   const readme = await readFile(join(result.root, 'README.md'), 'utf8')
@@ -35,7 +38,9 @@ test('scaffolds the complete CUE ID V2 working package', async () => {
   assert.equal(metadata.assetVersion, '2.0.0')
   assert.equal(sculptReview.assetVersion, '2.0.0')
   assert.equal(sculptReview.gates.A_regularBases.status, 'pending')
-  assert.equal(sculptReview.gates.E_mobile.status, 'pending')
+  assert.equal(sculptReview.gates.E_productSize.status, 'pending')
+  assert.equal(mobileReview.assetVersion, '2.0.0')
+  assert.equal(mobileReview.status, 'pending')
   assert.match(bindings, /feminine \/ neutral \/ masculine reviewed on regular build/)
   assert.match(sculptSpec, /Base and build are independent semantic dimensions/)
   assert.match(sculptSpec, /feminine \+ regular/)
