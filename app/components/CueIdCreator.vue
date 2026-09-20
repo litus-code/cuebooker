@@ -36,6 +36,7 @@ const emit = defineEmits<{
 }>()
 
 const activeStep = ref<CreatorStep>('base')
+const viewMode = ref<'edit' | 'review'>('edit')
 const saveState = ref<'idle' | 'saved'>('idle')
 const DRAFT_STORAGE_KEY = 'cuebooker:cue-id:creator-draft:v1'
 const runtimeConfig = computed(() => cueIdCreatorToRuntimeConfig(props.modelValue))
@@ -80,7 +81,12 @@ const copy = computed(() => props.locale === 'es' ? {
   next: 'Siguiente',
   saved: 'Guardado',
   draftSaved: 'Borrador guardado en este dispositivo',
-  step: 'Paso'
+  step: 'Paso',
+  review: 'Ver resultado',
+  edit: 'Seguir editando',
+  finalEyebrow: 'TU CUE ID',
+  finalTitle: 'Así se verá tu identidad.',
+  finalBody: 'Vista limpia del CUE ID que has construido. El asset visual sigue siendo provisional hasta sustituir el fixture por el sculpt authored aprobado.'
 } : {
   creator: 'CUE ID CREATOR',
   title: 'Build your visual identity.',
@@ -109,7 +115,12 @@ const copy = computed(() => props.locale === 'es' ? {
   next: 'Next',
   saved: 'Saved',
   draftSaved: 'Draft saved on this device',
-  step: 'Step'
+  step: 'Step',
+  review: 'Review result',
+  edit: 'Keep editing',
+  finalEyebrow: 'YOUR CUE ID',
+  finalTitle: 'This is your identity.',
+  finalBody: 'Clean view of the CUE ID you built. The visual asset remains provisional until the fixture is replaced by the approved authored sculpt.'
 })
 
 const steps = computed(() => ([
@@ -212,7 +223,16 @@ function resetCreator() {
   if (import.meta.client) localStorage.removeItem(DRAFT_STORAGE_KEY)
   saveState.value = 'idle'
   activeStep.value = 'base'
+  viewMode.value = 'edit'
   emit('reset')
+}
+
+function openReview() {
+  viewMode.value = 'review'
+}
+
+function closeReview() {
+  viewMode.value = 'edit'
 }
 
 onMounted(() => {
@@ -232,6 +252,7 @@ onMounted(() => {
 
 <template>
   <section class="creator">
+    <template v-if="viewMode === 'edit'">
     <header class="creator__heading">
       <div>
         <p>{{ copy.creator }}</p>
@@ -337,6 +358,15 @@ onMounted(() => {
           <button type="button" :disabled="isLastStep" @click="goNext">{{ copy.next }}</button>
         </div>
 
+        <button
+          v-if="isLastStep"
+          type="button"
+          class="creator__review-button"
+          @click="openReview"
+        >
+          {{ copy.review }}
+        </button>
+
         <button type="button" class="creator__save" @click="saveDraft">
           {{ saveState === 'saved' ? copy.saved : copy.save }}
         </button>
@@ -355,6 +385,58 @@ onMounted(() => {
         {{ step.label }}
       </button>
     </div>
+    </template>
+
+    <section v-else class="creator__review">
+      <header class="creator__review-head">
+        <div>
+          <p>{{ copy.finalEyebrow }}</p>
+          <h2>{{ copy.finalTitle }}</h2>
+          <span>{{ copy.finalBody }}</span>
+        </div>
+        <button type="button" @click="closeReview">{{ copy.edit }}</button>
+      </header>
+
+      <div class="creator__review-card" :class="previewClasses">
+        <div class="creator__review-stage">
+          <CueIdStage
+            :config="runtimeConfig"
+            artist-name="LITUS"
+            lab-asset="candidate"
+            lab-quality="medium"
+            :show-diagnostics="false"
+          />
+          <div class="creator__semantic-preview creator__semantic-preview--review" aria-hidden="true">
+            <i class="creator__semantic-head" />
+            <i class="creator__semantic-face" />
+            <i class="creator__semantic-hair" />
+            <i class="creator__semantic-facial-hair" />
+            <i class="creator__semantic-accessory" />
+            <i class="creator__semantic-top" />
+            <i class="creator__semantic-bottom" />
+            <i class="creator__semantic-footwear creator__semantic-footwear--left" />
+            <i class="creator__semantic-footwear creator__semantic-footwear--right" />
+          </div>
+        </div>
+
+        <div class="creator__review-meta">
+          <span>CUE ID / LITUS</span>
+          <div class="creator__review-tags">
+            <b>{{ modelValue.base }}</b>
+            <b>{{ modelValue.build }}</b>
+            <b>{{ modelValue.hair }}</b>
+            <b>{{ modelValue.top }}</b>
+            <b>{{ modelValue.bottom }}</b>
+            <b>{{ modelValue.footwear }}</b>
+            <b>{{ modelValue.pose }}</b>
+          </div>
+          <button type="button" class="creator__save creator__save--review" @click="saveDraft">
+            {{ saveState === 'saved' ? copy.saved : copy.save }}
+          </button>
+          <small v-if="saveState === 'saved'" class="creator__saved-note">{{ copy.draftSaved }}</small>
+        </div>
+      </div>
+    </section>
   </section>
 </template>
 
@@ -545,9 +627,27 @@ onMounted(() => {
 .creator__step-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:auto 14px 8px}
 .creator__step-actions button{min-height:42px;border:1px solid var(--cue-border);background:transparent;color:var(--cue-text);font-weight:800;cursor:pointer}
 .creator__step-actions button:disabled{opacity:.32;cursor:not-allowed}
+.creator__review-button{margin:0 14px 8px;min-height:44px;border:1px solid var(--cue-text);background:transparent;color:var(--cue-text);font-weight:900;cursor:pointer}
 .creator__save{margin:0 14px 8px;min-height:48px;border:1px solid var(--cue-accent);background:var(--cue-accent);color:#070807;font-weight:900;cursor:pointer}
 .creator__saved-note{display:block;margin:0 14px 14px;color:var(--cue-muted);font:700 9px/1.35 monospace}
 .creator__mobile-tabs{display:none}
+.creator__review{display:grid;gap:18px;padding-top:26px}
+.creator__review-head{display:flex;justify-content:space-between;align-items:end;gap:28px}
+.creator__review-head>div{max-width:800px}
+.creator__review-head p{margin:0 0 10px;color:var(--cue-accent);font:700 10px/1.2 monospace;letter-spacing:.14em}
+.creator__review-head h2{margin:0;font-size:clamp(2.8rem,6vw,6.5rem);line-height:.86;letter-spacing:-.055em;text-transform:uppercase}
+.creator__review-head span{display:block;max-width:700px;margin-top:16px;color:var(--cue-muted);font-size:14px;line-height:1.6}
+.creator__review-head button{min-height:44px;padding:0 16px;border:1px solid var(--cue-border);background:transparent;color:var(--cue-text);font-weight:800;cursor:pointer}
+.creator__review-card{display:grid;grid-template-columns:minmax(0,1fr) 280px;border:1px solid var(--cue-border);background:#070908}
+.creator__review-stage{position:relative;min-height:690px;padding:18px}
+.creator__review-stage :deep(.cue-id-stage){min-height:650px}
+.creator__semantic-preview--review{top:47%;opacity:.5}
+.creator__review-meta{display:flex;flex-direction:column;padding:22px;border-left:1px solid var(--cue-border);background:#0a0c0b}
+.creator__review-meta>span{color:var(--cue-muted);font:700 9px/1 monospace;letter-spacing:.12em}
+.creator__review-tags{display:flex;flex-wrap:wrap;gap:7px;margin:24px 0}
+.creator__review-tags b{padding:8px 10px;border:1px solid var(--cue-border);font:700 9px/1 monospace;text-transform:uppercase}
+.creator__save--review{margin:auto 0 8px}
+.creator__review-meta .creator__saved-note{margin:0}
 button:focus-visible{outline:2px solid var(--cue-accent);outline-offset:2px}
 @media(max-width:1040px){
   .creator__shell{grid-template-columns:128px minmax(0,1fr) 270px}
@@ -581,6 +681,17 @@ button:focus-visible{outline:2px solid var(--cue-accent);outline-offset:2px}
   .creator__step-actions{margin:0 12px 8px}
   .creator__save{margin:0 12px 6px;min-height:46px}
   .creator__saved-note{margin:0 12px 10px}
+  .creator__review-button{margin:0 12px 8px}
+  .creator__review{padding-top:18px}
+  .creator__review-head{align-items:start;flex-direction:column}
+  .creator__review-head h2{font-size:clamp(2.35rem,13vw,4.2rem)}
+  .creator__review-head button{width:100%}
+  .creator__review-card{grid-template-columns:1fr}
+  .creator__review-stage{min-height:470px;padding:0}
+  .creator__review-stage :deep(.cue-id-stage){min-height:470px;border:0}
+  .creator__review-meta{border-left:0;border-top:1px solid var(--cue-border);padding:16px 12px}
+  .creator__save--review{margin:auto 0 6px}
+  .creator__review-meta .creator__saved-note{margin:0}
   .creator__mobile-tabs{display:flex;position:sticky;bottom:0;z-index:20;overflow-x:auto;border:1px solid var(--cue-border);background:rgba(8,10,9,.96);backdrop-filter:blur(14px);scroll-snap-type:x proximity}
   .creator__mobile-tabs button{flex:0 0 auto;min-height:46px;padding:0 13px;border:0;border-right:1px solid var(--cue-border);background:transparent;color:var(--cue-muted);font-size:10px;font-weight:800;scroll-snap-align:start}
   .creator__mobile-tabs button.active{color:var(--cue-accent)}
