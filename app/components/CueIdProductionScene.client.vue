@@ -77,7 +77,8 @@ function applyMorphBindings(root: Object3D) {
   if (!resolved) return false
 
   const semanticMorphNames = new Set(
-    Object.values(props.manifest.bindings.morphs || {}).filter(Boolean)
+    Object.values(props.manifest.bindings.morphs || {})
+      .filter((value): value is string => Boolean(value))
   )
 
   root.traverse(node => {
@@ -173,8 +174,12 @@ function applyProductionSemantics(root: Object3D) {
   const resolved = resolveCueIdProductionBindings(props.config, props.manifest)
   if (!resolved) return false
 
-  const allOutfitNodes = Object.values(props.manifest.bindings.outfits || {}).flat()
-  const allAccessoryNodes = Object.values(props.manifest.bindings.accessories || {}).flat()
+  const allOutfitNodes = Object.values(props.manifest.bindings.outfits || {})
+    .flat()
+    .filter((value): value is string => Boolean(value))
+  const allAccessoryNodes = Object.values(props.manifest.bindings.accessories || {})
+    .flat()
+    .filter((value): value is string => Boolean(value))
 
   setSemanticVisibility(root, resolved.outfitNodes, allOutfitNodes)
   setSemanticVisibility(root, resolved.accessoryNodes, allAccessoryNodes)
