@@ -7633,3 +7633,35 @@ This is a reporting/pre-admission tool only. It does not mutate `CUE_ID_PRODUCTI
 The production catalogue remains empty.
 
 Production remains untouched.
+
+## 131. Non-destructive production promotion proposal
+
+The V2 intake pipeline now has a final promotion proposal gate without automatic catalogue mutation.
+
+New files:
+
+`scripts/lib/cue-id-promotion-proposal.mjs`
+`scripts/propose-cue-id-promotion.mjs`
+`tests/cueIdPromotionProposal.test.ts`
+
+New command:
+
+```bash
+npm run cue-id:propose-promotion -- <asset.glb> <manifest.json> --evidence <evidence.json>
+```
+
+Behavior:
+
+- `auto` promotes to the highest readiness state actually achieved;
+- static-ready assets produce `static_approved` proposals;
+- fully passing assets produce `interactive_approved` proposals;
+- forced interactive promotion is rejected when interactive gates are incomplete;
+- missing human review evidence blocks promotion;
+- the command outputs a proposal object only;
+- `CUE_ID_PRODUCTION_CATALOGUE` is never modified automatically.
+
+This preserves explicit human control over the final catalogue admission step.
+
+The production catalogue remains empty.
+
+Production remains untouched.
