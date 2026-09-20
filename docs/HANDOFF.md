@@ -7876,3 +7876,60 @@ runtime measurements       -> performance
 The production catalogue remains empty.
 
 Production remains untouched.
+
+## 137. Structured performance evidence
+
+The final independent evidence axis now has the same auditable workflow as visual and mobile review.
+
+New files:
+
+`scripts/lib/cue-id-performance-review.mjs`
+`scripts/assess-cue-id-performance-review.mjs`
+`scripts/lib/cue-id-performance-evidence-proposal.mjs`
+`scripts/propose-cue-id-performance-evidence.mjs`
+`tests/cueIdPerformanceReview.test.ts`
+
+New scaffold artifact:
+
+`manifest/performance-review.draft.json`
+
+New commands:
+
+```bash
+npm run cue-id:assess-performance -- <performance-review.json>
+npm run cue-id:propose-performance-evidence -- <performance-review.json> <evidence.json>
+```
+
+The assessor imports and uses the real product performance policy from `app/domain/cueIdPerformance.ts`.
+
+Current ready-time budgets remain:
+
+- full <= 800 ms;
+- reduced <= 1500 ms.
+
+Each tier requires:
+
+- a finite non-negative `totalReadyMs` measurement;
+- at least one evidence reference;
+- a passing result against the runtime budget.
+
+The evidence bridge:
+
+- requires matching asset versions;
+- sets only the full/reduced performance timings;
+- preserves visual/mobile state;
+- records budget + measurement + evidence refs;
+- does not mutate source evidence automatically.
+
+The independent evidence model is now:
+
+```text
+sculpt/product-size review -> visualReview
+real-device review         -> mobileReview
+runtime timing review      -> performance
+package-to-GLB validator   -> packageValidation
+```
+
+The production catalogue remains empty.
+
+Production remains untouched.
