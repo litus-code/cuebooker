@@ -29,3 +29,11 @@ test('product CUE ID keeps production static visible until the first interactive
   assert.match(source, /@ready="handleProductionRuntimeReady"/)
   assert.match(source, /@failed="handleRuntimeFailed\('tresjs_production_v2'\)"/)
 })
+
+
+test('failed production static variants retry only after the resolved asset path changes', async () => {
+  const source = await readFile(stagePath, 'utf8')
+
+  assert.match(source, /resolvedProductionAsset\.value\?\.staticPath \|\| null/)
+  assert.doesNotMatch(source, /watch\(productionStaticPath/)
+})
