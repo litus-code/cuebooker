@@ -71,3 +71,29 @@ It should not sit at either extreme:
 - low-poly avatar.
 
 The desired space is authored, sculptural, human and credible.
+
+## Turnaround status after V2.3/V2.4 experiments
+
+The latest generated turnaround sheets are useful only as structural direction references and are NOT approved as production modelling turnarounds.
+
+Reason:
+
+- feminine was repeatedly rendered with a slimmer/athletic build;
+- masculine was repeatedly rendered with a stronger/athletic build;
+- this mixes the independent `base` and `build` product dimensions;
+- approving that reference would bake a semantic architecture bug into the sculpt.
+
+Hard rule for the next approved turnaround:
+
+- feminine = regular build;
+- neutral = regular build;
+- masculine = regular build;
+- same apparent height;
+- same overall mass class;
+- same tee/trousers/shoes;
+- same pose;
+- same lighting;
+- same camera;
+- only structural base anatomy may differ.
+
+`slim` and `strong` must be reviewed later as independent build morphs on every base.
