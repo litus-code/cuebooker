@@ -7098,3 +7098,43 @@ New regression coverage:
 `tests/cueIdProductionSceneBoundary.test.ts`
 
 Production remains untouched.
+
+## 116. Static-valid vs interactive-ready production manifests
+
+The production manifest lifecycle now distinguishes visual/static admission from interactive semantic readiness.
+
+New rule:
+
+- a manifest may be structurally valid and provide version-matched static assets without being allowed to render interactively;
+- interactive rendering requires explicit V2 semantic bindings.
+
+Interactive readiness currently requires:
+
+- feminine base binding;
+- masculine base binding;
+- slim build binding;
+- strong build binding;
+- neutral / relaxed / focused / editorial pose bindings;
+- editorial tee binding;
+- body material binding;
+- textile material binding.
+
+Neutral base and regular build may remain authored reference/default states.
+
+Resolver behavior:
+
+- invalid manifest -> ignored;
+- valid + incomplete bindings -> static representation;
+- valid + complete bindings + supported full/reduced tier -> interactive representation;
+- static tier -> static representation regardless.
+
+This allows a future authored V2 asset to enter Cuebooker safely in phases:
+
+1. static visual approval;
+2. manifest admission;
+3. semantic binding completion;
+4. interactive renderer activation.
+
+No production asset has been admitted yet.
+
+Production remains untouched.
