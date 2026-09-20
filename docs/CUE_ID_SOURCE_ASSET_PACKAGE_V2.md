@@ -443,3 +443,36 @@ The validator checks:
 A package must pass this command before catalogue admission.
 
 This validator complements, but does not replace, visual review or runtime benchmarking.
+
+## 27. Semantic static render matrix
+
+Static CUE ID output must represent the exact visible semantic configuration, not a generic portrait for the whole asset version.
+
+Static variant key:
+
+```text
+<base>__<build>__<outfit>__<accessory|none>__<pose>__<material>__<accent|none>
+```
+
+Example:
+
+```text
+feminine__regular__tee__none__editorial__matte__red
+```
+
+For every configuration declared in manifest capabilities, the package must provide:
+
+- portrait static render;
+- square static render.
+
+Rules:
+
+- no fallback from one base to another;
+- no fallback from strong/slim to regular;
+- no fallback from one pose to another;
+- no fallback from selected accessory to none;
+- no material/accent substitution;
+- paths must be application-owned;
+- renders should be generated in batch from the same authored asset and semantic configuration used by the interactive renderer.
+
+`cue-id:validate-package` checks semantic static coverage before catalogue admission.
