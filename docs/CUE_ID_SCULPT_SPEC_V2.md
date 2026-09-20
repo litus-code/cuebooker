@@ -352,6 +352,10 @@ Spot-check relaxed/focused and slim/strong combinations.
 ### Gate E — product-size still
 Review at approximately 390 px viewport width before GLB integration.
 
+This is a visual-size gate only.
+
+Do not treat Gate E as the real-device mobile review. iPhone-class and representative Android mid-range validation are tracked separately in the mobile review artifact.
+
 ## 17. Hard rejection conditions
 
 Reject the candidate if:
@@ -375,7 +379,8 @@ Before runtime integration, provide:
 - nine base/build review stills;
 - tee-fit review;
 - neutral/editorial pose review;
-- mobile-size review still;
+- product-size review still;
+- separate real-device mobile review evidence;
 - optimized GLB candidate;
 - asset metadata;
 - reviewed semantic bindings.
