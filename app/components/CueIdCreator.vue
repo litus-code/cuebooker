@@ -6,6 +6,7 @@ import {
 } from '../domain/cueIdCreator'
 import { getCueIdCreatorAssetStatusForConfig } from '../domain/cueIdCreatorAssetStatus'
 import { getCueIdCreatorVisualCoverage } from '../domain/cueIdCreatorVisualCoverage'
+import { getCueIdCreatorRepresentation } from '../domain/cueIdCreatorRepresentation'
 
 type Locale = 'es' | 'en'
 type CreatorStep = keyof Pick<
@@ -46,6 +47,9 @@ const assetStatus = computed(() => getCueIdCreatorAssetStatusForConfig(runtimeCo
 const creatorUsesLabFixture = computed(() => assetStatus.value.source === 'lab_candidate')
 const visualCoverage = computed(() => getCueIdCreatorVisualCoverage(assetStatus.value.source))
 const activeStepVisibleInAsset = computed(() => visualCoverage.value[activeStep.value])
+const activeRepresentation = computed(() =>
+  getCueIdCreatorRepresentation(props.modelValue, activeStep.value, assetStatus.value.source)
+)
 
 const previewClasses = computed(() => [
   `creator__preview--skin-${props.modelValue.skin}`,
@@ -96,6 +100,8 @@ const copy = computed(() => props.locale === 'es' ? {
   passed: 'OK',
   futureVisual: 'Configuración futura',
   futureVisualBody: 'Esta opción forma parte del modelo del creator, pero el asset authored V2 actual todavía no la representa visualmente.',
+  sharedVisual: 'Variante compartida',
+  sharedVisualBody: 'Esta elección usa actualmente la misma representación authored V2 que otra variante del creator.',
   previous: 'Anterior',
   next: 'Siguiente',
   saved: 'Guardado',
@@ -143,6 +149,8 @@ const copy = computed(() => props.locale === 'es' ? {
   passed: 'OK',
   futureVisual: 'Future configuration',
   futureVisualBody: 'This option is part of the creator model, but the current authored V2 asset does not represent it visually yet.',
+  sharedVisual: 'Shared variant',
+  sharedVisualBody: 'This choice currently uses the same authored V2 representation as another creator variant.',
   previous: 'Previous',
   next: 'Next',
   saved: 'Saved',
@@ -426,6 +434,12 @@ onMounted(() => {
           <small v-if="!activeStepVisibleInAsset" class="creator__coverage-note">
             {{ copy.futureVisual }} · {{ copy.futureVisualBody }}
           </small>
+          <small
+            v-else-if="activeRepresentation.status === 'shared_runtime_variant'"
+            class="creator__coverage-note creator__coverage-note--shared"
+          >
+            {{ copy.sharedVisual }} · {{ copy.sharedVisualBody }}
+          </small>
         </div>
 
         <div class="creator__options">
@@ -654,6 +668,7 @@ onMounted(() => {
 .creator__panel-head span{color:var(--cue-muted);font:700 9px/1 monospace;letter-spacing:.1em;text-transform:uppercase}
 .creator__panel-head strong{font-size:20px}
 .creator__coverage-note{display:block;margin-top:4px;color:#a4a8a1;font:600 9px/1.45 monospace}
+.creator__coverage-note--shared{color:#c6cabf}
 .creator__options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:14px;max-height:370px;overflow:auto}
 .creator__options button{display:grid;gap:10px;min-height:94px;padding:10px;border:1px solid var(--cue-border);background:#0d100e;color:var(--cue-text);text-align:left;cursor:pointer}
 .creator__option-visual{position:relative;display:block;height:54px;overflow:hidden;border-radius:4px;background:linear-gradient(135deg,#171b18,#2a302a);isolation:isolate}
