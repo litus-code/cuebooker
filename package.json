@@ -14,7 +14,8 @@
     "test": "node --experimental-strip-types --test tests/**/*.test.ts",
     "cue-id:inspect": "node scripts/inspect-cue-id-v2-glb.mjs",
     "cue-id:validate-package": "node scripts/validate-cue-id-v2-package.mjs",
-    "cue-id:plan-static": "node --experimental-strip-types scripts/plan-cue-id-static-renders.mjs"
+    "cue-id:plan-static": "node --experimental-strip-types scripts/plan-cue-id-static-renders.mjs",
+    "cue-id:finalize-static": "node scripts/finalize-cue-id-static-renders.mjs"
   },
   "dependencies": {
     "@nuxtjs/i18n": "^10.1.0",
