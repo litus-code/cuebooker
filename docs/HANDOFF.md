@@ -7503,3 +7503,47 @@ CI exposed one remaining test fixture using the legacy generic `static.portrait/
 No runtime behavior changed in this correction.
 
 Production remains untouched.
+
+## 128. Deterministic static render planning
+
+The V2 intake path now has a deterministic planner for the semantic static render matrix.
+
+Domain extension:
+
+`app/domain/cueIdStaticVariants.ts`
+
+New CLI:
+
+`scripts/plan-cue-id-static-renders.mjs`
+
+New command:
+
+```bash
+npm run cue-id:plan-static -- <manifest.json>
+```
+
+Optional JSON output:
+
+```bash
+npm run cue-id:plan-static -- <manifest.json> --output <plan.json>
+```
+
+The planner:
+
+- reads `assetVersion` and declared capabilities;
+- enumerates every visible semantic combination;
+- generates deterministic portrait/square target paths;
+- reports the exact render count;
+- does not mutate the manifest;
+- does not treat planned paths as existing or approved assets.
+
+Default file layout:
+
+`/cue-id/production/static/<assetVersion>/<semantic-key>-portrait.webp`
+`/cue-id/production/static/<assetVersion>/<semantic-key>-square.webp`
+
+Regression coverage added to `tests/cueIdStaticVariants.test.ts`.
+
+The production catalogue remains empty.
+
+Production remains untouched.
