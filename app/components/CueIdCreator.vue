@@ -208,6 +208,13 @@ function saveDraft() {
   saveState.value = 'saved'
 }
 
+function resetCreator() {
+  if (import.meta.client) localStorage.removeItem(DRAFT_STORAGE_KEY)
+  saveState.value = 'idle'
+  activeStep.value = 'base'
+  emit('reset')
+}
+
 onMounted(() => {
   const rawDraft = localStorage.getItem(DRAFT_STORAGE_KEY)
   if (!rawDraft) return
@@ -231,7 +238,7 @@ onMounted(() => {
         <h1>{{ copy.title }}</h1>
         <span>{{ copy.subtitle }}</span>
       </div>
-      <button type="button" class="creator__reset" @click="emit('reset')">
+      <button type="button" class="creator__reset" @click="resetCreator">
         {{ copy.reset }}
       </button>
     </header>
