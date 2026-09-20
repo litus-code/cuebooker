@@ -7547,3 +7547,43 @@ Regression coverage added to `tests/cueIdStaticVariants.test.ts`.
 The production catalogue remains empty.
 
 Production remains untouched.
+
+## 129. Static render finalization gate
+
+The semantic static pipeline now refuses to populate a production manifest from planned paths alone.
+
+New files:
+
+`scripts/lib/cue-id-static-finalizer.mjs`
+`scripts/finalize-cue-id-static-renders.mjs`
+`tests/cueIdStaticFinalizer.test.ts`
+
+New command:
+
+```bash
+npm run cue-id:finalize-static -- <manifest.json> <plan.json> --output <finalized-manifest.json>
+```
+
+Behavior:
+
+- plan and manifest asset versions must match;
+- every portrait file must exist physically under the configured public directory;
+- every square file must exist physically;
+- one missing file fails finalization;
+- `static.variants` is populated only after successful filesystem verification.
+
+Static V2 pipeline is now:
+
+```text
+capabilities
+  -> cue-id:plan-static
+  -> actual render/export
+  -> human visual review
+  -> cue-id:finalize-static
+  -> cue-id:validate-package
+  -> catalogue admission
+```
+
+The production catalogue remains empty.
+
+Production remains untouched.
