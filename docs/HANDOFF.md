@@ -7493,3 +7493,13 @@ Correction:
 Regression coverage added to `tests/cueIdProductStageBoundary.test.ts`.
 
 Production remains untouched.
+
+## 127. Semantic static fixture alignment
+
+CI exposed one remaining test fixture using the legacy generic `static.portrait/static.square` shape.
+
+`tests/cueIdProductionBindings.test.ts` now builds the complete semantic static variant matrix from its declared capabilities, matching the production manifest contract.
+
+No runtime behavior changed in this correction.
+
+Production remains untouched.
