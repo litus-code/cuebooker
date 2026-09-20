@@ -7472,3 +7472,24 @@ Visual checkpoint note:
 The production catalogue remains empty.
 
 Production remains untouched.
+
+## 126. Static variant failure retry boundary
+
+A fallback-loop bug was fixed in `CueIdStage.vue`.
+
+Previous behavior risk:
+
+- a failed production static image set `productionStaticFailed = true`;
+- `productionStaticPath` then changed to null;
+- a watcher on that computed value immediately reset the failure flag;
+- the same broken image could be requested again repeatedly.
+
+Correction:
+
+- the failure flag now resets only when the underlying resolved production static asset path changes;
+- the same broken variant stays on CSS fallback instead of retrying in a loop;
+- changing CUE ID config or admitted asset version can legitimately retry the new resolved path.
+
+Regression coverage added to `tests/cueIdProductStageBoundary.test.ts`.
+
+Production remains untouched.
