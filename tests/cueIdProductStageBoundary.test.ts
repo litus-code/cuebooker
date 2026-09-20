@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
+import test from 'node:test'
+
+const stagePath = new URL('../app/components/CueIdStage.vue', import.meta.url)
+
+test('product CUE ID stage never loads the fixture renderer implicitly', async () => {
+  const source = await readFile(stagePath, 'utf8')
+
+  assert.match(source, /v-if="labAsset && interactive && runtimeWanted && runtimeDecision"/)
+  assert.match(source, /reason: resolvedProductionAsset.value ? 'production_static_first' : 'no_production_asset'/)
+})
+
+test('product CUE ID stage can render a versioned production static asset', async () => {
+  const source = await readFile(stagePath, 'utf8')
+
+  assert.match(source, /const productionStaticPath = computed/)
+  assert.match(source, /class="cue-id-stage__production-static"/)
+  assert.match(source, /@error="productionStaticFailed = true"/)
+})
