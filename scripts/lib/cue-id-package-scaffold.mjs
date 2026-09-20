@@ -65,6 +65,7 @@ export async function scaffoldCueIdV2Package(rootDir, version) {
   }
 
   const evidence = {
+    assetVersion: version,
     visualReview: false,
     mobileReview: false,
     performance: {
