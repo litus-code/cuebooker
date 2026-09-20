@@ -38,6 +38,14 @@ const emit = defineEmits<{
 const activeStep = ref<CreatorStep>('base')
 const runtimeConfig = computed(() => cueIdCreatorToRuntimeConfig(props.modelValue))
 
+const previewClasses = computed(() => [
+  `creator__preview--skin-${props.modelValue.skin}`,
+  `creator__preview--hair-${props.modelValue.hair}`,
+  `creator__preview--top-${props.modelValue.top}`,
+  `creator__preview--bottom-${props.modelValue.bottom}`,
+  `creator__preview--footwear-${props.modelValue.footwear}`
+])
+
 const copy = computed(() => props.locale === 'es' ? {
   creator: 'CREADOR CUE ID',
   title: 'Construye tu identidad visual.',
@@ -191,7 +199,7 @@ function select(value: unknown) {
         </button>
       </nav>
 
-      <div class="creator__stage">
+      <div class="creator__stage" :class="previewClasses">
         <div class="creator__stage-label">
           <span>{{ copy.preview }}</span>
           <strong>{{ copy.authored }}</strong>
@@ -204,6 +212,15 @@ function select(value: unknown) {
           lab-quality="medium"
           :show-diagnostics="false"
         />
+
+        <div class="creator__semantic-preview" aria-hidden="true">
+          <i class="creator__semantic-head" />
+          <i class="creator__semantic-hair" />
+          <i class="creator__semantic-top" />
+          <i class="creator__semantic-bottom" />
+          <i class="creator__semantic-footwear creator__semantic-footwear--left" />
+          <i class="creator__semantic-footwear creator__semantic-footwear--right" />
+        </div>
 
         <p class="creator__asset-note">{{ copy.authoredBody }}</p>
       </div>
@@ -283,6 +300,48 @@ function select(value: unknown) {
 .creator__stage-label{position:absolute;z-index:8;top:34px;left:36px;display:grid;gap:5px;pointer-events:none}
 .creator__stage-label span{color:var(--cue-muted);font:700 9px/1 monospace;letter-spacing:.12em;text-transform:uppercase}
 .creator__stage-label strong{font-size:11px;text-transform:uppercase}
+.creator__semantic-preview{position:absolute;z-index:6;left:50%;top:47%;width:150px;height:330px;transform:translate(-50%,-50%);pointer-events:none;opacity:.42;mix-blend-mode:screen}
+.creator__semantic-preview i{position:absolute;display:block}
+.creator__semantic-head{left:49px;top:4px;width:52px;height:66px;border-radius:46% 46% 42% 42%;background:var(--creator-skin,#b9805f)}
+.creator__semantic-hair{left:46px;top:-1px;width:58px;height:25px;background:#151815;border-radius:55% 55% 28% 28%}
+.creator__semantic-top{left:27px;top:76px;width:96px;height:112px;background:#272c27;clip-path:polygon(18% 0,82% 0,100% 17%,86% 100%,14% 100%,0 17%)}
+.creator__semantic-bottom{left:38px;top:184px;width:74px;height:118px;background:#202420;clip-path:polygon(5% 0,95% 0,82% 100%,58% 100%,50% 48%,42% 100%,18% 100%)}
+.creator__semantic-footwear{bottom:0;width:37px;height:17px;background:#d7d8d4;border-radius:7px 12px 4px 4px}
+.creator__semantic-footwear--left{left:34px}
+.creator__semantic-footwear--right{right:34px;transform:scaleX(-1)}
+
+.creator__preview--skin-skin-01{--creator-skin:#f1d1bb}
+.creator__preview--skin-skin-02{--creator-skin:#d9aa88}
+.creator__preview--skin-skin-03{--creator-skin:#b9805f}
+.creator__preview--skin-skin-04{--creator-skin:#8f5d45}
+.creator__preview--skin-skin-05{--creator-skin:#67402f}
+.creator__preview--skin-skin-06{--creator-skin:#3d261d}
+
+.creator__preview--hair-buzz .creator__semantic-hair{height:12px}
+.creator__preview--hair-textured-crop .creator__semantic-hair{height:20px;transform:rotate(-3deg)}
+.creator__preview--hair-curly-crop .creator__semantic-hair{height:27px;border-radius:50%;box-shadow:-10px 2px 0 -4px #151815,10px 2px 0 -4px #151815}
+.creator__preview--hair-curtains .creator__semantic-hair{height:27px;clip-path:polygon(0 0,45% 0,50% 56%,55% 0,100% 0,88% 100%,12% 100%)}
+.creator__preview--hair-bob .creator__semantic-hair{left:41px;width:68px;height:55px;border-radius:48% 48% 32% 32%}
+.creator__preview--hair-tied-back .creator__semantic-hair{height:19px}
+.creator__preview--hair-tied-back .creator__semantic-hair::after{content:'';position:absolute;right:-13px;top:3px;width:18px;height:34px;border-radius:50%;background:#151815}
+.creator__preview--hair-locs .creator__semantic-hair{height:50px;background:repeating-linear-gradient(90deg,#151815 0 5px,transparent 5px 8px)}
+.creator__preview--hair-long-natural .creator__semantic-hair{left:37px;width:76px;height:83px;border-radius:48% 48% 30% 30%}
+
+.creator__preview--top-fitted-tee .creator__semantic-top{left:33px;width:84px}
+.creator__preview--top-tank .creator__semantic-top{left:38px;width:74px;clip-path:polygon(28% 0,72% 0,91% 14%,82% 100%,18% 100%,9% 14%)}
+.creator__preview--top-hoodie .creator__semantic-top{left:21px;width:108px;border-radius:8px}
+.creator__preview--top-hoodie .creator__semantic-top::before{content:'';position:absolute;left:30px;right:30px;top:-16px;height:27px;border:4px solid #343a34;border-bottom:0;border-radius:50% 50% 0 0}
+.creator__preview--top-bomber .creator__semantic-top{left:19px;width:112px;border-radius:10px;background:#2d332e}
+
+.creator__preview--bottom-wide-trouser .creator__semantic-bottom{left:31px;width:88px}
+.creator__preview--bottom-straight-trouser .creator__semantic-bottom{left:39px;width:72px}
+.creator__preview--bottom-cargo .creator__semantic-bottom{background:#2c312c}
+.creator__preview--bottom-cargo .creator__semantic-bottom::after{content:'';position:absolute;left:2px;right:2px;top:38px;height:18px;border-left:13px solid #373d37;border-right:13px solid #373d37}
+.creator__preview--bottom-denim .creator__semantic-bottom{background:#303943}
+
+.creator__preview--footwear-minimal-sneaker .creator__semantic-footwear{height:12px}
+.creator__preview--footwear-boot .creator__semantic-footwear{height:29px;border-radius:5px 10px 4px 4px;background:#222522}
+
 .creator__asset-note{position:absolute;z-index:8;left:36px;right:36px;bottom:34px;max-width:520px;margin:0;padding:10px 12px;border:1px solid rgba(255,255,255,.11);background:rgba(5,7,6,.82);backdrop-filter:blur(8px);color:#92978f;font-size:11px;line-height:1.45}
 .creator__panel{display:flex;flex-direction:column;min-width:0;border-left:1px solid var(--cue-border);background:#0a0c0b}
 .creator__panel-head{display:grid;gap:6px;padding:20px;border-bottom:1px solid var(--cue-border)}
@@ -394,6 +453,7 @@ button:focus-visible{outline:2px solid var(--cue-accent);outline-offset:2px}
   .creator__stage{padding:0}
   .creator__stage :deep(.cue-id-stage){min-height:540px;border:0}
   .creator__stage-label{top:18px;left:18px}
+  .creator__semantic-preview{top:46%;transform:translate(-50%,-50%) scale(.86)}
   .creator__asset-note{left:16px;right:16px;bottom:18px}
   .creator__panel{border-left:0;border-top:1px solid var(--cue-border)}
   .creator__panel-head{padding:16px}
