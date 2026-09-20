@@ -7138,3 +7138,47 @@ This allows a future authored V2 asset to enter Cuebooker safely in phases:
 No production asset has been admitted yet.
 
 Production remains untouched.
+
+## 117. Production semantic binding resolver
+
+The V2 production path now has a renderer-agnostic semantic adapter.
+
+New domain:
+
+`app/domain/cueIdProductionBindings.ts`
+
+New regression coverage:
+
+`tests/cueIdProductionBindings.test.ts`
+
+Responsibility:
+
+- receive `CueIdConfigV1` plus an interactive-ready production manifest;
+- resolve authored base/build morph names;
+- resolve pose clip name;
+- resolve selected outfit nodes;
+- resolve selected accessory nodes;
+- resolve semantic material slot names;
+- return null when the selected configuration cannot be represented safely.
+
+Reference states:
+
+- neutral base may require no explicit morph;
+- regular build may require no explicit morph.
+
+This keeps Three/Tres-specific scene code free from product semantics.
+
+Target data flow is now:
+
+```text
+CueIdConfigV1
+  -> resolveCueIdAsset(...)
+  -> resolveCueIdProductionBindings(...)
+  -> production renderer
+```
+
+The production renderer is still intentionally disconnected from Artist Profile until the first authored V2 asset exists and its actual morph/clip/node bindings can be validated.
+
+No production asset has been admitted.
+
+Production remains untouched.
