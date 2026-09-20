@@ -4,6 +4,8 @@ import type { CueIdCandidateQuality } from '../domain/cueIdAssets'
 import { selectCueIdCandidateQuality, type CueIdQualityMode } from '../domain/cueIdQuality'
 import { decideCueIdRuntime, getCueIdRuntimeSignals, type CueIdRuntimeDecision } from '../domain/cueIdRuntime'
 import { evaluateCueIdReadyPerformance } from '../domain/cueIdPerformance'
+import { resolveCueIdAsset } from '../domain/cueIdAssetResolver'
+import { CUE_ID_PRODUCTION_MANIFESTS } from '../domain/cueIdProductionCatalogue'
 
 const props = withDefaults(defineProps<{
   config: CueIdConfigV1
@@ -27,6 +29,7 @@ const stageRoot = ref<HTMLElement | null>(null)
 const runtimeWanted = ref(false)
 const runtimeReady = ref(false)
 const runtimeDecision = ref<CueIdRuntimeDecision | null>(null)
+const productionStaticFailed = ref(false)
 const runtimeInitMs = ref<number | null>(null)
 const latestLabMetrics = ref<{
   assetId: string
@@ -41,9 +44,36 @@ let runtimeObserver: IntersectionObserver | null = null
 
 const LazyCueIdScene = defineAsyncComponent(() => import('./CueIdScene.client.vue'))
 
+const resolvedProductionAsset = computed(() => {
+  if (!runtimeDecision.value || props.labAsset) return null
+  return resolveCueIdAsset(
+    props.config,
+    runtimeDecision.value.tier,
+    CUE_ID_PRODUCTION_MANIFESTS
+  )
+})
+
+const productionStaticPath = computed(() =>
+  productionStaticFailed.value
+    ? null
+    : resolvedProductionAsset.value?.staticPath || null
+)
+
+watch(productionStaticPath, () => {
+  productionStaticFailed.value = false
+})
+
 onMounted(() => {
   if (!props.interactive) return
   runtimeDecision.value = decideCueIdRuntime(getCueIdRuntimeSignals())
+
+  if (!props.labAsset) {
+    analytics.track('cue_id_static_fallback_used', {
+      reason: resolvedProductionAsset.value ? 'production_static_first' : 'no_production_asset',
+      tier: runtimeDecision.value.tier
+    })
+    return
+  }
 
   if (!runtimeDecision.value.shouldLoadRuntime) {
     analytics.track('cue_id_static_fallback_used', {
@@ -172,11 +202,20 @@ const performanceGate = computed(() => {
       <i class="cue-id-stage__accessory" :data-accessory="config.accessory || 'none'" />
     </div>
 
+    <img
+      v-if="productionStaticPath"
+      class="cue-id-stage__production-static"
+      :src="productionStaticPath"
+      alt=""
+      aria-hidden="true"
+      @error="productionStaticFailed = true"
+    />
+
     <div class="cue-id-stage__scan" aria-hidden="true" />
 
     <ClientOnly>
       <LazyCueIdScene
-        v-if="interactive && runtimeWanted && runtimeDecision"
+        v-if="labAsset && interactive && runtimeWanted && runtimeDecision"
         :config="config"
         :decision="runtimeDecision"
         :lab-asset="labAsset"
@@ -253,6 +292,7 @@ const performanceGate = computed(() => {
   filter:drop-shadow(0 38px 46px rgba(0,0,0,.8))
 }
 .cue-id-stage__figure i{position:absolute;display:block}
+.cue-id-stage__production-static{position:absolute;z-index:3;inset:18px 18px 70px;width:calc(100% - 36px);height:calc(100% - 88px);object-fit:contain;object-position:center center}
 .cue-id-stage--runtime-ready .cue-id-stage__figure{opacity:0;transition:opacity .28s ease}
 .cue-id-stage--runtime-ready .cue-id-stage__scan{opacity:.32}
 .cue-id-stage__meta{z-index:5}
