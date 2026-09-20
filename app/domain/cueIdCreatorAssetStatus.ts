@@ -1,3 +1,5 @@
+import type { CueIdConfigV1 } from './cueId'
+import { resolveCueIdAsset } from './cueIdAssetResolver'
 import { CUE_ID_PRODUCTION_CATALOGUE } from './cueIdProductionCatalogue'
 import type { CueIdProductionAdmission } from './cueIdProductionAdmission'
 
@@ -51,4 +53,27 @@ export function getCueIdCreatorAssetStatus(
     packageValidation: latest.evidence.packageValidation === true,
     performanceReady: performanceReady(latest)
   }
+}
+
+
+export function getCueIdCreatorAssetStatusForConfig(
+  config: CueIdConfigV1,
+  admissions: CueIdProductionAdmission[] = CUE_ID_PRODUCTION_CATALOGUE
+): CueIdCreatorAssetStatus {
+  const resolved = resolveCueIdAsset(config, 'static', admissions)
+
+  if (!resolved) {
+    return getCueIdCreatorAssetStatus([])
+  }
+
+  const admission = admissions.find(item =>
+    item.manifest.assetVersion === resolved.manifest.assetVersion
+    && item.manifest.family === resolved.manifest.family
+  )
+
+  if (!admission) {
+    return getCueIdCreatorAssetStatus([])
+  }
+
+  return getCueIdCreatorAssetStatus([admission])
 }
