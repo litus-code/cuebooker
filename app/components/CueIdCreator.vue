@@ -475,26 +475,31 @@ button:focus-visible{outline:2px solid var(--cue-accent);outline-offset:2px}
   .creator__stage :deep(.cue-id-stage){min-height:540px}
 }
 @media(max-width:780px){
-  .creator__heading{align-items:start;flex-direction:column}
+  .creator{gap:12px}
+  .creator__heading{align-items:start;flex-direction:column;padding:18px 0 4px}
+  .creator__heading h1{font-size:clamp(2.35rem,13vw,4.2rem)}
+  .creator__heading span{margin-top:12px;font-size:13px;line-height:1.5}
   .creator__reset{width:100%}
   .creator__shell{grid-template-columns:1fr;min-height:0}
   .creator__rail{display:none}
   .creator__stage{padding:0}
-  .creator__stage :deep(.cue-id-stage){min-height:540px;border:0}
-  .creator__stage-label{top:18px;left:18px}
+  .creator__stage :deep(.cue-id-stage){min-height:470px;border:0}
+  .creator__stage-label{top:16px;left:16px}
   .creator__semantic-preview{top:46%;transform:translate(-50%,-50%) scale(.86)}
   .creator__preview--pose-relaxed .creator__semantic-preview{transform:translate(-50%,-50%) scale(.86) rotate(-2deg)}
   .creator__preview--pose-focused .creator__semantic-preview{transform:translate(-50%,-50%) scale(.84) rotate(1deg)}
   .creator__preview--pose-editorial .creator__semantic-preview{transform:translate(-50%,-50%) scale(.86) rotate(5deg)}
-  .creator__asset-note{left:16px;right:16px;bottom:18px}
+  .creator__asset-note{left:12px;right:12px;bottom:12px;max-width:none;padding:8px 10px;font-size:10px}
   .creator__panel{border-left:0;border-top:1px solid var(--cue-border)}
-  .creator__panel-head{padding:16px}
-  .creator__options{display:flex;overflow-x:auto;max-height:none;padding:12px}
-  .creator__options button{flex:0 0 118px}
+  .creator__panel-head{padding:14px 12px}
+  .creator__panel-head strong{font-size:17px}
+  .creator__options{display:flex;overflow-x:auto;max-height:none;padding:10px 12px 12px;scroll-snap-type:x proximity}
+  .creator__options button{flex:0 0 108px;min-height:84px;scroll-snap-align:start}
+  .creator__option-visual{height:48px}
   .creator__summary{display:none}
-  .creator__save{margin:2px 12px 12px}
-  .creator__mobile-tabs{display:flex;position:sticky;bottom:0;z-index:20;overflow-x:auto;border:1px solid var(--cue-border);background:rgba(8,10,9,.96);backdrop-filter:blur(14px)}
-  .creator__mobile-tabs button{flex:0 0 auto;min-height:48px;padding:0 14px;border:0;border-right:1px solid var(--cue-border);background:transparent;color:var(--cue-muted);font-size:10px;font-weight:800}
+  .creator__save{margin:0 12px 12px;min-height:46px}
+  .creator__mobile-tabs{display:flex;position:sticky;bottom:0;z-index:20;overflow-x:auto;border:1px solid var(--cue-border);background:rgba(8,10,9,.96);backdrop-filter:blur(14px);scroll-snap-type:x proximity}
+  .creator__mobile-tabs button{flex:0 0 auto;min-height:46px;padding:0 13px;border:0;border-right:1px solid var(--cue-border);background:transparent;color:var(--cue-muted);font-size:10px;font-weight:800;scroll-snap-align:start}
   .creator__mobile-tabs button.active{color:var(--cue-accent)}
 }
 </style>
