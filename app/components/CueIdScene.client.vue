@@ -52,24 +52,6 @@ let baseRootScale: [number, number, number] = [1, 1, 1]
 let labFrameStartedAt = 0
 let labMetrics: { assetId: string; bytes: number; loadMs: number; parseMs: number } | null = null
 
-const buildScale = computed(() =>
-  props.config.build === 'strong' ? 1.12 : props.config.build === 'slim' ? 0.9 : 1
-)
-
-const poseRotation = computed(() =>
-  props.config.pose === 'editorial'
-    ? [0, 0.24, 0.035]
-    : props.config.pose === 'focused'
-      ? [0, -0.08, 0]
-      : props.config.pose === 'relaxed'
-        ? [0, 0.12, -0.02]
-        : [0, 0, 0]
-)
-
-const surfaceColor = computed(() =>
-  props.config.material === 'satin' ? '#555c53' : '#303630'
-)
-
 const accentColor = computed(() => getCueIdAccentColor(props.config.accent))
 const cameraPosition = computed(() =>
   props.decision.tier === 'reduced'
@@ -385,55 +367,7 @@ onErrorCaptured(() => {
         :object="labScene"
       />
 
-      <TresGroup
-        v-else-if="!labAsset"
-        :rotation="poseRotation"
-        :scale="[buildScale, 1, 1]"
-        :position="[0, -0.15, 0]"
-      >
-        <TresMesh :position="[0, 1.55, 0]">
-          <TresBoxGeometry :args="[0.8, 0.9, 0.72]" />
-          <TresMeshStandardMaterial
-            :color="surfaceColor"
-            :roughness="config.material === 'satin' ? 0.42 : 0.78"
-            :metalness="config.material === 'satin' ? 0.18 : 0.04"
-          />
-        </TresMesh>
 
-        <TresMesh :position="[0, 0.2, 0]">
-          <TresBoxGeometry :args="[1.5, 1.9, 0.7]" />
-          <TresMeshStandardMaterial
-            :color="surfaceColor"
-            :roughness="config.material === 'satin' ? 0.42 : 0.8"
-            :metalness="config.material === 'satin' ? 0.16 : 0.03"
-          />
-        </TresMesh>
-
-        <TresMesh :position="[-0.95, 0.18, 0]" :rotation="[0, 0, config.pose === 'relaxed' ? -0.12 : 0.04]">
-          <TresBoxGeometry :args="[0.34, 1.75, 0.4]" />
-          <TresMeshStandardMaterial color="#171a17" :roughness="0.85" />
-        </TresMesh>
-
-        <TresMesh :position="[0.95, 0.18, 0]" :rotation="[0, 0, config.pose === 'focused' ? -0.08 : -0.04]">
-          <TresBoxGeometry :args="[0.34, 1.75, 0.4]" />
-          <TresMeshStandardMaterial color="#171a17" :roughness="0.85" />
-        </TresMesh>
-
-        <TresMesh :position="[-0.45, -1.65, 0]">
-          <TresBoxGeometry :args="[0.42, 1.85, 0.46]" />
-          <TresMeshStandardMaterial color="#141714" :roughness="0.88" />
-        </TresMesh>
-
-        <TresMesh :position="[0.45, -1.65, 0]">
-          <TresBoxGeometry :args="[0.42, 1.85, 0.46]" />
-          <TresMeshStandardMaterial color="#141714" :roughness="0.88" />
-        </TresMesh>
-
-        <TresMesh :position="[0, 0.58, -0.39]">
-          <TresBoxGeometry :args="[1.05, 0.055, 0.04]" />
-          <TresMeshBasicMaterial :color="accentColor" />
-        </TresMesh>
-      </TresGroup>
     </TresCanvas>
   </div>
 </template>
