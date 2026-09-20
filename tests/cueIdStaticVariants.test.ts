@@ -3,6 +3,7 @@ import test from 'node:test'
 
 import { DEFAULT_CUE_ID_CONFIG } from '../app/domain/cueId.ts'
 import {
+  createCueIdStaticRenderPlan,
   createCueIdStaticVariantKey,
   listCueIdRequiredStaticVariantKeys
 } from '../app/domain/cueIdStaticVariants.ts'
@@ -57,4 +58,47 @@ test('enumerates every declared static semantic combination exactly once', () =>
 
   assert.equal(keys.length, 108)
   assert.equal(new Set(keys).size, 108)
+})
+
+
+test('creates deterministic portrait and square render paths for every semantic key', () => {
+  const plan = createCueIdStaticRenderPlan({
+    bases: ['neutral'],
+    builds: ['regular'],
+    outfits: ['tee'],
+    accessories: [null],
+    poses: ['neutral', 'editorial'],
+    materials: ['matte'],
+    accents: ['lime', null]
+  }, {
+    assetVersion: '2.0.0'
+  })
+
+  assert.equal(plan.length, 4)
+  assert.deepEqual(plan[0], {
+    key: 'neutral__regular__tee__none__neutral__matte__lime',
+    portrait: '/cue-id/production/static/2.0.0/neutral__regular__tee__none__neutral__matte__lime-portrait.webp',
+    square: '/cue-id/production/static/2.0.0/neutral__regular__tee__none__neutral__matte__lime-square.webp'
+  })
+})
+
+test('supports an application-owned custom static base path without changing semantic keys', () => {
+  const [entry] = createCueIdStaticRenderPlan({
+    bases: ['feminine'],
+    builds: ['regular'],
+    outfits: ['tee'],
+    accessories: [null],
+    poses: ['editorial'],
+    materials: ['matte'],
+    accents: ['red']
+  }, {
+    assetVersion: '2.1.0',
+    basePath: '/assets/cue-id/static/'
+  })
+
+  assert.equal(entry.key, 'feminine__regular__tee__none__editorial__matte__red')
+  assert.equal(
+    entry.portrait,
+    '/assets/cue-id/static/2.1.0/feminine__regular__tee__none__editorial__matte__red-portrait.webp'
+  )
 })
