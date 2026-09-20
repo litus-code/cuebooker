@@ -244,7 +244,7 @@ Expected flow:
 11. Export static renders into renders/ and the app public target path
 12. Run cue-id:finalize-static
 13. Run cue-id:validate-package
-14. Complete visual/mobile/performance evidence
+14. Generate combined evidence with cue-id:propose-evidence
 15. Run cue-id:assess
 16. Run cue-id:propose-promotion
 17. Human review before catalogue admission
