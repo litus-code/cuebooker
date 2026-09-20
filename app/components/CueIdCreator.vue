@@ -2,7 +2,8 @@
 import type { CueIdCreatorConfigV1 } from '../domain/cueIdCreator'
 import {
   CUE_ID_CREATOR_CATALOGUE,
-  cueIdCreatorToRuntimeConfig
+  cueIdCreatorToRuntimeConfig,
+  isCueIdCreatorConfigV1
 } from '../domain/cueIdCreator'
 import { getCueIdCreatorAssetStatusForConfig } from '../domain/cueIdCreatorAssetStatus'
 import { getCueIdCreatorVisualCoverage } from '../domain/cueIdCreatorVisualCoverage'
@@ -327,9 +328,12 @@ onMounted(() => {
   if (!rawDraft) return
 
   try {
-    const parsed = JSON.parse(rawDraft) as Partial<CueIdCreatorConfigV1>
-    if (parsed.schemaVersion !== 1) return
-    emit('update:modelValue', { ...props.modelValue, ...parsed })
+    const parsed = JSON.parse(rawDraft)
+    if (!isCueIdCreatorConfigV1(parsed)) {
+      localStorage.removeItem(DRAFT_STORAGE_KEY)
+      return
+    }
+    emit('update:modelValue', parsed)
     saveState.value = 'saved'
   } catch {
     localStorage.removeItem(DRAFT_STORAGE_KEY)
