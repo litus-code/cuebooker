@@ -1,4 +1,7 @@
-import type { CueIdAssetDescriptor } from '../domain/cueIdAssets'
+export type CueIdLoadableGlb = {
+  glbPath: string
+  compressedBytes: number
+}
 
 export type CueIdGlbLoadResult = {
   buffer: ArrayBuffer
@@ -62,7 +65,7 @@ function concatChunks(chunks: Uint8Array[], totalBytes: number) {
 }
 
 export async function loadCueIdGlbBuffer(
-  asset: CueIdAssetDescriptor,
+  asset: CueIdLoadableGlb,
   options: {
     fetchImpl?: typeof fetch
     timeoutMs?: number
