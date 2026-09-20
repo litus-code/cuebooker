@@ -50,7 +50,7 @@ test('reports ready only when Gates A through E pass in order with evidence', ()
   passGate(review.gates.B_builds)
   passGate(review.gates.C_tee)
   passGate(review.gates.D_poses)
-  passGate(review.gates.E_mobile)
+  passGate(review.gates.E_productSize)
 
   const result = assessCueIdSculptReview(review)
 
