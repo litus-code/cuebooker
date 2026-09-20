@@ -7054,3 +7054,47 @@ Behavior:
 Regression coverage in `tests/cueIdProductStageBoundary.test.ts` now locks the exclusive static representation rule.
 
 Production remains untouched.
+
+## 115. Isolated production renderer shell
+
+A dedicated production renderer now exists without being connected to Artist Profile yet.
+
+New component:
+
+`app/components/CueIdProductionScene.client.vue`
+
+Responsibilities currently implemented:
+
+- accept an approved `CueIdProductionManifest`;
+- load the manifest GLB through the generic bounded GLB loader;
+- enforce manifest compressed-byte ceiling while loading;
+- parse with GLTFLoader;
+- frame the authored asset consistently for full/reduced tiers;
+- keep first-frame readiness explicit;
+- preserve on-demand rendering after ready;
+- handle WebGL context loss;
+- dispose geometry/material resources on replacement/unmount.
+
+Loader boundary improvement:
+
+`loadCueIdGlbBuffer(...)` now accepts the minimal `glbPath + compressedBytes` contract rather than requiring the legacy `CueIdAssetDescriptor` type.
+
+This allows both lab fixtures and future V2 manifests to use the same hardened GLB loading path without pretending they belong to the same catalogue model.
+
+Bundle isolation:
+
+- Three/Tres imports are now allowed only in `CueIdScene.client.vue` and `CueIdProductionScene.client.vue`;
+- Booking/Calendar/Activity and all other application code remain free of renderer imports.
+
+Intentional limitation:
+
+- the production renderer is NOT mounted by `CueIdStage.vue` yet;
+- semantic morph/pose/outfit/material bindings are deliberately not guessed without the first authored asset;
+- Artist Profile therefore remains static-first;
+- the lab renderer remains explicit and isolated.
+
+New regression coverage:
+
+`tests/cueIdProductionSceneBoundary.test.ts`
+
+Production remains untouched.
