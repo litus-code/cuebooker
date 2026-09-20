@@ -476,3 +476,44 @@ Rules:
 - renders should be generated in batch from the same authored asset and semantic configuration used by the interactive renderer.
 
 `cue-id:validate-package` checks semantic static coverage before catalogue admission.
+
+## 28. Static render planning workflow
+
+After a manifest draft defines its semantic capabilities, generate the deterministic static render plan:
+
+```bash
+npm run cue-id:plan-static -- path/to/manifest.json
+```
+
+Optional output file:
+
+```bash
+npm run cue-id:plan-static -- path/to/manifest.json --output /tmp/cue-id-static-plan.json
+```
+
+The plan contains:
+
+- the complete semantic variant key;
+- proposed portrait path;
+- proposed square path;
+- total render count.
+
+Default path format:
+
+```text
+/cue-id/production/static/<assetVersion>/<semantic-key>-portrait.webp
+/cue-id/production/static/<assetVersion>/<semantic-key>-square.webp
+```
+
+The planner does not mutate the manifest and does not claim that the files exist.
+
+Workflow:
+
+1. define capabilities;
+2. generate the static render plan;
+3. render/export the listed variants from the authored asset;
+4. review the outputs;
+5. populate `static.variants` only with real approved files;
+6. run `cue-id:validate-package`.
+
+This keeps static coverage deterministic without bypassing visual approval.
