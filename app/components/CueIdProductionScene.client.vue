@@ -1,12 +1,23 @@
 <script setup lang="ts">
 import { TresCanvas } from '@tresjs/core'
-import { Box3, Object3D, Vector3 } from 'three'
+import {
+  AnimationMixer,
+  Box3,
+  MeshStandardMaterial,
+  Object3D,
+  Vector3,
+  type AnimationClip
+} from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import type { CueIdConfigV1 } from '../domain/cueId'
+import { getCueIdAccentColor, CUE_ID_MATERIAL_PRESETS } from '../domain/cueIdMaterial'
+import { resolveCueIdProductionBindings } from '../domain/cueIdProductionBindings'
 import type { CueIdProductionManifest } from '../domain/cueIdProductionManifest'
 import type { CueIdRuntimeDecision } from '../domain/cueIdRuntime'
 import { loadCueIdGlbBuffer } from '../services/cueIdAssetLoader'
 
 const props = defineProps<{
+  config: CueIdConfigV1
   manifest: CueIdProductionManifest
   decision: CueIdRuntimeDecision
 }>()
@@ -25,6 +36,8 @@ let frameStartedAt = 0
 let metrics: { assetVersion: string; bytes: number; loadMs: number; parseMs: number } | null = null
 let contextCanvas: HTMLCanvasElement | null = null
 let contextLostHandler: ((event: Event) => void) | null = null
+let mixer: AnimationMixer | null = null
+let animations: AnimationClip[] = []
 
 const cameraPosition = computed(() =>
   props.decision.tier === 'reduced'
@@ -45,6 +58,130 @@ function frameScene(root: Object3D) {
     -center.y * scale + (props.decision.tier === 'reduced' ? 0.10 : -0.04),
     -center.z * scale
   )
+}
+
+
+function setSemanticVisibility(root: Object3D, selectedNodes: string[], allNodes: string[]) {
+  const selected = new Set(selectedNodes)
+  const controlled = new Set(allNodes)
+
+  root.traverse(node => {
+    if (controlled.has(node.name)) {
+      node.visible = selected.has(node.name)
+    }
+  })
+}
+
+function applyMorphBindings(root: Object3D) {
+  const resolved = resolveCueIdProductionBindings(props.config, props.manifest)
+  if (!resolved) return false
+
+  const semanticMorphNames = new Set(
+    Object.values(props.manifest.bindings.morphs || {}).filter(Boolean)
+  )
+
+  root.traverse(node => {
+    const mesh = node as Object3D & {
+      morphTargetDictionary?: Record<string, number>
+      morphTargetInfluences?: number[]
+    }
+    const dictionary = mesh.morphTargetDictionary
+    const influences = mesh.morphTargetInfluences
+    if (!dictionary || !influences) return
+
+    for (const name of semanticMorphNames) {
+      const index = dictionary[name]
+      if (index !== undefined) influences[index] = 0
+    }
+
+    for (const morph of resolved.morphs) {
+      const index = dictionary[morph.name]
+      if (index !== undefined) influences[index] = morph.weight
+    }
+  })
+
+  return true
+}
+
+function applyPoseBinding(root: Object3D) {
+  const resolved = resolveCueIdProductionBindings(props.config, props.manifest)
+  if (!resolved) return false
+
+  const clip = animations.find(item => item.name === resolved.poseClip)
+  if (!clip) return false
+
+  mixer?.stopAllAction()
+  mixer = new AnimationMixer(root)
+  const action = mixer.clipAction(clip)
+  action.reset().play()
+  mixer.setTime(Math.max(0, clip.duration))
+  action.paused = true
+  return true
+}
+
+function applyMaterialBindings(root: Object3D) {
+  const resolved = resolveCueIdProductionBindings(props.config, props.manifest)
+  if (!resolved) return false
+
+  const preset = CUE_ID_MATERIAL_PRESETS[props.config.material]
+  const mapped = new Map<string, keyof typeof preset>([
+    [resolved.materials.body, 'body'],
+    [resolved.materials.textile, 'mid']
+  ])
+
+  if (resolved.materials.technical) {
+    mapped.set(resolved.materials.technical, 'dark')
+  }
+  if (resolved.materials.accent) {
+    mapped.set(resolved.materials.accent, 'accent')
+  }
+
+  const seen = new Set<string>()
+
+  root.traverse(node => {
+    const materialValue = (node as Object3D & {
+      material?: MeshStandardMaterial | MeshStandardMaterial[]
+    }).material
+    const materials = Array.isArray(materialValue)
+      ? materialValue
+      : materialValue
+        ? [materialValue]
+        : []
+
+    for (const material of materials) {
+      if (!material.isMeshStandardMaterial || seen.has(material.uuid)) continue
+      const semanticSurface = mapped.get(material.name)
+      if (!semanticSurface) continue
+
+      seen.add(material.uuid)
+      const surface = preset[semanticSurface]
+      material.roughness = surface.roughness
+      material.metalness = surface.metalness
+
+      if (semanticSurface === 'accent') {
+        material.color.set(getCueIdAccentColor(props.config.accent))
+      }
+
+      material.needsUpdate = true
+    }
+  })
+
+  return true
+}
+
+function applyProductionSemantics(root: Object3D) {
+  const resolved = resolveCueIdProductionBindings(props.config, props.manifest)
+  if (!resolved) return false
+
+  const allOutfitNodes = Object.values(props.manifest.bindings.outfits || {}).flat()
+  const allAccessoryNodes = Object.values(props.manifest.bindings.accessories || {}).flat()
+
+  setSemanticVisibility(root, resolved.outfitNodes, allOutfitNodes)
+  setSemanticVisibility(root, resolved.accessoryNodes, allAccessoryNodes)
+
+  return applyMorphBindings(root)
+    && applyPoseBinding(root)
+    && applyMaterialBindings(root)
 }
 
 function disposeObject(object: Object3D | null) {
@@ -94,6 +231,11 @@ async function loadProductionAsset() {
     const loader = new GLTFLoader()
     const gltf = await loader.parseAsync(result.buffer, '/cue-id/production/')
     const parsed = gltf.scene
+    animations = gltf.animations
+
+    if (!applyProductionSemantics(parsed)) {
+      throw new Error('CUE ID production semantic bindings could not be applied')
+    }
 
     frameScene(parsed)
     disposeObject(scene.value)
@@ -163,11 +305,33 @@ watch(
   () => loadProductionAsset()
 )
 
+watch(
+  () => [
+    props.config.base,
+    props.config.build,
+    props.config.outfit,
+    props.config.accessory,
+    props.config.pose,
+    props.config.material,
+    props.config.accent
+  ],
+  () => {
+    if (!scene.value) return
+    if (!applyProductionSemantics(scene.value)) {
+      ready.value = false
+      emit('failed')
+    }
+  }
+)
+
 onMounted(loadProductionAsset)
 
 onBeforeUnmount(() => {
   loadAbort?.abort()
   unbindWebGlContextLifecycle()
+  mixer?.stopAllAction()
+  mixer = null
+  animations = []
   disposeObject(scene.value)
 })
 
