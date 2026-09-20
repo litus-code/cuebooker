@@ -24,7 +24,8 @@
     "cue-id:assess-mobile": "node scripts/assess-cue-id-mobile-review.mjs",
     "cue-id:propose-mobile-evidence": "node scripts/propose-cue-id-mobile-evidence.mjs",
     "cue-id:assess-performance": "node --experimental-strip-types scripts/assess-cue-id-performance-review.mjs",
-    "cue-id:propose-performance-evidence": "node --experimental-strip-types scripts/propose-cue-id-performance-evidence.mjs"
+    "cue-id:propose-performance-evidence": "node --experimental-strip-types scripts/propose-cue-id-performance-evidence.mjs",
+    "cue-id:propose-evidence": "node --experimental-strip-types scripts/propose-cue-id-combined-evidence.mjs"
   },
   "dependencies": {
     "@nuxtjs/i18n": "^10.1.0",
