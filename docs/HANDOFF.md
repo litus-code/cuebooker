@@ -7422,3 +7422,53 @@ Regression coverage updated in:
 The production catalogue remains empty.
 
 Production remains untouched.
+
+## 125. Exact semantic parity for static CUE ID
+
+A production parity gap was fixed: the manifest previously exposed one generic portrait/square static asset per version, which could show the wrong base/build/pose/material/accent while interactive state represented the selected config correctly.
+
+New domain:
+
+`app/domain/cueIdStaticVariants.ts`
+
+Static identity is now keyed by the complete visible semantic state:
+
+```text
+base + build + outfit + accessory + pose + material + accent
+```
+
+Key example:
+
+`neutral__regular__tee__none__neutral__matte__lime`
+
+Manifest changes:
+
+- `static.portrait` / `static.square` generic paths are replaced by `static.variants`;
+- manifest validation enumerates every declared capability combination;
+- missing variant coverage makes the manifest invalid;
+- every portrait/square path must be application-owned;
+- the asset resolver selects the exact static variant for `CueIdConfigV1`;
+- no unrelated static fallback is allowed.
+
+Tooling changes:
+
+- `cue-id:validate-package` now validates semantic static coverage and local paths;
+- manifest drafts intentionally start with an empty `static.variants` map;
+- static renders must be generated/reviewed before admission.
+
+Regression coverage:
+
+`tests/cueIdStaticVariants.test.ts`
+`tests/cueIdProductionManifest.test.ts`
+`tests/cueIdAssetResolver.test.ts`
+`tests/cueIdProductionAdmission.test.ts`
+`tests/cueIdPackageValidator.test.ts`
+
+Visual checkpoint note:
+
+- recent generated turnaround references are not approved because they repeatedly coupled feminine with slim/athletic and masculine with strong/athletic;
+- next approved modelling turnaround must show all three bases on regular build under identical conditions.
+
+The production catalogue remains empty.
+
+Production remains untouched.
