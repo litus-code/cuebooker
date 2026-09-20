@@ -7397,3 +7397,28 @@ New regression coverage:
 The production catalogue remains empty.
 
 Production remains untouched.
+
+## 124. Admission-stage-aware asset resolution
+
+A correctness issue was fixed in the production resolver.
+
+Before this block, `CUE_ID_PRODUCTION_MANIFESTS` stripped catalogue admission state. A manifest with complete bindings could therefore resolve as interactive even if it had only been admitted as `static_approved`.
+
+Correction:
+
+- `resolveCueIdAsset(...)` now consumes `CueIdProductionAdmission[]`, not raw manifests;
+- `CueIdStage.vue` resolves from `CUE_ID_PRODUCTION_CATALOGUE`;
+- `static_approved` always resolves as static on full/reduced/static tiers;
+- only `interactive_approved` can resolve as interactive;
+- invalid admissions are ignored entirely;
+- the newest compatible admitted asset version still wins.
+
+This preserves the production approval boundary all the way from catalogue declaration to runtime activation.
+
+Regression coverage updated in:
+
+`tests/cueIdAssetResolver.test.ts`
+
+The production catalogue remains empty.
+
+Production remains untouched.
