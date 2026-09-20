@@ -7256,3 +7256,51 @@ Human review remains required to map discovered DCC/export names to Cuebooker se
 This gives the V2 intake flow an objective first step before catalogue admission or renderer activation.
 
 Production remains untouched.
+
+## 120. V2 package-to-GLB binding validation
+
+The V2 intake flow now validates the reviewed manifest against the actual exported GLB.
+
+New files:
+
+`scripts/lib/cue-id-package-validator.mjs`
+`scripts/validate-cue-id-v2-package.mjs`
+`tests/cueIdPackageValidator.test.ts`
+
+New command:
+
+```bash
+npm run cue-id:validate-package -- <asset.glb> <manifest.json>
+```
+
+Validation covers:
+
+- byte count;
+- triangle count;
+- material count;
+- texture count;
+- morph bindings;
+- animation clip bindings;
+- outfit node bindings;
+- accessory node bindings;
+- material slot bindings;
+- visibility-node reuse.
+
+This closes the gap between a manually reviewed semantic manifest and the actual exported DCC/GLB names.
+
+Current V2 intake sequence is now:
+
+```text
+authored source asset
+  -> GLB export
+  -> cue-id:inspect
+  -> human semantic binding review
+  -> cue-id:validate-package
+  -> visual/mobile acceptance
+  -> runtime benchmark
+  -> catalogue admission
+```
+
+No production asset has been admitted.
+
+Production remains untouched.
