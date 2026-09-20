@@ -188,7 +188,7 @@ const performanceGate = computed(() => {
     <div class="cue-id-stage__halo cue-id-stage__halo--one" aria-hidden="true" />
     <div class="cue-id-stage__halo cue-id-stage__halo--two" aria-hidden="true" />
 
-    <div class="cue-id-stage__figure" aria-hidden="true">
+    <div v-if="!productionStaticPath" class="cue-id-stage__figure" aria-hidden="true">
       <i class="cue-id-stage__head" />
       <i class="cue-id-stage__neck" />
       <i class="cue-id-stage__torso" />
