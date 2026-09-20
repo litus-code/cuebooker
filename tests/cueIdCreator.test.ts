@@ -95,7 +95,7 @@ test('CUE ID creator UI uses the creator config and runtime adapter', async () =
   )
 
   assert.match(component, /CueIdCreatorConfigV1/)
-  assert.match(component, /cueIdCreatorToRuntimeConfig\(modelValue\)/)
+  assert.match(component, /cueIdCreatorToRuntimeConfig\(props\.modelValue\)/)
   assert.match(component, /case 'skin'/)
   assert.match(component, /case 'face'/)
   assert.match(component, /case 'hair'/)
