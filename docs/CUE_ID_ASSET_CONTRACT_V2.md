@@ -58,8 +58,11 @@ type CueIdProductionManifest = {
   assetVersion: string
   glbPath: string
   static: {
-    portrait: string
-    square: string
+    variants: Partial<Record<CueIdStaticVariantKey, {
+      portrait: string
+      square: string
+    }>>
+    editorialTransparent?: string | null
   }
   metrics: {
     compressedBytes: number
@@ -185,20 +188,34 @@ Accent must remain optional and restrained.
 
 ## 10. Static contract
 
-Every production asset version must ship with static review/output renders derived from the same accepted source asset.
+Every production asset version must ship with static output derived from the same accepted authored source asset.
 
-Minimum:
+Static output is keyed by the complete visible semantic configuration:
 
-- portrait neutral;
-- portrait editorial;
-- square neutral;
-- transparent editorial export where needed.
+```text
+base + build + outfit + accessory + pose + material + accent
+```
 
-Static output version must match assetVersion so the app can detect stale static representation.
+Key example:
+
+```text
+neutral__regular__tee__none__neutral__matte__lime
+```
+
+For every configuration declared by manifest capabilities, the manifest must provide:
+
+- one portrait static render;
+- one square static render.
+
+No fallback is allowed between base, build, pose, accessory, material or accent states.
+
+All static paths must be application-owned and versioned with the same `assetVersion`.
+
+`editorialTransparent` remains optional and is not a substitute for semantic static coverage.
 
 ## 11. Compatibility validation
 
-Before an asset can enter CUE_ID_ASSETS, validation must prove:
+Before an asset can enter the production catalogue, validation must prove:
 
 - every declared binding resolves;
 - required semantic options are supported;
@@ -240,11 +257,12 @@ Do not migrate fixture-specific semantics into persisted product data.
 
 ## 14. Promotion gate
 
-Only after visual approval, mobile review and contract validation may an authored V2 asset be added to CUE_ID_ASSETS.
+Only after visual approval, real-device mobile review, package validation and the required performance gate may an authored V2 asset be proposed for production-catalogue admission.
 
 Until then:
 
 - production catalogue stays empty;
 - /cue-id may continue to use the technical fixture;
 - Artist Profile persistence remains semantic and stable;
+- static-approved and interactive-approved remain explicit admission stages;
 - production remains untouched.
