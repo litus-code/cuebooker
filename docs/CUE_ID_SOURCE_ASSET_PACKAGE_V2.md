@@ -801,43 +801,7 @@ The proposal:
 
 This keeps runtime measurement criteria aligned with `evaluateCueIdReadyPerformance(...)` rather than duplicating threshold logic in handoff documentation.
 
-## 37. Separate performance review evidence
-
-Runtime performance measurements are now tracked in their own versioned review artifact:
-
-`manifest/performance-review.draft.json`
-
-Assess it with:
-
-```bash
-npm run cue-id:assess-performance -- path/to/performance-review.json
-```
-
-The review keeps full and reduced measurements separate and reuses the existing runtime budgets:
-
-- full: <= 800 ms total ready;
-- reduced: <= 1500 ms total ready.
-
-Each measured tier requires at least one evidence reference.
-
-After both tiers pass, generate a non-destructive evidence proposal:
-
-```bash
-npm run cue-id:propose-performance-evidence -- performance-review.json evidence.json
-```
-
-That proposal:
-
-- requires matching `assetVersion`;
-- copies only passing full/reduced ready times;
-- preserves visual review state;
-- preserves mobile review state;
-- stores the measured budgets and evidence refs;
-- never mutates the source evidence file.
-
-This keeps visual, mobile and runtime acceptance independent while feeding the same final intake evidence model.
-
-## 38. Evidence version integrity
+## 37. Evidence version integrity
 
 Every intake evidence file must declare the asset version it belongs to:
 
@@ -856,7 +820,7 @@ This guard applies even if visual, mobile and performance fields are otherwise p
 
 The review-specific proposal commands already enforce this boundary before producing evidence candidates; the unified assessor now enforces it again at the final intake boundary.
 
-## 39. Combined intake evidence proposal
+## 38. Combined intake evidence proposal
 
 Once sculpt, mobile and performance reviews are all ready, combine them into one versioned evidence proposal:
 
