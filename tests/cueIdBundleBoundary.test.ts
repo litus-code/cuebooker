@@ -22,7 +22,7 @@ async function collectSourceFiles(dir: string): Promise<string[]> {
   return files
 }
 
-test('Three/Tres runtime imports stay isolated to CueIdScene.client.vue', async () => {
+test('Three/Tres runtime imports stay isolated to the two CUE ID client renderers', async () => {
   const appDir = new URL('../app/', import.meta.url)
   const files = await collectSourceFiles(appDir.pathname)
   const violations: string[] = []
@@ -37,7 +37,11 @@ test('Three/Tres runtime imports stay isolated to CueIdScene.client.vue', async 
     if (!uses3dRuntime) continue
 
     const rel = relative(appDir.pathname, file)
-    if (rel !== 'components/CueIdScene.client.vue') {
+    const allowedRenderers = new Set([
+      'components/CueIdScene.client.vue',
+      'components/CueIdProductionScene.client.vue'
+    ])
+    if (!allowedRenderers.has(rel)) {
       violations.push(rel)
     }
   }
@@ -45,7 +49,7 @@ test('Three/Tres runtime imports stay isolated to CueIdScene.client.vue', async 
   assert.deepEqual(
     violations,
     [],
-    `3D runtime imports leaked outside CueIdScene.client.vue: ${violations.join(', ')}`
+    `3D runtime imports leaked outside the CUE ID client renderers: ${violations.join(', ')}`
   )
 })
 
