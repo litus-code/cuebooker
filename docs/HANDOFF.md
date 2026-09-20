@@ -7934,57 +7934,26 @@ The production catalogue remains empty.
 
 Production remains untouched.
 
-## 137. Separate performance review evidence
+## 138. Intake evidence asset-version integrity
 
-The final independent evidence dimension now has its own versioned review artifact and bridge.
+The unified V2 intake boundary now rejects review evidence that belongs to a different asset version.
 
-New files:
+Correction:
 
-`scripts/lib/cue-id-performance-review.mjs`
-`scripts/assess-cue-id-performance-review.mjs`
-`scripts/lib/cue-id-performance-evidence-proposal.mjs`
-`scripts/propose-cue-id-performance-evidence.mjs`
-`tests/cueIdPerformanceReview.test.ts`
+- scaffold evidence already carries `assetVersion`;
+- visual/mobile/performance evidence proposal bridges already require matching versions;
+- `cue-id:assess` now independently checks evidence `assetVersion` against manifest `assetVersion`;
+- missing evidence version blocks static and interactive readiness;
+- mismatched evidence version blocks static and interactive readiness;
+- package validation can still report independently, but review evidence cannot be reused across asset revisions.
 
-`cue-id:scaffold-package` now also creates:
+Regression coverage was added to:
 
-`manifest/performance-review.draft.json`
+`tests/cueIdIntakeAssessor.test.ts`
 
-New commands:
+Promotion proposal fixtures now also use versioned evidence consistently.
 
-```bash
-npm run cue-id:assess-performance -- <performance-review.json>
-npm run cue-id:propose-performance-evidence -- <performance-review.json> <evidence.json>
-```
-
-The assessor reuses the canonical runtime budgets from `app/domain/cueIdPerformance.ts`:
-
-- full <= 800 ms;
-- reduced <= 1500 ms.
-
-Each tier must have:
-
-- a measured non-negative total-ready time;
-- at least one evidence reference;
-- a passing budget result.
-
-The evidence bridge:
-
-- requires matching asset versions;
-- copies only passing full/reduced measurements;
-- preserves `visualReview`;
-- preserves `mobileReview`;
-- records timing, budget and evidence refs;
-- never edits source evidence automatically.
-
-The evidence model is now cleanly separated:
-
-```text
-sculpt/product-size review -> visualReview
-real-device review         -> mobileReview
-runtime benchmark review   -> performance
-package validation         -> packageValidation
-```
+A duplicate HANDOFF section for block 137 created by concurrent documentation commits was removed while closing this block.
 
 The production catalogue remains empty.
 
