@@ -271,11 +271,17 @@ function isSelected(value: unknown) {
   return props.modelValue[activeStep.value] === value
 }
 
+function normalizeOptionVisualToken(value: string) {
+  return value === 'null'
+    ? 'none'
+    : value.replace(/[^a-z0-9-]/gi, '-').toLowerCase()
+}
+
 function optionVisualClass(optionId: string) {
   return [
     'creator__option-visual',
-    `creator__option-visual--${activeStep.value}`,
-    `creator__option-visual--${optionId.replace(/[^a-z0-9-]/gi, '-').toLowerCase()}`
+    `creator__option-visual--${activeStep.value.toLowerCase()}`,
+    `creator__option-visual--${normalizeOptionVisualToken(optionId)}`
   ]
 }
 
@@ -732,7 +738,8 @@ onMounted(() => {
 
 .creator__option-visual--pose::before{width:12px;height:34px;border-radius:7px;background:#777f76}
 .creator__option-visual--pose::after{content:'';position:absolute;left:50%;top:10px;width:20px;height:20px;border:4px solid #777f76;border-bottom:0;border-radius:50%;transform:translateX(-50%)}
-.creator__option-visual--relaxed{transform:rotate(-3deg)}
+.creator__option-visual--relaxed::before{transform:translate(-50%,-50%) rotate(-3deg)}
+.creator__option-visual--relaxed::after{transform:translateX(-50%) rotate(-3deg)}
 .creator__option-visual--focused::before{transform:translate(-50%,-50%) rotate(3deg)}
 .creator__option-visual--editorial::before{transform:translate(-50%,-50%) rotate(10deg)}
 
