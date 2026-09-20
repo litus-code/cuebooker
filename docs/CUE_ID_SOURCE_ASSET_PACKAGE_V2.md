@@ -587,3 +587,33 @@ Possible summary states:
 - `interactive_ready`.
 
 The assessor does not mutate catalogue state. It is a pre-admission report only.
+
+## 31. Promotion proposal workflow
+
+After intake assessment reaches a promotable state, generate a non-destructive catalogue proposal:
+
+```bash
+npm run cue-id:propose-promotion -- path/to/asset.glb path/to/manifest.json --evidence path/to/evidence.json
+```
+
+Optional stage override:
+
+```bash
+npm run cue-id:propose-promotion -- asset.glb manifest.json --evidence evidence.json --stage static_approved
+```
+
+Optional output file:
+
+```bash
+npm run cue-id:propose-promotion -- asset.glb manifest.json --evidence evidence.json --output proposal.json
+```
+
+Rules:
+
+- `auto` selects `interactive_approved` only when every interactive gate passes;
+- otherwise `auto` selects `static_approved` when static admission passes;
+- forced interactive promotion fails if interactive readiness is incomplete;
+- no proposal is created before visual/mobile review passes;
+- the command never edits the production catalogue.
+
+The proposal is a human-reviewed handoff artifact, not an automatic publication mechanism.
