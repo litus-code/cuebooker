@@ -22,8 +22,6 @@ type CreatorStep = keyof Pick<
   | 'footwear'
   | 'accessory'
   | 'pose'
-  | 'material'
-  | 'accent'
 >
 
 const props = withDefaults(defineProps<{
@@ -174,9 +172,7 @@ const steps = computed(() => ([
   { id: 'bottom' as const, label: copy.value.bottom },
   { id: 'footwear' as const, label: copy.value.footwear },
   { id: 'accessory' as const, label: copy.value.accessory },
-  { id: 'pose' as const, label: copy.value.pose },
-  { id: 'material' as const, label: copy.value.material },
-  { id: 'accent' as const, label: copy.value.accent }
+  { id: 'pose' as const, label: copy.value.pose }
 ]))
 
 const assetSourceLabel = computed(() => {
@@ -231,12 +227,6 @@ function selectedLabel(step: CreatorStep, value: string | null) {
     case 'pose':
       options = CUE_ID_CREATOR_CATALOGUE.poses
       break
-    case 'material':
-      options = CUE_ID_CREATOR_CATALOGUE.materials
-      break
-    case 'accent':
-      options = CUE_ID_CREATOR_CATALOGUE.accents
-      break
   }
 
   const option = options.find(item => item.id === value)
@@ -274,10 +264,6 @@ const activeOptions = computed(() => {
       return CUE_ID_CREATOR_CATALOGUE.accessories.map(item => ({ id: String(item.id), label: label(item), value: item.id }))
     case 'pose':
       return CUE_ID_CREATOR_CATALOGUE.poses.map(item => ({ id: String(item.id), label: label(item), value: item.id }))
-    case 'material':
-      return CUE_ID_CREATOR_CATALOGUE.materials.map(item => ({ id: String(item.id), label: label(item), value: item.id }))
-    case 'accent':
-      return CUE_ID_CREATOR_CATALOGUE.accents.map(item => ({ id: String(item.id), label: label(item), value: item.id }))
   }
 })
 
