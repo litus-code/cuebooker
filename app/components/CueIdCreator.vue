@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import type { CueIdConfigV1 } from '../domain/cueId'
-import { CLUB_MINIMAL_CATALOGUE } from '../domain/cueId'
+import { CUE_ID_CREATOR_CATALOGUE } from '../domain/cueId'
 
 type Locale = 'es' | 'en'
 type CreatorStep = 'base' | 'build' | 'outfit' | 'accessory' | 'pose' | 'material' | 'accent'
 
 const props = withDefaults(defineProps<{
-  modelValue: CueIdConfigV1
+  modelValue: CueIdCreatorConfigV1
   locale?: Locale
 }>(), {
   locale: 'es'
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: CueIdConfigV1]
+  'update:modelValue': [value: CueIdCreatorConfigV1]
   reset: []
 }>()
 
@@ -29,7 +29,7 @@ const copy = computed(() => props.locale === 'es' ? {
   reset: 'Restablecer',
   base: 'Base',
   build: 'Build',
-  outfit: 'Outfit',
+  skin: 'Piel',\n  face: 'Rostro',\n  hair: 'Pelo',\n  facialHair: 'Barba',\n  top: 'Parte superior',\n  bottom: 'Pantalón',\n  footwear: 'Calzado',
   accessory: 'Accesorio',
   pose: 'Pose',
   material: 'Material',
@@ -48,7 +48,7 @@ const copy = computed(() => props.locale === 'es' ? {
   reset: 'Reset',
   base: 'Base',
   build: 'Build',
-  outfit: 'Outfit',
+  skin: 'Skin',\n  face: 'Face',\n  hair: 'Hair',\n  facialHair: 'Facial hair',\n  top: 'Top',\n  bottom: 'Bottom',\n  footwear: 'Footwear',
   accessory: 'Accessory',
   pose: 'Pose',
   material: 'Material',
@@ -62,7 +62,7 @@ const copy = computed(() => props.locale === 'es' ? {
 const steps = computed(() => ([
   { id: 'base' as const, label: copy.value.base },
   { id: 'build' as const, label: copy.value.build },
-  { id: 'outfit' as const, label: copy.value.outfit },
+  { id: 'skin' as const, label: copy.value.skin },\n  { id: 'face' as const, label: copy.value.face },\n  { id: 'hair' as const, label: copy.value.hair },\n  { id: 'facialHair' as const, label: copy.value.facialHair },\n  { id: 'top' as const, label: copy.value.top },\n  { id: 'bottom' as const, label: copy.value.bottom },\n  { id: 'footwear' as const, label: copy.value.footwear },
   { id: 'accessory' as const, label: copy.value.accessory },
   { id: 'pose' as const, label: copy.value.pose },
   { id: 'material' as const, label: copy.value.material },
@@ -73,24 +73,24 @@ function label(option: { label: { es: string; en: string } }) {
   return option.label[props.locale]
 }
 
-function update<K extends keyof CueIdConfigV1>(key: K, value: CueIdConfigV1[K]) {
+function update<K extends keyof CueIdCreatorConfigV1>(key: K, value: CueIdCreatorConfigV1[K]) {
   emit('update:modelValue', { ...props.modelValue, [key]: value })
 }
 
 const activeOptions = computed(() => {
   switch (activeStep.value) {
     case 'base':
-      return CLUB_MINIMAL_CATALOGUE.bases.map(item => ({ id: String(item.id), label: label(item), value: item.id }))
+      return CUE_ID_CREATOR_CATALOGUE.bases.map(item => ({ id: String(item.id), label: label(item), value: item.id }))
     case 'build':
-      return CLUB_MINIMAL_CATALOGUE.builds.map(item => ({ id: String(item.id), label: label(item), value: item.id }))
+      return CUE_ID_CREATOR_CATALOGUE.builds.map(item => ({ id: String(item.id), label: label(item), value: item.id }))
     case 'outfit':
-      return CLUB_MINIMAL_CATALOGUE.outfits.map(item => ({ id: String(item.id), label: label(item), value: item.id }))
+      return CUE_ID_CREATOR_CATALOGUE.outfits.map(item => ({ id: String(item.id), label: label(item), value: item.id }))
     case 'accessory':
-      return CLUB_MINIMAL_CATALOGUE.accessories.map(item => ({ id: String(item.id), label: label(item), value: item.id }))
+      return CUE_ID_CREATOR_CATALOGUE.accessories.map(item => ({ id: String(item.id), label: label(item), value: item.id }))
     case 'pose':
-      return CLUB_MINIMAL_CATALOGUE.poses.map(item => ({ id: String(item.id), label: label(item), value: item.id }))
+      return CUE_ID_CREATOR_CATALOGUE.poses.map(item => ({ id: String(item.id), label: label(item), value: item.id }))
     case 'material':
-      return CLUB_MINIMAL_CATALOGUE.materials.map(item => ({ id: String(item.id), label: label(item), value: item.id }))
+      return CUE_ID_CREATOR_CATALOGUE.materials.map(item => ({ id: String(item.id), label: label(item), value: item.id }))
     case 'accent':
       return [
         { id: 'lime', label: 'Lime', value: 'lime' },
@@ -105,7 +105,7 @@ function isSelected(value: unknown) {
 }
 
 function select(value: unknown) {
-  update(activeStep.value as keyof CueIdConfigV1, value as never)
+  update(activeStep.value as keyof CueIdCreatorConfigV1, value as never)
 }
 </script>
 
@@ -141,7 +141,7 @@ function select(value: unknown) {
           <strong>{{ copy.authored }}</strong>
         </div>
         <CueIdStage
-          :config="modelValue"
+          :config="cueIdCreatorToRuntimeConfig(modelValue)"
           artist-name="LITUS"
           lab-asset="candidate"
           lab-quality="medium"
@@ -173,7 +173,7 @@ function select(value: unknown) {
         <div class="creator__summary">
           <div><span>{{ copy.base }}</span><strong>{{ modelValue.base }}</strong></div>
           <div><span>{{ copy.build }}</span><strong>{{ modelValue.build }}</strong></div>
-          <div><span>{{ copy.outfit }}</span><strong>{{ modelValue.outfit }}</strong></div>
+          <div><span>{{ copy.skin }}</span><strong>{{ modelValue.skin }}</strong></div>\n          <div><span>{{ copy.face }}</span><strong>{{ modelValue.face }}</strong></div>\n          <div><span>{{ copy.hair }}</span><strong>{{ modelValue.hair }}</strong></div>\n          <div><span>{{ copy.top }}</span><strong>{{ modelValue.top }}</strong></div>\n          <div><span>{{ copy.bottom }}</span><strong>{{ modelValue.bottom }}</strong></div>\n          <div><span>{{ copy.footwear }}</span><strong>{{ modelValue.footwear }}</strong></div>
           <div><span>{{ copy.accessory }}</span><strong>{{ modelValue.accessory || copy.none }}</strong></div>
           <div><span>{{ copy.pose }}</span><strong>{{ modelValue.pose }}</strong></div>
         </div>
