@@ -11,7 +11,8 @@
     "build": "nuxt build",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "test": "node --experimental-strip-types --test tests/**/*.test.ts"
+    "test": "node --experimental-strip-types --test tests/**/*.test.ts",
+    "cue-id:inspect": "node scripts/inspect-cue-id-v2-glb.mjs"
   },
   "dependencies": {
     "@nuxtjs/i18n": "^10.1.0",
