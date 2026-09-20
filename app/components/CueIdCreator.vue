@@ -4,8 +4,7 @@ import {
   CUE_ID_CREATOR_CATALOGUE,
   cueIdCreatorToRuntimeConfig
 } from '../domain/cueIdCreator'
-import { CUE_ID_PRODUCTION_CATALOGUE } from '../domain/cueIdProductionCatalogue'
-import { getCueIdCreatorAssetStatus } from '../domain/cueIdCreatorAssetStatus'
+import { getCueIdCreatorAssetStatusForConfig } from '../domain/cueIdCreatorAssetStatus'
 import { getCueIdCreatorVisualCoverage } from '../domain/cueIdCreatorVisualCoverage'
 
 type Locale = 'es' | 'en'
@@ -43,8 +42,8 @@ const viewMode = ref<'edit' | 'review'>('edit')
 const saveState = ref<'idle' | 'saved'>('idle')
 const DRAFT_STORAGE_KEY = 'cuebooker:cue-id:creator-draft:v1'
 const runtimeConfig = computed(() => cueIdCreatorToRuntimeConfig(props.modelValue))
-const creatorUsesLabFixture = computed(() => CUE_ID_PRODUCTION_CATALOGUE.length === 0)
-const assetStatus = computed(() => getCueIdCreatorAssetStatus())
+const assetStatus = computed(() => getCueIdCreatorAssetStatusForConfig(runtimeConfig.value))
+const creatorUsesLabFixture = computed(() => assetStatus.value.source === 'lab_candidate')
 const visualCoverage = computed(() => getCueIdCreatorVisualCoverage(assetStatus.value.source))
 const activeStepVisibleInAsset = computed(() => visualCoverage.value[activeStep.value])
 
