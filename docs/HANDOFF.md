@@ -7341,3 +7341,19 @@ Regression coverage updated in:
 Because `CUE_ID_PRODUCTION_MANIFESTS` is still empty, this block does not activate any new production visual or download any production GLB today.
 
 Production remains untouched.
+
+## 122. Deterministic production pose freeze
+
+The V2 production renderer now guarantees that authored semantic pose clips freeze at their intended final frame.
+
+Fix:
+
+- semantic pose actions use `LoopOnce`;
+- `clampWhenFinished` is enabled;
+- the mixer evaluates the clip at its duration and then holds that state.
+
+This avoids the default repeat-loop behavior potentially wrapping an exact end-time evaluation back to the first frame.
+
+Regression coverage in `tests/cueIdProductionSceneBoundary.test.ts` locks the `LoopOnce + clampWhenFinished` contract.
+
+Production remains untouched.
