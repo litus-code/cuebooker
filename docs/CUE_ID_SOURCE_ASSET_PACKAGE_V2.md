@@ -650,3 +650,39 @@ Important behavior:
 - visual/mobile/performance evidence starts incomplete;
 - existing files are never overwritten;
 - the scaffold is a working package, not an approval artifact.
+
+## 33. Sculpt review gate artifact
+
+The working package now includes a machine-readable sculpt review draft:
+
+`manifest/sculpt-review.draft.json`
+
+Assess it with:
+
+```bash
+npm run cue-id:assess-sculpt -- path/to/sculpt-review.draft.json
+```
+
+The review is ordered through:
+
+- Gate A: three regular bases under identical conditions;
+- Gate B: independent slim/regular/strong builds across all bases;
+- Gate C: tee fit/deformation;
+- Gate D: pose parity and grounding;
+- Gate E: real-device mobile/product-size read.
+
+A gate marked `pass` must:
+
+- have every required check set to true;
+- contain at least one evidence reference;
+- follow all previous gates in sequence.
+
+The assessor reports:
+
+- `ready`;
+- structural/check issues;
+- failed gates;
+- pending gates;
+- next gate.
+
+This review artifact does not set `visualReview` automatically. Final production evidence remains an explicit human decision.
