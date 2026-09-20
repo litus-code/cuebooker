@@ -6943,3 +6943,46 @@ The turnaround judges:
 Production modelling should not begin until this checkpoint passes.
 
 Production remains untouched.
+
+## 111. Production asset resolver boundary
+
+The production manifest contract now has a dedicated semantic resolver.
+
+New domain:
+
+`app/domain/cueIdAssetResolver.ts`
+
+New regression coverage:
+
+`tests/cueIdAssetResolver.test.ts`
+
+Resolver contract:
+
+```text
+CueIdConfigV1 + device tier + available production manifests
+  -> newest valid compatible manifest
+  -> interactive or static representation
+  -> null when no production asset is valid/compatible
+```
+
+Current behavior:
+
+- disabled CUE ID resolves to null;
+- an empty production catalogue resolves to null;
+- invalid manifests are ignored;
+- semantic capability mismatches are rejected;
+- full/reduced require the manifest to support that interactive tier;
+- static tier resolves the version-matched portrait static asset;
+- when multiple compatible versions exist, the newest assetVersion wins.
+
+Important architecture rule:
+
+- the resolver knows product semantics and manifest capabilities;
+- `CueIdScene.client.vue` does not yet consume it;
+- the rejected procedural fixture remains on its isolated lab path;
+- no production asset has been admitted;
+- `CUE_ID_ASSETS` remains empty.
+
+This is the final domain boundary needed before an authored V2 asset can be introduced without coupling persistence to GLB internals.
+
+Production remains untouched.
