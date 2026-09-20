@@ -7039,3 +7039,18 @@ New regression coverage:
 The test locks the absence of `TresBoxGeometry` and the implicit no-labAsset fallback.
 
 Production remains untouched.
+
+## 114. Exclusive static representation path
+
+The product stage now guarantees that only one static CUE ID representation is visible at a time.
+
+Behavior:
+
+- when a future approved production static render resolves successfully, the CSS fallback figure is not rendered;
+- if that image fails to load, the CSS fallback automatically becomes active again;
+- lab mode remains unchanged and still uses the CSS/static layer until the explicit lab GLB becomes ready;
+- this avoids transparent production renders visually stacking over the legacy CSS silhouette.
+
+Regression coverage in `tests/cueIdProductStageBoundary.test.ts` now locks the exclusive static representation rule.
+
+Production remains untouched.
