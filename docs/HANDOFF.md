@@ -7182,3 +7182,36 @@ The production renderer is still intentionally disconnected from Artist Profile 
 No production asset has been admitted.
 
 Production remains untouched.
+
+## 118. Production renderer semantic application
+
+The isolated V2 production renderer can now apply the renderer-agnostic bindings resolved from `CueIdConfigV1` and an interactive-ready manifest.
+
+Implemented in:
+
+`app/components/CueIdProductionScene.client.vue`
+
+Semantic application now covers:
+
+- base/build morph target weights through manifest morph names;
+- selected outfit visibility through manifest node bindings;
+- selected accessory visibility through manifest node bindings;
+- semantic pose clip selection through manifest clip names;
+- body/textile/technical/accent material slot mapping;
+- matte/satin PBR surface presets;
+- lime/red/none accent color application.
+
+Important constraints:
+
+- no fixture geometry names are hardcoded;
+- no Blender/DCC names live in product config;
+- only names supplied by the application-owned manifest are used;
+- neutral base and regular build remain zero-morph reference states;
+- pose clips are evaluated at their final frame and then held;
+- the renderer remains on-demand after ready.
+
+The source asset package now documents the pose-clip final-frame convention.
+
+`CueIdStage.vue` still does not mount the production renderer. Activation remains blocked until the first authored V2 GLB and its real bindings pass validation.
+
+Production remains untouched.
