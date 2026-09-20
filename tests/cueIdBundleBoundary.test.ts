@@ -53,7 +53,7 @@ test('Three/Tres runtime imports stay isolated to the two CUE ID client renderer
   )
 })
 
-test('CueIdStage keeps the renderer behind an async component boundary', async () => {
+test('CueIdStage keeps both CUE ID renderers behind async component boundaries', async () => {
   const source = await readFile(
     new URL('../app/components/CueIdStage.vue', import.meta.url),
     'utf8'
@@ -62,6 +62,10 @@ test('CueIdStage keeps the renderer behind an async component boundary', async (
   assert.match(
     source,
     /defineAsyncComponent\(\(\)\s*=>\s*import\(['"]\.\/CueIdScene\.client\.vue['"]\)\)/
+  )
+  assert.match(
+    source,
+    /defineAsyncComponent\(\(\)\s*=>\s*import\(['"]\.\/CueIdProductionScene\.client\.vue['"]\)\)/
   )
 })
 
