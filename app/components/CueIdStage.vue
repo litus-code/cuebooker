@@ -43,6 +43,7 @@ let runtimeLoadStartedAt = 0
 let runtimeObserver: IntersectionObserver | null = null
 
 const LazyCueIdScene = defineAsyncComponent(() => import('./CueIdScene.client.vue'))
+const LazyCueIdProductionScene = defineAsyncComponent(() => import('./CueIdProductionScene.client.vue'))
 
 const resolvedProductionAsset = computed(() => {
   if (!runtimeDecision.value || props.labAsset) return null
@@ -59,15 +60,29 @@ const productionStaticPath = computed(() =>
     : resolvedProductionAsset.value?.staticPath || null
 )
 
+const productionInteractiveManifest = computed(() =>
+  resolvedProductionAsset.value?.representation === 'interactive'
+    ? resolvedProductionAsset.value.manifest
+    : null
+)
+
 watch(productionStaticPath, () => {
   productionStaticFailed.value = false
 })
+
+watch(
+  () => resolvedProductionAsset.value?.representation || null,
+  () => {
+    runtimeReady.value = false
+    runtimeInitMs.value = null
+  }
+)
 
 onMounted(() => {
   if (!props.interactive) return
   runtimeDecision.value = decideCueIdRuntime(getCueIdRuntimeSignals())
 
-  if (!props.labAsset) {
+  if (!props.labAsset && !productionInteractiveManifest.value) {
     analytics.track('cue_id_static_fallback_used', {
       reason: resolvedProductionAsset.value ? 'production_static_first' : 'no_production_asset',
       tier: runtimeDecision.value.tier
@@ -92,17 +107,50 @@ onMounted(() => {
   if (stageRoot.value) runtimeObserver.observe(stageRoot.value)
 })
 
-function handleRuntimeReady() {
+function markRuntimeReady(renderer: 'tresjs_lab' | 'tresjs_production_v2') {
   runtimeReady.value = true
   runtimeInitMs.value = runtimeLoadStartedAt
     ? Math.max(0, Math.round(performance.now() - runtimeLoadStartedAt))
     : null
 
   analytics.track('cue_id_renderer_ready', {
-    renderer: 'tresjs_procedural',
+    renderer,
     runtime_tier: runtimeDecision.value?.tier || null,
     init_ms: runtimeInitMs.value,
     dpr_cap: runtimeDecision.value?.dprCap || null
+  })
+}
+
+function handleRuntimeReady() {
+  markRuntimeReady('tresjs_lab')
+}
+
+function handleProductionRuntimeReady(metrics: {
+  assetVersion: string
+  bytes: number
+  loadMs: number
+  parseMs: number
+  firstFrameMs: number
+}) {
+  markRuntimeReady('tresjs_production_v2')
+
+  const totalReadyMs = runtimeLoadStartedAt
+    ? Math.max(0, Math.round(performance.now() - runtimeLoadStartedAt))
+    : null
+  const gate = runtimeDecision.value
+    ? evaluateCueIdReadyPerformance(runtimeDecision.value.tier, totalReadyMs)
+    : null
+
+  analytics.track('cue_id_production_asset_loaded', {
+    asset_version: metrics.assetVersion,
+    bytes: metrics.bytes,
+    load_ms: metrics.loadMs,
+    parse_ms: metrics.parseMs,
+    first_frame_ms: metrics.firstFrameMs,
+    total_ready_ms: totalReadyMs,
+    runtime_tier: runtimeDecision.value?.tier || null,
+    ready_budget_ms: gate?.budgetMs ?? null,
+    ready_gate: gate?.status ?? 'not_applicable'
   })
 }
 
@@ -134,10 +182,10 @@ function handleLabAssetLoaded(metrics: { assetId: string; bytes: number; loadMs:
   })
 }
 
-function handleRuntimeFailed() {
+function handleRuntimeFailed(renderer: 'tresjs_lab' | 'tresjs_production_v2' = 'tresjs_lab') {
   runtimeReady.value = false
   analytics.track('cue_id_renderer_failed', {
-    renderer: 'tresjs_procedural',
+    renderer,
     reason: 'scene_failed',
     runtime_tier: runtimeDecision.value?.tier || null
   })
@@ -203,7 +251,7 @@ const performanceGate = computed(() => {
     </div>
 
     <img
-      v-if="productionStaticPath"
+      v-if="productionStaticPath && !runtimeReady"
       class="cue-id-stage__production-static"
       :src="productionStaticPath"
       alt=""
@@ -221,8 +269,17 @@ const performanceGate = computed(() => {
         :lab-asset="labAsset"
         :lab-quality="resolvedLabQuality"
         @ready="handleRuntimeReady"
-        @failed="handleRuntimeFailed"
+        @failed="handleRuntimeFailed('tresjs_lab')"
         @lab-asset-loaded="handleLabAssetLoaded"
+      />
+
+      <LazyCueIdProductionScene
+        v-if="!labAsset && interactive && runtimeWanted && runtimeDecision && productionInteractiveManifest"
+        :config="config"
+        :manifest="productionInteractiveManifest"
+        :decision="runtimeDecision"
+        @ready="handleProductionRuntimeReady"
+        @failed="handleRuntimeFailed('tresjs_production_v2')"
       />
     </ClientOnly>
 
