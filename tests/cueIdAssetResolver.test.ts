@@ -5,17 +5,35 @@ import { DEFAULT_CUE_ID_CONFIG } from '../app/domain/cueId.ts'
 import { resolveCueIdAsset } from '../app/domain/cueIdAssetResolver.ts'
 import type { CueIdProductionAdmission } from '../app/domain/cueIdProductionAdmission.ts'
 import type { CueIdProductionManifest } from '../app/domain/cueIdProductionManifest.ts'
+import { listCueIdRequiredStaticVariantKeys } from '../app/domain/cueIdStaticVariants.ts'
 
 function manifest(overrides: Partial<CueIdProductionManifest> = {}): CueIdProductionManifest {
+  const capabilities = overrides.capabilities || {
+    bases: ['feminine', 'masculine', 'neutral'],
+    builds: ['slim', 'regular', 'strong'],
+    outfits: ['tee'],
+    accessories: [null],
+    poses: ['neutral', 'relaxed', 'focused', 'editorial'],
+    materials: ['matte', 'satin'],
+    accents: ['lime', 'red', null]
+  } satisfies CueIdProductionManifest['capabilities']
+
+  const variants = Object.fromEntries(
+    listCueIdRequiredStaticVariantKeys(capabilities).map(key => [
+      key,
+      {
+        portrait: `/cue-id/production/static/${key}-portrait.webp`,
+        square: `/cue-id/production/static/${key}-square.webp`
+      }
+    ])
+  ) as CueIdProductionManifest['static']['variants']
+
   return {
     manifestVersion: 1,
     family: 'club_minimal',
     assetVersion: '2.0.0',
     glbPath: '/cue-id/production/club-minimal-v2.glb',
-    static: {
-      portrait: '/cue-id/production/club-minimal-v2-portrait.webp',
-      square: '/cue-id/production/club-minimal-v2-square.webp'
-    },
+    static: overrides.static || { variants },
     metrics: {
       compressedBytes: 650_000,
       triangles: 24_000,
@@ -24,15 +42,7 @@ function manifest(overrides: Partial<CueIdProductionManifest> = {}): CueIdProduc
       largestTextureDimension: 1024
     },
     supportedTiers: ['full', 'reduced'],
-    capabilities: {
-      bases: ['feminine', 'masculine', 'neutral'],
-      builds: ['slim', 'regular', 'strong'],
-      outfits: ['tee'],
-      accessories: [null],
-      poses: ['neutral', 'relaxed', 'focused', 'editorial'],
-      materials: ['matte', 'satin'],
-      accents: ['lime', 'red', null]
-    },
+    capabilities,
     bindings: {
       morphs: {
         'base.feminine': 'base_feminine',
@@ -54,7 +64,9 @@ function manifest(overrides: Partial<CueIdProductionManifest> = {}): CueIdProduc
         textile: 'material_textile'
       }
     },
-    ...overrides
+    ...overrides,
+    capabilities,
+    static: overrides.static || { variants }
   }
 }
 
@@ -90,14 +102,14 @@ test('resolves an interactive-approved asset for a supported full tier config', 
 
   assert.equal(result?.representation, 'interactive')
   assert.equal(result?.manifest.assetVersion, '2.0.0')
-  assert.equal(result?.staticPath, '/cue-id/production/club-minimal-v2-portrait.webp')
+  assert.equal(result?.staticPath, `/cue-id/production/static/neutral__regular__tee__none__neutral__matte__lime-portrait.webp`)
 })
 
 test('resolves the same identity as static representation for static tier', () => {
   const result = resolveCueIdAsset(DEFAULT_CUE_ID_CONFIG, 'static', [admission()])
 
   assert.equal(result?.representation, 'static')
-  assert.equal(result?.staticPath, '/cue-id/production/club-minimal-v2-portrait.webp')
+  assert.equal(result?.staticPath, `/cue-id/production/static/neutral__regular__tee__none__neutral__matte__lime-portrait.webp`)
 })
 
 test('rejects manifests that do not support the selected semantic config', () => {
@@ -142,7 +154,7 @@ test('keeps static-approved assets static even when their bindings are complete'
   )
 
   assert.equal(result?.representation, 'static')
-  assert.equal(result?.staticPath, '/cue-id/production/club-minimal-v2-portrait.webp')
+  assert.equal(result?.staticPath, `/cue-id/production/static/neutral__regular__tee__none__neutral__matte__lime-portrait.webp`)
 })
 
 test('ignores invalid interactive admissions', () => {
