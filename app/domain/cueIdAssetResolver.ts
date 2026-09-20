@@ -1,7 +1,10 @@
 import type { CueIdConfigV1 } from './cueId'
 import type { CueIdDeviceTier } from './cueIdAssets'
 import type { CueIdProductionManifest } from './cueIdProductionManifest.ts'
-import { validateCueIdProductionManifest } from './cueIdProductionManifest.ts'
+import {
+  isCueIdProductionInteractiveReady,
+  validateCueIdProductionManifest
+} from './cueIdProductionManifest.ts'
 
 export type CueIdResolvedProductionAsset = {
   manifest: CueIdProductionManifest
@@ -44,7 +47,9 @@ export function resolveCueIdAsset(
     if (manifest.supportedTiers.includes(tier)) {
       return {
         manifest,
-        representation: 'interactive',
+        representation: isCueIdProductionInteractiveReady(manifest)
+          ? 'interactive'
+          : 'static',
         staticPath: manifest.static.portrait
       }
     }
