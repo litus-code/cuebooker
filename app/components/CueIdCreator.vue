@@ -149,23 +149,51 @@ function label(option: { label: { es: string; en: string } }) {
 }
 
 function selectedLabel(step: CreatorStep, value: string | null) {
-  const catalogue = {
-    base: CUE_ID_CREATOR_CATALOGUE.bases,
-    build: CUE_ID_CREATOR_CATALOGUE.builds,
-    skin: CUE_ID_CREATOR_CATALOGUE.skins,
-    face: CUE_ID_CREATOR_CATALOGUE.faces,
-    hair: CUE_ID_CREATOR_CATALOGUE.hairs,
-    facialHair: CUE_ID_CREATOR_CATALOGUE.facialHair,
-    top: CUE_ID_CREATOR_CATALOGUE.tops,
-    bottom: CUE_ID_CREATOR_CATALOGUE.bottoms,
-    footwear: CUE_ID_CREATOR_CATALOGUE.footwear,
-    accessory: CUE_ID_CREATOR_CATALOGUE.accessories,
-    pose: CUE_ID_CREATOR_CATALOGUE.poses,
-    material: CUE_ID_CREATOR_CATALOGUE.materials,
-    accent: CUE_ID_CREATOR_CATALOGUE.accents
-  } as const
+  let options: ReadonlyArray<{ id: string | null; label: { es: string; en: string } }>
 
-  const option = catalogue[step].find(item => item.id === value)
+  switch (step) {
+    case 'base':
+      options = CUE_ID_CREATOR_CATALOGUE.bases
+      break
+    case 'build':
+      options = CUE_ID_CREATOR_CATALOGUE.builds
+      break
+    case 'skin':
+      options = CUE_ID_CREATOR_CATALOGUE.skins
+      break
+    case 'face':
+      options = CUE_ID_CREATOR_CATALOGUE.faces
+      break
+    case 'hair':
+      options = CUE_ID_CREATOR_CATALOGUE.hairs
+      break
+    case 'facialHair':
+      options = CUE_ID_CREATOR_CATALOGUE.facialHair
+      break
+    case 'top':
+      options = CUE_ID_CREATOR_CATALOGUE.tops
+      break
+    case 'bottom':
+      options = CUE_ID_CREATOR_CATALOGUE.bottoms
+      break
+    case 'footwear':
+      options = CUE_ID_CREATOR_CATALOGUE.footwear
+      break
+    case 'accessory':
+      options = CUE_ID_CREATOR_CATALOGUE.accessories
+      break
+    case 'pose':
+      options = CUE_ID_CREATOR_CATALOGUE.poses
+      break
+    case 'material':
+      options = CUE_ID_CREATOR_CATALOGUE.materials
+      break
+    case 'accent':
+      options = CUE_ID_CREATOR_CATALOGUE.accents
+      break
+  }
+
+  const option = options.find(item => item.id === value)
   return option ? label(option) : (value || copy.value.none)
 }
 
