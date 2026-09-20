@@ -8,6 +8,39 @@ function bindingValues(record) {
   return Object.values(record || {}).flat().filter(value => typeof value === 'string' && value.length > 0)
 }
 
+
+function token(value) {
+  return value ?? 'none'
+}
+
+function requiredStaticVariantKeys(capabilities = {}) {
+  const keys = []
+  for (const base of capabilities.bases || []) {
+    for (const build of capabilities.builds || []) {
+      for (const outfit of capabilities.outfits || []) {
+        for (const accessory of capabilities.accessories || []) {
+          for (const pose of capabilities.poses || []) {
+            for (const material of capabilities.materials || []) {
+              for (const accent of capabilities.accents || []) {
+                keys.push([
+                  base,
+                  build,
+                  outfit,
+                  token(accessory),
+                  pose,
+                  material,
+                  token(accent)
+                ].join('__'))
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return keys
+}
+
 export function validateCueIdPackage(buffer, manifest) {
   const inspection = inspectGlb(buffer)
   const issues = []
@@ -46,6 +79,32 @@ export function validateCueIdPackage(buffer, manifest) {
       'metrics.textures',
       `manifest declares ${manifest.metrics?.textures ?? 'missing'} textures but GLB contains ${inspection.counts.textures}`
     ))
+  }
+
+  const staticVariants = manifest.static?.variants || {}
+  const requiredStaticKeys = requiredStaticVariantKeys(manifest.capabilities)
+  const missingStaticKeys = requiredStaticKeys.filter(key => !staticVariants[key])
+
+  if (missingStaticKeys.length) {
+    issues.push(issue(
+      'static.variants',
+      `manifest is missing ${missingStaticKeys.length} required semantic static variants`
+    ))
+  }
+
+  for (const [key, variant] of Object.entries(staticVariants)) {
+    if (
+      !variant
+      || typeof variant.portrait !== 'string'
+      || typeof variant.square !== 'string'
+      || !variant.portrait.startsWith('/')
+      || !variant.square.startsWith('/')
+    ) {
+      issues.push(issue(
+        `static.variants.${key}`,
+        'static variant portrait and square paths must be application-owned'
+      ))
+    }
   }
 
   const morphNames = new Set(inspection.discovered.morphTargets)
