@@ -148,6 +148,27 @@ function label(option: { label: { es: string; en: string } }) {
   return option.label[props.locale]
 }
 
+function selectedLabel(step: CreatorStep, value: string | null) {
+  const catalogue = {
+    base: CUE_ID_CREATOR_CATALOGUE.bases,
+    build: CUE_ID_CREATOR_CATALOGUE.builds,
+    skin: CUE_ID_CREATOR_CATALOGUE.skins,
+    face: CUE_ID_CREATOR_CATALOGUE.faces,
+    hair: CUE_ID_CREATOR_CATALOGUE.hairs,
+    facialHair: CUE_ID_CREATOR_CATALOGUE.facialHair,
+    top: CUE_ID_CREATOR_CATALOGUE.tops,
+    bottom: CUE_ID_CREATOR_CATALOGUE.bottoms,
+    footwear: CUE_ID_CREATOR_CATALOGUE.footwear,
+    accessory: CUE_ID_CREATOR_CATALOGUE.accessories,
+    pose: CUE_ID_CREATOR_CATALOGUE.poses,
+    material: CUE_ID_CREATOR_CATALOGUE.materials,
+    accent: CUE_ID_CREATOR_CATALOGUE.accents
+  } as const
+
+  const option = catalogue[step].find(item => item.id === value)
+  return option ? label(option) : (value || copy.value.none)
+}
+
 function update<K extends keyof CueIdCreatorConfigV1>(
   key: K,
   value: CueIdCreatorConfigV1[K]
@@ -340,17 +361,17 @@ onMounted(() => {
         </div>
 
         <div class="creator__summary">
-          <div><span>{{ copy.base }}</span><strong>{{ modelValue.base }}</strong></div>
-          <div><span>{{ copy.build }}</span><strong>{{ modelValue.build }}</strong></div>
-          <div><span>{{ copy.skin }}</span><strong>{{ modelValue.skin }}</strong></div>
-          <div><span>{{ copy.face }}</span><strong>{{ modelValue.face }}</strong></div>
-          <div><span>{{ copy.hair }}</span><strong>{{ modelValue.hair }}</strong></div>
-          <div><span>{{ copy.facialHair }}</span><strong>{{ modelValue.facialHair }}</strong></div>
-          <div><span>{{ copy.top }}</span><strong>{{ modelValue.top }}</strong></div>
-          <div><span>{{ copy.bottom }}</span><strong>{{ modelValue.bottom }}</strong></div>
-          <div><span>{{ copy.footwear }}</span><strong>{{ modelValue.footwear }}</strong></div>
-          <div><span>{{ copy.accessory }}</span><strong>{{ modelValue.accessory || copy.none }}</strong></div>
-          <div><span>{{ copy.pose }}</span><strong>{{ modelValue.pose }}</strong></div>
+          <div><span>{{ copy.base }}</span><strong>{{ selectedLabel('base', modelValue.base) }}</strong></div>
+          <div><span>{{ copy.build }}</span><strong>{{ selectedLabel('build', modelValue.build) }}</strong></div>
+          <div><span>{{ copy.skin }}</span><strong>{{ selectedLabel('skin', modelValue.skin) }}</strong></div>
+          <div><span>{{ copy.face }}</span><strong>{{ selectedLabel('face', modelValue.face) }}</strong></div>
+          <div><span>{{ copy.hair }}</span><strong>{{ selectedLabel('hair', modelValue.hair) }}</strong></div>
+          <div><span>{{ copy.facialHair }}</span><strong>{{ selectedLabel('facialHair', modelValue.facialHair) }}</strong></div>
+          <div><span>{{ copy.top }}</span><strong>{{ selectedLabel('top', modelValue.top) }}</strong></div>
+          <div><span>{{ copy.bottom }}</span><strong>{{ selectedLabel('bottom', modelValue.bottom) }}</strong></div>
+          <div><span>{{ copy.footwear }}</span><strong>{{ selectedLabel('footwear', modelValue.footwear) }}</strong></div>
+          <div><span>{{ copy.accessory }}</span><strong>{{ selectedLabel('accessory', modelValue.accessory) }}</strong></div>
+          <div><span>{{ copy.pose }}</span><strong>{{ selectedLabel('pose', modelValue.pose) }}</strong></div>
         </div>
 
         <div class="creator__step-actions">
@@ -359,7 +380,6 @@ onMounted(() => {
         </div>
 
         <button
-          v-if="isLastStep"
           type="button"
           class="creator__review-button"
           @click="openReview"
@@ -422,13 +442,13 @@ onMounted(() => {
         <div class="creator__review-meta">
           <span>CUE ID / LITUS</span>
           <div class="creator__review-tags">
-            <b>{{ modelValue.base }}</b>
-            <b>{{ modelValue.build }}</b>
-            <b>{{ modelValue.hair }}</b>
-            <b>{{ modelValue.top }}</b>
-            <b>{{ modelValue.bottom }}</b>
-            <b>{{ modelValue.footwear }}</b>
-            <b>{{ modelValue.pose }}</b>
+            <b>{{ selectedLabel('base', modelValue.base) }}</b>
+            <b>{{ selectedLabel('build', modelValue.build) }}</b>
+            <b>{{ selectedLabel('hair', modelValue.hair) }}</b>
+            <b>{{ selectedLabel('top', modelValue.top) }}</b>
+            <b>{{ selectedLabel('bottom', modelValue.bottom) }}</b>
+            <b>{{ selectedLabel('footwear', modelValue.footwear) }}</b>
+            <b>{{ selectedLabel('pose', modelValue.pose) }}</b>
           </div>
           <button type="button" class="creator__save creator__save--review" @click="saveDraft">
             {{ saveState === 'saved' ? copy.saved : copy.save }}
