@@ -22,8 +22,11 @@ test('production CUE ID renderer depends on manifest and generic loader only', a
   assert.doesNotMatch(source, /CUE_ID_OUTFITS/)
 })
 
-test('production renderer remains disconnected until authored semantic bindings are validated', async () => {
+test('production renderer is mounted only behind an interactive production manifest', async () => {
   const stage = await readFile(stagePath, 'utf8')
 
-  assert.doesNotMatch(stage, /CueIdProductionScene\.client\.vue/)
+  assert.match(stage, /defineAsyncComponent\(\(\)\s*=>\s*import\(['"]\.\/CueIdProductionScene\.client\.vue['"]\)\)/)
+  assert.match(stage, /const productionInteractiveManifest = computed/)
+  assert.match(stage, /resolvedProductionAsset\.value\?\.representation === 'interactive'/)
+  assert.match(stage, /v-if="!labAsset && interactive && runtimeWanted && runtimeDecision && productionInteractiveManifest"/)
 })
