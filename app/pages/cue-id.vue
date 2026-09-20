@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { cloneCueIdConfig, DEFAULT_CUE_ID_CONFIG } from '../domain/cueId'
+import { cloneCueIdCreatorConfig, DEFAULT_CUE_ID_CREATOR_CONFIG } from '../domain/cueIdCreator'
 
 const preferences = useCuePreferences()
-const cueIdConfig = ref(cloneCueIdConfig(DEFAULT_CUE_ID_CONFIG))
+const cueIdConfig = ref(cloneCueIdCreatorConfig(DEFAULT_CUE_ID_CREATOR_CONFIG))
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
   back: 'Volver',
@@ -15,7 +15,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
 })
 
 function resetCueId() {
-  cueIdConfig.value = cloneCueIdConfig(DEFAULT_CUE_ID_CONFIG)
+  cueIdConfig.value = cloneCueIdCreatorConfig(DEFAULT_CUE_ID_CREATOR_CONFIG)
 }
 
 useHead(() => ({
