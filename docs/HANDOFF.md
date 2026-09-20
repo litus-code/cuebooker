@@ -7019,3 +7019,23 @@ Important result:
 The rejected procedural fixture can no longer leak into Artist Profile simply because interactive runtime is available.
 
 Production remains untouched.
+
+## 113. Rejected procedural scene fallback removed
+
+`CueIdScene.client.vue` no longer contains the old implicit box-built humanoid rendered when `labAsset` was absent.
+
+Changes:
+
+- removed the internal `v-else-if="!labAsset"` procedural TresGroup;
+- removed now-unused procedural-only computed build/pose/material helpers;
+- the renderer currently renders only an explicitly requested lab GLB;
+- production interactive rendering remains intentionally absent until the V2 manifest/binding path is implemented;
+- Artist Profile therefore stays static-first and cannot accidentally resurrect the rejected mannequin.
+
+New regression coverage:
+
+`tests/cueIdSceneFixtureBoundary.test.ts`
+
+The test locks the absence of `TresBoxGeometry` and the implicit no-labAsset fallback.
+
+Production remains untouched.
