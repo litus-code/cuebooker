@@ -852,3 +852,30 @@ Every intake evidence file must declare the asset version it belongs to:
 This guard applies even if visual, mobile and performance fields are otherwise passing.
 
 The review-specific proposal commands already enforce this boundary before producing evidence candidates; the unified assessor now enforces it again at the final intake boundary.
+
+## 37. Combined intake evidence proposal
+
+Once sculpt, mobile and performance reviews are all ready, combine them into one versioned evidence proposal:
+
+```bash
+npm run cue-id:propose-evidence -- sculpt-review.json mobile-review.json performance-review.json evidence.json
+```
+
+Optional output:
+
+```bash
+npm run cue-id:propose-evidence -- sculpt-review.json mobile-review.json performance-review.json evidence.json --output evidence.complete.json
+```
+
+The combined proposal:
+
+- requires one identical `assetVersion` across evidence, sculpt, mobile and performance reviews;
+- validates every underlying review through its existing assessor;
+- sets `visualReview: true` only through the sculpt bridge;
+- sets `mobileReview: true` only through the mobile bridge;
+- copies performance only through the performance bridge;
+- preserves all review evidence references;
+- adds `evidenceVersion: 1`;
+- never mutates any source review/evidence file.
+
+The resulting proposal is the intended input for `cue-id:assess`.
