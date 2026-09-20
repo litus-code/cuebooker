@@ -7665,3 +7665,41 @@ This preserves explicit human control over the final catalogue admission step.
 The production catalogue remains empty.
 
 Production remains untouched.
+
+## 132. Authored V2 working-package scaffold
+
+The repository can now generate the exact working package expected from the first real authored CUE ID V2 asset.
+
+New files:
+
+`scripts/lib/cue-id-package-scaffold.mjs`
+`scripts/scaffold-cue-id-v2-package.mjs`
+`tests/cueIdPackageScaffold.test.ts`
+
+New command:
+
+```bash
+npm run cue-id:scaffold-package -- --version <x.y.z> --output-dir <path>
+```
+
+The scaffold creates source/export/textures/renders/manifest directories plus:
+
+- `manifest.draft.json`;
+- `evidence.draft.json`;
+- `asset-metadata.draft.json`;
+- `bindings.md`;
+- package `README.md`.
+
+Safety rules:
+
+- version format is constrained to `x.y.z`;
+- semantic bindings are never guessed;
+- static variants begin empty;
+- review/performance evidence begins incomplete;
+- existing scaffold files are never overwritten.
+
+This converts the V2 source-asset brief into an executable artist handoff package without admitting or fabricating a production asset.
+
+The production catalogue remains empty.
+
+Production remains untouched.
