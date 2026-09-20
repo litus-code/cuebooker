@@ -617,3 +617,36 @@ Rules:
 - the command never edits the production catalogue.
 
 The proposal is a human-reviewed handoff artifact, not an automatic publication mechanism.
+
+## 32. Package scaffold workflow
+
+Start a new authored asset package with:
+
+```bash
+npm run cue-id:scaffold-package -- --version 2.0.0 --output-dir /path/to/work
+```
+
+The scaffold creates:
+
+```text
+cue-id-v2-2.0.0/
+├── source/
+├── export/
+├── textures/
+├── renders/
+├── manifest/
+│   ├── manifest.draft.json
+│   ├── evidence.draft.json
+│   ├── asset-metadata.draft.json
+│   └── bindings.md
+└── README.md
+```
+
+Important behavior:
+
+- version must use `x.y.z` format;
+- manifest bindings start empty;
+- static variants start empty;
+- visual/mobile/performance evidence starts incomplete;
+- existing files are never overwritten;
+- the scaffold is a working package, not an approval artifact.
