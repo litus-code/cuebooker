@@ -6,7 +6,7 @@ import type {
   CueIdMaterialId,
   CueIdOutfitId,
   CueIdPoseId
-} from './cueId'
+} from './cueId.ts'
 
 export type CueIdStaticVariantKey =
   `${CueIdBaseId}__${CueIdBuildId}__${CueIdOutfitId}__${string}__${CueIdPoseId}__${CueIdMaterialId}__${string}`
@@ -77,4 +77,26 @@ export function listCueIdRequiredStaticVariantKeys(
   }
 
   return keys
+}
+
+export type CueIdStaticRenderPlanEntry = {
+  key: CueIdStaticVariantKey
+  portrait: string
+  square: string
+}
+
+export function createCueIdStaticRenderPlan(
+  capabilities: CueIdStaticVariantCapabilities,
+  options: {
+    assetVersion: string
+    basePath?: string
+  }
+): CueIdStaticRenderPlanEntry[] {
+  const basePath = (options.basePath || '/cue-id/production/static').replace(/\/$/, '')
+
+  return listCueIdRequiredStaticVariantKeys(capabilities).map(key => ({
+    key,
+    portrait: `${basePath}/${options.assetVersion}/${key}-portrait.webp`,
+    square: `${basePath}/${options.assetVersion}/${key}-square.webp`
+  }))
 }
