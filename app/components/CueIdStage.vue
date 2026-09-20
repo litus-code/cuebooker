@@ -5,7 +5,7 @@ import { selectCueIdCandidateQuality, type CueIdQualityMode } from '../domain/cu
 import { decideCueIdRuntime, getCueIdRuntimeSignals, type CueIdRuntimeDecision } from '../domain/cueIdRuntime'
 import { evaluateCueIdReadyPerformance } from '../domain/cueIdPerformance'
 import { resolveCueIdAsset } from '../domain/cueIdAssetResolver'
-import { CUE_ID_PRODUCTION_MANIFESTS } from '../domain/cueIdProductionCatalogue'
+import { CUE_ID_PRODUCTION_CATALOGUE } from '../domain/cueIdProductionCatalogue'
 
 const props = withDefaults(defineProps<{
   config: CueIdConfigV1
@@ -50,7 +50,7 @@ const resolvedProductionAsset = computed(() => {
   return resolveCueIdAsset(
     props.config,
     runtimeDecision.value.tier,
-    CUE_ID_PRODUCTION_MANIFESTS
+    CUE_ID_PRODUCTION_CATALOGUE
   )
 })
 
