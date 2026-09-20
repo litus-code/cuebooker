@@ -7587,3 +7587,49 @@ capabilities
 The production catalogue remains empty.
 
 Production remains untouched.
+
+## 130. Unified V2 intake readiness report
+
+The first authored V2 asset can now be assessed with one command after its GLB, finalized manifest and review evidence exist.
+
+New files:
+
+`scripts/lib/cue-id-intake-assessor.mjs`
+`scripts/assess-cue-id-v2.mjs`
+`tests/cueIdIntakeAssessor.test.ts`
+
+New command:
+
+```bash
+npm run cue-id:assess -- <asset.glb> <manifest.json> --evidence <evidence.json>
+```
+
+The assessor combines:
+
+- package-to-GLB validation;
+- semantic static coverage;
+- visual review evidence;
+- real-device mobile review evidence;
+- interactive semantic binding readiness;
+- full/reduced runtime performance evidence.
+
+It reports:
+
+- `package.ready`;
+- `static.ready`;
+- `interactive.ready`;
+- field-level issues for each gate;
+- one summary state.
+
+Summary states:
+
+- `package_invalid`;
+- `package_valid_review_pending`;
+- `static_ready_interactive_pending`;
+- `interactive_ready`.
+
+This is a reporting/pre-admission tool only. It does not mutate `CUE_ID_PRODUCTION_CATALOGUE`.
+
+The production catalogue remains empty.
+
+Production remains untouched.
