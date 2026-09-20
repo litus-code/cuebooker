@@ -7958,3 +7958,36 @@ A duplicate HANDOFF section for block 137 created by concurrent documentation co
 The production catalogue remains empty.
 
 Production remains untouched.
+
+## 139. Combined review evidence orchestration
+
+The three independent review axes can now be assembled into one intake evidence proposal without manual copying.
+
+New files:
+
+`scripts/lib/cue-id-combined-evidence-proposal.mjs`
+`scripts/propose-cue-id-combined-evidence.mjs`
+`tests/cueIdCombinedEvidenceProposal.test.ts`
+
+New command:
+
+```bash
+npm run cue-id:propose-evidence -- <sculpt-review.json> <mobile-review.json> <performance-review.json> <evidence.json>
+```
+
+Behavior:
+
+- requires matching `assetVersion` across all four inputs;
+- rejects cross-version review mixing before any bridge runs;
+- reuses the existing visual/mobile/performance proposal builders;
+- rejects if any underlying review is incomplete;
+- returns one evidence proposal with `visualReview`, `mobileReview`, performance and all audit refs;
+- adds `evidenceVersion: 1`;
+- never mutates source files;
+- never touches the production catalogue.
+
+The working-package README now directs the artist/integrator to generate this combined evidence before `cue-id:assess`.
+
+The production catalogue remains empty.
+
+Production remains untouched.
