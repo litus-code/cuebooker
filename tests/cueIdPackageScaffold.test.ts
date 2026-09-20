@@ -20,6 +20,7 @@ test('scaffolds the complete CUE ID V2 working package', async () => {
     await readFile(join(result.dirs.manifest, 'asset-metadata.draft.json'), 'utf8')
   )
   const bindings = await readFile(join(result.dirs.manifest, 'bindings.md'), 'utf8')
+  const sculptSpec = await readFile(join(result.root, 'SCULPT_SPEC.md'), 'utf8')
   const readme = await readFile(join(result.root, 'README.md'), 'utf8')
 
   assert.equal(manifest.assetVersion, '2.0.0')
@@ -29,6 +30,10 @@ test('scaffolds the complete CUE ID V2 working package', async () => {
   assert.equal(evidence.performance.full, null)
   assert.equal(metadata.assetVersion, '2.0.0')
   assert.match(bindings, /feminine \/ neutral \/ masculine reviewed on regular build/)
+  assert.match(sculptSpec, /Base and build are independent semantic dimensions/)
+  assert.match(sculptSpec, /feminine \+ regular/)
+  assert.match(sculptSpec, /masculine \+ regular/)
+  assert.match(readme, /SCULPT_SPEC\.md/)
   assert.match(readme, /Human review before catalogue admission/)
 })
 
