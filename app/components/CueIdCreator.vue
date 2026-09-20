@@ -6,6 +6,7 @@ import {
 } from '../domain/cueIdCreator'
 import { CUE_ID_PRODUCTION_CATALOGUE } from '../domain/cueIdProductionCatalogue'
 import { getCueIdCreatorAssetStatus } from '../domain/cueIdCreatorAssetStatus'
+import { getCueIdCreatorVisualCoverage } from '../domain/cueIdCreatorVisualCoverage'
 
 type Locale = 'es' | 'en'
 type CreatorStep = keyof Pick<
@@ -44,6 +45,8 @@ const DRAFT_STORAGE_KEY = 'cuebooker:cue-id:creator-draft:v1'
 const runtimeConfig = computed(() => cueIdCreatorToRuntimeConfig(props.modelValue))
 const creatorUsesLabFixture = computed(() => CUE_ID_PRODUCTION_CATALOGUE.length === 0)
 const assetStatus = computed(() => getCueIdCreatorAssetStatus())
+const visualCoverage = computed(() => getCueIdCreatorVisualCoverage(assetStatus.value.source))
+const activeStepVisibleInAsset = computed(() => visualCoverage.value[activeStep.value])
 
 const previewClasses = computed(() => [
   `creator__preview--skin-${props.modelValue.skin}`,
@@ -92,6 +95,10 @@ const copy = computed(() => props.locale === 'es' ? {
   gatePerformance: 'Performance',
   pending: 'Pendiente',
   passed: 'OK',
+  futureVisual: 'Future configuration',
+  futureVisualBody: 'This option is part of the creator model, but the current authored V2 asset does not represent it visually yet.',
+  futureVisual: 'Configuración futura',
+  futureVisualBody: 'Esta opción forma parte del modelo del creator, pero el asset authored V2 actual todavía no la representa visualmente.',
   previous: 'Anterior',
   next: 'Siguiente',
   saved: 'Guardado',
@@ -351,7 +358,7 @@ onMounted(() => {
           v-for="(step, index) in steps"
           :key="step.id"
           type="button"
-          :class="{ active: activeStep === step.id }"
+          :class="{ active: activeStep === step.id, pending: !visualCoverage[step.id] }"
           :aria-current="activeStep === step.id ? 'step' : undefined"
           @click="activeStep = step.id"
         >
@@ -417,6 +424,9 @@ onMounted(() => {
         <div class="creator__panel-head">
           <span>{{ copy.current }}</span>
           <strong>{{ steps.find(step => step.id === activeStep)?.label }}</strong>
+          <small v-if="!activeStepVisibleInAsset" class="creator__coverage-note">
+            {{ copy.futureVisual }} · {{ copy.futureVisualBody }}
+          </small>
         </div>
 
         <div class="creator__options">
@@ -555,6 +565,8 @@ onMounted(() => {
 .creator__rail button strong{font-size:11px}
 .creator__rail button.active{background:color-mix(in srgb,var(--cue-accent) 7%,transparent);color:var(--cue-text);box-shadow:inset 3px 0 0 var(--cue-accent)}
 .creator__rail button.active span{color:var(--cue-accent)}
+.creator__rail button.pending strong::after{content:' ·';color:#6f756d}
+.creator__rail button.pending{opacity:.72}
 .creator__stage{position:relative;min-width:0;padding:18px;background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.035),transparent 38%),#050706}
 .creator__stage :deep(.cue-id-stage){min-height:590px;border-color:#202420}
 .creator__stage-label{position:absolute;z-index:8;top:34px;left:36px;display:grid;gap:5px;pointer-events:none}
@@ -642,6 +654,7 @@ onMounted(() => {
 .creator__panel-head{display:grid;gap:6px;padding:20px;border-bottom:1px solid var(--cue-border)}
 .creator__panel-head span{color:var(--cue-muted);font:700 9px/1 monospace;letter-spacing:.1em;text-transform:uppercase}
 .creator__panel-head strong{font-size:20px}
+.creator__coverage-note{display:block;margin-top:4px;color:#a4a8a1;font:600 9px/1.45 monospace}
 .creator__options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:14px;max-height:370px;overflow:auto}
 .creator__options button{display:grid;gap:10px;min-height:94px;padding:10px;border:1px solid var(--cue-border);background:#0d100e;color:var(--cue-text);text-align:left;cursor:pointer}
 .creator__option-visual{position:relative;display:block;height:54px;overflow:hidden;border-radius:4px;background:linear-gradient(135deg,#171b18,#2a302a);isolation:isolate}
