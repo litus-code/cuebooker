@@ -151,6 +151,66 @@ export function validateCueIdProductionManifest(
   return issues
 }
 
+
+export type CueIdProductionBindingIssue = {
+  field: 'base' | 'build' | 'pose' | 'outfit' | 'material'
+  message: string
+}
+
+export function validateCueIdProductionInteractiveBindings(
+  manifest: CueIdProductionManifest
+): CueIdProductionBindingIssue[] {
+  const issues: CueIdProductionBindingIssue[] = []
+  const morphs = manifest.bindings.morphs || {}
+  const poses = manifest.bindings.poses || {}
+  const outfits = manifest.bindings.outfits || {}
+  const materials = manifest.bindings.materials || {}
+
+  if (!morphs['base.feminine'] || !morphs['base.masculine']) {
+    issues.push({
+      field: 'base',
+      message: 'Interactive CUE ID V2 requires feminine and masculine authored base bindings'
+    })
+  }
+
+  if (!morphs['build.slim'] || !morphs['build.strong']) {
+    issues.push({
+      field: 'build',
+      message: 'Interactive CUE ID V2 requires slim and strong authored build bindings'
+    })
+  }
+
+  for (const pose of REQUIRED_POSES) {
+    if (!poses[pose]) {
+      issues.push({
+        field: 'pose',
+        message: `Interactive CUE ID V2 requires pose binding "${pose}"`
+      })
+    }
+  }
+
+  if (!outfits.tee?.length) {
+    issues.push({
+      field: 'outfit',
+      message: 'Interactive CUE ID V2 requires an editorial tee binding'
+    })
+  }
+
+  if (!materials.body || !materials.textile) {
+    issues.push({
+      field: 'material',
+      message: 'Interactive CUE ID V2 requires body and textile material bindings'
+    })
+  }
+
+  return issues
+}
+
+export function isCueIdProductionInteractiveReady(manifest: CueIdProductionManifest) {
+  return validateCueIdProductionManifest(manifest).length === 0
+    && validateCueIdProductionInteractiveBindings(manifest).length === 0
+}
+
 export function assertCueIdProductionManifest(manifest: CueIdProductionManifest) {
   const issues = validateCueIdProductionManifest(manifest)
   if (issues.length) {
