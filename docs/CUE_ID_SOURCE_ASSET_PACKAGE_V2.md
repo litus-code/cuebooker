@@ -564,6 +564,7 @@ Evidence example:
 
 ```json
 {
+  "assetVersion": "2.0.0",
   "visualReview": true,
   "mobileReview": true,
   "performance": {
@@ -832,3 +833,22 @@ That proposal:
 - never mutates the source evidence file.
 
 This keeps visual, mobile and runtime acceptance independent while feeding the same final intake evidence model.
+
+## 37. Evidence version integrity
+
+Every intake evidence file must declare the asset version it belongs to:
+
+```json
+{
+  "assetVersion": "2.0.0"
+}
+```
+
+`cue-id:assess` rejects evidence when:
+
+- `assetVersion` is missing;
+- evidence `assetVersion` differs from manifest `assetVersion`.
+
+This guard applies even if visual, mobile and performance fields are otherwise passing.
+
+The review-specific proposal commands already enforce this boundary before producing evidence candidates; the unified assessor now enforces it again at the final intake boundary.
