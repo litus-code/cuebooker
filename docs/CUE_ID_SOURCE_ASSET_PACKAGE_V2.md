@@ -419,3 +419,27 @@ The manifest draft intentionally leaves semantic bindings empty.
 Do not auto-map names such as `base_feminine` or `pose_editorial` into production bindings purely by naming convention. A human review must confirm that each discovered target/clip/node actually represents the intended product semantic.
 
 The inspector is an audit aid, not an asset-approval shortcut.
+
+## 26. Package validation workflow
+
+After the manifest bindings have been reviewed manually, validate the package against the actual GLB:
+
+```bash
+npm run cue-id:validate-package -- path/to/cue-id-v2.glb path/to/manifest.json
+```
+
+The validator checks:
+
+- manifest byte count against the GLB;
+- manifest triangle count against the GLB;
+- material count;
+- texture count;
+- every morph binding resolves to a discovered morph target;
+- every pose binding resolves to a discovered animation clip;
+- every outfit/accessory binding resolves to an exported node;
+- every semantic material binding resolves to an exported material;
+- outfit/accessory visibility bindings do not reuse the same node.
+
+A package must pass this command before catalogue admission.
+
+This validator complements, but does not replace, visual review or runtime benchmarking.
