@@ -7771,7 +7771,7 @@ Review order is enforced:
 - B: independent build matrix;
 - C: tee fit/deformation;
 - D: pose parity/grounding;
-- E: mobile/product-size read.
+- E: product-size visual read only; real-device mobile review is tracked separately.
 
 Passing a gate requires:
 
@@ -7987,6 +7987,24 @@ Behavior:
 - never touches the production catalogue.
 
 The working-package README now directs the artist/integrator to generate this combined evidence before `cue-id:assess`.
+
+The production catalogue remains empty.
+
+Production remains untouched.
+
+## 140. Review-contract documentation normalization
+
+Residual documentation drift from the product-size/mobile split has been removed.
+
+Corrections:
+
+- sculpt Gate E is consistently documented as product-size visual review only;
+- real-device iPhone/Android validation is consistently documented as a separate mobile review;
+- scaffold checklist wording now distinguishes product-size still review from real-device mobile review;
+- the source-package tree now lists sculpt/mobile/performance review artifacts;
+- duplicated source-package section numbering around performance/evidence orchestration was normalized.
+
+No runtime behavior changed.
 
 The production catalogue remains empty.
 
