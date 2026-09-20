@@ -3,6 +3,7 @@ import { TresCanvas } from '@tresjs/core'
 import {
   AnimationMixer,
   Box3,
+  LoopOnce,
   MeshStandardMaterial,
   Object3D,
   Vector3,
@@ -114,7 +115,10 @@ function applyPoseBinding(root: Object3D) {
   mixer?.stopAllAction()
   mixer = new AnimationMixer(root)
   const action = mixer.clipAction(clip)
-  action.reset().play()
+  action.reset()
+  action.setLoop(LoopOnce, 1)
+  action.clampWhenFinished = true
+  action.play()
   mixer.setTime(Math.max(0, clip.duration))
   action.paused = true
   return true
