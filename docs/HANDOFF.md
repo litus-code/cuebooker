@@ -7933,3 +7933,59 @@ package-to-GLB validator   -> packageValidation
 The production catalogue remains empty.
 
 Production remains untouched.
+
+## 137. Separate performance review evidence
+
+The final independent evidence dimension now has its own versioned review artifact and bridge.
+
+New files:
+
+`scripts/lib/cue-id-performance-review.mjs`
+`scripts/assess-cue-id-performance-review.mjs`
+`scripts/lib/cue-id-performance-evidence-proposal.mjs`
+`scripts/propose-cue-id-performance-evidence.mjs`
+`tests/cueIdPerformanceReview.test.ts`
+
+`cue-id:scaffold-package` now also creates:
+
+`manifest/performance-review.draft.json`
+
+New commands:
+
+```bash
+npm run cue-id:assess-performance -- <performance-review.json>
+npm run cue-id:propose-performance-evidence -- <performance-review.json> <evidence.json>
+```
+
+The assessor reuses the canonical runtime budgets from `app/domain/cueIdPerformance.ts`:
+
+- full <= 800 ms;
+- reduced <= 1500 ms.
+
+Each tier must have:
+
+- a measured non-negative total-ready time;
+- at least one evidence reference;
+- a passing budget result.
+
+The evidence bridge:
+
+- requires matching asset versions;
+- copies only passing full/reduced measurements;
+- preserves `visualReview`;
+- preserves `mobileReview`;
+- records timing, budget and evidence refs;
+- never edits source evidence automatically.
+
+The evidence model is now cleanly separated:
+
+```text
+sculpt/product-size review -> visualReview
+real-device review         -> mobileReview
+runtime benchmark review   -> performance
+package validation         -> packageValidation
+```
+
+The production catalogue remains empty.
+
+Production remains untouched.
