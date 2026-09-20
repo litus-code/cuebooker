@@ -517,3 +517,37 @@ Workflow:
 6. run `cue-id:validate-package`.
 
 This keeps static coverage deterministic without bypassing visual approval.
+
+## 29. Static render finalization workflow
+
+After the planned portrait/square renders have actually been exported into the application public directory, finalize the manifest:
+
+```bash
+npm run cue-id:finalize-static -- path/to/manifest.json path/to/static-plan.json --output path/to/finalized-manifest.json
+```
+
+Optional public directory override:
+
+```bash
+npm run cue-id:finalize-static -- manifest.json plan.json --output finalized.json --public-dir public
+```
+
+The finalizer:
+
+- requires the plan `assetVersion` to match the manifest;
+- checks every planned portrait file exists physically;
+- checks every planned square file exists physically;
+- refuses to finalize if any file is missing;
+- writes `static.variants` only after all planned files are present.
+
+This prevents planned URLs from being mistaken for delivered assets.
+
+Recommended static sequence:
+
+```text
+cue-id:plan-static
+  -> render/export actual files
+  -> visual review
+  -> cue-id:finalize-static
+  -> cue-id:validate-package
+```
