@@ -1,6 +1,7 @@
 import { mkdir, writeFile, access } from 'node:fs/promises'
 import { join } from 'node:path'
 import { createCueIdSculptReviewDraft } from './cue-id-sculpt-review.mjs'
+import { createCueIdMobileReviewDraft } from './cue-id-mobile-review.mjs'
 
 function ensureVersion(version) {
   if (!version || !/^[0-9]+\.[0-9]+\.[0-9]+$/.test(version)) {
@@ -75,6 +76,7 @@ export async function scaffoldCueIdV2Package(rootDir, version) {
   }
 
   const sculptReview = createCueIdSculptReviewDraft(version)
+  const mobileReview = createCueIdMobileReviewDraft(version)
 
   const metadata = {
     assetVersion: version,
@@ -232,16 +234,17 @@ Expected flow:
 3. Put approved texture files in textures/
 4. Follow SCULPT_SPEC.md for base/build/rig/pose production
 5. Complete sculpt-review.draft.json gate by gate
-6. Run cue-id:inspect
-7. Review and fill manifest/bindings.md
-8. Run cue-id:plan-static
-9. Export static renders into renders/ and the app public target path
-10. Run cue-id:finalize-static
-11. Run cue-id:validate-package
-12. Complete visual/mobile/performance evidence
-13. Run cue-id:assess
-14. Run cue-id:propose-promotion
-15. Human review before catalogue admission
+6. Complete mobile-review.draft.json on real devices
+7. Run cue-id:inspect
+8. Review and fill manifest/bindings.md
+9. Run cue-id:plan-static
+10. Export static renders into renders/ and the app public target path
+11. Run cue-id:finalize-static
+12. Run cue-id:validate-package
+13. Complete visual/mobile/performance evidence
+14. Run cue-id:assess
+15. Run cue-id:propose-promotion
+16. Human review before catalogue admission
 
 The production catalogue must never be modified automatically.
 `
@@ -251,6 +254,7 @@ The production catalogue must never be modified automatically.
     writeNew(join(dirs.manifest, 'evidence.draft.json'), JSON.stringify(evidence, null, 2) + '\n'),
     writeNew(join(dirs.manifest, 'asset-metadata.draft.json'), JSON.stringify(metadata, null, 2) + '\n'),
     writeNew(join(dirs.manifest, 'sculpt-review.draft.json'), JSON.stringify(sculptReview, null, 2) + '\n'),
+    writeNew(join(dirs.manifest, 'mobile-review.draft.json'), JSON.stringify(mobileReview, null, 2) + '\n'),
     writeNew(join(dirs.manifest, 'bindings.md'), bindings),
     writeNew(join(root, 'SCULPT_SPEC.md'), sculptSpec),
     writeNew(join(root, 'README.md'), readme)
