@@ -713,3 +713,45 @@ Rules:
 - the source evidence file is never mutated.
 
 This bridges structured human sculpt approval into the intake evidence model without bypassing separate mobile or performance gates.
+
+## 35. Separate real-device mobile review
+
+Product-size visual review and real-device mobile review are separate gates.
+
+`sculpt-review.draft.json` Gate E now means product-size visual readability only.
+
+Real-device validation lives in:
+
+`manifest/mobile-review.draft.json`
+
+Assess it with:
+
+```bash
+npm run cue-id:assess-mobile -- path/to/mobile-review.json
+```
+
+A passing mobile review requires:
+
+- iPhone-class device check;
+- representative Android mid-range device check;
+- <=430 px viewport;
+- reduced tier;
+- DPR 1 equivalent review;
+- head/shoulder/hands/garment/full-silhouette readability;
+- diagnostics not obscuring the figure;
+- at least two evidence references, one for each device class.
+
+After it passes, create a non-destructive mobile evidence proposal:
+
+```bash
+npm run cue-id:propose-mobile-evidence -- mobile-review.json evidence.json
+```
+
+That proposal:
+
+- requires matching `assetVersion`;
+- changes only `mobileReview` to true;
+- preserves `visualReview`;
+- preserves performance evidence;
+- stores mobile evidence references;
+- never mutates the source evidence file.
