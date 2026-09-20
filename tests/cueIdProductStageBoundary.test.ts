@@ -8,7 +8,7 @@ test('product CUE ID stage never loads the fixture renderer implicitly', async (
   const source = await readFile(stagePath, 'utf8')
 
   assert.match(source, /v-if="labAsset && interactive && runtimeWanted && runtimeDecision"/)
-  assert.match(source, /reason: resolvedProductionAsset.value ? 'production_static_first' : 'no_production_asset'/)
+  assert.match(source, /reason: resolvedProductionAsset\.value \? 'production_static_first' : 'no_production_asset'/)
 })
 
 test('product CUE ID stage can render a versioned production static asset', async () => {
