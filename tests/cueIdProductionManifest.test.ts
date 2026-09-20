@@ -6,17 +6,35 @@ import {
   validateCueIdProductionManifest,
   type CueIdProductionManifest
 } from '../app/domain/cueIdProductionManifest.ts'
+import { listCueIdRequiredStaticVariantKeys } from '../app/domain/cueIdStaticVariants.ts'
 
 function createManifest(): CueIdProductionManifest {
+  const capabilities: CueIdProductionManifest['capabilities'] = {
+    bases: ['feminine', 'masculine', 'neutral'],
+    builds: ['slim', 'regular', 'strong'],
+    outfits: ['tee'],
+    accessories: [null],
+    poses: ['neutral', 'relaxed', 'focused', 'editorial'],
+    materials: ['matte'],
+    accents: ['lime', 'red', null]
+  }
+
+  const variants = Object.fromEntries(
+    listCueIdRequiredStaticVariantKeys(capabilities).map(key => [
+      key,
+      {
+        portrait: `/cue-id/production/static/${key}-portrait.webp`,
+        square: `/cue-id/production/static/${key}-square.webp`
+      }
+    ])
+  ) as CueIdProductionManifest['static']['variants']
+
   return {
     manifestVersion: 1,
     family: 'club_minimal',
     assetVersion: 'v2-test',
     glbPath: '/cue-id/production/club-minimal-v2.glb',
-    static: {
-      portrait: '/cue-id/production/club-minimal-v2-portrait.webp',
-      square: '/cue-id/production/club-minimal-v2-square.webp'
-    },
+    static: { variants },
     metrics: {
       compressedBytes: 650_000,
       triangles: 24_000,
@@ -25,15 +43,7 @@ function createManifest(): CueIdProductionManifest {
       largestTextureDimension: 1024
     },
     supportedTiers: ['full', 'reduced'],
-    capabilities: {
-      bases: ['feminine', 'masculine', 'neutral'],
-      builds: ['slim', 'regular', 'strong'],
-      outfits: ['tee'],
-      accessories: [null],
-      poses: ['neutral', 'relaxed', 'focused', 'editorial'],
-      materials: ['matte'],
-      accents: ['lime', 'red', null]
-    },
+    capabilities,
     bindings: {}
   }
 }
@@ -101,4 +111,16 @@ test('rejects external asset paths', () => {
   const issues = validateCueIdProductionManifest(manifest)
 
   assert.ok(issues.some(issue => issue.field === 'glbPath'))
+})
+
+
+test('rejects incomplete static semantic coverage', () => {
+  const manifest = createManifest()
+  const [firstKey] = Object.keys(manifest.static.variants)
+
+  delete manifest.static.variants[firstKey as keyof typeof manifest.static.variants]
+
+  const issues = validateCueIdProductionManifest(manifest)
+
+  assert.ok(issues.some(issue => issue.field === 'static'))
 })
