@@ -686,3 +686,30 @@ The assessor reports:
 - next gate.
 
 This review artifact does not set `visualReview` automatically. Final production evidence remains an explicit human decision.
+
+## 34. Sculpt review to visual evidence proposal
+
+Once Gates A–E are all passed with evidence, generate a non-destructive visual evidence proposal:
+
+```bash
+npm run cue-id:propose-visual-evidence -- path/to/sculpt-review.json path/to/evidence.json
+```
+
+Optional output:
+
+```bash
+npm run cue-id:propose-visual-evidence -- sculpt-review.json evidence.json --output evidence.proposal.json
+```
+
+Rules:
+
+- sculpt review must be fully ready;
+- review and evidence `assetVersion` must match;
+- evidence must be versioned;
+- only `visualReview` is promoted to true;
+- `mobileReview` is preserved unchanged;
+- performance evidence is preserved unchanged;
+- reviewed gate evidence references are copied into `reviewEvidence.sculpt`;
+- the source evidence file is never mutated.
+
+This bridges structured human sculpt approval into the intake evidence model without bypassing separate mobile or performance gates.
