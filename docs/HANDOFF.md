@@ -7357,3 +7357,43 @@ This avoids the default repeat-loop behavior potentially wrapping an exact end-t
 Regression coverage in `tests/cueIdProductionSceneBoundary.test.ts` locks the `LoopOnce + clampWhenFinished` contract.
 
 Production remains untouched.
+
+## 123. Production catalogue admission gate
+
+The production catalogue can no longer accept raw manifests directly.
+
+New domain:
+
+`app/domain/cueIdProductionAdmission.ts`
+
+`app/domain/cueIdProductionCatalogue.ts` now builds its catalogue through `defineCueIdProductionCatalogue(...)` and derives `CUE_ID_PRODUCTION_MANIFESTS` only from admitted entries.
+
+Admission stages:
+
+- `static_approved`;
+- `interactive_approved`.
+
+Every admitted asset requires explicit evidence for:
+
+- visual review;
+- real-device mobile review;
+- package-to-GLB validation.
+
+`interactive_approved` additionally requires:
+
+- complete interactive semantic bindings;
+- measured performance evidence for every supported interactive tier;
+- full tier ready time within the existing 800 ms budget;
+- reduced tier ready time within the existing 1500 ms budget.
+
+The catalogue also rejects duplicate `family + assetVersion` entries.
+
+This creates a hard code-level distinction between an asset that is merely authored/exported and one that is actually approved for Cuebooker production use.
+
+New regression coverage:
+
+`tests/cueIdProductionAdmission.test.ts`
+
+The production catalogue remains empty.
+
+Production remains untouched.
