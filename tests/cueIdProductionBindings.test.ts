@@ -4,17 +4,35 @@ import test from 'node:test'
 import { DEFAULT_CUE_ID_CONFIG } from '../app/domain/cueId.ts'
 import { resolveCueIdProductionBindings } from '../app/domain/cueIdProductionBindings.ts'
 import type { CueIdProductionManifest } from '../app/domain/cueIdProductionManifest.ts'
+import { listCueIdRequiredStaticVariantKeys } from '../app/domain/cueIdStaticVariants.ts'
 
 function manifest(): CueIdProductionManifest {
+  const capabilities: CueIdProductionManifest['capabilities'] = {
+    bases: ['feminine', 'masculine', 'neutral'],
+    builds: ['slim', 'regular', 'strong'],
+    outfits: ['tee'],
+    accessories: [null, 'glasses'],
+    poses: ['neutral', 'relaxed', 'focused', 'editorial'],
+    materials: ['matte', 'satin'],
+    accents: ['lime', 'red', null]
+  }
+
+  const variants = Object.fromEntries(
+    listCueIdRequiredStaticVariantKeys(capabilities).map(key => [
+      key,
+      {
+        portrait: `/cue-id/production/static/${key}-portrait.webp`,
+        square: `/cue-id/production/static/${key}-square.webp`
+      }
+    ])
+  ) as CueIdProductionManifest['static']['variants']
+
   return {
     manifestVersion: 1,
     family: 'club_minimal',
     assetVersion: '2.0.0',
     glbPath: '/cue-id/production/club-minimal-v2.glb',
-    static: {
-      portrait: '/cue-id/production/club-minimal-v2-portrait.webp',
-      square: '/cue-id/production/club-minimal-v2-square.webp'
-    },
+    static: { variants },
     metrics: {
       compressedBytes: 650_000,
       triangles: 24_000,
@@ -23,15 +41,7 @@ function manifest(): CueIdProductionManifest {
       largestTextureDimension: 1024
     },
     supportedTiers: ['full', 'reduced'],
-    capabilities: {
-      bases: ['feminine', 'masculine', 'neutral'],
-      builds: ['slim', 'regular', 'strong'],
-      outfits: ['tee'],
-      accessories: [null, 'glasses'],
-      poses: ['neutral', 'relaxed', 'focused', 'editorial'],
-      materials: ['matte', 'satin'],
-      accents: ['lime', 'red', null]
-    },
+    capabilities,
     bindings: {
       morphs: {
         'base.feminine': 'base_feminine',
