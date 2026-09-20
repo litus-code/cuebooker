@@ -118,6 +118,7 @@ test('auto proposes static approval when reviews pass but performance is missing
   const manifest = createManifest(glb.length)
 
   const proposal = createCueIdPromotionProposal(glb, manifest, {
+    assetVersion: '2.0.0',
     visualReview: true,
     mobileReview: true
   })
@@ -131,6 +132,7 @@ test('auto proposes interactive approval when every gate passes', () => {
   const manifest = createManifest(glb.length)
 
   const proposal = createCueIdPromotionProposal(glb, manifest, {
+    assetVersion: '2.0.0',
     visualReview: true,
     mobileReview: true,
     performance: { full: 800, reduced: 1500 }
@@ -148,7 +150,7 @@ test('rejects forced interactive promotion when only static-ready', () => {
     () => createCueIdPromotionProposal(
       glb,
       manifest,
-      { visualReview: true, mobileReview: true },
+      { assetVersion: '2.0.0', visualReview: true, mobileReview: true },
       'interactive_approved'
     ),
     /not interactive-ready/
@@ -160,7 +162,7 @@ test('rejects promotion when human review evidence is incomplete', () => {
   const manifest = createManifest(glb.length)
 
   assert.throws(
-    () => createCueIdPromotionProposal(glb, manifest, {}),
+    () => createCueIdPromotionProposal(glb, manifest, { assetVersion: '2.0.0' }),
     /not promotion-ready/
   )
 })
