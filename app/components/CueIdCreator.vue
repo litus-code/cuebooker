@@ -36,6 +36,8 @@ const emit = defineEmits<{
 }>()
 
 const activeStep = ref<CreatorStep>('base')
+const saveState = ref<'idle' | 'saved'>('idle')
+const DRAFT_STORAGE_KEY = 'cuebooker:cue-id:creator-draft:v1'
 const runtimeConfig = computed(() => cueIdCreatorToRuntimeConfig(props.modelValue))
 
 const previewClasses = computed(() => [
@@ -73,7 +75,12 @@ const copy = computed(() => props.locale === 'es' ? {
   none: 'Ninguno',
   current: 'Selección actual',
   authored: 'Asset authored pendiente',
-  authoredBody: 'Esta vista valida el creator y su modelo semántico. El fixture actual no representa el resultado visual final.'
+  authoredBody: 'Esta vista valida el creator y su modelo semántico. El fixture actual no representa el resultado visual final.',
+  previous: 'Anterior',
+  next: 'Siguiente',
+  saved: 'Guardado',
+  draftSaved: 'Borrador guardado en este dispositivo',
+  step: 'Paso'
 } : {
   creator: 'CUE ID CREATOR',
   title: 'Build your visual identity.',
@@ -97,7 +104,12 @@ const copy = computed(() => props.locale === 'es' ? {
   none: 'None',
   current: 'Current selection',
   authored: 'Authored asset pending',
-  authoredBody: 'This view validates the creator and its semantic model. The current fixture does not represent the final visual result.'
+  authoredBody: 'This view validates the creator and its semantic model. The current fixture does not represent the final visual result.',
+  previous: 'Previous',
+  next: 'Next',
+  saved: 'Saved',
+  draftSaved: 'Draft saved on this device',
+  step: 'Step'
 })
 
 const steps = computed(() => ([
@@ -115,6 +127,11 @@ const steps = computed(() => ([
   { id: 'material' as const, label: copy.value.material },
   { id: 'accent' as const, label: copy.value.accent }
 ]))
+
+const activeStepIndex = computed(() => Math.max(0, steps.value.findIndex(step => step.id === activeStep.value)))
+const progress = computed(() => ((activeStepIndex.value + 1) / steps.value.length) * 100)
+const isFirstStep = computed(() => activeStepIndex.value === 0)
+const isLastStep = computed(() => activeStepIndex.value === steps.value.length - 1)
 
 function label(option: { label: { es: string; en: string } }) {
   return option.label[props.locale]
@@ -172,7 +189,38 @@ function optionVisualClass(optionId: string) {
 
 function select(value: unknown) {
   update(activeStep.value, value as never)
+  saveState.value = 'idle'
 }
+
+function goPrevious() {
+  if (isFirstStep.value) return
+  activeStep.value = steps.value[activeStepIndex.value - 1].id
+}
+
+function goNext() {
+  if (isLastStep.value) return
+  activeStep.value = steps.value[activeStepIndex.value + 1].id
+}
+
+function saveDraft() {
+  if (!import.meta.client) return
+  localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(props.modelValue))
+  saveState.value = 'saved'
+}
+
+onMounted(() => {
+  const rawDraft = localStorage.getItem(DRAFT_STORAGE_KEY)
+  if (!rawDraft) return
+
+  try {
+    const parsed = JSON.parse(rawDraft) as Partial<CueIdCreatorConfigV1>
+    if (parsed.schemaVersion !== 1) return
+    emit('update:modelValue', { ...props.modelValue, ...parsed })
+    saveState.value = 'saved'
+  } catch {
+    localStorage.removeItem(DRAFT_STORAGE_KEY)
+  }
+})
 </script>
 
 <template>
@@ -233,6 +281,14 @@ function select(value: unknown) {
       </div>
 
       <aside class="creator__panel">
+        <div class="creator__progress" aria-label="CUE ID creator progress">
+          <div>
+            <span>{{ copy.step }} {{ activeStepIndex + 1 }} / {{ steps.length }}</span>
+            <strong>{{ Math.round(progress) }}%</strong>
+          </div>
+          <i><b :style="{ width: progress + '%' }" /></i>
+        </div>
+
         <div class="creator__panel-head">
           <span>{{ copy.current }}</span>
           <strong>{{ steps.find(step => step.id === activeStep)?.label }}</strong>
@@ -269,7 +325,15 @@ function select(value: unknown) {
           <div><span>{{ copy.pose }}</span><strong>{{ modelValue.pose }}</strong></div>
         </div>
 
-        <button type="button" class="creator__save">{{ copy.save }}</button>
+        <div class="creator__step-actions">
+          <button type="button" :disabled="isFirstStep" @click="goPrevious">{{ copy.previous }}</button>
+          <button type="button" :disabled="isLastStep" @click="goNext">{{ copy.next }}</button>
+        </div>
+
+        <button type="button" class="creator__save" @click="saveDraft">
+          {{ saveState === 'saved' ? copy.saved : copy.save }}
+        </button>
+        <small v-if="saveState === 'saved'" class="creator__saved-note">{{ copy.draftSaved }}</small>
       </aside>
     </div>
 
@@ -373,6 +437,11 @@ function select(value: unknown) {
 
 .creator__asset-note{position:absolute;z-index:8;left:36px;right:36px;bottom:34px;max-width:520px;margin:0;padding:10px 12px;border:1px solid rgba(255,255,255,.11);background:rgba(5,7,6,.82);backdrop-filter:blur(8px);color:#92978f;font-size:11px;line-height:1.45}
 .creator__panel{display:flex;flex-direction:column;min-width:0;border-left:1px solid var(--cue-border);background:#0a0c0b}
+.creator__progress{display:grid;gap:9px;padding:16px 20px;border-bottom:1px solid var(--cue-border)}
+.creator__progress>div{display:flex;justify-content:space-between;gap:14px;color:var(--cue-muted);font:700 9px/1 monospace;letter-spacing:.08em;text-transform:uppercase}
+.creator__progress strong{color:var(--cue-text)}
+.creator__progress>i{display:block;height:2px;background:#202420;overflow:hidden}
+.creator__progress>i b{display:block;height:100%;background:var(--cue-accent);transition:width .2s ease}
 .creator__panel-head{display:grid;gap:6px;padding:20px;border-bottom:1px solid var(--cue-border)}
 .creator__panel-head span{color:var(--cue-muted);font:700 9px/1 monospace;letter-spacing:.1em;text-transform:uppercase}
 .creator__panel-head strong{font-size:20px}
@@ -466,7 +535,11 @@ function select(value: unknown) {
 .creator__summary div{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--cue-border)}
 .creator__summary span{color:var(--cue-muted);font:700 9px/1 monospace;text-transform:uppercase}
 .creator__summary strong{max-width:150px;overflow:hidden;text-overflow:ellipsis;font-size:10px;text-transform:uppercase}
-.creator__save{margin:auto 14px 14px;min-height:48px;border:1px solid var(--cue-accent);background:var(--cue-accent);color:#070807;font-weight:900;cursor:pointer}
+.creator__step-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:auto 14px 8px}
+.creator__step-actions button{min-height:42px;border:1px solid var(--cue-border);background:transparent;color:var(--cue-text);font-weight:800;cursor:pointer}
+.creator__step-actions button:disabled{opacity:.32;cursor:not-allowed}
+.creator__save{margin:0 14px 8px;min-height:48px;border:1px solid var(--cue-accent);background:var(--cue-accent);color:#070807;font-weight:900;cursor:pointer}
+.creator__saved-note{display:block;margin:0 14px 14px;color:var(--cue-muted);font:700 9px/1.35 monospace}
 .creator__mobile-tabs{display:none}
 button:focus-visible{outline:2px solid var(--cue-accent);outline-offset:2px}
 @media(max-width:1040px){
@@ -491,13 +564,16 @@ button:focus-visible{outline:2px solid var(--cue-accent);outline-offset:2px}
   .creator__preview--pose-editorial .creator__semantic-preview{transform:translate(-50%,-50%) scale(.86) rotate(5deg)}
   .creator__asset-note{left:12px;right:12px;bottom:12px;max-width:none;padding:8px 10px;font-size:10px}
   .creator__panel{border-left:0;border-top:1px solid var(--cue-border)}
+  .creator__progress{padding:12px}
   .creator__panel-head{padding:14px 12px}
   .creator__panel-head strong{font-size:17px}
   .creator__options{display:flex;overflow-x:auto;max-height:none;padding:10px 12px 12px;scroll-snap-type:x proximity}
   .creator__options button{flex:0 0 108px;min-height:84px;scroll-snap-align:start}
   .creator__option-visual{height:48px}
   .creator__summary{display:none}
-  .creator__save{margin:0 12px 12px;min-height:46px}
+  .creator__step-actions{margin:0 12px 8px}
+  .creator__save{margin:0 12px 6px;min-height:46px}
+  .creator__saved-note{margin:0 12px 10px}
   .creator__mobile-tabs{display:flex;position:sticky;bottom:0;z-index:20;overflow-x:auto;border:1px solid var(--cue-border);background:rgba(8,10,9,.96);backdrop-filter:blur(14px);scroll-snap-type:x proximity}
   .creator__mobile-tabs button{flex:0 0 auto;min-height:46px;padding:0 13px;border:0;border-right:1px solid var(--cue-border);background:transparent;color:var(--cue-muted);font-size:10px;font-weight:800;scroll-snap-align:start}
   .creator__mobile-tabs button.active{color:var(--cue-accent)}
