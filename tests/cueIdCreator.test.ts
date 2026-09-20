@@ -5,7 +5,8 @@ import {
   CUE_ID_CREATOR_CATALOGUE,
   DEFAULT_CUE_ID_CREATOR_CONFIG,
   cloneCueIdCreatorConfig,
-  cueIdCreatorToRuntimeConfig
+  cueIdCreatorToRuntimeConfig,
+  isCueIdCreatorConfigV1
 } from '../app/domain/cueIdCreator.ts'
 
 test('CUE ID creator default config stays inside the creator catalogue', () => {
@@ -52,6 +53,25 @@ test('creator base and build remain independent dimensions', () => {
   assert.equal(feminineStrong.build, 'strong')
   assert.equal(masculineSlim.base, 'masculine')
   assert.equal(masculineSlim.build, 'slim')
+})
+
+test('creator config validator rejects incomplete or out-of-catalogue drafts', () => {
+  assert.equal(isCueIdCreatorConfigV1(DEFAULT_CUE_ID_CREATOR_CONFIG), true)
+  assert.equal(isCueIdCreatorConfigV1({ schemaVersion: 1 }), false)
+  assert.equal(
+    isCueIdCreatorConfigV1({
+      ...DEFAULT_CUE_ID_CREATOR_CONFIG,
+      hair: 'unknown-hair'
+    }),
+    false
+  )
+  assert.equal(
+    isCueIdCreatorConfigV1({
+      ...DEFAULT_CUE_ID_CREATOR_CONFIG,
+      accessory: 'unknown-accessory'
+    }),
+    false
+  )
 })
 
 test('creator top maps to the legacy runtime outfit without widening production semantics', () => {
@@ -129,6 +149,7 @@ test('CUE ID creator UI uses the creator config and runtime adapter', async () =
   assert.match(component, /creator__option-visual--relaxed::before/)
   assert.doesNotMatch(component, /\.creator__option-visual--relaxed\{transform:/)
   assert.match(component, /DRAFT_STORAGE_KEY/)
+  assert.match(component, /isCueIdCreatorConfigV1/)
   assert.match(component, /localStorage\.setItem/)
   assert.match(component, /localStorage\.removeItem/)
   assert.match(component, /goPrevious/)
