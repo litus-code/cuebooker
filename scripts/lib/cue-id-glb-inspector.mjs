@@ -184,8 +184,7 @@ export function createManifestDraft(inspection, options = {}) {
     assetVersion,
     glbPath: `${basePath}/cue-id-club-minimal-${assetVersion}.glb`,
     static: {
-      portrait: `${basePath}/cue-id-club-minimal-${assetVersion}-portrait.webp`,
-      square: `${basePath}/cue-id-club-minimal-${assetVersion}-square.webp`
+      variants: {}
     },
     metrics: {
       compressedBytes: inspection.bytes,
