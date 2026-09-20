@@ -4,6 +4,7 @@ import {
   CUE_ID_CREATOR_CATALOGUE,
   cueIdCreatorToRuntimeConfig
 } from '../domain/cueIdCreator'
+import { CUE_ID_PRODUCTION_CATALOGUE } from '../domain/cueIdProductionCatalogue'
 
 type Locale = 'es' | 'en'
 type CreatorStep = keyof Pick<
@@ -40,6 +41,7 @@ const viewMode = ref<'edit' | 'review'>('edit')
 const saveState = ref<'idle' | 'saved'>('idle')
 const DRAFT_STORAGE_KEY = 'cuebooker:cue-id:creator-draft:v1'
 const runtimeConfig = computed(() => cueIdCreatorToRuntimeConfig(props.modelValue))
+const creatorUsesLabFixture = computed(() => CUE_ID_PRODUCTION_CATALOGUE.length === 0)
 
 const previewClasses = computed(() => [
   `creator__preview--skin-${props.modelValue.skin}`,
@@ -77,6 +79,7 @@ const copy = computed(() => props.locale === 'es' ? {
   current: 'Selección actual',
   authored: 'Asset authored pendiente',
   authoredBody: 'Esta vista valida el creator y su modelo semántico. El fixture actual no representa el resultado visual final.',
+  productionBody: 'Esta vista ya usa el asset CUE ID admitido por el catálogo de producción.',
   previous: 'Anterior',
   next: 'Siguiente',
   saved: 'Guardado',
@@ -111,6 +114,7 @@ const copy = computed(() => props.locale === 'es' ? {
   current: 'Current selection',
   authored: 'Authored asset pending',
   authoredBody: 'This view validates the creator and its semantic model. The current fixture does not represent the final visual result.',
+  productionBody: 'This view now uses the CUE ID asset admitted by the production catalogue.',
   previous: 'Previous',
   next: 'Next',
   saved: 'Saved',
@@ -337,12 +341,12 @@ onMounted(() => {
         <CueIdStage
           :config="runtimeConfig"
           artist-name="LITUS"
-          lab-asset="candidate"
+          :lab-asset="creatorUsesLabFixture ? 'candidate' : null"
           lab-quality="medium"
           :show-diagnostics="false"
         />
 
-        <div class="creator__semantic-preview" aria-hidden="true">
+        <div v-if="creatorUsesLabFixture" class="creator__semantic-preview" aria-hidden="true">
           <i class="creator__semantic-head" />
           <i class="creator__semantic-face" />
           <i class="creator__semantic-hair" />
@@ -354,7 +358,9 @@ onMounted(() => {
           <i class="creator__semantic-footwear creator__semantic-footwear--right" />
         </div>
 
-        <p class="creator__asset-note">{{ copy.authoredBody }}</p>
+        <p class="creator__asset-note">
+          {{ creatorUsesLabFixture ? copy.authoredBody : copy.productionBody }}
+        </p>
       </div>
 
       <aside class="creator__panel">
@@ -450,11 +456,15 @@ onMounted(() => {
           <CueIdStage
             :config="runtimeConfig"
             artist-name="LITUS"
-            lab-asset="candidate"
+            :lab-asset="creatorUsesLabFixture ? 'candidate' : null"
             lab-quality="medium"
             :show-diagnostics="false"
           />
-          <div class="creator__semantic-preview creator__semantic-preview--review" aria-hidden="true">
+          <div
+            v-if="creatorUsesLabFixture"
+            class="creator__semantic-preview creator__semantic-preview--review"
+            aria-hidden="true"
+          >
             <i class="creator__semantic-head" />
             <i class="creator__semantic-face" />
             <i class="creator__semantic-hair" />
