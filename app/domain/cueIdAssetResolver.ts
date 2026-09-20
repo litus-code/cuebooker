@@ -3,6 +3,7 @@ import type { CueIdDeviceTier } from './cueIdAssets'
 import type { CueIdProductionAdmission } from './cueIdProductionAdmission.ts'
 import { validateCueIdProductionAdmission } from './cueIdProductionAdmission.ts'
 import type { CueIdProductionManifest } from './cueIdProductionManifest.ts'
+import { createCueIdStaticVariantKey } from './cueIdStaticVariants.ts'
 
 export type CueIdResolvedProductionAsset = {
   manifest: CueIdProductionManifest
@@ -39,14 +40,19 @@ export function resolveCueIdAsset(
       )
     )
 
+  const staticKey = createCueIdStaticVariantKey(config)
+
   for (const admission of candidates) {
     const manifest = admission.manifest
+    const staticVariant = manifest.static.variants[staticKey]
+
+    if (!staticVariant) continue
 
     if (tier === 'static') {
       return {
         manifest,
         representation: 'static',
-        staticPath: manifest.static.portrait
+        staticPath: staticVariant.portrait
       }
     }
 
@@ -57,7 +63,7 @@ export function resolveCueIdAsset(
     return {
       manifest,
       representation: canRenderInteractively ? 'interactive' : 'static',
-      staticPath: manifest.static.portrait
+      staticPath: staticVariant.portrait
     }
   }
 
