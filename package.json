@@ -18,7 +18,8 @@
     "cue-id:finalize-static": "node scripts/finalize-cue-id-static-renders.mjs",
     "cue-id:assess": "node --experimental-strip-types scripts/assess-cue-id-v2.mjs",
     "cue-id:propose-promotion": "node --experimental-strip-types scripts/propose-cue-id-promotion.mjs",
-    "cue-id:scaffold-package": "node scripts/scaffold-cue-id-v2-package.mjs"
+    "cue-id:scaffold-package": "node scripts/scaffold-cue-id-v2-package.mjs",
+    "cue-id:assess-sculpt": "node scripts/assess-cue-id-sculpt-review.mjs"
   },
   "dependencies": {
     "@nuxtjs/i18n": "^10.1.0",
