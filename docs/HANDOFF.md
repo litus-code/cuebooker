@@ -7703,3 +7703,44 @@ This converts the V2 source-asset brief into an executable artist handoff packag
 The production catalogue remains empty.
 
 Production remains untouched.
+
+## 133. Sculpt / rig production specification
+
+The first authored V2 asset now has an explicit sculpt and rig production specification rather than relying on broad art-direction language alone.
+
+New document:
+
+`docs/CUE_ID_SCULPT_SPEC_V2.md`
+
+The spec defines:
+
+- canonical `neutral + regular` reference state;
+- strict separation of `base` and `build` morph semantics;
+- three-base regular review gate before build work;
+- nine base/build spot-check matrix;
+- shared editorial adult proportion envelope;
+- allowed structural differentiation zones;
+- build morph rules;
+- head/topology priorities;
+- joint and garment deformation acceptance;
+- shared-rig expectations;
+- semantic pose targets;
+- material-slot expectations;
+- ordered sculpt review gates;
+- hard rejection conditions.
+
+The working-package scaffold now also generates:
+
+`SCULPT_SPEC.md`
+
+so an external 3D artist receives the essential production rules inside the handoff package itself.
+
+Critical rule preserved:
+
+- feminine regular must not be authored as slim;
+- masculine regular must not be authored as strong;
+- build remains independent across feminine, neutral and masculine bases.
+
+The production catalogue remains empty.
+
+Production remains untouched.
