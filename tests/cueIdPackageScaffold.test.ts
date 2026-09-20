@@ -29,6 +29,7 @@ test('scaffolds the complete CUE ID V2 working package', async () => {
   assert.equal(manifest.assetVersion, '2.0.0')
   assert.deepEqual(manifest.static.variants, {})
   assert.deepEqual(manifest.bindings.morphs, {})
+  assert.equal(evidence.assetVersion, '2.0.0')
   assert.equal(evidence.visualReview, false)
   assert.equal(evidence.performance.full, null)
   assert.equal(metadata.assetVersion, '2.0.0')
