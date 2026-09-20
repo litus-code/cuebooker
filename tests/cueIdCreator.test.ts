@@ -133,5 +133,7 @@ test('CUE ID creator UI uses the creator config and runtime adapter', async () =
   assert.match(component, /creator__review-card/)
   assert.match(component, /creator__review-stage/)
   assert.match(component, /creator__review-tags/)
+  assert.match(component, /selectedLabel/)
+  assert.doesNotMatch(component, /v-if="isLastStep"[\s\S]*creator__review-button/)
   assert.doesNotMatch(component, /case 'outfit'/)
 })
