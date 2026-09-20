@@ -13,6 +13,8 @@ test('production CUE ID renderer depends on manifest and generic loader only', a
   assert.match(source, /resolveCueIdProductionBindings/)
   assert.match(source, /applyMorphBindings/)
   assert.match(source, /applyPoseBinding/)
+  assert.match(source, /setLoop\(LoopOnce, 1\)/)
+  assert.match(source, /clampWhenFinished = true/)
   assert.match(source, /applyMaterialBindings/)
   assert.match(source, /setSemanticVisibility/)
   assert.doesNotMatch(source, /CUE_ID_CANDIDATE_ASSETS/)
