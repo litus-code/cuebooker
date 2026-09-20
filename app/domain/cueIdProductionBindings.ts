@@ -1,6 +1,6 @@
 import type { CueIdConfigV1 } from './cueId'
-import type { CueIdProductionManifest } from './cueIdProductionManifest'
-import { isCueIdProductionInteractiveReady } from './cueIdProductionManifest'
+import type { CueIdProductionManifest } from './cueIdProductionManifest.ts'
+import { isCueIdProductionInteractiveReady } from './cueIdProductionManifest.ts'
 
 export type CueIdResolvedProductionBindings = {
   morphs: Array<{ name: string; weight: number }>
