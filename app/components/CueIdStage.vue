@@ -66,9 +66,12 @@ const productionInteractiveManifest = computed(() =>
     : null
 )
 
-watch(productionStaticPath, () => {
-  productionStaticFailed.value = false
-})
+watch(
+  () => resolvedProductionAsset.value?.staticPath || null,
+  () => {
+    productionStaticFailed.value = false
+  }
+)
 
 watch(
   () => resolvedProductionAsset.value?.representation || null,
