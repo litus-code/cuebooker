@@ -355,3 +355,37 @@ Reject an asset if it looks technically correct but still reads as:
 - a game mascot unrelated to music/fashion identity.
 
 Accept only when male and female feel like deliberately designed members of the same CUE ID character family.
+
+
+## 15. Quality-first production rule
+
+The approved male/female prototypes are the visual target.
+
+Do not lower character quality to satisfy an early mobile triangle budget.
+
+Production order:
+
+1. build the best-looking authored master that matches the approved prototypes;
+2. approve face, proportions, hair, clothing and silhouette;
+3. rig and author expressions;
+4. only then create runtime LODs and platform-specific optimizations.
+
+The master may exceed the previous 20k/28k runtime targets.
+
+Those numbers are no longer art-direction gates.
+
+Optimization is acceptable only when the visual difference at product size is negligible.
+
+If a reduction makes the character look cheap, generic, faceted, mannequin-like or visibly worse than the approved concept, reject the reduction and keep the higher-quality asset.
+
+Web/mobile performance will be handled later through:
+
+- LODs;
+- mesh variants;
+- texture atlases;
+- compressed textures;
+- lower-cost shadows/materials;
+- static snapshots on low-end devices;
+- device-tier quality settings.
+
+The art master is never downgraded simply to hit a number.
