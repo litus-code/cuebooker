@@ -22,6 +22,12 @@ jobs:
       BLENDER_DIR: "blender-5.2.2-linux-x64"
 
     steps:
+      - name: Install headless render dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1 libglx-mesa0 libglu1-mesa xvfb
+
       - name: Checkout branch
         uses: actions/checkout@v4
 
@@ -48,7 +54,7 @@ jobs:
           set -euo pipefail
           mkdir -p artifacts
           BLENDER="${RUNNER_TEMP}/${BLENDER_DIR}/blender"
-          "${BLENDER}" --background \
+          xvfb-run -a "${BLENDER}" --background \
             --python scripts/blender/cue-id-creator-v1-bootstrap.py \
             -- \
             --output "${GITHUB_WORKSPACE}/artifacts/source.blend"
