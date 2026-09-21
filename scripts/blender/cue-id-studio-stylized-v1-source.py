@@ -228,6 +228,7 @@ def extract_shell(body, name, predicate, material, offset, decimate_ratio=0.62):
 
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
+    obj.matrix_world = body.matrix_world.copy()
     set_single_material(obj, material)
     smooth(obj)
 
@@ -674,12 +675,12 @@ def create_hair(body, eye_centers, rig, hair_material):
         (
             midpoint.x,
             midpoint.y + eye_span * 0.34,
-            midpoint.z + eye_span * 1.14,
+            midpoint.z + eye_span * 1.26,
         ),
         (
-            eye_span * 1.72,
-            eye_span * 1.12,
-            eye_span * 1.03,
+            eye_span * 1.58,
+            eye_span * 1.02,
+            eye_span * 0.88,
         ),
         hair_material,
         segments=18,
@@ -689,10 +690,9 @@ def create_hair(body, eye_centers, rig, hair_material):
     parts.append(cap)
 
     fringe_specs = (
-        (-0.72, 0.34, 0.46, 0.48, 0.34, -0.18),
-        (-0.22, 0.42, 0.58, 0.52, 0.36, -0.08),
-        (0.28, 0.43, 0.54, 0.50, 0.35, 0.10),
-        (0.70, 0.35, 0.42, 0.45, 0.32, 0.18),
+        (-0.62, 0.20, 0.54, 0.40, 0.25, -0.22),
+        (-0.18, 0.27, 0.66, 0.43, 0.28, -0.12),
+        (0.30, 0.31, 0.48, 0.38, 0.24, 0.10),
     )
 
     for index, (x, z, sx, sy, sz, rotation) in enumerate(fringe_specs):
@@ -701,7 +701,7 @@ def create_hair(body, eye_centers, rig, hair_material):
             (
                 midpoint.x + eye_span * x,
                 midpoint.y - eye_span * 0.10,
-                midpoint.z + eye_span * (0.58 + z),
+                midpoint.z + eye_span * (0.52 + z),
             ),
             (
                 eye_span * sx,
@@ -745,9 +745,11 @@ def create_face_details(body, eyes, rig, hair_material, detail_material):
         iris_radius = max(eye_span_reference * 0.115, height * 0.0105)
         front_y = bounds_min.y - height * 0.0025
 
+        gaze_x = center.x + (-1.0 if index == 0 else 1.0) * height * 0.0032
+
         iris = create_uv_ellipsoid(
             f"cue_iris_{side}",
-            (center.x, front_y, center.z),
+            (gaze_x, front_y, center.z),
             (iris_radius, height * 0.0032, iris_radius),
             hair_material,
             segments=14,
@@ -758,7 +760,7 @@ def create_face_details(body, eyes, rig, hair_material, detail_material):
 
         pupil = create_uv_ellipsoid(
             f"cue_pupil_{side}",
-            (center.x, front_y - height * 0.0020, center.z),
+            (gaze_x, front_y - height * 0.0020, center.z),
             (
                 iris_radius * 0.44,
                 height * 0.0022,
@@ -774,7 +776,7 @@ def create_face_details(body, eyes, rig, hair_material, detail_material):
         highlight = create_uv_ellipsoid(
             f"cue_eye_highlight_{side}",
             (
-                center.x - iris_radius * 0.28,
+                gaze_x - iris_radius * 0.28,
                 front_y - height * 0.0042,
                 center.z + iris_radius * 0.30,
             ),
