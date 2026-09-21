@@ -39,7 +39,10 @@ const copy = computed(() => props.locale === 'es' ? {
   saved: 'Identidad visual guardada.',
   error: 'No se pudo guardar la identidad visual.',
   privateHint: 'Si tu perfil público está activo, esta será tu representación visible. Tus datos de booking y operación siguen siendo privados.',
-  unsaved: 'Cambios sin guardar'
+  unsaved: 'Cambios sin guardar',
+  creatorLab: 'CUE ID Creator 3D',
+  creatorLabBody: 'Crea o continúa tu identidad 3D en el nuevo Creator. Por ahora permanece separada de tu representación pública hasta completar la validación 3D.',
+  openCreator: 'Abrir Creator'
 } : {
   eyebrow: 'VISUAL PRESENTATION',
   title: 'Choose how your identity appears.',
@@ -55,7 +58,10 @@ const copy = computed(() => props.locale === 'es' ? {
   saved: 'Visual identity saved.',
   error: 'The visual identity could not be saved.',
   privateHint: 'If your public profile is active, this becomes your visible representation. Booking and operational data remain private.',
-  unsaved: 'Unsaved changes'
+  unsaved: 'Unsaved changes',
+  creatorLab: 'CUE ID 3D Creator',
+  creatorLabBody: 'Create or continue your 3D identity in the new Creator. For now it remains separate from your public representation until 3D validation is complete.',
+  openCreator: 'Open Creator'
 })
 
 const modes = computed(() => [
@@ -161,6 +167,13 @@ async function save() {
     </div>
 
     <div v-if="presentationMode === 'cue_id'" class="cue-id-profile-editor__studio">
+      <div class="cue-id-profile-editor__creator-link">
+        <div>
+          <strong>{{ copy.creatorLab }}</strong>
+          <span>{{ copy.creatorLabBody }}</span>
+        </div>
+        <NuxtLink to="/cue-id?from=workspace">{{ copy.openCreator }}</NuxtLink>
+      </div>
       <CueIdStage :config="cueIdConfig" :artist-name="artistName" compact />
       <CueIdControls
         :model-value="cueIdConfig"
@@ -196,9 +209,12 @@ async function save() {
 .cue-id-profile-editor__modes button:focus-visible,.cue-id-profile-editor__footer button:focus-visible{outline:2px solid var(--cue-accent);outline-offset:-3px}
 .cue-id-profile-editor__modes button:disabled{cursor:not-allowed;opacity:.55}
 .cue-id-profile-editor__studio{display:grid;gap:14px;padding:14px;background:var(--cue-bg)}
+.cue-id-profile-editor__creator-link{display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px;padding:14px 16px;border:1px solid var(--cue-border);background:color-mix(in srgb,var(--cue-accent) 5%,var(--cue-surface))}
+.cue-id-profile-editor__creator-link div{display:grid;gap:5px}.cue-id-profile-editor__creator-link strong{color:var(--cue-accent);font-size:13px}.cue-id-profile-editor__creator-link span{max-width:680px;color:var(--cue-muted);font-size:11px;line-height:1.45}
+.cue-id-profile-editor__creator-link a{min-height:42px;display:inline-flex;align-items:center;padding:0 14px;border:1px solid var(--cue-accent);color:var(--cue-accent);font-weight:800;text-decoration:none}.cue-id-profile-editor__creator-link a:focus-visible{outline:2px solid var(--cue-accent);outline-offset:2px}
 .cue-id-profile-editor__footer{display:flex;align-items:center;justify-content:flex-end;gap:16px;min-height:72px;padding:14px 18px;border-top:1px solid var(--cue-border)}
 .cue-id-profile-editor__footer>span{margin-right:auto;color:var(--cue-muted);font-size:11px}.cue-id-profile-editor__dirty{color:var(--cue-accent)!important}
 .cue-id-profile-editor__footer button{min-height:44px;padding:0 16px;border:1px solid var(--cue-accent);background:var(--cue-accent);color:#080808;cursor:pointer;font-weight:850}
 .cue-id-profile-editor__footer button:disabled{border-color:var(--cue-border);background:transparent;color:var(--cue-muted);cursor:not-allowed}
-@media(max-width:760px){.cue-id-profile-editor__header{grid-template-columns:1fr}.cue-id-profile-editor__modes{grid-template-columns:1fr}.cue-id-profile-editor__modes button{min-height:92px;border-right:0;border-bottom:1px solid var(--cue-border)}.cue-id-profile-editor__modes button:last-child{border-bottom:0}.cue-id-profile-editor__studio{padding:10px}}
+@media(max-width:760px){.cue-id-profile-editor__header{grid-template-columns:1fr}.cue-id-profile-editor__modes{grid-template-columns:1fr}.cue-id-profile-editor__modes button{min-height:92px;border-right:0;border-bottom:1px solid var(--cue-border)}.cue-id-profile-editor__modes button:last-child{border-bottom:0}.cue-id-profile-editor__studio{padding:10px}.cue-id-profile-editor__creator-link{grid-template-columns:1fr}.cue-id-profile-editor__creator-link a{justify-content:center}}
 </style>
