@@ -9540,3 +9540,70 @@ Behavior:
 The legacy/public visual representation remains separate from the new stylized Creator V1 until real 3D admission is approved.
 
 Production remains untouched.
+
+
+## 177. Commercial home aligned with current product truth
+
+The commercial home was updated without changing production.
+
+Updated:
+
+```text
+content/es/home.json
+content/en/home.json
+app/pages/index.vue
+assets/css/main.css
+```
+
+Changes:
+
+- removed unproven 30-day trial language from primary conversion copy;
+- current staging capabilities now include real outbound/inbound booking email threading;
+- pre-production work is described as hardening, smoke and launch preparation rather than missing core product;
+- discovery remains clearly marked as future/conceptual;
+- added a Distribution section for profile links, direct booking links, hosted iframe widget and attributed QR/source links;
+- added an Artist Identity section connecting Artist Profile, optional CUE ID and later CUE Passport;
+- CUE ID is explicitly described as optional and still in visual lab status;
+- section numbering was normalized after the new narrative blocks;
+- analytics CTA name for the join block no longer references a trial.
+
+The home now tells the product story as:
+
+```text
+fragmented conversations
+-> CUE / capture
+-> Booking Core
+-> distribution
+-> artist identity
+-> roles/access
+-> current product status
+-> future discovery
+```
+
+Production remains untouched.
+
+## 178. Public ingress hardening state re-verified
+
+The deployed staging `submit-booking-request` and repository branch were re-checked.
+
+Verified:
+
+- honeypot protection exists;
+- rate limiting exists at client, artist and artist/contact levels;
+- rate-limit keys are HMAC-derived;
+- database-backed rate limit migrations are committed;
+- anonymous rate protection is implemented, though thresholds still require launch smoke.
+
+Staging Security Advisor currently reports two `rls_enabled_no_policy` INFO notices for internal email-delivery tables. Effective grants were checked directly:
+
+- `anon`: no privileges;
+- `authenticated`: no privileges;
+- `service_role`: internal access only.
+
+Those notices are therefore accepted for the current internal-service design and must not be “fixed” with permissive policies.
+
+The project-level `auth_leaked_password_protection` warning remains open.
+
+The public acknowledgement email still requires a real provider-configured staging delivery smoke before production.
+
+Production remains untouched.
