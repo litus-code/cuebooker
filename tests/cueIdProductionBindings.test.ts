@@ -130,3 +130,29 @@ test('returns null when a selected accessory has no authored binding', () => {
 
   assert.equal(resolveCueIdProductionBindings(config, incomplete), null)
 })
+
+
+test('partial authored lab bindings can resolve the selected state without production-wide readiness', () => {
+  const partial = manifest()
+  partial.bindings.morphs = {}
+  partial.bindings.poses = { neutral: 'pose_neutral' }
+  partial.bindings.outfits = { tee: ['outfit_tee'] }
+  partial.bindings.materials = {
+    body: 'material_body',
+    textile: 'material_textile'
+  }
+
+  assert.equal(
+    resolveCueIdProductionBindings(DEFAULT_CUE_ID_CONFIG, partial),
+    null
+  )
+
+  const resolved = resolveCueIdProductionBindings(
+    DEFAULT_CUE_ID_CONFIG,
+    partial,
+    { allowPartial: true }
+  )
+
+  assert.equal(resolved?.poseClip, 'pose_neutral')
+  assert.deepEqual(resolved?.outfitNodes, ['outfit_tee'])
+})
