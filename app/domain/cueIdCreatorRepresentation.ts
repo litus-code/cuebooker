@@ -1,6 +1,6 @@
-import type { CueIdCreatorConfigV1 } from './cueIdCreator'
-import type { CueIdCreatorAssetSource } from './cueIdCreatorAssetStatus'
-import type { CueIdCreatorVisualStep } from './cueIdCreatorVisualCoverage'
+import type { CueIdCreatorConfigV1 } from './cueIdCreator.ts'
+import type { CueIdCreatorAssetSource } from './cueIdCreatorAssetStatus.ts'
+import type { CueIdCreatorVisualStep } from './cueIdCreatorVisualCoverage.ts'
 import { getCueIdCreatorVisualCoverage } from './cueIdCreatorVisualCoverage'
 
 export type CueIdCreatorRepresentationStatus =
