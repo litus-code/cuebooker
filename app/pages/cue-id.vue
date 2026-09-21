@@ -101,7 +101,7 @@ useHead(() => ({
     />
 
     <p
-      v-if="saveState === 'saved'"
+      v-if="saveState !== 'idle'"
       class="cue-id-page__saved"
       role="status"
       aria-live="polite"
