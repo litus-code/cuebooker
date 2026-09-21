@@ -9166,3 +9166,50 @@ Rig remains the gate for:
 - clothing deformation validation.
 
 Production remains untouched.
+
+
+## 166. Stylized Creator lab shell completed
+
+The live branch already contained the isolated `CueIdStylizedWorkspace.vue` shell described in section 165. This pass validated that implementation against the current branch and completed missing lab-only UX without touching production.
+
+Updated:
+
+```text
+app/components/CueIdStylizedWorkspace.vue
+app/pages/cue-id.vue
+```
+
+Current lab behavior:
+
+- one body is visible/edited at a time;
+- male/female body switching preserves the semantic Creator config;
+- the same shared catalogue remains available for both bodies;
+- skin tones, expressions, hair, hair colors, eyes, contact lenses, facial hair, piercings, makeup and nails are editable;
+- top, bottom and one-piece colors are controlled independently;
+- footwear has its own color;
+- shared accessory color is editable;
+- harness remains a torso overlay selection;
+- Venetian mask and festival/Burning-Man-inspired catalogue entries remain present;
+- the stage remains a non-3D pending-rig state and does not reintroduce the rejected procedural mannequin;
+- the current selection is summarized in the pending-rig stage so the editor remains legible while physical preview is deferred.
+
+Save semantics in the lab:
+
+- `Guardar CUE ID` now saves a validated V1 draft only in browser `localStorage`;
+- the draft is restored on the same device on the next `/cue-id` visit;
+- malformed/stale local drafts are discarded;
+- this save path does not publish the profile;
+- it does not write to Supabase;
+- it does not connect assets to `CUE_ID_PRODUCTION_CATALOGUE`;
+- it does not admit anything to `CUE_ID_CREATOR_3D_LAB_CANDIDATE`.
+
+The route remains:
+
+```text
+/cue-id
+robots = noindex, nofollow
+```
+
+The physical Blender rig remains pending and unapproved. Expression morph execution, actual 3D body rendering and clothing deformation remain blocked on the rig deformation gate.
+
+Production remains untouched.
