@@ -1,7 +1,7 @@
-import type { CueIdConfigV1 } from './cueId'
-import { resolveCueIdAsset } from './cueIdAssetResolver'
-import { CUE_ID_PRODUCTION_CATALOGUE } from './cueIdProductionCatalogue'
-import type { CueIdProductionAdmission } from './cueIdProductionAdmission'
+import type { CueIdConfigV1 } from './cueId.ts'
+import { resolveCueIdAsset } from './cueIdAssetResolver.ts'
+import { CUE_ID_PRODUCTION_CATALOGUE } from './cueIdProductionCatalogue.ts'
+import type { CueIdProductionAdmission } from './cueIdProductionAdmission.ts'
 
 export type CueIdCreatorAssetSource = 'lab_candidate' | 'production_static' | 'production_interactive'
 
