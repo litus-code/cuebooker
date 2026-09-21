@@ -51,6 +51,8 @@ const activeRepresentation = computed(() =>
 )
 
 const previewClasses = computed(() => [
+  `creator__preview--base-${props.modelValue.base}`,
+  `creator__preview--build-${props.modelValue.build}`,
   `creator__preview--skin-${props.modelValue.skin}`,
   `creator__preview--face-${props.modelValue.face}`,
   `creator__preview--hair-${props.modelValue.hair}`,
@@ -400,10 +402,13 @@ onMounted(() => {
 
         <div v-if="creatorUsesLabFixture" class="creator__semantic-preview" aria-hidden="true">
           <i class="creator__semantic-head" />
+          <i class="creator__semantic-neck" />
           <i class="creator__semantic-face" />
           <i class="creator__semantic-hair" />
           <i class="creator__semantic-facial-hair" />
           <i class="creator__semantic-accessory" />
+          <i class="creator__semantic-arm creator__semantic-arm--left" />
+          <i class="creator__semantic-arm creator__semantic-arm--right" />
           <i class="creator__semantic-top" />
           <i class="creator__semantic-bottom" />
           <i class="creator__semantic-footwear creator__semantic-footwear--left" />
@@ -589,18 +594,30 @@ onMounted(() => {
 .creator__asset-status li{display:flex;justify-content:space-between;gap:8px;color:var(--cue-muted);font:700 8px/1.2 monospace;text-transform:uppercase}
 .creator__asset-status li b{color:#8d928b}
 .creator__asset-status li[data-pass="true"] b{color:var(--cue-accent)}
-.creator__semantic-preview{position:absolute;z-index:6;left:50%;top:47%;width:150px;height:330px;transform:translate(-50%,-50%);pointer-events:none;opacity:.42;mix-blend-mode:screen}
+.creator__semantic-preview{position:absolute;z-index:6;left:50%;top:47%;width:170px;height:352px;transform:translate(-50%,-50%);pointer-events:none;opacity:.94;filter:drop-shadow(0 28px 34px rgba(0,0,0,.46));--creator-body-scale:1;--creator-shoulder-shift:0px}
 .creator__semantic-preview i{position:absolute;display:block}
-.creator__semantic-head{left:49px;top:4px;width:52px;height:66px;border-radius:46% 46% 42% 42%;background:var(--creator-skin,#b9805f);transition:clip-path .2s ease,border-radius .2s ease}
-.creator__semantic-face{left:59px;top:31px;width:32px;height:2px;background:rgba(20,20,20,.55);box-shadow:0 12px 0 rgba(20,20,20,.38)}
-.creator__semantic-hair{left:46px;top:-1px;width:58px;height:25px;background:#151815;border-radius:55% 55% 28% 28%}
-.creator__semantic-facial-hair{left:58px;top:49px;width:34px;height:0;background:#181a18;border-radius:0 0 50% 50%;opacity:0}
+.creator__semantic-head{left:58px;top:2px;width:54px;height:69px;border-radius:47% 47% 43% 43% / 44% 44% 55% 55%;background:linear-gradient(105deg,color-mix(in srgb,var(--creator-skin,#b9805f) 82%,#fff 18%),var(--creator-skin,#b9805f) 52%,color-mix(in srgb,var(--creator-skin,#b9805f) 76%,#261812 24%));box-shadow:inset -5px -2px 10px rgba(0,0,0,.14);transition:clip-path .2s ease,border-radius .2s ease}
+.creator__semantic-neck{left:75px;top:62px;width:20px;height:28px;background:var(--creator-skin,#b9805f);clip-path:polygon(18% 0,82% 0,100% 100%,0 100%)}
+.creator__semantic-face{left:65px;top:31px;width:40px;height:18px;border-top:2px solid rgba(28,20,16,.38);border-bottom:1px solid rgba(28,20,16,.24);opacity:.72}
+.creator__semantic-face::after{content:'';position:absolute;left:50%;top:3px;width:5px;height:10px;border-right:1px solid rgba(28,20,16,.34);border-bottom:1px solid rgba(28,20,16,.3);transform:translateX(-50%) skewX(-8deg)}
+.creator__semantic-hair{left:54px;top:-3px;width:62px;height:27px;background:#151815;border-radius:58% 58% 30% 30%}
+.creator__semantic-facial-hair{left:64px;top:50px;width:42px;height:0;background:#181a18;border-radius:0 0 50% 50%;opacity:0}
 .creator__semantic-accessory{display:none}
-.creator__semantic-top{left:27px;top:76px;width:96px;height:112px;background:#272c27;clip-path:polygon(18% 0,82% 0,100% 17%,86% 100%,14% 100%,0 17%)}
-.creator__semantic-bottom{left:38px;top:184px;width:74px;height:118px;background:#202420;clip-path:polygon(5% 0,95% 0,82% 100%,58% 100%,50% 48%,42% 100%,18% 100%)}
-.creator__semantic-footwear{bottom:0;width:37px;height:17px;background:#d7d8d4;border-radius:7px 12px 4px 4px}
-.creator__semantic-footwear--left{left:34px}
-.creator__semantic-footwear--right{right:34px;transform:scaleX(-1)}
+.creator__semantic-arm{top:101px;width:20px;height:126px;background:linear-gradient(var(--creator-skin,#b9805f),color-mix(in srgb,var(--creator-skin,#b9805f) 82%,#17120f 18%));border-radius:45% 45% 50% 50%;transform-origin:50% 8%}
+.creator__semantic-arm::after{content:'';position:absolute;left:3px;bottom:-13px;width:14px;height:23px;border-radius:48% 48% 42% 42%;background:var(--creator-skin,#b9805f)}
+.creator__semantic-arm--left{left:23px;transform:rotate(3deg)}
+.creator__semantic-arm--right{right:23px;transform:rotate(-2deg)}
+.creator__semantic-top{left:31px;top:79px;width:108px;height:116px;background:linear-gradient(118deg,#343a34,#202420 48%,#121512);clip-path:polygon(19% 0,81% 0,100% 17%,88% 100%,12% 100%,0 17%);transform:scaleX(var(--creator-body-scale));transform-origin:50% 12%;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.creator__semantic-bottom{left:42px;top:190px;width:86px;height:132px;background:linear-gradient(100deg,#292e29,#171a17 66%,#101210);clip-path:polygon(5% 0,95% 0,84% 100%,58% 100%,50% 45%,42% 100%,16% 100%)}
+.creator__semantic-footwear{bottom:0;width:42px;height:18px;background:linear-gradient(180deg,#ecece8,#a9aaa6);border-radius:7px 14px 4px 4px;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.creator__semantic-footwear--left{left:35px}
+.creator__semantic-footwear--right{right:35px;transform:scaleX(-1)}
+.creator__preview--build-slim{--creator-body-scale:.94}
+.creator__preview--build-regular{--creator-body-scale:1}
+.creator__preview--build-strong{--creator-body-scale:1.07}
+.creator__preview--base-feminine .creator__semantic-top{clip-path:polygon(22% 0,78% 0,96% 18%,84% 100%,16% 100%,4% 18%)}
+.creator__preview--base-neutral .creator__semantic-top{clip-path:polygon(19% 0,81% 0,100% 17%,88% 100%,12% 100%,0 17%)}
+.creator__preview--base-masculine .creator__semantic-top{clip-path:polygon(15% 0,85% 0,100% 18%,88% 100%,12% 100%,0 18%)}
 
 .creator__preview--skin-skin-01{--creator-skin:#f1d1bb}
 .creator__preview--skin-skin-02{--creator-skin:#d9aa88}
