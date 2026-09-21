@@ -9432,3 +9432,56 @@ Behavior:
 Unit coverage proves object-key order and piercing-order differences do not create false dirty state.
 
 Production remains untouched.
+
+
+## 174. CUE ID Creator non-3D closure pass
+
+The current Creator V1 lab is now considered functionally closed as far as work that does not require the authored 3D rig/render pipeline.
+
+Completed in this pass:
+
+- semantic config equality is used for dirty-state tracking instead of raw object serialization;
+- piercing order does not create false dirty state;
+- local draft parsing is schema-aware and rejects malformed or incompatible stored data;
+- invalid stored drafts are removed instead of being retried on every visit;
+- Save validates the runtime config again before writing browser storage;
+- browser-storage read/write/remove failures are handled without crashing the Creator;
+- unsaved changes trigger a browser unload warning;
+- in-app route changes prompt before discarding unsaved CUE ID changes;
+- Reset requires confirmation before deleting the device-local draft;
+- the pending stage no longer uses a body/mannequin-shaped placeholder;
+- the pending stage now uses an abstract grid/halo treatment so it cannot be mistaken for an approved avatar;
+- the look summary reflects the active one-piece layer instead of always showing stored top/bottom;
+- expression is included in the current look summary;
+- piercing selection has an explicit maximum-three state;
+- unselected piercing choices are disabled once the limit is reached while selected piercings remain removable;
+- wardrobe tests now guarantee catalogue coverage for every category that currently has an authored fitting contract;
+- config parsing and runtime validation have dedicated tests.
+
+### Lab / production boundaries re-verified
+
+```text
+CUE_ID_CREATOR_3D_LAB_CANDIDATE = null
+CUE_ID_PRODUCTION_CATALOGUE = []
+```
+
+No new asset was admitted to either boundary.
+
+### What remains genuinely blocked by 3D work
+
+The following must not be represented as completed until the approved masters pass the physical deformation gate:
+
+1. execute and review the male/female physical rigs;
+2. approve neutral/relaxed deformation on real geometry;
+3. author and review the facial expression morph targets;
+4. bind approved hair assets to the real heads;
+5. create and review actual garment fits for the shared catalogue;
+6. validate harness/outerwear clipping on real deformation;
+7. connect authored GLB semantic bindings to the Creator stage;
+8. validate mobile/Android GPU and memory behavior with the real assets;
+9. create real static fallbacks from approved authored assets;
+10. only after visual/mobile/package/performance evidence, consider lab-candidate or production admission.
+
+Until those gates pass, the current abstract stage and temporary 2D option previews are intentional and truthful.
+
+Production remains untouched.
