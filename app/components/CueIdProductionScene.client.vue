@@ -11,6 +11,8 @@ import {
 } from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import type { CueIdConfigV1 } from '../domain/cueId'
+import type { CueIdCreatorConfigV1 } from '../domain/cueIdCreator'
+import { resolveCueIdCreator3dBindings } from '../domain/cueIdCreator3dBindings'
 import { getCueIdAccentColor, CUE_ID_MATERIAL_PRESETS } from '../domain/cueIdMaterial'
 import { resolveCueIdProductionBindings } from '../domain/cueIdProductionBindings'
 import type { CueIdProductionManifest } from '../domain/cueIdProductionManifest'
@@ -19,6 +21,7 @@ import { loadCueIdGlbBuffer } from '../services/cueIdAssetLoader'
 
 const props = defineProps<{
   config: CueIdConfigV1
+  creatorConfig?: CueIdCreatorConfigV1 | null
   manifest: CueIdProductionManifest
   decision: CueIdRuntimeDecision
 }>()
@@ -77,10 +80,16 @@ function applyMorphBindings(root: Object3D) {
   const resolved = resolveCueIdProductionBindings(props.config, props.manifest)
   if (!resolved) return false
 
-  const semanticMorphNames = new Set(
-    Object.values(props.manifest.bindings.morphs || {})
-      .filter((value): value is string => Boolean(value))
-  )
+  const creatorResolved = props.creatorConfig
+    ? resolveCueIdCreator3dBindings(props.creatorConfig, props.manifest)
+    : null
+
+  if (props.creatorConfig && !creatorResolved) return false
+
+  const semanticMorphNames = new Set([
+    ...Object.values(props.manifest.bindings.morphs || {}),
+    ...Object.values(props.manifest.bindings.creator?.faces || {})
+  ].filter((value): value is string => Boolean(value)))
 
   root.traverse(node => {
     const mesh = node as Object3D & {
@@ -96,7 +105,7 @@ function applyMorphBindings(root: Object3D) {
       if (index !== undefined) influences[index] = 0
     }
 
-    for (const morph of resolved.morphs) {
+    for (const morph of [...resolved.morphs, ...(creatorResolved?.morphs || [])]) {
       const index = dictionary[morph.name]
       if (index !== undefined) influences[index] = morph.weight
     }
@@ -127,6 +136,12 @@ function applyPoseBinding(root: Object3D) {
 function applyMaterialBindings(root: Object3D) {
   const resolved = resolveCueIdProductionBindings(props.config, props.manifest)
   if (!resolved) return false
+
+  const creatorResolved = props.creatorConfig
+    ? resolveCueIdCreator3dBindings(props.creatorConfig, props.manifest)
+    : null
+
+  if (props.creatorConfig && !creatorResolved) return false
 
   const preset = CUE_ID_MATERIAL_PRESETS[props.config.material]
   const mapped = new Map<string, keyof typeof preset>([
@@ -163,7 +178,9 @@ function applyMaterialBindings(root: Object3D) {
       material.roughness = surface.roughness
       material.metalness = surface.metalness
 
-      if (semanticSurface === 'accent') {
+      if (semanticSurface === 'body' && creatorResolved) {
+        material.color.set(creatorResolved.skinColor)
+      } else if (semanticSurface === 'accent') {
         material.color.set(getCueIdAccentColor(props.config.accent))
       }
 
@@ -178,6 +195,12 @@ function applyProductionSemantics(root: Object3D) {
   const resolved = resolveCueIdProductionBindings(props.config, props.manifest)
   if (!resolved) return false
 
+  const creatorResolved = props.creatorConfig
+    ? resolveCueIdCreator3dBindings(props.creatorConfig, props.manifest)
+    : null
+
+  if (props.creatorConfig && !creatorResolved) return false
+
   const allOutfitNodes = Object.values(props.manifest.bindings.outfits || {})
     .flat()
     .filter((value): value is string => Boolean(value))
@@ -185,8 +208,27 @@ function applyProductionSemantics(root: Object3D) {
     .flat()
     .filter((value): value is string => Boolean(value))
 
-  setSemanticVisibility(root, resolved.outfitNodes, allOutfitNodes)
+  setSemanticVisibility(
+    root,
+    creatorResolved ? [] : resolved.outfitNodes,
+    allOutfitNodes
+  )
   setSemanticVisibility(root, resolved.accessoryNodes, allAccessoryNodes)
+
+  const creator = props.manifest.bindings.creator
+  if (creatorResolved && creator) {
+    const allHairNodes = Object.values(creator.hairs || {}).flat()
+    const allFacialHairNodes = Object.values(creator.facialHair || {}).flat()
+    const allTopNodes = Object.values(creator.tops || {}).flat()
+    const allBottomNodes = Object.values(creator.bottoms || {}).flat()
+    const allFootwearNodes = Object.values(creator.footwear || {}).flat()
+
+    setSemanticVisibility(root, creatorResolved.hairNodes, allHairNodes)
+    setSemanticVisibility(root, creatorResolved.facialHairNodes, allFacialHairNodes)
+    setSemanticVisibility(root, creatorResolved.topNodes, allTopNodes)
+    setSemanticVisibility(root, creatorResolved.bottomNodes, allBottomNodes)
+    setSemanticVisibility(root, creatorResolved.footwearNodes, allFootwearNodes)
+  }
 
   return applyMorphBindings(root)
     && applyPoseBinding(root)
@@ -322,7 +364,14 @@ watch(
     props.config.accessory,
     props.config.pose,
     props.config.material,
-    props.config.accent
+    props.config.accent,
+    props.creatorConfig?.skin,
+    props.creatorConfig?.face,
+    props.creatorConfig?.hair,
+    props.creatorConfig?.facialHair,
+    props.creatorConfig?.top,
+    props.creatorConfig?.bottom,
+    props.creatorConfig?.footwear
   ],
   () => {
     if (!scene.value) return
