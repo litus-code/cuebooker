@@ -509,8 +509,8 @@ onMounted(() => {
           <CueIdStage
             :config="runtimeConfig"
             artist-name="LITUS"
-            :lab-asset="creatorUsesLabFixture ? 'candidate' : null"
-            lab-quality="medium"
+            :interactive="!creatorUsesLabFixture"
+            :show-placeholder-figure="!creatorUsesLabFixture"
             :show-diagnostics="false"
           />
           <div
@@ -519,10 +519,13 @@ onMounted(() => {
             aria-hidden="true"
           >
             <i class="creator__semantic-head" />
+            <i class="creator__semantic-neck" />
             <i class="creator__semantic-face" />
             <i class="creator__semantic-hair" />
             <i class="creator__semantic-facial-hair" />
             <i class="creator__semantic-accessory" />
+            <i class="creator__semantic-arm creator__semantic-arm--left" />
+            <i class="creator__semantic-arm creator__semantic-arm--right" />
             <i class="creator__semantic-top" />
             <i class="creator__semantic-bottom" />
             <i class="creator__semantic-footwear creator__semantic-footwear--left" />
