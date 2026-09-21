@@ -22,6 +22,7 @@ import { loadCueIdGlbBuffer } from '../services/cueIdAssetLoader'
 const props = defineProps<{
   config: CueIdConfigV1
   creatorConfig?: CueIdCreatorConfigV1 | null
+  labMode?: boolean
   manifest: CueIdProductionManifest
   decision: CueIdRuntimeDecision
 }>()
@@ -81,7 +82,11 @@ function setSemanticVisibility(root: Object3D, selectedNodes: string[], allNodes
 }
 
 function applyMorphBindings(root: Object3D) {
-  const resolved = resolveCueIdProductionBindings(props.config, props.manifest)
+  const resolved = resolveCueIdProductionBindings(
+    props.config,
+    props.manifest,
+    { allowPartial: props.labMode === true }
+  )
   if (!resolved) return false
 
   const creatorResolved = props.creatorConfig
@@ -119,7 +124,11 @@ function applyMorphBindings(root: Object3D) {
 }
 
 function applyPoseBinding(root: Object3D) {
-  const resolved = resolveCueIdProductionBindings(props.config, props.manifest)
+  const resolved = resolveCueIdProductionBindings(
+    props.config,
+    props.manifest,
+    { allowPartial: props.labMode === true }
+  )
   if (!resolved) return false
 
   const clip = animations.find(item => item.name === resolved.poseClip)
@@ -138,7 +147,11 @@ function applyPoseBinding(root: Object3D) {
 }
 
 function applyMaterialBindings(root: Object3D) {
-  const resolved = resolveCueIdProductionBindings(props.config, props.manifest)
+  const resolved = resolveCueIdProductionBindings(
+    props.config,
+    props.manifest,
+    { allowPartial: props.labMode === true }
+  )
   if (!resolved) return false
 
   const creatorResolved = props.creatorConfig
@@ -196,7 +209,11 @@ function applyMaterialBindings(root: Object3D) {
 }
 
 function applyProductionSemantics(root: Object3D) {
-  const resolved = resolveCueIdProductionBindings(props.config, props.manifest)
+  const resolved = resolveCueIdProductionBindings(
+    props.config,
+    props.manifest,
+    { allowPartial: props.labMode === true }
+  )
   if (!resolved) return false
 
   const creatorResolved = props.creatorConfig
