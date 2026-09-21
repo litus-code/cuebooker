@@ -8831,3 +8831,23 @@ Female derivation and the full wardrobe/accessory library follow only after this
 male visual gate passes.
 
 Production remains untouched.
+
+
+## 161. Quality-first rule overrides early runtime budgets
+
+The user explicitly rejected performance-first compromises.
+
+CUE ID must not ship or be approved visually if optimization makes the character look cheap.
+
+From this point:
+
+- approved male/female prototype images are the art target;
+- first build high-quality 3D masters;
+- do not decimate the master before visual approval;
+- previous <=20k preferred / <=28k hard targets apply only to later runtime LOD candidates, not to the authored master;
+- rigging, expressions and modular assets follow the accepted master;
+- runtime optimization happens after the master passes visual review;
+- if an optimization visibly reduces face, hair, hands, clothing or silhouette quality, reject it;
+- low-end devices may use lower LODs or static snapshots rather than degrading the canonical art source.
+
+Production remains untouched.
