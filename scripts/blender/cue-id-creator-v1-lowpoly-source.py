@@ -302,7 +302,7 @@ def create_authored_parts(body, rig, textile_material, hair_material):
         side_crop = center.z > 1.515 and center.y > -0.155
         return abs(center.x) < 0.17 and (crown or side_crop)
 
-    def hair_transform(coord, index):
+    def hair_transform(coord, normal, index):
         relative = coord - head_center
         direction = relative.normalized() if relative.length > 0.0001 else Vector((0.0, 0.0, 1.0))
         result = coord + direction * 0.010
@@ -330,13 +330,14 @@ def create_authored_parts(body, rig, textile_material, hair_material):
         short_sleeve = 1.045 < center.z < 1.335 and abs(center.x) < 0.455
         return torso or short_sleeve
 
-    def tee_transform(coord, _index):
+    def tee_transform(coord, normal, _index):
         relative = coord - torso_center
         lower_extra = min(max((1.05 - coord.z) / 0.25, 0.0), 1.0)
         sleeve_extra = min(max((abs(coord.x) - 0.24) / 0.17, 0.0), 1.0)
         relative.x *= 1.105 + 0.055 * lower_extra + 0.035 * sleeve_extra
         relative.y *= 1.18 + 0.035 * sleeve_extra
         result = torso_center + relative
+        result += normal * 0.012
         if coord.z < 0.88:
             result.z -= 0.026
         return result
@@ -350,7 +351,7 @@ def create_authored_parts(body, rig, textile_material, hair_material):
     def pants_predicate(center):
         return 0.065 < center.z < 0.93 and abs(center.x) < 0.31
 
-    def pants_transform(coord, _index):
+    def pants_transform(coord, normal, _index):
         side = -1.0 if coord.x < 0.0 else 1.0
         leg_center_x = side * 0.112
         relative_x = coord.x - leg_center_x
@@ -361,6 +362,7 @@ def create_authored_parts(body, rig, textile_material, hair_material):
         result = coord.copy()
         result.x = leg_center_x + relative_x * x_scale
         result.y = y_center + (coord.y - y_center) * (1.16 + 0.08 * lower_blend)
+        result += normal * 0.013
         if coord.z < 0.14:
             result.z -= 0.010
         return result
