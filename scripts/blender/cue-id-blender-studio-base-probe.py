@@ -32,8 +32,7 @@ def clear_scene():
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
     for collection in list(bpy.data.collections):
-        if collection.users == 0:
-            bpy.data.collections.remove(collection)
+        bpy.data.collections.remove(collection)
 
 
 def library_index(blend_path):
@@ -59,11 +58,18 @@ def append_collection(blend_path, collection_name):
         for name, collection in bpy.data.collections.items()
         if name not in before
     ]
+    if created:
+        exact = next(
+            (collection for collection in created if collection.name == collection_name),
+            None,
+        )
+        if exact:
+            return exact
+        return created[-1]
+
     target = bpy.data.collections.get(collection_name)
     if target:
         return target
-    if created:
-        return created[-1]
     raise RuntimeError(f"Collection was not appended: {collection_name}")
 
 
@@ -235,7 +241,12 @@ def render_collection(collection, output_path, portrait=False):
     bpy.context.scene.world = world
 
     scene = bpy.context.scene
-    scene.render.engine = "BLENDER_EEVEE"
+    scene.render.engine = "BLENDER_WORKBENCH"
+    scene.display.shading.light = "STUDIO"
+    scene.display.shading.color_type = "MATERIAL"
+    scene.display.shading.show_shadows = True
+    scene.display.shading.show_cavity = True
+    scene.display.shading.cavity_type = "WORLD"
     scene.render.resolution_x = 768
     scene.render.resolution_y = 1024
     scene.render.resolution_percentage = 100
