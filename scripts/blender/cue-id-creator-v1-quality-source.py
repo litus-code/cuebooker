@@ -41,11 +41,11 @@ FACE_04_TARGETS = [
 ]
 
 AUTHORING_ASSETS = {
-    "hair": ["short03.mhclo", "short02.mhclo", "short01.mhclo"],
-    "eyes": ["high-poly.mhclo", "low-poly.mhclo"],
+    "hair": ["short01.mhclo", "short02.mhclo", "short03.mhclo"],
+    "eyes": ["low-poly.mhclo", "high-poly.mhclo"],
     "eyebrows": ["eyebrow002.mhclo", "eyebrow001.mhclo"],
     "top": ["elvs_crude_t-shirt_male.mhclo", "toigo_basic_tucked_t-shirt.mhclo"],
-    "bottom": ["toigo_harem_pants.mhclo", "cortu_cargo_pants.mhclo"],
+    "bottom": ["cortu_cargo_pants.mhclo", "toigo_wool_pants.mhclo", "toigo_harem_pants.mhclo"],
     "footwear": ["shoes04.mhclo", "shoes03.mhclo", "shoes01.mhclo"],
 }
 
@@ -528,7 +528,7 @@ def main():
     selected["skin"] = skin_name
 
     eye_path, eye_name = find_first_asset(AssetService, "eyes", AUTHORING_ASSETS["eyes"])
-    eyes = add_asset(HumanService, eye_path, human, "Eyes", material_type="PROCEDURAL_EYES")
+    eyes = add_asset(HumanService, eye_path, human, "Eyes", material_type="GAMEENGINE")
     eyes.name = "cue_eyes"
     selected["eyes"] = eye_name
 
