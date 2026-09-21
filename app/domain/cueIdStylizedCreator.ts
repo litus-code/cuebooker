@@ -303,6 +303,44 @@ export function cloneCueIdStylizedCreatorConfig(
   }
 }
 
+export function cueIdStylizedCreatorConfigsEqual(
+  a: CueIdStylizedCreatorConfigV1,
+  b: CueIdStylizedCreatorConfigV1
+) {
+  const canonical = (config: CueIdStylizedCreatorConfigV1) => [
+    config.schemaVersion,
+    config.enabled,
+    config.body,
+    config.skin,
+    config.expression,
+    config.eyeColor,
+    config.contactLens,
+    config.hair,
+    config.hairColor,
+    config.facialHair,
+    [...config.piercings].sort(),
+    config.headwear,
+    config.faceAccessory,
+    config.earAccessory,
+    config.gloves,
+    config.torsoAccessory,
+    config.neckAccessory,
+    config.makeup,
+    config.nails,
+    config.top,
+    config.topColor,
+    config.bottom,
+    config.bottomColor,
+    config.onePiece,
+    config.onePieceColor,
+    config.footwear,
+    config.footwearColor,
+    config.accessoryColor
+  ]
+
+  return JSON.stringify(canonical(a)) === JSON.stringify(canonical(b))
+}
+
 export type CueIdStylizedBrandMarkId = 'none' | 'cuebooker-symbol'
 
 export type CueIdStylizedBrandPlacementId =
