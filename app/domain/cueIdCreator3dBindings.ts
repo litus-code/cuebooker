@@ -22,7 +22,7 @@ export type CueIdResolvedCreator3dBindings = {
   topNodes: string[]
   bottomNodes: string[]
   footwearNodes: string[]
-  skinMaterial: string
+  skinColor: string
 }
 
 const REFERENCE_FACE: CueIdFaceId = 'face-03'
@@ -143,7 +143,7 @@ export function resolveCueIdCreator3dBindings(
     morphs.push({ name: faceMorph, weight: 1 })
   }
 
-  const skinMaterial = creator.skins?.[config.skin]
+  const skinColor = creator.skins?.[config.skin]
   const hairNodes = creator.hairs?.[config.hair]
   const facialHairNodes = config.facialHair === 'none'
     ? []
@@ -153,7 +153,7 @@ export function resolveCueIdCreator3dBindings(
   const footwearNodes = creator.footwear?.[config.footwear]
 
   if (
-    !skinMaterial
+    !skinColor
     || !hairNodes?.length
     || (config.facialHair !== 'none' && !facialHairNodes?.length)
     || !topNodes?.length
@@ -170,6 +170,6 @@ export function resolveCueIdCreator3dBindings(
     topNodes: [...topNodes],
     bottomNodes: [...bottomNodes],
     footwearNodes: [...footwearNodes],
-    skinMaterial
+    skinColor
   }
 }
