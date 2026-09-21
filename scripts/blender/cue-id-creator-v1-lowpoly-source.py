@@ -236,8 +236,19 @@ def copy_weights(source, target, source_indices):
                 target_group.add([new_index], membership.weight, "REPLACE")
 
 
+def hide_source_region(source, name, source_indices):
+    group_name = "cue_hide_" + name
+    group = source.vertex_groups.get(group_name) or source.vertex_groups.new(name=group_name)
+    group.add(source_indices, 1.0, "REPLACE")
+
+    modifier = source.modifiers.new(name=group_name, type="MASK")
+    modifier.vertex_group = group_name
+    modifier.invert_vertex_group = True
+    return modifier
+
+
 def derived_shell(source, rig, name, face_predicate, transform, material,
-                  solidify=0.0, subdiv=0):
+                  solidify=0.0, subdiv=0, hide_source=False):
     selected_polygons = []
     used = set()
 
@@ -290,6 +301,10 @@ def derived_shell(source, rig, name, face_predicate, transform, material,
         modifier.render_levels = subdiv
 
     assign_only_material(obj, material)
+
+    if hide_source:
+        hide_source_region(source, name, source_indices)
+
     return obj
 
 
@@ -345,7 +360,7 @@ def create_authored_parts(body, rig, textile_material, hair_material):
     tee = derived_shell(
         body, rig, "cue_top_oversized_tee",
         tee_predicate, tee_transform, textile_material,
-        solidify=0.010, subdiv=0,
+        solidify=0.010, subdiv=0, hide_source=True,
     )
 
     def pants_predicate(center):
@@ -370,7 +385,7 @@ def create_authored_parts(body, rig, textile_material, hair_material):
     pants = derived_shell(
         body, rig, "cue_bottom_wide_trouser",
         pants_predicate, pants_transform, textile_material,
-        solidify=0.010, subdiv=0,
+        solidify=0.010, subdiv=0, hide_source=True,
     )
 
     def shoe_predicate(center):
@@ -392,7 +407,7 @@ def create_authored_parts(body, rig, textile_material, hair_material):
     shoes = derived_shell(
         body, rig, "cue_footwear_technical_sneaker",
         shoe_predicate, shoe_transform, textile_material,
-        solidify=0.009, subdiv=0,
+        solidify=0.009, subdiv=0, hide_source=True,
     )
 
     return [hair, tee, pants, shoes]
@@ -630,11 +645,6 @@ def main():
 
     add_face04_proxy_morph(human, body, HumanService, TargetService)
 
-    body_subdiv = body.modifiers.new(name="cue_body_subdivision", type="SUBSURF")
-    body_subdiv.subdivision_type = "CATMULL_CLARK"
-    body_subdiv.levels = 1
-    body_subdiv.render_levels = 1
-
     body_material = make_material("cue_mat_body", (0.34, 0.17, 0.095, 1.0), 0.60)
     textile_material = make_material("cue_mat_textile", (0.012, 0.014, 0.018, 1.0), 0.79)
     hair_material = make_material("cue_mat_hair", (0.004, 0.0035, 0.003, 1.0), 0.86)
@@ -644,6 +654,14 @@ def main():
     human.data.materials.append(body_material)
 
     authored_parts = create_authored_parts(body, rig, textile_material, hair_material)
+
+    # Keep body smoothing after garment masks so hidden skin is removed before
+    # subdivision. This lowers the evaluated render cost and avoids clothing
+    # fighting the body surface.
+    body_subdiv = body.modifiers.new(name="cue_body_subdivision", type="SUBSURF")
+    body_subdiv.subdivision_type = "CATMULL_CLARK"
+    body_subdiv.levels = 1
+    body_subdiv.render_levels = 1
 
     create_pose_action(
         rig,
