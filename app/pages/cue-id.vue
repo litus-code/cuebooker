@@ -7,11 +7,11 @@ const cueIdConfig = ref(cloneCueIdCreatorConfig(DEFAULT_CUE_ID_CREATOR_CONFIG))
 const copy = computed(() => preferences.locale.value === 'es' ? {
   back: 'Volver',
   lab: 'LAB / NOINDEX',
-  status: 'CUE ID V2 · CREATOR PROTOTYPE'
+  status: 'CUE ID · CREATOR 3D LAB'
 } : {
   back: 'Back',
   lab: 'LAB / NOINDEX',
-  status: 'CUE ID V2 · CREATOR PROTOTYPE'
+  status: 'CUE ID · CREATOR 3D LAB'
 })
 
 function resetCueId() {
