@@ -8099,3 +8099,45 @@ The purpose of this pass is to make the creator coherent and useful while the re
 The production catalogue remains empty.
 
 Production remains untouched.
+
+
+## 144. Creator UX separated from technical asset diagnostics
+
+The main CUE ID creator no longer exposes production admission gates as artist-facing UI.
+
+Removed from the creator surface:
+
+- visual review gate;
+- mobile review gate;
+- package validation gate;
+- performance gate;
+- pending/pass technical status panel.
+
+The underlying asset status model remains intact and is still used internally for:
+
+- lab vs production source resolution;
+- source-aware representation coverage;
+- asset version display when applicable;
+- lab/production review copy.
+
+Technical validation belongs in the dedicated `/cue-id` lab and intake tooling, not in the artist creator.
+
+Creator copy was also cleaned to remove implementation vocabulary such as:
+
+- “authored asset pending”;
+- “fixture”;
+- “production avatar”.
+
+The artist-facing creator now speaks in terms of identity, appearance and preview while retaining a discreet lab disclaimer when the selected configuration is not backed by an admitted production asset.
+
+This preserves a clean product boundary:
+
+```text
+Artist creator -> identity decisions and visual feedback
+/cue-id lab    -> runtime / asset diagnostics and benchmark work
+intake scripts -> package / review / performance admission
+```
+
+No production catalogue entry was added.
+
+Production remains untouched.
