@@ -9103,3 +9103,66 @@ Current execution limitation:
 The uploaded semantic GLBs exist in the active conversation workspace but are not currently reachable from GitHub Actions. The rig script is therefore committed and ready, but physical rig output must be generated either in local Blender 5.2.2 or after placing the semantic GLBs in a CI-accessible asset location.
 
 Production remains untouched.
+
+
+## 165. Rig deferred; Creator workspace and wardrobe continue in parallel
+
+The physical Blender rig step is intentionally deferred until the user can run the local Blender package.
+
+Pending rig package:
+
+```text
+cueid-rig-local-package.zip
+```
+
+Do not block product/UI work on this step.
+
+Parallel work completed:
+
+- `app/domain/cueIdWardrobe.ts`
+  - shared male/female fitting contract;
+  - garment coverage zones;
+  - modesty-layer rules;
+  - harness/outerwear compatibility;
+  - no wardrobe item is restricted by body selection.
+
+- `app/domain/cueIdWorkspace.ts`
+  - one body is edited at a time;
+  - expression/hair previews always use the currently selected body;
+  - switching body preserves the current semantic configuration.
+
+- `app/components/CueIdStylizedWorkspace.vue`
+  - new Creator V1 workspace shell;
+  - single-body stage;
+  - shared catalogue sections;
+  - skin/hair/color controls;
+  - outfit/footwear/accessory sections;
+  - no low-quality fake 3D avatar is shown while the physical rig is pending.
+
+- `app/pages/cue-id.vue`
+  - lab route now uses the stylized shared Creator workspace;
+  - route remains noindex;
+  - production is unchanged.
+
+Wardrobe rules explicitly support:
+
+- mesh tops;
+- festival tops/outfits;
+- harnesses;
+- skirts;
+- bodysuits;
+- festival wraps;
+- Venetian masks;
+- platform boots;
+- Vans-style shoes;
+- festival headwear/goggles;
+- the same catalogue for male/female bodies.
+
+Rig remains the gate for:
+
+- real 3D body preview;
+- physical poses;
+- expression morph execution;
+- clothing deformation validation.
+
+Production remains untouched.
