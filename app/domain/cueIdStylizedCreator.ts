@@ -47,6 +47,25 @@ export type CueIdStylizedPiercingId =
   | 'nostril'
   | 'eyebrow'
 
+export type CueIdStylizedHeadwearId =
+  | 'none'
+  | 'cap'
+  | 'beanie'
+  | 'top-hat'
+
+export type CueIdStylizedFaceAccessoryId =
+  | 'none'
+  | 'mask'
+
+export type CueIdStylizedEarAccessoryId =
+  | 'none'
+  | 'headphones'
+
+export type CueIdStylizedGlovesId =
+  | 'none'
+  | 'short-gloves'
+  | 'long-gloves'
+
 export type CueIdStylizedTopId =
   | 'tee'
   | 'tank'
@@ -88,6 +107,10 @@ export type CueIdStylizedCreatorConfigV1 = {
   hairColor: CueIdStylizedHairColorId
   facialHair: CueIdStylizedFacialHairId
   piercings: CueIdStylizedPiercingId[]
+  headwear: CueIdStylizedHeadwearId
+  faceAccessory: CueIdStylizedFaceAccessoryId
+  earAccessory: CueIdStylizedEarAccessoryId
+  gloves: CueIdStylizedGlovesId
   top: CueIdStylizedTopId
   topColor: CueIdStylizedGarmentColorId
   bottom: CueIdStylizedBottomId
@@ -110,6 +133,10 @@ export const DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG: CueIdStylizedCreatorConfigV
   hairColor: 'black',
   facialHair: 'none',
   piercings: [],
+  headwear: 'none',
+  faceAccessory: 'none',
+  earAccessory: 'none',
+  gloves: 'none',
   top: 'tee',
   topColor: 'black',
   bottom: 'wide-trouser',
@@ -130,6 +157,10 @@ export const CUE_ID_STYLIZED_CREATOR_CATALOGUE = {
   hairColors: ['black', 'brown', 'blond', 'red', 'platinum'] as const,
   facialHair: ['none', 'stubble', 'moustache', 'beard'] as const,
   piercings: ['ear', 'septum', 'nostril', 'eyebrow'] as const,
+  headwear: ['none', 'cap', 'beanie', 'top-hat'] as const,
+  faceAccessories: ['none', 'mask'] as const,
+  earAccessories: ['none', 'headphones'] as const,
+  gloves: ['none', 'short-gloves', 'long-gloves'] as const,
   tops: ['tee', 'tank', 'sweatshirt', 'hoodie', 'bomber'] as const,
   bottoms: ['wide-trouser', 'straight-trouser', 'cargo', 'shorts', 'denim'] as const,
   onePieces: ['none', 'jumpsuit'] as const,
@@ -172,6 +203,10 @@ export function isCueIdStylizedCreatorConfigV1(
     && config.piercings.length <= 3
     && config.piercings.every(piercing => includes(catalogue.piercings, piercing))
     && new Set(config.piercings).size === config.piercings.length
+    && includes(catalogue.headwear, config.headwear)
+    && includes(catalogue.faceAccessories, config.faceAccessory)
+    && includes(catalogue.earAccessories, config.earAccessory)
+    && includes(catalogue.gloves, config.gloves)
     && includes(catalogue.tops, config.top)
     && includes(catalogue.garmentColors, config.topColor)
     && includes(catalogue.bottoms, config.bottom)
@@ -189,4 +224,41 @@ export function cloneCueIdStylizedCreatorConfig(
     ...config,
     piercings: [...config.piercings]
   }
+}
+
+
+export type CueIdStylizedBrandMarkId = 'none' | 'cuebooker-symbol'
+
+export type CueIdStylizedBrandPlacementId =
+  | 'left-chest'
+  | 'sleeve'
+  | 'front-center-small'
+  | 'pocket'
+
+export type CueIdStylizedBasicsBranding = {
+  mark: CueIdStylizedBrandMarkId
+  placement: CueIdStylizedBrandPlacementId | null
+}
+
+export const CUE_ID_STYLIZED_CUEBOOKER_BASICS = {
+  tops: {
+    tee: { mark: 'cuebooker-symbol', placement: 'left-chest' },
+    sweatshirt: { mark: 'cuebooker-symbol', placement: 'left-chest' },
+    hoodie: { mark: 'cuebooker-symbol', placement: 'left-chest' },
+    bomber: { mark: 'cuebooker-symbol', placement: 'sleeve' }
+  },
+  bottoms: {
+    'wide-trouser': { mark: 'none', placement: null },
+    'straight-trouser': { mark: 'none', placement: null },
+    cargo: { mark: 'cuebooker-symbol', placement: 'pocket' }
+  },
+  headwear: {
+    cap: { mark: 'cuebooker-symbol', placement: 'front-center-small' },
+    beanie: { mark: 'cuebooker-symbol', placement: 'front-center-small' },
+    'top-hat': { mark: 'none', placement: null }
+  }
+} as const satisfies {
+  tops: Partial<Record<CueIdStylizedTopId, CueIdStylizedBasicsBranding>>
+  bottoms: Partial<Record<CueIdStylizedBottomId, CueIdStylizedBasicsBranding>>
+  headwear: Partial<Record<Exclude<CueIdStylizedHeadwearId, 'none'>, CueIdStylizedBasicsBranding>>
 }
