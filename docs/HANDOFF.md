@@ -8749,3 +8749,85 @@ Do not spend further time polishing the primitive body.
 The next art pass should use the approved soft-caricature reference as the visual target and keep the semantic/runtime contract already defined in `docs/CUE_ID_STYLIZED_CREATOR_V1.md`.
 
 Production remains untouched.
+
+
+## 160. Blender Studio stylized body adopted as authored source
+
+The primitive-built stylized body is no longer the character base.
+
+CUE ID Stylized V1 now uses the official Blender Studio / Blender Human Base Meshes
+stylized male/female bodies as the authoring source.
+
+Source bundle used for validation:
+
+`Human Base Meshes v1.4.1`
+
+License:
+
+`CC0`
+
+Validated collections:
+
+```text
+Body Male - Stylized
+Body Female - Stylized
+```
+
+Both source bodies contain the same measured geometry:
+
+```text
+raw vertices: 14,106
+raw triangles: 28,200
+```
+
+The source is intentionally retained as authoring/reference geometry. It is too close
+to the V1 hard active-avatar budget to ship unchanged once hair, clothing and
+accessories are present.
+
+Runtime reduction probe:
+
+```text
+50% body reduction:
+  evaluated vertices: 7,856
+  evaluated triangles: 15,700
+
+35% body reduction:
+  evaluated vertices: 5,981
+  evaluated triangles: 11,950
+```
+
+Visual decision:
+
+- 50% retains substantially better face, ear and hand definition;
+- 35% introduces visible faceting and loses too much facial quality;
+- the first runtime source therefore starts at 50% reduction;
+- reduction is applied before CUE ID expression morph authoring;
+- the full CC0 source remains the editable visual reference.
+
+This leaves roughly 4k triangles inside the preferred 20k active-avatar target for
+hair and visible authored details, while the 28k hard limit remains the safety ceiling.
+
+New authoring path:
+
+`scripts/blender/cue-id-studio-stylized-v1-source.py`
+
+CI:
+
+`.github/workflows/cue-id-studio-stylized-v1.yml`
+
+The first pass builds the male art-gate character with:
+
+- slightly enlarged/stylized head proportions;
+- readable eyes and iris geometry;
+- authored brows;
+- crop hair made from smooth cartoon masses;
+- black Cuebooker Basics tee/trousers/shoes;
+- small Cuebooker chest mark;
+- neutral + four expression morphs;
+- one shared armature;
+- relaxed standing pose.
+
+Female derivation and the full wardrobe/accessory library follow only after this
+male visual gate passes.
+
+Production remains untouched.
