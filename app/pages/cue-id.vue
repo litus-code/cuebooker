@@ -8,8 +8,13 @@ import {
 
 const preferences = useCuePreferences()
 const cueIdConfig = ref(cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG))
-const saveState = ref<'idle' | 'saved'>('idle')
+const savedConfig = ref(cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG))
+const saveState = ref<'idle' | 'saved' | 'reset'>('idle')
 const LAB_DRAFT_KEY = 'cuebooker:cue-id:stylized-v1:lab-draft'
+
+const dirty = computed(() =>
+  JSON.stringify(cueIdConfig.value) !== JSON.stringify(savedConfig.value)
+)
 
 onMounted(() => {
   const raw = window.localStorage.getItem(LAB_DRAFT_KEY)
@@ -18,7 +23,9 @@ onMounted(() => {
   try {
     const parsed = JSON.parse(raw)
     if (isCueIdStylizedCreatorConfigV1(parsed)) {
-      cueIdConfig.value = cloneCueIdStylizedCreatorConfig(parsed)
+      const restored = cloneCueIdStylizedCreatorConfig(parsed)
+      cueIdConfig.value = restored
+      savedConfig.value = cloneCueIdStylizedCreatorConfig(restored)
     }
   } catch {
     window.localStorage.removeItem(LAB_DRAFT_KEY)
@@ -26,8 +33,21 @@ onMounted(() => {
 })
 
 function saveLabDraft(value: CueIdStylizedCreatorConfigV1) {
-  window.localStorage.setItem(LAB_DRAFT_KEY, JSON.stringify(value))
+  const saved = cloneCueIdStylizedCreatorConfig(value)
+  window.localStorage.setItem(LAB_DRAFT_KEY, JSON.stringify(saved))
+  savedConfig.value = saved
   saveState.value = 'saved'
+  window.setTimeout(() => {
+    saveState.value = 'idle'
+  }, 1800)
+}
+
+function resetLabDraft() {
+  const initial = cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG)
+  cueIdConfig.value = initial
+  savedConfig.value = cloneCueIdStylizedCreatorConfig(initial)
+  window.localStorage.removeItem(LAB_DRAFT_KEY)
+  saveState.value = 'reset'
   window.setTimeout(() => {
     saveState.value = 'idle'
   }, 1800)
@@ -37,12 +57,14 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   back: 'Volver',
   lab: 'LAB / NOINDEX',
   status: 'CUE ID · CREATOR V1 LAB',
-  saved: 'Draft guardado en este dispositivo'
+  saved: 'Draft guardado en este dispositivo',
+  reset: 'CUE ID restablecido al estado inicial'
 } : {
   back: 'Back',
   lab: 'LAB / NOINDEX',
   status: 'CUE ID · CREATOR V1 LAB',
-  saved: 'Draft saved on this device'
+  saved: 'Draft saved on this device',
+  reset: 'CUE ID reset to initial state'
 })
 
 useHead(() => ({
@@ -73,7 +95,9 @@ useHead(() => ({
     <CueIdStylizedWorkspace
       v-model="cueIdConfig"
       :locale="preferences.locale.value"
+      :dirty="dirty"
       @save="saveLabDraft"
+      @reset="resetLabDraft"
     />
 
     <p
@@ -82,7 +106,7 @@ useHead(() => ({
       role="status"
       aria-live="polite"
     >
-      {{ copy.saved }}
+      {{ saveState === 'reset' ? copy.reset : copy.saved }}
     </p>
   </main>
 </template>
