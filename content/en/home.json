@@ -16,7 +16,7 @@
     "titleTop": "DON'T LOSE",
     "titleBottom": "THE BOOKING.",
     "body": "WhatsApp, call, email or voice. Cuebooker understands what matters, shows it to you and keeps the thread intact until the date is resolved.",
-    "primaryCta": "Try 30 days",
+    "primaryCta": "Create account",
     "secondaryCta": "See the flow",
     "networkIdle": "IT HAPPENED · TELL IT",
     "networkSearching": "UNDERSTANDING CONTEXT",
@@ -214,21 +214,21 @@
     "current": [
       "Smart Capture by text and voice with review before applying",
       "Real bookings with search and status filters",
-      "Operational status derived from the conversation",
-      "Messages, calls and notes in one booking thread",
+      "Activity with messages, calls, notes and operational changes",
       "Editing for date, venue, fee and incomplete details",
-      "Next actions, provisional date holds and calendar",
+      "Next Move, holds and calendar kept together",
+      "Outbound email and replies linked back to the same booking",
       "Public profile and booking form for new opportunities",
-      "Email and in-app notifications"
+      "History, archive/restore and relationship memory"
     ],
     "realTitle": "In progress",
     "real": [
-      "Capture from pasted WhatsApp and email content",
-      "Fully linked email reply threads",
       "More channel automation without losing human control",
-      "Commercial plans and a 30-day trial"
+      "Email and public follow-up hardening before production",
+      "Deeper Manager / Agency workflows for rosters",
+      "Product analytics, observability and launch preparation"
     ],
-    "realNote": "CueBooker can propose and organise. Decisions that change a booking remain human.",
+    "realNote": "CueBooker can already organise and preserve context. Decisions that change a booking remain human.",
     "panelButton": "Create account",
     "requestButton": "View public form"
   },
@@ -272,26 +272,26 @@
   },
   "join": {
     "index": "05 / JOIN NOW",
-    "eyebrow": "30 DAYS TO TRY IT WITH REAL WORK",
-    "title": "Use it on real bookings. No card and no new way of working to learn.",
-    "body": "The trial only matters if CueBooker enters your real operation: a call, an offer, a pending reply and a date you need to protect. For 30 days you can use the complete core and decide whether it genuinely saves memory, follow-up and time.",
-    "nowTitle": "What you get from day one",
+    "eyebrow": "START WITH REAL WORK",
+    "title": "Try it on the next booking you receive.",
+    "body": "CueBooker matters when it enters a real situation: a call, an offer, a pending reply or a date you need to protect. Create your workspace and see whether it helps you remember less and follow up better.",
+    "nowTitle": "Available now",
     "now": [
       "Smart Capture by voice or text to turn conversations into reviewable bookings",
-      "Inbox with automatic operational states and one conversation thread",
-      "Calendar, next action and provisional date holds",
-      "Public artist profile and form for structured enquiries",
-      "Notifications and traceability without forcing promoters into CueBooker"
+      "Real inbox with Activity, statuses, search and filters",
+      "Next Move, holds, calendar and history kept together",
+      "Outbound email and replies returning to the same booking",
+      "Public artist profile and form for structured enquiries"
     ],
-    "upcomingTitle": "Coming next",
+    "upcomingTitle": "Before production",
     "upcoming": [
-      "Smart capture from pasted WhatsApp and email content",
-      "Email replies fully linked to the booking thread",
-      "More channel automation with human confirmation",
-      "Deeper Manager / Agency workflows for rosters",
-      "Simple commercial plans once the workflow is proven"
+      "Full desktop/mobile smoke of the operational flow",
+      "Duplicate and archived-booking email hardening",
+      "Reliable acknowledgement delivery for the public form",
+      "Abuse protection and embedded-widget validation",
+      "Analytics, observability and launch preparation"
     ],
-    "note": "Joining now also means helping us refine CueBooker around real operational work, not vanity metrics or invented workflows.",
-    "cta": "Start 30 days"
+    "note": "CueBooker is currently being validated on staging. The priority is proving the daily workflow before adding commercial or discovery layers.",
+    "cta": "Create account"
   }
 }
