@@ -8475,3 +8475,86 @@ The first headless topology comparison now completes successfully.
 The production catalogue remains empty.
 
 Production remains untouched.
+
+
+## 155. Quality-source review rejected, visual criteria locked
+
+The first MPFB quality-source render proved the fitted-asset pipeline but is rejected as a visual candidate.
+
+User review identified concrete blockers:
+
+- eyes rendered white / unreadable;
+- arm and shoulder deformation still looked unnatural;
+- the relaxed pose did not read like a person standing naturally;
+- the default white shirt + patterned trousers were wrong for the CUE ID base identity;
+- the default avatar must not assume long sleeves or full-length trousers because later Creator variants include short sleeves, sleeveless/tank tops and shorts.
+
+The initial canonical outfit is now locked to a deliberately neutral visual baseline:
+
+```text
+top: plain black T-shirt
+bottom: plain black trousers
+footwear: dark neutral sneaker
+hair: short crop with the full face visible
+pose: natural standing relaxed
+```
+
+This baseline is for evaluating anatomy, face, deformation and silhouette. Artist customization comes after the neutral base reads correctly.
+
+Visual acceptance gate before any lab candidate:
+
+- both eyes must be visible and readable;
+- hair must not cover eyes, nose or most of the face;
+- face must read as a plausible adult human rather than a low-poly mannequin;
+- shoulders must sit down naturally;
+- arms must fall close to the torso;
+- elbows need only a slight natural flex;
+- hands must rest around upper/mid-thigh without crossing;
+- no T-pose or pseudo-T-pose may be used as the accepted review pose;
+- plain black top and trousers must be the canonical initial outfit;
+- no clipping, detached shells or exposed skin caused by garment masks;
+- body coverage must support future short-sleeve, sleeveless and shorts variants without rebuilding the character.
+
+The quality-source ZIP produced before this section is evidence only and must not be promoted.
+
+Production remains untouched.
+
+## 156. Authoring direction switched to hybrid head/body prototype
+
+The next prototype is implemented in:
+
+`scripts/blender/cue-id-creator-v1-hybrid-source.py`
+
+with CI in:
+
+`.github/workflows/cue-id-hybrid-source.yml`
+
+Reason for the change:
+
+- `male1591` is efficient for the body but visibly degrades facial anatomy;
+- the full MakeHuman basemesh preserves substantially more facial information but is too expensive as the complete runtime body;
+- fitted MHCLO assets are retained for clothing/body parts because they provide correct fitting, rig integration and authoring provenance.
+
+Current prototype architecture:
+
+- one shared `cue_rig`;
+- lightweight `cue_body` from the official `male1591` proxy;
+- separate masked high-detail `cue_head` from the authored MakeHuman basemesh;
+- `cue_face_04` remains on the high-detail head source;
+- MHCLO eyes, eyebrows, short hair, top, trousers and footwear;
+- full lightweight body is preserved under the outfit so exposed-skin variants can later use tank tops and shorts;
+- garment masks are not baked permanently into the runtime body in this prototype;
+- neutral and relaxed actions stay embedded;
+- production catalogue and production runtime remain unchanged.
+
+The hybrid prototype is still evidence-only until it passes the visual gate in section 155.
+
+Current next step:
+
+1. inspect the hybrid full-body and portrait renders;
+2. force the canonical garments to plain black/dark materials;
+3. correct eye rendering if the MHCLO eye material is still unreadable;
+4. tune the relaxed standing pose from the actual rendered deformation;
+5. only after those pass, run the Blender export gate and prepare the first authored lab GLB.
+
+Production remains untouched.
