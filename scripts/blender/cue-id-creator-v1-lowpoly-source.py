@@ -666,23 +666,18 @@ def main():
     create_pose_action(
         rig,
         "cue_pose_neutral",
-        {
-            "upperarm_l": (0.0, 0.0, -48.0),
-            "upperarm_r": (0.0, 0.0, 48.0),
-            "lowerarm_l": (0.0, 0.0, -5.0),
-            "lowerarm_r": (0.0, 0.0, 5.0),
-        },
+        {},
     )
-    relaxed = create_pose_action(
+    create_pose_action(
         rig,
         "cue_pose_relaxed",
         {
-            "upperarm_l": (4.0, -4.0, -55.0),
-            "upperarm_r": (-3.0, 5.0, 51.0),
-            "lowerarm_l": (0.0, -7.0, -13.0),
-            "lowerarm_r": (0.0, 6.0, 10.0),
-            "thigh_l": (0.0, 0.0, 1.5),
-            "thigh_r": (0.0, 0.0, -2.0),
+            "upperarm_l": (2.0, -2.0, -8.0),
+            "upperarm_r": (-2.0, 2.0, 8.0),
+            "lowerarm_l": (0.0, -2.0, -4.0),
+            "lowerarm_r": (0.0, 2.0, 4.0),
+            "thigh_l": (0.0, 0.0, 0.8),
+            "thigh_r": (0.0, 0.0, -0.8),
         },
     )
 
