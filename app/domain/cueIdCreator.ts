@@ -6,7 +6,7 @@ import {
   type CueIdConfigV1,
   type CueIdMaterialId,
   type CueIdPoseId
-} from './cueId'
+} from './cueId.ts'
 
 export type CueIdSkinId =
   | 'skin-01'
