@@ -282,6 +282,10 @@ function optionVisualClass(optionId: string) {
   ]
 }
 
+function selectStep(step: CreatorStep) {
+  activeStep.value = step
+}
+
 function select(value: unknown) {
   update(activeStep.value, value as never)
   saveState.value = 'idle'
@@ -359,7 +363,7 @@ onMounted(() => {
           type="button"
           :class="{ active: activeStep === step.id, pending: !visualCoverage[step.id] }"
           :aria-current="activeStep === step.id ? 'step' : undefined"
-          @click="activeStep = step.id"
+          @click="selectStep(step.id)"
         >
           <span>{{ String(index + 1).padStart(2, '0') }}</span>
           <strong>{{ step.label }}</strong>
@@ -475,17 +479,19 @@ onMounted(() => {
       </aside>
     </div>
 
-    <div class="creator__mobile-tabs" aria-label="CUE ID creator categories">
+    <nav class="creator__mobile-tabs" aria-label="CUE ID creator categories">
       <button
-        v-for="step in steps"
+        v-for="(step, index) in steps"
         :key="step.id"
         type="button"
-        :class="{ active: activeStep === step.id }"
-        @click="activeStep = step.id"
+        :class="{ active: activeStep === step.id, pending: !visualCoverage[step.id] }"
+        :aria-current="activeStep === step.id ? 'step' : undefined"
+        @click="selectStep(step.id)"
       >
-        {{ step.label }}
+        <span>{{ String(index + 1).padStart(2, '0') }}</span>
+        <strong>{{ step.label }}</strong>
       </button>
-    </div>
+    </nav>
     </template>
 
     <section v-else class="creator__review">
@@ -823,7 +829,11 @@ button:focus-visible{outline:2px solid var(--cue-accent);outline-offset:2px}
   .creator__save--review{margin:auto 0 6px}
   .creator__review-meta .creator__saved-note{margin:0}
   .creator__mobile-tabs{display:flex;position:sticky;bottom:0;z-index:20;overflow-x:auto;border:1px solid var(--cue-border);background:rgba(8,10,9,.96);backdrop-filter:blur(14px);scroll-snap-type:x proximity}
-  .creator__mobile-tabs button{flex:0 0 auto;min-height:46px;padding:0 13px;border:0;border-right:1px solid var(--cue-border);background:transparent;color:var(--cue-muted);font-size:10px;font-weight:800;scroll-snap-align:start}
-  .creator__mobile-tabs button.active{color:var(--cue-accent)}
+  .creator__mobile-tabs button{display:grid;grid-template-columns:auto auto;align-items:center;gap:6px;flex:0 0 auto;min-height:46px;padding:0 13px;border:0;border-right:1px solid var(--cue-border);background:transparent;color:var(--cue-muted);scroll-snap-align:start}
+  .creator__mobile-tabs button span{font:700 8px/1 monospace}
+  .creator__mobile-tabs button strong{font-size:10px}
+  .creator__mobile-tabs button.active{color:var(--cue-text);box-shadow:inset 0 -2px 0 var(--cue-accent)}
+  .creator__mobile-tabs button.active span{color:var(--cue-accent)}
+  .creator__mobile-tabs button.pending{opacity:.72}
 }
 </style>
