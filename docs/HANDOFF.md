@@ -8030,3 +8030,42 @@ No runtime behavior changed.
 The production catalogue remains empty.
 
 Production remains untouched.
+
+
+## 142. Creator lab preview single-representation boundary
+
+The CUE ID creator lab no longer stacks three competing visual representations.
+
+Previous behavior in the creator could combine:
+
+- the procedural `CueIdStage` placeholder figure;
+- the TresJS GLB lab candidate once loaded;
+- the creator semantic CSS preview.
+
+That produced a ghost/double-avatar risk and made the creator visually incoherent.
+
+Correction:
+
+- `CueIdStage` now exposes `showPlaceholderFigure`, defaulting to `true`;
+- all existing/non-creator consumers retain the current placeholder behavior by default;
+- the creator passes `interactive=false` while its selected config resolves to `lab_candidate`;
+- the creator also passes `showPlaceholderFigure=false` in that state;
+- therefore the creator lab shows exactly one semantic preview representation;
+- when a selected config resolves to an admitted production asset, the creator re-enables the normal production stage;
+- `/cue-id` keeps the TresJS `candidate` / `benchmark` runtime path for technical GLB, device-tier and performance validation.
+
+The creator lab source label was changed from “Lab candidate” to “Lab preview” because the creator no longer renders the technical candidate GLB directly.
+
+This is an intentional product boundary:
+
+```text
+Creator lab     -> one semantic product preview
+/cue-id lab     -> technical TresJS candidate/benchmark
+Production      -> admitted static/interative authored asset
+```
+
+No production catalogue entry was added.
+
+Production remains untouched.
+
+Visual quality of the semantic creator preview is NOT considered approved by this change alone; this block removes representation overlap only.
