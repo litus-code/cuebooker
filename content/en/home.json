@@ -31,12 +31,12 @@
   "problem": {
     "index": "01 / THE PROBLEM",
     "eyebrow": "BOOKINGS DO NOT START IN A FORM",
-    "title": "There are enough tools. The problem is scattered conversations.",
+    "title": "There is no shortage of tools. Context is what gets lost.",
     "body": "A booking may start on WhatsApp, change by phone and finish by email. The trouble starts days later when you need to remember who said what, whether you were waiting for a reply, which fee was discussed or whether the date was still free.",
     "quoteOne": "Does the 24th work?",
     "quoteTwo": "Still need to confirm schedule",
     "file": "artist_dates_FINAL_v8.xlsx",
-    "statement": "CueBooker does not force you into another channel. It turns what already happens into an operational thread that stays intact."
+    "statement": "CueBooker turns what already happens into one thread that stays intact."
   },
   "search": {
     "index": "10 / VISION",
@@ -297,49 +297,49 @@
   "distribution": {
     "index": "04 / DISTRIBUTION",
     "eyebrow": "ONE BOOKING, MANY ENTRY POINTS",
-    "title": "Put your link where you need it. Context returns to the same place.",
-    "body": "Share the profile, open the booking form directly, generate attributed links or embed it on a website. However the enquiry arrives, it lands in the same Booking Core.",
+    "title": "One link. Everything returns to CueBooker.",
+    "body": "Share booking however you want. Link, widget or QR: every enquiry ends up in the same place.",
     "channels": [
       {
         "label": "LINK",
-        "name": "Profile and booking",
-        "body": "Share your own URL from Instagram, bio, WhatsApp, email or EPK."
+        "name": "Your profile",
+        "body": "Instagram, bio, WhatsApp, email or EPK."
       },
       {
         "label": "WIDGET",
-        "name": "On your website",
-        "body": "Embed the CueBooker-hosted form without duplicating backend or booking logic."
+        "name": "Your website",
+        "body": "Embed the form without duplicating logic or backend."
       },
       {
         "label": "QR / SOURCE",
-        "name": "Know where it came from",
-        "body": "Use QR and attributed links to distinguish web, Instagram, WhatsApp, email or campaigns."
+        "name": "Its source",
+        "body": "Know where each enquiry came from."
       }
     ],
-    "note": "The promoter does not need an account. The artist keeps one conversation, one booking and one history."
+    "note": "The promoter needs no account. You keep one booking and one history."
   },
   "identity": {
     "index": "05 / IDENTITY",
     "eyebrow": "THE PROFILE IS NOT DECORATION",
-    "title": "Your public identity connected to real work.",
-    "body": "Artist Profile brings presentation, booking and professional context together. Photo and artwork remain valid. CUE ID is an optional layer, not a requirement or a replacement for trajectory.",
+    "title": "Your profile. Your work. Your identity.",
+    "body": "Photo, artwork and CUE ID can coexist. Visual identity supports your trajectory; it does not replace it.",
     "cards": [
       {
         "label": "NOW",
         "name": "Artist Profile",
-        "body": "Bio, city, styles, formats, links, cover and direct access to booking."
+        "body": "Your professional presentation and booking access."
       },
       {
         "label": "OPTIONAL",
         "name": "CUE ID",
-        "body": "A visual identity you can start during onboarding or leave until later."
+        "body": "Your visual identity. Now or later."
       },
       {
         "label": "LATER",
         "name": "CUE Passport",
-        "body": "Trajectory built from bookings, cities, venues and real relationships, not followers."
+        "body": "Trajectory built from real work, not followers."
       }
     ],
-    "cueIdStatus": "CUE ID 3D is currently a visual lab. Artist Profile and Booking Core work without requiring an avatar."
+    "cueIdStatus": "CUE ID 3D remains in the lab. CueBooker works without an avatar."
   }
 }
