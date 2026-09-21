@@ -31,12 +31,12 @@
   "problem": {
     "index": "01 / EL PROBLEMA",
     "eyebrow": "LOS BOOKINGS NO NACEN EN UN FORMULARIO",
-    "title": "No faltan herramientas. Sobran conversaciones sueltas.",
+    "title": "No faltan herramientas. Falta contexto.",
     "body": "Un booking puede empezar por WhatsApp, cambiar por teléfono y terminar por email. El problema aparece cuando días después tienes que recordar quién dijo qué, si estabas esperando respuesta, qué fee se habló o si esa fecha seguía libre.",
     "quoteOne": "¿Te va bien el 24?",
     "quoteTwo": "Falta confirmar horario",
     "file": "fechas_artistas_FINAL_v8.xlsx",
-    "statement": "CueBooker no te obliga a cambiar de canal. Convierte lo que ya ocurre en un hilo operativo que no se pierde."
+    "statement": "CueBooker convierte lo que ya ocurre en un hilo que no se pierde."
   },
   "search": {
     "index": "10 / VISIÓN",
@@ -297,49 +297,49 @@
   "distribution": {
     "index": "04 / DISTRIBUCIÓN",
     "eyebrow": "UN BOOKING, MUCHOS PUNTOS DE ENTRADA",
-    "title": "Tu enlace donde lo necesites. El contexto vuelve al mismo sitio.",
-    "body": "Comparte el perfil, abre el formulario directamente, genera enlaces atribuidos o intégralo como widget en una web. No importa por dónde llegue la solicitud: termina en el mismo Booking Core.",
+    "title": "Un enlace. Todo vuelve a CueBooker.",
+    "body": "Comparte tu booking como quieras. Link, widget o QR: cada solicitud termina en el mismo sitio.",
     "channels": [
       {
         "label": "LINK",
-        "name": "Perfil y booking",
-        "body": "Comparte una URL propia desde Instagram, bio, WhatsApp, email o EPK."
+        "name": "Tu perfil",
+        "body": "Instagram, bio, WhatsApp, email o EPK."
       },
       {
         "label": "WIDGET",
-        "name": "En tu web",
-        "body": "Inserta el formulario alojado por CueBooker sin duplicar backend ni lógica de booking."
+        "name": "Tu web",
+        "body": "Integra el formulario sin duplicar lógica ni backend."
       },
       {
         "label": "QR / SOURCE",
-        "name": "Saber de dónde llega",
-        "body": "Usa QR y enlaces con atribución para distinguir web, Instagram, WhatsApp, email o campañas."
+        "name": "Su origen",
+        "body": "Distingue de dónde llega cada solicitud."
       }
     ],
-    "note": "El promotor no necesita una cuenta. El artista mantiene una sola conversación, un solo booking y una sola historia."
+    "note": "El promotor no necesita cuenta. Tú mantienes un solo booking y una sola historia."
   },
   "identity": {
     "index": "05 / IDENTIDAD",
     "eyebrow": "EL PERFIL NO ES UN DECORADO",
-    "title": "Tu identidad pública conectada con el trabajo real.",
-    "body": "Artist Profile reúne presentación, booking y contexto profesional. Foto y artwork siguen siendo válidos. CUE ID se añade como una capa opcional, no como obligación ni sustituto de la trayectoria.",
+    "title": "Tu perfil. Tu trabajo. Tu identidad.",
+    "body": "Foto, artwork y CUE ID pueden convivir. La identidad visual acompaña tu trayectoria; no la sustituye.",
     "cards": [
       {
         "label": "AHORA",
         "name": "Artist Profile",
-        "body": "Biografía, ciudad, estilos, formatos, links, portada y acceso directo a booking."
+        "body": "Tu presentación profesional y acceso a booking."
       },
       {
         "label": "OPCIONAL",
         "name": "CUE ID",
-        "body": "Una identidad visual propia que puedes empezar en onboarding o dejar para más adelante."
+        "body": "Tu identidad visual. Ahora o más adelante."
       },
       {
         "label": "DESPUÉS",
         "name": "CUE Passport",
-        "body": "Trayectoria construida a partir de bookings, ciudades, venues y relaciones reales, no de followers."
+        "body": "Trayectoria basada en trabajo real, no followers."
       }
     ],
-    "cueIdStatus": "CUE ID 3D está en laboratorio visual. El perfil y Booking Core funcionan sin necesitar avatar."
+    "cueIdStatus": "CUE ID 3D sigue en laboratorio. CueBooker funciona sin avatar."
   }
 }
