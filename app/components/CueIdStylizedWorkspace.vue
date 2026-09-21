@@ -23,13 +23,16 @@ type Locale = 'es' | 'en'
 const props = withDefaults(defineProps<{
   modelValue: CueIdStylizedCreatorConfigV1
   locale?: Locale
+  dirty?: boolean
 }>(), {
-  locale: 'es'
+  locale: 'es',
+  dirty: false
 })
 
 const emit = defineEmits<{
   'update:modelValue': [value: CueIdStylizedCreatorConfigV1]
   save: [value: CueIdStylizedCreatorConfigV1]
+  reset: []
 }>()
 
 const activeSection = ref<CueIdWorkspaceSection>('identity')
@@ -76,7 +79,11 @@ const copy = computed(() => props.locale === 'es' ? {
   harnessWarning: 'El harness seleccionado no tiene fitting aprobado con la capa de outfit activa. La selección se conserva, pero no se considera validada.',
   baseStored: 'Top y bottom quedan guardados y volverán al desactivar la prenda de una pieza.',
   activeLayer: 'Capa activa',
-  modesty: 'Modesty layer'
+  modesty: 'Modesty layer',
+  unsaved: 'Cambios sin guardar',
+  savedState: 'Draft guardado',
+  reset: 'Restablecer',
+  resetHint: 'Volver al CUE ID inicial del laboratorio'
 } : {
   title: 'CUE ID Creator',
   subtitle: 'Same catalogue. Your identity.',
@@ -119,7 +126,11 @@ const copy = computed(() => props.locale === 'es' ? {
   harnessWarning: 'The selected harness has no approved fitting with the active outfit layer. The selection is preserved, but it is not considered validated.',
   baseStored: 'Top and bottom stay stored and return when the one-piece is disabled.',
   activeLayer: 'Active layer',
-  modesty: 'Modesty layer'
+  modesty: 'Modesty layer',
+  unsaved: 'Unsaved changes',
+  savedState: 'Draft saved',
+  reset: 'Reset',
+  resetHint: 'Return to the initial lab CUE ID'
 })
 
 const sectionLabels = computed<Record<CueIdWorkspaceSection, string>>(() => ({
@@ -165,6 +176,10 @@ function save() {
     ...props.modelValue,
     piercings: [...props.modelValue.piercings]
   })
+}
+
+function reset() {
+  emit('reset')
 }
 
 function patch<K extends keyof CueIdStylizedCreatorConfigV1>(
@@ -229,7 +244,30 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
         <h1>{{ copy.title }}</h1>
         <span>{{ copy.subtitle }}</span>
       </div>
-      <button type="button" class="cue-workspace__save" @click="save">{{ copy.save }}</button>
+      <div class="cue-workspace__actions">
+        <span
+          class="cue-workspace__save-state"
+          :class="{ dirty }"
+        >
+          {{ dirty ? copy.unsaved : copy.savedState }}
+        </span>
+        <button
+          type="button"
+          class="cue-workspace__reset"
+          :title="copy.resetHint"
+          @click="reset"
+        >
+          {{ copy.reset }}
+        </button>
+        <button
+          type="button"
+          class="cue-workspace__save"
+          :disabled="!dirty"
+          @click="save"
+        >
+          {{ copy.save }}
+        </button>
+      </div>
     </header>
 
     <div class="cue-workspace__layout">
@@ -661,7 +699,10 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace__topbar p{margin:0 0 6px;color:var(--cue-accent);font:800 10px/1 monospace;letter-spacing:.18em}
 .cue-workspace__topbar h1{margin:0;font-size:clamp(1.9rem,4vw,3.2rem);line-height:.95}
 .cue-workspace__topbar span{display:block;margin-top:8px;color:var(--cue-muted)}
-.cue-workspace__save{border:0;border-radius:12px;padding:13px 18px;background:var(--cue-accent);color:#111;font-weight:900}
+.cue-workspace__actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.cue-workspace__save-state{padding:7px 9px;border:1px solid var(--cue-border);border-radius:999px;color:var(--cue-muted);font:800 9px/1 monospace;letter-spacing:.05em;text-transform:uppercase}.cue-workspace__save-state.dirty{border-color:rgba(206,255,84,.42);color:var(--cue-accent);background:rgba(206,255,84,.06)}
+.cue-workspace__reset{min-height:42px;border:1px solid var(--cue-border);border-radius:12px;padding:11px 14px;background:transparent;color:var(--cue-muted);font-weight:800}.cue-workspace__reset:hover{color:var(--cue-text)}
+.cue-workspace__save{min-height:42px;border:0;border-radius:12px;padding:11px 18px;background:var(--cue-accent);color:#111;font-weight:900}.cue-workspace__save:disabled{opacity:.38;cursor:not-allowed}
 .cue-workspace__layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(380px,.9fr);gap:14px;min-height:680px}
 .cue-workspace__stage,.cue-workspace__editor{border:1px solid var(--cue-border);border-radius:20px;background:color-mix(in srgb,var(--cue-surface) 94%,transparent)}
 .cue-workspace__stage{display:grid;grid-template-rows:auto 1fr auto;overflow:hidden}
@@ -700,7 +741,9 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
   .cue-workspace__topbar{display:grid;grid-template-columns:1fr;align-items:start;gap:12px}
   .cue-workspace__topbar h1{font-size:2rem}
   .cue-workspace__topbar span{font-size:13px}
-  .cue-workspace__save{width:100%;min-height:44px;padding:11px 13px}
+  .cue-workspace__actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+  .cue-workspace__save-state{grid-column:1 / -1;width:max-content}
+  .cue-workspace__reset,.cue-workspace__save{width:100%;min-height:44px;padding:11px 13px}
   .cue-workspace__stage,.cue-workspace__editor{border-radius:14px}
   .cue-workspace__stage-head{padding:12px;gap:10px}
   .cue-workspace__stage-head strong{font-size:1rem}
