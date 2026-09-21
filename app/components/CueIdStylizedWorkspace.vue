@@ -13,7 +13,10 @@ import {
   type CueIdWorkspaceSection
 } from '../domain/cueIdWorkspace'
 import { CUE_ID_SKIN_TONES } from '../domain/cueIdBodyMaterials'
-import { cueIdHarnessCompatibleWithTop } from '../domain/cueIdWardrobe'
+import {
+  cueIdHarnessCompatibleWithSelection,
+  cueIdModestyForSelection
+} from '../domain/cueIdWardrobe'
 
 type Locale = 'es' | 'en'
 
@@ -70,7 +73,10 @@ const copy = computed(() => props.locale === 'es' ? {
   clubFestival: 'Club / Festival',
   preview2d: 'Preview 2D provisional',
   incompatible: 'Combinación pendiente de fitting',
-  harnessWarning: 'El harness seleccionado no tiene fitting aprobado con esta parte superior. La selección se conserva, pero no se considera validada.'
+  harnessWarning: 'El harness seleccionado no tiene fitting aprobado con la capa de outfit activa. La selección se conserva, pero no se considera validada.',
+  baseStored: 'Top y bottom quedan guardados y volverán al desactivar la prenda de una pieza.',
+  activeLayer: 'Capa activa',
+  modesty: 'Modesty layer'
 } : {
   title: 'CUE ID Creator',
   subtitle: 'Same catalogue. Your identity.',
@@ -110,7 +116,10 @@ const copy = computed(() => props.locale === 'es' ? {
   clubFestival: 'Club / Festival',
   preview2d: 'Temporary 2D preview',
   incompatible: 'Pending fitting combination',
-  harnessWarning: 'The selected harness has no approved fitting with this top. The selection is preserved, but it is not considered validated.'
+  harnessWarning: 'The selected harness has no approved fitting with the active outfit layer. The selection is preserved, but it is not considered validated.',
+  baseStored: 'Top and bottom stay stored and return when the one-piece is disabled.',
+  activeLayer: 'Active layer',
+  modesty: 'Modesty layer'
 })
 
 const sectionLabels = computed<Record<CueIdWorkspaceSection, string>>(() => ({
@@ -129,10 +138,20 @@ const clubTops = ['mesh-top', 'festival-top'] as const
 const basicsBottoms = ['wide-trouser', 'straight-trouser', 'cargo', 'shorts', 'utility-trouser'] as const
 const clubBottoms = ['skirt', 'harem-trouser', 'festival-wrap'] as const
 
-const harnessCompatible = computed(() => cueIdHarnessCompatibleWithTop(props.modelValue.top))
+const harnessCompatible = computed(() => cueIdHarnessCompatibleWithSelection({
+  top: props.modelValue.top,
+  onePiece: props.modelValue.onePiece
+}))
 const harnessSelectionNeedsFitting = computed(() =>
   props.modelValue.torsoAccessory === 'harness' && !harnessCompatible.value
 )
+const onePieceActive = computed(() => props.modelValue.onePiece !== 'none')
+const modestyRule = computed(() => cueIdModestyForSelection({
+  top: props.modelValue.top,
+  bottom: props.modelValue.bottom,
+  onePiece: props.modelValue.onePiece,
+  torsoAccessory: props.modelValue.torsoAccessory
+}))
 
 const currentLookSummary = computed(() => [
   props.modelValue.hair,
@@ -412,13 +431,19 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
         </div>
 
         <div v-else-if="activeSection === 'outfit'" class="cue-workspace__group">
+          <div class="cue-workspace__outfit-state">
+            <span><strong>{{ copy.activeLayer }}:</strong> {{ onePieceActive ? modelValue.onePiece : modelValue.top + ' + ' + modelValue.bottom }}</span>
+            <span><strong>{{ copy.modesty }}:</strong> {{ modestyRule }}</span>
+            <small v-if="onePieceActive">{{ copy.baseStored }}</small>
+          </div>
           <h2>{{ copy.basics }} · {{ copy.top }}</h2>
           <div class="cue-workspace__chips">
             <button
               v-for="top in basicsTops"
               :key="top"
               type="button"
-              :class="{ selected: modelValue.top === top }"
+              :class="{ selected: modelValue.top === top, muted: onePieceActive }"
+              :aria-disabled="onePieceActive"
               @click="patch('top', top)"
             >{{ top }}</button>
           </div>
@@ -440,7 +465,8 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               v-for="bottom in basicsBottoms"
               :key="bottom"
               type="button"
-              :class="{ selected: modelValue.bottom === bottom }"
+              :class="{ selected: modelValue.bottom === bottom, muted: onePieceActive }"
+              :aria-disabled="onePieceActive"
               @click="patch('bottom', bottom)"
             >{{ bottom }}</button>
           </div>
@@ -656,13 +682,14 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace__tabs button{min-height:42px;border:0;border-radius:10px;padding:10px;background:transparent;color:var(--cue-muted);font-weight:800}.cue-workspace__tabs button.active{background:rgba(206,255,84,.12);color:var(--cue-accent)}
 .cue-workspace__group{align-content:start;display:grid;gap:10px;padding:18px;overflow:auto}.cue-workspace__group h2{margin:10px 0 2px;font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;color:var(--cue-muted)}
 .cue-workspace__chips,.cue-workspace__tiles,.cue-workspace__swatches{display:flex;flex-wrap:wrap;gap:8px}
-.cue-workspace__chips button{min-height:40px;border:1px solid var(--cue-border);border-radius:10px;padding:9px 11px;background:transparent;color:var(--cue-text)}.cue-workspace__chips button.selected{border-color:var(--cue-accent);box-shadow:0 0 0 1px var(--cue-accent) inset}.cue-workspace__chips button:disabled{opacity:.34;cursor:not-allowed}
+.cue-workspace__chips button{min-height:40px;border:1px solid var(--cue-border);border-radius:10px;padding:9px 11px;background:transparent;color:var(--cue-text)}.cue-workspace__chips button.selected{border-color:var(--cue-accent);box-shadow:0 0 0 1px var(--cue-accent) inset}.cue-workspace__chips button.muted{opacity:.52}.cue-workspace__chips button:disabled{opacity:.34;cursor:not-allowed}
 .cue-workspace__swatches button{width:34px;height:34px;border:2px solid transparent;border-radius:50%;background:var(--swatch);box-shadow:0 0 0 1px var(--cue-border)}.cue-workspace__swatches button.selected{border-color:var(--cue-accent);box-shadow:0 0 0 2px #111 inset,0 0 0 1px var(--cue-accent)}
 .cue-workspace__tiles--preview button{display:grid;grid-template-rows:58px auto;min-width:86px;overflow:hidden;border:1px solid var(--cue-border);border-radius:12px;padding:0;background:transparent;color:var(--cue-text)}.cue-workspace__tiles--preview button.selected{border-color:var(--cue-accent)}
 .cue-workspace__tiles--preview i{display:grid;place-items:center;background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.02));font-style:normal;font-size:10px;color:var(--cue-muted)}.cue-workspace__tiles--preview span{display:grid;gap:3px;padding:8px;font-size:11px}.cue-workspace__tiles--preview span small{color:var(--cue-muted);font-size:8px}
 .cue-workspace__mini-avatar{position:relative;overflow:hidden;min-height:58px}.cue-workspace__mini-avatar b{position:absolute;left:50%;top:10px;width:28px;height:31px;transform:translateX(-50%);border-radius:46% 46% 44% 44%;background:var(--mini-skin)}.cue-workspace__mini-avatar em{position:absolute;left:50%;top:37px;width:48px;height:31px;transform:translateX(-50%);border-radius:50% 50% 16% 16%;background:color-mix(in srgb,var(--mini-skin) 60%,var(--cue-surface))}
 .cue-workspace__mini-avatar[data-body="female"] em{width:44px;border-radius:46% 46% 22% 22%}.cue-workspace__mini-avatar[data-hair]:not([data-hair="bald"]) b:before{content:"";position:absolute;left:-3px;right:-3px;top:-4px;height:13px;border-radius:60% 60% 38% 38%;background:var(--mini-hair)}.cue-workspace__mini-avatar[data-hair="mohawk"] b:before{left:8px;right:8px;top:-9px;height:16px;border-radius:50%}.cue-workspace__mini-avatar[data-hair="locs"] b:before,.cue-workspace__mini-avatar[data-hair="tied-back"] b:before,.cue-workspace__mini-avatar[data-hair="bob"] b:before{height:25px;border-radius:55% 55% 28% 28%}.cue-workspace__mini-avatar[data-expression] b:after{content:"";position:absolute;left:7px;right:7px;bottom:7px;height:2px;border-radius:999px;background:rgba(30,20,18,.65)}.cue-workspace__mini-avatar[data-expression="smile"] b:after{height:5px;border-bottom:2px solid rgba(30,20,18,.7);background:transparent}.cue-workspace__mini-avatar[data-expression="playful"] b:after{transform:rotate(-8deg)}
 .cue-workspace__compatibility{display:grid;gap:5px;padding:10px 12px;border:1px solid rgba(255,69,69,.38);border-radius:10px;background:rgba(255,69,69,.06)}.cue-workspace__compatibility strong{font-size:11px;color:#ff7777}.cue-workspace__compatibility span{font-size:11px;line-height:1.45;color:var(--cue-muted)}
+.cue-workspace__outfit-state{display:grid;gap:4px;padding:11px 12px;border:1px solid var(--cue-border);border-radius:10px;background:rgba(255,255,255,.025);font-size:11px;color:var(--cue-muted)}.cue-workspace__outfit-state strong{color:var(--cue-text)}.cue-workspace__outfit-state small{font-size:10px;line-height:1.4;color:var(--cue-accent)}
 @media(max-width:1000px){
   .cue-workspace__layout{grid-template-columns:1fr;min-height:0}
   .cue-workspace__stage-placeholder{min-height:420px}
