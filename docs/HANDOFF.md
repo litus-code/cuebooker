@@ -8163,3 +8163,70 @@ No domain semantics changed.
 No production catalogue entry was added.
 
 Production remains untouched.
+
+
+## 146. Creator 3D authored slice contract and runtime bindings
+
+CUE ID has moved from CSS-placeholder refinement into the first real authored 3D integration phase.
+
+New runtime/domain support:
+
+- `app/domain/cueIdCreator3dBindings.ts`
+- optional `bindings.creator` block in `CueIdProductionManifest`
+- creator-aware semantics inside `CueIdProductionScene.client.vue`
+
+The creator 3D binding layer supports:
+
+- face morph selection;
+- hair mesh visibility;
+- facial-hair mesh visibility;
+- top mesh visibility;
+- bottom mesh visibility;
+- footwear mesh visibility;
+- semantic skin tone applied to the authored body material.
+
+The existing V2 production binding contract remains valid.
+
+Creator bindings are optional, so existing V2 manifests are not widened implicitly.
+
+The renderer only applies creator semantics when an explicit creator config + creator binding block are present.
+
+A new authoring target document now defines the first real slice:
+
+`docs/CUE_ID_CREATOR_3D_V1.md`
+
+First authored slice:
+
+- neutral / regular;
+- skin-03 + skin-05;
+- face-03 + face-04;
+- textured-crop + curly-crop + locs;
+- none + short-beard;
+- oversized-tee + bomber;
+- wide-trouser + cargo;
+- technical-sneaker + boot;
+- accessory none;
+- neutral + relaxed poses;
+- matte treatment.
+
+Important implementation choice:
+
+Skin variants do not consume one material each.
+
+The authored asset keeps one skin surface/material; semantic skin tones modify that authored surface so the <=4 material budget remains realistic for mobile.
+
+Static-first boundary:
+
+The existing V2 static variant cartesian key is NOT expanded to every Creator dimension.
+
+The first Creator 3D authored asset is validated interactively in the noindex `/cue-id` lab.
+
+Before any Creator 3D production admission, Cuebooker still needs a per-saved-avatar static snapshot strategy rather than pre-rendering the full combinatorial Creator catalogue.
+
+The production catalogue remains empty.
+
+Production remains untouched.
+
+Current next step:
+
+Produce or import the first authored GLB matching `docs/CUE_ID_CREATOR_3D_V1.md`, inspect it, build the draft creator binding manifest from the actual exported node/morph names, and validate it in the CUE ID lab before any production promotion.
