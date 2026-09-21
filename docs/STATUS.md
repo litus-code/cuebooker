@@ -206,3 +206,68 @@ Validation for this pass:
 - `nuxi typecheck`: unavailable because this branch does not install `typescript`/`vue-tsc`; Nuxt client and server compilation passed.
 
 Next gate: deploy the branch to staging and complete the Dark/Light × ES/EN smoke pass at desktop and phone widths. Continue to the humanoid CUE ID only after that gate passes.
+
+
+## 21 September 2026 current branch status
+
+Reference branch: `feature/app-visual-system`  
+Reference PR: #75  
+Production remains intentionally untouched by the current CUE ID / Booking Core validation work.
+
+### Booking Core
+
+The real operational spine is working on staging:
+
+```text
+CUE
+-> Booking
+-> Activity
+-> Next Move / Hold
+-> Calendar
+-> History
+-> Relationship Memory
+```
+
+Outbound/inbound booking email roundtrip has been verified on staging. Public follow-up and embed distribution are implemented. Remaining work is launch hardening and manual smoke, not a replacement booking architecture.
+
+### CUE ID
+
+The new stylized Creator V1 lab is functionally closed for non-3D work.
+
+It now includes:
+
+- shared male/female catalogue with one body edited at a time;
+- skin, hair, face, outfit, footwear and accessory controls;
+- wardrobe layering and compatibility rules;
+- mobile/light/accessibility passes;
+- validated local draft save/reset/dirty behavior;
+- optional onboarding branch for DJs;
+- later re-entry from Artist Profile;
+- strict separation from the current public visual representation;
+- `CUE_ID_CREATOR_3D_LAB_CANDIDATE = null`;
+- `CUE_ID_PRODUCTION_CATALOGUE = []`.
+
+The physical rig and authored GLB validation remain the real gate.
+
+### Commercial site
+
+Home copy is being realigned with actual staging capability:
+
+- remove unproven 30-day trial language;
+- treat email threading as current staging capability;
+- keep discovery explicitly future/conceptual;
+- describe pre-production hardening accurately;
+- position Cuebooker around preserving booking context across fragmented channels.
+
+### Known external/manual gates
+
+- public acknowledgement email provider configuration on staging;
+- duplicate-provider and archived-email smoke cases;
+- desktop/mobile end-to-end smoke;
+- anonymous abuse/rate protection review;
+- embedded-widget external-origin/CSP review;
+- leaked-password protection decision;
+- production migration and rollback review;
+- analytics/observability setup.
+
+Do not infer production readiness from CI/staging success alone.
