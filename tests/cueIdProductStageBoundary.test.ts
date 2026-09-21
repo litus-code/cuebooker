@@ -27,7 +27,7 @@ test('product CUE ID keeps production static visible until the first interactive
 
   assert.match(source, /productionStaticPath && !runtimeReady/)
   assert.match(source, /@ready="handleProductionRuntimeReady"/)
-  assert.match(source, /@failed="handleRuntimeFailed\('tresjs_production_v2'\)"/)
+  assert.match(source, /@failed="handleRuntimeFailed\(labAuthoredManifest \? 'tresjs_authored_lab' : 'tresjs_production_v2'\)"/)
 })
 
 
