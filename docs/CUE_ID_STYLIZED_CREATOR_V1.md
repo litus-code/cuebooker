@@ -430,6 +430,28 @@ Visible-avatar target:
 
 The complete authoring library may contain more inactive meshes than the visible-avatar triangle target. Runtime metrics must measure the active configuration separately from total authoring-library geometry.
 
+### Authored body source
+
+V1 uses the CC0 Blender Human Base Meshes stylized male/female bodies as the character-design source.
+
+Measured source body:
+
+```text
+14,106 vertices
+28,200 triangles
+```
+
+The first runtime topology starts from a 50% reduction applied before expression authoring:
+
+```text
+7,856 evaluated vertices
+15,700 evaluated triangles
+```
+
+A 35% reduction was tested at 11,950 triangles but rejected as the default because facial planes, ears and hands lose too much definition.
+
+The unmodified source remains an authoring reference and is not the runtime mesh.
+
 ## 15. V1 acceptance gate
 
 The first stylized avatar is accepted only when:
