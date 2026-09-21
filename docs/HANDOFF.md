@@ -9352,3 +9352,29 @@ Changes:
 No catalogue semantics, rig state or production behavior changed.
 
 Production remains untouched.
+
+
+## 172. Creator light-theme surface cleanup
+
+The stylized Creator shell no longer relies on several dark-only surface assumptions.
+
+Updated:
+
+```text
+app/components/CueIdStylizedWorkspace.vue
+```
+
+Changes:
+
+- pending-rig panel background now derives from `--cue-surface`;
+- stage gradients derive from theme text/accent variables;
+- selected swatch inner ring uses the current surface instead of fixed black;
+- temporary preview-card backgrounds derive from theme text/surface colors;
+- fitting-warning and outfit-state backgrounds now mix against the current surface;
+- dark remains the primary art direction, but the shell can render coherently under the existing light theme variables.
+
+Brand lime buttons intentionally retain dark text for contrast.
+
+No runtime 3D, rig or production catalogue changes were made.
+
+Production remains untouched.
