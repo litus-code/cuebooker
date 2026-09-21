@@ -210,3 +210,53 @@ Before production:
 6. explicit production migration/function review.
 
 Production is not authorized by this document.
+
+
+## 21 September 2026 hardening status
+
+The public booking ingress has moved beyond the earlier rate-protection gap described above.
+
+Current `submit-booking-request` behavior on staging includes:
+
+- honeypot rejection for bot-filled hidden fields;
+- per-client rate limiting;
+- per-artist rate limiting;
+- per-artist/contact rate limiting;
+- HMAC-derived rate-limit keys rather than storing raw client identifiers;
+- dedicated database-backed rate-limit consumption;
+- bounded request payload size;
+- idempotent public booking creation remains in place.
+
+Repository migrations:
+
+```text
+20260918194500_add_public_ingress_rate_limits.sql
+20260918195000_prune_public_ingress_rate_limits.sql
+```
+
+Therefore stronger anonymous rate protection is no longer an unimplemented product item. It remains a pre-production validation item: thresholds and behavior should still be smoke-tested under realistic traffic before launch.
+
+### Current Supabase advisor interpretation
+
+The staging Security Advisor currently reports:
+
+- `auth_leaked_password_protection`: WARN, still unresolved at project configuration level;
+- `rls_enabled_no_policy`: INFO for:
+  - `email_delivery_webhook_receipts`;
+  - `notification_email_deliveries`.
+
+The two RLS informational notices are intentional for the current internal-delivery design. Effective grants were verified on staging:
+
+- no `anon` privileges;
+- no `authenticated` privileges;
+- access is restricted to `service_role`.
+
+Do not add permissive RLS policies merely to remove these informational notices.
+
+Performance advisor `unused_index` notices remain expected on the low-volume staging database and must not be treated as evidence to delete indexes before representative workload exists.
+
+### Still open
+
+The acknowledgement email path still depends on project-level Edge Function secrets/provider configuration. The function fails closed when `BREVO_API_KEY` or the reply domain is unavailable. This must be verified by a real staging acknowledgement delivery smoke before production.
+
+The embedded widget must still be tested from real external origins for frame/CSP behavior.
