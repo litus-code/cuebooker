@@ -225,3 +225,81 @@ For the first authored Creator 3D slice:
 - a per-saved-avatar snapshot strategy must be defined before Creator 3D promotion to production.
 
 Do not weaken the public static-first requirement to ship this asset early.
+
+
+## 12. Lab import flow
+
+The first authored GLB does not enter the production catalogue.
+
+Use the dedicated lab candidate slot:
+
+`app/domain/cueIdCreator3dLabCandidate.ts`
+
+Current state:
+
+```ts
+export const CUE_ID_CREATOR_3D_LAB_CANDIDATE = null
+```
+
+When the first real GLB exists:
+
+1. place the GLB under an application-owned lab path, for example:
+
+```text
+/public/cue-id/lab/creator-v1.glb
+```
+
+2. inspect the exported GLB:
+
+```bash
+npm run cue-id:inspect -- public/cue-id/lab/creator-v1.glb \
+  --manifest-draft /tmp/cue-id-creator-v1.json \
+  --asset-version 3.0.0-lab
+```
+
+3. verify the actual exported morph, node, material and animation names;
+
+4. build a partial `CueIdProductionManifest` for the authored slice;
+
+5. assign that inspected manifest to `CUE_ID_CREATOR_3D_LAB_CANDIDATE`;
+
+6. open `/cue-id`.
+
+The Creator automatically:
+
+- uses the authored GLB when the current config is covered by the partial manifest;
+- falls back to the semantic lab preview when the selected option is not yet authored;
+- remounts the stage when switching between authored and semantic lab representations;
+- never adds the lab candidate to `CUE_ID_PRODUCTION_CATALOGUE`.
+
+The lab renderer may resolve partial V2 bindings only when `labMode=true`.
+
+Production resolution still requires normal production-wide manifest readiness.
+
+## 13. Permissive authoring base option
+
+A MakeHuman / MPFB core human asset is an acceptable starting point for the sculpt/retopology phase if it materially accelerates the first authored character.
+
+Reason:
+
+- MakeHuman core graphical assets are published as CC0;
+- exported character output may be used and modified without forcing Cuebooker runtime/product code under the MakeHuman application license;
+- third-party downloaded MakeHuman community assets must still be checked separately.
+
+Use this only as a base mesh/source.
+
+Do not ship an untouched generic MakeHuman character as CUE ID.
+
+The character still needs:
+
+- Cuebooker-specific sculpting and proportions;
+- authored face identity;
+- custom hair;
+- club/editorial garments;
+- shared rig cleanup;
+- optimized topology;
+- product-specific materials;
+- CUE ID semantic node/morph naming during export;
+- mobile/performance review.
+
+The runtime has no dependency on MakeHuman or MPFB.
