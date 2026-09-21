@@ -328,7 +328,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visibl
 }
 
 @media (max-width: 720px) {
-  .section-pad { padding: 82px 22px; }
+  .section-pad { padding: 64px 20px; }
   .site-header { backdrop-filter: none; background: var(--cue-bg); gap: 8px; min-height: 66px; padding: 0 12px; }
   .site-nav--open { background: var(--cue-bg); top: 65px; }
   .floating-actions { bottom: max(10px, env(safe-area-inset-bottom)); gap: 6px; left: auto; right: 10px; }
@@ -358,24 +358,40 @@ button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visibl
   .hero__edge { margin-top: 20px; text-align: left; }
   .problem, .discovery, .connected, .roles, .access-model, .distribution, .identity-story { display: block; }
   .section-heading { margin-top: 32px; }
-  .section-heading h2, .early-access h2 { font-size: clamp(3.2rem, 15vw, 5.4rem); }
+  .section-heading h2, .early-access h2 { font-size: clamp(2.75rem, 11.5vw, 4.6rem); line-height:.92; }
   .chaos { margin-top: 50px; min-height: 420px; }
   .chaos__card { width: 72%; }
   .chaos__card--whatsapp { left: 25%; }
   .chaos__card--sheet { left: 23%; }
-  .problem__statement { font-size: 3rem; margin-top: 30px; }
+  .problem__statement { font-size: clamp(2rem, 8.5vw, 2.8rem); line-height:1.02; margin-top: 26px; max-width: 17ch; }
   .search-panel { background: var(--cue-surface); border: 1px solid var(--cue-border); margin-top: 42px; padding: 20px; }
   .results { padding-top: 70px; }
   .results > header { align-items: flex-start; flex-direction: column; gap: 10px; }
-  .artist-grid, .role-grid, .distribution-grid, .identity-grid { display: flex; margin-right: -22px; overflow-x: auto; padding-bottom: 16px; scroll-snap-type: x mandatory; }
-  .artist-result, .role-grid article, .distribution-grid article, .identity-grid article { flex: 0 0 86%; scroll-snap-align: start; }
+  .artist-grid, .role-grid { display: flex; margin-right: -20px; overflow-x: auto; padding-bottom: 16px; scroll-snap-type: x mandatory; }
+  .distribution-grid, .identity-grid { display:grid; grid-template-columns:1fr; gap:10px; margin-right:0; overflow:visible; padding-bottom:0; }
+  .artist-result, .role-grid article { flex: 0 0 86%; scroll-snap-align: start; }
   .artist-result__visual { height: 240px; }
   .flow-line { display: grid; grid-template-columns: 1fr; margin-top: 28px; }
   .flow-line li { border-bottom: 1px solid var(--cue-border); min-height: 0; }
   .flow-line span { margin-bottom: 18px; }
-  .role-grid, .distribution-grid, .identity-grid { margin-top: 45px; }
-  .distribution-note, .identity-status { margin-top: 24px; }
+  .role-grid { margin-top: 40px; }
+  .distribution-grid, .identity-grid { margin-top: 30px; }
+  .distribution-note, .identity-status { margin-top: 18px; }
   .role-grid article { min-height: 340px; }
+
+  .distribution, .identity-story { padding-top:56px; padding-bottom:56px; }
+  .distribution .section-heading h2 { color:var(--cue-accent); }
+  .distribution .section-heading > p:last-child,
+  .identity-story .section-heading > p:last-child { font-size:1rem; line-height:1.5; max-width:34rem; }
+  .distribution-grid article,
+  .identity-grid article { min-height:0; padding:20px; }
+  .distribution-grid h3 { font-size:2rem; margin:22px 0 10px; }
+  .distribution-grid p,
+  .identity-grid p { font-size:12px; line-height:1.5; }
+  .distribution-signal { height:82px; margin-top:18px; }
+  .identity-grid strong { margin-top:34px; font-size:2.25rem; }
+  .identity-grid article.active { background:color-mix(in srgb,var(--cue-accent) 8%,var(--cue-bg)); }
+  .identity-status { font-size:9px; line-height:1.45; }
   .access-demo { margin-top: 45px; }
   .access-tabs button { font-size: 8px; min-height: 38px; padding: 0 6px; }
   .access-card { min-height: 0; padding: 24px 20px; }
