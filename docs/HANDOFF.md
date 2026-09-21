@@ -8230,3 +8230,54 @@ Production remains untouched.
 Current next step:
 
 Produce or import the first authored GLB matching `docs/CUE_ID_CREATOR_3D_V1.md`, inspect it, build the draft creator binding manifest from the actual exported node/morph names, and validate it in the CUE ID lab before any production promotion.
+
+
+## 147. Authored Creator 3D lab-candidate slot
+
+The first real authored Creator GLB can now be integrated and reviewed in `/cue-id` without pretending it is production-ready.
+
+New file:
+
+`app/domain/cueIdCreator3dLabCandidate.ts`
+
+Key boundary:
+
+```ts
+CUE_ID_CREATOR_3D_LAB_CANDIDATE
+```
+
+remains `null` until an actual inspected GLB + partial manifest exist.
+
+The lab candidate resolver requires both:
+
+- the selected legacy/runtime semantics to resolve;
+- the selected Creator semantics to resolve.
+
+If the current Creator config is outside the authored slice, the Creator falls back to its semantic lab preview instead of showing a wrong authored avatar.
+
+Runtime changes:
+
+- `resolveCueIdProductionBindings(..., { allowPartial: true })` exists for lab validation only;
+- `CueIdProductionScene.client.vue` accepts `labMode`;
+- `CueIdStage.vue` accepts `labAuthoredManifest` + `creatorConfig`;
+- lab authored renders are tracked separately from production renderer readiness;
+- the Creator remounts the Stage when switching semantic-lab / authored-lab / production modes;
+- authored lab does not show the procedural placeholder mannequin while loading.
+
+Production behavior remains strict:
+
+- default production binding resolution still requires full interactive readiness;
+- the production catalogue remains empty;
+- no production admission is bypassed.
+
+The Creator review view was also corrected: it still contained the old technical GLB candidate path and could double-render. Edit and review now use the same single-representation rule.
+
+Authoring flow is documented in:
+
+`docs/CUE_ID_CREATOR_3D_V1.md`
+
+The first real GLB should be placed under an application-owned lab path, inspected with the existing CUE ID inspector, then wired into the lab candidate slot using the actual exported bindings.
+
+MakeHuman / MPFB core assets are documented as a possible CC0 base-mesh starting point only. Cuebooker must still sculpt, style, retopologize, rig-clean and optimize the character into its own authored visual identity. The runtime has no MakeHuman dependency.
+
+Production remains untouched.
