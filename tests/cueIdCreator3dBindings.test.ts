@@ -63,8 +63,8 @@ function manifest(): CueIdProductionManifest {
           'face-04': 'cue_face_04'
         },
         skins: {
-          'skin-03': 'cue_skin_03',
-          'skin-05': 'cue_skin_05'
+          'skin-03': '#b9805f',
+          'skin-05': '#67402f'
         },
         hairs: {
           'textured-crop': ['cue_hair_textured_crop'],
@@ -108,7 +108,7 @@ test('reference face resolves without a face morph', () => {
   assert.deepEqual(resolved?.topNodes, ['cue_top_oversized_tee'])
   assert.deepEqual(resolved?.bottomNodes, ['cue_bottom_wide_trouser'])
   assert.deepEqual(resolved?.footwearNodes, ['cue_footwear_technical_sneaker'])
-  assert.equal(resolved?.skinMaterial, 'cue_skin_03')
+  assert.equal(resolved?.skinColor, '#b9805f')
 })
 
 test('creator 3D bindings resolve authored face and visible parts', () => {
@@ -129,7 +129,7 @@ test('creator 3D bindings resolve authored face and visible parts', () => {
   assert.deepEqual(resolved?.topNodes, ['cue_top_bomber'])
   assert.deepEqual(resolved?.bottomNodes, ['cue_bottom_cargo'])
   assert.deepEqual(resolved?.footwearNodes, ['cue_footwear_boot'])
-  assert.equal(resolved?.skinMaterial, 'cue_skin_05')
+  assert.equal(resolved?.skinColor, '#67402f')
 })
 
 test('creator 3D resolver rejects config outside authored capabilities', () => {
