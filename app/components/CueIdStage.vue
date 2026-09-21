@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { CueIdConfigV1 } from '../domain/cueId'
+import type { CueIdCreatorConfigV1 } from '../domain/cueIdCreator'
+import type { CueIdProductionManifest } from '../domain/cueIdProductionManifest'
 import type { CueIdCandidateQuality } from '../domain/cueIdAssets'
 import { selectCueIdCandidateQuality, type CueIdQualityMode } from '../domain/cueIdQuality'
 import { decideCueIdRuntime, getCueIdRuntimeSignals, type CueIdRuntimeDecision } from '../domain/cueIdRuntime'
@@ -9,6 +11,8 @@ import { CUE_ID_PRODUCTION_CATALOGUE } from '../domain/cueIdProductionCatalogue'
 
 const props = withDefaults(defineProps<{
   config: CueIdConfigV1
+  creatorConfig?: CueIdCreatorConfigV1 | null
+  labAuthoredManifest?: CueIdProductionManifest | null
   artistName?: string
   compact?: boolean
   interactive?: boolean
@@ -17,6 +21,8 @@ const props = withDefaults(defineProps<{
   showDiagnostics?: boolean
   showPlaceholderFigure?: boolean
 }>(), {
+  creatorConfig: null,
+  labAuthoredManifest: null,
   artistName: 'ARTIST',
   compact: false,
   interactive: true,
@@ -48,7 +54,7 @@ const LazyCueIdScene = defineAsyncComponent(() => import('./CueIdScene.client.vu
 const LazyCueIdProductionScene = defineAsyncComponent(() => import('./CueIdProductionScene.client.vue'))
 
 const resolvedProductionAsset = computed(() => {
-  if (!runtimeDecision.value || props.labAsset) return null
+  if (!runtimeDecision.value || props.labAsset || props.labAuthoredManifest) return null
   return resolveCueIdAsset(
     props.config,
     runtimeDecision.value.tier,
@@ -63,9 +69,10 @@ const productionStaticPath = computed(() =>
 )
 
 const productionInteractiveManifest = computed(() =>
-  resolvedProductionAsset.value?.representation === 'interactive'
-    ? resolvedProductionAsset.value.manifest
-    : null
+  props.labAuthoredManifest
+    || (resolvedProductionAsset.value?.representation === 'interactive'
+      ? resolvedProductionAsset.value.manifest
+      : null)
 )
 
 watch(
@@ -112,7 +119,7 @@ onMounted(() => {
   if (stageRoot.value) runtimeObserver.observe(stageRoot.value)
 })
 
-function markRuntimeReady(renderer: 'tresjs_lab' | 'tresjs_production_v2') {
+function markRuntimeReady(renderer: 'tresjs_lab' | 'tresjs_authored_lab' | 'tresjs_production_v2') {
   runtimeReady.value = true
   runtimeInitMs.value = runtimeLoadStartedAt
     ? Math.max(0, Math.round(performance.now() - runtimeLoadStartedAt))
@@ -137,7 +144,7 @@ function handleProductionRuntimeReady(metrics: {
   parseMs: number
   firstFrameMs: number
 }) {
-  markRuntimeReady('tresjs_production_v2')
+  markRuntimeReady(props.labAuthoredManifest ? 'tresjs_authored_lab' : 'tresjs_production_v2')
 
   const totalReadyMs = runtimeLoadStartedAt
     ? Math.max(0, Math.round(performance.now() - runtimeLoadStartedAt))
@@ -146,7 +153,11 @@ function handleProductionRuntimeReady(metrics: {
     ? evaluateCueIdReadyPerformance(runtimeDecision.value.tier, totalReadyMs)
     : null
 
-  analytics.track('cue_id_production_asset_loaded', {
+  analytics.track(
+    props.labAuthoredManifest
+      ? 'cue_id_authored_lab_asset_loaded'
+      : 'cue_id_production_asset_loaded',
+    {
     asset_version: metrics.assetVersion,
     bytes: metrics.bytes,
     load_ms: metrics.loadMs,
@@ -156,7 +167,8 @@ function handleProductionRuntimeReady(metrics: {
     runtime_tier: runtimeDecision.value?.tier || null,
     ready_budget_ms: gate?.budgetMs ?? null,
     ready_gate: gate?.status ?? 'not_applicable'
-  })
+    }
+  )
 }
 
 function handleLabAssetLoaded(metrics: { assetId: string; bytes: number; loadMs: number; parseMs: number; firstFrameMs: number }) {
@@ -187,7 +199,7 @@ function handleLabAssetLoaded(metrics: { assetId: string; bytes: number; loadMs:
   })
 }
 
-function handleRuntimeFailed(renderer: 'tresjs_lab' | 'tresjs_production_v2' = 'tresjs_lab') {
+function handleRuntimeFailed(renderer: 'tresjs_lab' | 'tresjs_authored_lab' | 'tresjs_production_v2' = 'tresjs_lab') {
   runtimeReady.value = false
   analytics.track('cue_id_renderer_failed', {
     renderer,
@@ -281,10 +293,12 @@ const performanceGate = computed(() => {
       <LazyCueIdProductionScene
         v-if="!labAsset && interactive && runtimeWanted && runtimeDecision && productionInteractiveManifest"
         :config="config"
+        :creator-config="creatorConfig"
+        :lab-mode="Boolean(labAuthoredManifest)"
         :manifest="productionInteractiveManifest"
         :decision="runtimeDecision"
         @ready="handleProductionRuntimeReady"
-        @failed="handleRuntimeFailed('tresjs_production_v2')"
+        @failed="handleRuntimeFailed(labAuthoredManifest ? 'tresjs_authored_lab' : 'tresjs_production_v2')"
       />
     </ClientOnly>
 
