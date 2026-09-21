@@ -292,9 +292,11 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
         </div>
 
         <div class="cue-workspace__stage-placeholder">
-          <div class="cue-workspace__silhouette" :data-body="modelValue.body">
-            <i class="cue-workspace__silhouette-head" />
-            <i class="cue-workspace__silhouette-body" />
+          <div class="cue-workspace__stage-graphic" aria-hidden="true">
+            <i class="cue-workspace__stage-ring cue-workspace__stage-ring--outer" />
+            <i class="cue-workspace__stage-ring cue-workspace__stage-ring--inner" />
+            <i class="cue-workspace__stage-axis cue-workspace__stage-axis--x" />
+            <i class="cue-workspace__stage-axis cue-workspace__stage-axis--y" />
           </div>
           <div class="cue-workspace__pending">
             <span class="cue-workspace__preview-kicker">{{ copy.previewBody }} · {{ currentBodyLabel }}</span>
@@ -735,10 +737,14 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace__stage-head span{display:block;color:var(--cue-muted);font-size:11px;text-transform:uppercase;letter-spacing:.1em}.cue-workspace__stage-head strong{font-size:1.1rem}
 .cue-workspace__body-toggle{display:flex;padding:3px;border:1px solid var(--cue-border);border-radius:999px}.cue-workspace__body-toggle button{min-height:40px;border:0;border-radius:999px;padding:8px 14px;background:transparent;color:var(--cue-muted);font-weight:800}.cue-workspace__body-toggle button.active{background:var(--cue-accent);color:#111}
 .cue-workspace__stage-placeholder{position:relative;display:grid;place-items:center;min-height:560px;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--cue-accent) 9%,transparent),transparent 38%),linear-gradient(180deg,color-mix(in srgb,var(--cue-text) 3%,transparent),transparent)}
-.cue-workspace__silhouette{position:absolute;inset:8% 24% 8%;opacity:.15;filter:blur(.1px)}
-.cue-workspace__silhouette-head{position:absolute;left:50%;top:3%;width:100px;height:120px;transform:translateX(-50%);border-radius:48%;background:linear-gradient(160deg,#fff,#59605a)}
-.cue-workspace__silhouette-body{position:absolute;left:50%;top:20%;width:240px;height:420px;transform:translateX(-50%);border-radius:44% 44% 28% 28%/18% 18% 24% 24%;background:linear-gradient(160deg,#fff,#4d534e)}
-.cue-workspace__silhouette[data-body="female"] .cue-workspace__silhouette-body{width:220px;border-radius:42% 42% 34% 34%/18% 18% 24% 24%}
+.cue-workspace__stage-graphic{position:absolute;inset:8%;opacity:.42;overflow:hidden}
+.cue-workspace__stage-graphic:before{content:"";position:absolute;inset:0;background-image:linear-gradient(color-mix(in srgb,var(--cue-text) 6%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--cue-text) 6%,transparent) 1px,transparent 1px);background-size:28px 28px;mask-image:radial-gradient(circle at center,#000 24%,transparent 72%)}
+.cue-workspace__stage-ring{position:absolute;left:50%;top:50%;border:1px solid color-mix(in srgb,var(--cue-accent) 28%,transparent);border-radius:50%;transform:translate(-50%,-50%)}
+.cue-workspace__stage-ring--outer{width:min(72%,420px);aspect-ratio:1}
+.cue-workspace__stage-ring--inner{width:min(42%,240px);aspect-ratio:1;border-style:dashed;opacity:.8}
+.cue-workspace__stage-axis{position:absolute;left:50%;top:50%;background:color-mix(in srgb,var(--cue-accent) 18%,transparent);transform:translate(-50%,-50%)}
+.cue-workspace__stage-axis--x{width:min(76%,460px);height:1px}
+.cue-workspace__stage-axis--y{width:1px;height:min(76%,460px)}
 .cue-workspace__pending{position:relative;z-index:2;display:grid;gap:8px;max-width:360px;padding:18px;text-align:center;border:1px solid var(--cue-border);border-radius:16px;background:color-mix(in srgb,var(--cue-surface) 88%,transparent);backdrop-filter:blur(10px)}
 .cue-workspace__pending strong{font-size:1.05rem}.cue-workspace__pending span{color:var(--cue-muted);line-height:1.5}.cue-workspace__pending small{color:var(--cue-text);font:700 10px/1.4 monospace;letter-spacing:.04em}
 .cue-workspace__preview-kicker{color:var(--cue-accent)!important;font:800 9px/1.2 monospace;letter-spacing:.1em;text-transform:uppercase}
@@ -775,7 +781,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
   .cue-workspace__body-toggle{flex:0 0 auto}
   .cue-workspace__body-toggle button{min-height:38px;padding:7px 11px;font-size:12px}
   .cue-workspace__stage-placeholder{min-height:300px}
-  .cue-workspace__silhouette{inset:10% 18% 6%;transform:scale(.72);transform-origin:50% 50%}
+  .cue-workspace__stage-graphic{inset:6%}
   .cue-workspace__pending{max-width:calc(100% - 28px);padding:14px}
   .cue-workspace__pending span:not(.cue-workspace__preview-kicker){font-size:12px}
   .cue-workspace__shared-note{padding:11px 12px;font-size:11px}
