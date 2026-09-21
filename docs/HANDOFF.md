@@ -8349,3 +8349,129 @@ The canonical visible exported state is textured-crop + oversized-tee + wide-tro
 This script is authoring tooling only and does not enter the application bundle.
 
 Current material blocker is now external to repo architecture: create the actual sculpt/rig/garments in Blender/MPFB (or another DCC), then run this export gate and wire the inspected GLB into the existing authored lab candidate slot.
+
+
+## 150. MPFB authoring bootstrap automated in CI
+
+The external Blender authoring blocker has been reduced to a reproducible CI workflow.
+
+New files:
+
+`scripts/blender/cue-id-creator-v1-bootstrap.py`
+`.github/workflows/cue-id-author-bootstrap.yml`
+
+The workflow:
+
+- downloads Blender 5.2.2;
+- installs the official MPFB extension;
+- creates an editable human source;
+- applies the face-03 reference sculpt;
+- creates the `cue_face_04` morph;
+- adds one `game_engine` rig;
+- creates `cue_pose_neutral` and `cue_pose_relaxed`;
+- saves `source.blend`;
+- emits geometry/rig metadata;
+- renders full-body and portrait review PNGs;
+- stores everything as a GitHub Actions artifact.
+
+The generated source is explicitly an authoring base, not a production avatar and not a lab candidate.
+
+Measured MPFB basemesh geometry:
+
+```text
+visible body vertices: 13,380
+visible body triangles: 26,756
+hidden helper triangles: 10,216
+raw mesh triangles: 36,972
+```
+
+The visible body alone leaves too little geometry budget for the full Creator slice, so the raw MPFB basemesh is retained only as a high-detail authoring source.
+
+Production remains untouched.
+
+## 151. Lightweight topology comparison
+
+A CI topology probe was added:
+
+`scripts/blender/cue-id-creator-v1-topology-probe.py`
+`.github/workflows/cue-id-topology-probe.yml`
+
+It installs the official MakeHuman CC0 system asset pack and compares these proxies with the same neutral CUE ID source character:
+
+- `proxy741`;
+- `male1591`;
+- `female1605`.
+
+The probe generates full-body and portrait renders plus triangle/vertex measurements.
+
+Review result:
+
+- `proxy741` is too destructive in the face for the first authored CUE ID;
+- `female1605` preserves detail but carries anatomy-specific torso volume that is undesirable for the neutral base;
+- `male1591` provides the best current balance for the neutral export topology.
+
+The upstream filename `male1591` is provenance only. The runtime object is renamed `cue_body` and CUE ID semantics do not expose that upstream naming.
+
+Production remains untouched.
+
+## 152. First low-poly dressed canonical source
+
+New authoring files:
+
+`scripts/blender/cue-id-creator-v1-lowpoly-source.py`
+`.github/workflows/cue-id-lowpoly-source.yml`
+
+The first successful artifact used the `male1591` proxy as `cue_body`, generated `cue_face_04` on that topology, shared one rig and created a canonical visible set:
+
+```text
+cue_hair_textured_crop
+cue_top_oversized_tee
+cue_bottom_wide_trouser
+cue_footwear_technical_sneaker
+```
+
+The first pass proved the technical structure and remained within the hard material budget, but its visual result is rejected.
+
+Observed problems in review:
+
+- relaxed arm pose reads unnaturally;
+- garment shells look visibly layered over the body;
+- shoulder/axilla treatment makes the arms look joined;
+- trousers intersect/read too close to the body;
+- textured crop intrudes too far into the face;
+- review lighting overexposes the materials.
+
+The generated ZIP from this pass must NOT be treated as accepted visual evidence.
+
+No GLB from this pass should be wired into `CUE_ID_CREATOR_3D_LAB_CANDIDATE`.
+
+## 153. Canonical shell refinement in progress
+
+The low-poly source is being refined before authoring any additional variants.
+
+Current correction direction:
+
+- reduce hair coverage and remove subdivision from the crop;
+- clean the front hairline and temple selection;
+- restrict the oversized tee to torso plus short-sleeve regions;
+- create a real neckline opening;
+- offset garment vertices using body normals to avoid z-fighting and shell intersections;
+- separate trouser legs and waist more cleanly;
+- reduce review light energy;
+- preserve the same `cue_body` topology, morph and shared rig.
+
+This step intentionally delays curly crop, locs, bomber, cargo, boot and beard. Variant expansion only resumes after the canonical combination reads as one believable authored character at product size.
+
+Production remains untouched.
+
+## 154. Authoring workflow infrastructure
+
+GitHub Actions headless Blender rendering now installs Mesa/EGL/Xvfb dependencies and runs render steps under `xvfb-run`.
+
+The MakeHuman CC0 system asset ZIP is cached in the low-poly workflow so later authoring iterations do not repeatedly download the full 267 MB pack.
+
+The first headless topology comparison now completes successfully.
+
+The production catalogue remains empty.
+
+Production remains untouched.
