@@ -3,6 +3,7 @@ import test from 'node:test'
 
 import {
   CUE_ID_WARDROBE_ASSETS,
+  cueIdHarnessCompatibleWithSelection,
   cueIdHarnessCompatibleWithTop,
   cueIdModestyForSelection,
   cueIdOuterwearCompatibleWithTop,
@@ -87,6 +88,30 @@ test('harness compatibility is explicit per top', () => {
   assert.equal(cueIdHarnessCompatibleWithTop('tee'), true)
   assert.equal(cueIdHarnessCompatibleWithTop('sweatshirt'), false)
   assert.equal(cueIdHarnessCompatibleWithTop('hoodie'), false)
+})
+
+test('one-piece compatibility takes precedence over stored top', () => {
+  assert.equal(
+    cueIdHarnessCompatibleWithSelection({
+      top: 'tee',
+      onePiece: 'jumpsuit'
+    }),
+    false
+  )
+  assert.equal(
+    cueIdHarnessCompatibleWithSelection({
+      top: 'hoodie',
+      onePiece: 'bodysuit'
+    }),
+    true
+  )
+  assert.equal(
+    cueIdHarnessCompatibleWithSelection({
+      top: 'mesh-top',
+      onePiece: 'none'
+    }),
+    true
+  )
 })
 
 test('outerwear compatibility is explicit per top', () => {
