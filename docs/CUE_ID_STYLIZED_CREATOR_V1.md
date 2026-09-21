@@ -156,7 +156,63 @@ Each piercing uses one small mesh attached to a stable head/face anchor.
 
 Maximum simultaneous V1 piercings: 3.
 
-## 8. Skin
+## 8. Accessories
+
+Accessories are separate semantic slots rather than one generic accessory field.
+
+Headwear:
+
+```text
+none
+cap
+beanie
+top-hat
+```
+
+Face accessory:
+
+```text
+none
+mask
+```
+
+Ear accessory:
+
+```text
+none
+headphones
+```
+
+Hands:
+
+```text
+none
+short-gloves
+long-gloves
+```
+
+Rules:
+
+- one active value per accessory slot;
+- piercings remain independent and multi-select;
+- selecting an accessory must never silently overwrite the persisted hair, piercing or clothing choice;
+- when two authored meshes physically conflict, the Creator marks the unsupported combination rather than mutating another slot;
+- headwear may use hair-fit variants internally while preserving the selected hair semantic;
+- the first authored V1 coverage does not require `top-hat + headphones` simultaneously.
+
+Recommended aliases:
+
+```text
+cue_headwear_cap
+cue_headwear_beanie
+cue_headwear_top_hat
+cue_face_mask
+cue_ears_headphones
+cue_gloves_short
+cue_gloves_long
+```
+
+## 9. Skin
 
 Retain the existing six semantic skin tones:
 
@@ -171,7 +227,7 @@ skin-06
 
 Skin tone changes the shared body material.
 
-## 9. Clothing
+## 10. Clothing
 
 Canonical default outfit:
 
@@ -231,7 +287,7 @@ technical-sneaker
 boot
 ```
 
-## 10. Canonical default
+## 11. Canonical default
 
 ```text
 body: male
@@ -243,6 +299,10 @@ hair: crop
 hair colour: black
 facial hair: none
 piercings: []
+headwear: none
+face accessory: none
+ear accessory: none
+gloves: none
 top: tee
 top colour: black
 bottom: wide-trouser
@@ -253,7 +313,7 @@ footwear colour: black
 pose: relaxed-standing
 ```
 
-## 11. Runtime model
+## 12. Runtime model
 
 Use one shared skeleton.
 
@@ -282,6 +342,14 @@ cue_piercing_septum
 cue_piercing_nostril
 cue_piercing_eyebrow
 
+cue_headwear_cap
+cue_headwear_beanie
+cue_headwear_top_hat
+cue_face_mask
+cue_ears_headphones
+cue_gloves_short
+cue_gloves_long
+
 cue_top_tee
 cue_top_tank
 cue_top_sweatshirt
@@ -301,7 +369,7 @@ cue_footwear_technical_sneaker
 cue_footwear_boot
 ```
 
-## 12. Material strategy
+## 13. Material strategy
 
 Target four runtime materials maximum:
 
@@ -322,9 +390,27 @@ Use parameters for:
 - one-piece colour;
 - footwear colour where possible.
 
-Piercings use `cue_mat_detail`.
+Piercings and hard accessories use `cue_mat_detail`. Fabric accessories should reuse `cue_mat_textile` where possible.
 
-## 13. Performance
+### Cuebooker Basics branding
+
+The default clothing family is called `Cuebooker Basics`.
+
+Branding must read as a small signature, not as branded merchandise.
+
+Default treatment:
+
+- black tee: small Cuebooker symbol on the left chest;
+- sweatshirt / hoodie: small symbol on the left chest;
+- bomber: small symbol on the sleeve;
+- cap / beanie: small front symbol;
+- wide and straight trousers: no visible logo by default;
+- cargo may use a tiny pocket mark;
+- use the symbol/isotype rather than the full `cuebooker` wordmark at avatar scale.
+
+The branding is garment metadata. It is not another runtime material and it is not a required user-facing customization field.
+
+## 14. Performance
 
 Stylization exists partly to simplify rendering.
 
@@ -344,7 +430,7 @@ Visible-avatar target:
 
 The complete authoring library may contain more inactive meshes than the visible-avatar triangle target. Runtime metrics must measure the active configuration separately from total authoring-library geometry.
 
-## 14. V1 acceptance gate
+## 15. V1 acceptance gate
 
 The first stylized avatar is accepted only when:
 
@@ -356,14 +442,15 @@ The first stylized avatar is accepted only when:
 6. hair does not obscure the face by accident;
 7. facial hair attaches cleanly;
 8. ear, septum, nostril and eyebrow piercings align correctly;
-9. black tee + black wide trousers is visually clean;
-10. tank and shorts expose body geometry without holes;
-11. no body/garment clipping is visible at product size;
-12. relaxed standing pose has shoulders down and arms naturally beside the body;
-13. the active avatar remains inside the V1 performance budget;
-14. public Artist Profile remains static-first.
+9. cap, beanie, top hat, mask, headphones and both glove variants align correctly in their supported combinations;
+10. black tee + black wide trousers is visually clean and the small Cuebooker mark is legible without dominating the outfit;
+11. tank and shorts expose body geometry without holes;
+12. no body/garment/accessory clipping is visible at product size;
+13. relaxed standing pose has shoulders down and arms naturally beside the body;
+14. the active avatar remains inside the V1 performance budget;
+15. public Artist Profile remains static-first.
 
-## 15. Scope control
+## 16. Scope control
 
 Do not add in V1:
 
@@ -381,7 +468,7 @@ Do not add in V1:
 
 Those can be later additions after the base creator is visually accepted.
 
-## 16. Migration from previous experiments
+## 17. Migration from previous experiments
 
 The following are deprecated as visual directions:
 
@@ -392,5 +479,33 @@ The following are deprecated as visual directions:
 
 They may remain in the repo as authoring research until cleanup, but none may enter
 `CUE_ID_CREATOR_3D_LAB_CANDIDATE` or `CUE_ID_PRODUCTION_CATALOGUE`.
+
+Production remains untouched.
+
+
+## 18. Current visual prototype status
+
+The Blender primitive-based stylized prototype generated on 21 September 2026 is technical evidence only.
+
+It proves:
+
+- the five-expression morph pipeline;
+- the basic material and render workflow;
+- a low geometry budget;
+- deterministic CI generation.
+
+It is rejected as the final art direction because the body still reads as assembled geometric primitives rather than the approved soft-caricature character family.
+
+Do not spend further iterations polishing that primitive silhouette.
+
+The next authored character must target the approved reference characteristics:
+
+- larger expressive head, but not chibi;
+- softer continuous torso and limbs;
+- readable large eyes;
+- natural relaxed hands and arms;
+- clean black Cuebooker Basics outfit;
+- male and female members of the same visual family;
+- modular hair, facial hair, piercings, clothing and accessories from the semantic catalogue above.
 
 Production remains untouched.
