@@ -332,8 +332,9 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="skin"
               type="button"
               :class="{ selected: modelValue.skin === skin }"
+              :aria-pressed="modelValue.skin === skin"
               :style="{ '--swatch': CUE_ID_SKIN_TONES[skin].color }"
-              :aria-label="skin"
+              :aria-label="copy.skin + ': ' + skin"
               @click="patch('skin', skin)"
             />
           </div>
@@ -345,6 +346,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="expression"
               type="button"
               :class="{ selected: modelValue.expression === expression }"
+              :aria-pressed="modelValue.expression === expression"
               @click="patch('expression', expression as CueIdStylizedExpressionId)"
             >
               <i
@@ -370,6 +372,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="hair"
               type="button"
               :class="{ selected: modelValue.hair === hair }"
+              :aria-pressed="modelValue.hair === hair"
               @click="patch('hair', hair as CueIdStylizedHairId)"
             >
               <i
@@ -393,8 +396,9 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="hairColor"
               type="button"
               :class="{ selected: modelValue.hairColor === hairColor }"
+              :aria-pressed="modelValue.hairColor === hairColor"
               :style="{ '--swatch': hairColorHex(hairColor) }"
-              :aria-label="hairColor"
+              :aria-label="copy.hairColor + ': ' + hairColor"
               @click="patch('hairColor', hairColor)"
             />
           </div>
@@ -408,6 +412,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="eyeColor"
               type="button"
               :class="{ selected: modelValue.eyeColor === eyeColor }"
+              :aria-pressed="modelValue.eyeColor === eyeColor"
               @click="patch('eyeColor', eyeColor)"
             >{{ eyeColor }}</button>
           </div>
@@ -419,6 +424,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="lens"
               type="button"
               :class="{ selected: modelValue.contactLens === lens }"
+              :aria-pressed="modelValue.contactLens === lens"
               @click="patch('contactLens', lens)"
             >{{ lens }}</button>
           </div>
@@ -430,6 +436,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="facialHair"
               type="button"
               :class="{ selected: modelValue.facialHair === facialHair }"
+              :aria-pressed="modelValue.facialHair === facialHair"
               @click="patch('facialHair', facialHair)"
             >{{ facialHair }}</button>
           </div>
@@ -441,6 +448,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="piercing"
               type="button"
               :class="{ selected: modelValue.piercings.includes(piercing) }"
+              :aria-pressed="modelValue.piercings.includes(piercing)"
               @click="togglePiercing(piercing)"
             >{{ piercing }}</button>
           </div>
@@ -452,6 +460,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="makeup"
               type="button"
               :class="{ selected: modelValue.makeup === makeup }"
+              :aria-pressed="modelValue.makeup === makeup"
               @click="patch('makeup', makeup)"
             >{{ makeup }}</button>
           </div>
@@ -463,6 +472,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="nail"
               type="button"
               :class="{ selected: modelValue.nails === nail }"
+              :aria-pressed="modelValue.nails === nail"
               @click="patch('nails', nail)"
             >{{ nail }}</button>
           </div>
@@ -481,6 +491,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="top"
               type="button"
               :class="{ selected: modelValue.top === top, muted: onePieceActive }"
+              :aria-pressed="modelValue.top === top"
               :aria-disabled="onePieceActive"
               @click="patch('top', top)"
             >{{ top }}</button>
@@ -493,6 +504,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="top"
               type="button"
               :class="{ selected: modelValue.top === top }"
+              :aria-pressed="modelValue.top === top"
               @click="patch('top', top)"
             >{{ top }}</button>
           </div>
@@ -504,6 +516,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="bottom"
               type="button"
               :class="{ selected: modelValue.bottom === bottom, muted: onePieceActive }"
+              :aria-pressed="modelValue.bottom === bottom"
               :aria-disabled="onePieceActive"
               @click="patch('bottom', bottom)"
             >{{ bottom }}</button>
@@ -516,6 +529,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="bottom"
               type="button"
               :class="{ selected: modelValue.bottom === bottom }"
+              :aria-pressed="modelValue.bottom === bottom"
               @click="patch('bottom', bottom)"
             >{{ bottom }}</button>
           </div>
@@ -527,6 +541,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="piece"
               type="button"
               :class="{ selected: modelValue.onePiece === piece }"
+              :aria-pressed="modelValue.onePiece === piece"
               @click="patch('onePiece', piece)"
             >{{ piece }}</button>
           </div>
@@ -538,8 +553,9 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="'top-' + color"
               type="button"
               :class="{ selected: modelValue.topColor === color }"
+              :aria-pressed="modelValue.topColor === color"
               :style="{ '--swatch': colorHex(color) }"
-              :aria-label="color"
+              :aria-label="copy.top + ' · ' + copy.color + ': ' + color"
               @click="patch('topColor', color)"
             />
           </div>
@@ -551,8 +567,9 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="'bottom-' + color"
               type="button"
               :class="{ selected: modelValue.bottomColor === color }"
+              :aria-pressed="modelValue.bottomColor === color"
               :style="{ '--swatch': colorHex(color) }"
-              :aria-label="color"
+              :aria-label="copy.bottom + ' · ' + copy.color + ': ' + color"
               @click="patch('bottomColor', color)"
             />
           </div>
@@ -581,6 +598,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="footwear"
               type="button"
               :class="{ selected: modelValue.footwear === footwear }"
+              :aria-pressed="modelValue.footwear === footwear"
               @click="patch('footwear', footwear)"
             >{{ footwear }}</button>
           </div>
@@ -592,8 +610,9 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="color"
               type="button"
               :class="{ selected: modelValue.footwearColor === color }"
+              :aria-pressed="modelValue.footwearColor === color"
               :style="{ '--swatch': colorHex(color) }"
-              :aria-label="color"
+              :aria-label="copy.footwear + ' · ' + copy.color + ': ' + color"
               @click="patch('footwearColor', color)"
             />
           </div>
@@ -607,6 +626,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="headwear"
               type="button"
               :class="{ selected: modelValue.headwear === headwear }"
+              :aria-pressed="modelValue.headwear === headwear"
               @click="patch('headwear', headwear)"
             >{{ headwear }}</button>
           </div>
@@ -618,6 +638,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="faceAccessory"
               type="button"
               :class="{ selected: modelValue.faceAccessory === faceAccessory }"
+              :aria-pressed="modelValue.faceAccessory === faceAccessory"
               @click="patch('faceAccessory', faceAccessory)"
             >{{ faceAccessory }}</button>
           </div>
@@ -629,6 +650,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="earAccessory"
               type="button"
               :class="{ selected: modelValue.earAccessory === earAccessory }"
+              :aria-pressed="modelValue.earAccessory === earAccessory"
               @click="patch('earAccessory', earAccessory)"
             >{{ earAccessory }}</button>
           </div>
@@ -648,6 +670,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="torsoAccessory"
               type="button"
               :class="{ selected: modelValue.torsoAccessory === torsoAccessory }"
+              :aria-pressed="modelValue.torsoAccessory === torsoAccessory"
               :disabled="torsoAccessory === 'harness' && !harnessCompatible && modelValue.torsoAccessory !== 'harness'"
               @click="patch('torsoAccessory', torsoAccessory)"
             >{{ torsoAccessory }}</button>
@@ -660,6 +683,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="glove"
               type="button"
               :class="{ selected: modelValue.gloves === glove }"
+              :aria-pressed="modelValue.gloves === glove"
               @click="patch('gloves', glove)"
             >{{ glove }}</button>
           </div>
@@ -671,6 +695,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="neckAccessory"
               type="button"
               :class="{ selected: modelValue.neckAccessory === neckAccessory }"
+              :aria-pressed="modelValue.neckAccessory === neckAccessory"
               @click="patch('neckAccessory', neckAccessory)"
             >{{ neckAccessory }}</button>
           </div>
@@ -682,8 +707,9 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               :key="'accessory-' + color"
               type="button"
               :class="{ selected: modelValue.accessoryColor === color }"
+              :aria-pressed="modelValue.accessoryColor === color"
               :style="{ '--swatch': colorHex(color) }"
-              :aria-label="color"
+              :aria-label="copy.accessories + ' · ' + copy.color + ': ' + color"
               @click="patch('accessoryColor', color)"
             />
           </div>
@@ -702,6 +728,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace__actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 .cue-workspace__save-state{padding:7px 9px;border:1px solid var(--cue-border);border-radius:999px;color:var(--cue-muted);font:800 9px/1 monospace;letter-spacing:.05em;text-transform:uppercase}.cue-workspace__save-state.dirty{border-color:rgba(206,255,84,.42);color:var(--cue-accent);background:rgba(206,255,84,.06)}
 .cue-workspace__reset{min-height:42px;border:1px solid var(--cue-border);border-radius:12px;padding:11px 14px;background:transparent;color:var(--cue-muted);font-weight:800}.cue-workspace__reset:hover{color:var(--cue-text)}
+.cue-workspace button:focus-visible{outline:2px solid var(--cue-accent);outline-offset:2px}
 .cue-workspace__save{min-height:42px;border:0;border-radius:12px;padding:11px 18px;background:var(--cue-accent);color:#111;font-weight:900}.cue-workspace__save:disabled{opacity:.38;cursor:not-allowed}
 .cue-workspace__layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(380px,.9fr);gap:14px;min-height:680px}
 .cue-workspace__stage,.cue-workspace__editor{border:1px solid var(--cue-border);border-radius:20px;background:color-mix(in srgb,var(--cue-surface) 94%,transparent)}
