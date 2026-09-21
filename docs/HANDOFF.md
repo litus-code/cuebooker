@@ -9485,3 +9485,32 @@ The following must not be represented as completed until the approved masters pa
 Until those gates pass, the current abstract stage and temporary 2D option previews are intentional and truthful.
 
 Production remains untouched.
+
+
+## 175. Artist onboarding can branch into CUE ID Creator
+
+Artist onboarding now exposes CUE ID as an optional next step without making it a registration requirement.
+
+Updated:
+
+```text
+app/pages/onboarding.vue
+app/pages/cue-id.vue
+```
+
+Behavior:
+
+- the choice appears only for `DJ / ARTIST` accounts;
+- agencies are not shown the CUE ID creation decision;
+- the default remains `Do it later`, so onboarding is never blocked by visual identity creation;
+- artists can choose `Create my CUE ID now` before submitting onboarding;
+- account/workspace creation still completes first;
+- choosing `now` routes to `/cue-id?from=onboarding`;
+- choosing `later` continues to `/workspace?setup=profile`;
+- when CUE ID was opened from onboarding, its exit action becomes `Continue to workspace` and returns to professional-profile setup;
+- CUE ID remains available later from the workspace path;
+- no 3D renderer is required for this onboarding decision.
+
+This is intentionally a next-step preference, not a persisted requirement or completion gate.
+
+Production remains untouched.
