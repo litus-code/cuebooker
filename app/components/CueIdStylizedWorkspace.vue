@@ -25,6 +25,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [value: CueIdStylizedCreatorConfigV1]
+  save: [value: CueIdStylizedCreatorConfigV1]
 }>()
 
 const activeSection = ref<CueIdWorkspaceSection>('identity')
@@ -61,7 +62,9 @@ const copy = computed(() => props.locale === 'es' ? {
   outfit: 'Ropa',
   accessories: 'Accesorios',
   save: 'Guardar CUE ID',
-  sameCatalogue: 'Todas las opciones están disponibles para ambos cuerpos.'
+  sameCatalogue: 'Todas las opciones están disponibles para ambos cuerpos.',
+  previewBody: 'Preview activo',
+  localDraft: 'El guardado del laboratorio no publica ni conecta assets a producción.'
 } : {
   title: 'CUE ID Creator',
   subtitle: 'Same catalogue. Your identity.',
@@ -94,7 +97,9 @@ const copy = computed(() => props.locale === 'es' ? {
   outfit: 'Outfit',
   accessories: 'Accessories',
   save: 'Save CUE ID',
-  sameCatalogue: 'Every option is available for both bodies.'
+  sameCatalogue: 'Every option is available for both bodies.',
+  previewBody: 'Active preview',
+  localDraft: 'Lab save does not publish or connect assets to production.'
 })
 
 const sectionLabels = computed<Record<CueIdWorkspaceSection, string>>(() => ({
@@ -107,6 +112,20 @@ const sectionLabels = computed<Record<CueIdWorkspaceSection, string>>(() => ({
 }))
 
 const currentBodyLabel = computed(() => props.modelValue.body === 'male' ? 'Male' : 'Female')
+
+const currentLookSummary = computed(() => [
+  props.modelValue.hair,
+  props.modelValue.top,
+  props.modelValue.bottom,
+  props.modelValue.footwear
+].join(' · '))
+
+function save() {
+  emit('save', {
+    ...props.modelValue,
+    piercings: [...props.modelValue.piercings]
+  })
+}
 
 function patch<K extends keyof CueIdStylizedCreatorConfigV1>(
   key: K,
@@ -170,7 +189,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
         <h1>{{ copy.title }}</h1>
         <span>{{ copy.subtitle }}</span>
       </div>
-      <button type="button" class="cue-workspace__save">{{ copy.save }}</button>
+      <button type="button" class="cue-workspace__save" @click="save">{{ copy.save }}</button>
     </header>
 
     <div class="cue-workspace__layout">
@@ -200,12 +219,17 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
             <i class="cue-workspace__silhouette-body" />
           </div>
           <div class="cue-workspace__pending">
+            <span class="cue-workspace__preview-kicker">{{ copy.previewBody }} · {{ currentBodyLabel }}</span>
             <strong>{{ copy.rigPending }}</strong>
             <span>{{ copy.rigBody }}</span>
+            <small>{{ currentLookSummary }}</small>
           </div>
         </div>
 
-        <p class="cue-workspace__shared-note">{{ copy.sameCatalogue }}</p>
+        <div class="cue-workspace__shared-note">
+          <span>{{ copy.sameCatalogue }}</span>
+          <small>{{ copy.localDraft }}</small>
+        </div>
       </section>
 
       <aside class="cue-workspace__editor">
@@ -334,6 +358,17 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               @click="patch('makeup', makeup)"
             >{{ makeup }}</button>
           </div>
+
+          <h2>{{ copy.nails }}</h2>
+          <div class="cue-workspace__chips">
+            <button
+              v-for="nail in CUE_ID_STYLIZED_CREATOR_CATALOGUE.nails"
+              :key="nail"
+              type="button"
+              :class="{ selected: modelValue.nails === nail }"
+              @click="patch('nails', nail)"
+            >{{ nail }}</button>
+          </div>
         </div>
 
         <div v-else-if="activeSection === 'outfit'" class="cue-workspace__group">
@@ -370,11 +405,11 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
             >{{ piece }}</button>
           </div>
 
-          <h2>{{ copy.color }}</h2>
+          <h2>{{ copy.top }} · {{ copy.color }}</h2>
           <div class="cue-workspace__swatches">
             <button
               v-for="color in garmentColors"
-              :key="color"
+              :key="'top-' + color"
               type="button"
               :class="{ selected: modelValue.topColor === color }"
               :style="{ '--swatch': colorHex(color) }"
@@ -382,6 +417,34 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               @click="patch('topColor', color)"
             />
           </div>
+
+          <h2>{{ copy.bottom }} · {{ copy.color }}</h2>
+          <div class="cue-workspace__swatches">
+            <button
+              v-for="color in garmentColors"
+              :key="'bottom-' + color"
+              type="button"
+              :class="{ selected: modelValue.bottomColor === color }"
+              :style="{ '--swatch': colorHex(color) }"
+              :aria-label="color"
+              @click="patch('bottomColor', color)"
+            />
+          </div>
+
+          <template v-if="modelValue.onePiece !== 'none'">
+            <h2>{{ copy.onePiece }} · {{ copy.color }}</h2>
+            <div class="cue-workspace__swatches">
+              <button
+                v-for="color in garmentColors"
+                :key="'one-piece-' + color"
+                type="button"
+                :class="{ selected: modelValue.onePieceColor === color }"
+                :style="{ '--swatch': colorHex(color) }"
+                :aria-label="color"
+                @click="patch('onePieceColor', color)"
+              />
+            </div>
+          </template>
         </div>
 
         <div v-else-if="activeSection === 'footwear'" class="cue-workspace__group">
@@ -476,6 +539,19 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               @click="patch('neckAccessory', neckAccessory)"
             >{{ neckAccessory }}</button>
           </div>
+
+          <h2>{{ copy.accessories }} · {{ copy.color }}</h2>
+          <div class="cue-workspace__swatches">
+            <button
+              v-for="color in garmentColors"
+              :key="'accessory-' + color"
+              type="button"
+              :class="{ selected: modelValue.accessoryColor === color }"
+              :style="{ '--swatch': colorHex(color) }"
+              :aria-label="color"
+              @click="patch('accessoryColor', color)"
+            />
+          </div>
         </div>
       </aside>
     </div>
@@ -501,8 +577,9 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace__silhouette-body{position:absolute;left:50%;top:20%;width:240px;height:420px;transform:translateX(-50%);border-radius:44% 44% 28% 28%/18% 18% 24% 24%;background:linear-gradient(160deg,#fff,#4d534e)}
 .cue-workspace__silhouette[data-body="female"] .cue-workspace__silhouette-body{width:220px;border-radius:42% 42% 34% 34%/18% 18% 24% 24%}
 .cue-workspace__pending{position:relative;z-index:2;display:grid;gap:8px;max-width:360px;padding:18px;text-align:center;border:1px solid var(--cue-border);border-radius:16px;background:rgba(8,10,9,.78);backdrop-filter:blur(10px)}
-.cue-workspace__pending strong{font-size:1.05rem}.cue-workspace__pending span{color:var(--cue-muted);line-height:1.5}
-.cue-workspace__shared-note{margin:0;padding:14px 18px;border-top:1px solid var(--cue-border);color:var(--cue-muted);font-size:12px}
+.cue-workspace__pending strong{font-size:1.05rem}.cue-workspace__pending span{color:var(--cue-muted);line-height:1.5}.cue-workspace__pending small{color:var(--cue-text);font:700 10px/1.4 monospace;letter-spacing:.04em}
+.cue-workspace__preview-kicker{color:var(--cue-accent)!important;font:800 9px/1.2 monospace;letter-spacing:.1em;text-transform:uppercase}
+.cue-workspace__shared-note{display:grid;gap:4px;margin:0;padding:14px 18px;border-top:1px solid var(--cue-border);color:var(--cue-muted);font-size:12px}.cue-workspace__shared-note small{font-size:10px;opacity:.78}
 .cue-workspace__editor{display:grid;grid-template-rows:auto 1fr;overflow:hidden}
 .cue-workspace__tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px;border-bottom:1px solid var(--cue-border)}
 .cue-workspace__tabs button{border:0;border-radius:10px;padding:10px;background:transparent;color:var(--cue-muted);font-weight:800}.cue-workspace__tabs button.active{background:rgba(206,255,84,.12);color:var(--cue-accent)}
