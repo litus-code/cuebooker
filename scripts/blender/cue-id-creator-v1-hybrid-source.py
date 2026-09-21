@@ -197,6 +197,88 @@ def assign_single_material(obj, material):
     obj.data.materials.append(material)
 
 
+def normalize_export_materials(body, head, eyes, brows, hair, top, bottom, shoes):
+    body_material = None
+    for obj in (body, head):
+        if obj.data.materials:
+            body_material = obj.data.materials[0]
+            break
+    if body_material is None:
+        body_material = make_material(
+            "cue_mat_body",
+            (0.36, 0.19, 0.12, 1.0),
+            roughness=0.56,
+        )
+    body_material.name = "cue_mat_body"
+    assign_single_material(body, body_material)
+    assign_single_material(head, body_material)
+
+    eye_material = eyes.data.materials[0] if eyes.data.materials else None
+    if eye_material is None:
+        eye_material = make_material(
+            "cue_mat_eye",
+            (0.78, 0.80, 0.78, 1.0),
+            roughness=0.32,
+        )
+    eye_material.name = "cue_mat_eye"
+    assign_single_material(eyes, eye_material)
+
+    hair_material = make_material(
+        "cue_mat_hair",
+        (0.012, 0.010, 0.009, 1.0),
+        roughness=0.82,
+    )
+    assign_single_material(hair, hair_material)
+    assign_single_material(brows, hair_material)
+
+    textile_material = make_material(
+        "cue_mat_textile",
+        (0.008, 0.009, 0.011, 1.0),
+        roughness=0.78,
+    )
+    assign_single_material(top, textile_material)
+    assign_single_material(bottom, textile_material)
+    assign_single_material(shoes, textile_material)
+
+    return {
+        "body": body_material.name,
+        "eye": eye_material.name,
+        "hair": hair_material.name,
+        "textile": textile_material.name,
+    }
+
+
+def prune_and_limit_images(max_dimension=2048):
+    for material in list(bpy.data.materials):
+        if material.users == 0:
+            bpy.data.materials.remove(material)
+
+    resized = []
+    removed = []
+    for image in list(bpy.data.images):
+        if image.source == "VIEWER":
+            continue
+        if image.users == 0:
+            removed.append(image.name)
+            bpy.data.images.remove(image)
+            continue
+
+        width, height = image.size[:]
+        largest = max(width, height)
+        if largest > max_dimension:
+            scale = max_dimension / float(largest)
+            new_width = max(1, int(round(width * scale)))
+            new_height = max(1, int(round(height * scale)))
+            image.scale(new_width, new_height)
+            resized.append({
+                "name": image.name,
+                "from": [int(width), int(height)],
+                "to": [new_width, new_height],
+            })
+
+    return {"resized": resized, "removed": removed}
+
+
 def add_asset(HumanService, path, human, asset_type, material_type="GAMEENGINE"):
     obj = HumanService.add_mhclo_asset(
         path,
@@ -427,7 +509,7 @@ def validate_future_assets(AssetService):
     return found
 
 
-def write_report(output, visible, rig, selected, removed_masks, future):
+def write_report(output, visible, rig, selected, removed_masks, future, material_map, image_cleanup):
     stats = {
         obj.name: {
             "vertices": len(obj.data.vertices),
@@ -449,6 +531,8 @@ def write_report(output, visible, rig, selected, removed_masks, future):
         "selectedAssets": selected,
         "futureVariantAssetsFound": future,
         "proxyGarmentMasksRemoved": removed_masks,
+        "canonicalMaterialMap": material_map,
+        "imageCleanup": image_cleanup,
         "trianglesByObject": stats,
         "totalVisibleTriangles": sum(item["triangles"] for item in stats.values()),
         "materials": materials,
@@ -576,22 +660,17 @@ def main():
     shoes.name = "cue_footwear_technical_sneaker"
     selected["footwear"] = shoe_name
 
-    # Canonical CUE ID baseline: visually neutral black outfit. Asset textures are
-    # intentionally replaced here so review focuses on anatomy, silhouette and
-    # deformation. Artist-facing colour/style variants remain a later layer.
-    textile_material = make_material(
-        "cue_mat_textile",
-        (0.008, 0.009, 0.011, 1.0),
-        roughness=0.78,
+    # Canonical CUE ID baseline: four materials maximum for the first lab export.
+    material_map = normalize_export_materials(
+        body,
+        head,
+        eyes,
+        brows,
+        hair,
+        top,
+        bottom,
+        shoes,
     )
-    footwear_material = make_material(
-        "cue_mat_footwear",
-        (0.018, 0.020, 0.024, 1.0),
-        roughness=0.58,
-    )
-    assign_single_material(top, textile_material)
-    assign_single_material(bottom, textile_material)
-    assign_single_material(shoes, footwear_material)
 
     removed_masks = remove_garment_masks_from_proxy(body)
 
@@ -616,13 +695,23 @@ def main():
     render_preview(os.path.join(os.path.dirname(output), "hybrid-preview-portrait.png"), visible, True)
 
     future = validate_future_assets(Asset)
+    image_cleanup = prune_and_limit_images(2048)
 
     body["cue_id_authoring_stage"] = "hybrid-quality-prototype"
     body["cue_id_full_skin_for_variants"] = True
     head["cue_id_high_detail_head"] = True
 
     bpy.ops.wm.save_as_mainfile(filepath=output)
-    write_report(output, visible, rig, selected, removed_masks, future)
+    write_report(
+        output,
+        visible,
+        rig,
+        selected,
+        removed_masks,
+        future,
+        material_map,
+        image_cleanup,
+    )
 
     print("[CUE ID hybrid] saved", output)
 
