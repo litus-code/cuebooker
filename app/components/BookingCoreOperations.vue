@@ -313,9 +313,63 @@ async function convertHold(hold: Hold) {
   .core-ops__grid { grid-template-columns:1fr; }
 }
 @media (max-width:560px) {
+  .core-ops__form { gap:12px; padding:12px; }
   .core-ops__form-row, .core-ops__form-row--hold { grid-template-columns:1fr; }
   .core-ops__form > button, .core-ops__form-row > button { width:100%; }
   .core-ops__current, .core-ops__holds article { align-items:flex-start; flex-wrap:wrap; }
   .core-ops__hold-actions { width:100%; }
+
+  .core-ops__auto-reply {
+    display:grid !important;
+    grid-template-columns:20px minmax(0,1fr) !important;
+    align-items:start !important;
+    gap:10px !important;
+    width:100% !important;
+    min-width:0 !important;
+    min-height:0 !important;
+    height:auto !important;
+    box-sizing:border-box !important;
+    padding:12px !important;
+  }
+
+  .core-ops__auto-reply input[type="checkbox"] {
+    appearance:auto !important;
+    -webkit-appearance:checkbox !important;
+    display:block !important;
+    grid-column:1 !important;
+    width:18px !important;
+    height:18px !important;
+    min-width:18px !important;
+    min-height:18px !important;
+    max-width:18px !important;
+    max-height:18px !important;
+    padding:0 !important;
+    margin:1px 0 0 !important;
+    border:0 !important;
+    box-shadow:none !important;
+  }
+
+  .core-ops__auto-reply > span {
+    grid-column:2 !important;
+    width:auto !important;
+    min-width:0 !important;
+    max-width:none !important;
+    margin:0 !important;
+  }
+
+  .core-ops__auto-reply strong {
+    font-size:11px !important;
+    line-height:1.3 !important;
+    overflow-wrap:normal !important;
+    word-break:normal !important;
+  }
+
+  .core-ops__auto-reply small {
+    margin-top:5px !important;
+    font-size:10px !important;
+    line-height:1.4 !important;
+    overflow-wrap:normal !important;
+    word-break:normal !important;
+  }
 }
 </style>
