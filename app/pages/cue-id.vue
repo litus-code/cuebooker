@@ -1,22 +1,21 @@
 <script setup lang="ts">
-import { cloneCueIdCreatorConfig, DEFAULT_CUE_ID_CREATOR_CONFIG } from '../domain/cueIdCreator'
+import {
+  cloneCueIdStylizedCreatorConfig,
+  DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG
+} from '../domain/cueIdStylizedCreator'
 
 const preferences = useCuePreferences()
-const cueIdConfig = ref(cloneCueIdCreatorConfig(DEFAULT_CUE_ID_CREATOR_CONFIG))
+const cueIdConfig = ref(cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG))
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
   back: 'Volver',
   lab: 'LAB / NOINDEX',
-  status: 'CUE ID · CREATOR 3D LAB'
+  status: 'CUE ID · CREATOR V1 LAB'
 } : {
   back: 'Back',
   lab: 'LAB / NOINDEX',
-  status: 'CUE ID · CREATOR 3D LAB'
+  status: 'CUE ID · CREATOR V1 LAB'
 })
-
-function resetCueId() {
-  cueIdConfig.value = cloneCueIdCreatorConfig(DEFAULT_CUE_ID_CREATOR_CONFIG)
-}
 
 useHead(() => ({
   title: 'CUE ID creator | CueBooker',
@@ -43,10 +42,9 @@ useHead(() => ({
       </div>
     </header>
 
-    <CueIdCreator
+    <CueIdStylizedWorkspace
       v-model="cueIdConfig"
       :locale="preferences.locale.value"
-      @reset="resetCueId"
     />
   </main>
 </template>
