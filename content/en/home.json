@@ -293,5 +293,53 @@
     ],
     "note": "CueBooker is currently being validated on staging. The priority is proving the daily workflow before adding commercial or discovery layers.",
     "cta": "Create account"
+  },
+  "distribution": {
+    "index": "04 / DISTRIBUTION",
+    "eyebrow": "ONE BOOKING, MANY ENTRY POINTS",
+    "title": "Put your link where you need it. Context returns to the same place.",
+    "body": "Share the profile, open the booking form directly, generate attributed links or embed it on a website. However the enquiry arrives, it lands in the same Booking Core.",
+    "channels": [
+      {
+        "label": "LINK",
+        "name": "Profile and booking",
+        "body": "Share your own URL from Instagram, bio, WhatsApp, email or EPK."
+      },
+      {
+        "label": "WIDGET",
+        "name": "On your website",
+        "body": "Embed the CueBooker-hosted form without duplicating backend or booking logic."
+      },
+      {
+        "label": "QR / SOURCE",
+        "name": "Know where it came from",
+        "body": "Use QR and attributed links to distinguish web, Instagram, WhatsApp, email or campaigns."
+      }
+    ],
+    "note": "The promoter does not need an account. The artist keeps one conversation, one booking and one history."
+  },
+  "identity": {
+    "index": "05 / IDENTITY",
+    "eyebrow": "THE PROFILE IS NOT DECORATION",
+    "title": "Your public identity connected to real work.",
+    "body": "Artist Profile brings presentation, booking and professional context together. Photo and artwork remain valid. CUE ID is an optional layer, not a requirement or a replacement for trajectory.",
+    "cards": [
+      {
+        "label": "NOW",
+        "name": "Artist Profile",
+        "body": "Bio, city, styles, formats, links, cover and direct access to booking."
+      },
+      {
+        "label": "OPTIONAL",
+        "name": "CUE ID",
+        "body": "A visual identity you can start during onboarding or leave until later."
+      },
+      {
+        "label": "LATER",
+        "name": "CUE Passport",
+        "body": "Trajectory built from bookings, cities, venues and real relationships, not followers."
+      }
+    ],
+    "cueIdStatus": "CUE ID 3D is currently a visual lab. Artist Profile and Booking Core work without requiring an avatar."
   }
 }
