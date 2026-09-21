@@ -1,7 +1,7 @@
 import type { CueIdCreatorConfigV1 } from './cueIdCreator.ts'
 import type { CueIdCreatorAssetSource } from './cueIdCreatorAssetStatus.ts'
 import type { CueIdCreatorVisualStep } from './cueIdCreatorVisualCoverage.ts'
-import { getCueIdCreatorVisualCoverage } from './cueIdCreatorVisualCoverage'
+import { getCueIdCreatorVisualCoverage } from './cueIdCreatorVisualCoverage.ts'
 
 export type CueIdCreatorRepresentationStatus =
   | 'exact'
