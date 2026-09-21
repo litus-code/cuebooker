@@ -39,7 +39,7 @@
     "statement": "CueBooker no te obliga a cambiar de canal. Convierte lo que ya ocurre en un hilo operativo que no se pierde."
   },
   "search": {
-    "index": "07 / VISIÓN",
+    "index": "10 / VISIÓN",
     "eyebrow": "MÁS ADELANTE · CUANDO EXISTA LA RED",
     "title": "La trayectoria primero. El discovery después.",
     "body": "Con una base real de bookings, relaciones y disponibilidad, CueBooker podrá añadir descubrimiento de artistas sin convertir seguidores o popularidad en una medida de valor. El núcleo seguirá siendo la trayectoria y el trabajo real del artista.",
@@ -131,7 +131,7 @@
     "note": "CueBooker no pretende sustituir WhatsApp, email o teléfono. Su trabajo es que ninguna oportunidad dependa de tu memoria."
   },
   "roles": {
-    "index": "04 / PARA QUIÉN",
+    "index": "06 / PARA QUIÉN",
     "eyebrow": "POCO VOLUMEN O MUCHO, EL PROBLEMA ES EL MISMO",
     "title": "Valor desde el primer booking. Profundidad cuando crece el trabajo.",
     "items": [
@@ -153,7 +153,7 @@
     ]
   },
   "access": {
-    "index": "05 / ACCESO",
+    "index": "08 / ACCESO",
     "eyebrow": "EL WORKSPACE ES DEL ARTISTA Y SU EQUIPO",
     "title": "Empieza simple. La estructura aparece cuando la necesitas.",
     "body": "Un DJ puede trabajar solo dentro de su workspace. Una agencia utiliza el mismo núcleo con varios artistas. El promotor no necesita adoptar CueBooker para que el DJ pueda mantener su seguimiento.",
@@ -206,7 +206,7 @@
     ]
   },
   "demo": {
-    "index": "06 / PRODUCTO",
+    "index": "09 / PRODUCTO",
     "eyebrow": "EL PRODUCTO",
     "title": "Ya puedes usar el núcleo real de CueBooker.",
     "body": "Captura una oportunidad, revisa lo que el sistema ha entendido y síguela en el mismo workspace hasta resolverla.",
@@ -271,7 +271,7 @@
     "email": "contacto@cuebooker.com"
   },
   "join": {
-    "index": "05 / ENTRA AHORA",
+    "index": "07 / ENTRA AHORA",
     "eyebrow": "EMPIEZA CON TRABAJO REAL",
     "title": "Pruébalo con el próximo booking que recibas.",
     "body": "CueBooker tiene sentido cuando entra en una situación real: una llamada, una propuesta, una respuesta pendiente o una fecha que tienes que proteger. Crea tu workspace y comprueba si te ayuda a recordar menos y seguir mejor.",
