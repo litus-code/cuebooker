@@ -253,7 +253,11 @@ def derived_shell(source, rig, name, face_predicate, transform, material,
     source_indices = sorted(used)
     remap = {old: new for new, old in enumerate(source_indices)}
     vertices = [
-        tuple(transform(source.data.vertices[source_index].co.copy(), source_index))
+        tuple(transform(
+            source.data.vertices[source_index].co.copy(),
+            source.data.vertices[source_index].normal.copy(),
+            source_index,
+        ))
         for source_index in source_indices
     ]
     faces = [tuple(remap[index] for index in polygon) for polygon in selected_polygons]
@@ -370,7 +374,7 @@ def create_authored_parts(body, rig, textile_material, hair_material):
     def shoe_predicate(center):
         return center.z < 0.175
 
-    def shoe_transform(coord, _index):
+    def shoe_transform(coord, normal, _index):
         side = -1.0 if coord.x < 0.0 else 1.0
         center = Vector((side * 0.118, -0.15, 0.065))
         relative = coord - center
@@ -380,6 +384,7 @@ def create_authored_parts(body, rig, textile_material, hair_material):
         result = center + relative
         result.y -= 0.012
         result.z += 0.004
+        result += normal * 0.010
         return result
 
     shoes = derived_shell(
@@ -402,9 +407,9 @@ def setup_review_scene(body, rig):
     bpy.context.scene.camera = camera
 
     for name, relative, energy, size_factor in [
-        ("cue_review_key", (-0.70, -1.15, 0.45), 820.0, 1.9),
-        ("cue_review_fill", (0.85, -0.55, 0.15), 420.0, 2.4),
-        ("cue_review_rim", (0.0, 0.85, 0.42), 650.0, 1.8),
+        ("cue_review_key", (-0.70, -1.15, 0.45), 115.0, 1.9),
+        ("cue_review_fill", (0.85, -0.55, 0.15), 55.0, 2.4),
+        ("cue_review_rim", (0.0, 0.85, 0.42), 90.0, 1.8),
     ]:
         data = bpy.data.lights.new(name=name, type="AREA")
         data.energy = energy
@@ -425,7 +430,7 @@ def setup_review_scene(body, rig):
     background = world.node_tree.nodes.get("Background")
     if background:
         background.inputs["Color"].default_value = (0.010, 0.012, 0.016, 1.0)
-        background.inputs["Strength"].default_value = 0.24
+        background.inputs["Strength"].default_value = 0.12
 
     return camera, minimum, maximum
 
