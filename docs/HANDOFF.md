@@ -9327,3 +9327,28 @@ Behavior:
 Reset affects only the local `/cue-id` lab state. It does not write to Supabase, production profile data or any asset catalogue.
 
 Production remains untouched. The physical rig remains pending.
+
+
+## 171. Creator selection accessibility pass
+
+The lab Creator now exposes selection state more explicitly to keyboard and assistive-technology users.
+
+Updated:
+
+```text
+app/components/CueIdStylizedWorkspace.vue
+```
+
+Changes:
+
+- selectable text controls expose `aria-pressed` for their current state;
+- piercing multi-select exposes pressed state independently per piercing;
+- skin, hair and garment color swatches expose both selected state and descriptive labels;
+- body selector continues to expose pressed state;
+- keyboard focus now has a visible lime focus ring across Creator buttons;
+- disabled fitting combinations remain native disabled controls where appropriate;
+- stored-but-secondary top/bottom choices remain readable while one-piece is active.
+
+No catalogue semantics, rig state or production behavior changed.
+
+Production remains untouched.
