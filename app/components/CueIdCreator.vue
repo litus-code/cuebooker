@@ -88,7 +88,7 @@ const copy = computed(() => props.locale === 'es' ? {
   authoredBody: 'Esta vista valida el creator y su modelo semántico. El fixture actual no representa el resultado visual final.',
   productionBody: 'Esta vista ya usa el asset CUE ID admitido por el catálogo de producción.',
   assetSource: 'Fuente visual',
-  sourceLab: 'Candidate de laboratorio',
+  sourceLab: 'Vista de laboratorio',
   sourceStatic: 'Producción estática',
   sourceInteractive: 'Producción interactiva',
   gateVisual: 'Visual',
@@ -137,7 +137,7 @@ const copy = computed(() => props.locale === 'es' ? {
   authoredBody: 'This view validates the creator and its semantic model. The current fixture does not represent the final visual result.',
   productionBody: 'This view now uses the CUE ID asset admitted by the production catalogue.',
   assetSource: 'Visual source',
-  sourceLab: 'Lab candidate',
+  sourceLab: 'Lab preview',
   sourceStatic: 'Production static',
   sourceInteractive: 'Production interactive',
   gateVisual: 'Visual',
@@ -393,8 +393,8 @@ onMounted(() => {
         <CueIdStage
           :config="runtimeConfig"
           artist-name="LITUS"
-          :lab-asset="creatorUsesLabFixture ? 'candidate' : null"
-          lab-quality="medium"
+          :interactive="!creatorUsesLabFixture"
+          :show-placeholder-figure="!creatorUsesLabFixture"
           :show-diagnostics="false"
         />
 
