@@ -39,7 +39,7 @@
     "statement": "CueBooker does not force you into another channel. It turns what already happens into an operational thread that stays intact."
   },
   "search": {
-    "index": "07 / VISION",
+    "index": "10 / VISION",
     "eyebrow": "LATER · WHEN A REAL NETWORK EXISTS",
     "title": "Trajectory first. Discovery later.",
     "body": "Once real bookings, relationships and availability exist, CueBooker can add artist discovery without turning followers or popularity into a measure of value. The core remains the artist's real work and trajectory.",
@@ -131,7 +131,7 @@
     "note": "CueBooker is not trying to replace WhatsApp, email or phone. Its job is to stop opportunities depending on your memory."
   },
   "roles": {
-    "index": "04 / FOR WHOM",
+    "index": "06 / FOR WHOM",
     "eyebrow": "LOW VOLUME OR HIGH, THE PROBLEM IS THE SAME",
     "title": "Value from the first booking. More depth as the work grows.",
     "items": [
@@ -153,7 +153,7 @@
     ]
   },
   "access": {
-    "index": "05 / ACCESS",
+    "index": "08 / ACCESS",
     "eyebrow": "THE WORKSPACE BELONGS TO THE ARTIST AND THEIR TEAM",
     "title": "Start simple. Structure appears when you need it.",
     "body": "A DJ can work alone inside one workspace. An agency uses the same core across several artists. A promoter does not have to adopt CueBooker for the DJ to keep proper follow-up.",
@@ -206,7 +206,7 @@
     ]
   },
   "demo": {
-    "index": "06 / PRODUCT",
+    "index": "09 / PRODUCT",
     "eyebrow": "THE PRODUCT",
     "title": "The real CueBooker core is already usable.",
     "body": "Capture an opportunity, review what the system understood and follow it in the same workspace until it is resolved.",
@@ -271,7 +271,7 @@
     "email": "contacto@cuebooker.com"
   },
   "join": {
-    "index": "05 / JOIN NOW",
+    "index": "07 / JOIN NOW",
     "eyebrow": "START WITH REAL WORK",
     "title": "Try it on the next booking you receive.",
     "body": "CueBooker matters when it enters a real situation: a call, an offer, a pending reply or a date you need to protect. Create your workspace and see whether it helps you remember less and follow up better.",
