@@ -15,13 +15,15 @@ const props = withDefaults(defineProps<{
   labAsset?: 'benchmark' | 'candidate' | null
   labQuality?: CueIdQualityMode
   showDiagnostics?: boolean
+  showPlaceholderFigure?: boolean
 }>(), {
   artistName: 'ARTIST',
   compact: false,
   interactive: true,
   labAsset: null,
   labQuality: 'auto',
-  showDiagnostics: false
+  showDiagnostics: false,
+  showPlaceholderFigure: true
 })
 
 const analytics = useAnalytics()
@@ -239,7 +241,7 @@ const performanceGate = computed(() => {
     <div class="cue-id-stage__halo cue-id-stage__halo--one" aria-hidden="true" />
     <div class="cue-id-stage__halo cue-id-stage__halo--two" aria-hidden="true" />
 
-    <div v-if="!productionStaticPath" class="cue-id-stage__figure" aria-hidden="true">
+    <div v-if="showPlaceholderFigure && !productionStaticPath" class="cue-id-stage__figure" aria-hidden="true">
       <i class="cue-id-stage__head" />
       <i class="cue-id-stage__neck" />
       <i class="cue-id-stage__torso" />
