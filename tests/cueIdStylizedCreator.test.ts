@@ -6,7 +6,9 @@ import {
   CUE_ID_STYLIZED_CUEBOOKER_BASICS,
   DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG,
   cloneCueIdStylizedCreatorConfig,
+  cloneValidCueIdStylizedCreatorConfig,
   cueIdStylizedCreatorConfigsEqual,
+  parseCueIdStylizedCreatorConfigV1,
   isCueIdStylizedCreatorConfigV1,
   normalizeCueIdStylizedPiercings
 } from '../app/domain/cueIdStylizedCreator.ts'
@@ -101,6 +103,35 @@ test('piercings stay multi-select, unique and capped at three', () => {
     normalizeCueIdStylizedPiercings(['ear', 'septum', 'ear', 'eyebrow', 'nostril']),
     ['ear', 'septum', 'eyebrow']
   )
+})
+
+test('creator config parser rejects malformed and schema-invalid local drafts', () => {
+  assert.equal(parseCueIdStylizedCreatorConfigV1('{bad json'), null)
+  assert.equal(
+    parseCueIdStylizedCreatorConfigV1(JSON.stringify({
+      ...DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG,
+      hair: 'unknown-hair'
+    })),
+    null
+  )
+
+  const valid = parseCueIdStylizedCreatorConfigV1(
+    JSON.stringify(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG)
+  )
+  assert.ok(valid)
+  assert.notEqual(valid, DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG)
+  assert.notEqual(valid?.piercings, DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG.piercings)
+})
+
+test('validated creator clone rejects unknown runtime values', () => {
+  assert.equal(
+    cloneValidCueIdStylizedCreatorConfig({
+      ...DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG,
+      footwear: 'unknown'
+    }),
+    null
+  )
+  assert.ok(cloneValidCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG))
 })
 
 test('creator config equality ignores object key order and piercing selection order', () => {
