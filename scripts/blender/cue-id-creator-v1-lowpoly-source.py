@@ -293,63 +293,78 @@ def create_authored_parts(body, rig, textile_material, hair_material):
     head_center = Vector((0.0, -0.115, 1.545))
 
     def hair_predicate(center):
-        return center.z > 1.475 and abs(center.x) < 0.155 and center.y < 0.045
+        # Keep a compact crown + temple crop. The lower-front head must remain skin.
+        crown = center.z > 1.585
+        side_crop = center.z > 1.515 and center.y > -0.155
+        return abs(center.x) < 0.17 and (crown or side_crop)
 
     def hair_transform(coord, index):
         relative = coord - head_center
-        relative.x *= 1.055
-        relative.y *= 1.06
-        relative.z *= 1.028
-        result = head_center + relative
-        result.z += 0.006 + 0.0025 * math.sin(index * 2.173)
+        direction = relative.normalized() if relative.length > 0.0001 else Vector((0.0, 0.0, 1.0))
+        result = coord + direction * 0.010
+        result.z += 0.004 + 0.003 * math.sin(index * 2.173)
         return result
 
     hair = derived_shell(
         body, rig, "cue_hair_textured_crop",
         hair_predicate, hair_transform, hair_material,
-        solidify=0.0045, subdiv=1,
+        solidify=0.0045, subdiv=0,
     )
 
     torso_center = Vector((0.0, -0.105, 1.075))
 
     def tee_predicate(center):
-        return 0.82 < center.z < 1.355 and abs(center.x) < 0.43
+        if not 0.80 < center.z < 1.405:
+            return False
+
+        # A compact crew-neck opening instead of slicing the garment horizontally
+        # across the clavicles.
+        if center.z > 1.305 and abs(center.x) < 0.115 and center.y < 0.025:
+            return False
+
+        torso = abs(center.x) < 0.315
+        short_sleeve = 1.045 < center.z < 1.335 and abs(center.x) < 0.455
+        return torso or short_sleeve
 
     def tee_transform(coord, _index):
         relative = coord - torso_center
-        lower_extra = max(0.0, (1.02 - coord.z) / 0.20)
-        relative.x *= 1.085 + 0.045 * min(lower_extra, 1.0)
-        relative.y *= 1.14
+        lower_extra = min(max((1.05 - coord.z) / 0.25, 0.0), 1.0)
+        sleeve_extra = min(max((abs(coord.x) - 0.24) / 0.17, 0.0), 1.0)
+        relative.x *= 1.105 + 0.055 * lower_extra + 0.035 * sleeve_extra
+        relative.y *= 1.18 + 0.035 * sleeve_extra
         result = torso_center + relative
-        if coord.z < 0.90:
-            result.z -= 0.018
+        if coord.z < 0.88:
+            result.z -= 0.026
         return result
 
     tee = derived_shell(
         body, rig, "cue_top_oversized_tee",
         tee_predicate, tee_transform, textile_material,
-        solidify=0.009, subdiv=1,
+        solidify=0.010, subdiv=0,
     )
 
     def pants_predicate(center):
-        return 0.155 < center.z < 0.91 and abs(center.x) < 0.295
+        return 0.065 < center.z < 0.93 and abs(center.x) < 0.31
 
     def pants_transform(coord, _index):
         side = -1.0 if coord.x < 0.0 else 1.0
         leg_center_x = side * 0.112
         relative_x = coord.x - leg_center_x
-        waist_blend = min(max((0.91 - coord.z) / 0.22, 0.0), 1.0)
-        x_scale = 1.10 + 0.17 * waist_blend
+        lower_blend = min(max((0.78 - coord.z) / 0.58, 0.0), 1.0)
+        hip_blend = min(max((coord.z - 0.72) / 0.20, 0.0), 1.0)
+        x_scale = 1.14 + 0.20 * lower_blend + 0.04 * hip_blend
         y_center = -0.105
         result = coord.copy()
         result.x = leg_center_x + relative_x * x_scale
-        result.y = y_center + (coord.y - y_center) * (1.13 + 0.07 * waist_blend)
+        result.y = y_center + (coord.y - y_center) * (1.16 + 0.08 * lower_blend)
+        if coord.z < 0.14:
+            result.z -= 0.010
         return result
 
     pants = derived_shell(
         body, rig, "cue_bottom_wide_trouser",
         pants_predicate, pants_transform, textile_material,
-        solidify=0.010, subdiv=1,
+        solidify=0.010, subdiv=0,
     )
 
     def shoe_predicate(center):
@@ -359,9 +374,9 @@ def create_authored_parts(body, rig, textile_material, hair_material):
         side = -1.0 if coord.x < 0.0 else 1.0
         center = Vector((side * 0.118, -0.15, 0.065))
         relative = coord - center
-        relative.x *= 1.11
-        relative.y *= 1.19
-        relative.z *= 1.10
+        relative.x *= 1.14
+        relative.y *= 1.25
+        relative.z *= 1.12
         result = center + relative
         result.y -= 0.012
         result.z += 0.004
@@ -370,7 +385,7 @@ def create_authored_parts(body, rig, textile_material, hair_material):
     shoes = derived_shell(
         body, rig, "cue_footwear_technical_sneaker",
         shoe_predicate, shoe_transform, textile_material,
-        solidify=0.008, subdiv=1,
+        solidify=0.009, subdiv=0,
     )
 
     return [hair, tee, pants, shoes]
@@ -613,9 +628,9 @@ def main():
     body_subdiv.levels = 1
     body_subdiv.render_levels = 1
 
-    body_material = make_material("cue_mat_body", (0.724, 0.502, 0.373, 1.0), 0.57)
-    textile_material = make_material("cue_mat_textile", (0.035, 0.037, 0.041, 1.0), 0.76)
-    hair_material = make_material("cue_mat_hair", (0.016, 0.014, 0.013, 1.0), 0.83)
+    body_material = make_material("cue_mat_body", (0.34, 0.17, 0.095, 1.0), 0.60)
+    textile_material = make_material("cue_mat_textile", (0.012, 0.014, 0.018, 1.0), 0.79)
+    hair_material = make_material("cue_mat_hair", (0.004, 0.0035, 0.003, 1.0), 0.86)
 
     assign_only_material(body, body_material)
     human.data.materials.clear()
@@ -650,8 +665,11 @@ def main():
     human.hide_viewport = True
     rig.hide_render = True
 
+    # Review the authored silhouette in the source rest pose. The actions stay
+    # embedded for runtime switching, but the canonical still must expose fit
+    # and clipping problems rather than hiding them behind a crossed-arm pose.
     rig.animation_data_create()
-    rig.animation_data.action = relaxed
+    rig.animation_data.action = None
     bpy.context.scene.frame_set(1)
 
     output = os.path.abspath(output)
