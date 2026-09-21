@@ -154,12 +154,14 @@ def smoothstep(value):
     return value * value * (3.0 - 2.0 * value)
 
 
-def stylize_head_proportions(body):
+def stylize_head_proportions(body, eyes):
     minimum, maximum = local_bounds(body)
     height = maximum.z - minimum.z
-    neck_z = minimum.z + height * 0.765
+    neck_z = minimum.z + height * 0.755
     full_head_z = minimum.z + height * 0.815
     center_y = (minimum.y + maximum.y) * 0.5
+    head_xy_scale = 1.18
+    head_z_scale = 1.10
 
     for vertex in body.data.vertices:
         z = vertex.co.z
@@ -167,12 +169,23 @@ def stylize_head_proportions(body):
             continue
 
         weight = smoothstep((z - neck_z) / max(full_head_z - neck_z, 0.0001))
-        xy_scale = 1.0 + 0.105 * weight
-        z_scale = 1.0 + 0.055 * weight
+        xy_scale = 1.0 + (head_xy_scale - 1.0) * weight
+        z_scale = 1.0 + (head_z_scale - 1.0) * weight
 
         vertex.co.x *= xy_scale
         vertex.co.y = center_y + (vertex.co.y - center_y) * xy_scale
         vertex.co.z = neck_z + (vertex.co.z - neck_z) * z_scale
+
+    for eye in eyes:
+        center = eye.location.copy()
+        eye.location.x = center.x * head_xy_scale
+        eye.location.y = center_y + (center.y - center_y) * head_xy_scale
+        eye.location.z = neck_z + (center.z - neck_z) * head_z_scale
+        eye.scale.x *= 1.08
+        eye.scale.y *= 1.04
+        eye.scale.z *= 1.08
+
+    body.data.update()
 
 
 def object_center(obj):
@@ -183,6 +196,124 @@ def object_center(obj):
 def object_size(obj):
     minimum, maximum = world_bounds(obj)
     return maximum - minimum
+
+
+def extract_shell(body, name, predicate, material, offset, decimate_ratio=0.62):
+    source = body.data
+    source.update()
+
+    selected = [polygon for polygon in source.polygons if predicate(polygon)]
+    if not selected:
+        raise RuntimeError("No source faces selected for " + name)
+
+    vertex_map = {}
+    vertices = []
+    faces = []
+
+    for polygon in selected:
+        face = []
+        for source_index in polygon.vertices:
+            if source_index not in vertex_map:
+                source_vertex = source.vertices[source_index]
+                vertex_map[source_index] = len(vertices)
+                vertices.append(
+                    source_vertex.co + source_vertex.normal.normalized() * offset
+                )
+            face.append(vertex_map[source_index])
+        faces.append(tuple(face))
+
+    mesh = bpy.data.meshes.new(name + "_mesh")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.update()
+
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    set_single_material(obj, material)
+    smooth(obj)
+
+    if decimate_ratio < 1.0:
+        modifier = obj.modifiers.new(name="cue_shell_decimate", type="DECIMATE")
+        modifier.decimate_type = "COLLAPSE"
+        modifier.ratio = decimate_ratio
+        modifier.use_collapse_triangulate = True
+        bpy.context.view_layer.objects.active = obj
+        obj.select_set(True)
+        bpy.ops.object.modifier_apply(modifier=modifier.name)
+        obj.select_set(False)
+
+    solidify = obj.modifiers.new(name="cue_shell_solidify", type="SOLIDIFY")
+    solidify.thickness = offset * 0.34
+    solidify.offset = 0.0
+    bpy.context.view_layer.objects.active = obj
+    obj.select_set(True)
+    bpy.ops.object.modifier_apply(modifier=solidify.name)
+    obj.select_set(False)
+
+    return obj
+
+
+def create_clothing_shells(body, textile):
+    minimum, maximum = local_bounds(body)
+    height = maximum.z - minimum.z
+
+    def normalized_center(polygon):
+        center = sum(
+            (body.data.vertices[index].co for index in polygon.vertices),
+            Vector(),
+        ) / len(polygon.vertices)
+        return center, (center.z - minimum.z) / height
+
+    def tee_predicate(polygon):
+        center, z = normalized_center(polygon)
+        x = abs(center.x) / height
+        if not (0.49 <= z <= 0.735):
+            return False
+
+        torso = x <= 0.145
+        sleeve = 0.145 < x <= 0.255 and z >= 0.625
+
+        if z >= 0.695 and x <= 0.062:
+            return False
+        return torso or sleeve
+
+    def trouser_predicate(polygon):
+        center, z = normalized_center(polygon)
+        x = abs(center.x) / height
+        return 0.075 <= z <= 0.505 and x <= 0.145
+
+    def footwear_predicate(polygon):
+        center, z = normalized_center(polygon)
+        x = abs(center.x) / height
+        return z <= 0.090 and x <= 0.145
+
+    offset = height * 0.0075
+
+    top = extract_shell(
+        body,
+        "cue_top_tee",
+        tee_predicate,
+        textile,
+        offset,
+        decimate_ratio=0.60,
+    )
+    bottom = extract_shell(
+        body,
+        "cue_bottom_wide_trouser",
+        trouser_predicate,
+        textile,
+        offset,
+        decimate_ratio=0.56,
+    )
+    footwear = extract_shell(
+        body,
+        "cue_footwear_minimal_sneaker",
+        footwear_predicate,
+        textile,
+        offset * 1.15,
+        decimate_ratio=0.64,
+    )
+
+    return [top, bottom, footwear]
 
 
 def create_uv_ellipsoid(name, location, scale, material, segments=16, rings=8):
@@ -528,48 +659,64 @@ def create_relaxed_pose(rig, height):
     return neutral, action
 
 
-def create_hair(body, rig, hair_material):
-    minimum, maximum = world_bounds(body)
-    height = maximum.z - minimum.z
-    head_center = Vector((
-        0.0,
-        (minimum.y + maximum.y) * 0.5,
-        minimum.z + height * 0.885,
-    ))
+def create_hair(body, eye_centers, rig, hair_material):
+    if len(eye_centers) != 2:
+        raise RuntimeError("Hair placement requires exactly two eye centers")
 
-    specs = [
-        (-0.085, -0.035, 0.080, 0.067, 0.047, 0.00),
-        (-0.030, -0.052, 0.096, 0.073, 0.050, -0.10),
-        (0.030, -0.052, 0.098, 0.073, 0.052, 0.08),
-        (0.085, -0.035, 0.082, 0.066, 0.048, 0.14),
-        (-0.105, 0.005, 0.064, 0.060, 0.056, -0.12),
-        (0.105, 0.005, 0.066, 0.060, 0.056, 0.12),
-        (-0.060, 0.035, 0.082, 0.062, 0.045, 0.08),
-        (0.060, 0.035, 0.082, 0.062, 0.045, -0.08),
-        (0.000, 0.055, 0.090, 0.065, 0.043, 0.00),
-    ]
+    left, right = sorted(eye_centers, key=lambda item: item.x)
+    midpoint = (left + right) * 0.5
+    eye_span = max(abs(right.x - left.x), 0.001)
 
-    clumps = []
-    for index, (nx, ny, sx, sy, sz, rot) in enumerate(specs):
-        location = (
-            head_center.x + nx * height,
-            head_center.y + ny * height,
-            head_center.z + (0.070 if index < 4 else 0.055) * height,
-        )
+    parts = []
+
+    cap = create_uv_ellipsoid(
+        "cue_hair_crop_cap",
+        (
+            midpoint.x,
+            midpoint.y + eye_span * 0.34,
+            midpoint.z + eye_span * 1.14,
+        ),
+        (
+            eye_span * 1.72,
+            eye_span * 1.12,
+            eye_span * 1.03,
+        ),
+        hair_material,
+        segments=18,
+        rings=9,
+    )
+    rigid_bind(cap, rig, "head")
+    parts.append(cap)
+
+    fringe_specs = (
+        (-0.72, 0.34, 0.46, 0.48, 0.34, -0.18),
+        (-0.22, 0.42, 0.58, 0.52, 0.36, -0.08),
+        (0.28, 0.43, 0.54, 0.50, 0.35, 0.10),
+        (0.70, 0.35, 0.42, 0.45, 0.32, 0.18),
+    )
+
+    for index, (x, z, sx, sy, sz, rotation) in enumerate(fringe_specs):
         clump = create_uv_ellipsoid(
-            f"cue_hair_crop_{index}",
-            location,
-            (sx * height, sy * height, sz * height),
+            f"cue_hair_crop_fringe_{index}",
+            (
+                midpoint.x + eye_span * x,
+                midpoint.y - eye_span * 0.10,
+                midpoint.z + eye_span * (0.58 + z),
+            ),
+            (
+                eye_span * sx,
+                eye_span * sy,
+                eye_span * sz,
+            ),
             hair_material,
             segments=12,
             rings=6,
         )
-        clump.rotation_euler.z = rot
+        clump.rotation_euler.y = rotation
         rigid_bind(clump, rig, "head")
-        clumps.append(clump)
+        parts.append(clump)
 
-    return clumps
-
+    return parts
 
 def create_face_details(body, eyes, rig, hair_material, detail_material):
     minimum, maximum = world_bounds(body)
@@ -577,31 +724,31 @@ def create_face_details(body, eyes, rig, hair_material, detail_material):
 
     eye_centers = []
     irises = []
+    pupils = []
+    highlights = []
     brows = []
 
     ordered = sorted(eyes, key=lambda item: object_center(item).x)
 
     for index, eye in enumerate(ordered):
-        eye.name = "cue_eye_l" if index == 0 else "cue_eye_r"
+        side = "l" if index == 0 else "r"
+        eye.name = f"cue_eye_{side}"
         set_single_material(eye, detail_material)
         smooth(eye)
 
         center = object_center(eye)
-        size = object_size(eye)
+        bounds_min, bounds_max = world_bounds(eye)
+        size = bounds_max - bounds_min
         eye_centers.append(center)
 
+        eye_span_reference = max(size.x, size.z)
+        iris_radius = max(eye_span_reference * 0.115, height * 0.0105)
+        front_y = bounds_min.y - height * 0.0025
+
         iris = create_uv_ellipsoid(
-            "cue_iris_l" if index == 0 else "cue_iris_r",
-            (
-                center.x,
-                center.y - max(size.y * 0.48, height * 0.002),
-                center.z,
-            ),
-            (
-                max(size.x * 0.23, height * 0.012),
-                height * 0.004,
-                max(size.z * 0.23, height * 0.012),
-            ),
+            f"cue_iris_{side}",
+            (center.x, front_y, center.z),
+            (iris_radius, height * 0.0032, iris_radius),
             hair_material,
             segments=14,
             rings=7,
@@ -609,30 +756,61 @@ def create_face_details(body, eyes, rig, hair_material, detail_material):
         rigid_bind(iris, rig, "head")
         irises.append(iris)
 
-        brow = create_uv_ellipsoid(
-            "cue_brow_l" if index == 0 else "cue_brow_r",
+        pupil = create_uv_ellipsoid(
+            f"cue_pupil_{side}",
+            (center.x, front_y - height * 0.0020, center.z),
             (
-                center.x,
-                center.y - height * 0.028,
-                center.z + height * 0.048,
-            ),
-            (
-                height * 0.043,
-                height * 0.007,
-                height * 0.011,
+                iris_radius * 0.44,
+                height * 0.0022,
+                iris_radius * 0.44,
             ),
             hair_material,
             segments=12,
             rings=6,
         )
-        brow.rotation_euler.y = math.radians(-8 if index == 0 else 8)
+        rigid_bind(pupil, rig, "head")
+        pupils.append(pupil)
+
+        highlight = create_uv_ellipsoid(
+            f"cue_eye_highlight_{side}",
+            (
+                center.x - iris_radius * 0.28,
+                front_y - height * 0.0042,
+                center.z + iris_radius * 0.30,
+            ),
+            (
+                iris_radius * 0.16,
+                height * 0.0018,
+                iris_radius * 0.16,
+            ),
+            detail_material,
+            segments=10,
+            rings=5,
+        )
+        rigid_bind(highlight, rig, "head")
+        highlights.append(highlight)
+
+        brow = create_uv_ellipsoid(
+            f"cue_brow_{side}",
+            (
+                center.x,
+                front_y - height * 0.008,
+                center.z + height * 0.043,
+            ),
+            (
+                height * 0.037,
+                height * 0.006,
+                height * 0.009,
+            ),
+            hair_material,
+            segments=12,
+            rings=6,
+        )
+        brow.rotation_euler.y = math.radians(-9 if index == 0 else 9)
         rigid_bind(brow, rig, "head")
         brows.append(brow)
 
-        rigid_bind(eye, rig, "head")
-
-    return eye_centers, irises, brows
-
+    return eye_centers, irises, pupils, highlights, brows
 
 def create_brand_mark(body, rig, detail_material):
     minimum, maximum = world_bounds(body)
@@ -792,7 +970,7 @@ def main():
     body = body_candidates[0]
     body.name = "cue_body_male"
     apply_runtime_decimation(body)
-    stylize_head_proportions(body)
+    stylize_head_proportions(body, eyes)
     smooth(body)
 
     skin = make_material("cue_mat_skin", (0.54, 0.32, 0.23, 1.0), 0.60)
@@ -800,7 +978,8 @@ def main():
     textile = make_material("cue_mat_textile", (0.008, 0.009, 0.012, 1.0), 0.78)
     detail = make_material("cue_mat_detail", (0.91, 0.92, 0.90, 1.0), 0.40)
 
-    create_material_zones(body, skin, textile)
+    set_single_material(body, skin)
+    clothing_parts = create_clothing_shells(body, textile)
 
     if ART_GATE_STATIC:
         rig = None
@@ -811,7 +990,7 @@ def main():
         rig, height = create_rig(body)
         bind_method = auto_bind_body(body, rig)
 
-    eye_centers, irises, brows = create_face_details(
+    eye_centers, irises, pupils, highlights, brows = create_face_details(
         body,
         eyes,
         rig,
@@ -820,7 +999,7 @@ def main():
     )
     expression_meta = add_expression_keys(body, eye_centers)
 
-    hair_parts = create_hair(body, rig, hair)
+    hair_parts = create_hair(body, eye_centers, rig, hair)
     brand_parts = create_brand_mark(body, rig, detail)
 
     if rig is not None:
@@ -830,7 +1009,17 @@ def main():
         bpy.context.scene.frame_set(1)
         bpy.context.view_layer.update()
 
-    visible = [body, *eyes, *irises, *brows, *hair_parts, *brand_parts]
+    visible = [
+        body,
+        *clothing_parts,
+        *eyes,
+        *irises,
+        *pupils,
+        *highlights,
+        *brows,
+        *hair_parts,
+        *brand_parts,
+    ]
 
     setup_scene()
     output = os.path.abspath(output)
@@ -903,7 +1092,7 @@ def main():
         "notes": [
             "Blender primitive body prototype is superseded by this authored-base route.",
             "Body is reduced before expression morph authoring.",
-            "Black tee/trousers/shoes are material zones on the continuous body for the first art gate.",
+            "Tee, wide trousers and minimal sneakers are separate body-derived shells for the art gate.",
             "The small chest mark is Cuebooker Basics branding.",
             "Hair uses sculpted cartoon clumps; no strand system is used.",
             "This render intentionally validates art before rigging; no IK or skinning is applied in the static art gate.",
