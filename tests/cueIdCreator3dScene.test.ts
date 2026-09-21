@@ -9,6 +9,8 @@ test('production scene can apply optional creator 3D semantics', async () => {
   )
 
   assert.match(source, /creatorConfig\?: CueIdCreatorConfigV1 \| null/)
+  assert.match(source, /labMode\?: boolean/)
+  assert.match(source, /allowPartial: props\.labMode === true/)
   assert.match(source, /resolveCueIdCreator3dBindings/)
   assert.match(source, /creatorResolved\.hairNodes/)
   assert.match(source, /creatorResolved\.facialHairNodes/)
