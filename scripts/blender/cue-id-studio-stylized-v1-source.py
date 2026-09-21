@@ -17,6 +17,7 @@ from mathutils import Vector
 
 SOURCE_COLLECTION = "Body Male - Stylized"
 RUNTIME_DECIMATE_RATIO = 0.50
+ART_GATE_STATIC = True
 EXPRESSIONS = ("neutral", "smile", "focused", "confident", "playful")
 
 
@@ -427,6 +428,9 @@ def auto_bind_body(body, rig):
 
 
 def rigid_bind(obj, rig, bone_name):
+    if rig is None:
+        return
+
     group = obj.vertex_groups.get(bone_name) or obj.vertex_groups.new(name=bone_name)
     group.add(list(range(len(obj.data.vertices))), 1.0, "REPLACE")
 
@@ -798,8 +802,14 @@ def main():
 
     create_material_zones(body, skin, textile)
 
-    rig, height = create_rig(body)
-    bind_method = auto_bind_body(body, rig)
+    if ART_GATE_STATIC:
+        rig = None
+        bind_method = "pending_after_art_gate"
+        neutral_action = None
+        relaxed_action = None
+    else:
+        rig, height = create_rig(body)
+        bind_method = auto_bind_body(body, rig)
 
     eye_centers, irises, brows = create_face_details(
         body,
@@ -812,12 +822,13 @@ def main():
 
     hair_parts = create_hair(body, rig, hair)
     brand_parts = create_brand_mark(body, rig, detail)
-    neutral_action, relaxed_action = create_relaxed_pose(rig, height)
 
-    rig.animation_data_create()
-    rig.animation_data.action = relaxed_action
-    bpy.context.scene.frame_set(1)
-    bpy.context.view_layer.update()
+    if rig is not None:
+        neutral_action, relaxed_action = create_relaxed_pose(rig, height)
+        rig.animation_data_create()
+        rig.animation_data.action = relaxed_action
+        bpy.context.scene.frame_set(1)
+        bpy.context.view_layer.update()
 
     visible = [body, *eyes, *irises, *brows, *hair_parts, *brand_parts]
 
@@ -874,7 +885,13 @@ def main():
             "footwearColor": "black",
             "brandFamily": "Cuebooker Basics",
         },
-        "actions": [neutral_action.name, relaxed_action.name],
+        "artGateStatic": ART_GATE_STATIC,
+        "riggingPending": ART_GATE_STATIC,
+        "actions": [
+            action.name
+            for action in (neutral_action, relaxed_action)
+            if action is not None
+        ],
         "triangles": total,
         "trianglesByObject": by_object,
         "materials": [
@@ -889,6 +906,8 @@ def main():
             "Black tee/trousers/shoes are material zones on the continuous body for the first art gate.",
             "The small chest mark is Cuebooker Basics branding.",
             "Hair uses sculpted cartoon clumps; no strand system is used.",
+            "This render intentionally validates art before rigging; no IK or skinning is applied in the static art gate.",
+            "Rigging starts only after face, hair, clothing read and proportions pass review.",
             "Female body and wardrobe variants follow after the male art gate passes.",
             "Production remains untouched.",
         ],
