@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   cloneCueIdStylizedCreatorConfig,
+  cueIdStylizedCreatorConfigsEqual,
   DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG,
   isCueIdStylizedCreatorConfigV1,
   type CueIdStylizedCreatorConfigV1
@@ -13,7 +14,7 @@ const saveState = ref<'idle' | 'saved' | 'reset'>('idle')
 const LAB_DRAFT_KEY = 'cuebooker:cue-id:stylized-v1:lab-draft'
 
 const dirty = computed(() =>
-  JSON.stringify(cueIdConfig.value) !== JSON.stringify(savedConfig.value)
+  !cueIdStylizedCreatorConfigsEqual(cueIdConfig.value, savedConfig.value)
 )
 
 onMounted(() => {
