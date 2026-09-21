@@ -1,4 +1,4 @@
-# CUE ID — Creator 3D V1 first authored slice
+> **Visual direction superseded:** the realistic/semi-realistic authoring target in this document has been replaced by `docs/CUE_ID_STYLIZED_CREATOR_V1.md`. This file remains as architecture and research history. Do not promote the MakeHuman/MPFB visual experiments to lab or production.\n\n# CUE ID — Creator 3D V1 first authored slice
 
 Updated: 21 September 2026  
 Status: ACTIVE AUTHORING TARGET
