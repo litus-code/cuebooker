@@ -163,6 +163,7 @@ test('CUE ID creator UI uses the creator config and runtime adapter', async () =
   assert.match(component, /isCueIdCreatorConfigV1/)
   assert.match(component, /localStorage\.setItem/)
   assert.match(component, /localStorage\.removeItem/)
+  assert.match(component, /selectStep/)
   assert.match(component, /goPrevious/)
   assert.match(component, /goNext/)
   assert.match(component, /creator__progress/)
