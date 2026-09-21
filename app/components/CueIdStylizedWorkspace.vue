@@ -80,6 +80,7 @@ const copy = computed(() => props.locale === 'es' ? {
   baseStored: 'Top y bottom quedan guardados y volverán al desactivar la prenda de una pieza.',
   activeLayer: 'Capa activa',
   modesty: 'Modesty layer',
+  piercingLimit: 'Máximo 3 piercings',
   unsaved: 'Cambios sin guardar',
   savedState: 'Draft guardado',
   reset: 'Restablecer',
@@ -127,6 +128,7 @@ const copy = computed(() => props.locale === 'es' ? {
   baseStored: 'Top and bottom stay stored and return when the one-piece is disabled.',
   activeLayer: 'Active layer',
   modesty: 'Modesty layer',
+  piercingLimit: 'Maximum 3 piercings',
   unsaved: 'Unsaved changes',
   savedState: 'Draft saved',
   reset: 'Reset',
@@ -164,10 +166,14 @@ const modestyRule = computed(() => cueIdModestyForSelection({
   torsoAccessory: props.modelValue.torsoAccessory
 }))
 
+const piercingLimitReached = computed(() => props.modelValue.piercings.length >= 3)
+
 const currentLookSummary = computed(() => [
+  props.modelValue.expression,
   props.modelValue.hair,
-  props.modelValue.top,
-  props.modelValue.bottom,
+  props.modelValue.onePiece !== 'none'
+    ? props.modelValue.onePiece
+    : `${props.modelValue.top} + ${props.modelValue.bottom}`,
   props.modelValue.footwear
 ].join(' · '))
 
@@ -444,6 +450,13 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
           </div>
 
           <h2>{{ copy.piercings }}</h2>
+          <small
+            v-if="piercingLimitReached"
+            class="cue-workspace__limit-note"
+            role="status"
+          >
+            {{ copy.piercingLimit }}
+          </small>
           <div class="cue-workspace__chips">
             <button
               v-for="piercing in CUE_ID_STYLIZED_CREATOR_CATALOGUE.piercings"
@@ -451,6 +464,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               type="button"
               :class="{ selected: modelValue.piercings.includes(piercing) }"
               :aria-pressed="modelValue.piercings.includes(piercing)"
+              :disabled="piercingLimitReached && !modelValue.piercings.includes(piercing)"
               @click="togglePiercing(piercing)"
             >{{ piercing }}</button>
           </div>
@@ -762,6 +776,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace__mini-avatar[data-body="female"] em{width:44px;border-radius:46% 46% 22% 22%}.cue-workspace__mini-avatar[data-hair]:not([data-hair="bald"]) b:before{content:"";position:absolute;left:-3px;right:-3px;top:-4px;height:13px;border-radius:60% 60% 38% 38%;background:var(--mini-hair)}.cue-workspace__mini-avatar[data-hair="mohawk"] b:before{left:8px;right:8px;top:-9px;height:16px;border-radius:50%}.cue-workspace__mini-avatar[data-hair="locs"] b:before,.cue-workspace__mini-avatar[data-hair="tied-back"] b:before,.cue-workspace__mini-avatar[data-hair="bob"] b:before{height:25px;border-radius:55% 55% 28% 28%}.cue-workspace__mini-avatar[data-expression] b:after{content:"";position:absolute;left:7px;right:7px;bottom:7px;height:2px;border-radius:999px;background:rgba(30,20,18,.65)}.cue-workspace__mini-avatar[data-expression="smile"] b:after{height:5px;border-bottom:2px solid rgba(30,20,18,.7);background:transparent}.cue-workspace__mini-avatar[data-expression="playful"] b:after{transform:rotate(-8deg)}
 .cue-workspace__compatibility{display:grid;gap:5px;padding:10px 12px;border:1px solid rgba(255,69,69,.38);border-radius:10px;background:color-mix(in srgb,#ff4545 7%,var(--cue-surface))}.cue-workspace__compatibility strong{font-size:11px;color:#ff7777}.cue-workspace__compatibility span{font-size:11px;line-height:1.45;color:var(--cue-muted)}
 .cue-workspace__outfit-state{display:grid;gap:4px;padding:11px 12px;border:1px solid var(--cue-border);border-radius:10px;background:color-mix(in srgb,var(--cue-text) 3%,var(--cue-surface));font-size:11px;color:var(--cue-muted)}.cue-workspace__outfit-state strong{color:var(--cue-text)}.cue-workspace__outfit-state small{font-size:10px;line-height:1.4;color:var(--cue-accent)}
+.cue-workspace__limit-note{margin:-2px 0 2px;color:var(--cue-accent);font:700 10px/1.3 monospace}
 @media(max-width:1000px){
   .cue-workspace__layout{grid-template-columns:1fr;min-height:0}
   .cue-workspace__stage-placeholder{min-height:420px}
