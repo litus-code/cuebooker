@@ -1002,7 +1002,7 @@ def setup_scene():
     bpy.context.scene.world = world
 
 
-def render(path, visible, portrait=False):
+def render(path, visible, portrait=False, angle_deg=0.0):
     minimum, maximum = bounds_for(visible)
     center = (minimum + maximum) * 0.5
     height = maximum.z - minimum.z
@@ -1012,20 +1012,24 @@ def render(path, visible, portrait=False):
     bpy.context.collection.objects.link(camera)
     bpy.context.scene.camera = camera
 
+    angle = math.radians(angle_deg)
+
     if portrait:
         target = Vector((center.x, center.y, maximum.z - height * 0.145))
         camera.data.lens = 76
+        distance = height * 0.62
         camera.location = (
-            center.x + height * 0.035,
-            minimum.y - height * 0.62,
+            center.x + math.sin(angle) * distance,
+            center.y - math.cos(angle) * distance,
             target.z + height * 0.015,
         )
     else:
         target = Vector((center.x, center.y, minimum.z + height * 0.51))
         camera.data.lens = 58
+        distance = height * 1.68
         camera.location = (
-            center.x + height * 0.055,
-            minimum.y - height * 1.68,
+            center.x + math.sin(angle) * distance,
+            center.y - math.cos(angle) * distance,
             minimum.z + height * 0.53,
         )
 
@@ -1067,6 +1071,45 @@ def render(path, visible, portrait=False):
         data = light.data
         bpy.data.objects.remove(light, do_unlink=True)
         bpy.data.lights.remove(data)
+
+
+def export_glb(path, objects):
+    bpy.ops.object.select_all(action="DESELECT")
+    selectable = []
+
+    for obj in objects:
+        if obj.type not in {"MESH", "CURVE"}:
+            continue
+
+        if obj.type == "CURVE":
+            duplicate = obj.copy()
+            duplicate.data = obj.data.copy()
+            bpy.context.collection.objects.link(duplicate)
+            bpy.context.view_layer.objects.active = duplicate
+            duplicate.select_set(True)
+            bpy.ops.object.convert(target="MESH")
+            duplicate.name = obj.name + "_export"
+            obj.hide_render = True
+            selectable.append(duplicate)
+        else:
+            obj.select_set(True)
+            selectable.append(obj)
+
+    bpy.context.view_layer.objects.active = selectable[0]
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+
+    bpy.ops.export_scene.gltf(
+        filepath=path,
+        export_format="GLB",
+        use_selection=True,
+        export_apply=True,
+        export_animations=False,
+        export_morph=True,
+        export_morph_normal=True,
+        export_morph_tangent=False,
+        export_yup=True,
+        export_materials="EXPORT",
+    )
 
 
 def triangle_count(objects):
@@ -1180,14 +1223,30 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
 
     set_expression(body, "neutral")
-    render(os.path.join(output_dir, "studio-stylized-full.png"), visible, False)
+
+    turnaround = [
+        ("front", 0.0, False),
+        ("three-quarter", 35.0, False),
+        ("side", 90.0, False),
+        ("back", 180.0, False),
+        ("close", 0.0, True),
+    ]
+
+    for label, angle, portrait in turnaround:
+        render(
+            os.path.join(output_dir, f"{body_type}-{label}.png"),
+            visible,
+            portrait=portrait,
+            angle_deg=angle,
+        )
 
     for expression in EXPRESSIONS:
         set_expression(body, expression)
         render(
-            os.path.join(output_dir, f"studio-stylized-face-{expression}.png"),
+            os.path.join(output_dir, f"{body_type}-expression-{expression}.png"),
             visible,
-            True,
+            portrait=True,
+            angle_deg=0.0,
         )
 
     set_expression(body, "neutral")
@@ -1200,8 +1259,11 @@ def main():
 
     bpy.ops.wm.save_as_mainfile(filepath=output)
 
+    glb_path = os.path.splitext(output)[0] + ".glb"
+    export_glb(glb_path, visible)
+
     report = {
-        "status": "blender_studio_stylized_v1",
+        "status": "cue_id_character_master",
         "productionReady": False,
         "labCandidateReady": False,
         "source": "Blender Studio Human Base Meshes v1.4.1",
@@ -1209,6 +1271,7 @@ def main():
         "body": body_type,
         "runtimeDecimateRatio": None,
         "masterQuality": True,
+        "glb": os.path.basename(glb_path),
         "bindMethod": bind_method,
         "expressionMeta": expression_meta,
         "expressionMorphs": [
