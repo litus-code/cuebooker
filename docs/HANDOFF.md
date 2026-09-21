@@ -8141,3 +8141,25 @@ intake scripts -> package / review / performance admission
 No production catalogue entry was added.
 
 Production remains untouched.
+
+
+## 145. Creator navigation parity across desktop and mobile
+
+Desktop and mobile creator navigation now share the same interaction model and state semantics.
+
+Changes:
+
+- introduced a single `selectStep(step)` path for direct category navigation;
+- desktop rail and mobile tabs now use the same active-step transition;
+- mobile now exposes the same category numbering as desktop;
+- mobile now uses `aria-current="step"` for the active category;
+- mobile now mirrors pending visual-coverage state;
+- active mobile styling now communicates the selected category consistently with the desktop rail.
+
+The goal is one creator system rendered responsively, not two separate interfaces.
+
+No domain semantics changed.
+
+No production catalogue entry was added.
+
+Production remains untouched.
