@@ -9299,3 +9299,31 @@ Added unit coverage for one-piece harness precedence.
 No physical garment deformation is claimed. Rig and authored fitting validation remain pending.
 
 Production remains untouched.
+
+
+## 170. Lab draft dirty state and reset controls
+
+The Creator lab now behaves more like a real editor while keeping persistence strictly local.
+
+Updated:
+
+```text
+app/components/CueIdStylizedWorkspace.vue
+app/pages/cue-id.vue
+```
+
+Behavior:
+
+- the page tracks the last saved local draft separately from the current editable config;
+- any semantic config change marks the Creator as having unsaved changes;
+- the Save button is disabled when the current config already matches the saved draft;
+- the top bar exposes a visible saved / unsaved state;
+- Reset returns the Creator to `DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG`;
+- Reset also removes the lab draft from browser `localStorage`;
+- Save and Reset both surface short live-region confirmations;
+- restoring a valid local draft establishes it as the saved baseline, so the page does not appear dirty immediately after load;
+- malformed local drafts continue to be discarded.
+
+Reset affects only the local `/cue-id` lab state. It does not write to Supabase, production profile data or any asset catalogue.
+
+Production remains untouched. The physical rig remains pending.
