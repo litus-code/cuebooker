@@ -303,6 +303,27 @@ export function cloneCueIdStylizedCreatorConfig(
   }
 }
 
+export function parseCueIdStylizedCreatorConfigV1(
+  raw: string
+): CueIdStylizedCreatorConfigV1 | null {
+  try {
+    const parsed = JSON.parse(raw)
+    return isCueIdStylizedCreatorConfigV1(parsed)
+      ? cloneCueIdStylizedCreatorConfig(parsed)
+      : null
+  } catch {
+    return null
+  }
+}
+
+export function cloneValidCueIdStylizedCreatorConfig(
+  value: unknown
+): CueIdStylizedCreatorConfigV1 | null {
+  return isCueIdStylizedCreatorConfigV1(value)
+    ? cloneCueIdStylizedCreatorConfig(value)
+    : null
+}
+
 export function cueIdStylizedCreatorConfigsEqual(
   a: CueIdStylizedCreatorConfigV1,
   b: CueIdStylizedCreatorConfigV1
