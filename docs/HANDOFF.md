@@ -9607,3 +9607,43 @@ The project-level `auth_leaked_password_protection` warning remains open.
 The public acknowledgement email still requires a real provider-configured staging delivery smoke before production.
 
 Production remains untouched.
+
+
+## 179. Commercial home mobile compression after real-device review
+
+Real iPhone screenshots of the PR preview exposed an overlong, over-scaled mobile composition.
+
+Observed:
+
+- section headlines occupied too much of the viewport;
+- Distribution cards became visually cramped;
+- Artist Identity cards felt too tall and repetitive;
+- several sections carried the same visual weight;
+- the separate `Join now` and `Product` blocks repeated essentially the same conversion message;
+- the page felt much longer than the amount of product information justified.
+
+Updated:
+
+```text
+content/es/home.json
+content/en/home.json
+app/pages/index.vue
+assets/css/main.css
+```
+
+Corrections:
+
+- shortened Problem, Distribution and Artist Identity copy;
+- reduced mobile section-heading scale and vertical section padding;
+- reduced the oversized Problem closing statement;
+- Distribution uses lime as a stronger mobile visual accent;
+- Distribution and Identity cards become full-width compact stacks on mobile instead of narrow multi-card rails;
+- card heights and internal spacing were reduced;
+- removed the redundant `Join now` section entirely;
+- the existing Product status block remains the conversion/status section;
+- removed dead `join` copy from ES/EN content;
+- renumbered following sections.
+
+The intent is now fewer, stronger beats rather than one large editorial statement per viewport.
+
+Production remains untouched.
