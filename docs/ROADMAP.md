@@ -88,3 +88,73 @@ Do not start this phase until the pilot has enough participating DJs and the boo
 7. Keep `useBookingDemo` as the public demo adapter.
 8. Add the Supabase adapter for authenticated workspaces.
 9. Connect transactional email last within the vertical slice, after persistence and token security work.
+
+
+## 21 September 2026 status override
+
+The phase descriptions above are historical planning context. Current implementation on `feature/app-visual-system` has moved beyond the original Phase 2/3 definitions.
+
+### Operational product currently working on staging
+
+- authenticated DJ and agency workspaces;
+- Booking Core persistence;
+- manual +CUE capture;
+- natural-language and voice-assisted capture/review;
+- Booking Activity timeline;
+- Next Move;
+- Holds;
+- calendar projection;
+- search, filters and History;
+- archive / restore;
+- conflict diagnostics;
+- Relationship Memory;
+- public artist profile and booking form;
+- outbound booking email;
+- inbound email reply threading back into Booking Activity;
+- secure public follow-up link;
+- iframe booking widget;
+- attributed share links;
+- optional CUE ID entry during DJ onboarding;
+- CUE ID Creator V1 lab shell and local draft workflow.
+
+### Current non-production gates
+
+Booking Core and public booking infrastructure remain staging-first. Before production:
+
+1. complete desktop/mobile smoke of the real operational loop;
+2. exercise Archive / Restore and conflict warnings manually;
+3. run duplicate-provider and archived-booking email hardening checks;
+4. configure and smoke public acknowledgement email delivery;
+5. strengthen anonymous abuse/rate protection;
+6. verify iframe/CSP behavior on real external origins;
+7. resolve Supabase leaked-password protection decision;
+8. confirm rollback/backup procedure and production configuration;
+9. establish product analytics/observability baseline.
+
+### CUE ID gate
+
+All useful non-3D Creator/product work is closed for the current V1 lab. Remaining CUE ID work depends on authored 3D execution and review:
+
+- male/female physical rig;
+- deformation approval;
+- expression morphs;
+- modular hair/accessory binding;
+- garment fitting and clipping validation;
+- real GLB integration;
+- Android/mobile performance validation;
+- static fallback generation from approved authored assets;
+- lab/production admission only after evidence gates.
+
+### Deferred product layers
+
+Still intentionally deferred until the operational loop is validated:
+
+- broad discovery network;
+- CUE Passport expansion;
+- constellation/professional-world visualization;
+- deep Gmail/Outlook integrations;
+- automatic WhatsApp ingestion;
+- contracts/invoices as generic CRM scope;
+- production CUE ID 3D rollout.
+
+Commercial-site copy should reflect current staging truth and must not present deferred discovery or unproven launch/commercial promises as available product.
