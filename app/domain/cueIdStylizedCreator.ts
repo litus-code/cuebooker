@@ -22,24 +22,31 @@ export type CueIdStylizedContactLensId =
   | 'red'
 
 export type CueIdStylizedHairId =
-  | 'buzz'
+  | 'bald'
+  | 'shaved'
+  | 'mohawk'
+  | 'fade'
   | 'crop'
   | 'curly'
   | 'bob'
+  | 'tied-back'
   | 'locs'
 
 export type CueIdStylizedHairColorId =
   | 'black'
+  | 'dark-brown'
   | 'brown'
   | 'blond'
-  | 'red'
   | 'platinum'
+  | 'red'
+  | 'blue'
 
 export type CueIdStylizedFacialHairId =
   | 'none'
   | 'stubble'
   | 'moustache'
-  | 'beard'
+  | 'short-beard'
+  | 'full-beard'
 
 export type CueIdStylizedPiercingId =
   | 'ear'
@@ -52,19 +59,36 @@ export type CueIdStylizedHeadwearId =
   | 'cap'
   | 'beanie'
   | 'top-hat'
+  | 'festival-hood'
 
 export type CueIdStylizedFaceAccessoryId =
   | 'none'
   | 'mask'
+  | 'venetian-mask'
+  | 'sunglasses'
+  | 'festival-goggles'
 
 export type CueIdStylizedEarAccessoryId =
   | 'none'
   | 'headphones'
+  | 'in-ear'
 
 export type CueIdStylizedGlovesId =
   | 'none'
   | 'short-gloves'
   | 'long-gloves'
+  | 'arm-sleeves'
+
+export type CueIdStylizedTorsoAccessoryId =
+  | 'none'
+  | 'harness'
+
+export type CueIdStylizedNeckAccessoryId =
+  | 'none'
+  | 'chain'
+  | 'choker'
+  | 'scarf'
+  | 'bandana'
 
 export type CueIdStylizedTopId =
   | 'tee'
@@ -72,28 +96,56 @@ export type CueIdStylizedTopId =
   | 'sweatshirt'
   | 'hoodie'
   | 'bomber'
+  | 'mesh-top'
+  | 'festival-top'
 
 export type CueIdStylizedBottomId =
   | 'wide-trouser'
   | 'straight-trouser'
   | 'cargo'
   | 'shorts'
-  | 'denim'
+  | 'skirt'
+  | 'utility-trouser'
+  | 'harem-trouser'
+  | 'festival-wrap'
 
-export type CueIdStylizedOnePieceId = 'none' | 'jumpsuit'
+export type CueIdStylizedOnePieceId =
+  | 'none'
+  | 'jumpsuit'
+  | 'bodysuit'
+  | 'festival-outfit'
 
 export type CueIdStylizedFootwearId =
-  | 'minimal-sneaker'
+  | 'vans-style'
   | 'technical-sneaker'
   | 'boot'
+  | 'platform-boot'
+  | 'sandal'
+
+export type CueIdStylizedMakeupId =
+  | 'none'
+  | 'soft'
+  | 'eyeliner'
+  | 'club'
+  | 'festival'
+
+export type CueIdStylizedNailsId =
+  | 'natural'
+  | 'black'
+  | 'red'
+  | 'lime'
+  | 'purple'
+  | 'chrome'
 
 export type CueIdStylizedGarmentColorId =
   | 'black'
   | 'white'
   | 'charcoal'
+  | 'grey'
   | 'lime'
   | 'red'
   | 'purple'
+  | 'blue'
 
 export type CueIdStylizedCreatorConfigV1 = {
   schemaVersion: 1
@@ -111,6 +163,10 @@ export type CueIdStylizedCreatorConfigV1 = {
   faceAccessory: CueIdStylizedFaceAccessoryId
   earAccessory: CueIdStylizedEarAccessoryId
   gloves: CueIdStylizedGlovesId
+  torsoAccessory: CueIdStylizedTorsoAccessoryId
+  neckAccessory: CueIdStylizedNeckAccessoryId
+  makeup: CueIdStylizedMakeupId
+  nails: CueIdStylizedNailsId
   top: CueIdStylizedTopId
   topColor: CueIdStylizedGarmentColorId
   bottom: CueIdStylizedBottomId
@@ -119,6 +175,7 @@ export type CueIdStylizedCreatorConfigV1 = {
   onePieceColor: CueIdStylizedGarmentColorId
   footwear: CueIdStylizedFootwearId
   footwearColor: CueIdStylizedGarmentColorId
+  accessoryColor: CueIdStylizedGarmentColorId
 }
 
 export const DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG: CueIdStylizedCreatorConfigV1 = {
@@ -129,7 +186,7 @@ export const DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG: CueIdStylizedCreatorConfigV
   expression: 'neutral',
   eyeColor: 'dark',
   contactLens: 'none',
-  hair: 'crop',
+  hair: 'fade',
   hairColor: 'black',
   facialHair: 'none',
   piercings: [],
@@ -137,35 +194,50 @@ export const DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG: CueIdStylizedCreatorConfigV
   faceAccessory: 'none',
   earAccessory: 'none',
   gloves: 'none',
+  torsoAccessory: 'none',
+  neckAccessory: 'none',
+  makeup: 'none',
+  nails: 'natural',
   top: 'tee',
   topColor: 'black',
   bottom: 'wide-trouser',
   bottomColor: 'black',
   onePiece: 'none',
   onePieceColor: 'black',
-  footwear: 'minimal-sneaker',
-  footwearColor: 'black'
+  footwear: 'vans-style',
+  footwearColor: 'black',
+  accessoryColor: 'black'
 }
 
+/**
+ * One shared catalogue for every body.
+ *
+ * Body selection controls fitting and previews only. It must never filter which
+ * hair, facial hair, makeup, garment, footwear or accessory the person may use.
+ */
 export const CUE_ID_STYLIZED_CREATOR_CATALOGUE = {
   bodies: ['male', 'female'] as const,
   skins: ['skin-01', 'skin-02', 'skin-03', 'skin-04', 'skin-05', 'skin-06'] as const,
   expressions: ['neutral', 'smile', 'focused', 'confident', 'playful'] as const,
   eyeColors: ['blue', 'green', 'hazel', 'dark'] as const,
   contactLenses: ['none', 'ice', 'white', 'red'] as const,
-  hairs: ['buzz', 'crop', 'curly', 'bob', 'locs'] as const,
-  hairColors: ['black', 'brown', 'blond', 'red', 'platinum'] as const,
-  facialHair: ['none', 'stubble', 'moustache', 'beard'] as const,
+  hairs: ['bald', 'shaved', 'mohawk', 'fade', 'crop', 'curly', 'bob', 'tied-back', 'locs'] as const,
+  hairColors: ['black', 'dark-brown', 'brown', 'blond', 'platinum', 'red', 'blue'] as const,
+  facialHair: ['none', 'stubble', 'moustache', 'short-beard', 'full-beard'] as const,
   piercings: ['ear', 'septum', 'nostril', 'eyebrow'] as const,
-  headwear: ['none', 'cap', 'beanie', 'top-hat'] as const,
-  faceAccessories: ['none', 'mask'] as const,
-  earAccessories: ['none', 'headphones'] as const,
-  gloves: ['none', 'short-gloves', 'long-gloves'] as const,
-  tops: ['tee', 'tank', 'sweatshirt', 'hoodie', 'bomber'] as const,
-  bottoms: ['wide-trouser', 'straight-trouser', 'cargo', 'shorts', 'denim'] as const,
-  onePieces: ['none', 'jumpsuit'] as const,
-  footwear: ['minimal-sneaker', 'technical-sneaker', 'boot'] as const,
-  garmentColors: ['black', 'white', 'charcoal', 'lime', 'red', 'purple'] as const
+  headwear: ['none', 'cap', 'beanie', 'top-hat', 'festival-hood'] as const,
+  faceAccessories: ['none', 'mask', 'venetian-mask', 'sunglasses', 'festival-goggles'] as const,
+  earAccessories: ['none', 'headphones', 'in-ear'] as const,
+  gloves: ['none', 'short-gloves', 'long-gloves', 'arm-sleeves'] as const,
+  torsoAccessories: ['none', 'harness'] as const,
+  neckAccessories: ['none', 'chain', 'choker', 'scarf', 'bandana'] as const,
+  makeup: ['none', 'soft', 'eyeliner', 'club', 'festival'] as const,
+  nails: ['natural', 'black', 'red', 'lime', 'purple', 'chrome'] as const,
+  tops: ['tee', 'tank', 'sweatshirt', 'hoodie', 'bomber', 'mesh-top', 'festival-top'] as const,
+  bottoms: ['wide-trouser', 'straight-trouser', 'cargo', 'shorts', 'skirt', 'utility-trouser', 'harem-trouser', 'festival-wrap'] as const,
+  onePieces: ['none', 'jumpsuit', 'bodysuit', 'festival-outfit'] as const,
+  footwear: ['vans-style', 'technical-sneaker', 'boot', 'platform-boot', 'sandal'] as const,
+  garmentColors: ['black', 'white', 'charcoal', 'grey', 'lime', 'red', 'purple', 'blue'] as const
 }
 
 function includes<T extends string>(
@@ -207,6 +279,10 @@ export function isCueIdStylizedCreatorConfigV1(
     && includes(catalogue.faceAccessories, config.faceAccessory)
     && includes(catalogue.earAccessories, config.earAccessory)
     && includes(catalogue.gloves, config.gloves)
+    && includes(catalogue.torsoAccessories, config.torsoAccessory)
+    && includes(catalogue.neckAccessories, config.neckAccessory)
+    && includes(catalogue.makeup, config.makeup)
+    && includes(catalogue.nails, config.nails)
     && includes(catalogue.tops, config.top)
     && includes(catalogue.garmentColors, config.topColor)
     && includes(catalogue.bottoms, config.bottom)
@@ -215,6 +291,7 @@ export function isCueIdStylizedCreatorConfigV1(
     && includes(catalogue.garmentColors, config.onePieceColor)
     && includes(catalogue.footwear, config.footwear)
     && includes(catalogue.garmentColors, config.footwearColor)
+    && includes(catalogue.garmentColors, config.accessoryColor)
 }
 
 export function cloneCueIdStylizedCreatorConfig(
@@ -225,7 +302,6 @@ export function cloneCueIdStylizedCreatorConfig(
     piercings: [...config.piercings]
   }
 }
-
 
 export type CueIdStylizedBrandMarkId = 'none' | 'cuebooker-symbol'
 
