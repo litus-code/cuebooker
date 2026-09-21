@@ -89,16 +89,9 @@ const copy = computed(() => props.locale === 'es' ? {
   authored: 'Asset authored pendiente',
   authoredBody: 'Esta vista valida el creator y su modelo semántico. El fixture actual no representa el resultado visual final.',
   productionBody: 'Esta vista ya usa el asset CUE ID admitido por el catálogo de producción.',
-  assetSource: 'Fuente visual',
   sourceLab: 'Vista de laboratorio',
   sourceStatic: 'Producción estática',
   sourceInteractive: 'Producción interactiva',
-  gateVisual: 'Visual',
-  gateMobile: 'Mobile',
-  gatePackage: 'Paquete',
-  gatePerformance: 'Performance',
-  pending: 'Pendiente',
-  passed: 'OK',
   futureVisual: 'Configuración futura',
   futureVisualBody: 'Esta opción forma parte del modelo del creator, pero el asset authored V2 actual todavía no la representa visualmente.',
   sharedVisual: 'Variante compartida',
@@ -139,16 +132,9 @@ const copy = computed(() => props.locale === 'es' ? {
   authored: 'Authored asset pending',
   authoredBody: 'This view validates the creator and its semantic model. The current fixture does not represent the final visual result.',
   productionBody: 'This view now uses the CUE ID asset admitted by the production catalogue.',
-  assetSource: 'Visual source',
   sourceLab: 'Lab preview',
   sourceStatic: 'Production static',
   sourceInteractive: 'Production interactive',
-  gateVisual: 'Visual',
-  gateMobile: 'Mobile',
-  gatePackage: 'Package',
-  gatePerformance: 'Performance',
-  pending: 'Pending',
-  passed: 'OK',
   futureVisual: 'Future configuration',
   futureVisualBody: 'This option is part of the creator model, but the current authored V2 asset does not represent it visually yet.',
   sharedVisual: 'Shared variant',
@@ -384,21 +370,8 @@ onMounted(() => {
         <div class="creator__stage-label">
           <span>{{ copy.preview }}</span>
           <strong>{{ creatorUsesLabFixture ? copy.authored : assetSourceLabel }}</strong>
+          <small v-if="assetStatus.assetVersion">v{{ assetStatus.assetVersion }}</small>
         </div>
-
-        <aside class="creator__asset-status" aria-label="CUE ID asset status">
-          <div>
-            <span>{{ copy.assetSource }}</span>
-            <strong>{{ assetSourceLabel }}</strong>
-            <small v-if="assetStatus.assetVersion">v{{ assetStatus.assetVersion }}</small>
-          </div>
-          <ul>
-            <li :data-pass="assetStatus.visualReview"><span>{{ copy.gateVisual }}</span><b>{{ assetStatus.visualReview ? copy.passed : copy.pending }}</b></li>
-            <li :data-pass="assetStatus.mobileReview"><span>{{ copy.gateMobile }}</span><b>{{ assetStatus.mobileReview ? copy.passed : copy.pending }}</b></li>
-            <li :data-pass="assetStatus.packageValidation"><span>{{ copy.gatePackage }}</span><b>{{ assetStatus.packageValidation ? copy.passed : copy.pending }}</b></li>
-            <li :data-pass="assetStatus.performanceReady"><span>{{ copy.gatePerformance }}</span><b>{{ assetStatus.performanceReady ? copy.passed : copy.pending }}</b></li>
-          </ul>
-        </aside>
 
         <CueIdStage
           :config="runtimeConfig"
@@ -822,8 +795,6 @@ button:focus-visible{outline:2px solid var(--cue-accent);outline-offset:2px}
   .creator__stage{padding:0}
   .creator__stage :deep(.cue-id-stage){min-height:470px;border:0}
   .creator__stage-label{top:16px;left:16px}
-  .creator__asset-status{top:14px;right:12px;width:150px;padding:8px}
-  .creator__asset-status ul{display:none}
   .creator__semantic-preview{top:46%;transform:translate(-50%,-50%) scale(.86)}
   .creator__preview--pose-relaxed .creator__semantic-preview{transform:translate(-50%,-50%) scale(.86) rotate(-2deg)}
   .creator__preview--pose-focused .creator__semantic-preview{transform:translate(-50%,-50%) scale(.84) rotate(1deg)}
