@@ -9,6 +9,9 @@ import {
 } from '../domain/cueIdStylizedCreator'
 
 const preferences = useCuePreferences()
+const route = useRoute()
+const fromOnboarding = computed(() => route.query.from === 'onboarding')
+const exitTarget = computed(() => fromOnboarding.value ? '/workspace?setup=profile' : '/')
 const cueIdConfig = ref(cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG))
 const savedConfig = ref(cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG))
 const saveState = ref<'idle' | 'saved' | 'reset' | 'invalid' | 'storage-error'>('idle')
@@ -91,6 +94,7 @@ function resetLabDraft() {
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
   back: 'Volver',
+  continueWorkspace: 'Continuar al workspace',
   lab: 'LAB / NOINDEX',
   status: 'CUE ID · CREATOR V1 LAB',
   saved: 'Draft guardado en este dispositivo',
@@ -101,6 +105,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   resetConfirm: '¿Restablecer CUE ID? Se eliminará el draft guardado en este dispositivo.'
 } : {
   back: 'Back',
+  continueWorkspace: 'Continue to workspace',
   lab: 'LAB / NOINDEX',
   status: 'CUE ID · CREATOR V1 LAB',
   saved: 'Draft saved on this device',
@@ -137,7 +142,7 @@ useHead(() => ({
 
       <div class="cue-id-page__header-actions">
         <CuePreferencesControl compact />
-        <NuxtLink to="/">{{ copy.back }}</NuxtLink>
+        <NuxtLink :to="exitTarget">{{ fromOnboarding ? copy.continueWorkspace : copy.back }}</NuxtLink>
       </div>
     </header>
 
