@@ -20,10 +20,141 @@ async function writeNew(path, content) {
   await writeFile(path, content, 'utf8')
 }
 
-export async function scaffoldCueIdV2Package(rootDir, version) {
+function creator3dV1Manifest(version) {
+  return {
+    manifestVersion: 1,
+    family: 'club_minimal',
+    assetVersion: version,
+    glbPath: '/cue-id/lab/creator-v1.glb',
+    static: { variants: {} },
+    metrics: {
+      compressedBytes: 0,
+      triangles: 0,
+      materials: 0,
+      textures: 0,
+      largestTextureDimension: 0
+    },
+    supportedTiers: ['full', 'reduced'],
+    capabilities: {
+      bases: ['neutral'],
+      builds: ['regular'],
+      outfits: ['tee'],
+      accessories: [null],
+      poses: ['neutral', 'relaxed'],
+      materials: ['matte'],
+      accents: ['lime']
+    },
+    bindings: {
+      morphs: {},
+      poses: {},
+      outfits: {},
+      accessories: {},
+      materials: {},
+      creator: {
+        capabilities: {
+          skins: ['skin-03', 'skin-05'],
+          faces: ['face-03', 'face-04'],
+          hairs: ['textured-crop', 'curly-crop', 'locs'],
+          facialHair: ['none', 'short-beard'],
+          tops: ['oversized-tee', 'bomber'],
+          bottoms: ['wide-trouser', 'cargo'],
+          footwear: ['technical-sneaker', 'boot']
+        },
+        faces: {},
+        skins: {
+          'skin-03': '#b9805f',
+          'skin-05': '#67402f'
+        },
+        hairs: {},
+        facialHair: {},
+        tops: {},
+        bottoms: {},
+        footwear: {}
+      }
+    }
+  }
+}
+
+function creator3dV1Bindings(version) {
+  return `# CUE ID Creator 3D V1 bindings review — ${version}
+
+This is a lab authoring package, not a production admission package.
+
+Canonical reviewed state:
+- base: neutral
+- build: regular
+- skin: skin-03
+- face: face-03
+- hair: textured-crop
+- facial hair: none
+- top: oversized-tee
+- bottom: wide-trouser
+- footwear: technical-sneaker
+- accessory: none
+- pose: neutral
+- material: matte
+- accent: lime
+
+Required first-slice aliases to inspect:
+- cue_face_04
+- cue_hair_textured_crop
+- cue_hair_curly_crop
+- cue_hair_locs
+- cue_facial_short_beard
+- cue_top_oversized_tee
+- cue_top_bomber
+- cue_bottom_wide_trouser
+- cue_bottom_cargo
+- cue_footwear_technical_sneaker
+- cue_footwear_boot
+- cue_pose_neutral
+- cue_pose_relaxed
+- cue_mat_body
+- cue_mat_textile
+
+Fill every binding from actual GLB inspection, never from assumption.
+
+Full target:
+docs/CUE_ID_CREATOR_3D_V1.md
+`
+}
+
+function creator3dV1Readme(version) {
+  return `# CUE ID Creator 3D V1 lab package ${version}
+
+This package is the first real authored avatar slice for the noindex /cue-id lab.
+
+Flow:
+
+1. Put the editable DCC source in source/
+2. Author the neutral/regular human described in docs/CUE_ID_CREATOR_3D_V1.md
+3. Export the GLB to export/creator-v1.glb
+4. Copy the reviewed GLB to public/cue-id/lab/creator-v1.glb
+5. Run cue-id:inspect against the exported GLB
+6. Replace draft binding values with actual exported names
+7. Wire the inspected partial manifest into CUE_ID_CREATOR_3D_LAB_CANDIDATE
+8. Review /cue-id at desktop and mobile sizes
+9. Run real-device reduced-tier review
+10. Do not modify CUE_ID_PRODUCTION_CATALOGUE
+
+The semantic/CSS preview remains fallback only.
+`
+}
+
+export async function scaffoldCueIdV2Package(rootDir, version, options = {}) {
   ensureVersion(version)
 
-  const root = join(rootDir, `cue-id-v2-${version}`)
+  const profile = options.profile || 'v2'
+  if (!['v2', 'creator-3d-v1'].includes(profile)) {
+    throw new Error('unsupported CUE ID scaffold profile')
+  }
+
+  const root = join(
+    rootDir,
+    profile === 'creator-3d-v1'
+      ? `cue-id-creator-3d-v1-${version}`
+      : `cue-id-v2-${version}`
+  )
   const dirs = {
     source: join(root, 'source'),
     export: join(root, 'export'),
@@ -34,7 +165,9 @@ export async function scaffoldCueIdV2Package(rootDir, version) {
 
   await Promise.all(Object.values(dirs).map(dir => mkdir(dir, { recursive: true })))
 
-  const manifest = {
+  const manifest = profile === 'creator-3d-v1'
+    ? creator3dV1Manifest(version)
+    : {
     manifestVersion: 1,
     family: 'club_minimal',
     assetVersion: version,
@@ -96,7 +229,9 @@ export async function scaffoldCueIdV2Package(rootDir, version) {
     knownLimitations: []
   }
 
-  const bindings = `# CUE ID V2 bindings review — ${version}
+  const bindings = profile === 'creator-3d-v1'
+    ? creator3dV1Bindings(version)
+    : `# CUE ID V2 bindings review — ${version}
 
 Do not fill bindings from naming convention alone. Confirm every target against the authored asset.
 
@@ -256,7 +391,9 @@ docs/CUE_ID_SCULPT_SPEC_V2.md
 docs/CUE_ID_AUTHORED_BINDINGS_V2.md
 `
 
-  const readme = `# CUE ID V2 asset package ${version}
+  const readme = profile === 'creator-3d-v1'
+    ? creator3dV1Readme(version)
+    : `# CUE ID V2 asset package ${version}
 
 This folder is a working handoff scaffold, not an approved production asset.
 
