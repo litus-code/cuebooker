@@ -119,6 +119,69 @@ docs/CUE_ID_CREATOR_3D_V1.md
 `
 }
 
+function creator3dV1SculptSpec(version) {
+  return `# CUE ID Creator 3D V1 sculpt spec — ${version}
+
+## Reviewed baseline
+- base: neutral
+- build: regular
+- skin: skin-03
+- face: face-03
+- hair: textured-crop
+- facial hair: none
+- top: oversized-tee
+- bottom: wide-trouser
+- footwear: technical-sneaker
+- accessory: none
+- pose: neutral
+- material: matte
+
+This is the first authored avatar slice, not the full V2 production matrix.
+
+Visual target:
+- adult and human;
+- stylized-realistic;
+- editorial / club-aware;
+- believable at ~390 px;
+- no mannequin anatomy;
+- no perfect bilateral symmetry;
+- no game/cartoon proportions;
+- no bodybuilder default.
+
+Required authored variants:
+- skins: skin-03, skin-05
+- faces: face-03 reference, face-04 morph
+- hair: textured-crop, curly-crop, locs
+- facial hair: none, short-beard
+- tops: oversized-tee, bomber
+- bottoms: wide-trouser, cargo
+- footwear: technical-sneaker, boot
+- poses: neutral, relaxed
+
+One shared rig only.
+
+Hard reject if:
+- face morph looks like a different unrelated person;
+- hair floats or clips through the head;
+- garments use runtime scale hacks;
+- limbs read cylindrical/mannequin-like;
+- neutral pose reads as T-pose/rig test;
+- silhouette loses human weight distribution;
+- mobile product-size still reads as placeholder.
+
+Budgets:
+- 18k–28k triangles preferred
+- 35k hard ceiling
+- <=4 materials
+- 1024 textures preferred
+- compressed GLB 450–850 KB preferred
+- 1 MB hard ceiling
+
+Full target:
+docs/CUE_ID_CREATOR_3D_V1.md
+`
+}
+
 function creator3dV1Readme(version) {
   return `# CUE ID Creator 3D V1 lab package ${version}
 
@@ -315,7 +378,9 @@ docs/CUE_ID_AUTHORED_BINDINGS_V2.md
 - [ ] intake assessor run
 `
 
-  const sculptSpec = `# CUE ID V2 sculpt / rig production spec — ${version}
+  const sculptSpec = profile === 'creator-3d-v1'
+    ? creator3dV1SculptSpec(version)
+    : `# CUE ID V2 sculpt / rig production spec — ${version}
 
 ## Canonical baseline
 - base: neutral
