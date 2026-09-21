@@ -11,7 +11,7 @@ import {
 const preferences = useCuePreferences()
 const cueIdConfig = ref(cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG))
 const savedConfig = ref(cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG))
-const saveState = ref<'idle' | 'saved' | 'reset' | 'invalid'>('idle')
+const saveState = ref<'idle' | 'saved' | 'reset' | 'invalid' | 'storage-error'>('idle')
 const LAB_DRAFT_KEY = 'cuebooker:cue-id:stylized-v1:lab-draft'
 
 const dirty = computed(() =>
@@ -25,15 +25,19 @@ function handleBeforeUnload(event: BeforeUnloadEvent) {
 }
 
 onMounted(() => {
-  const raw = window.localStorage.getItem(LAB_DRAFT_KEY)
-  if (raw) {
-    const restored = parseCueIdStylizedCreatorConfigV1(raw)
-    if (restored) {
-      cueIdConfig.value = restored
-      savedConfig.value = cloneCueIdStylizedCreatorConfig(restored)
-    } else {
-      window.localStorage.removeItem(LAB_DRAFT_KEY)
+  try {
+    const raw = window.localStorage.getItem(LAB_DRAFT_KEY)
+    if (raw) {
+      const restored = parseCueIdStylizedCreatorConfigV1(raw)
+      if (restored) {
+        cueIdConfig.value = restored
+        savedConfig.value = cloneCueIdStylizedCreatorConfig(restored)
+      } else {
+        window.localStorage.removeItem(LAB_DRAFT_KEY)
+      }
     }
+  } catch {
+    saveState.value = 'storage-error'
   }
 
   window.addEventListener('beforeunload', handleBeforeUnload)
@@ -53,23 +57,36 @@ function saveLabDraft(value: CueIdStylizedCreatorConfigV1) {
     return
   }
 
-  window.localStorage.setItem(LAB_DRAFT_KEY, JSON.stringify(saved))
-  savedConfig.value = saved
-  saveState.value = 'saved'
+  try {
+    window.localStorage.setItem(LAB_DRAFT_KEY, JSON.stringify(saved))
+    savedConfig.value = saved
+    saveState.value = 'saved'
+  } catch {
+    saveState.value = 'storage-error'
+  }
+
   window.setTimeout(() => {
     saveState.value = 'idle'
-  }, 1800)
+  }, saveState.value === 'storage-error' ? 2600 : 1800)
 }
 
 function resetLabDraft() {
+  if (!window.confirm(copy.value.resetConfirm)) return
+
   const initial = cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG)
   cueIdConfig.value = initial
   savedConfig.value = cloneCueIdStylizedCreatorConfig(initial)
-  window.localStorage.removeItem(LAB_DRAFT_KEY)
-  saveState.value = 'reset'
+
+  try {
+    window.localStorage.removeItem(LAB_DRAFT_KEY)
+    saveState.value = 'reset'
+  } catch {
+    saveState.value = 'storage-error'
+  }
+
   window.setTimeout(() => {
     saveState.value = 'idle'
-  }, 1800)
+  }, saveState.value === 'storage-error' ? 2600 : 1800)
 }
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
@@ -79,7 +96,9 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   saved: 'Draft guardado en este dispositivo',
   reset: 'CUE ID restablecido al estado inicial',
   invalid: 'No se ha guardado: la configuración no es válida',
-  leave: 'Tienes cambios sin guardar en CUE ID. Si sales, se perderán.'
+  storageError: 'No se ha podido acceder al almacenamiento local de este navegador',
+  leave: 'Tienes cambios sin guardar en CUE ID. Si sales, se perderán.',
+  resetConfirm: '¿Restablecer CUE ID? Se eliminará el draft guardado en este dispositivo.'
 } : {
   back: 'Back',
   lab: 'LAB / NOINDEX',
@@ -87,7 +106,9 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   saved: 'Draft saved on this device',
   reset: 'CUE ID reset to initial state',
   invalid: 'Not saved: the configuration is invalid',
-  leave: 'You have unsaved CUE ID changes. Leaving will discard them.'
+  storageError: 'Local browser storage could not be accessed',
+  leave: 'You have unsaved CUE ID changes. Leaving will discard them.',
+  resetConfirm: 'Reset CUE ID? The draft saved on this device will be deleted.'
 })
 
 onBeforeRouteLeave(() => {
@@ -134,7 +155,7 @@ useHead(() => ({
       role="status"
       aria-live="polite"
     >
-      {{ saveState === 'reset' ? copy.reset : saveState === 'invalid' ? copy.invalid : copy.saved }}
+      {{ saveState === 'reset' ? copy.reset : saveState === 'invalid' ? copy.invalid : saveState === 'storage-error' ? copy.storageError : copy.saved }}
     </p>
   </main>
 </template>
