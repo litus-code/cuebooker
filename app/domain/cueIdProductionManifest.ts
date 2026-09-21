@@ -8,6 +8,15 @@ import type {
   CueIdPoseId
 } from './cueId'
 import type { CueIdDeviceTier } from './cueIdAssets'
+import type {
+  CueIdBottomId,
+  CueIdFaceId,
+  CueIdFacialHairId,
+  CueIdFootwearId,
+  CueIdHairId,
+  CueIdSkinId,
+  CueIdTopId
+} from './cueIdCreator.ts'
 import {
   listCueIdRequiredStaticVariantKeys,
   type CueIdStaticVariant,
@@ -37,6 +46,25 @@ export type CueIdProductionCapabilities = {
   accents: Array<'lime' | 'red' | null>
 }
 
+export type CueIdCreator3dManifestBindings = {
+  capabilities: {
+    skins: CueIdSkinId[]
+    faces: CueIdFaceId[]
+    hairs: CueIdHairId[]
+    facialHair: CueIdFacialHairId[]
+    tops: CueIdTopId[]
+    bottoms: CueIdBottomId[]
+    footwear: CueIdFootwearId[]
+  }
+  faces?: Partial<Record<CueIdFaceId, string>>
+  skins?: Partial<Record<CueIdSkinId, string>>
+  hairs?: Partial<Record<CueIdHairId, string[]>>
+  facialHair?: Partial<Record<Exclude<CueIdFacialHairId, 'none'>, string[]>>
+  tops?: Partial<Record<CueIdTopId, string[]>>
+  bottoms?: Partial<Record<CueIdBottomId, string[]>>
+  footwear?: Partial<Record<CueIdFootwearId, string[]>>
+}
+
 export type CueIdProductionBindings = {
   morphs?: Partial<Record<
     | `base.${CueIdBaseId}`
@@ -47,6 +75,7 @@ export type CueIdProductionBindings = {
   outfits?: Partial<Record<CueIdOutfitId, string[]>>
   accessories?: Partial<Record<Exclude<CueIdAccessoryId, null>, string[]>>
   materials?: Partial<Record<'body' | 'textile' | 'technical' | 'accent', string>>
+  creator?: CueIdCreator3dManifestBindings
 }
 
 export type CueIdProductionManifest = {
