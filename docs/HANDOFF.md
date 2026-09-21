@@ -9241,3 +9241,31 @@ This does not change the underlying catalogue, production assets, production run
 The physical rig remains pending. No expression morph, skin deformation or clothing deformation is claimed as working.
 
 Production remains untouched.
+
+
+## 168. Creator mobile editing pass
+
+The stylized Creator lab received a mobile-focused layout pass while the physical 3D rig remains deferred.
+
+Updated:
+
+```text
+app/components/CueIdStylizedWorkspace.vue
+```
+
+Mobile behavior now:
+
+- save action becomes a full-width 44px control;
+- stage height is reduced so the editor appears much sooner on small screens;
+- body selector remains directly available above the stage;
+- editor section navigation becomes one horizontal scroll row instead of a two-column grid;
+- the active section exposes `aria-current`;
+- section tabs and catalogue choices use larger touch targets;
+- expression and hair preview tiles scroll horizontally rather than creating a long wrapped block;
+- color swatches are enlarged for touch;
+- editor content flows naturally on mobile instead of using an inner scroll area;
+- desktop/tablet layout remains split or stacked as before.
+
+The stage still shows only the pending-rig state. No procedural avatar, rigged GLB or production asset was introduced.
+
+Production remains untouched.
