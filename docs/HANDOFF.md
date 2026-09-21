@@ -8069,3 +8069,33 @@ No production catalogue entry was added.
 Production remains untouched.
 
 Visual quality of the semantic creator preview is NOT considered approved by this change alone; this block removes representation overlap only.
+
+
+## 143. Creator semantic preview humanization pass
+
+The creator lab semantic preview was refined after removing the overlapping Stage/GLB/mannequin representations.
+
+Changes in `CueIdCreator.vue`:
+
+- removed the hologram-like `mix-blend-mode: screen` presentation;
+- increased semantic preview solidity/readability;
+- added authored-looking neck, arms and hands to the CSS preview;
+- improved head shading and facial plane hints;
+- improved garment, trouser and footwear volume;
+- added `base` and `build` classes to the semantic preview state;
+- `build` now changes body mass subtly on the same figure;
+- `base` changes shoulder/torso structure without using feminine=slim or masculine=strong shortcuts;
+- review preview opacity is now near-full rather than washed out;
+- review copy is source-aware: lab configurations remain explicitly provisional while production-resolved configurations use production copy.
+
+Important boundary:
+
+This is still a semantic lab preview, not an approved authored avatar asset.
+
+Do not treat this CSS preview as the final visual quality bar.
+
+The purpose of this pass is to make the creator coherent and useful while the real authored asset pipeline remains pending.
+
+The production catalogue remains empty.
+
+Production remains untouched.
