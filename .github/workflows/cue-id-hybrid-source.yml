@@ -74,6 +74,16 @@ jobs:
             --output "$GITHUB_WORKSPACE/artifacts/hybrid/source-hybrid.blend"
           python -m json.tool artifacts/hybrid/source-hybrid.hybrid-report.json
 
+      - name: Export hybrid lab GLB
+        run: |
+          set -euo pipefail
+          BLENDER="$RUNNER_TEMP/$BLENDER_DIR/blender"
+          xvfb-run -a "$BLENDER" "artifacts/hybrid/source-hybrid.blend" --background \
+            --python scripts/blender/cue-id-creator-v1-hybrid-export.py \
+            -- \
+            --output "$GITHUB_WORKSPACE/artifacts/hybrid/creator-v1-hybrid.glb"
+          python -m json.tool artifacts/hybrid/creator-v1-hybrid.export-report.json
+
       - name: Upload hybrid evidence
         uses: actions/upload-artifact@v4
         with:
