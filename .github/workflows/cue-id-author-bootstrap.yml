@@ -61,5 +61,7 @@ jobs:
           path: |
             artifacts/source.blend
             artifacts/source.bootstrap-report.json
+            artifacts/source-preview-full.png
+            artifacts/source-preview-portrait.png
           if-no-files-found: error
           retention-days: 14
