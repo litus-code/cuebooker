@@ -9647,3 +9647,28 @@ Corrections:
 The intent is now fewer, stronger beats rather than one large editorial statement per viewport.
 
 Production remains untouched.
+
+
+## 180. Booking Next Move mobile CSS collision fixed
+
+A real iPhone screenshot exposed a severe responsive regression in `BookingCoreOperations.vue`.
+
+Observed:
+
+- the auto-complete checkbox expanded to a large square;
+- the descriptive text collapsed into an extremely narrow right column;
+- the auto-reply control inherited conflicting workspace/mobile form styles;
+- the block grew hundreds of pixels vertically and distorted Booking Detail.
+
+Fix:
+
+- mobile auto-reply layout is now explicitly owned by the component;
+- checkbox dimensions are hard-bounded to 18px;
+- mobile layout uses a two-column grid: checkbox + flexible text;
+- label height/min-height/padding are explicitly reset;
+- text width, wrapping and line-height are normalized;
+- the control remains accessible and touch-friendly without relying on global input styles.
+
+No Booking Core domain behavior changed.
+
+Production remains untouched.
