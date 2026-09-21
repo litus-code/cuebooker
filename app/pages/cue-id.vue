@@ -1,40 +1,58 @@
 <script setup lang="ts">
 import {
   cloneCueIdStylizedCreatorConfig,
+  cloneValidCueIdStylizedCreatorConfig,
   cueIdStylizedCreatorConfigsEqual,
   DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG,
-  isCueIdStylizedCreatorConfigV1,
+  parseCueIdStylizedCreatorConfigV1,
   type CueIdStylizedCreatorConfigV1
 } from '../domain/cueIdStylizedCreator'
 
 const preferences = useCuePreferences()
 const cueIdConfig = ref(cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG))
 const savedConfig = ref(cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG))
-const saveState = ref<'idle' | 'saved' | 'reset'>('idle')
+const saveState = ref<'idle' | 'saved' | 'reset' | 'invalid'>('idle')
 const LAB_DRAFT_KEY = 'cuebooker:cue-id:stylized-v1:lab-draft'
 
 const dirty = computed(() =>
   !cueIdStylizedCreatorConfigsEqual(cueIdConfig.value, savedConfig.value)
 )
 
+function handleBeforeUnload(event: BeforeUnloadEvent) {
+  if (!dirty.value) return
+  event.preventDefault()
+  event.returnValue = ''
+}
+
 onMounted(() => {
   const raw = window.localStorage.getItem(LAB_DRAFT_KEY)
-  if (!raw) return
-
-  try {
-    const parsed = JSON.parse(raw)
-    if (isCueIdStylizedCreatorConfigV1(parsed)) {
-      const restored = cloneCueIdStylizedCreatorConfig(parsed)
+  if (raw) {
+    const restored = parseCueIdStylizedCreatorConfigV1(raw)
+    if (restored) {
       cueIdConfig.value = restored
       savedConfig.value = cloneCueIdStylizedCreatorConfig(restored)
+    } else {
+      window.localStorage.removeItem(LAB_DRAFT_KEY)
     }
-  } catch {
-    window.localStorage.removeItem(LAB_DRAFT_KEY)
   }
+
+  window.addEventListener('beforeunload', handleBeforeUnload)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload)
 })
 
 function saveLabDraft(value: CueIdStylizedCreatorConfigV1) {
-  const saved = cloneCueIdStylizedCreatorConfig(value)
+  const saved = cloneValidCueIdStylizedCreatorConfig(value)
+  if (!saved) {
+    saveState.value = 'invalid'
+    window.setTimeout(() => {
+      saveState.value = 'idle'
+    }, 2200)
+    return
+  }
+
   window.localStorage.setItem(LAB_DRAFT_KEY, JSON.stringify(saved))
   savedConfig.value = saved
   saveState.value = 'saved'
@@ -59,13 +77,22 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   lab: 'LAB / NOINDEX',
   status: 'CUE ID · CREATOR V1 LAB',
   saved: 'Draft guardado en este dispositivo',
-  reset: 'CUE ID restablecido al estado inicial'
+  reset: 'CUE ID restablecido al estado inicial',
+  invalid: 'No se ha guardado: la configuración no es válida',
+  leave: 'Tienes cambios sin guardar en CUE ID. Si sales, se perderán.'
 } : {
   back: 'Back',
   lab: 'LAB / NOINDEX',
   status: 'CUE ID · CREATOR V1 LAB',
   saved: 'Draft saved on this device',
-  reset: 'CUE ID reset to initial state'
+  reset: 'CUE ID reset to initial state',
+  invalid: 'Not saved: the configuration is invalid',
+  leave: 'You have unsaved CUE ID changes. Leaving will discard them.'
+})
+
+onBeforeRouteLeave(() => {
+  if (!dirty.value) return true
+  return window.confirm(copy.value.leave)
 })
 
 useHead(() => ({
@@ -107,7 +134,7 @@ useHead(() => ({
       role="status"
       aria-live="polite"
     >
-      {{ saveState === 'reset' ? copy.reset : copy.saved }}
+      {{ saveState === 'reset' ? copy.reset : saveState === 'invalid' ? copy.invalid : copy.saved }}
     </p>
   </main>
 </template>
