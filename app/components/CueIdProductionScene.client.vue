@@ -65,6 +65,10 @@ function frameScene(root: Object3D) {
 }
 
 
+function listSemanticNodes(groups: Record<string, string[] | undefined>) {
+  return Object.values(groups).flatMap(nodes => nodes || [])
+}
+
 function setSemanticVisibility(root: Object3D, selectedNodes: string[], allNodes: string[]) {
   const selected = new Set(selectedNodes)
   const controlled = new Set(allNodes)
@@ -217,11 +221,11 @@ function applyProductionSemantics(root: Object3D) {
 
   const creator = props.manifest.bindings.creator
   if (creatorResolved && creator) {
-    const allHairNodes = Object.values(creator.hairs || {}).flat()
-    const allFacialHairNodes = Object.values(creator.facialHair || {}).flat()
-    const allTopNodes = Object.values(creator.tops || {}).flat()
-    const allBottomNodes = Object.values(creator.bottoms || {}).flat()
-    const allFootwearNodes = Object.values(creator.footwear || {}).flat()
+    const allHairNodes = listSemanticNodes(creator.hairs || {})
+    const allFacialHairNodes = listSemanticNodes(creator.facialHair || {})
+    const allTopNodes = listSemanticNodes(creator.tops || {})
+    const allBottomNodes = listSemanticNodes(creator.bottoms || {})
+    const allFootwearNodes = listSemanticNodes(creator.footwear || {})
 
     setSemanticVisibility(root, creatorResolved.hairNodes, allHairNodes)
     setSemanticVisibility(root, creatorResolved.facialHairNodes, allFacialHairNodes)
