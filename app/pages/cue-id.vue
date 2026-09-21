@@ -1,20 +1,48 @@
 <script setup lang="ts">
 import {
   cloneCueIdStylizedCreatorConfig,
-  DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG
+  DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG,
+  isCueIdStylizedCreatorConfigV1,
+  type CueIdStylizedCreatorConfigV1
 } from '../domain/cueIdStylizedCreator'
 
 const preferences = useCuePreferences()
 const cueIdConfig = ref(cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG))
+const saveState = ref<'idle' | 'saved'>('idle')
+const LAB_DRAFT_KEY = 'cuebooker:cue-id:stylized-v1:lab-draft'
+
+onMounted(() => {
+  const raw = window.localStorage.getItem(LAB_DRAFT_KEY)
+  if (!raw) return
+
+  try {
+    const parsed = JSON.parse(raw)
+    if (isCueIdStylizedCreatorConfigV1(parsed)) {
+      cueIdConfig.value = cloneCueIdStylizedCreatorConfig(parsed)
+    }
+  } catch {
+    window.localStorage.removeItem(LAB_DRAFT_KEY)
+  }
+})
+
+function saveLabDraft(value: CueIdStylizedCreatorConfigV1) {
+  window.localStorage.setItem(LAB_DRAFT_KEY, JSON.stringify(value))
+  saveState.value = 'saved'
+  window.setTimeout(() => {
+    saveState.value = 'idle'
+  }, 1800)
+}
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
   back: 'Volver',
   lab: 'LAB / NOINDEX',
-  status: 'CUE ID · CREATOR V1 LAB'
+  status: 'CUE ID · CREATOR V1 LAB',
+  saved: 'Draft guardado en este dispositivo'
 } : {
   back: 'Back',
   lab: 'LAB / NOINDEX',
-  status: 'CUE ID · CREATOR V1 LAB'
+  status: 'CUE ID · CREATOR V1 LAB',
+  saved: 'Draft saved on this device'
 })
 
 useHead(() => ({
@@ -45,7 +73,17 @@ useHead(() => ({
     <CueIdStylizedWorkspace
       v-model="cueIdConfig"
       :locale="preferences.locale.value"
+      @save="saveLabDraft"
     />
+
+    <p
+      v-if="saveState === 'saved'"
+      class="cue-id-page__saved"
+      role="status"
+      aria-live="polite"
+    >
+      {{ copy.saved }}
+    </p>
   </main>
 </template>
 
@@ -56,5 +94,6 @@ useHead(() => ({
 .brand{color:inherit;text-decoration:none}
 .cue-id-page__status{display:flex;align-items:center;gap:10px;color:var(--cue-muted);font:700 9px/1.2 monospace;letter-spacing:.08em}.cue-id-page__status span{color:var(--cue-accent)}.cue-id-page__status strong{font:inherit}
 .cue-id-page__header-actions{display:flex;justify-content:flex-end;align-items:center;gap:14px}.cue-id-page__header-actions>a{color:var(--cue-muted);font:700 11px/1.2 monospace;text-decoration:none;text-transform:uppercase;letter-spacing:.08em}
-@media(max-width:760px){.cue-id-page{padding:0 14px 30px}.cue-id-page__header{grid-template-columns:1fr auto;min-height:62px}.cue-id-page__status{display:none}}
+.cue-id-page__saved{position:fixed;right:20px;bottom:20px;z-index:10;margin:0;padding:10px 13px;border:1px solid var(--cue-border);border-radius:10px;background:var(--cue-surface);color:var(--cue-text);font:700 11px/1.3 monospace;box-shadow:0 10px 30px rgba(0,0,0,.22)}
+@media(max-width:760px){.cue-id-page{padding:0 14px 30px}.cue-id-page__header{grid-template-columns:1fr auto;min-height:62px}.cue-id-page__status{display:none}.cue-id-page__saved{right:14px;bottom:14px;left:14px;text-align:center}}
 </style>
