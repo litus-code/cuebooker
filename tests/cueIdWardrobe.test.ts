@@ -11,6 +11,27 @@ import {
   cueIdWardrobeIsSharedAcrossBodies,
   cueIdWardrobeSupportsBody
 } from '../app/domain/cueIdWardrobe.ts'
+import { CUE_ID_STYLIZED_CREATOR_CATALOGUE } from '../app/domain/cueIdStylizedCreator.ts'
+
+test('wardrobe contract covers every current fitted creator category', () => {
+  const ids = new Set(CUE_ID_WARDROBE_ASSETS.map(asset => asset.id))
+
+  for (const id of CUE_ID_STYLIZED_CREATOR_CATALOGUE.tops) assert.equal(ids.has(id), true, `top:${id}`)
+  for (const id of CUE_ID_STYLIZED_CREATOR_CATALOGUE.bottoms) assert.equal(ids.has(id), true, `bottom:${id}`)
+  for (const id of CUE_ID_STYLIZED_CREATOR_CATALOGUE.onePieces.filter(id => id !== 'none')) {
+    assert.equal(ids.has(id), true, `one-piece:${id}`)
+  }
+  for (const id of CUE_ID_STYLIZED_CREATOR_CATALOGUE.footwear) assert.equal(ids.has(id), true, `footwear:${id}`)
+  for (const id of CUE_ID_STYLIZED_CREATOR_CATALOGUE.headwear.filter(id => id !== 'none')) {
+    assert.equal(ids.has(id), true, `headwear:${id}`)
+  }
+  for (const id of CUE_ID_STYLIZED_CREATOR_CATALOGUE.faceAccessories.filter(id => id !== 'none')) {
+    assert.equal(ids.has(id), true, `face-accessory:${id}`)
+  }
+  for (const id of CUE_ID_STYLIZED_CREATOR_CATALOGUE.torsoAccessories.filter(id => id !== 'none')) {
+    assert.equal(ids.has(id), true, `torso-accessory:${id}`)
+  }
+})
 
 test('every authored wardrobe item is shared across male and female bodies', () => {
   for (const asset of CUE_ID_WARDROBE_ASSETS) {
