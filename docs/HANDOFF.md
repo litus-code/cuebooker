@@ -9269,3 +9269,33 @@ Mobile behavior now:
 The stage still shows only the pending-rig state. No procedural avatar, rigged GLB or production asset was introduced.
 
 Production remains untouched.
+
+
+## 169. Active outfit layering semantics surfaced in Creator
+
+The Creator now reflects the wardrobe layer model more accurately without mutating stored user choices.
+
+Updated:
+
+```text
+app/domain/cueIdWardrobe.ts
+app/components/CueIdStylizedWorkspace.vue
+tests/cueIdWardrobe.test.ts
+```
+
+Behavior:
+
+- harness compatibility is resolved against the active outfit layer;
+- when a one-piece is active, its `allowWithHarness` rule takes precedence over the stored top;
+- when no one-piece is active, compatibility falls back to the selected top;
+- top and bottom selections remain stored while a one-piece is active;
+- the UI marks those stored base-layer choices as secondary instead of deleting or rewriting them;
+- disabling the one-piece restores the previously selected top and bottom immediately;
+- the current active outfit layer and resulting modesty rule are visible in the Outfit section;
+- existing incompatible harness selections are preserved and shown as pending fitting.
+
+Added unit coverage for one-piece harness precedence.
+
+No physical garment deformation is claimed. Rig and authored fitting validation remain pending.
+
+Production remains untouched.
