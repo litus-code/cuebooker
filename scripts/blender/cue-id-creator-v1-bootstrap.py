@@ -15,6 +15,8 @@ import math
 import os
 import sys
 
+from mathutils import Vector
+
 
 FACE_03_TARGETS = [
     {"target": "head-oval", "value": 0.16},
@@ -184,6 +186,134 @@ def triangle_count(obj):
         evaluated.to_mesh_clear()
 
 
+def evaluated_bounds(obj):
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    evaluated = obj.evaluated_get(depsgraph)
+    mesh = evaluated.to_mesh()
+    try:
+        coords = [evaluated.matrix_world @ vertex.co for vertex in mesh.vertices]
+        if not coords:
+            raise RuntimeError("Cannot frame an empty evaluated mesh")
+        minimum = Vector((
+            min(value.x for value in coords),
+            min(value.y for value in coords),
+            min(value.z for value in coords),
+        ))
+        maximum = Vector((
+            max(value.x for value in coords),
+            max(value.y for value in coords),
+            max(value.z for value in coords),
+        ))
+        return minimum, maximum
+    finally:
+        evaluated.to_mesh_clear()
+
+
+def look_at(obj, target):
+    direction = Vector(target) - obj.location
+    obj.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
+
+
+def configure_saved_viewport(human):
+    minimum, maximum = evaluated_bounds(human)
+    center = (minimum + maximum) * 0.5
+    height = max(maximum.z - minimum.z, 0.1)
+
+    for screen in bpy.data.screens:
+        for area in screen.areas:
+            if area.type != "VIEW_3D":
+                continue
+            space = area.spaces.active
+            if not hasattr(space, "region_3d"):
+                continue
+            space.region_3d.view_location = center
+            space.region_3d.view_distance = height * 0.72
+
+
+def ensure_review_camera_and_lights(human):
+    minimum, maximum = evaluated_bounds(human)
+    center = (minimum + maximum) * 0.5
+    height = max(maximum.z - minimum.z, 0.1)
+
+    camera_data = bpy.data.cameras.get("cue_review_camera") or bpy.data.cameras.new("cue_review_camera")
+    camera = bpy.data.objects.get("cue_review_camera")
+    if camera is None:
+        camera = bpy.data.objects.new("cue_review_camera", camera_data)
+        bpy.context.collection.objects.link(camera)
+    camera.data = camera_data
+    bpy.context.scene.camera = camera
+
+    light_specs = [
+        ("cue_review_key", (-0.75, -1.2, 0.45), 950.0, 3.0),
+        ("cue_review_fill", (0.9, -0.65, 0.18), 520.0, 3.4),
+        ("cue_review_rim", (0.0, 0.95, 0.48), 780.0, 2.6),
+    ]
+
+    for name, relative, energy, size in light_specs:
+        data = bpy.data.lights.get(name) or bpy.data.lights.new(name=name, type="AREA")
+        data.energy = energy
+        data.shape = "DISK"
+        data.size = height * size
+        light = bpy.data.objects.get(name)
+        if light is None:
+            light = bpy.data.objects.new(name, data)
+            bpy.context.collection.objects.link(light)
+        light.data = data
+        light.location = (
+            center.x + relative[0] * height,
+            center.y + relative[1] * height,
+            center.z + relative[2] * height,
+        )
+        look_at(light, center)
+
+    world = bpy.context.scene.world
+    if world is None:
+        world = bpy.data.worlds.new("cue_review_world")
+        bpy.context.scene.world = world
+    world.use_nodes = True
+    background = world.node_tree.nodes.get("Background")
+    if background:
+        background.inputs["Color"].default_value = (0.012, 0.014, 0.018, 1.0)
+        background.inputs["Strength"].default_value = 0.30
+
+    return camera, minimum, maximum
+
+
+def render_review_preview(output, human, portrait=False):
+    camera, minimum, maximum = ensure_review_camera_and_lights(human)
+    center = (minimum + maximum) * 0.5
+    height = max(maximum.z - minimum.z, 0.1)
+
+    if portrait:
+        target = Vector((center.x, center.y, maximum.z - height * 0.16))
+        camera.location = (
+            center.x + height * 0.11,
+            center.y - height * 0.72,
+            target.z + height * 0.02,
+        )
+        camera.data.lens = 74
+    else:
+        target = center
+        camera.location = (
+            center.x + height * 0.12,
+            center.y - height * 1.70,
+            center.z + height * 0.04,
+        )
+        camera.data.lens = 58
+
+    look_at(camera, target)
+
+    scene = bpy.context.scene
+    scene.render.engine = "BLENDER_EEVEE_NEXT"
+    scene.render.resolution_x = 768
+    scene.render.resolution_y = 1024
+    scene.render.resolution_percentage = 100
+    scene.render.image_settings.file_format = "PNG"
+    scene.render.film_transparent = False
+    scene.render.filepath = output
+    bpy.ops.render.render(write_still=True)
+
+
 def mesh_surface_breakdown(human, ObjectService):
     body_vertices = set(ObjectService.get_vertex_indexes_for_vertex_group(human, "body"))
     if not body_vertices:
@@ -337,7 +467,13 @@ def main():
     human["cue_id_production_ready"] = False
 
     output = os.path.abspath(output)
-    os.makedirs(os.path.dirname(output), exist_ok=True)
+    output_dir = os.path.dirname(output)
+    os.makedirs(output_dir, exist_ok=True)
+
+    render_review_preview(os.path.join(output_dir, "source-preview-full.png"), human, portrait=False)
+    render_review_preview(os.path.join(output_dir, "source-preview-portrait.png"), human, portrait=True)
+    configure_saved_viewport(human)
+
     bpy.ops.wm.save_as_mainfile(filepath=output)
     write_report(output, human, rig, macro, ObjectService)
 
