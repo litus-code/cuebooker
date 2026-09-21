@@ -8851,3 +8851,101 @@ From this point:
 - low-end devices may use lower LODs or static snapshots rather than degrading the canonical art source.
 
 Production remains untouched.
+
+
+## 162. Meshy male/female masters received and audited
+
+The approved CUE ID male/female visual masters were exported from Meshy and supplied in both GLB and FBX packages.
+
+Canonical local filenames:
+
+```text
+cueid-male-master-v1.glb
+cueid-male-master-v1.fbx.zip
+cueid-female-master-v1.glb
+cueid-female-master-v1.fbx.zip
+```
+
+Measured files:
+
+```text
+male GLB
+  bytes: 26,674,040
+  sha256: 1139d7166cd51ece54877c0d0e6589ab0bcc5544067c99ff07f75d3613123e7f
+
+female GLB
+  bytes: 24,560,984
+  sha256: f3000754bb34bc411d123cb7ea1929be2c096ace0e0174d83687f84d6d2528df
+
+male FBX package
+  bytes: 45,047,692
+  sha256: c1d7e0df3b8c04681c7704f9aa3d4bf08fbab7ddd67be1930e30858862e56b2d
+
+female FBX package
+  bytes: 41,906,176
+  sha256: d522f46a504e31b5df8eb68aa906b2dc503bb5660c5a93de51773a4cb2a0f93b
+```
+
+GLB geometry audit:
+
+```text
+male
+  vertices: 395,763
+  triangles: 735,810
+  mesh primitives: 1
+  materials: 1
+  skins: 0
+  animations: 0
+  morph targets: 0
+  extents: ~0.693 x 1.896 x 0.350
+
+female
+  vertices: 352,674
+  triangles: 655,612
+  mesh primitives: 1
+  materials: 1
+  skins: 0
+  animations: 0
+  morph targets: 0
+  extents: ~0.679 x 1.900 x 0.425
+```
+
+Both GLBs contain 2K embedded PBR textures:
+
+- base color;
+- metallic/roughness;
+- normal.
+
+The FBX ZIPs additionally contain the separate PNG texture files:
+
+- base color;
+- metallic;
+- roughness;
+- normal.
+
+Decision:
+
+- the GLBs are the primary approved visual masters for Cuebooker/Web/ThreeJS;
+- the FBX packages are retained as a production/Blender/Unreal fallback;
+- do not regenerate the characters unless the approved visual direction changes;
+- do not use these raw Meshy exports directly as the modular runtime avatar.
+
+Current structural limitation:
+
+Meshy exported each character as one high-density mesh using one material. There is currently no armature, no animation data, no expression morphs and no semantic material split between skin, hair, clothing and footwear.
+
+Required cleanup phase:
+
+1. preserve the approved silhouette and face;
+2. import the master in Blender without visual remodelling;
+3. separate or mask semantic regions: skin, hair, top, bottom, footwear, eyes/details;
+4. create a dedicated skin mask so skin tone can change independently;
+5. create a shared humanoid rig and skin weights;
+6. author the five CUE ID expression morphs;
+7. add modular hair/facial-hair/piercing/accessory anchors;
+8. only after visual/rig approval create runtime LODs;
+9. keep the master source untouched as the visual source of truth.
+
+Skin tone must be material-driven, not separate character meshes. The target remains six selectable skin tones across the same male/female geometry.
+
+Production remains untouched.
