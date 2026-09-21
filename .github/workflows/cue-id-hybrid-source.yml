@@ -1,0 +1,83 @@
+name: CUE ID hybrid quality prototype
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - scripts/blender/cue-id-creator-v1-hybrid-source.py
+      - .github/workflows/cue-id-hybrid-source.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build-hybrid-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      BLENDER_ARCHIVE: blender-5.2.2-linux-x64.tar.xz
+      BLENDER_DIR: blender-5.2.2-linux-x64
+      SYSTEM_ASSETS_URL: https://files2.makehumancommunity.org/asset_packs/makehuman_system_assets/makehuman_system_assets_cc0.zip
+      SHIRTS01_URL: https://files2.makehumancommunity.org/asset_packs/shirts01/shirts01_cc0.zip
+      PANTS01_URL: https://files2.makehumancommunity.org/asset_packs/pants01/pants01_cc0.zip
+
+    steps:
+      - name: Install headless render dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1 libglx-mesa0 libglu1-mesa xvfb
+
+      - uses: actions/checkout@v4
+
+      - name: Cache authoring packs
+        id: packs-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            /tmp/makehuman_system_assets_cc0.zip
+            /tmp/shirts01_cc0.zip
+            /tmp/pants01_cc0.zip
+          key: cue-id-makehuman-quality-packs-v1
+
+      - name: Download CC0 authoring packs
+        if: steps.packs-cache.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 "$SYSTEM_ASSETS_URL" -o /tmp/makehuman_system_assets_cc0.zip
+          curl -fL --retry 3 "$SHIRTS01_URL" -o /tmp/shirts01_cc0.zip
+          curl -fL --retry 3 "$PANTS01_URL" -o /tmp/pants01_cc0.zip
+
+      - name: Install Blender
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 "https://download.blender.org/release/Blender5.2/$BLENDER_ARCHIVE" -o "/tmp/$BLENDER_ARCHIVE"
+          tar -xf "/tmp/$BLENDER_ARCHIVE" -C "$RUNNER_TEMP"
+
+      - name: Install MPFB
+        run: |
+          set -euo pipefail
+          BLENDER="$RUNNER_TEMP/$BLENDER_DIR/blender"
+          "$BLENDER" --online-mode --command extension install -s -e mpfb
+
+      - name: Build hybrid source
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/hybrid
+          BLENDER="$RUNNER_TEMP/$BLENDER_DIR/blender"
+          PACKS="/tmp/makehuman_system_assets_cc0.zip:/tmp/shirts01_cc0.zip:/tmp/pants01_cc0.zip"
+          xvfb-run -a "$BLENDER" --background \
+            --python scripts/blender/cue-id-creator-v1-hybrid-source.py \
+            -- \
+            --asset-packs "$PACKS" \
+            --output "$GITHUB_WORKSPACE/artifacts/hybrid/source-hybrid.blend"
+          python -m json.tool artifacts/hybrid/source-hybrid.hybrid-report.json
+
+      - name: Upload hybrid evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: cue-id-creator-v1-hybrid-quality
+          path: artifacts/hybrid/
+          if-no-files-found: error
+          retention-days: 14
