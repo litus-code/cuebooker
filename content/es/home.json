@@ -39,7 +39,7 @@
     "statement": "CueBooker convierte lo que ya ocurre en un hilo que no se pierde."
   },
   "search": {
-    "index": "10 / VISIÓN",
+    "index": "09 / VISIÓN",
     "eyebrow": "MÁS ADELANTE · CUANDO EXISTA LA RED",
     "title": "La trayectoria primero. El discovery después.",
     "body": "Con una base real de bookings, relaciones y disponibilidad, CueBooker podrá añadir descubrimiento de artistas sin convertir seguidores o popularidad en una medida de valor. El núcleo seguirá siendo la trayectoria y el trabajo real del artista.",
@@ -153,7 +153,7 @@
     ]
   },
   "access": {
-    "index": "08 / ACCESO",
+    "index": "07 / ACCESO",
     "eyebrow": "EL WORKSPACE ES DEL ARTISTA Y SU EQUIPO",
     "title": "Empieza simple. La estructura aparece cuando la necesitas.",
     "body": "Un DJ puede trabajar solo dentro de su workspace. Una agencia utiliza el mismo núcleo con varios artistas. El promotor no necesita adoptar CueBooker para que el DJ pueda mantener su seguimiento.",
@@ -206,7 +206,7 @@
     ]
   },
   "demo": {
-    "index": "09 / PRODUCTO",
+    "index": "08 / PRODUCTO",
     "eyebrow": "EL PRODUCTO",
     "title": "Ya puedes usar el núcleo real de CueBooker.",
     "body": "Captura una oportunidad, revisa lo que el sistema ha entendido y síguela en el mismo workspace hasta resolverla.",
@@ -269,30 +269,6 @@
   "cta": {
     "topButton": "Volver arriba",
     "email": "contacto@cuebooker.com"
-  },
-  "join": {
-    "index": "07 / ENTRA AHORA",
-    "eyebrow": "EMPIEZA CON TRABAJO REAL",
-    "title": "Pruébalo con el próximo booking que recibas.",
-    "body": "CueBooker tiene sentido cuando entra en una situación real: una llamada, una propuesta, una respuesta pendiente o una fecha que tienes que proteger. Crea tu workspace y comprueba si te ayuda a recordar menos y seguir mejor.",
-    "nowTitle": "Disponible ahora",
-    "now": [
-      "Smart Capture por voz o texto para convertir conversaciones en bookings revisables",
-      "Inbox real con Activity, estados, búsqueda y filtros",
-      "Next Move, holds, calendario e historial conectados",
-      "Email saliente y respuestas que vuelven al mismo booking",
-      "Perfil público y formulario para recibir solicitudes estructuradas"
-    ],
-    "upcomingTitle": "Antes de producción",
-    "upcoming": [
-      "Smoke completo desktop/mobile del flujo operativo",
-      "Hardening de duplicados y bookings archivados en email",
-      "Entrega segura del acknowledgement del formulario público",
-      "Protección antiabuso y validación del widget embebido",
-      "Analítica, observabilidad y preparación de lanzamiento"
-    ],
-    "note": "Ahora mismo CueBooker está en validación de producto sobre staging. La prioridad es demostrar que el flujo diario funciona bien antes de añadir capas comerciales o de discovery.",
-    "cta": "Crear cuenta"
   },
   "distribution": {
     "index": "04 / DISTRIBUCIÓN",
