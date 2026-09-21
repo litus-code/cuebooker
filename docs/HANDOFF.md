@@ -8281,3 +8281,45 @@ The first real GLB should be placed under an application-owned lab path, inspect
 MakeHuman / MPFB core assets are documented as a possible CC0 base-mesh starting point only. Cuebooker must still sculpt, style, retopologize, rig-clean and optimize the character into its own authored visual identity. The runtime has no MakeHuman dependency.
 
 Production remains untouched.
+
+
+## 148. Creator 3D authored package scaffold
+
+The existing CUE ID package scaffold now supports a dedicated first-avatar profile without changing the default V2 behavior.
+
+Command:
+
+```bash
+npm run cue-id:scaffold-package -- \
+  --version 3.0.0 \
+  --profile creator-3d-v1 \
+  --output-dir /path/to/work
+```
+
+Default behavior remains the legacy V2 scaffold when `--profile` is omitted.
+
+The `creator-3d-v1` profile generates a lab-only authored package containing:
+
+- source/export/textures/renders/manifest directories;
+- partial Creator 3D manifest draft;
+- Creator-specific bindings sheet;
+- Creator-specific sculpt spec;
+- evidence/metadata/mobile/performance drafts;
+- explicit lab GLB path `/cue-id/lab/creator-v1.glb`.
+
+The generated Creator manifest is deliberately narrow:
+
+- base neutral;
+- build regular;
+- skin-03 / skin-05;
+- face-03 / face-04;
+- textured-crop / curly-crop / locs;
+- none / short-beard;
+- oversized-tee / bomber;
+- wide-trouser / cargo;
+- technical-sneaker / boot;
+- neutral / relaxed poses.
+
+No production admission or catalogue entry is generated.
+
+The next material step is no longer architecture: create/export the actual GLB into this package, inspect it, fill bindings from the real export and wire that inspected manifest into `CUE_ID_CREATOR_3D_LAB_CANDIDATE`.
