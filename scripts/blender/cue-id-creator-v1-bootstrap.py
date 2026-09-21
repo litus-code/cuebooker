@@ -184,7 +184,34 @@ def triangle_count(obj):
         evaluated.to_mesh_clear()
 
 
-def write_report(output, human, rig, macro):
+def mesh_surface_breakdown(human, ObjectService):
+    body_vertices = set(ObjectService.get_vertex_indexes_for_vertex_group(human, "body"))
+    if not body_vertices:
+        raise RuntimeError("MPFB basemesh is missing the expected body vertex group")
+
+    human.data.calc_loop_triangles()
+    body_triangles = 0
+    helper_triangles = 0
+
+    for triangle in human.data.loop_triangles:
+        if all(index in body_vertices for index in triangle.vertices):
+            body_triangles += 1
+        else:
+            helper_triangles += 1
+
+    return {
+        "bodySurfaceVertices": len(body_vertices),
+        "helperVertices": len(human.data.vertices) - len(body_vertices),
+        "bodySurfaceTriangles": body_triangles,
+        "helperTriangles": helper_triangles,
+        "rawMeshTriangles": body_triangles + helper_triangles,
+        "evaluatedTriangles": triangle_count(human),
+    }
+
+
+def write_report(output, human, rig, macro, ObjectService):
+    surface = mesh_surface_breakdown(human, ObjectService)
+
     report = {
         "status": "authoring_bootstrap_only",
         "source": "MPFB official extension + MakeHuman core basemesh/targets",
@@ -194,7 +221,8 @@ def write_report(output, human, rig, macro):
         "rigObject": rig.name,
         "rigType": "game_engine",
         "vertices": len(human.data.vertices),
-        "triangles": triangle_count(human),
+        "triangles": surface["evaluatedTriangles"],
+        "surfaceBreakdown": surface,
         "shapeKeys": (
             [key.name for key in human.data.shape_keys.key_blocks]
             if human.data.shape_keys
@@ -232,6 +260,7 @@ def main():
 
     HumanService = dynamic_import("mpfb.services.humanservice", "HumanService")
     TargetService = dynamic_import("mpfb.services.targetservice", "TargetService")
+    ObjectService = dynamic_import("mpfb.services.objectservice", "ObjectService")
 
     clear_scene()
 
@@ -310,7 +339,7 @@ def main():
     output = os.path.abspath(output)
     os.makedirs(os.path.dirname(output), exist_ok=True)
     bpy.ops.wm.save_as_mainfile(filepath=output)
-    write_report(output, human, rig, macro)
+    write_report(output, human, rig, macro, ObjectService)
 
     print(f"[CUE ID Creator 3D V1] saved editable authoring base: {output}")
 
