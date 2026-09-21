@@ -22,6 +22,12 @@ jobs:
       SYSTEM_ASSETS_URL: https://files2.makehumancommunity.org/asset_packs/makehuman_system_assets/makehuman_system_assets_cc0.zip
 
     steps:
+      - name: Install headless render dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1 libglx-mesa0 libglu1-mesa xvfb
+
       - uses: actions/checkout@v4
 
       - name: Install Blender
@@ -48,7 +54,11 @@ jobs:
           set -euo pipefail
           mkdir -p artifacts/topology-probe
           BLENDER="$RUNNER_TEMP/$BLENDER_DIR/blender"
-          "$BLENDER" --background             --python scripts/blender/cue-id-creator-v1-topology-probe.py             --             --asset-pack /tmp/makehuman_system_assets_cc0.zip             --output-dir "$GITHUB_WORKSPACE/artifacts/topology-probe"
+          xvfb-run -a "$BLENDER" --background \
+            --python scripts/blender/cue-id-creator-v1-topology-probe.py \
+            -- \
+            --asset-pack /tmp/makehuman_system_assets_cc0.zip \
+            --output-dir "$GITHUB_WORKSPACE/artifacts/topology-probe"
           python -m json.tool artifacts/topology-probe/topology-probe-report.json
 
       - name: Upload evidence
