@@ -176,7 +176,7 @@ const steps = computed(() => ([
 ]))
 
 const reviewBody = computed(() =>
-  creatorUsesLabFixture.value
+  assetStatus.value.source === 'lab_candidate'
     ? copy.value.finalBodyLab
     : copy.value.finalBodyProduction
 )
@@ -390,7 +390,7 @@ onMounted(() => {
           :config="runtimeConfig"
           artist-name="LITUS"
           :interactive="!creatorUsesLabFixture"
-          :show-placeholder-figure="!creatorUsesLabFixture"
+          :show-placeholder-figure="!creatorUsesLabFixture && !authoredLabManifest"
           :show-diagnostics="false"
         />
 
@@ -410,7 +410,7 @@ onMounted(() => {
         </div>
 
         <p class="creator__asset-note">
-          {{ creatorUsesLabFixture ? copy.authoredBody : copy.productionBody }}
+          {{ assetStatus.source === 'lab_candidate' ? copy.authoredBody : copy.productionBody }}
         </p>
       </div>
 
@@ -522,7 +522,7 @@ onMounted(() => {
             :lab-authored-manifest="authoredLabManifest"
             artist-name="LITUS"
             :interactive="!creatorUsesLabFixture"
-            :show-placeholder-figure="!creatorUsesLabFixture"
+            :show-placeholder-figure="!creatorUsesLabFixture && !authoredLabManifest"
             :show-diagnostics="false"
           />
           <div
