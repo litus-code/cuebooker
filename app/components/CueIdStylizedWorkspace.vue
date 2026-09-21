@@ -492,7 +492,6 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               type="button"
               :class="{ selected: modelValue.top === top, muted: onePieceActive }"
               :aria-pressed="modelValue.top === top"
-              :aria-disabled="onePieceActive"
               @click="patch('top', top)"
             >{{ top }}</button>
           </div>
@@ -503,7 +502,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               v-for="top in clubTops"
               :key="top"
               type="button"
-              :class="{ selected: modelValue.top === top }"
+              :class="{ selected: modelValue.top === top, muted: onePieceActive }"
               :aria-pressed="modelValue.top === top"
               @click="patch('top', top)"
             >{{ top }}</button>
@@ -517,7 +516,6 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               type="button"
               :class="{ selected: modelValue.bottom === bottom, muted: onePieceActive }"
               :aria-pressed="modelValue.bottom === bottom"
-              :aria-disabled="onePieceActive"
               @click="patch('bottom', bottom)"
             >{{ bottom }}</button>
           </div>
@@ -528,7 +526,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               v-for="bottom in clubBottoms"
               :key="bottom"
               type="button"
-              :class="{ selected: modelValue.bottom === bottom }"
+              :class="{ selected: modelValue.bottom === bottom, muted: onePieceActive }"
               :aria-pressed="modelValue.bottom === bottom"
               @click="patch('bottom', bottom)"
             >{{ bottom }}</button>
@@ -552,7 +550,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               v-for="color in garmentColors"
               :key="'top-' + color"
               type="button"
-              :class="{ selected: modelValue.topColor === color }"
+              :class="{ selected: modelValue.topColor === color, muted: onePieceActive }"
               :aria-pressed="modelValue.topColor === color"
               :style="{ '--swatch': colorHex(color) }"
               :aria-label="copy.top + ' · ' + copy.color + ': ' + color"
@@ -566,7 +564,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
               v-for="color in garmentColors"
               :key="'bottom-' + color"
               type="button"
-              :class="{ selected: modelValue.bottomColor === color }"
+              :class="{ selected: modelValue.bottomColor === color, muted: onePieceActive }"
               :aria-pressed="modelValue.bottomColor === color"
               :style="{ '--swatch': colorHex(color) }"
               :aria-label="copy.bottom + ' · ' + copy.color + ': ' + color"
@@ -751,7 +749,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace__group{align-content:start;display:grid;gap:10px;padding:18px;overflow:auto}.cue-workspace__group h2{margin:10px 0 2px;font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;color:var(--cue-muted)}
 .cue-workspace__chips,.cue-workspace__tiles,.cue-workspace__swatches{display:flex;flex-wrap:wrap;gap:8px}
 .cue-workspace__chips button{min-height:40px;border:1px solid var(--cue-border);border-radius:10px;padding:9px 11px;background:transparent;color:var(--cue-text)}.cue-workspace__chips button.selected{border-color:var(--cue-accent);box-shadow:0 0 0 1px var(--cue-accent) inset}.cue-workspace__chips button.muted{opacity:.52}.cue-workspace__chips button:disabled{opacity:.34;cursor:not-allowed}
-.cue-workspace__swatches button{width:34px;height:34px;border:2px solid transparent;border-radius:50%;background:var(--swatch);box-shadow:0 0 0 1px var(--cue-border)}.cue-workspace__swatches button.selected{border-color:var(--cue-accent);box-shadow:0 0 0 2px var(--cue-surface) inset,0 0 0 1px var(--cue-accent)}
+.cue-workspace__swatches button{width:34px;height:34px;border:2px solid transparent;border-radius:50%;background:var(--swatch);box-shadow:0 0 0 1px var(--cue-border)}.cue-workspace__swatches button.muted{opacity:.52}.cue-workspace__swatches button.selected{border-color:var(--cue-accent);box-shadow:0 0 0 2px var(--cue-surface) inset,0 0 0 1px var(--cue-accent)}
 .cue-workspace__tiles--preview button{display:grid;grid-template-rows:58px auto;min-width:86px;overflow:hidden;border:1px solid var(--cue-border);border-radius:12px;padding:0;background:transparent;color:var(--cue-text)}.cue-workspace__tiles--preview button.selected{border-color:var(--cue-accent)}
 .cue-workspace__tiles--preview i{display:grid;place-items:center;background:linear-gradient(145deg,color-mix(in srgb,var(--cue-text) 9%,transparent),color-mix(in srgb,var(--cue-text) 2%,transparent));font-style:normal;font-size:10px;color:var(--cue-muted)}.cue-workspace__tiles--preview span{display:grid;gap:3px;padding:8px;font-size:11px}.cue-workspace__tiles--preview span small{color:var(--cue-muted);font-size:8px}
 .cue-workspace__mini-avatar{position:relative;overflow:hidden;min-height:58px}.cue-workspace__mini-avatar b{position:absolute;left:50%;top:10px;width:28px;height:31px;transform:translateX(-50%);border-radius:46% 46% 44% 44%;background:var(--mini-skin)}.cue-workspace__mini-avatar em{position:absolute;left:50%;top:37px;width:48px;height:31px;transform:translateX(-50%);border-radius:50% 50% 16% 16%;background:color-mix(in srgb,var(--mini-skin) 60%,var(--cue-surface))}
