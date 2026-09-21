@@ -1,0 +1,79 @@
+name: CUE ID Blender Studio base probe
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - scripts/blender/cue-id-blender-studio-base-probe.py
+      - .github/workflows/cue-id-blender-studio-base-probe.yml
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BLENDER_ARCHIVE: blender-5.2.2-linux-x64.tar.xz
+      BLENDER_DIR: blender-5.2.2-linux-x64
+      BASE_MESH_BUNDLE_URL: https://download.blender.org/demo/asset-bundles/human-base-meshes/human-base-meshes-bundle-v1.4.1.zip
+
+    steps:
+      - name: Install headless render dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1 libglx-mesa0 libglu1-mesa xvfb unzip
+
+      - uses: actions/checkout@v4
+
+      - name: Cache Blender Studio base mesh bundle
+        id: base-cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/human-base-meshes-bundle-v1.4.1.zip
+          key: cue-id-blender-human-base-meshes-v1.4.1
+
+      - name: Download official CC0 base mesh bundle
+        if: steps.base-cache.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 "$BASE_MESH_BUNDLE_URL" -o /tmp/human-base-meshes-bundle-v1.4.1.zip
+
+      - name: Extract base mesh bundle
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/human-base-meshes
+          mkdir -p /tmp/human-base-meshes
+          unzip -q /tmp/human-base-meshes-bundle-v1.4.1.zip -d /tmp/human-base-meshes
+          find /tmp/human-base-meshes -maxdepth 3 -type f -name '*.blend' -print
+
+      - name: Install Blender
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 "https://download.blender.org/release/Blender5.2/$BLENDER_ARCHIVE" -o "/tmp/$BLENDER_ARCHIVE"
+          tar -xf "/tmp/$BLENDER_ARCHIVE" -C "$RUNNER_TEMP"
+
+      - name: Probe stylized bodies
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/blender-studio-probe
+          BLEND_FILE="$(find /tmp/human-base-meshes -type f -name 'human_base_meshes__body-stylized.blend' | head -1)"
+          test -n "$BLEND_FILE"
+          BLENDER="$RUNNER_TEMP/$BLENDER_DIR/blender"
+          xvfb-run -a "$BLENDER" --background \
+            --python scripts/blender/cue-id-blender-studio-base-probe.py \
+            -- \
+            --blend "$BLEND_FILE" \
+            --output-dir "$GITHUB_WORKSPACE/artifacts/blender-studio-probe"
+          python -m json.tool artifacts/blender-studio-probe/probe-report.json
+
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: cue-id-blender-studio-base-probe
+          path: artifacts/blender-studio-probe/
+          if-no-files-found: error
+          retention-days: 14
