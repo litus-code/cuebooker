@@ -9,6 +9,12 @@ import {
   isCueIdStylizedCreatorConfigV1,
   normalizeCueIdStylizedPiercings
 } from '../app/domain/cueIdStylizedCreator.ts'
+import {
+  CUE_ID_BODY_SEMANTIC_NODES,
+  CUE_ID_BODY_SOURCE_HAIR,
+  CUE_ID_SKIN_TONES,
+  resolveCueIdBodySemanticState
+} from '../app/domain/cueIdBodyMaterials.ts'
 
 test('stylized creator default config stays inside the catalogue', () => {
   const config = DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG
@@ -16,6 +22,7 @@ test('stylized creator default config stays inside the catalogue', () => {
 
   assert.equal(config.schemaVersion, 1)
   assert.ok(catalogue.bodies.includes(config.body))
+  assert.ok(catalogue.skins.includes(config.skin))
   assert.ok(catalogue.expressions.includes(config.expression))
   assert.ok(catalogue.eyeColors.includes(config.eyeColor))
   assert.ok(catalogue.contactLenses.includes(config.contactLens))
@@ -26,19 +33,46 @@ test('stylized creator default config stays inside the catalogue', () => {
   assert.ok(catalogue.faceAccessories.includes(config.faceAccessory))
   assert.ok(catalogue.earAccessories.includes(config.earAccessory))
   assert.ok(catalogue.gloves.includes(config.gloves))
+  assert.ok(catalogue.torsoAccessories.includes(config.torsoAccessory))
+  assert.ok(catalogue.neckAccessories.includes(config.neckAccessory))
+  assert.ok(catalogue.makeup.includes(config.makeup))
+  assert.ok(catalogue.nails.includes(config.nails))
   assert.ok(catalogue.tops.includes(config.top))
   assert.ok(catalogue.bottoms.includes(config.bottom))
   assert.ok(catalogue.onePieces.includes(config.onePiece))
   assert.ok(catalogue.footwear.includes(config.footwear))
 })
 
-test('stylized creator supports the agreed first accessory set', () => {
+test('male and female use one shared unrestricted catalogue', () => {
   const catalogue = CUE_ID_STYLIZED_CREATOR_CATALOGUE
 
-  assert.deepEqual(catalogue.headwear, ['none', 'cap', 'beanie', 'top-hat'])
-  assert.deepEqual(catalogue.faceAccessories, ['none', 'mask'])
-  assert.deepEqual(catalogue.earAccessories, ['none', 'headphones'])
-  assert.deepEqual(catalogue.gloves, ['none', 'short-gloves', 'long-gloves'])
+  assert.deepEqual(catalogue.bodies, ['male', 'female'])
+  assert.deepEqual(
+    catalogue.hairs,
+    ['bald', 'shaved', 'mohawk', 'fade', 'crop', 'curly', 'bob', 'tied-back', 'locs']
+  )
+  assert.deepEqual(
+    catalogue.hairColors,
+    ['black', 'dark-brown', 'brown', 'blond', 'platinum', 'red', 'blue']
+  )
+  assert.ok(catalogue.bottoms.includes('skirt'))
+  assert.ok(catalogue.torsoAccessories.includes('harness'))
+  assert.ok(catalogue.faceAccessories.includes('venetian-mask'))
+  assert.ok(catalogue.tops.includes('mesh-top'))
+  assert.ok(catalogue.onePieces.includes('bodysuit'))
+  assert.ok(catalogue.footwear.includes('platform-boot'))
+  assert.ok(catalogue.footwear.includes('vans-style'))
+})
+
+test('stylized creator supports club and festival accessories', () => {
+  const catalogue = CUE_ID_STYLIZED_CREATOR_CATALOGUE
+
+  assert.deepEqual(catalogue.headwear, ['none', 'cap', 'beanie', 'top-hat', 'festival-hood'])
+  assert.ok(catalogue.faceAccessories.includes('venetian-mask'))
+  assert.ok(catalogue.faceAccessories.includes('festival-goggles'))
+  assert.deepEqual(catalogue.earAccessories, ['none', 'headphones', 'in-ear'])
+  assert.ok(catalogue.gloves.includes('arm-sleeves'))
+  assert.deepEqual(catalogue.torsoAccessories, ['none', 'harness'])
 })
 
 test('stylized creator validator rejects unknown accessory ids', () => {
@@ -47,7 +81,7 @@ test('stylized creator validator rejects unknown accessory ids', () => {
   assert.equal(
     isCueIdStylizedCreatorConfigV1({
       ...DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG,
-      headwear: 'cowboy-hat'
+      headwear: 'unknown-hat'
     }),
     false
   )
@@ -55,7 +89,7 @@ test('stylized creator validator rejects unknown accessory ids', () => {
   assert.equal(
     isCueIdStylizedCreatorConfigV1({
       ...DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG,
-      earAccessory: 'unknown'
+      torsoAccessory: 'unknown'
     }),
     false
   )
@@ -90,4 +124,61 @@ test('Cuebooker Basics uses a small symbol and avoids branding the default trous
     CUE_ID_STYLIZED_CUEBOOKER_BASICS.headwear.cap,
     { mark: 'cuebooker-symbol', placement: 'front-center-small' }
   )
+})
+
+test('body material controller exposes six skin tones', () => {
+  assert.deepEqual(Object.keys(CUE_ID_SKIN_TONES), [
+    'skin-01',
+    'skin-02',
+    'skin-03',
+    'skin-04',
+    'skin-05',
+    'skin-06'
+  ])
+
+  for (const tone of Object.values(CUE_ID_SKIN_TONES)) {
+    assert.match(tone.color, /^#[0-9a-f]{6}$/i)
+    assert.ok(tone.tintStrength > 0 && tone.tintStrength <= 1)
+  }
+})
+
+test('semantic body nodes stay predictable for both bodies', () => {
+  assert.deepEqual(CUE_ID_BODY_SEMANTIC_NODES.male, {
+    skin: 'cue_male_skin',
+    hair: 'cue_male_hair',
+    underwear: 'cue_male_underwear'
+  })
+  assert.deepEqual(CUE_ID_BODY_SEMANTIC_NODES.female, {
+    skin: 'cue_female_skin',
+    hair: 'cue_female_hair',
+    underwear: 'cue_female_underwear'
+  })
+})
+
+test('source hair visibility follows each approved body master', () => {
+  assert.equal(CUE_ID_BODY_SOURCE_HAIR.male, 'fade')
+  assert.equal(CUE_ID_BODY_SOURCE_HAIR.female, 'tied-back')
+
+  const male = resolveCueIdBodySemanticState({
+    ...DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG,
+    body: 'male',
+    hair: 'fade'
+  })
+  assert.equal(male.sourceHairVisible, true)
+  assert.equal(male.underwearVisible, true)
+
+  const female = resolveCueIdBodySemanticState({
+    ...DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG,
+    body: 'female',
+    hair: 'tied-back'
+  })
+  assert.equal(female.sourceHairVisible, true)
+  assert.equal(female.underwearVisible, true)
+
+  const bald = resolveCueIdBodySemanticState({
+    ...DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG,
+    body: 'female',
+    hair: 'bald'
+  })
+  assert.equal(bald.sourceHairVisible, false)
 })
