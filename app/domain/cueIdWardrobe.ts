@@ -473,6 +473,17 @@ export function cueIdHarnessCompatibleWithTop(top: CueIdStylizedTopId) {
   return getCueIdWardrobeAsset(top)?.allowWithHarness ?? false
 }
 
+export function cueIdHarnessCompatibleWithSelection(selection: {
+  top: CueIdStylizedTopId
+  onePiece: CueIdStylizedOnePieceId
+}) {
+  if (selection.onePiece !== 'none') {
+    return getCueIdWardrobeAsset(selection.onePiece)?.allowWithHarness ?? false
+  }
+
+  return cueIdHarnessCompatibleWithTop(selection.top)
+}
+
 export function cueIdOuterwearCompatibleWithTop(top: CueIdStylizedTopId) {
   return getCueIdWardrobeAsset(top)?.allowWithOuterwear ?? false
 }
