@@ -104,21 +104,38 @@ def evaluated_bounds(objects):
 
 def mesh_stats(objects):
     depsgraph = bpy.context.evaluated_depsgraph_get()
-    triangles = 0
-    vertices = 0
+    evaluated_triangles = 0
+    evaluated_vertices = 0
+    raw_triangles = 0
+    raw_vertices = 0
     materials = set()
     mesh_names = []
+    modifiers = {}
 
     for obj in objects:
         if obj.type != "MESH":
             continue
         mesh_names.append(obj.name)
+
+        obj.data.calc_loop_triangles()
+        raw_triangles += len(obj.data.loop_triangles)
+        raw_vertices += len(obj.data.vertices)
+        modifiers[obj.name] = [
+            {
+                "name": modifier.name,
+                "type": modifier.type,
+                "showViewport": bool(modifier.show_viewport),
+                "showRender": bool(modifier.show_render),
+            }
+            for modifier in obj.modifiers
+        ]
+
         evaluated = obj.evaluated_get(depsgraph)
         mesh = evaluated.to_mesh()
         try:
             mesh.calc_loop_triangles()
-            triangles += len(mesh.loop_triangles)
-            vertices += len(mesh.vertices)
+            evaluated_triangles += len(mesh.loop_triangles)
+            evaluated_vertices += len(mesh.vertices)
         finally:
             evaluated.to_mesh_clear()
 
@@ -128,8 +145,11 @@ def mesh_stats(objects):
 
     return {
         "meshObjects": sorted(mesh_names),
-        "vertices": vertices,
-        "triangles": triangles,
+        "rawVertices": raw_vertices,
+        "rawTriangles": raw_triangles,
+        "evaluatedVertices": evaluated_vertices,
+        "evaluatedTriangles": evaluated_triangles,
+        "modifiers": modifiers,
         "materials": sorted(materials),
     }
 
