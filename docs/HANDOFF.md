@@ -8949,3 +8949,75 @@ Required cleanup phase:
 Skin tone must be material-driven, not separate character meshes. The target remains six selectable skin tones across the same male/female geometry.
 
 Production remains untouched.
+
+
+## 163. Body masters converted to semantic GLB sources
+
+The approved Meshy body masters now have reproducible semantic-split outputs.
+
+New scripts:
+
+```text
+scripts/3d/cue-id-body-semantic-audit.py
+scripts/3d/cue-id-body-semantic-split.py
+```
+
+Input body masters:
+
+```text
+cueid-male-body-master-v1-textured.glb
+cueid-female-body-master-v1-textured-clean.glb
+```
+
+Semantic outputs generated locally:
+
+```text
+cueid-male-body-master-v1-semantic.glb
+cueid-female-body-master-v1-semantic.glb
+```
+
+Each output contains three explicit geometries:
+
+```text
+cue_<body>_skin
+cue_<body>_hair
+cue_<body>_underwear
+```
+
+Male roundtrip:
+
+```text
+skin       118,149 vertices / 215,201 tris
+hair        66,858 vertices / 120,735 tris
+underwear    9,002 vertices / 15,982 tris
+total                    351,918 tris
+```
+
+Female roundtrip:
+
+```text
+skin       115,741 vertices / 206,707 tris
+hair       113,993 vertices / 208,695 tris
+underwear   29,466 vertices / 51,342 tris
+total                    466,744 tris
+```
+
+Decision:
+
+- the split is non-destructive;
+- total triangle counts remain identical to the source body masters;
+- these semantic GLBs become the working source for skin-tone materials and default-hair visibility;
+- the original Meshy GLBs remain the immutable visual source of truth;
+- eyes/details remain fused with the skin source for now and will be separated during the facial-rig pass;
+- do not begin runtime decimation yet.
+
+Next implementation phase:
+
+1. create body material controller with six skin-tone presets;
+2. make hair visibility independently controllable;
+3. make underwear visibility independently controllable;
+4. create the shared humanoid rig contract;
+5. author the five expression morphs;
+6. only then start modular clothing and accessories.
+
+Production remains untouched.
