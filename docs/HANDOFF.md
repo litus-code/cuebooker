@@ -9514,3 +9514,29 @@ Behavior:
 This is intentionally a next-step preference, not a persisted requirement or completion gate.
 
 Production remains untouched.
+
+
+## 176. CUE ID Creator is reachable later from Artist Profile
+
+The onboarding `Do it later` path is now complete end-to-end.
+
+Updated:
+
+```text
+app/components/CueIdProfileEditor.vue
+app/pages/cue-id.vue
+```
+
+Behavior:
+
+- Artist Profile keeps the existing public visual-presentation editor untouched;
+- when the artist selects the existing CUE ID presentation mode, a separate `CUE ID 3D Creator` callout is shown;
+- the callout explains that the new Creator remains isolated from public representation until the 3D validation gates pass;
+- `Open Creator` routes to `/cue-id?from=workspace`;
+- when opened from Artist Profile, the Creator exit action becomes `Back to profile`;
+- this gives artists who skipped CUE ID during onboarding a clear re-entry point later;
+- no local Creator draft is promoted into the public profile or production catalogue.
+
+The legacy/public visual representation remains separate from the new stylized Creator V1 until real 3D admission is approved.
+
+Production remains untouched.
