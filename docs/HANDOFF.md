@@ -8650,3 +8650,102 @@ Production remains untouched.
 Current next step:
 
 Build one intentional stylized lab character first, using the locked default configuration above. The first visual gate is the male base with black outfit and all five facial expressions. Once its art direction is accepted, derive the female body and the remaining modular options from the same visual system.
+
+
+## 158. Stylized Creator accessories and Cuebooker Basics locked
+
+The stylized Creator domain now includes dedicated accessory slots rather than one generic accessory selector.
+
+Implemented in:
+
+`app/domain/cueIdStylizedCreator.ts`
+
+Accessory slots:
+
+```text
+headwear:
+  none
+  cap
+  beanie
+  top-hat
+
+face accessory:
+  none
+  mask
+
+ear accessory:
+  none
+  headphones
+
+hands:
+  none
+  short-gloves
+  long-gloves
+```
+
+Piercings remain an independent multi-select dimension:
+
+```text
+ear
+septum
+nostril
+eyebrow
+```
+
+with a maximum of three simultaneous piercings.
+
+Compatibility rule:
+
+- accessory choices are persisted independently;
+- the UI/runtime must not silently change hair, piercings or clothing when another accessory is selected;
+- unsupported physical combinations are marked unavailable by authored-coverage metadata;
+- hair-fit variants may be used internally for hats/headphones without changing the selected hair semantic;
+- `top-hat + headphones` does not need simultaneous authored coverage in V1.
+
+The canonical default still has no accessories selected.
+
+### Cuebooker Basics
+
+The initial clothing family is now named `Cuebooker Basics`.
+
+Branding is deliberately subtle:
+
+- black tee: small Cuebooker symbol on the left chest;
+- sweatshirt / hoodie: small symbol on the left chest;
+- bomber: small symbol on the sleeve;
+- cap / beanie: small front symbol;
+- wide / straight trousers: no visible logo by default;
+- cargo: optional tiny pocket mark;
+- prefer the Cuebooker symbol/isotype over the full wordmark at avatar scale.
+
+Branding is garment metadata, not a separate runtime material and not a required user-facing creator control.
+
+Tests:
+
+`tests/cueIdStylizedCreator.test.ts`
+
+cover the accessory catalogue, validation, piercing cap and the Cuebooker Basics branding defaults.
+
+## 159. First primitive stylized render rejected as final art
+
+The CI-generated primitive stylized avatar successfully proved:
+
+- five expression morph targets;
+- deterministic Blender generation;
+- a very small geometry footprint;
+- basic material/render plumbing.
+
+Its current full-body render is still rejected as the final art target.
+
+Reason:
+
+- torso and limbs read as assembled primitives;
+- silhouette is too rigid;
+- body proportions feel like a technical mannequin;
+- the approved reference requires softer continuous cartoon anatomy and a more designed face.
+
+Do not spend further time polishing the primitive body.
+
+The next art pass should use the approved soft-caricature reference as the visual target and keep the semantic/runtime contract already defined in `docs/CUE_ID_STYLIZED_CREATOR_V1.md`.
+
+Production remains untouched.
