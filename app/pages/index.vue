@@ -251,31 +251,6 @@ useHead(() => ({
       <div class="role-grid"><article v-for="(item, index) in copy.roles.items" :key="item.name"><span class="mono">0{{ index + 1 }}</span><p class="eyebrow">{{ item.name }}</p><h3>{{ item.headline }}</h3><p>{{ item.body }}</p></article></div>
     </section>
 
-    <section class="demo-reality section-pad" data-analytics-section="join_now">
-      <div class="section-mark mono">{{ copy.join.index }}</div>
-      <div class="section-heading">
-        <p class="eyebrow">{{ copy.join.eyebrow }}</p>
-        <h2>{{ copy.join.title }}</h2>
-        <p>{{ copy.join.body }}</p>
-      </div>
-      <div class="demo-reality__grid">
-        <article>
-          <strong>{{ copy.join.nowTitle }}</strong>
-          <ul><li v-for="item in copy.join.now" :key="item"><span>✓</span>{{ item }}</li></ul>
-        </article>
-        <article>
-          <strong>{{ copy.join.upcomingTitle }}</strong>
-          <ul><li v-for="item in copy.join.upcoming" :key="item"><span>○</span>{{ item }}</li></ul>
-          <p class="demo-reality__note">{{ copy.join.note }}</p>
-        </article>
-      </div>
-      <div class="demo-reality__actions">
-        <NuxtLink class="button button--primary" to="/access?mode=signup" @click="trackAuth('signup', 'join_now'); trackCta('create_account', 'join_now', '/access?mode=signup')">
-          {{ copy.join.cta }} <span class="arrow arrow--ne" aria-hidden="true" />
-        </NuxtLink>
-      </div>
-    </section>
-
     <section class="access-model section-pad" data-analytics-section="access">
       <div class="section-mark mono">{{ copy.access.index }}</div>
       <div class="section-heading">
