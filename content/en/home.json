@@ -39,7 +39,7 @@
     "statement": "CueBooker turns what already happens into one thread that stays intact."
   },
   "search": {
-    "index": "10 / VISION",
+    "index": "09 / VISION",
     "eyebrow": "LATER · WHEN A REAL NETWORK EXISTS",
     "title": "Trajectory first. Discovery later.",
     "body": "Once real bookings, relationships and availability exist, CueBooker can add artist discovery without turning followers or popularity into a measure of value. The core remains the artist's real work and trajectory.",
@@ -153,7 +153,7 @@
     ]
   },
   "access": {
-    "index": "08 / ACCESS",
+    "index": "07 / ACCESS",
     "eyebrow": "THE WORKSPACE BELONGS TO THE ARTIST AND THEIR TEAM",
     "title": "Start simple. Structure appears when you need it.",
     "body": "A DJ can work alone inside one workspace. An agency uses the same core across several artists. A promoter does not have to adopt CueBooker for the DJ to keep proper follow-up.",
@@ -206,7 +206,7 @@
     ]
   },
   "demo": {
-    "index": "09 / PRODUCT",
+    "index": "08 / PRODUCT",
     "eyebrow": "THE PRODUCT",
     "title": "The real CueBooker core is already usable.",
     "body": "Capture an opportunity, review what the system understood and follow it in the same workspace until it is resolved.",
@@ -269,30 +269,6 @@
   "cta": {
     "topButton": "Back to top",
     "email": "contacto@cuebooker.com"
-  },
-  "join": {
-    "index": "07 / JOIN NOW",
-    "eyebrow": "START WITH REAL WORK",
-    "title": "Try it on the next booking you receive.",
-    "body": "CueBooker matters when it enters a real situation: a call, an offer, a pending reply or a date you need to protect. Create your workspace and see whether it helps you remember less and follow up better.",
-    "nowTitle": "Available now",
-    "now": [
-      "Smart Capture by voice or text to turn conversations into reviewable bookings",
-      "Real inbox with Activity, statuses, search and filters",
-      "Next Move, holds, calendar and history kept together",
-      "Outbound email and replies returning to the same booking",
-      "Public artist profile and form for structured enquiries"
-    ],
-    "upcomingTitle": "Before production",
-    "upcoming": [
-      "Full desktop/mobile smoke of the operational flow",
-      "Duplicate and archived-booking email hardening",
-      "Reliable acknowledgement delivery for the public form",
-      "Abuse protection and embedded-widget validation",
-      "Analytics, observability and launch preparation"
-    ],
-    "note": "CueBooker is currently being validated on staging. The priority is proving the daily workflow before adding commercial or discovery layers.",
-    "cta": "Create account"
   },
   "distribution": {
     "index": "04 / DISTRIBUTION",
