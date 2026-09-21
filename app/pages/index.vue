@@ -205,6 +205,46 @@ useHead(() => ({
       <p class="integration-note"><i />{{ copy.integrations.note }}</p>
     </section>
 
+    <section class="distribution section-pad" data-analytics-section="distribution">
+      <div class="section-mark mono">{{ copy.distribution.index }}</div>
+      <div class="section-heading">
+        <p class="eyebrow">{{ copy.distribution.eyebrow }}</p>
+        <h2>{{ copy.distribution.title }}</h2>
+        <p>{{ copy.distribution.body }}</p>
+      </div>
+      <div class="distribution-grid">
+        <article v-for="(item, index) in copy.distribution.channels" :key="item.name">
+          <span class="mono">0{{ index + 1 }} / {{ item.label }}</span>
+          <div class="distribution-signal" :class="`distribution-signal--${index + 1}`" aria-hidden="true">
+            <i /><i /><i />
+          </div>
+          <h3>{{ item.name }}</h3>
+          <p>{{ item.body }}</p>
+        </article>
+      </div>
+      <p class="distribution-note">{{ copy.distribution.note }}</p>
+    </section>
+
+    <section class="identity-story section-pad" data-analytics-section="identity">
+      <div class="section-mark mono">{{ copy.identity.index }}</div>
+      <div class="section-heading">
+        <p class="eyebrow">{{ copy.identity.eyebrow }}</p>
+        <h2>{{ copy.identity.title }}</h2>
+        <p>{{ copy.identity.body }}</p>
+      </div>
+      <div class="identity-grid">
+        <article v-for="(item, index) in copy.identity.cards" :key="item.name" :class="{ active: index === 1 }">
+          <span class="mono">{{ item.label }}</span>
+          <strong>{{ item.name }}</strong>
+          <p>{{ item.body }}</p>
+        </article>
+      </div>
+      <div class="identity-status">
+        <i />
+        <span>{{ copy.identity.cueIdStatus }}</span>
+      </div>
+    </section>
+
     <section id="roles" class="roles section-pad" data-analytics-section="roles">
       <div class="section-mark mono">{{ copy.roles.index }}</div>
       <div class="section-heading"><p class="eyebrow">{{ copy.roles.eyebrow }}</p><h2>{{ copy.roles.title }}</h2></div>
@@ -230,7 +270,7 @@ useHead(() => ({
         </article>
       </div>
       <div class="demo-reality__actions">
-        <NuxtLink class="button button--primary" to="/access?mode=signup" @click="trackAuth('signup', 'join_now'); trackCta('trial_30_days', 'join_now', '/access?mode=signup')">
+        <NuxtLink class="button button--primary" to="/access?mode=signup" @click="trackAuth('signup', 'join_now'); trackCta('create_account', 'join_now', '/access?mode=signup')">
           {{ copy.join.cta }} <span class="arrow arrow--ne" aria-hidden="true" />
         </NuxtLink>
       </div>
