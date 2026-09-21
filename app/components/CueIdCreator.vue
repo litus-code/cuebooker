@@ -8,6 +8,7 @@ import {
 import { getCueIdCreatorAssetStatusForConfig } from '../domain/cueIdCreatorAssetStatus'
 import { getCueIdCreatorVisualCoverage } from '../domain/cueIdCreatorVisualCoverage'
 import { getCueIdCreatorRepresentation } from '../domain/cueIdCreatorRepresentation'
+import { resolveCueIdCreator3dLabCandidate } from '../domain/cueIdCreator3dLabCandidate'
 
 type Locale = 'es' | 'en'
 type CreatorStep = keyof Pick<
@@ -43,7 +44,15 @@ const saveState = ref<'idle' | 'saved'>('idle')
 const DRAFT_STORAGE_KEY = 'cuebooker:cue-id:creator-draft:v1'
 const runtimeConfig = computed(() => cueIdCreatorToRuntimeConfig(props.modelValue))
 const assetStatus = computed(() => getCueIdCreatorAssetStatusForConfig(runtimeConfig.value))
-const creatorUsesLabFixture = computed(() => assetStatus.value.source === 'lab_candidate')
+const authoredLabManifest = computed(() =>
+  assetStatus.value.source === 'lab_candidate'
+    ? resolveCueIdCreator3dLabCandidate(props.modelValue, runtimeConfig.value)
+    : null
+)
+const creatorUsesLabFixture = computed(() =>
+  assetStatus.value.source === 'lab_candidate'
+  && !authoredLabManifest.value
+)
 const visualCoverage = computed(() => getCueIdCreatorVisualCoverage(assetStatus.value.source))
 const activeStepVisibleInAsset = computed(() => visualCoverage.value[activeStep.value])
 const activeRepresentation = computed(() =>
@@ -507,7 +516,10 @@ onMounted(() => {
       <div class="creator__review-card" :class="previewClasses">
         <div class="creator__review-stage">
           <CueIdStage
+            :key="authoredLabManifest ? 'authored-lab' : creatorUsesLabFixture ? 'semantic-lab' : 'production'"
             :config="runtimeConfig"
+            :creator-config="modelValue"
+            :lab-authored-manifest="authoredLabManifest"
             artist-name="LITUS"
             :interactive="!creatorUsesLabFixture"
             :show-placeholder-figure="!creatorUsesLabFixture"
