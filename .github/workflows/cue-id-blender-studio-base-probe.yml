@@ -60,8 +60,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p artifacts/blender-studio-probe
-          BLEND_FILE="$(find /tmp/human-base-meshes -type f -name 'human_base_meshes__body-stylized.blend' | head -1)"
+          BLEND_FILE="$(find /tmp/human-base-meshes -type f \( -name 'human_base_meshes__body-stylized.blend' -o -name 'human_base_meshes_bundle.blend' \) | head -1)"
           test -n "$BLEND_FILE"
+          echo "Using Blender Studio bundle: $BLEND_FILE"
           BLENDER="$RUNNER_TEMP/$BLENDER_DIR/blender"
           xvfb-run -a "$BLENDER" --background \
             --python scripts/blender/cue-id-blender-studio-base-probe.py \
