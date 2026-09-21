@@ -17,9 +17,10 @@ export type CueIdResolvedProductionBindings = {
 
 export function resolveCueIdProductionBindings(
   config: CueIdConfigV1,
-  manifest: CueIdProductionManifest
+  manifest: CueIdProductionManifest,
+  options: { allowPartial?: boolean } = {}
 ): CueIdResolvedProductionBindings | null {
-  if (!isCueIdProductionInteractiveReady(manifest)) return null
+  if (!options.allowPartial && !isCueIdProductionInteractiveReady(manifest)) return null
 
   const morphs: CueIdResolvedProductionBindings['morphs'] = []
   const morphBindings = manifest.bindings.morphs || {}
