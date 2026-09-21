@@ -8323,3 +8323,29 @@ The generated Creator manifest is deliberately narrow:
 No production admission or catalogue entry is generated.
 
 The next material step is no longer architecture: create/export the actual GLB into this package, inspect it, fill bindings from the real export and wire that inspected manifest into `CUE_ID_CREATOR_3D_LAB_CANDIDATE`.
+
+
+## 149. Blender-side Creator 3D V1 export gate
+
+The authored avatar flow now includes a Blender-side pre-export validator:
+
+`scripts/blender/cue-id-creator-v1-export.py`
+
+It is intended to run against the real editable `.blend` source before producing `creator-v1.glb`.
+
+The gate blocks export when the first authored slice is structurally incomplete or outside hard runtime budgets:
+
+- required Creator mesh aliases;
+- face-04 morph;
+- neutral/relaxed actions;
+- body/textile materials;
+- one shared armature;
+- <=35k triangles;
+- <=4 materials;
+- <=2048 texture dimension.
+
+The canonical visible exported state is textured-crop + oversized-tee + wide-trouser + technical-sneaker while the other first-slice meshes remain in the GLB for runtime visibility switching.
+
+This script is authoring tooling only and does not enter the application bundle.
+
+Current material blocker is now external to repo architecture: create the actual sculpt/rig/garments in Blender/MPFB (or another DCC), then run this export gate and wire the inspected GLB into the existing authored lab candidate slot.
