@@ -8558,3 +8558,95 @@ Current next step:
 5. only after those pass, run the Blender export gate and prepare the first authored lab GLB.
 
 Production remains untouched.
+
+
+## 157. CUE ID visual direction pivot: stylized avatar Creator
+
+The realistic / semi-realistic avatar direction is rejected.
+
+The user explicitly prefers an intentionally stylized 3D character closer to a low-poly soft-caricature/editorial avatar. The previous MakeHuman outputs read as cheap because realistic anatomy, face, eyes and deformation expose every imperfection.
+
+Canonical spec:
+
+`docs/CUE_ID_STYLIZED_CREATOR_V1.md`
+
+New semantic domain:
+
+`app/domain/cueIdStylizedCreator.ts`
+
+This new direction supersedes the visual target in the earlier realistic Creator authoring experiments.
+
+Stylized V1 scope is deliberately finite:
+
+- body: male / female;
+- six existing skin tones;
+- five expressions: neutral, smile, focused, confident, playful;
+- eye colours: blue, green, hazel, dark;
+- optional stylized contacts: none, ice, white, red;
+- hair styles: buzz, crop, curly, bob, locs;
+- hair colours: black, brown, blond, red, platinum;
+- facial hair: none, stubble, moustache, beard;
+- piercings: ear, septum, nostril, eyebrow, maximum three active;
+- tops: tee, tank, sweatshirt, hoodie, bomber;
+- bottoms: wide trouser, straight trouser, cargo, shorts, denim;
+- one-piece: none / jumpsuit;
+- footwear: minimal sneaker, technical sneaker, boot;
+- six shared garment colours.
+
+Canonical initial avatar:
+
+```text
+male
+skin-03
+neutral expression
+dark eyes
+no contacts
+crop / black hair
+no facial hair
+no piercings
+black tee
+black wide trousers
+black minimal sneaker
+relaxed standing
+```
+
+Art rules:
+
+- stylization is intentional;
+- no photoreal skin;
+- no realistic strand hair;
+- facial planes may be simplified;
+- eyes must remain readable;
+- hair must be built as designed masses;
+- clothes use clean silhouettes;
+- proportions may be mildly caricatured;
+- avatar must read well around 390 px;
+- avoid childish/chibi proportions.
+
+Runtime material target:
+
+```text
+cue_mat_skin
+cue_mat_hair
+cue_mat_textile
+cue_mat_detail
+```
+
+The first stylized runtime should target <=20k visible triangles, hard <=28k, one armature, <=4 materials, <=4 active textures and max 1024 texture dimension.
+
+The complete authoring library may contain more inactive meshes. Performance gates must measure the active configuration separately from all stored variants.
+
+Previous realistic authoring files and workflows are now research evidence only:
+
+- MPFB bootstrap;
+- low-poly male1591 source;
+- quality MakeHuman source;
+- hybrid high-detail-head / low-poly-body prototype.
+
+None of those assets may be promoted to `CUE_ID_CREATOR_3D_LAB_CANDIDATE`.
+
+Production remains untouched.
+
+Current next step:
+
+Build one intentional stylized lab character first, using the locked default configuration above. The first visual gate is the male base with black outfit and all five facial expressions. Once its art direction is accepted, derive the female body and the remaining modular options from the same visual system.
