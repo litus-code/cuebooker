@@ -344,3 +344,43 @@ The character still needs:
 - mobile/performance review.
 
 The runtime has no dependency on MakeHuman or MPFB.
+
+
+## 15. Blender export gate
+
+The repo now includes a Blender-side export gate:
+
+`scripts/blender/cue-id-creator-v1-export.py`
+
+Run it from Blender in background mode:
+
+```bash
+blender --background /path/to/source.blend \
+  --python scripts/blender/cue-id-creator-v1-export.py \
+  -- \
+  --output /path/to/export/creator-v1.glb
+```
+
+The script validates before export:
+
+- all first-slice hair / facial-hair / top / bottom / footwear aliases exist;
+- `cue_face_04` shape key exists;
+- `cue_pose_neutral` and `cue_pose_relaxed` actions exist;
+- `cue_mat_body` and `cue_mat_textile` exist;
+- exactly one shared armature exists;
+- triangle count <= 35k;
+- material count <= 4;
+- texture dimensions <= 2048.
+
+It warns above the preferred 28k triangle target.
+
+The exported canonical visible state is:
+
+- textured crop;
+- oversized tee;
+- wide trouser;
+- technical sneaker.
+
+Variant meshes remain in the GLB for runtime visibility switching.
+
+This export gate is authoring-only. It is not bundled into the Cuebooker runtime.
