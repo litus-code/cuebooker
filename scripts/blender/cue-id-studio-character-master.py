@@ -954,7 +954,7 @@ def create_brand_mark(body, rig, detail_material):
             (x, front_y - height * 0.0012, z),
             (height * 0.0012, height * 0.0015, height * 0.0040),
             lime,
-            bevel=height * 0.0005,
+            bevel_width=height * 0.0005,
         )
         bar.rotation_euler.y = -angle
         parts.append(bar)
@@ -968,7 +968,7 @@ def create_brand_mark(body, rig, detail_material):
         ),
         (height * 0.014, height * 0.0017, height * 0.0012),
         red,
-        bevel=height * 0.0006,
+        bevel_width=height * 0.0006,
     )
     parts.append(needle)
 
