@@ -16,7 +16,7 @@
     "titleTop": "NO PIERDAS",
     "titleBottom": "EL BOOKING.",
     "body": "WhatsApp, llamada, email o voz. Cuebooker entiende lo importante, te lo enseña y mantiene el hilo hasta cerrar la fecha.",
-    "primaryCta": "Probar 30 días",
+    "primaryCta": "Crear cuenta",
     "secondaryCta": "Ver el flujo",
     "networkIdle": "PASÓ ALGO · CUÉNTALO",
     "networkSearching": "ENTENDIENDO EL CONTEXTO",
@@ -214,21 +214,21 @@
     "current": [
       "Smart Capture por texto y voz con revisión antes de aplicar",
       "Bookings reales con búsqueda y filtros por estado",
-      "Estados operativos automáticos según la conversación",
-      "Hilo de mensajes, llamadas y notas por booking",
+      "Activity con mensajes, llamadas, notas y cambios operativos",
       "Edición de fecha, sala, fee y datos incompletos",
-      "Próxima acción, reservas provisionales de fecha y calendario",
+      "Próxima acción, holds y calendario conectados",
+      "Email saliente y respuestas enlazadas al mismo booking",
       "Perfil público y formulario para recibir nuevas oportunidades",
-      "Notificaciones por email y dentro del workspace"
+      "Historial, archivo/restauración y memoria de relaciones"
     ],
     "realTitle": "En construcción",
     "real": [
-      "Captura desde contenido pegado de WhatsApp y email",
-      "Respuesta por email completamente enlazada al hilo",
       "Más automatización de canales sin perder control humano",
-      "Planes comerciales y trial de 30 días"
+      "Hardening de email y follow-up público antes de producción",
+      "Experiencia Manager / Agencia más profunda para rosters",
+      "Analítica de producto, observabilidad y preparación de lanzamiento"
     ],
-    "realNote": "CueBooker puede proponer y ordenar. Las decisiones que cambian un booking siguen siendo humanas.",
+    "realNote": "CueBooker ya puede ordenar y mantener el contexto. Las decisiones que cambian un booking siguen siendo humanas.",
     "panelButton": "Crear cuenta",
     "requestButton": "Ver formulario público"
   },
@@ -272,26 +272,26 @@
   },
   "join": {
     "index": "05 / ENTRA AHORA",
-    "eyebrow": "30 DÍAS PARA PROBARLO CON TRABAJO REAL",
-    "title": "Úsalo con bookings reales. Sin tarjeta y sin aprender otra forma de trabajar.",
-    "body": "La prueba tiene sentido si CueBooker entra en tu operativa de verdad: una llamada, una propuesta, una respuesta pendiente y una fecha que tienes que controlar. Durante 30 días puedes probar el núcleo completo y decidir si realmente te ahorra memoria, seguimiento y tiempo.",
-    "nowTitle": "Lo que ganas desde el primer día",
+    "eyebrow": "EMPIEZA CON TRABAJO REAL",
+    "title": "Pruébalo con el próximo booking que recibas.",
+    "body": "CueBooker tiene sentido cuando entra en una situación real: una llamada, una propuesta, una respuesta pendiente o una fecha que tienes que proteger. Crea tu workspace y comprueba si te ayuda a recordar menos y seguir mejor.",
+    "nowTitle": "Disponible ahora",
     "now": [
       "Smart Capture por voz o texto para convertir conversaciones en bookings revisables",
-      "Inbox con estados automáticos y conversación centralizada",
-      "Calendario, próxima acción y reservas provisionales de fecha",
-      "Perfil público y formulario para recibir solicitudes estructuradas",
-      "Notificaciones y trazabilidad sin obligar al promotor a usar CueBooker"
+      "Inbox real con Activity, estados, búsqueda y filtros",
+      "Next Move, holds, calendario e historial conectados",
+      "Email saliente y respuestas que vuelven al mismo booking",
+      "Perfil público y formulario para recibir solicitudes estructuradas"
     ],
-    "upcomingTitle": "Lo próximo",
+    "upcomingTitle": "Antes de producción",
     "upcoming": [
-      "Captura inteligente desde WhatsApp y emails pegados",
-      "Respuestas de email completamente enlazadas al hilo del booking",
-      "Más automatización de canales con confirmación humana",
-      "Experiencia Manager / Agencia más profunda para rosters",
-      "Planes comerciales simples cuando el flujo esté validado"
+      "Smoke completo desktop/mobile del flujo operativo",
+      "Hardening de duplicados y bookings archivados en email",
+      "Entrega segura del acknowledgement del formulario público",
+      "Protección antiabuso y validación del widget embebido",
+      "Analítica, observabilidad y preparación de lanzamiento"
     ],
-    "note": "Entrar ahora también significa ayudarnos a afinar CueBooker sobre operativa real, no sobre métricas de vanidad ni workflows inventados.",
-    "cta": "Empezar 30 días"
+    "note": "Ahora mismo CueBooker está en validación de producto sobre staging. La prioridad es demostrar que el flujo diario funciona bien antes de añadir capas comerciales o de discovery.",
+    "cta": "Crear cuenta"
   }
 }
