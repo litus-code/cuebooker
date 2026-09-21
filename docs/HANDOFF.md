@@ -9401,3 +9401,34 @@ Behavior:
 This keeps visual hierarchy and accessibility semantics aligned.
 
 Production remains untouched.
+
+
+## 174. Semantic Creator config equality
+
+Dirty-state comparison was moved out of the page and into the CUE ID domain.
+
+Updated:
+
+```text
+app/domain/cueIdStylizedCreator.ts
+app/pages/cue-id.vue
+tests/cueIdStylizedCreator.test.ts
+```
+
+New helper:
+
+```text
+cueIdStylizedCreatorConfigsEqual(a, b)
+```
+
+Behavior:
+
+- compares V1 config fields in a fixed semantic order;
+- does not depend on JavaScript object property insertion order;
+- treats piercing selection order as irrelevant while preserving piercing membership;
+- still detects any actual semantic configuration change;
+- `/cue-id` now uses this helper for saved/dirty state.
+
+Unit coverage proves object-key order and piercing-order differences do not create false dirty state.
+
+Production remains untouched.
