@@ -9378,3 +9378,26 @@ Brand lime buttons intentionally retain dark text for contrast.
 No runtime 3D, rig or production catalogue changes were made.
 
 Production remains untouched.
+
+
+## 173. Stored base outfit semantics aligned
+
+A small Creator consistency issue was corrected around one-piece layering.
+
+Updated:
+
+```text
+app/components/CueIdStylizedWorkspace.vue
+```
+
+Behavior:
+
+- when a one-piece is active, all stored top/bottom families are shown with the same secondary visual treatment;
+- stored top/bottom colors are also shown as secondary;
+- those stored base-layer choices remain editable;
+- because they remain editable, they are no longer exposed as `aria-disabled`;
+- true unavailable fitting combinations, such as adding a harness where no authored fit exists, continue to use native disabled controls.
+
+This keeps visual hierarchy and accessibility semantics aligned.
+
+Production remains untouched.
