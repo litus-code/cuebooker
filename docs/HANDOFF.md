@@ -9213,3 +9213,31 @@ robots = noindex, nofollow
 The physical Blender rig remains pending and unapproved. Expression morph execution, actual 3D body rendering and clothing deformation remain blocked on the rig deformation gate.
 
 Production remains untouched.
+
+
+## 167. Creator presentation and wardrobe compatibility pass
+
+The stylized Creator lab received a second UX pass without enabling the physical 3D rig.
+
+Updated:
+
+```text
+app/components/CueIdStylizedWorkspace.vue
+```
+
+Changes:
+
+- expression and hair choices now use explicit temporary 2D single-body thumbnails instead of text-only placeholders;
+- previews always use the currently selected body, skin and hair-color context;
+- the thumbnails are labelled as temporary 2D previews and are not presented as authored 3D assets;
+- outfit controls are grouped into `Cuebooker Basics` and `Club / Festival` families while preserving one shared male/female catalogue;
+- the existing wardrobe fitting contract now surfaces harness/top incompatibility in the UI;
+- incompatible harness selection is never silently removed when the user changes top;
+- selecting a new harness is blocked when the current top has no authored harness fit;
+- an already-selected incompatible harness remains visible with a fitting-pending warning so the semantic selection is preserved.
+
+This does not change the underlying catalogue, production assets, production runtime or rig status.
+
+The physical rig remains pending. No expression morph, skin deformation or clothing deformation is claimed as working.
+
+Production remains untouched.
