@@ -101,6 +101,49 @@ def create_cube(name, location, scale, mat, bevel_width=0.0, smooth=False):
     return obj
 
 
+def create_tapered_box(
+    name,
+    center,
+    bottom_half_width,
+    top_half_width,
+    half_depth,
+    half_height,
+    mat,
+    bevel_width=0.0,
+):
+    cx, cy, cz = center
+    z0 = cz - half_height
+    z1 = cz + half_height
+    vertices = [
+        (cx - bottom_half_width, cy - half_depth, z0),
+        (cx + bottom_half_width, cy - half_depth, z0),
+        (cx + bottom_half_width, cy + half_depth, z0),
+        (cx - bottom_half_width, cy + half_depth, z0),
+        (cx - top_half_width, cy - half_depth, z1),
+        (cx + top_half_width, cy - half_depth, z1),
+        (cx + top_half_width, cy + half_depth, z1),
+        (cx - top_half_width, cy + half_depth, z1),
+    ]
+    faces = [
+        (0, 1, 2, 3),
+        (4, 7, 6, 5),
+        (0, 4, 5, 1),
+        (1, 5, 6, 2),
+        (2, 6, 7, 3),
+        (4, 0, 3, 7),
+    ]
+    mesh = bpy.data.meshes.new(name + "_mesh")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    if bevel_width > 0:
+        bevel(obj, bevel_width, segments=1)
+    set_material(obj, mat)
+    shade(obj, False)
+    return obj
+
+
 def create_ico(name, location, scale, mat, subdivisions=2, smooth=True):
     bpy.ops.mesh.primitive_ico_sphere_add(
         subdivisions=subdivisions,
@@ -110,6 +153,39 @@ def create_ico(name, location, scale, mat, subdivisions=2, smooth=True):
     obj = bpy.context.object
     obj.name = name
     obj.scale = scale
+    apply_transform(obj)
+    set_material(obj, mat)
+    shade(obj, smooth)
+    return obj
+
+
+def create_tapered_between(
+    name,
+    a,
+    b,
+    radius_start,
+    radius_end,
+    mat,
+    vertices=10,
+    smooth=False,
+):
+    start = Vector(a)
+    end = Vector(b)
+    midpoint = (start + end) * 0.5
+    direction = end - start
+    length = direction.length
+
+    bpy.ops.mesh.primitive_cone_add(
+        vertices=vertices,
+        radius1=radius_start,
+        radius2=radius_end,
+        depth=length,
+        location=midpoint,
+    )
+    obj = bpy.context.object
+    obj.name = name
+    obj.rotation_mode = "QUATERNION"
+    obj.rotation_quaternion = direction.to_track_quat("Z", "Y")
     apply_transform(obj)
     set_material(obj, mat)
     shade(obj, smooth)
@@ -314,7 +390,7 @@ def create_character(rig):
     head = create_ico(
         "cue_head",
         (0, -0.006, 1.885),
-        (0.205, 0.175, 0.245),
+        (0.195, 0.168, 0.238),
         skin,
         subdivisions=3,
         smooth=True,
@@ -351,7 +427,7 @@ def create_character(rig):
         sclera = create_ico(
             f"cue_eye_white_{side}",
             (sign * 0.075, -0.162, 1.935),
-            (0.052, 0.018, 0.034),
+            (0.043, 0.016, 0.029),
             eye_white,
             subdivisions=2,
             smooth=True,
@@ -359,7 +435,7 @@ def create_character(rig):
         iris = create_ico(
             f"cue_eye_iris_{side}",
             (sign * 0.075, -0.178, 1.935),
-            (0.021, 0.010, 0.021),
+            (0.016, 0.009, 0.016),
             eye_iris,
             subdivisions=2,
             smooth=True,
@@ -398,13 +474,15 @@ def create_character(rig):
     rigid_bind(hair_obj, rig, "head")
     visible.append(hair_obj)
 
-    torso = create_cube(
+    torso = create_tapered_box(
         "cue_top_tee",
-        (0, 0.0, 1.31),
-        (0.31, 0.17, 0.31),
-        textile,
-        bevel_width=0.055,
-        smooth=False,
+        (0, 0.0, 1.32),
+        bottom_half_width=0.255,
+        top_half_width=0.355,
+        half_depth=0.155,
+        half_height=0.29,
+        mat=textile,
+        bevel_width=0.045,
     )
     rigid_bind(torso, rig, "spine")
     visible.append(torso)
@@ -428,9 +506,9 @@ def create_character(rig):
 
         sleeve = create_cylinder_between(
             f"cue_top_tee_sleeve_{side}",
-            shoulder,
+            Vector((sign * 0.285, 0.0, 1.47)),
             upper_mid,
-            0.115,
+            0.125,
             textile,
             vertices=8,
             smooth=False,
@@ -442,7 +520,7 @@ def create_character(rig):
             f"cue_upperarm_skin_{side}",
             upper_mid,
             elbow,
-            0.078,
+            0.082,
             skin,
             vertices=10,
             smooth=True,
@@ -450,11 +528,23 @@ def create_character(rig):
         rigid_bind(upper_skin, rig, f"upperarm_{side}")
         visible.append(upper_skin)
 
-        forearm = create_cylinder_between(
+        elbow_joint = create_ico(
+            f"cue_elbow_{side}",
+            elbow,
+            (0.083, 0.078, 0.083),
+            skin,
+            subdivisions=1,
+            smooth=True,
+        )
+        rigid_bind(elbow_joint, rig, f"lowerarm_{side}")
+        visible.append(elbow_joint)
+
+        forearm = create_tapered_between(
             f"cue_forearm_skin_{side}",
             elbow,
             wrist,
-            0.070,
+            0.076,
+            0.060,
             skin,
             vertices=10,
             smooth=True,
@@ -477,11 +567,12 @@ def create_character(rig):
         knee = Vector((sign * 0.13, 0.0, 0.57))
         ankle = Vector((sign * 0.13, -0.005, 0.16))
 
-        upper_pant = create_cylinder_between(
+        upper_pant = create_tapered_between(
             f"cue_bottom_wide_upper_{side}",
             hip,
             knee,
-            0.125,
+            0.138,
+            0.120,
             textile,
             vertices=8,
             smooth=False,
@@ -489,11 +580,12 @@ def create_character(rig):
         rigid_bind(upper_pant, rig, f"thigh_{side}")
         visible.append(upper_pant)
 
-        lower_pant = create_cylinder_between(
+        lower_pant = create_tapered_between(
             f"cue_bottom_wide_lower_{side}",
             knee,
-            Vector((ankle.x, ankle.y, ankle.z + 0.05)),
-            0.115,
+            Vector((ankle.x, ankle.y, ankle.z + 0.015)),
+            0.122,
+            0.102,
             textile,
             vertices=8,
             smooth=False,
@@ -503,8 +595,8 @@ def create_character(rig):
 
         shoe = create_cube(
             f"cue_footwear_minimal_sneaker_{side}",
-            (sign * 0.13, -0.105, 0.095),
-            (0.105, 0.165, 0.070),
+            (sign * 0.13, -0.105, 0.105),
+            (0.112, 0.175, 0.095),
             textile,
             bevel_width=0.035,
             smooth=False,
