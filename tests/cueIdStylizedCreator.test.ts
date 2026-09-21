@@ -6,6 +6,7 @@ import {
   CUE_ID_STYLIZED_CUEBOOKER_BASICS,
   DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG,
   cloneCueIdStylizedCreatorConfig,
+  cueIdStylizedCreatorConfigsEqual,
   isCueIdStylizedCreatorConfigV1,
   normalizeCueIdStylizedPiercings
 } from '../app/domain/cueIdStylizedCreator.ts'
@@ -99,6 +100,34 @@ test('piercings stay multi-select, unique and capped at three', () => {
   assert.deepEqual(
     normalizeCueIdStylizedPiercings(['ear', 'septum', 'ear', 'eyebrow', 'nostril']),
     ['ear', 'septum', 'eyebrow']
+  )
+})
+
+test('creator config equality ignores object key order and piercing selection order', () => {
+  const left = {
+    ...DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG,
+    piercings: ['septum', 'ear'] as const
+  }
+  const right = {
+    accessoryColor: DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG.accessoryColor,
+    ...DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG,
+    piercings: ['ear', 'septum'] as const
+  }
+
+  assert.equal(
+    cueIdStylizedCreatorConfigsEqual(
+      { ...left, piercings: [...left.piercings] },
+      { ...right, piercings: [...right.piercings] }
+    ),
+    true
+  )
+
+  assert.equal(
+    cueIdStylizedCreatorConfigsEqual(
+      { ...left, piercings: [...left.piercings] },
+      { ...right, piercings: [...right.piercings], hair: 'mohawk' }
+    ),
+    false
   )
 })
 
