@@ -2,6 +2,7 @@
 const auth = useCueAuth()
 const { locale } = useCuePreferences()
 const accountType = ref<'dj' | 'agency'>('dj')
+const cueIdNextStep = ref<'now' | 'later'>('later')
 const displayName = ref('')
 const entityName = ref('')
 const entitySlug = ref('')
@@ -15,7 +16,13 @@ const copy = computed(() => locale.value === 'es'
       dj: 'DJ / ARTISTA', djBody: 'Gestiono mi propio proyecto y calendario.',
       agency: 'AGENCIA', agencyBody: 'Gestiono un roster y su operativa de booking.',
       yourName: 'Tu nombre', artistName: 'Nombre artístico', agencyName: 'Nombre de la agencia', slug: 'Identificador',
-      profileNote: 'Después podrás completar tu ficha profesional y, si quieres, empezar CUE ID. Todo esto es opcional y podrás retomarlo más tarde desde tu workspace.',
+      cueIdTitle: 'Tu CUE ID',
+      cueIdBody: 'Decide si quieres empezar tu identidad visual 3D al terminar el registro o entrar directamente al workspace.',
+      cueIdNow: 'Crear mi CUE ID ahora',
+      cueIdNowBody: 'Ir al Creator después de crear tu workspace.',
+      cueIdLater: 'Hacerlo más tarde',
+      cueIdLaterBody: 'Entrar al workspace y crear tu CUE ID cuando quieras.',
+      profileNote: 'Después podrás completar tu ficha profesional. CUE ID también seguirá disponible desde tu workspace.',
       saving: 'Guardando…', submit: 'Crear workspace', genericError: 'No se pudo completar la configuración.',
       pageTitle: 'Configura tu cuenta | Cuebooker'
     }
@@ -25,7 +32,13 @@ const copy = computed(() => locale.value === 'es'
       dj: 'DJ / ARTIST', djBody: 'I manage my own project and calendar.',
       agency: 'AGENCY', agencyBody: 'I manage a roster and its booking operations.',
       yourName: 'Your name', artistName: 'Artist name', agencyName: 'Agency name', slug: 'Identifier',
-      profileNote: 'Afterwards you can complete your professional profile and, if you want, start CUE ID. Both are optional and can be resumed later from your workspace.',
+      cueIdTitle: 'Your CUE ID',
+      cueIdBody: 'Choose whether to start your 3D visual identity after registration or go straight to the workspace.',
+      cueIdNow: 'Create my CUE ID now',
+      cueIdNowBody: 'Open the Creator after your workspace is created.',
+      cueIdLater: 'Do it later',
+      cueIdLaterBody: 'Enter the workspace and create your CUE ID whenever you want.',
+      profileNote: 'Afterwards you can complete your professional profile. CUE ID will also remain available from your workspace.',
       saving: 'Saving…', submit: 'Create workspace', genericError: 'Setup could not be completed.',
       pageTitle: 'Set up your account | Cuebooker'
     })
@@ -66,6 +79,10 @@ async function submit() {
       entityName: entityName.value,
       entitySlug: entitySlug.value
     })
+    if (accountType.value === 'dj' && cueIdNextStep.value === 'now') {
+      await navigateTo('/cue-id?from=onboarding')
+      return
+    }
     await navigateTo('/workspace?setup=profile')
   } catch (error: any) {
     errorMessage.value = error?.data?.message || error?.message || copy.value.genericError
@@ -99,7 +116,35 @@ useHead(() => ({ title: copy.value.pageTitle, htmlAttrs: { lang: locale.value } 
         </button>
       </div>
 
-      <CueIdTeaser v-if="accountType === 'dj'" :artist-name="entityName" compact />
+      <template v-if="accountType === 'dj'">
+        <CueIdTeaser :artist-name="entityName" compact />
+        <section class="cue-id-choice" aria-labelledby="cue-id-choice-title">
+          <div class="cue-id-choice__heading">
+            <p id="cue-id-choice-title">{{ copy.cueIdTitle }}</p>
+            <span>{{ copy.cueIdBody }}</span>
+          </div>
+          <div class="cue-id-choice__grid" role="group" :aria-label="copy.cueIdTitle">
+            <button
+              type="button"
+              :class="{ active: cueIdNextStep === 'now' }"
+              :aria-pressed="cueIdNextStep === 'now'"
+              @click="cueIdNextStep = 'now'"
+            >
+              <strong>{{ copy.cueIdNow }}</strong>
+              <span>{{ copy.cueIdNowBody }}</span>
+            </button>
+            <button
+              type="button"
+              :class="{ active: cueIdNextStep === 'later' }"
+              :aria-pressed="cueIdNextStep === 'later'"
+              @click="cueIdNextStep = 'later'"
+            >
+              <strong>{{ copy.cueIdLater }}</strong>
+              <span>{{ copy.cueIdLaterBody }}</span>
+            </button>
+          </div>
+        </section>
+      </template>
 
       <form class="onboarding-form" @submit.prevent="submit">
         <label><span>{{ copy.yourName }}</span><input v-model="displayName" minlength="2" autocomplete="name" required /></label>
@@ -127,6 +172,16 @@ h1 { margin:0; font-size:clamp(2.6rem,8vw,5.5rem); line-height:.9; text-transfor
 .type-grid button.active { border-color:var(--cue-toggle); box-shadow:inset 0 0 0 1px var(--cue-toggle); background:color-mix(in srgb,var(--cue-toggle) 8%,var(--cue-surface)); }
 .type-grid strong { display:block; margin-bottom:10px; color:var(--cue-accent); font:800 13px/1.2 monospace; }
 .type-grid span { color:var(--cue-muted); line-height:1.45; }
+.cue-id-choice { width:min(760px,100%); margin:16px auto 0; padding:20px; box-sizing:border-box; border:1px solid var(--cue-border); background:color-mix(in srgb,var(--cue-accent) 4%,var(--cue-surface)); }
+.cue-id-choice__heading { display:grid; gap:6px; margin-bottom:14px; }
+.cue-id-choice__heading p { margin:0; color:var(--cue-accent); font:800 11px/1.2 monospace; text-transform:uppercase; letter-spacing:.1em; }
+.cue-id-choice__heading span { color:var(--cue-muted); font-size:13px; line-height:1.45; }
+.cue-id-choice__grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.cue-id-choice__grid button { min-height:104px; padding:16px; border:1px solid var(--cue-border); background:var(--cue-bg); color:var(--cue-text); text-align:left; cursor:pointer; }
+.cue-id-choice__grid button.active { border-color:var(--cue-toggle); box-shadow:inset 0 0 0 1px var(--cue-toggle); background:color-mix(in srgb,var(--cue-toggle) 8%,var(--cue-bg)); }
+.cue-id-choice__grid strong { display:block; margin-bottom:7px; }
+.cue-id-choice__grid span { color:var(--cue-muted); font-size:12px; line-height:1.4; }
+.cue-id-choice button:focus-visible { outline:2px solid var(--cue-accent); outline-offset:2px; }
 .onboarding-form { display:grid; gap:16px; margin-top:18px; padding:26px; border:1px solid var(--cue-border); background:var(--cue-surface); box-shadow:0 24px 80px var(--cue-shadow); }
 label { display:grid; gap:7px; }
 label span { color:var(--cue-muted); font:700 11px/1.2 monospace; text-transform:uppercase; letter-spacing:.1em; }
@@ -134,5 +189,5 @@ input { min-height:48px; padding:0 14px; border:1px solid var(--cue-border); bac
 .onboarding-submit { min-height:50px; border:0; background:var(--cue-toggle); color:var(--cue-toggle-ink); font-weight:800; cursor:pointer; }
 .onboarding-error { margin:0; padding:12px; border:1px solid #8b3434; color:#d65757; }
 .profile-note { margin:0; padding:14px; border-left:2px solid var(--cue-toggle); background:color-mix(in srgb,var(--cue-toggle) 7%,var(--cue-bg)); color:var(--cue-muted); font-size:13px; line-height:1.5; }
-@media (max-width:700px) { .onboarding-page { padding:20px; } .type-grid { grid-template-columns:1fr; } .onboarding-form { padding:20px; } .onboarding-panel { margin-top:4vh; } }
+@media (max-width:700px) { .onboarding-page { padding:20px; } .type-grid,.cue-id-choice__grid { grid-template-columns:1fr; } .onboarding-form { padding:20px; } .onboarding-panel { margin-top:4vh; } }
 </style>
