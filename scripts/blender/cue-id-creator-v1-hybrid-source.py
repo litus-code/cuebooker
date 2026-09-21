@@ -41,8 +41,8 @@ ASSETS = {
     "hair": ["short01.mhclo", "short02.mhclo"],
     "eyes": ["low-poly.mhclo"],
     "eyebrows": ["eyebrow002.mhclo", "eyebrow001.mhclo"],
-    "top": ["elvs_crude_t-shirt_male.mhclo", "toigo_basic_tucked_t-shirt.mhclo"],
-    "bottom": ["cortu_cargo_pants.mhclo", "toigo_wool_pants.mhclo"],
+    "top": ["toigo_basic_tucked_t-shirt.mhclo", "elvs_crude_t-shirt_male.mhclo"],
+    "bottom": ["toigo_wool_pants.mhclo", "cortu_cargo_pants.mhclo"],
     "footwear": ["shoes04.mhclo", "shoes03.mhclo", "shoes01.mhclo"],
 }
 
@@ -178,6 +178,23 @@ def remove_garment_masks_from_proxy(proxy):
             removed.append(modifier.name)
             proxy.modifiers.remove(modifier)
     return removed
+
+
+def make_material(name, color, roughness=0.72, metallic=0.0):
+    material = bpy.data.materials.get(name) or bpy.data.materials.new(name)
+    material.use_nodes = True
+    material.diffuse_color = color
+    bsdf = material.node_tree.nodes.get("Principled BSDF")
+    if bsdf:
+        bsdf.inputs["Base Color"].default_value = color
+        bsdf.inputs["Roughness"].default_value = roughness
+        bsdf.inputs["Metallic"].default_value = metallic
+    return material
+
+
+def assign_single_material(obj, material):
+    obj.data.materials.clear()
+    obj.data.materials.append(material)
 
 
 def add_asset(HumanService, path, human, asset_type, material_type="GAMEENGINE"):
@@ -449,6 +466,9 @@ def write_report(output, visible, rig, selected, removed_masks, future):
             "Full lightweight body remains available below garments for tank/shorts variants.",
             "Garment delete masks are deliberately removed from cue_body in this prototype.",
             "High-detail face is isolated as cue_head and keeps cue_face_04.",
+            "Canonical review outfit is forced to plain black/dark materials.",
+            "Canonical top prefers the clean basic T-shirt over the rejected crude/torn T-shirt asset.",
+            "Canonical bottom prefers clean wool trousers over the cargo variant.",
             "Production catalogue remains untouched.",
         ],
     }
@@ -555,6 +575,23 @@ def main():
     shoes = add_asset(Human, shoe_path, human, "Clothes")
     shoes.name = "cue_footwear_technical_sneaker"
     selected["footwear"] = shoe_name
+
+    # Canonical CUE ID baseline: visually neutral black outfit. Asset textures are
+    # intentionally replaced here so review focuses on anatomy, silhouette and
+    # deformation. Artist-facing colour/style variants remain a later layer.
+    textile_material = make_material(
+        "cue_mat_textile",
+        (0.008, 0.009, 0.011, 1.0),
+        roughness=0.78,
+    )
+    footwear_material = make_material(
+        "cue_mat_footwear",
+        (0.018, 0.020, 0.024, 1.0),
+        roughness=0.58,
+    )
+    assign_single_material(top, textile_material)
+    assign_single_material(bottom, textile_material)
+    assign_single_material(shoes, footwear_material)
 
     removed_masks = remove_garment_masks_from_proxy(body)
 
