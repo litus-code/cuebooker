@@ -9021,3 +9021,85 @@ Next implementation phase:
 6. only then start modular clothing and accessories.
 
 Production remains untouched.
+
+
+## 164. Shared physical rig bootstrap prepared
+
+The semantic male/female body masters now have a reproducible Blender 5.2.2 rig bootstrap:
+
+```text
+scripts/blender/cue-id-body-rig-v1.py
+```
+
+Inputs:
+
+```text
+cueid-male-body-master-v1-semantic.glb
+cueid-female-body-master-v1-semantic.glb
+```
+
+Expected semantic meshes:
+
+```text
+cue_male_skin
+cue_male_hair
+cue_male_underwear
+
+cue_female_skin
+cue_female_hair
+cue_female_underwear
+```
+
+Shared public skeleton contract:
+
+```text
+root
+hips
+spine
+chest
+upper-chest
+neck
+head
+shoulder-l
+upper-arm-l
+lower-arm-l
+hand-l
+shoulder-r
+upper-arm-r
+lower-arm-r
+hand-r
+upper-leg-l
+lower-leg-l
+foot-l
+toe-l
+upper-leg-r
+lower-leg-r
+foot-r
+toe-r
+```
+
+The bootstrap:
+
+- imports the semantic GLB;
+- builds the exact shared skeleton for male/female;
+- binds skin, source hair and underwear through Blender automatic weights;
+- writes `cue_pose_neutral`;
+- writes `cue_pose_relaxed`;
+- writes `cue_pose_rig_check` as a QA-only deformation pose;
+- reports per-mesh weighted-vertex coverage;
+- saves an editable `.blend`;
+- exports a rigged `.glb`;
+- does not author facial expressions yet;
+- is not production-admitted automatically.
+
+Acceptance rule:
+
+Automatic weights are never accepted simply because export succeeds. The rig must pass a deformation review around shoulders, elbows, wrists, neck, hips, knees and ankles using `cue_pose_rig_check`.
+
+Expression morphs remain blocked until this body-deformation gate passes.
+
+Current execution limitation:
+
+The uploaded semantic GLBs exist in the active conversation workspace but are not currently reachable from GitHub Actions. The rig script is therefore committed and ready, but physical rig output must be generated either in local Blender 5.2.2 or after placing the semantic GLBs in a CI-accessible asset location.
+
+Production remains untouched.
