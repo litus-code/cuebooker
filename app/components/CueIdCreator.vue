@@ -112,7 +112,8 @@ const copy = computed(() => props.locale === 'es' ? {
   edit: 'Seguir editando',
   finalEyebrow: 'TU CUE ID',
   finalTitle: 'Así se verá tu identidad.',
-  finalBody: 'Vista limpia del CUE ID que has construido. El asset visual sigue siendo provisional hasta sustituir el fixture por el sculpt authored aprobado.'
+  finalBodyLab: 'Vista limpia del CUE ID que has construido. La representación visual sigue siendo de laboratorio hasta disponer del asset authored aprobado.',
+  finalBodyProduction: 'Vista limpia de tu CUE ID usando la representación authored admitida para esta configuración.'
 } : {
   creator: 'CUE ID CREATOR',
   title: 'Build your visual identity.',
@@ -161,7 +162,8 @@ const copy = computed(() => props.locale === 'es' ? {
   edit: 'Keep editing',
   finalEyebrow: 'YOUR CUE ID',
   finalTitle: 'This is your identity.',
-  finalBody: 'Clean view of the CUE ID you built. The visual asset remains provisional until the fixture is replaced by the approved authored sculpt.'
+  finalBodyLab: 'Clean view of the CUE ID you built. The visual representation remains a lab preview until the approved authored asset is available.',
+  finalBodyProduction: 'Clean view of your CUE ID using the admitted authored representation for this configuration.'
 })
 
 const steps = computed(() => ([
@@ -177,6 +179,12 @@ const steps = computed(() => ([
   { id: 'accessory' as const, label: copy.value.accessory },
   { id: 'pose' as const, label: copy.value.pose }
 ]))
+
+const reviewBody = computed(() =>
+  creatorUsesLabFixture.value
+    ? copy.value.finalBodyLab
+    : copy.value.finalBodyProduction
+)
 
 const assetSourceLabel = computed(() => {
   if (assetStatus.value.source === 'production_interactive') return copy.value.sourceInteractive
@@ -512,7 +520,7 @@ onMounted(() => {
         <div>
           <p>{{ copy.finalEyebrow }}</p>
           <h2>{{ copy.finalTitle }}</h2>
-          <span>{{ copy.finalBody }}</span>
+          <span>{{ reviewBody }}</span>
         </div>
         <button type="button" @click="closeReview">{{ copy.edit }}</button>
       </header>
@@ -790,7 +798,7 @@ onMounted(() => {
 .creator__review-card{display:grid;grid-template-columns:minmax(0,1fr) 280px;border:1px solid var(--cue-border);background:#070908}
 .creator__review-stage{position:relative;min-height:690px;padding:18px}
 .creator__review-stage :deep(.cue-id-stage){min-height:650px}
-.creator__semantic-preview--review{top:47%;opacity:.5}
+.creator__semantic-preview--review{top:47%;opacity:.96}
 .creator__review-meta{display:flex;flex-direction:column;padding:22px;border-left:1px solid var(--cue-border);background:#0a0c0b}
 .creator__review-meta>span{color:var(--cue-muted);font:700 9px/1 monospace;letter-spacing:.12em}
 .creator__review-tags{display:flex;flex-wrap:wrap;gap:7px;margin:24px 0}
