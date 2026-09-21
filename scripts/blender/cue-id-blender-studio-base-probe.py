@@ -15,6 +15,8 @@ TARGET_COLLECTIONS = (
     "Body Female - Stylized",
 )
 
+DECIMATION_RATIOS = (0.50, 0.35)
+
 
 def arg(flag):
     if "--" not in sys.argv:
@@ -158,7 +160,27 @@ def look_at(obj, target):
     obj.rotation_euler = (Vector(target) - obj.location).to_track_quat("-Z", "Y").to_euler()
 
 
-def render_collection(collection, output_path):
+def add_body_decimation(objects, ratio):
+    candidates = [
+        obj
+        for obj in objects
+        if obj.type == "MESH" and ".eye." not in obj.name.lower()
+    ]
+    if not candidates:
+        raise RuntimeError("Could not find stylized body mesh for decimation")
+
+    body = max(candidates, key=lambda obj: len(obj.data.vertices))
+    modifier = body.modifiers.new(
+        name=f"cue_runtime_decimate_{int(ratio * 100)}",
+        type="DECIMATE",
+    )
+    modifier.decimate_type = "COLLAPSE"
+    modifier.ratio = ratio
+    modifier.use_collapse_triangulate = True
+    return body.name
+
+
+def render_collection(collection, output_path, portrait=False):
     objects = recursive_objects(collection)
     minimum, maximum = evaluated_bounds(objects)
     center = (minimum + maximum) * 0.5
@@ -168,13 +190,23 @@ def render_collection(collection, output_path):
     camera = bpy.data.objects.new("cue_probe_camera", camera_data)
     bpy.context.collection.objects.link(camera)
     bpy.context.scene.camera = camera
-    camera.data.lens = 62
-    camera.location = (
-        center.x + height * 0.10,
-        center.y - height * 1.85,
-        center.z + height * 0.03,
-    )
-    look_at(camera, center)
+    if portrait:
+        target = Vector((center.x, center.y, maximum.z - height * 0.145))
+        camera.data.lens = 78
+        camera.location = (
+            center.x + height * 0.055,
+            center.y - height * 0.62,
+            target.z + height * 0.01,
+        )
+    else:
+        target = center
+        camera.data.lens = 62
+        camera.location = (
+            center.x + height * 0.10,
+            center.y - height * 1.85,
+            center.z + height * 0.03,
+        )
+    look_at(camera, target)
 
     for name, relative, energy, size_factor in [
         ("cue_probe_key", (-0.7, -1.0, 0.5), 700.0, 0.9),
@@ -257,6 +289,42 @@ def main():
             "collection": collection_name,
             **stats,
         }
+
+    report["decimation"] = {}
+
+    for collection_name in TARGET_COLLECTIONS:
+        slug = "male" if "Male" in collection_name else "female"
+        report["decimation"][slug] = {}
+
+        for ratio in DECIMATION_RATIOS:
+            clear_scene()
+            collection = append_collection(blend_path, collection_name)
+            objects = recursive_objects(collection)
+            body_name = add_body_decimation(objects, ratio)
+            suffix = str(int(ratio * 100))
+
+            full_stats = render_collection(
+                collection,
+                os.path.join(
+                    output_dir,
+                    f"blender-studio-{slug}-runtime-{suffix}-full.png",
+                ),
+                portrait=False,
+            )
+            render_collection(
+                collection,
+                os.path.join(
+                    output_dir,
+                    f"blender-studio-{slug}-runtime-{suffix}-portrait.png",
+                ),
+                portrait=True,
+            )
+
+            report["decimation"][slug][suffix] = {
+                "bodyObject": body_name,
+                "ratio": ratio,
+                **full_stats,
+            }
 
     with open(os.path.join(output_dir, "probe-report.json"), "w", encoding="utf-8") as handle:
         json.dump(report, handle, indent=2)
