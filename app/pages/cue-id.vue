@@ -11,7 +11,12 @@ import {
 const preferences = useCuePreferences()
 const route = useRoute()
 const fromOnboarding = computed(() => route.query.from === 'onboarding')
-const exitTarget = computed(() => fromOnboarding.value ? '/workspace?setup=profile' : '/')
+const fromWorkspace = computed(() => route.query.from === 'workspace')
+const exitTarget = computed(() =>
+  fromOnboarding.value || fromWorkspace.value
+    ? '/workspace?setup=profile'
+    : '/'
+)
 const cueIdConfig = ref(cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG))
 const savedConfig = ref(cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG))
 const saveState = ref<'idle' | 'saved' | 'reset' | 'invalid' | 'storage-error'>('idle')
@@ -95,6 +100,7 @@ function resetLabDraft() {
 const copy = computed(() => preferences.locale.value === 'es' ? {
   back: 'Volver',
   continueWorkspace: 'Continuar al workspace',
+  backProfile: 'Volver al perfil',
   lab: 'LAB / NOINDEX',
   status: 'CUE ID · CREATOR V1 LAB',
   saved: 'Draft guardado en este dispositivo',
@@ -106,6 +112,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
 } : {
   back: 'Back',
   continueWorkspace: 'Continue to workspace',
+  backProfile: 'Back to profile',
   lab: 'LAB / NOINDEX',
   status: 'CUE ID · CREATOR V1 LAB',
   saved: 'Draft saved on this device',
@@ -142,7 +149,9 @@ useHead(() => ({
 
       <div class="cue-id-page__header-actions">
         <CuePreferencesControl compact />
-        <NuxtLink :to="exitTarget">{{ fromOnboarding ? copy.continueWorkspace : copy.back }}</NuxtLink>
+        <NuxtLink :to="exitTarget">
+          {{ fromOnboarding ? copy.continueWorkspace : fromWorkspace ? copy.backProfile : copy.back }}
+        </NuxtLink>
       </div>
     </header>
 
