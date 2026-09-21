@@ -227,6 +227,47 @@ For the first authored Creator 3D slice:
 Do not weaken the public static-first requirement to ship this asset early.
 
 
+## 14. Scaffold command
+
+Generate the first authored Creator 3D working package with:
+
+```bash
+npm run cue-id:scaffold-package -- \
+  --version 3.0.0 \
+  --profile creator-3d-v1 \
+  --output-dir /path/to/work
+```
+
+This creates:
+
+```text
+cue-id-creator-3d-v1-3.0.0/
+├── source/
+├── export/
+├── textures/
+├── renders/
+├── manifest/
+│   ├── manifest.draft.json
+│   ├── bindings.md
+│   ├── evidence.draft.json
+│   ├── asset-metadata.draft.json
+│   ├── sculpt-review.draft.json
+│   ├── mobile-review.draft.json
+│   └── performance-review.draft.json
+├── SCULPT_SPEC.md
+└── README.md
+```
+
+The Creator profile deliberately generates a partial lab manifest:
+
+- neutral base only;
+- regular build only;
+- neutral + relaxed poses;
+- the first two skins/faces and narrow hair/garment/footwear slice;
+- lab GLB path `/cue-id/lab/creator-v1.glb`.
+
+The default scaffold behavior remains V2 when `--profile` is omitted.
+
 ## 12. Lab import flow
 
 The first authored GLB does not enter the production catalogue.
