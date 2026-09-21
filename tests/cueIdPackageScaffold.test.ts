@@ -88,3 +88,52 @@ test('never overwrites an existing scaffold file', async () => {
 
   assert.equal(await readFile(readmePath, 'utf8'), 'keep me')
 })
+
+
+test('scaffolds the first authored Creator 3D V1 lab package', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'cue-id-creator-scaffold-'))
+  const result = await scaffoldCueIdV2Package(
+    root,
+    '3.0.0',
+    { profile: 'creator-3d-v1' }
+  )
+
+  const manifest = JSON.parse(
+    await readFile(join(result.dirs.manifest, 'manifest.draft.json'), 'utf8')
+  )
+  const bindings = await readFile(join(result.dirs.manifest, 'bindings.md'), 'utf8')
+  const sculptSpec = await readFile(join(result.root, 'SCULPT_SPEC.md'), 'utf8')
+  const readme = await readFile(join(result.root, 'README.md'), 'utf8')
+
+  assert.match(result.root, /cue-id-creator-3d-v1-3\.0\.0$/)
+  assert.equal(manifest.glbPath, '/cue-id/lab/creator-v1.glb')
+  assert.deepEqual(manifest.capabilities.bases, ['neutral'])
+  assert.deepEqual(manifest.capabilities.builds, ['regular'])
+  assert.deepEqual(manifest.capabilities.poses, ['neutral', 'relaxed'])
+  assert.deepEqual(
+    manifest.bindings.creator.capabilities.hairs,
+    ['textured-crop', 'curly-crop', 'locs']
+  )
+  assert.deepEqual(
+    manifest.bindings.creator.capabilities.tops,
+    ['oversized-tee', 'bomber']
+  )
+  assert.equal(manifest.bindings.creator.skins['skin-03'], '#b9805f')
+  assert.match(bindings, /cue_face_04/)
+  assert.match(bindings, /cue_hair_textured_crop/)
+  assert.match(bindings, /cue_bottom_cargo/)
+  assert.match(bindings, /CUE_ID_CREATOR_3D_V1\.md/)
+  assert.match(sculptSpec, /stylized-realistic/)
+  assert.match(sculptSpec, /no mannequin anatomy/)
+  assert.match(readme, /public\/cue-id\/lab\/creator-v1\.glb/)
+  assert.match(readme, /CUE_ID_CREATOR_3D_LAB_CANDIDATE/)
+})
+
+test('rejects unknown scaffold profiles', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'cue-id-scaffold-'))
+
+  await assert.rejects(
+    () => scaffoldCueIdV2Package(root, '3.0.0', { profile: 'unknown' }),
+    /unsupported CUE ID scaffold profile/
+  )
+})
