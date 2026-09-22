@@ -1595,24 +1595,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             </footer>
           </form>
 
-          <section class="profile-presence-distribution">
-            <div class="profile-presence-distribution__head">
-              <span>{{ preferences.locale.value === 'es' ? 'DISTRIBUYE' : 'DISTRIBUTE' }}</span>
-              <strong>{{ preferences.locale.value === 'es' ? 'Tu perfil y tu booking, donde ya está tu gente.' : 'Your profile and booking, where your audience already is.' }}</strong>
-            </div>
-            <PublicProfilePublishingControls
-              v-if="selectedArtist && canEditSelectedArtist"
-              :slug="selectedArtist.slug"
-              :published="publicProfilePublished"
-              :accepting-requests="publicProfileAcceptingRequests"
-              :saving="publicPublishingSaving"
-              :locale="preferences.locale.value"
-              @preview="profilePreviewOpen = true"
-              @update-published="updatePublicProfilePublished"
-              @update-accepting-requests="updatePublicAcceptingRequests"
-            />
-            <p v-if="publicPublishingMessage" class="public-publishing-message">{{ publicPublishingMessage }}</p>
-          </section>
+
         </template>
       </section>
     </template>
@@ -1845,8 +1828,8 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-presence-preview { border:1px solid var(--cue-border); background:var(--cue-surface); overflow:hidden; }
 .profile-presence-preview__head { display:flex; justify-content:space-between; gap:18px; align-items:flex-end; padding:16px 18px; border-bottom:1px solid var(--cue-border); }
 .profile-presence-preview__head > div { display:grid; gap:6px; }
-.profile-presence-preview__head span,.profile-builder__head span,.profile-presence-distribution__head span { color:var(--cue-accent); font:800 9px/1.2 monospace; letter-spacing:.12em; }
-.profile-presence-preview__head strong,.profile-builder__head strong,.profile-presence-distribution__head strong { font-size:16px; }
+.profile-presence-preview__head span,.profile-builder__head span { color:var(--cue-accent); font:800 9px/1.2 monospace; letter-spacing:.12em; }
+.profile-presence-preview__head strong,.profile-builder__head strong { font-size:16px; }
 .profile-presence-preview__head small { max-width:360px; color:var(--cue-muted); text-align:right; line-height:1.4; }
 .profile-presence-preview__frame { max-height:720px; overflow:auto; background:#0b0b0b; }
 .profile-builder { display:grid; gap:12px; }
@@ -1872,8 +1855,6 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-builder-editor > footer p { margin:0; color:#ff9b9b; font-size:12px; }
 .profile-builder-editor > footer p.success { color:#8ce99a; }
 .profile-builder-editor > footer .primary-button { min-width:170px; padding:0 16px; }
-.profile-presence-distribution { display:grid; gap:12px; padding-top:10px; }
-.profile-presence-distribution__head { display:grid; gap:6px; }
 
 .profile-view--hub { display:grid; gap:18px; }
 .profile-hub-heading { margin-bottom:4px; }
