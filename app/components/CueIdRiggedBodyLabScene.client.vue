@@ -8,6 +8,7 @@ import {
   Vector3
 } from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js'
 import type { CueIdStylizedCreatorConfigV1 } from '../domain/cueIdStylizedCreator'
 import {
   CUE_ID_SKIN_TONES,
@@ -150,7 +151,9 @@ async function loadBody() {
     }
 
     const buffer = await response.arrayBuffer()
-    const gltf = await new GLTFLoader().parseAsync(buffer, '/cue-id/lab/bodies/')
+    const loader = new GLTFLoader()
+    loader.setMeshoptDecoder(MeshoptDecoder)
+    const gltf = await loader.parseAsync(buffer, '/cue-id/lab/bodies/')
     const parsed = gltf.scene
 
     applySemanticState(parsed)
