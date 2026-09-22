@@ -9823,3 +9823,41 @@ Next gate:
 Do not reconnect embedded source hair to the body-base contract.
 
 Production remains untouched.
+
+
+## 185. Neutral-bald V2 rig strategy: transfer accepted V10 rig/weights
+
+To avoid rebuilding the rigging logic from scratch, the new V2 bald masters now use the accepted V10 rigged bodies as the transfer source.
+
+Added:
+
+\`\`\`text
+scripts/blender/cue-id-bald-v2-rig-transfer.py
+\`\`\`
+
+The script:
+
+- imports the accepted V10 rigged GLB for the same body;
+- keeps the shared \`cue_rig\` contract and imported QA actions;
+- imports the new V2 semantic body containing only skin + underwear;
+- transfers source V10 vertex-group weights onto the V2 topology in normalized body space using nearest-neighbor matching;
+- retargets V10 rest-bone positions from the old body bounds to the new V2 body bounds;
+- parents the V2 semantic meshes to the transferred rig;
+- removes the old source meshes from the output;
+- preserves actions with Fake User;
+- emits .blend, .glb and .rig-report.json outputs;
+- does not add hair or facial morphs;
+- keeps \`productionReady: false\`.
+
+This is a candidate transfer pipeline, not an automatic acceptance. The new body topology/proportions differ from V1, so Blender visual QA remains mandatory for:
+
+- head / neck;
+- shoulders;
+- elbows;
+- hips / groin;
+- knees;
+- underwear deformation.
+
+If transfer QA exposes a localized defect, refine that region on V2 rather than reintroducing source-hair geometry or rebuilding the entire character pipeline.
+
+Production remains untouched.
