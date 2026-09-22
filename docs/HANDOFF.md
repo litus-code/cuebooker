@@ -9672,3 +9672,28 @@ Fix:
 No Booking Core domain behavior changed.
 
 Production remains untouched.
+
+
+## 181. CUE ID rig V10 baseline accepted for continued lab work
+
+A real Blender validation pass was completed on the authored Meshy body masters.
+
+Detailed state:
+`docs/CUE_ID_RIG_V10_HANDOFF_2026-09-22.md`
+
+Key result:
+
+- automatic Blender Bone Heat was rejected after failing to skin body/hair reliably;
+- deterministic/proximity approaches V3-V8 were iterated and visually rejected where deformation remained unacceptable;
+- V9 established the first usable shared male/female bootstrap with a hard torso lock and arm capsules;
+- V10 refines shoulder/axilla, wrist/forearm/hand and pelvis/groin/upper-leg transitions;
+- male V10 passed isolated bootstrap QA for shoulders, elbows, hips and knees;
+- female V9 passed the same isolated bootstrap QA and final female V10 regression remains the last freeze gate;
+- persistent QA actions are stored in the `.blend` via Fake User;
+- V10 is the selected working baseline, while `productionReady` remains `false`.
+
+The rig contract remains shared between male/female and no sex-specific user-facing catalogue is introduced.
+
+Do not start broad garment fitting until final male + female V10 exports are frozen.
+
+Production remains untouched.
