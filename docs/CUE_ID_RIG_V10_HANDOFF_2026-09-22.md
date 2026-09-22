@@ -178,17 +178,41 @@ Knees:
 
 Status: **PASS as baseline**
 
-## Female QA
+## Female QA — V10
 
-V9 was validated visually across:
-- shoulders
-- elbows
-- hips
-- knees
+Validated visually in Blender.
 
-All accepted as bootstrap-level.
+Shoulders:
+- torso stable
+- chest/waist remain coherent
+- shoulder-to-arm transition acceptable for bootstrap
+- minor axilla stiffness remains
 
-Final V10 must still be regenerated and regression-checked on female before V10 exports are frozen as the shared final working baseline.
+Status: **PASS as baseline**
+
+Elbows:
+- torso stable
+- no major arm-to-torso contamination
+- elbow deformation reasonable
+- wrist remains slightly rigid but acceptable
+
+Status: **PASS as baseline**
+
+Hips:
+- pelvis remains stable
+- groin / upper-leg transition remains coherent
+- no severe underwear/body pull
+
+Status: **PASS as baseline**
+
+Knees:
+- leg bends without major collapse
+- silhouette remains usable
+- no blocking deformation regression
+
+Status: **PASS as baseline**
+
+Male V10 and female V10 are now both visually accepted as the shared refined bootstrap baseline.
 
 ## Important nuance
 
@@ -342,7 +366,16 @@ High remains lab-only.
 
 # Immediate next action
 
-1. Run final V10 on female.
-2. Quick regression: shoulders / elbows / hips / knees.
-3. Freeze male + female V10 outputs.
-4. Begin lab 3D integration with those V10 rigged GLBs.
+1. Freeze male + female V10 outputs as the selected working masters.
+2. Keep V9 as rollback/fallback only.
+3. Add the frozen V10 rigged GLBs to the lab-only asset path.
+4. Begin real `/cue-id` lab integration:
+   - one body loaded at a time;
+   - male/female switching;
+   - semantic config preserved;
+   - skin material binding;
+   - source hair visibility;
+   - underwear visibility;
+   - neutral/idle render;
+   - no 3D loading in Booking / Calendar / Activity.
+5. Do not start broad wardrobe fitting until the lab body integration is stable.
