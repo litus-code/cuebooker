@@ -9861,3 +9861,48 @@ This is a candidate transfer pipeline, not an automatic acceptance. The new body
 If transfer QA exposes a localized defect, refine that region on V2 rather than reintroducing source-hair geometry or rebuilding the entire character pipeline.
 
 Production remains untouched.
+
+
+## 186. CUE ID BODY V2 frozen after browser validation
+
+The neutral-bald V2 bodies have now passed the full lab gate and are considered the frozen body baseline for the next modular-asset phase.
+
+Validated in Blender and in the real `/cue-id` PR preview:
+
+- male and female neutral-bald geometry display correctly;
+- approved shared `cue_rig` alignment is preserved;
+- rebuilt proxy-derived skin weights no longer show the catastrophic V10-transfer shoulder/elbow tearing;
+- male/female switching works in the lab;
+- body and face inspection views load correctly;
+- semantic base is now skin + underwear only, with no embedded source-hair node;
+- Draco delivery is supported by the lab loader;
+- the loading overlay now resolves to ready after the parsed V2 scene is attached instead of hanging at 96%.
+
+Current lab delivery assets are approximately:
+
+- male: 15.2 MB;
+- female: 12.9 MB.
+
+Decision:
+
+- do not re-open body proportions, rest-bone alignment or broad skin-weight work unless a concrete runtime deformation bug is reproduced;
+- keep these approved V2 bodies as the source of truth for hair/clothing/accessory fitting;
+- production catalogue remains untouched and `productionReady` remains `false`.
+
+Next performance gate:
+
+1. preserve geometry, rig and weights exactly;
+2. test a conservative runtime candidate with textures capped at 1024px and no animation clips embedded;
+3. compare visual fidelity and first-load behavior against the current lab asset;
+4. only replace the lab GLBs if the candidate is visually indistinguishable at normal Creator inspection distances;
+5. then begin the modular HAIR vertical slice.
+
+Added:
+
+```text
+scripts/blender/cue-id-v2-runtime-optimize.py
+```
+
+This optimizer is deliberately conservative: it does not decimate geometry and does not modify the accepted rig or skin weights.
+
+Production remains untouched.
