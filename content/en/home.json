@@ -12,21 +12,22 @@
     "signup": "Create account"
   },
   "hero": {
-    "eyebrow": "REAL BOOKINGS. LESS MEMORY. MORE CONTROL.",
-    "titleTop": "DON'T LOSE",
-    "titleBottom": "THE BOOKING.",
-    "body": "WhatsApp, call, email or voice. Cuebooker understands what matters, shows it to you and keeps the thread intact until the date is resolved.",
-    "primaryCta": "Create account",
-    "secondaryCta": "See the flow",
-    "networkIdle": "IT HAPPENED · TELL IT",
-    "networkSearching": "UNDERSTANDING CONTEXT",
+    "eyebrow": "FOR DJS MAKING THINGS HAPPEN",
+    "titleTop": "LET THE MUSIC",
+    "titleBottom": "KEEP MOVING.",
+    "body": "Cuebooker captures what happens between a message, a call and a date. You decide. The system keeps the thread, organises the work and helps you close the booking.",
+    "primaryCta": "Create my space",
+    "secondaryCta": "See how it works",
+    "networkIdle": "SOMETHING HAPPENED · TELL IT",
+    "networkSearching": "PUTTING CONTEXT IN ORDER",
     "networkFound": "BOOKING READY TO FOLLOW",
     "proofs": [
       "CAPTURE",
-      "REVIEW",
-      "FOLLOW",
-      "DECIDE"
-    ]
+      "SORT",
+      "PROTECT DATES",
+      "FOLLOW"
+    ],
+    "manifesto": "Your energy belongs on the next set. Cuebooker handles the noise around it."
   },
   "problem": {
     "index": "01 / THE PROBLEM",
@@ -108,9 +109,9 @@
   },
   "integrations": {
     "index": "03 / WHEREVER IT STARTS",
-    "eyebrow": "DO NOT CHANGE HOW YOU WORK",
-    "title": "The booking can start anywhere. The follow-up ends up in CueBooker.",
-    "body": "Phone, WhatsApp, email, Instagram, an in-person conversation or a public form. CueBooker centralises context without forcing the promoter into another platform.",
+    "eyebrow": "AUTOMATE THE NOISE, KEEP THE CONTROL",
+    "title": "Cuebooker works around your music.",
+    "body": "The system captures information, prepares the next step, updates status and connects calendar, activity and conversation. Decisions that change a date remain yours.",
     "items": [
       {
         "label": "SMART CAPTURE",
@@ -234,8 +235,8 @@
   },
   "entry": {
     "eyebrow": "TRY IT ON A REAL BOOKING",
-    "title": "Next time someone asks about a date, do not leave it in your head.",
-    "body": "Open + CUE, tell CueBooker what happened and review how it turns that conversation into a booking you can follow."
+    "title": "Make sure the next opportunity goes somewhere.",
+    "body": "Create your space, share your profile and let Cuebooker turn every enquiry into a booking you can follow."
   },
   "feedback": {
     "eyebrow": "TESTING AND FEEDBACK",
@@ -272,9 +273,9 @@
   },
   "distribution": {
     "index": "04 / DISTRIBUTION",
-    "eyebrow": "ONE BOOKING, MANY ENTRY POINTS",
-    "title": "One link. Everything returns to CueBooker.",
-    "body": "Share booking however you want. Link, widget or QR: every enquiry ends up in the same place.",
+    "eyebrow": "YOUR BOOKING. WHEREVER IT STARTS.",
+    "title": "One link to enter. One workspace to resolve it.",
+    "body": "A public profile for artists without a website. A link for Instagram, bio, WhatsApp or EPK. An iframe for artists with a website. A QR for flyers, posters and events. Everything ends up in the same booking.",
     "channels": [
       {
         "label": "LINK",
