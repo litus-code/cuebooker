@@ -44,3 +44,24 @@ test('V10 lab loader supports Meshopt-compressed delivery GLBs', async () => {
   assert.match(source, /MeshoptDecoder/)
   assert.match(source, /setMeshoptDecoder\(MeshoptDecoder\)/)
 })
+
+
+test('V10 lab stage exposes loading progress and body/face inspection controls', async () => {
+  const scene = await readFile(
+    new URL('../app/components/CueIdRiggedBodyLabScene.client.vue', import.meta.url),
+    'utf8'
+  )
+  const workspace = await readFile(
+    new URL('../app/components/CueIdStylizedWorkspace.vue', import.meta.url),
+    'utf8'
+  )
+
+  assert.match(scene, /progress: \[value: number\]/)
+  assert.match(scene, /fetchBodyBuffer/)
+  assert.match(scene, /viewMode\?: ViewMode/)
+  assert.match(scene, /handlePointerMove/)
+  assert.match(scene, /handleWheel/)
+  assert.match(workspace, /labViewMode/)
+  assert.match(workspace, /cue-workspace__load-progress/)
+  assert.match(workspace, /:view-mode="labViewMode"/)
+})
