@@ -150,7 +150,7 @@ useHead(() => ({
       <div class="cue-id-page__header-actions">
         <CuePreferencesControl compact />
         <NuxtLink :to="exitTarget">
-          {{ fromOnboarding ? copy.continueWorkspace : fromWorkspace ? copy.backProfile : copy.back }}
+          {{ fromOnboarding ? copy.continueWorkspace : copy.back }}
         </NuxtLink>
       </div>
     </header>
