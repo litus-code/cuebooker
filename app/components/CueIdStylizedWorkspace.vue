@@ -314,13 +314,6 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
             <strong>{{ currentBodyLabel }}</strong>
           </div>
           <div class="cue-workspace__stage-controls">
-            <button
-              class="cue-workspace__edit-shortcut"
-              type="button"
-              @click="scrollToCueEditor"
-            >
-              {{ locale === 'es' ? 'Editar' : 'Edit' }} ↓
-            </button>
             <div class="cue-workspace__view-toggle" role="group" aria-label="CUE ID view">
               <button
                 type="button"
@@ -352,6 +345,13 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
                 {{ body === 'male' ? 'Male' : 'Female' }}
               </button>
             </div>
+            <button
+              class="cue-workspace__edit-shortcut"
+              type="button"
+              @click="scrollToCueEditor"
+            >
+              {{ locale === 'es' ? 'Editar CUE ID' : 'Edit CUE ID' }} ↓
+            </button>
           </div>
         </div>
 
@@ -823,7 +823,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace__topbar h1{margin:0;font-size:clamp(1.9rem,4vw,3.2rem);line-height:.95}
 .cue-workspace__topbar span{display:block;margin-top:8px;color:var(--cue-muted)}
 .cue-workspace__actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
-.cue-workspace__save-state{padding:7px 9px;border:1px solid var(--cue-border);border-radius:999px;color:var(--cue-muted);font:800 9px/1 monospace;letter-spacing:.05em;text-transform:uppercase}.cue-workspace__save-state.dirty{border-color:rgba(206,255,84,.42);color:var(--cue-accent);background:rgba(206,255,84,.06)}
+.cue-workspace__save-state{padding:0;border:0;border-radius:0;background:transparent;color:var(--cue-muted);font:800 8px/1 monospace;letter-spacing:.06em;text-transform:uppercase}.cue-workspace__save-state:before{margin-right:5px;color:var(--cue-muted);content:'·'}.cue-workspace__save-state.dirty{color:var(--cue-accent);background:transparent}.cue-workspace__save-state.dirty:before{color:var(--cue-accent)}
 .cue-workspace__reset{min-height:42px;border:1px solid var(--cue-border);border-radius:12px;padding:11px 14px;background:transparent;color:var(--cue-muted);font-weight:800}.cue-workspace__reset:hover{color:var(--cue-text)}
 .cue-workspace button:focus-visible{outline:2px solid var(--cue-accent);outline-offset:2px}
 .cue-workspace__save{min-height:42px;border:0;border-radius:12px;padding:11px 18px;background:var(--cue-accent);color:#111;font-weight:900}.cue-workspace__save:disabled{opacity:.38;cursor:not-allowed}
@@ -885,7 +885,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
   .cue-workspace__save-state{grid-column:1 / -1;width:max-content}
   .cue-workspace__reset,.cue-workspace__save{width:100%;min-height:44px;padding:11px 13px}
   .cue-workspace__stage,.cue-workspace__editor{border-radius:14px}
-  .cue-workspace__stage-head{padding:12px;gap:10px;align-items:flex-start}
+  .cue-workspace__stage-head{display:grid;grid-template-columns:1fr;padding:14px 12px;gap:12px;align-items:flex-start}
   .cue-workspace__stage-head strong{font-size:1rem}
   .cue-workspace__stage-controls{gap:6px}
   .cue-workspace__body-toggle,.cue-workspace__view-toggle{flex:0 0 auto}
