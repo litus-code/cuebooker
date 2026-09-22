@@ -21,6 +21,10 @@ function workspaceViewFromQuery(value: unknown): WorkspaceView {
   return typeof value === 'string' && WORKSPACE_VIEWS.includes(value as WorkspaceView) ? value as WorkspaceView : 'overview'
 }
 type ProfileEditSection = 'identity' | 'image' | 'sound' | 'links' | 'booking' | 'distribution' | null
+const PROFILE_EDIT_SECTIONS = ['identity', 'image', 'sound', 'links', 'booking', 'distribution'] as const
+function profileSectionFromQuery(value: unknown): Exclude<ProfileEditSection, null> | null {
+  return typeof value === 'string' && PROFILE_EDIT_SECTIONS.includes(value as any) ? value as Exclude<ProfileEditSection, null> : null
+}
 type ManagedArtist = { id: string; stage_name: string; slug: string; role: 'owner' | 'manager' | 'editor' }
 type ManagedOrganization = { id: string; name: string; slug: string; type: 'agency' | 'promoter'; role: 'owner' | 'admin' | 'member' }
 
@@ -106,7 +110,7 @@ const profileSaving = ref(false)
 const profileMessage = ref('')
 const profileWelcome = ref(false)
 const profilePreviewOpen = ref(false)
-const profileEditSection = ref<ProfileEditSection>(null)
+const profileEditSection = ref<ProfileEditSection>(route.query.view === 'profile' ? profileSectionFromQuery(route.query.section) : null)
 const profileCoverUrl = ref('')
 const profileCoverUploading = ref(false)
 const profileCoverMessage = ref('')
@@ -295,6 +299,11 @@ const publicQrSvg = computed(() => publicBookingUrl.value ? createBookingQrSvg(`
 
 async function toggleProfileEditSection(section: Exclude<ProfileEditSection, null>) {
   profileEditSection.value = profileEditSection.value === section ? null : section
+  const query: Record<string, any> = { ...route.query, view: 'profile' }
+  if (profileEditSection.value) query.section = profileEditSection.value
+  else delete query.section
+  void router.replace({ query }).catch(() => {})
+
   if (!profileEditSection.value || !import.meta.client) return
   await nextTick()
   await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
@@ -393,6 +402,14 @@ watch(selectedArtistId, async (artistId) => {
   await loadArtistProfile()
   await ensureBookingCoreWorkspace()
 })
+watch(() => route.query.view, value => {
+  const next = workspaceViewFromQuery(value)
+  if (next !== activeView.value) activeView.value = next
+  if (next === 'profile') profileEditSection.value = profileSectionFromQuery(route.query.section)
+})
+watch(() => route.query.section, value => {
+  if (activeView.value === 'profile') profileEditSection.value = profileSectionFromQuery(value)
+})
 watch(activeView, async (view) => {
   await nextTick()
   const nav = document.getElementById('workspace-navigation')
@@ -445,6 +462,7 @@ async function changeView(view: WorkspaceView) {
   const nextQuery: Record<string, any> = { ...route.query, view }
   delete nextQuery.setup
   if (view !== 'bookings') delete nextQuery.booking
+  if (view !== 'profile') delete nextQuery.section
   void router.replace({ query: nextQuery }).catch(() => {
     // View navigation must not be blocked by URL state sync.
   })
