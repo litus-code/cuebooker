@@ -165,9 +165,14 @@ function handleScroll() {
 watch(menuOpen, open => {
   if (import.meta.client) document.documentElement.classList.toggle('mobile-menu-open', open)
 })
-onMounted(() => window.addEventListener('keydown', closeMenuOnEscape))
+onMounted(() => {
+  lastScrollY.value = window.scrollY
+  window.addEventListener('keydown', closeMenuOnEscape)
+  window.addEventListener('scroll', handleScroll, { passive: true })
+})
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', closeMenuOnEscape)
+  window.removeEventListener('scroll', handleScroll)
   document.documentElement.classList.remove('mobile-menu-open')
 })
 useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.title, meta: [{ name: 'description', content: baseCopy.value.seo.description }] }))
