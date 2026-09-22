@@ -18,8 +18,9 @@ const p = computed(() => locale.value === 'es' ? {
   hero: {
     eyebrow: 'PARA ARTISTAS QUE SE TOMAN EN SERIO SU SONIDO',
     title: 'Que la música siga avanzando.',
-    accent: 'El papeleo, fuera.',
-    body: 'Cuebooker reúne todo el trabajo que existe alrededor de tu carrera, para que cada oportunidad tenga respuesta, cada fecha esté controlada y tú sigas tomando la decisión final.',
+    accent: 'El booking ya está ocurriendo. Cuebooker evita que una oportunidad se pierda.',
+    body: 'Las señales que llegan por Instagram, WhatsApp, email o tu web entran en un mismo lugar. Tú decides qué pasa después.',
+    flow: { channels: ['Instagram · 22:47', 'WhatsApp · 23:12', 'Formulario web · 00:06'], label: 'CUEBOOKER / NUEVA SOLICITUD', booking: 'Warehouse 23 / Barcelona', detail: '18 oct · Techno · 1.200 €', status: 'Pendiente de decisión' },
     primary: 'Entrar en el sistema',
     secondary: 'Conoce tu CUE ID',
     note: 'Hecho para DJs, managers y las personas que hacen posible cada noche.'
@@ -80,8 +81,9 @@ const p = computed(() => locale.value === 'es' ? {
   hero: {
     eyebrow: 'FOR ARTISTS WHO TAKE THEIR SOUND SERIOUSLY',
     title: 'Let the music keep moving.',
-    accent: 'Leave the paperwork behind.',
-    body: 'Cuebooker brings together the work around your career, so every opportunity gets an answer, every date stays visible and you keep the final decision.',
+    accent: 'Booking is already happening. Cuebooker makes sure no opportunity gets lost.',
+    body: 'Signals from Instagram, WhatsApp, email or your website land in one place. You decide what happens next.',
+    flow: { channels: ['Instagram · 22:47', 'WhatsApp · 23:12', 'Web form · 00:06'], label: 'CUEBOOKER / NEW REQUEST', booking: 'Warehouse 23 / Barcelona', detail: '18 Oct · Techno · €1,200', status: 'Waiting for your decision' },
     primary: 'Enter the system',
     secondary: 'Meet your CUE ID',
     note: 'Made for DJs, managers and the people who make every night happen.'
@@ -211,6 +213,11 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
         <p class="cp-eyebrow">{{ p.hero.eyebrow }}</p>
         <h1>{{ p.hero.title }} <em>{{ p.hero.accent }}</em></h1>
         <p class="cp-hero-lead">{{ p.hero.body }}</p>
+        <div class="cp-hero-flow" aria-label="Booking flow preview">
+          <div class="cp-hero-signals"><span v-for="channel in p.hero.flow.channels" :key="channel">{{ channel }}</span></div>
+          <div class="cp-hero-flow-line" aria-hidden="true"><i /></div>
+          <div class="cp-hero-request"><div class="cp-hero-request-head"><span>{{ p.hero.flow.label }}</span><b>{{ p.hero.flow.status }}</b></div><strong>{{ p.hero.flow.booking }}</strong><small>{{ p.hero.flow.detail }}</small></div>
+        </div>
         <div class="cp-hero-actions">
           <button class="cp-cta" type="button" @click="auth('signup', 'hero')">{{ p.hero.primary }} <span class="cp-arrow" aria-hidden="true" /></button>
           <button class="cp-cta cp-cta--ghost" type="button" @click="scrollTo('#system')">{{ p.hero.secondary }}</button>
