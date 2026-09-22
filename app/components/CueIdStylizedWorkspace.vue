@@ -276,15 +276,15 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
         <div class="cue-workspace__title-row">
           <p>CUE ID</p>
           <small>BETA</small>
-          <span
-            class="cue-workspace__save-state"
-            :class="{ dirty }"
-          >
-            {{ dirty ? copy.unsaved : copy.savedState }}
-          </span>
         </div>
         <h1>{{ copy.title }}</h1>
         <span>{{ copy.subtitle }}</span>
+        <span
+          class="cue-workspace__save-state"
+          :class="{ dirty }"
+        >
+          {{ dirty ? copy.unsaved : copy.savedState }}
+        </span>
       </div>
       <div class="cue-workspace__actions">
         <button
@@ -821,9 +821,9 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace__topbar p{margin:0 0 6px;color:var(--cue-accent);font:800 10px/1 monospace;letter-spacing:.18em}
 .cue-workspace__title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.cue-workspace__title-row p{margin:0}.cue-workspace__title-row small{padding:4px 6px;border:1px solid color-mix(in srgb,var(--cue-accent) 46%,var(--cue-border));border-radius:999px;color:var(--cue-accent);font:800 8px/1 monospace;letter-spacing:.08em}
 .cue-workspace__topbar h1{margin:0;font-size:clamp(1.9rem,4vw,3.2rem);line-height:.95}
-.cue-workspace__topbar span{display:block;margin-top:8px;color:var(--cue-muted)}
+.cue-workspace__topbar > div:first-child > span:not(.cue-workspace__save-state){display:block;margin-top:8px;color:var(--cue-muted)}
 .cue-workspace__actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
-.cue-workspace__save-state{padding:0;border:0;border-radius:0;background:transparent;color:var(--cue-muted);font:800 8px/1 monospace;letter-spacing:.06em;text-transform:uppercase}.cue-workspace__save-state:before{margin-right:5px;color:var(--cue-muted);content:'·'}.cue-workspace__save-state.dirty{color:var(--cue-accent);background:transparent}.cue-workspace__save-state.dirty:before{color:var(--cue-accent)}
+.cue-workspace__save-state{display:inline-flex!important;align-items:center;gap:6px;width:max-content;margin-top:10px!important;padding:0;border:0;background:transparent;color:var(--cue-muted);font:800 8px/1 monospace!important;letter-spacing:.06em;text-transform:uppercase}.cue-workspace__save-state:before{width:5px;height:5px;border-radius:50%;background:currentColor;content:''}.cue-workspace__save-state.dirty{color:var(--cue-accent)}
 .cue-workspace__reset{min-height:42px;border:1px solid var(--cue-border);border-radius:12px;padding:11px 14px;background:transparent;color:var(--cue-muted);font-weight:800}.cue-workspace__reset:hover{color:var(--cue-text)}
 .cue-workspace button:focus-visible{outline:2px solid var(--cue-accent);outline-offset:2px}
 .cue-workspace__save{min-height:42px;border:0;border-radius:12px;padding:11px 18px;background:var(--cue-accent);color:#111;font-weight:900}.cue-workspace__save:disabled{opacity:.38;cursor:not-allowed}
