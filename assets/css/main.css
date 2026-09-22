@@ -827,3 +827,19 @@ textarea:focus-visible, select:focus-visible { outline: 2px solid var(--cue-acce
   .workspace-proof__footer { display:block; }
   .workspace-proof__footer .text-button { display:inline-block; margin-top:1rem; }
 }
+
+
+/* Commercial direction: stronger club identity and conversion rhythm. */
+.hero { position: relative; isolation: isolate; }
+.hero::after { position:absolute; width:42vw; height:42vw; max-width:680px; max-height:680px; right:-12vw; top:8%; border-radius:50%; background:radial-gradient(circle, color-mix(in srgb,var(--cue-accent) 10%,transparent), transparent 66%); filter:blur(10px); content:""; pointer-events:none; z-index:-1; }
+.hero__manifesto { display:grid; gap:9px; max-width:430px; margin:22px 0 0; color:var(--cue-muted); font-size:.9rem; line-height:1.45; }
+.hero__manifesto span { color:var(--cue-accent); font:800 8px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.15em; }
+.hero-capture { box-shadow:0 34px 90px var(--cue-shadow), 0 0 90px color-mix(in srgb,var(--cue-accent) 7%,transparent); }
+.home-ticker { display:flex; align-items:center; justify-content:center; gap:15px; min-height:48px; padding:0 20px; overflow:hidden; border-top:1px solid var(--cue-border); border-bottom:1px solid var(--cue-border); color:var(--cue-muted); font:800 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.13em; }
+.home-ticker i { width:5px; height:5px; border-radius:50%; background:var(--cue-accent); box-shadow:0 0 12px color-mix(in srgb,var(--cue-accent) 62%,transparent); }
+.home-ticker span:last-child { color:var(--cue-accent); }
+@media (max-width:720px) {
+  .hero::after { width:90vw; height:90vw; right:-38vw; top:22%; }
+  .hero__manifesto { font-size:.96rem; }
+  .home-ticker { justify-content:flex-start; gap:11px; font-size:7px; white-space:nowrap; }
+}
