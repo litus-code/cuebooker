@@ -7,24 +7,26 @@ import {
   getCueIdRiggedBodyLabAsset
 } from '../app/domain/cueIdRiggedBodyLab.ts'
 
-test('V10 rigged bodies stay lab-only and expose semantic nodes', () => {
+test('V2 rigged bodies stay lab-only and expose semantic nodes', () => {
   const male = getCueIdRiggedBodyLabAsset('male')
   const female = getCueIdRiggedBodyLabAsset('female')
 
-  assert.equal(male.version, 'v10')
-  assert.equal(female.version, 'v10')
+  assert.equal(male.version, 'v2')
+  assert.equal(female.version, 'v2')
   assert.equal(male.productionReady, false)
   assert.equal(female.productionReady, false)
   assert.match(male.glbPath, /^\/cue-id\/lab\/bodies\//)
   assert.match(female.glbPath, /^\/cue-id\/lab\/bodies\//)
   assert.equal(male.semanticNodes.skin, 'cue_male_skin')
   assert.equal(female.semanticNodes.skin, 'cue_female_skin')
-  assert.equal(male.sourceHair, 'fade')
-  assert.equal(female.sourceHair, 'tied-back')
+  assert.equal(male.semanticNodes.hair, undefined)
+  assert.equal(female.semanticNodes.hair, undefined)
+  assert.equal(male.sourceHair, null)
+  assert.equal(female.sourceHair, null)
   assert.equal(Object.keys(CUE_ID_RIGGED_BODY_LAB_ASSETS).length, 2)
 })
 
-test('stylized workspace mounts the lab-only V10 scene instead of a fake mannequin', async () => {
+test('stylized workspace mounts the lab-only V2 scene instead of a fake mannequin', async () => {
   const source = await readFile(
     new URL('../app/components/CueIdStylizedWorkspace.vue', import.meta.url),
     'utf8'
@@ -35,7 +37,7 @@ test('stylized workspace mounts the lab-only V10 scene instead of a fake mannequ
 })
 
 
-test('V10 lab loader supports Meshopt-compressed delivery GLBs', async () => {
+test('V2 lab loader supports Meshopt-compressed delivery GLBs', async () => {
   const source = await readFile(
     new URL('../app/components/CueIdRiggedBodyLabScene.client.vue', import.meta.url),
     'utf8'
@@ -46,7 +48,7 @@ test('V10 lab loader supports Meshopt-compressed delivery GLBs', async () => {
 })
 
 
-test('V10 lab stage exposes loading progress and body/face inspection controls', async () => {
+test('V2 lab stage exposes loading progress and body/face inspection controls', async () => {
   const scene = await readFile(
     new URL('../app/components/CueIdRiggedBodyLabScene.client.vue', import.meta.url),
     'utf8'
