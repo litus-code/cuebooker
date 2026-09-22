@@ -779,3 +779,51 @@ textarea:focus-visible, select:focus-visible { outline: 2px solid var(--cue-acce
     background: color-mix(in srgb, var(--cue-accent) 8%, var(--cue-bg));
   }
 }
+
+
+/* Commercial landing: workspace proof aligned with the real CueBooker shell. */
+.workspace-proof { overflow: hidden; }
+.workspace-frame { display:grid; grid-template-columns:178px minmax(0,1fr); min-height:530px; margin-top:3rem; overflow:hidden; border:1px solid var(--cue-border); border-radius:28px; background:var(--cue-surface); box-shadow:0 28px 80px var(--cue-shadow); }
+.workspace-frame__sidebar { padding:2.2rem 1.2rem; border-right:1px solid var(--cue-border); background:rgba(0,0,0,.16); }
+.workspace-frame__sidebar .cue-brand { margin-bottom:3.4rem; color:var(--cue-accent); }
+.workspace-frame__sidebar nav { display:grid; gap:.45rem; }
+.workspace-frame__sidebar nav span { padding:.78rem .85rem; border-radius:13px; color:var(--cue-muted); font-size:.95rem; }
+.workspace-frame__sidebar nav span.active { color:var(--cue-accent-ink); background:var(--cue-accent); font-weight:700; }
+.workspace-frame__main { min-width:0; padding:2.35rem 2.5rem; }
+.workspace-frame__top { display:flex; align-items:flex-start; justify-content:space-between; gap:2rem; }
+.workspace-frame__top .mono { display:block; margin-bottom:1.25rem; color:var(--cue-dim); font-size:.65rem; letter-spacing:.14em; }
+.workspace-frame__top strong { display:block; font-size:clamp(1.6rem,3vw,2.7rem); line-height:.95; letter-spacing:-.05em; }
+.workspace-frame__top p { margin:.55rem 0 0; color:var(--cue-muted); }
+.workspace-frame__cta { flex:0 0 auto; padding:.9rem 1.1rem; border-radius:13px; color:var(--cue-accent-ink); background:var(--cue-accent); font-weight:700; text-decoration:none; }
+.workspace-kpis { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin:2.25rem 0 1.5rem; }
+.workspace-kpis > div { min-height:110px; padding:1.2rem; border:1px solid var(--cue-border); border-radius:16px; }
+.workspace-kpis span { display:block; margin-bottom:1rem; color:var(--cue-muted); font-size:.8rem; }
+.workspace-kpis strong { font-size:2rem; }
+.workspace-kpis strong.accent { color:var(--cue-accent); }
+.workspace-bookings { display:grid; gap:.7rem; }
+.workspace-booking { display:flex; align-items:center; gap:1rem; padding:1rem 1.1rem; border:1px solid var(--cue-border); border-radius:16px; }
+.workspace-booking > i { width:9px; height:44px; flex:0 0 9px; border-radius:99px; background:var(--cue-accent); }
+.workspace-booking > i.red { background:#ff514f; }
+.workspace-booking > i.blue { background:#718bff; }
+.workspace-booking div { min-width:0; }
+.workspace-booking strong, .workspace-booking span { display:block; }
+.workspace-booking span { margin-top:.3rem; color:var(--cue-muted); font-size:.85rem; }
+.workspace-booking em { margin-left:auto; color:var(--cue-muted); font-size:.85rem; font-style:normal; }
+.workspace-proof__footer { display:flex; justify-content:space-between; gap:1.5rem; margin-top:1.1rem; color:var(--cue-muted); }
+.workspace-proof__footer .text-button { color:var(--cue-text); }
+@media (max-width:760px) {
+  .workspace-frame { grid-template-columns:1fr; min-height:0; border-radius:20px; }
+  .workspace-frame__sidebar { display:none; }
+  .workspace-frame__main { padding:1.35rem; }
+  .workspace-frame__top { display:block; }
+  .workspace-frame__cta { display:inline-block; margin-top:1.3rem; }
+  .workspace-kpis { gap:.55rem; }
+  .workspace-kpis > div { min-height:90px; padding:.85rem; }
+  .workspace-kpis span { font-size:.68rem; }
+  .workspace-kpis strong { font-size:1.45rem; }
+  .workspace-booking { padding:.8rem; gap:.7rem; }
+  .workspace-booking strong { font-size:.9rem; }
+  .workspace-booking span, .workspace-booking em { font-size:.72rem; }
+  .workspace-proof__footer { display:block; }
+  .workspace-proof__footer .text-button { display:inline-block; margin-top:1rem; }
+}
