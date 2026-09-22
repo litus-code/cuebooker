@@ -22,7 +22,7 @@ async function collectSourceFiles(dir: string): Promise<string[]> {
   return files
 }
 
-test('Three/Tres runtime imports stay isolated to the two CUE ID client renderers', async () => {
+test('Three/Tres runtime imports stay isolated to the CUE ID client renderers', async () => {
   const appDir = new URL('../app/', import.meta.url)
   const files = await collectSourceFiles(appDir.pathname)
   const violations: string[] = []
@@ -39,7 +39,8 @@ test('Three/Tres runtime imports stay isolated to the two CUE ID client renderer
     const rel = relative(appDir.pathname, file)
     const allowedRenderers = new Set([
       'components/CueIdScene.client.vue',
-      'components/CueIdProductionScene.client.vue'
+      'components/CueIdProductionScene.client.vue',
+      'components/CueIdRiggedBodyLabScene.client.vue'
     ])
     if (!allowedRenderers.has(rel)) {
       violations.push(rel)
