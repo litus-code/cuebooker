@@ -1140,3 +1140,33 @@ textarea:focus-visible, select:focus-visible { outline: 2px solid var(--cue-acce
   .commercial-home .cp-channel-card h3 { padding-right:78px; }
   .commercial-home .cp-channel-card p { max-width:none; }
 }
+
+
+/* Hero proof: every incoming signal becomes one usable booking request. */
+.commercial-home .cp-hero-flow { display:grid; grid-template-columns:minmax(145px,.72fr) 46px minmax(220px,1.12fr); align-items:center; gap:12px; max-width:640px; margin:30px 0 0; padding:14px; border:1px solid var(--cp-line); border-radius:18px; background:color-mix(in srgb,var(--cp-panel) 82%,transparent); box-shadow:0 24px 64px color-mix(in srgb,var(--cp-black) 42%,transparent); }
+.commercial-home .cp-hero-signals { display:grid; gap:7px; }
+.commercial-home .cp-hero-signals span { padding:8px 9px; border:1px solid var(--cp-line); border-radius:7px; color:var(--cp-muted); background:color-mix(in srgb,var(--cp-black) 66%,transparent); font:700 8px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.07em; text-transform:uppercase; }
+.commercial-home .cp-hero-signals span:nth-child(2) { transform:translateX(8px); }
+.commercial-home .cp-hero-signals span:nth-child(3) { transform:translateX(3px); }
+.commercial-home .cp-hero-flow-line { position:relative; height:1px; background:linear-gradient(90deg,var(--cp-red),var(--cp-lime)); }
+.commercial-home .cp-hero-flow-line:after { position:absolute; top:-3px; right:0; width:7px; height:7px; border-top:1px solid var(--cp-lime); border-right:1px solid var(--cp-lime); content:""; transform:rotate(45deg); }
+.commercial-home .cp-hero-flow-line i { position:absolute; top:-4px; left:35%; width:8px; height:8px; border-radius:50%; background:var(--cp-lime); box-shadow:0 0 15px color-mix(in srgb,var(--cp-lime) 70%,transparent); animation:cp-signal-travel 1.8s ease-in-out infinite; }
+.commercial-home .cp-hero-request { padding:13px; border:1px solid color-mix(in srgb,var(--cp-lime) 42%,var(--cp-line)); border-radius:10px; background:color-mix(in srgb,var(--cp-black) 70%,transparent); }
+.commercial-home .cp-hero-request-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding-bottom:9px; border-bottom:1px solid var(--cp-line); }
+.commercial-home .cp-hero-request-head span,.commercial-home .cp-hero-request small { color:var(--cp-muted); font:700 8px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.08em; text-transform:uppercase; }
+.commercial-home .cp-hero-request-head b { color:var(--cp-lime); font:800 7px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.06em; text-align:right; text-transform:uppercase; }
+.commercial-home .cp-hero-request strong { display:block; margin:12px 0 4px; color:var(--cp-paper); font-size:18px; letter-spacing:-.045em; }
+@keyframes cp-signal-travel { 0%,15% { opacity:0; transform:translateX(-10px) scale(.7); } 45%,70% { opacity:1; transform:translateX(15px) scale(1); } 100% { opacity:0; transform:translateX(35px) scale(.7); } }
+@media (max-width:520px) {
+  .commercial-home .cp-hero-flow { grid-template-columns:1fr 28px 1.22fr; gap:7px; margin-top:23px; padding:10px; border-radius:14px; }
+  .commercial-home .cp-hero-signals { gap:5px; }
+  .commercial-home .cp-hero-signals span { padding:6px 5px; font-size:6px; letter-spacing:.04em; }
+  .commercial-home .cp-hero-signals span:nth-child(2) { transform:translateX(3px); }
+  .commercial-home .cp-hero-signals span:nth-child(3) { transform:translateX(1px); }
+  .commercial-home .cp-hero-request { padding:9px; }
+  .commercial-home .cp-hero-request-head { display:block; padding-bottom:6px; }
+  .commercial-home .cp-hero-request-head span { display:block; font-size:6px; }
+  .commercial-home .cp-hero-request-head b { display:block; margin-top:3px; font-size:6px; text-align:left; }
+  .commercial-home .cp-hero-request strong { margin:8px 0 3px; font-size:13px; line-height:1.05; }
+  .commercial-home .cp-hero-request small { font-size:6px; }
+}
