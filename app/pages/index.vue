@@ -3,390 +3,232 @@ import es from '../../content/es/home.json'
 import en from '../../content/en/home.json'
 
 const { locale, theme, setLocale, setTheme } = useCuePreferences()
-const copy = computed(() => locale.value === 'es' ? es : en)
+const baseCopy = computed(() => locale.value === 'es' ? es : en)
 const menuOpen = ref(false)
-const searchState = ref<'idle' | 'searching' | 'found'>('idle')
-const discoveryBudget = ref(1500)
-const activeRole = ref(0)
-const discoveryVisible = ref(false)
-const backToTopVisible = ref(false)
+const activeRole = ref<'artist' | 'manager'>('artist')
+const shareMode = ref<'profile' | 'website' | 'qr'>('profile')
 const router = useRouter()
 const analytics = useAnalytics()
-let sectionObserver: IntersectionObserver | null = null
-const seenSections = new Set<string>()
 
-function trackCta(name: string, placement: string, destination?: string) {
-  analytics.track('cta_click', {
-    cta_name: name,
-    placement,
-    destination: destination || null
-  })
-}
-
-function trackAuth(kind: 'signup' | 'login', placement: string) {
-  analytics.track(kind === 'signup' ? 'signup_click' : 'login_click', { placement })
-}
-
-const activeRoleData = computed(() => copy.value.access.roles[activeRole.value] ?? copy.value.access.roles[0]!)
-const discoveryArtists = computed(() => copy.value.search.artists
-  .map((artist, index) => ({ ...artist, fee: [900, 1400, 2200][index] ?? 1500 }))
-  .filter(artist => artist.fee <= discoveryBudget.value))
-const formattedBudget = computed(() => new Intl.NumberFormat(locale.value === 'es' ? 'es-ES' : 'en-GB', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(discoveryBudget.value))
-const discoveryCount = computed(() => locale.value === 'es'
-  ? `${discoveryArtists.value.length} ${discoveryArtists.value.length === 1 ? 'artista disponible' : 'artistas disponibles'}`
-  : `${discoveryArtists.value.length} available ${discoveryArtists.value.length === 1 ? 'artist' : 'artists'}`)
-const noDiscoveryResults = computed(() => locale.value === 'es'
-  ? 'No hay artistas ficticios dentro del presupuesto seleccionado.'
-  : 'No fictional artists match the selected budget.')
-
-const networkLabel = computed(() => {
-  if (searchState.value === 'searching') return copy.value.hero.networkSearching
-  if (searchState.value === 'found') return copy.value.hero.networkFound
-  return copy.value.hero.networkIdle
+const p = computed(() => locale.value === 'es' ? {
+  nav: { system: 'El sistema', distribution: 'Distribución', identity: 'CUE ID', login: 'Iniciar sesión', signup: 'Crear cuenta' },
+  hero: {
+    eyebrow: 'PARA ARTISTAS QUE SE TOMAN EN SERIO SU SONIDO',
+    title: 'Que la música siga avanzando.',
+    accent: 'El papeleo, fuera.',
+    body: 'Cuebooker reúne todo el trabajo que existe alrededor de tu carrera, para que cada oportunidad tenga respuesta, cada fecha esté controlada y tú sigas tomando la decisión final.',
+    primary: 'Entrar en el sistema',
+    secondary: 'Conoce tu CUE ID',
+    note: 'Hecho para DJs, managers y las personas que hacen posible cada noche.'
+  },
+  ticker: ['Reservas', 'Conversaciones', 'Calendario', 'Perfil de artista', 'Automatización', 'CUE ID'],
+  system: {
+    title: 'La noche es la parte visible. Cuebooker gestiona todo lo que la hace posible.',
+    body: 'Cada solicitud, respuesta, fecha, contacto y decisión vive dentro del mismo sistema. Menos trabajo disperso. Más espacio para lo que realmente mueve tu carrera.',
+    cards: [
+      ['01 / CAPTURA', 'Nada bueno se pierde en la bandeja de entrada.', 'Recibe las solicitudes en un único lugar, con la información que necesitas desde el primer momento.'],
+      ['02 / AVANCE', 'Cada conversación sabe cuál es su siguiente paso.', 'Responde, haz seguimiento, bloquea una fecha, confirma el bolo o archiva la oportunidad sin perder el contexto.'],
+      ['03 / AIRE', 'El trabajo repetitivo empieza a desaparecer.', 'Automatiza la parte mecánica mientras tú mantienes el control de las decisiones que marcan tu carrera.']
+    ]
+  },
+  stage: {
+    kicker: 'UNA ÚNICA SUPERFICIE DE TRABAJO',
+    title: 'Tus reservas no son un problema de hojas de cálculo.',
+    body: 'Son un flujo de señales, personas, fechas y decisiones. Cuebooker les da un lugar donde aterrizar, un estado por el que avanzar y un historial en el que confiar.',
+    points: [['Solicitudes', 'Recibe el briefing antes de que empiece el intercambio interminable de mensajes.'], ['Actividad', 'Mantén juntos el hilo, la decisión y la siguiente acción.'], ['Calendario', 'Consulta tu disponibilidad real antes de comprometerte.']],
+    workspace: 'cuebooker / espacio de trabajo',
+    greeting: 'Buenas tardes, Litus',
+    week: 'Tu semana, sin ruido.',
+    newBooking: '+ Nueva reserva',
+    metrics: [['Solicitudes abiertas', '08', false], ['Fechas bloqueadas', '04', true], ['Confirmadas', '12', false]],
+    bookings: [['Warehouse 23 / Barcelona', '18 oct · Techno · 1.200 €', 'Nueva', 'lime'], ['Club Mondo / Madrid', '02 nov · Peak time · 1.800 €', 'Pendiente', 'red'], ['Pulse Room / Berlín', '16 nov · Closing set · 2.100 €', 'Confirmada', 'blue']]
+  },
+  manifesto: { kicker: 'LA FORMA CUEBOOKER DE HACERLO', title: 'Tú pones la energía. El sistema soporta el peso.', body: 'Tú sigues decidiendo qué encaja contigo, con quién quieres trabajar y hacia dónde quieres llevar tu sonido. Cuebooker despeja el trabajo repetitivo que rodea esas decisiones.' },
+  control: {
+    title: 'Más ayuda. Más control.',
+    body: 'El asistente aparece cuando el proceso se repite. El artista sigue presente cuando la decisión es personal.',
+    assistant: 'LA CAPA ASISTENTE',
+    assistantTitle: 'Mensajes que saben para qué están ahí.',
+    assistantBody: 'Mantén viva la conversación sin convertir cada respuesta en otra pequeña tarea que recordar.',
+    human: 'LA CAPA HUMANA',
+    humanTitle: 'Toma la decisión cuando importa.',
+    artist: 'Soy artista',
+    manager: 'Gestiono artistas',
+    artistBody: 'Crea un perfil que se parezca a ti, recibe mejores solicitudes y mantén fechas, contactos y decisiones en un único espacio de trabajo.',
+    managerBody: 'Trabaja con varios artistas sin perder el hilo. Mantén solicitudes, disponibilidad, contactos y seguimientos dentro del mismo espacio.',
+    artistFeatures: ['Perfil público con una vía clara para contratarte', 'Visibilidad del calendario antes de comprometerte', 'Historial de reservas que crece contigo'],
+    managerFeatures: ['Cambia de artista sin cambiar de sistema', 'Controla el estado de cada oportunidad', 'Dale contexto al artista, no más trabajo administrativo']
+  },
+  distribution: {
+    title: 'Lleva tu booking a cualquier lugar donde ya está tu público.',
+    body: 'No necesitas rehacer tu web ni pedirle a la gente que busque cómo contactarte. Cuebooker se adapta a la forma en la que ya compartes tu música.',
+    profile: 'PERFIL PÚBLICO', profileTitle: '¿No tienes web? Ya tienes una puerta de entrada.', profileBody: 'Comparte tu perfil público de Cuebooker con tu bio, estilos, ciudad, información de contratación y formulario de reserva.',
+    link: 'ENLACE SOCIAL', linkTitle: 'Un enlace para Instagram, bio y redes.', linkBody: 'Publica una URL única en Instagram, TikTok, SoundCloud, WhatsApp o donde quieras.',
+    iframe: 'IFRAME', iframeTitle: '¿Ya tienes web? El formulario entra dentro.', iframeBody: 'Inserta el widget de Cuebooker en tu propia web. Tu imagen sigue siendo tuya y el flujo de booking funciona por detrás.',
+    label: 'TU PERFIL ESTÁ LISTO PARA COMPARTIR', live: 'Público', dj: 'DJ / Barcelona', name: 'Litus', sound: 'Techno · Industrial · Peak time',
+    copy: 'Copiar enlace', instagram: 'Compartir en Instagram', qr: 'Descargar QR',
+    kicker: 'UNA RUTA PARA CADA ARTISTA', title: 'Tu web, tu bio o una pegatina en la cabina.', detail: 'Cuebooker convierte cualquier punto de contacto en una oportunidad de contratación. El promotor puede llegar desde un enlace, escanear un QR o completar el formulario dentro de tu web.',
+    items: [['Perfil público', 'Para quien todavía no tiene web.'], ['Enlace compartible', 'Para Instagram, redes, mensajes y newsletters.'], ['Widget embebible', 'Para quien ya tiene una web propia.'], ['QR de booking', 'Para carteles, flyers, tarjetas y eventos.']]
+  },
+  identity: { kicker: 'IDENTIDAD, NO DECORACIÓN', title: 'Tu sonido merece una señal.', body: 'CUE ID convierte el perfil de artista en algo reconocible, compartible y preparado para crecer contigo. Una capa visual para la persona que existe detrás de cada reserva.', cta: 'Ver el sistema en movimiento', profile: 'Perfil de artista', active: 'Señal activa' },
+  closing: { title: 'Haz espacio para la parte que solo tú puedes hacer.', body: 'Cuebooker es la capa de trabajo entre la oportunidad y la noche. Empieza con tu próxima reserva.', cta: 'Crear mi espacio de trabajo' }
+} : {
+  nav: { system: 'The system', distribution: 'Distribution', identity: 'CUE ID', login: 'Sign in', signup: 'Create account' },
+  hero: {
+    eyebrow: 'FOR ARTISTS WHO TAKE THEIR SOUND SERIOUSLY',
+    title: 'Let the music keep moving.',
+    accent: 'Leave the paperwork behind.',
+    body: 'Cuebooker brings together the work around your career, so every opportunity gets an answer, every date stays visible and you keep the final decision.',
+    primary: 'Enter the system',
+    secondary: 'Meet your CUE ID',
+    note: 'Made for DJs, managers and the people who make every night happen.'
+  },
+  ticker: ['Bookings', 'Conversations', 'Calendar', 'Artist profile', 'Automation', 'CUE ID'],
+  system: {
+    title: 'The night is what people see. Cuebooker handles everything that makes it possible.',
+    body: 'Every request, reply, date, contact and decision lives in one system. Less scattered work. More room for what moves your career.',
+    cards: [
+      ['01 / CAPTURE', 'Nothing good gets lost in the inbox.', 'Receive requests in one place, with the information you need from the start.'],
+      ['02 / MOVE FORWARD', 'Every conversation knows its next step.', 'Reply, follow up, hold a date, confirm the gig or archive the opportunity without losing context.'],
+      ['03 / AIR', 'Repetitive work starts to disappear.', 'Automate the mechanical part while you keep control of the decisions that shape your career.']
+    ]
+  },
+  stage: {
+    kicker: 'ONE WORKSPACE FOR THE WHOLE OPERATION',
+    title: 'Your bookings are not a spreadsheet problem.',
+    body: 'They are a flow of signals, people, dates and decisions. Cuebooker gives them somewhere to land, a status to move through and a history you can trust.',
+    points: [['Requests', 'Receive the briefing before the endless message exchange starts.'], ['Activity', 'Keep the thread, decision and next action together.'], ['Calendar', 'Check your real availability before committing.']],
+    workspace: 'cuebooker / workspace',
+    greeting: 'Good afternoon, Litus',
+    week: 'Your week, without the noise.',
+    newBooking: '+ New booking',
+    metrics: [['Open requests', '08', false], ['Held dates', '04', true], ['Confirmed', '12', false]],
+    bookings: [['Warehouse 23 / Barcelona', '18 Oct · Techno · €1,200', 'New', 'lime'], ['Club Mondo / Madrid', '02 Nov · Peak time · €1,800', 'Pending', 'red'], ['Pulse Room / Berlin', '16 Nov · Closing set · €2,100', 'Confirmed', 'blue']]
+  },
+  manifesto: { kicker: 'THE CUEBOOKER WAY', title: 'You bring the energy. The system carries the weight.', body: 'You still decide what fits, who you work with and where you want to take your sound. Cuebooker clears the repetitive work around those decisions.' },
+  control: {
+    title: 'More help. More control.',
+    body: 'The assistant appears when a process repeats. The artist stays present when the decision is personal.',
+    assistant: 'THE ASSISTANT LAYER', assistantTitle: 'Messages that know what they are for.', assistantBody: 'Keep the conversation alive without turning every reply into another small task to remember.',
+    human: 'THE HUMAN LAYER', humanTitle: 'Make the call when it matters.', artist: 'I am an artist', manager: 'I manage artists',
+    artistBody: 'Create a profile that feels like you, receive better requests and keep dates, contacts and decisions in one workspace.',
+    managerBody: 'Work with several artists without losing the thread. Keep requests, availability, contacts and follow-ups in the same place.',
+    artistFeatures: ['A public profile with a clear route to hire you', 'Calendar visibility before you commit', 'A booking history that grows with you'],
+    managerFeatures: ['Switch artists without switching systems', 'Track the state of every opportunity', 'Give the artist context, not more admin']
+  },
+  distribution: {
+    title: 'Take your booking wherever your audience already is.',
+    body: 'You do not need to rebuild your website or make people search for how to contact you. Cuebooker fits the way you already share your music.',
+    profile: 'PUBLIC PROFILE', profileTitle: 'No website? You still have an entry point.', profileBody: 'Share your Cuebooker profile with your bio, styles, city, booking information and request form.',
+    link: 'SOCIAL LINK', linkTitle: 'One link for Instagram, bio and social.', linkBody: 'Publish one URL on Instagram, TikTok, SoundCloud, WhatsApp or anywhere else.',
+    iframe: 'IFRAME', iframeTitle: 'Already have a website? Put the form inside it.', iframeBody: 'Embed the Cuebooker widget in your own site. Your image stays yours and the booking flow runs behind it.',
+    label: 'YOUR PROFILE IS READY TO SHARE', live: 'Public', dj: 'DJ / Barcelona', name: 'Litus', sound: 'Techno · Industrial · Peak time',
+    copy: 'Copy link', instagram: 'Share on Instagram', qr: 'Download QR',
+    kicker: 'A ROUTE FOR EVERY ARTIST', title: 'Your website, your bio or a sticker on the booth.', detail: 'Cuebooker turns every contact point into a booking opportunity. Promoters can arrive from a link, scan a QR or fill the form inside your website.',
+    items: [['Public profile', 'For artists without a website.'], ['Shareable link', 'For Instagram, social, messages and newsletters.'], ['Embeddable widget', 'For artists with their own website.'], ['Booking QR', 'For posters, flyers, cards and events.']]
+  },
+  identity: { kicker: 'IDENTITY, NOT DECORATION', title: 'Your sound deserves a signal.', body: 'CUE ID turns an artist profile into something recognisable, shareable and ready to grow with you. A visual layer for the person behind every booking.', cta: 'See the system in motion', profile: 'Artist profile', active: 'Signal active' },
+  closing: { title: 'Make room for the part only you can do.', body: 'Cuebooker is the working layer between the opportunity and the night. Start with your next booking.', cta: 'Create my workspace' }
 })
+
+const roleBody = computed(() => activeRole.value === 'artist' ? p.value.control.artistBody : p.value.control.managerBody)
+const roleFeatures = computed(() => activeRole.value === 'artist' ? p.value.control.artistFeatures : p.value.control.managerFeatures)
 
 function scrollTo(id: string) {
   menuOpen.value = false
   document.querySelector(id)?.scrollIntoView({ behavior: 'smooth' })
 }
-
-function updateBackToTop() {
-  backToTopVisible.value = window.scrollY > Math.max(520, window.innerHeight * 0.7)
+function auth(mode: 'signin' | 'signup', placement: string) {
+  analytics.track(mode === 'signup' ? 'signup_click' : 'login_click', { placement })
+  router.push(\`/access?mode=\${mode}\`)
 }
-
-onMounted(() => {
-  updateBackToTop()
-  window.addEventListener('scroll', updateBackToTop, { passive: true })
-  window.addEventListener('keydown', closeMenuOnEscape)
-
-  sectionObserver = new IntersectionObserver(entries => {
-    for (const entry of entries) {
-      if (!entry.isIntersecting || entry.intersectionRatio < 0.3) continue
-      const section = (entry.target as HTMLElement).dataset.analyticsSection
-      if (!section || seenSections.has(section) || analytics.consent.value !== 'granted') continue
-      if (analytics.track('section_view', { section })) seenSections.add(section)
-    }
-  }, { threshold: [0.3] })
-
-  document.querySelectorAll<HTMLElement>('[data-analytics-section]').forEach(section => sectionObserver?.observe(section))
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('scroll', updateBackToTop)
-  window.removeEventListener('keydown', closeMenuOnEscape)
-  sectionObserver?.disconnect()
-  sectionObserver = null
-  document.documentElement.classList.remove('mobile-menu-open')
-})
-
+function openApp(placement: string) {
+  analytics.track('cta_click', { cta_name: 'workspace', placement, destination: '/app' })
+  router.push('/app')
+}
 function closeMenuOnEscape(event: KeyboardEvent) {
   if (event.key === 'Escape') menuOpen.value = false
 }
-
 watch(menuOpen, open => {
   if (import.meta.client) document.documentElement.classList.toggle('mobile-menu-open', open)
 })
-
-function discoverArtists() {
-  analytics.track('discovery_simulate', { budget_eur: discoveryBudget.value })
-  searchState.value = 'searching'
-  discoveryVisible.value = false
-  window.setTimeout(() => {
-    searchState.value = 'found'
-    discoveryVisible.value = true
-  }, 550)
-}
-
-useHead(() => ({
-  htmlAttrs: { lang: locale.value },
-  title: copy.value.seo.title,
-  meta: [{ name: 'description', content: copy.value.seo.description }]
-}))
+onMounted(() => window.addEventListener('keydown', closeMenuOnEscape))
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', closeMenuOnEscape)
+  document.documentElement.classList.remove('mobile-menu-open')
+})
+useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.title, meta: [{ name: 'description', content: baseCopy.value.seo.description }] }))
 </script>
 
 <template>
-  <main class="site-shell">
-    <header class="site-header">
-      <a class="brand" href="#top" aria-label="Cuebooker" @click.prevent="scrollTo('#top')"><CueBrand /></a>
-      <button class="menu-trigger" aria-controls="site-navigation" :aria-expanded="menuOpen" :aria-label="menuOpen ? (locale === 'es' ? 'Cerrar menú' : 'Close menu') : (locale === 'es' ? 'Abrir menú' : 'Open menu')" @click="menuOpen = !menuOpen"><span /><span /></button>
-      <nav id="site-navigation" class="site-nav" :class="{ 'site-nav--open': menuOpen }">
-        <a href="#problem" @click.prevent="scrollTo('#problem')">{{ copy.nav.problem }}</a>
-        <a href="#product" @click.prevent="scrollTo('#product')">{{ copy.nav.product }}</a>
-        <a href="#roles" @click.prevent="scrollTo('#roles')">{{ copy.nav.roles }}</a>
-        <a href="#try" @click.prevent="scrollTo('#try')">{{ copy.nav.tryProduct }}</a>
-        <div class="mobile-menu-auth">
-          <NuxtLink class="mobile-menu-login" to="/access?mode=signin" @click="menuOpen = false; trackAuth('login', 'mobile_menu')">{{ copy.nav.login }}</NuxtLink>
-          <NuxtLink class="mobile-menu-signup" to="/access?mode=signup" @click="menuOpen = false; trackAuth('signup', 'mobile_menu')">{{ copy.nav.signup }}</NuxtLink>
+  <main class="commercial-home">
+    <nav class="cp-nav">
+      <div class="cp-wrap cp-nav-inner">
+        <NuxtLink class="cp-brand" to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink>
+        <div class="cp-nav-links">
+          <a href="#system" @click.prevent="scrollTo('#system')">{{ p.nav.system }}</a>
+          <a href="#distribution" @click.prevent="scrollTo('#distribution')">{{ p.nav.distribution }}</a>
+          <a href="#cue-id" @click.prevent="scrollTo('#cue-id')">{{ p.nav.identity }}</a>
         </div>
-      </nav>
-      <div class="header-controls">
-        <div class="locale-control" aria-label="Idioma">
-          <button :class="{ active: locale === 'es' }" @click="setLocale('es')">ES</button>
-          <button :class="{ active: locale === 'en' }" @click="setLocale('en')">EN</button>
-        </div>
-        <button class="appearance-toggle" :aria-label="locale === 'es' ? 'Cambiar apariencia' : 'Change appearance'" :title="locale === 'es' ? 'Cambiar apariencia' : 'Change appearance'" @click="setTheme(theme === 'dark' ? 'light' : 'dark')"><span /></button>
-        <NuxtLink class="header-login" to="/access?mode=signin" @click="trackAuth('login', 'header')">{{ copy.nav.login }}</NuxtLink>
-        <NuxtLink class="header-signup" to="/access?mode=signup" @click="trackAuth('signup', 'header')">{{ copy.nav.signup }}</NuxtLink>
-      </div>
-    </header>
-
-    <section id="top" class="hero section-pad" data-analytics-section="hero">
-      <div class="hero__meta mono"><span>22:47:16</span><span>BARCELONA<br>41.3874° N</span></div>
-      <div class="hero__copy">
-        <p class="eyebrow">{{ copy.hero.eyebrow }}</p>
-        <h1>{{ copy.hero.titleTop }}<br><em><span v-for="word in copy.hero.titleBottom.split(' ')" :key="word">{{ word }}</span></em></h1>
-        <p class="lead">{{ copy.hero.body }}</p>
-        <p class="hero__manifesto"><span>RAW / MECHANICAL / HUMAN</span>{{ copy.hero.manifesto }}</p>
-        <div class="hero__actions">
-          <button class="button button--primary" @click="trackAuth('signup', 'hero'); trackCta('hero_primary', 'hero', '/access?mode=signup'); router.push('/access?mode=signup')">{{ copy.hero.primaryCta }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
-          <button class="text-button" @click="trackCta('see_how_it_works', 'hero', '#product'); scrollTo('#product')">{{ copy.hero.secondaryCta }} <span class="arrow arrow--down" aria-hidden="true" /></button>
+        <div class="cp-nav-actions">
+          <div class="cp-locale"><button :class="{ active: locale === 'es' }" @click="setLocale('es')">ES</button><button :class="{ active: locale === 'en' }" @click="setLocale('en')">EN</button></div>
+          <button class="cp-theme" type="button" :aria-label="locale === 'es' ? 'Cambiar apariencia' : 'Change appearance'" @click="setTheme(theme === 'dark' ? 'light' : 'dark')"><span /></button>
+          <NuxtLink class="cp-login" to="/access?mode=signin" @click="analytics.track('login_click', { placement: 'header' })">{{ p.nav.login }}</NuxtLink>
+          <NuxtLink class="cp-cta cp-cta--nav" to="/access?mode=signup" @click="analytics.track('signup_click', { placement: 'header' })">{{ p.nav.signup }}</NuxtLink>
+          <button class="cp-menu" type="button" :aria-expanded="menuOpen" aria-controls="cp-mobile-menu" @click="menuOpen = !menuOpen"><span /><span /></button>
         </div>
       </div>
+      <div id="cp-mobile-menu" class="cp-mobile-menu" :class="{ open: menuOpen }">
+        <a href="#system" @click.prevent="scrollTo('#system')">{{ p.nav.system }}</a>
+        <a href="#distribution" @click.prevent="scrollTo('#distribution')">{{ p.nav.distribution }}</a>
+        <a href="#cue-id" @click.prevent="scrollTo('#cue-id')">{{ p.nav.identity }}</a>
+        <NuxtLink to="/access?mode=signin" @click="menuOpen = false">{{ p.nav.login }}</NuxtLink>
+        <NuxtLink class="cp-cta" to="/access?mode=signup" @click="menuOpen = false">{{ p.nav.signup }}</NuxtLink>
+      </div>
+    </nav>
 
-      <div class="hero-capture" aria-label="Ejemplo de captura de booking">
-        <div class="hero-capture__incoming">
-          <span class="mono">WHATSAPP / 02:14</span>
-          <p>“23 OCT · NITSA · 1.500 + HOTEL · FALTA HORARIO”</p>
+    <section id="top" class="cp-hero">
+      <div class="cp-hero-overlay" />
+      <div class="cp-wrap cp-hero-content">
+        <p class="cp-eyebrow">{{ p.hero.eyebrow }}</p>
+        <h1>{{ p.hero.title }} <em>{{ p.hero.accent }}</em></h1>
+        <p class="cp-hero-lead">{{ p.hero.body }}</p>
+        <div class="cp-hero-actions">
+          <button class="cp-cta" type="button" @click="auth('signup', 'hero')">{{ p.hero.primary }} <span>↗</span></button>
+          <button class="cp-cta cp-cta--ghost" type="button" @click="scrollTo('#system')">{{ p.hero.secondary }}</button>
         </div>
-        <div class="hero-capture__pulse" aria-hidden="true"><i /><span>SMART CAPTURE</span></div>
-        <div class="hero-capture__booking">
-          <header><span class="mono">BOOKING</span><b>{{ locale === 'es' ? 'ESPERANDO RESPUESTA' : 'WAITING RESPONSE' }}</b></header>
-          <strong>NITSA</strong>
-          <dl>
-            <div><dt>{{ locale === 'es' ? 'FECHA' : 'DATE' }}</dt><dd>23 OCT</dd></div>
-            <div><dt>FEE</dt><dd>€1.500</dd></div>
-            <div><dt>HOTEL</dt><dd>INCL.</dd></div>
-            <div><dt>{{ locale === 'es' ? 'FALTA' : 'MISSING' }}</dt><dd>{{ locale === 'es' ? 'HORARIO' : 'SCHEDULE' }}</dd></div>
-          </dl>
-        </div>
-        <div class="hero-capture__steps">
-          <span v-for="(proof, index) in copy.hero.proofs" :key="proof"><i>{{ String(index + 1).padStart(2,'0') }}</i>{{ proof }}</span>
-        </div>
-      </div>
-
-      <p class="hero__edge mono">INPUT <span class="arrow arrow--right" aria-hidden="true" /> CONTEXT <span class="arrow arrow--right" aria-hidden="true" /> BOOKING <span class="arrow arrow--right" aria-hidden="true" /> FOLLOW-UP</p>
-    </section>
-
-    <div class="home-ticker" aria-hidden="true">
-      <span>DISCOVERY</span><i /> <span>BOOKING</span><i /> <span>MANAGEMENT</span><i /> <span>RAW / PRECISE / HUMAN</span>
-    </div>
-
-    <section id="problem" class="problem section-pad" data-analytics-section="problem">
-      <div class="section-mark mono">{{ copy.problem.index }}</div>
-      <div class="section-heading">
-        <p class="eyebrow">{{ copy.problem.eyebrow }}</p>
-        <h2>{{ copy.problem.title }}</h2>
-        <p>{{ copy.problem.body }}</p>
-      </div>
-      <div class="chaos" aria-hidden="true">
-        <div class="chaos__card chaos__card--instagram">INSTAGRAM<br><span>DM / 22:51</span></div>
-        <div class="chaos__card chaos__card--whatsapp">WHATSAPP<br><span>“{{ copy.problem.quoteOne }}”</span></div>
-        <div class="chaos__card chaos__card--mail">EMAIL<br><span>RE: {{ copy.problem.quoteTwo }}</span></div>
-        <div class="chaos__card chaos__card--sheet">SHEET<br><span>{{ copy.problem.file }}</span></div>
-      </div>
-      <p class="problem__statement">{{ copy.problem.statement }}</p>
-    </section>
-
-    <section id="product" class="connected section-pad" data-analytics-section="product">
-      <div class="section-mark mono">{{ copy.flow.index }}</div>
-      <div class="section-heading">
-        <p class="eyebrow">{{ copy.flow.eyebrow }}</p>
-        <h2>{{ copy.flow.title }}</h2>
-        <p>{{ copy.flow.body }}</p>
-      </div>
-      <ol class="flow-line">
-        <li v-for="(step, index) in copy.flow.steps" :key="step.name">
-          <span>{{ String(index + 1).padStart(2, '0') }}</span>
-          <strong>{{ step.name }}</strong>
-          <p>{{ step.detail }}</p>
-        </li>
-      </ol>
-    </section>
-
-    <section class="integrations section-pad" data-analytics-section="integrations">
-      <div class="section-mark mono">{{ copy.integrations.index }}</div>
-      <div class="section-heading"><p class="eyebrow">{{ copy.integrations.eyebrow }}</p><h2>{{ copy.integrations.title }}</h2><p>{{ copy.integrations.body }}</p></div>
-      <div class="integration-grid"><article v-for="(item, index) in copy.integrations.items" :key="item.name"><span class="mono">0{{ index + 1 }} / {{ item.label }}</span><div class="integration-visual" :class="`integration-visual--${index + 1}`"><i /><i /><i /></div><h3>{{ item.name }}</h3><p>{{ item.body }}</p></article></div>
-      <p class="integration-note"><i />{{ copy.integrations.note }}</p>
-    </section>
-
-    <section class="distribution section-pad" data-analytics-section="distribution">
-      <div class="section-mark mono">{{ copy.distribution.index }}</div>
-      <div class="section-heading">
-        <p class="eyebrow">{{ copy.distribution.eyebrow }}</p>
-        <h2>{{ copy.distribution.title }}</h2>
-        <p>{{ copy.distribution.body }}</p>
-      </div>
-      <div class="distribution-grid">
-        <article v-for="(item, index) in copy.distribution.channels" :key="item.name">
-          <span class="mono">0{{ index + 1 }} / {{ item.label }}</span>
-          <div class="distribution-signal" :class="`distribution-signal--${index + 1}`" aria-hidden="true">
-            <i /><i /><i />
-          </div>
-          <h3>{{ item.name }}</h3>
-          <p>{{ item.body }}</p>
-        </article>
-      </div>
-      <p class="distribution-note">{{ copy.distribution.note }}</p>
-    </section>
-
-    <section class="workspace-proof section-pad" data-analytics-section="workspace">
-      <div class="section-mark mono">{{ copy.workspace.index }}</div>
-      <div class="section-heading">
-        <p class="eyebrow">{{ copy.workspace.eyebrow }}</p>
-        <h2>{{ copy.workspace.title }}</h2>
-        <p>{{ copy.workspace.body }}</p>
-      </div>
-      <div class="workspace-frame">
-        <aside class="workspace-frame__sidebar">
-          <CueBrand />
-          <nav aria-label="Workspace preview">
-            <span v-for="(item, index) in copy.workspace.sidebar" :key="item" :class="{ active: index === 0 }">{{ item }}</span>
-          </nav>
-        </aside>
-        <div class="workspace-frame__main">
-          <div class="workspace-frame__top">
-            <div><span class="mono">CUEBOOKER / ESPACIO DE TRABAJO</span><strong>{{ copy.workspace.greeting }}</strong><p>{{ copy.workspace.subtitle }}</p></div>
-            <NuxtLink class="workspace-frame__cta" to="/app" @click="trackCta('workspace_preview', 'workspace', '/app')">+ {{ copy.workspace.newBooking }}</NuxtLink>
-          </div>
-          <div class="workspace-kpis">
-            <div v-for="stat in copy.workspace.stats" :key="stat.label"><span>{{ stat.label }}</span><strong :class="{ accent: stat.accent }">{{ stat.value }}</strong></div>
-          </div>
-          <div class="workspace-bookings">
-            <article v-for="booking in copy.workspace.bookings" :key="booking.venue" class="workspace-booking">
-              <i :class="booking.tone" />
-              <div><strong>{{ booking.venue }}</strong><span>{{ booking.meta }}</span></div>
-              <em>{{ booking.status }}</em>
-            </article>
-          </div>
-        </div>
-      </div>
-      <div class="workspace-proof__footer">
-        <span>{{ copy.workspace.note }}</span>
-        <NuxtLink class="text-button" to="/app" @click="trackCta('open_workspace', 'workspace', '/app')">{{ copy.workspace.cta }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
+        <p class="cp-hero-note"><span class="cp-live-dot" />{{ p.hero.note }}</p>
       </div>
     </section>
 
-    <section class="identity-story section-pad" data-analytics-section="identity">
-      <div class="section-mark mono">{{ copy.identity.index }}</div>
-      <div class="section-heading">
-        <p class="eyebrow">{{ copy.identity.eyebrow }}</p>
-        <h2>{{ copy.identity.title }}</h2>
-        <p>{{ copy.identity.body }}</p>
-      </div>
-      <div class="identity-grid">
-        <article v-for="(item, index) in copy.identity.cards" :key="item.name" :class="{ active: index === 1 }">
-          <span class="mono">{{ item.label }}</span>
-          <strong>{{ item.name }}</strong>
-          <p>{{ item.body }}</p>
-        </article>
-      </div>
-      <div class="identity-status">
-        <i />
-        <span>{{ copy.identity.cueIdStatus }}</span>
+    <div class="cp-ticker" aria-hidden="true"><div class="cp-ticker-track"><span v-for="item in [...p.ticker, ...p.ticker]" :key="item + Math.random()">{{ item }}</span></div></div>
+
+    <section id="system" class="cp-section">
+      <div class="cp-wrap">
+        <div class="cp-section-head"><h2>{{ p.system.title }}</h2><p>{{ p.system.body }}</p></div>
+        <div class="cp-signal-grid"><article v-for="card in p.system.cards" :key="card[0]" class="cp-signal-card"><span class="cp-signal-number">{{ card[0] }}</span><h3>{{ card[1] }}</h3><p>{{ card[2] }}</p></article></div>
       </div>
     </section>
 
-    <section id="roles" class="roles section-pad" data-analytics-section="roles">
-      <div class="section-mark mono">{{ copy.roles.index }}</div>
-      <div class="section-heading"><p class="eyebrow">{{ copy.roles.eyebrow }}</p><h2>{{ copy.roles.title }}</h2></div>
-      <div class="role-grid"><article v-for="(item, index) in copy.roles.items" :key="item.name"><span class="mono">0{{ index + 1 }}</span><p class="eyebrow">{{ item.name }}</p><h3>{{ item.headline }}</h3><p>{{ item.body }}</p></article></div>
-    </section>
-
-    <section class="access-model section-pad" data-analytics-section="access">
-      <div class="section-mark mono">{{ copy.access.index }}</div>
-      <div class="section-heading">
-        <p class="eyebrow">{{ copy.access.eyebrow }}</p>
-        <h2>{{ copy.access.title }}</h2>
-        <p>{{ copy.access.body }}</p>
-      </div>
-      <div class="access-demo">
-        <div class="access-tabs" role="tablist" :aria-label="copy.access.selectorLabel">
-          <button v-for="(role, index) in copy.access.roles" :key="role.name" :class="{ active: activeRole === index }" role="tab" :aria-selected="activeRole === index" @click="activeRole = index; analytics.track('role_select', { role: role.name })">{{ role.name }}</button>
-        </div>
-        <article class="access-card">
-          <div class="access-card__top"><span class="mono">{{ activeRoleData.label }}</span><strong>{{ activeRoleData.account }}</strong></div>
-          <h3>{{ activeRoleData.headline }}</h3>
-          <ol><li v-for="(step, index) in activeRoleData.steps" :key="step"><span>{{ String(index + 1).padStart(2, '0') }}</span>{{ step }}</li></ol>
-          <NuxtLink class="button button--primary" :to="activeRoleData.route" @click="trackCta('role_access', 'access', activeRoleData.route)">{{ activeRoleData.cta }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
-        </article>
-        <aside><i /> <span><strong>{{ copy.access.demoTitle }}</strong>{{ copy.access.demoNote }}</span></aside>
-      </div>
-    </section>
-
-    <section id="try" class="demo-reality section-pad" data-analytics-section="product_status">
-      <div class="section-mark mono">{{ copy.demo.index }}</div>
-      <div class="section-heading"><p class="eyebrow">{{ copy.demo.eyebrow }}</p><h2>{{ copy.demo.title }}</h2><p>{{ copy.demo.body }}</p></div>
-      <div class="demo-reality__grid"><article><strong>{{ copy.demo.currentTitle }}</strong><ul><li v-for="item in copy.demo.current" :key="item"><span>✓</span>{{ item }}</li></ul></article><article><strong>{{ copy.demo.realTitle }}</strong><ul><li v-for="item in copy.demo.real" :key="item"><span>○</span>{{ item }}</li></ul><p class="demo-reality__note">{{ copy.demo.realNote }}</p></article></div>
-      <div class="demo-reality__actions">
-        <NuxtLink class="button button--primary" to="/access?mode=signup" @click="trackAuth('signup', 'product_status'); trackCta('product_signup', 'product_status', '/access?mode=signup')">{{ copy.demo.panelButton }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
-        <NuxtLink class="button button--ghost" to="/artist" @click="trackCta('view_public_form', 'product_status', '/artist')">{{ copy.demo.requestButton }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
-      </div>
-    </section>
-
-    <section class="discovery section-pad" data-analytics-section="discovery">
-      <div class="section-mark mono">{{ copy.search.index }}</div>
-      <div class="section-heading discovery__heading">
-        <p class="eyebrow">{{ copy.search.eyebrow }}</p>
-        <h2>{{ copy.search.title }}</h2>
-        <p>{{ copy.search.body }}</p>
-      </div>
-      <form class="search-panel" @submit.prevent="discoverArtists">
-        <label>{{ copy.search.where }}<input type="text" value="Barcelona"></label>
-        <label>{{ copy.search.when }}<input type="text" value="24 OCT 2026"></label>
-        <label>{{ copy.search.sound }}<input type="text" value="Techno"></label>
-        <label class="range-field">{{ copy.search.budget }}<output>{{ formattedBudget }}</output><input v-model.number="discoveryBudget" type="range" min="300" max="3000" step="100"></label>
-        <button class="button button--primary" type="submit">{{ searchState === 'searching' ? copy.search.searching : copy.search.button }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
-      </form>
-      <div class="results" :class="{ 'results--visible': discoveryVisible }" aria-live="polite">
-        <header><strong>{{ discoveryCount }}</strong><span>{{ copy.search.visibility }}</span></header>
-        <p class="demo-note">{{ copy.search.resultHint }}</p>
-        <div class="artist-grid">
-          <article v-for="(artist, index) in discoveryArtists" :key="artist.name" class="artist-result" :class="{ active: index === 0 }">
-            <div class="artist-result__visual"><span>0{{ index + 1 }} / PROFILE</span><i /></div>
-            <p class="mono">{{ artist.city }}</p>
-            <h3>{{ artist.name }}</h3>
-            <p>{{ artist.sound }}</p>
-            <span class="availability"><i />{{ copy.search.available }}</span>
-            <details><summary>{{ copy.search.why }}</summary><ul><li v-for="reason in copy.search.reasons" :key="reason">{{ reason }}</li></ul></details>
-            <NuxtLink class="artist-link" to="/artist">{{ copy.search.request }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
-          </article>
-          <p v-if="!discoveryArtists.length" class="discovery-empty">{{ noDiscoveryResults }}</p>
+    <section id="start" class="cp-product-stage cp-section">
+      <div class="cp-wrap cp-stage-grid">
+        <div class="cp-stage-copy"><p class="cp-kicker">{{ p.stage.kicker }}</p><h2>{{ p.stage.title }}</h2><p>{{ p.stage.body }}</p><div class="cp-stage-points"><div v-for="point in p.stage.points" :key="point[0]" class="cp-stage-point"><b>{{ point[0] }}</b><span>{{ point[1] }}</span></div></div></div>
+        <div class="cp-app-window" aria-label="Cuebooker workspace preview">
+          <div class="cp-window-top"><span /><span /><span /><b>{{ p.stage.workspace }}</b></div>
+          <div class="cp-app-body"><aside class="cp-app-side"><div class="cp-side-brand">Cuebooker</div><div class="cp-side-item active">Resumen</div><div class="cp-side-item">Reservas <small>12</small></div><div class="cp-side-item">Calendario</div><div class="cp-side-item">Actividad</div><div class="cp-side-item">Perfil de artista</div><div class="cp-side-item">Ajustes</div></aside><div class="cp-app-main"><div class="cp-app-heading"><div><h3>{{ p.stage.greeting }}</h3><p>{{ p.stage.week }}</p></div><button class="cp-mini-button" type="button" @click="openApp('workspace_preview')">{{ p.stage.newBooking }}</button></div><div class="cp-metrics"><div v-for="metric in p.stage.metrics" :key="metric[0]" class="cp-metric"><small>{{ metric[0] }}</small><strong :class="{ lime: metric[2] }">{{ metric[1] }}</strong></div></div><div class="cp-booking-list"><div v-for="booking in p.stage.bookings" :key="booking[0]" class="cp-booking"><span class="cp-booking-bar" :class="booking[3]" /><div><b>{{ booking[0] }}</b><span>{{ booking[1] }}</span></div><em>{{ booking[2] }}</em></div></div></div></div>
         </div>
       </div>
     </section>
 
-    <section class="product-entry section-pad" data-analytics-section="final_cta">
-      <p class="eyebrow">{{ copy.entry.eyebrow }}</p>
-      <h2>{{ copy.entry.title }}</h2>
-      <p>{{ copy.entry.body }}</p>
-      <div class="product-entry__actions">
-        <NuxtLink class="button button--primary" to="/access?mode=signup" @click="trackAuth('signup', 'final_cta'); trackCta('final_signup', 'final_cta', '/access?mode=signup')">{{ copy.nav.signup }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
-        <NuxtLink class="text-button" to="/access?mode=signin" @click="trackAuth('login', 'final_cta')">{{ copy.nav.login }}</NuxtLink>
-      </div>
-    </section>
+    <section class="cp-manifesto cp-section"><div class="cp-wrap cp-manifesto-grid"><div><p class="cp-kicker">{{ p.manifesto.kicker }}</p><h2>{{ p.manifesto.title }}</h2></div><p>{{ p.manifesto.body }}</p></div></section>
 
-    <section id="feedback" class="early-access section-pad" data-analytics-section="feedback">
-      <div class="early-access__copy">
-        <p class="eyebrow">{{ copy.feedback.eyebrow }}</p>
-        <h2>{{ copy.feedback.title }}</h2>
-        <p>{{ copy.feedback.body }}</p>
-        <small>{{ copy.feedback.note }}</small>
-      </div>
-      <ClientOnly>
-        <BrevoPilotForm :copy="copy.feedback.form" :locale="locale" />
-        <template #fallback><div class="pilot-form pilot-form--loading">{{ copy.feedback.form.loading }}</div></template>
-      </ClientOnly>
-    </section>
+    <section id="control" class="cp-control cp-section"><div class="cp-wrap"><div class="cp-section-head"><h2>{{ p.control.title }}</h2><p>{{ p.control.body }}</p></div><div class="cp-control-grid"><article class="cp-control-card"><p class="cp-kicker">{{ p.control.assistant }}</p><h3>{{ p.control.assistantTitle }}</h3><p>{{ p.control.assistantBody }}</p><div class="cp-chat"><div class="cp-bubble">{{ locale === 'es' ? 'Nueva solicitud recibida. Fecha, sala y caché listos para revisar.' : 'New request received. Date, venue and fee ready to review.' }}</div><div class="cp-bubble you">{{ locale === 'es' ? 'Bloquea la fecha y pide el technical rider.' : 'Hold the date and request the technical rider.' }}</div><div class="cp-bubble">{{ locale === 'es' ? 'Hecho. Seguimiento programado. Tú mantienes el control.' : 'Done. Follow-up scheduled. You keep control.' }}</div></div></article><article class="cp-control-card"><p class="cp-kicker">{{ p.control.human }}</p><h3>{{ p.control.humanTitle }}</h3><div class="cp-toggle"><button :class="{ active: activeRole === 'artist' }" @click="activeRole = 'artist'">{{ p.control.artist }}</button><button :class="{ active: activeRole === 'manager' }" @click="activeRole = 'manager'">{{ p.control.manager }}</button></div><p class="cp-role-copy">{{ roleBody }}</p><div class="cp-role-features"><div v-for="feature in roleFeatures" :key="feature">{{ feature }}</div></div></article></div></div></section>
 
-    <div class="floating-actions" aria-label="Accesos rápidos">
-      <Transition name="floating-control">
-        <button v-if="backToTopVisible" class="back-to-top" type="button" :aria-label="copy.cta.topButton" @click="scrollTo('#top')">
-          <span class="floating-arrow"><i class="arrow arrow--up" aria-hidden="true" /></span>
-        </button>
-      </Transition>
-    </div>
+    <section id="distribution" class="cp-section"><div class="cp-wrap"><div class="cp-section-head"><h2>{{ p.distribution.title }}</h2><p>{{ p.distribution.body }}</p></div><div class="cp-signal-grid"><article class="cp-signal-card"><span class="cp-signal-number">01 / {{ p.distribution.profile }}</span><h3>{{ p.distribution.profileTitle }}</h3><p>{{ p.distribution.profileBody }}</p></article><article class="cp-signal-card"><span class="cp-signal-number">02 / {{ p.distribution.link }}</span><h3>{{ p.distribution.linkTitle }}</h3><p>{{ p.distribution.linkBody }}</p></article><article class="cp-signal-card"><span class="cp-signal-number">03 / {{ p.distribution.iframe }}</span><h3>{{ p.distribution.iframeTitle }}</h3><p>{{ p.distribution.iframeBody }}</p></article></div><div class="cp-distribution-detail"><div class="cp-distribution-ui"><div class="cp-share-header"><span>{{ p.distribution.label }}</span><span class="cp-share-live"><i />{{ p.distribution.live }}</span></div><div class="cp-share-preview"><div class="cp-share-avatar">CUE<small>ID 001</small></div><div><span>{{ p.distribution.dj }}</span><h3>{{ p.distribution.name }}</h3><p>{{ p.distribution.sound }}</p></div><span class="cp-share-arrow">↗</span></div><div class="cp-share-actions"><button :class="{ active: shareMode === 'profile' }" @click="shareMode = 'profile'">{{ p.distribution.copy }}</button><button :class="{ active: shareMode === 'website' }" @click="shareMode = 'website'">{{ p.distribution.instagram }}</button><button :class="{ active: shareMode === 'qr' }" @click="shareMode = 'qr'">{{ p.distribution.qr }}</button></div></div><div class="cp-distribution-copy"><p class="cp-kicker">{{ p.distribution.kicker }}</p><h3>{{ p.distribution.title }}</h3><p>{{ p.distribution.detail }}</p><div class="cp-distribution-list"><div v-for="item in p.distribution.items" :key="item[0]"><b>{{ item[0] }}</b><span>{{ item[1] }}</span></div></div></div></div></div></section>
 
-    <footer class="site-footer"><span>CUEBOOKER / 2026</span><span>RAW · MECHANICAL · HUMAN</span><a :href="`mailto:${copy.cta.email}`">{{ copy.cta.email }}</a></footer>
+    <section id="cue-id" class="cp-cue-id cp-section"><div class="cp-wrap cp-cue-grid"><div class="cp-cue-copy"><p class="cp-kicker">{{ p.identity.kicker }}</p><h2>{{ p.identity.title }}</h2><p>{{ p.identity.body }}</p><button class="cp-cta" type="button" @click="scrollTo('#top')">{{ p.identity.cta }} <span>↗</span></button></div><div class="cp-cue-card"><div class="cp-cue-ring"><span>CUE<br />ID 001</span></div><div class="cp-cue-meta"><span>{{ p.identity.profile }}</span><span>{{ p.identity.active }}</span></div></div></div></section>
+
+    <section class="cp-closing cp-section"><div class="cp-wrap cp-closing-inner"><h2>{{ p.closing.title }}</h2><div><p>{{ p.closing.body }}</p><button class="cp-cta" type="button" @click="auth('signup', 'closing')">{{ p.closing.cta }} <span>↗</span></button></div></div></section>
+    <footer class="cp-footer"><div class="cp-wrap"><span class="cp-brand"><CueBrand /></span><span>{{ locale === 'es' ? 'Hecho para las personas que están detrás del sonido.' : 'Made for the people behind the sound.' }}</span><span>© 2026 Cuebooker</span></div></footer>
   </main>
 </template>
