@@ -1122,3 +1122,14 @@ textarea:focus-visible, select:focus-visible { outline: 2px solid var(--cue-acce
 .commercial-home .cp-channel-icon--link:after { right:7px; transform:rotate(-42deg); border-color:var(--cp-red); }
 .commercial-home .cp-channel-icon--iframe:before { inset:13px 10px 11px; border:2px solid var(--cp-lime); border-radius:5px; }
 .commercial-home .cp-channel-icon--iframe:after { top:20px; left:12px; width:32px; height:2px; background:var(--cp-red); box-shadow:0 7px 0 color-mix(in srgb,var(--cp-lime) 65%,transparent),0 14px 0 color-mix(in srgb,var(--cp-lime) 65%,transparent); }
+
+.commercial-home .cp-nav { transition:transform .28s ease, background .28s ease; }
+.commercial-home .cp-nav--hidden { transform:translateY(-105%); }
+.commercial-home .cp-back-top { position:fixed; right:22px; bottom:22px; z-index:45; display:grid; place-items:center; width:48px; height:48px; border:1px solid var(--cp-line); border-radius:50%; background:color-mix(in srgb,var(--cp-panel) 92%,transparent); color:var(--cp-paper); cursor:pointer; box-shadow:0 14px 38px var(--cue-shadow); }
+.commercial-home .cp-back-top:hover { border-color:var(--cp-lime); color:var(--cp-lime); transform:translateY(-2px); }
+.commercial-home .cp-up-arrow { width:10px; height:10px; border-top:2px solid currentColor; border-left:2px solid currentColor; transform:translateY(3px) rotate(45deg); }
+.cp-float-enter-active,.cp-float-leave-active { transition:opacity .2s,transform .2s; }
+.cp-float-enter-from,.cp-float-leave-to { opacity:0; transform:translateY(10px); }
+@media (max-width:520px) {
+  .commercial-home .cp-back-top { right:14px; bottom:14px; width:44px; height:44px; }
+}
