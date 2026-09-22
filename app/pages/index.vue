@@ -30,7 +30,7 @@ const p = computed(() => locale.value === 'es' ? {
     title: 'La noche es la parte visible. Cuebooker gestiona todo lo que la hace posible.',
     body: 'Cada solicitud, respuesta, fecha, contacto y decisión vive dentro del mismo sistema. Menos trabajo disperso. Más espacio para lo que realmente mueve tu carrera.',
     cards: [
-      ['01 / CAPTURA', 'Nada bueno se pierde en la bandeja de entrada.', 'Recibe las solicitudes en un único lugar, con la información que necesitas desde el primer momento.'],
+      ['01 / CAPTURA', 'Cada oportunidad entra con contexto.', 'Fecha, caché, lugar y contacto, desde el primer mensaje.'],
       ['02 / AVANCE', 'Cada conversación sabe cuál es su siguiente paso.', 'Responde, haz seguimiento, bloquea una fecha, confirma el bolo o archiva la oportunidad sin perder el contexto.'],
       ['03 / AIRE', 'El trabajo repetitivo empieza a desaparecer.', 'Automatiza la parte mecánica mientras tú mantienes el control de las decisiones que marcan tu carrera.']
     ]
@@ -93,7 +93,7 @@ const p = computed(() => locale.value === 'es' ? {
     title: 'The night is what people see. Cuebooker handles everything that makes it possible.',
     body: 'Every request, reply, date, contact and decision lives in one system. Less scattered work. More room for what moves your career.',
     cards: [
-      ['01 / CAPTURE', 'Nothing good gets lost in the inbox.', 'Receive requests in one place, with the information you need from the start.'],
+      ['01 / CAPTURE', 'Every opportunity arrives with context.', 'Date, fee, venue and contact details, from the first message.'],
       ['02 / MOVE FORWARD', 'Every conversation knows its next step.', 'Reply, follow up, hold a date, confirm the gig or archive the opportunity without losing context.'],
       ['03 / AIR', 'Repetitive work starts to disappear.', 'Automate the mechanical part while you keep control of the decisions that shape your career.']
     ]
