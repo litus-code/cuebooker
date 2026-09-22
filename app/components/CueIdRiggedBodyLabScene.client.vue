@@ -8,6 +8,7 @@ import {
   Vector3
 } from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js'
 import type { CueIdStylizedCreatorConfigV1 } from '../domain/cueIdStylizedCreator'
 import {
@@ -251,6 +252,9 @@ async function loadBody() {
     emit('progress', 86)
 
     const loader = new GLTFLoader()
+    const dracoLoader = new DRACOLoader()
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/')
+    loader.setDRACOLoader(dracoLoader)
     loader.setMeshoptDecoder(MeshoptDecoder)
 
     emit('progress', 90)
