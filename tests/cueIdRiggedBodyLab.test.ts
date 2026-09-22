@@ -67,3 +67,14 @@ test('V2 lab stage exposes loading progress and body/face inspection controls', 
   assert.match(workspace, /cue-workspace__load-progress/)
   assert.match(workspace, /:view-mode="labViewMode"/)
 })
+
+
+test('V2 lab loader supports Draco-compressed body GLBs', async () => {
+  const source = await readFile(
+    new URL('../app/components/CueIdRiggedBodyLabScene.client.vue', import.meta.url),
+    'utf8'
+  )
+
+  assert.match(source, /DRACOLoader/)
+  assert.match(source, /setDRACOLoader\(dracoLoader\)/)
+})
