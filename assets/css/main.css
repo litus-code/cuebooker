@@ -1133,3 +1133,10 @@ textarea:focus-visible, select:focus-visible { outline: 2px solid var(--cue-acce
 @media (max-width:520px) {
   .commercial-home .cp-back-top { right:14px; bottom:14px; width:44px; height:44px; }
 }
+
+@media (max-width:520px) {
+  .commercial-home .cp-channel-card { padding-right:20px; }
+  .commercial-home .cp-channel-card .cp-signal-number,
+  .commercial-home .cp-channel-card h3 { padding-right:78px; }
+  .commercial-home .cp-channel-card p { max-width:none; }
+}
