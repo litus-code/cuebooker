@@ -1054,3 +1054,48 @@ textarea:focus-visible, select:focus-visible { outline: 2px solid var(--cue-acce
   .cp-toggle { max-width:100%; }
   .cp-toggle button { padding:8px 9px; font-size:10px; }
 }
+
+
+/* Prototype polish from mobile review. */
+.commercial-home .cp-cta,
+.commercial-home .cp-mini-button,
+.commercial-home .cp-signal-card,
+.commercial-home .cp-app-window,
+.commercial-home .cp-control-card,
+.commercial-home .cp-distribution-ui,
+.commercial-home .cp-distribution-copy,
+.commercial-home .cp-cue-card { box-shadow:0 18px 46px color-mix(in srgb,var(--cp-black) 34%,transparent); }
+.commercial-home .cp-cta { box-shadow:0 12px 28px color-mix(in srgb,var(--cp-lime) 22%,transparent); }
+.commercial-home .cp-cta--ghost { box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--cp-paper) 4%,transparent); }
+.commercial-home .cp-arrow { display:inline-block; width:9px; height:9px; border-top:2px solid currentColor; border-right:2px solid currentColor; transform:rotate(45deg); }
+.commercial-home .cp-signal-card:after { top:22px; right:22px; width:58px; height:58px; border:1px solid color-mix(in srgb,var(--cp-lime) 45%,transparent); border-radius:14px; background:radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--cp-lime) 68%,transparent) 0 7px,transparent 8px),linear-gradient(90deg,transparent 0 19%,color-mix(in srgb,var(--cp-lime) 55%,transparent) 20% 23%,transparent 24% 44%,color-mix(in srgb,var(--cp-red) 85%,transparent) 45% 48%,transparent 49% 69%,color-mix(in srgb,var(--cp-lime) 55%,transparent) 70% 73%,transparent 74%); box-shadow:none; opacity:.9; }
+.commercial-home .cp-signal-card:before { position:absolute; top:22px; right:91px; width:20px; height:2px; background:var(--cp-red); content:""; }
+@media (max-width:850px) {
+  .commercial-home .cp-section { padding:72px 0; }
+  .commercial-home .cp-section-head { margin-bottom:34px; }
+  .commercial-home .cp-signal-card { min-height:190px; }
+  .commercial-home .cp-product-stage { padding-top:58px; }
+  .commercial-home .cp-app-window { overflow:hidden; }
+  .commercial-home .cp-app-body { display:block; min-width:0; }
+  .commercial-home .cp-app-side { display:none; }
+  .commercial-home .cp-app-main { padding:26px 22px; }
+  .commercial-home .cp-stage-point { gap:12px; }
+  .commercial-home .cp-stage-point b { flex:0 0 88px; min-width:88px; }
+}
+@media (max-width:520px) {
+  .commercial-home .cp-section { padding:62px 0; }
+  .commercial-home .cp-product-stage { padding-top:46px; }
+  .commercial-home .cp-signal-card { min-height:172px; padding:20px; }
+  .commercial-home .cp-signal-card h3 { max-width:calc(100% - 70px); font-size:25px; }
+  .commercial-home .cp-stage-point { gap:10px; font-size:13px; }
+  .commercial-home .cp-stage-point b { flex-basis:86px; min-width:86px; font-size:10px; }
+  .commercial-home .cp-app-main { padding:22px 16px; }
+  .commercial-home .cp-metrics { gap:5px; }
+  .commercial-home .cp-metric { min-width:0; padding:10px 7px; }
+  .commercial-home .cp-metric small { display:block; min-height:28px; font-size:8px; line-height:1.15; }
+  .commercial-home .cp-metric strong { font-size:19px; }
+  .commercial-home .cp-booking { grid-template-columns:7px minmax(0,1fr) auto; gap:8px; padding:11px 9px; }
+  .commercial-home .cp-booking b { font-size:10px; line-height:1.15; }
+  .commercial-home .cp-booking span:not(.cp-booking-bar) { font-size:9px; }
+  .commercial-home .cp-share-actions { gap:6px; }
+}
