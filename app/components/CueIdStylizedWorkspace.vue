@@ -248,6 +248,14 @@ function colorHex(id: CueIdStylizedGarmentColorId) {
   }[id]
 }
 
+function scrollToCueEditor() {
+  if (!import.meta.client) return
+  const editor = document.getElementById('cue-id-editor')
+  if (!editor) return
+  const top = editor.getBoundingClientRect().top + window.scrollY - 10
+  window.scrollTo({ top: Math.max(0, top), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+}
+
 function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
   return {
     black: '#141311',
@@ -265,7 +273,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
   <section class="cue-workspace">
     <header class="cue-workspace__topbar">
       <div>
-        <p>CUE ID</p>
+        <div class="cue-workspace__title-row"><p>CUE ID</p><small>BETA</small></div>
         <h1>{{ copy.title }}</h1>
         <span>{{ copy.subtitle }}</span>
       </div>
@@ -376,9 +384,13 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
           <small v-if="labBodyReady">{{ copy.rotateHint }}</small>
           <small>{{ copy.localDraft }}</small>
         </div>
+        <button class="cue-workspace__mobile-edit-hint" type="button" @click="scrollToCueEditor">
+          <span>{{ locale === 'es' ? 'Personaliza tu CUE ID' : 'Customize your CUE ID' }}</span>
+          <strong>{{ locale === 'es' ? 'Desliza hacia abajo para editar' : 'Scroll down to edit' }} ↓</strong>
+        </button>
       </section>
 
-      <aside class="cue-workspace__editor">
+      <aside id="cue-id-editor" class="cue-workspace__editor">
         <nav class="cue-workspace__tabs" aria-label="CUE ID creator sections">
           <button
             v-for="section in CUE_ID_WORKSPACE_SECTIONS"
@@ -797,6 +809,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace{display:grid;gap:18px;padding:24px 0 12px}
 .cue-workspace__topbar{display:flex;justify-content:space-between;align-items:flex-end;gap:16px}
 .cue-workspace__topbar p{margin:0 0 6px;color:var(--cue-accent);font:800 10px/1 monospace;letter-spacing:.18em}
+.cue-workspace__title-row{display:flex;align-items:center;gap:8px}.cue-workspace__title-row p{margin:0}.cue-workspace__title-row small{padding:4px 6px;border:1px solid color-mix(in srgb,var(--cue-accent) 46%,var(--cue-border));border-radius:999px;color:var(--cue-accent);font:800 8px/1 monospace;letter-spacing:.08em}
 .cue-workspace__topbar h1{margin:0;font-size:clamp(1.9rem,4vw,3.2rem);line-height:.95}
 .cue-workspace__topbar span{display:block;margin-top:8px;color:var(--cue-muted)}
 .cue-workspace__actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
@@ -832,6 +845,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace__load-progress small{color:var(--cue-muted)!important}
 .cue-workspace__load-error{color:#ff8a8a!important;overflow-wrap:anywhere}
 .cue-workspace__shared-note{display:grid;gap:4px;margin:0;padding:14px 18px;border-top:1px solid var(--cue-border);color:var(--cue-muted);font-size:12px}.cue-workspace__shared-note small{font-size:10px;opacity:.78}
+.cue-workspace__mobile-edit-hint{display:none}
 .cue-workspace__editor{display:grid;grid-template-rows:auto 1fr;overflow:hidden}
 .cue-workspace__tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px;border-bottom:1px solid var(--cue-border)}
 .cue-workspace__tabs button{min-height:42px;border:0;border-radius:10px;padding:10px;background:transparent;color:var(--cue-muted);font-weight:800}.cue-workspace__tabs button.active{background:rgba(206,255,84,.12);color:var(--cue-accent)}
@@ -870,6 +884,10 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
   .cue-workspace__pending{max-width:calc(100% - 28px);padding:14px}
   .cue-workspace__pending span:not(.cue-workspace__preview-kicker){font-size:12px}
   .cue-workspace__shared-note{padding:11px 12px;font-size:11px}
+  .cue-workspace__mobile-edit-hint{display:grid;gap:4px;width:100%;padding:13px 12px;border:0;border-top:1px solid var(--cue-border);background:color-mix(in srgb,var(--cue-accent) 7%,var(--cue-surface));color:var(--cue-text);text-align:left;cursor:pointer}
+  .cue-workspace__mobile-edit-hint span{color:var(--cue-accent);font:800 9px/1.2 monospace;letter-spacing:.1em;text-transform:uppercase}
+  .cue-workspace__mobile-edit-hint strong{font-size:12px}
+  #cue-id-editor{scroll-margin-top:10px}
   .cue-workspace__editor{min-height:0;overflow:visible}
   .cue-workspace__tabs{position:sticky;top:0;z-index:4;display:flex;gap:6px;overflow-x:auto;padding:8px;background:var(--cue-surface);border-radius:14px 14px 0 0;scrollbar-width:none}
   .cue-workspace__tabs::-webkit-scrollbar{display:none}
