@@ -1189,3 +1189,19 @@ textarea:focus-visible, select:focus-visible { outline: 2px solid var(--cue-acce
   .commercial-home .cp-mobile-nav-links a { min-height:68px; font-size:16px; }
   .commercial-home .cp-mobile-login,.commercial-home .cp-mobile-signup { min-height:52px; }
 }
+
+
+/* Profile visibility and CUE ID beta state. */
+.commercial-home .cp-share-visibility { display:flex; align-items:center; gap:12px; }
+.commercial-home .cp-share-private { color:var(--cp-muted); font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
+.commercial-home .cp-share-private:before { display:inline-block; width:7px; height:7px; margin-right:6px; border:1px solid var(--cp-muted); border-radius:50%; content:""; vertical-align:middle; }
+.commercial-home .cp-beta-note { display:inline-flex; align-items:center; min-height:34px; margin-top:26px; padding:0 13px; border:1px solid color-mix(in srgb,var(--cp-lime) 48%,var(--cp-line)); border-radius:999px; color:var(--cp-lime); font-size:9px; font-weight:850; letter-spacing:.13em; text-transform:uppercase; }
+@media (max-width:850px) {
+  .commercial-home .cp-nav { overflow:visible; }
+  .commercial-home .cp-mobile-menu { z-index:50; }
+}
+@media (max-width:520px) {
+  .commercial-home .cp-share-header { align-items:flex-start; }
+  .commercial-home .cp-share-visibility { gap:8px; }
+  .commercial-home .cp-share-private { font-size:8px; }
+}
