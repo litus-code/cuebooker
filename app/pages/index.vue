@@ -14,7 +14,7 @@ const router = useRouter()
 const analytics = useAnalytics()
 
 const p = computed(() => locale.value === 'es' ? {
-  nav: { system: 'El sistema', distribution: 'Distribución', identity: 'CUE ID', login: 'Iniciar sesión', signup: 'Crear cuenta' },
+  nav: { system: 'Cómo funciona', distribution: 'Distribución', identity: 'CUE ID', login: 'Iniciar sesión', signup: 'Crear cuenta' },
   hero: {
     eyebrow: 'PARA QUIEN MUEVE LA NOCHE',
     title: 'Que la música siga avanzando.',
@@ -77,7 +77,7 @@ const p = computed(() => locale.value === 'es' ? {
   identity: { kicker: 'PERFIL DE ARTISTA', title: 'Tu perfil también tiene presencia.', body: 'CUE ID será la firma visual de tu perfil. El avatar y la personalización están en beta, para que tu identidad crezca sin convertirse en una plantilla.', profile: 'Perfil de artista', active: 'BETA · EN EVOLUCIÓN' },
   closing: { title: 'Haz espacio para la parte que solo tú puedes hacer.', body: 'Cuebooker es la capa de trabajo entre la oportunidad y la noche. Empieza con tu próxima reserva.', cta: 'Crear mi espacio de trabajo' }
 } : {
-  nav: { system: 'The system', distribution: 'Distribution', identity: 'CUE ID', login: 'Sign in', signup: 'Create account' },
+  nav: { system: 'How it works', distribution: 'Distribution', identity: 'CUE ID', login: 'Sign in', signup: 'Create account' },
   hero: {
     eyebrow: 'FOR THE PEOPLE WHO MOVE THE NIGHT',
     title: 'Let the music keep moving.',
