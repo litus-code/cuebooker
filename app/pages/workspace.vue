@@ -289,6 +289,22 @@ const publicWidgetCode = computed(() => publicWidgetUrl.value
   : '')
 const publicQrSvg = computed(() => publicBookingUrl.value ? createBookingQrSvg(`${publicBookingUrl.value}&src=qr`) : '')
 
+async function toggleProfileEditSection(section: Exclude<ProfileEditSection, null>) {
+  profileEditSection.value = profileEditSection.value === section ? null : section
+  if (!profileEditSection.value || !import.meta.client) return
+  await nextTick()
+  await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+  const editor = document.getElementById('profile-builder-editor')
+  const header = document.getElementById('workspace-header')
+  if (!editor) return
+  const offset = (header?.getBoundingClientRect().height || 0) + 12
+  const top = editor.getBoundingClientRect().top + window.scrollY - offset
+  window.scrollTo({
+    top: Math.max(0, top),
+    behavior: prefersReducedMotion() ? 'auto' : 'smooth'
+  })
+}
+
 async function copyProfileValue(label: string, value: string) {
   if (!import.meta.client || !value) return
   await navigator.clipboard.writeText(value)
@@ -1512,13 +1528,13 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             </div>
 
             <div class="profile-builder__grid">
-              <button type="button" :class="{ active: profileEditSection === 'identity' }" @click="profileEditSection = profileEditSection === 'identity' ? null : 'identity'">
+              <button type="button" :class="{ active: profileEditSection === 'identity' }" @click="toggleProfileEditSection('identity')">
                 <span>01</span>
                 <strong>{{ preferences.locale.value === 'es' ? 'Identidad' : 'Identity' }}</strong>
                 <p>{{ profileForm.stageName || selectedArtist?.stage_name }} · {{ profileForm.city || (preferences.locale.value === 'es' ? 'ciudad pendiente' : 'city pending') }}</p>
               </button>
 
-              <button type="button" :class="{ active: profileEditSection === 'image' }" @click="profileEditSection = profileEditSection === 'image' ? null : 'image'">
+              <button type="button" :class="{ active: profileEditSection === 'image' }" @click="toggleProfileEditSection('image')">
                 <span>02</span>
                 <strong>{{ preferences.locale.value === 'es' ? 'Imagen' : 'Image' }}</strong>
                 <p>{{ profileCoverUrl ? (preferences.locale.value === 'es' ? 'Portada personalizada' : 'Custom cover') : (preferences.locale.value === 'es' ? 'Portada Cuebooker' : 'Cuebooker cover') }}</p>
@@ -1530,25 +1546,25 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                 <p>{{ preferences.locale.value === 'es' ? 'Construye tu identidad visual 3D.' : 'Build your 3D visual identity.' }}</p>
               </NuxtLink>
 
-              <button type="button" :class="{ active: profileEditSection === 'sound' }" @click="profileEditSection = profileEditSection === 'sound' ? null : 'sound'">
+              <button type="button" :class="{ active: profileEditSection === 'sound' }" @click="toggleProfileEditSection('sound')">
                 <span>04</span>
                 <strong>{{ preferences.locale.value === 'es' ? 'Sonido' : 'Sound' }}</strong>
                 <p>{{ splitList(profileForm.primaryGenres, 3).join(' · ') || (preferences.locale.value === 'es' ? 'Géneros y formatos' : 'Genres and formats') }}</p>
               </button>
 
-              <button type="button" :class="{ active: profileEditSection === 'links' }" @click="profileEditSection = profileEditSection === 'links' ? null : 'links'">
+              <button type="button" :class="{ active: profileEditSection === 'links' }" @click="toggleProfileEditSection('links')">
                 <span>05</span>
                 <strong>{{ preferences.locale.value === 'es' ? 'Links' : 'Links' }}</strong>
                 <p>Instagram · SoundCloud · Spotify · Web</p>
               </button>
 
-              <button type="button" :class="{ active: profileEditSection === 'booking' }" @click="profileEditSection = profileEditSection === 'booking' ? null : 'booking'">
+              <button type="button" :class="{ active: profileEditSection === 'booking' }" @click="toggleProfileEditSection('booking')">
                 <span>06</span>
                 <strong>Booking</strong>
                 <p>{{ preferences.locale.value === 'es' ? 'Condiciones privadas y disponibilidad.' : 'Private terms and availability.' }}</p>
               </button>
 
-              <button type="button" :class="{ active: profileEditSection === 'distribution' }" @click="profileEditSection = profileEditSection === 'distribution' ? null : 'distribution'">
+              <button type="button" :class="{ active: profileEditSection === 'distribution' }" @click="toggleProfileEditSection('distribution')">
                 <span>07</span>
                 <strong>{{ preferences.locale.value === 'es' ? 'Distribución' : 'Distribution' }}</strong>
                 <p>{{ preferences.locale.value === 'es' ? 'Link, QR, Instagram, EPK e iframe.' : 'Link, QR, Instagram, EPK and iframe.' }}</p>
@@ -1556,7 +1572,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             </div>
           </section>
 
-          <form v-if="profileEditSection" class="profile-builder-editor" @submit.prevent="saveArtistProfile">
+          <form v-if="profileEditSection" id="profile-builder-editor" class="profile-builder-editor" @submit.prevent="saveArtistProfile">
             <header>
               <div>
                 <p class="eyebrow">
