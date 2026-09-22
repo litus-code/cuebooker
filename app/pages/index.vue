@@ -180,7 +180,7 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
 
 <template>
   <main class="commercial-home">
-    <nav class="cp-nav">
+    <nav class="cp-nav" :class="{ 'cp-nav--hidden': navHidden }">
       <div class="cp-wrap cp-nav-inner">
         <NuxtLink class="cp-brand" to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink>
         <div class="cp-nav-links">
