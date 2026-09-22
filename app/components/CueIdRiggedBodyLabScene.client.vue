@@ -268,6 +268,15 @@ async function loadBody() {
 
     disposeScene(scene.value)
     scene.value = parsed
+
+    // The model is parsed, framed and attached at this point. Relying on
+    // TresCanvas' render event left the loading overlay stuck at 96% even
+    // while the body was already visible, so mark the asset ready here.
+    await nextTick()
+    if (generation !== loadGeneration) return
+    ready.value = true
+    emit('progress', 100)
+    emit('ready')
   } catch (error) {
     if (abortController.signal.aborted || generation !== loadGeneration) return
     console.error('[CUE ID] V2 lab body load failed', error)
@@ -276,13 +285,6 @@ async function loadBody() {
     const message = error instanceof Error ? error.message : String(error)
     emit('failed', message)
   }
-}
-
-function handleRender() {
-  if (!scene.value || ready.value) return
-  ready.value = true
-  emit('progress', 100)
-  emit('ready')
 }
 
 function handlePointerDown(event: PointerEvent) {
@@ -367,7 +369,6 @@ onBeforeUnmount(() => {
       :fail-if-major-performance-caveat="true"
       power-preference="default"
       :render-mode="ready ? 'on-demand' : 'always'"
-      @render="handleRender"
     >
       <TresPerspectiveCamera :position="cameraPosition" :fov="38" />
       <TresAmbientLight :intensity="0.78" />
