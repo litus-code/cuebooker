@@ -115,7 +115,7 @@ useHead(() => ({
         <a href="#roles" @click.prevent="scrollTo('#roles')">{{ copy.nav.roles }}</a>
         <a href="#try" @click.prevent="scrollTo('#try')">{{ copy.nav.tryProduct }}</a>
         <div class="mobile-menu-auth">
-          <NuxtLink class="mobile-menu-login" to="/access" @click="menuOpen = false; trackAuth('login', 'mobile_menu')">{{ copy.nav.login }}</NuxtLink>
+          <NuxtLink class="mobile-menu-login" to="/access?mode=signin" @click="menuOpen = false; trackAuth('login', 'mobile_menu')">{{ copy.nav.login }}</NuxtLink>
           <NuxtLink class="mobile-menu-signup" to="/access?mode=signup" @click="menuOpen = false; trackAuth('signup', 'mobile_menu')">{{ copy.nav.signup }}</NuxtLink>
         </div>
       </nav>
@@ -125,7 +125,7 @@ useHead(() => ({
           <button :class="{ active: locale === 'en' }" @click="setLocale('en')">EN</button>
         </div>
         <button class="appearance-toggle" :aria-label="locale === 'es' ? 'Cambiar apariencia' : 'Change appearance'" :title="locale === 'es' ? 'Cambiar apariencia' : 'Change appearance'" @click="setTheme(theme === 'dark' ? 'light' : 'dark')"><span /></button>
-        <NuxtLink class="header-login" to="/access" @click="trackAuth('login', 'header')">{{ copy.nav.login }}</NuxtLink>
+        <NuxtLink class="header-login" to="/access?mode=signin" @click="trackAuth('login', 'header')">{{ copy.nav.login }}</NuxtLink>
         <NuxtLink class="header-signup" to="/access?mode=signup" @click="trackAuth('signup', 'header')">{{ copy.nav.signup }}</NuxtLink>
       </div>
     </header>
@@ -225,6 +225,43 @@ useHead(() => ({
       <p class="distribution-note">{{ copy.distribution.note }}</p>
     </section>
 
+    <section class="workspace-proof section-pad" data-analytics-section="workspace">
+      <div class="section-mark mono">{{ copy.workspace.index }}</div>
+      <div class="section-heading">
+        <p class="eyebrow">{{ copy.workspace.eyebrow }}</p>
+        <h2>{{ copy.workspace.title }}</h2>
+        <p>{{ copy.workspace.body }}</p>
+      </div>
+      <div class="workspace-frame">
+        <aside class="workspace-frame__sidebar">
+          <CueBrand />
+          <nav aria-label="Workspace preview">
+            <span v-for="(item, index) in copy.workspace.sidebar" :key="item" :class="{ active: index === 0 }">{{ item }}</span>
+          </nav>
+        </aside>
+        <div class="workspace-frame__main">
+          <div class="workspace-frame__top">
+            <div><span class="mono">CUEBOOKER / ESPACIO DE TRABAJO</span><strong>{{ copy.workspace.greeting }}</strong><p>{{ copy.workspace.subtitle }}</p></div>
+            <NuxtLink class="workspace-frame__cta" to="/app" @click="trackCta('workspace_preview', 'workspace', '/app')">+ {{ copy.workspace.newBooking }}</NuxtLink>
+          </div>
+          <div class="workspace-kpis">
+            <div v-for="stat in copy.workspace.stats" :key="stat.label"><span>{{ stat.label }}</span><strong :class="{ accent: stat.accent }">{{ stat.value }}</strong></div>
+          </div>
+          <div class="workspace-bookings">
+            <article v-for="booking in copy.workspace.bookings" :key="booking.venue" class="workspace-booking">
+              <i :class="booking.tone" />
+              <div><strong>{{ booking.venue }}</strong><span>{{ booking.meta }}</span></div>
+              <em>{{ booking.status }}</em>
+            </article>
+          </div>
+        </div>
+      </div>
+      <div class="workspace-proof__footer">
+        <span>{{ copy.workspace.note }}</span>
+        <NuxtLink class="text-button" to="/app" @click="trackCta('open_workspace', 'workspace', '/app')">{{ copy.workspace.cta }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
+      </div>
+    </section>
+
     <section class="identity-story section-pad" data-analytics-section="identity">
       <div class="section-mark mono">{{ copy.identity.index }}</div>
       <div class="section-heading">
@@ -320,7 +357,7 @@ useHead(() => ({
       <p>{{ copy.entry.body }}</p>
       <div class="product-entry__actions">
         <NuxtLink class="button button--primary" to="/access?mode=signup" @click="trackAuth('signup', 'final_cta'); trackCta('final_signup', 'final_cta', '/access?mode=signup')">{{ copy.nav.signup }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
-        <NuxtLink class="text-button" to="/access" @click="trackAuth('login', 'final_cta')">{{ copy.nav.login }}</NuxtLink>
+        <NuxtLink class="text-button" to="/access?mode=signin" @click="trackAuth('login', 'final_cta')">{{ copy.nav.login }}</NuxtLink>
       </div>
     </section>
 
