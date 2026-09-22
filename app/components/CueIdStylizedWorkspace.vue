@@ -273,17 +273,20 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
   <section class="cue-workspace">
     <header class="cue-workspace__topbar">
       <div>
-        <div class="cue-workspace__title-row"><p>CUE ID</p><small>BETA</small></div>
+        <div class="cue-workspace__title-row">
+          <p>CUE ID</p>
+          <small>BETA</small>
+          <span
+            class="cue-workspace__save-state"
+            :class="{ dirty }"
+          >
+            {{ dirty ? copy.unsaved : copy.savedState }}
+          </span>
+        </div>
         <h1>{{ copy.title }}</h1>
         <span>{{ copy.subtitle }}</span>
       </div>
       <div class="cue-workspace__actions">
-        <span
-          class="cue-workspace__save-state"
-          :class="{ dirty }"
-        >
-          {{ dirty ? copy.unsaved : copy.savedState }}
-        </span>
         <button
           type="button"
           class="cue-workspace__reset"
@@ -311,6 +314,13 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
             <strong>{{ currentBodyLabel }}</strong>
           </div>
           <div class="cue-workspace__stage-controls">
+            <button
+              class="cue-workspace__edit-shortcut"
+              type="button"
+              @click="scrollToCueEditor"
+            >
+              {{ locale === 'es' ? 'Editar' : 'Edit' }} ↓
+            </button>
             <div class="cue-workspace__view-toggle" role="group" aria-label="CUE ID view">
               <button
                 type="button"
@@ -386,7 +396,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
         </div>
         <button class="cue-workspace__mobile-edit-hint" type="button" @click="scrollToCueEditor">
           <span>{{ locale === 'es' ? 'Personaliza tu CUE ID' : 'Customize your CUE ID' }}</span>
-          <strong>{{ locale === 'es' ? 'Desliza hacia abajo para editar' : 'Scroll down to edit' }} ↓</strong>
+          <strong>{{ locale === 'es' ? 'Ir al editor' : 'Go to editor' }} ↓</strong>
         </button>
       </section>
 
@@ -809,7 +819,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace{display:grid;gap:18px;padding:24px 0 12px}
 .cue-workspace__topbar{display:flex;justify-content:space-between;align-items:flex-end;gap:16px}
 .cue-workspace__topbar p{margin:0 0 6px;color:var(--cue-accent);font:800 10px/1 monospace;letter-spacing:.18em}
-.cue-workspace__title-row{display:flex;align-items:center;gap:8px}.cue-workspace__title-row p{margin:0}.cue-workspace__title-row small{padding:4px 6px;border:1px solid color-mix(in srgb,var(--cue-accent) 46%,var(--cue-border));border-radius:999px;color:var(--cue-accent);font:800 8px/1 monospace;letter-spacing:.08em}
+.cue-workspace__title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.cue-workspace__title-row p{margin:0}.cue-workspace__title-row small{padding:4px 6px;border:1px solid color-mix(in srgb,var(--cue-accent) 46%,var(--cue-border));border-radius:999px;color:var(--cue-accent);font:800 8px/1 monospace;letter-spacing:.08em}
 .cue-workspace__topbar h1{margin:0;font-size:clamp(1.9rem,4vw,3.2rem);line-height:.95}
 .cue-workspace__topbar span{display:block;margin-top:8px;color:var(--cue-muted)}
 .cue-workspace__actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
@@ -823,6 +833,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace__stage-head{display:flex;justify-content:space-between;align-items:center;padding:18px;border-bottom:1px solid var(--cue-border)}
 .cue-workspace__stage-head span{display:block;color:var(--cue-muted);font-size:11px;text-transform:uppercase;letter-spacing:.1em}.cue-workspace__stage-head strong{font-size:1.1rem}
 .cue-workspace__stage-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.cue-workspace__edit-shortcut{display:none}
 .cue-workspace__body-toggle,.cue-workspace__view-toggle{display:flex;padding:3px;border:1px solid var(--cue-border);border-radius:999px}
 .cue-workspace__body-toggle button,.cue-workspace__view-toggle button{min-height:40px;border:0;border-radius:999px;padding:8px 14px;background:transparent;color:var(--cue-muted);font-weight:800}
 .cue-workspace__body-toggle button.active{background:var(--cue-accent);color:#111}
