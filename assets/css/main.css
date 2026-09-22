@@ -1205,3 +1205,21 @@ textarea:focus-visible, select:focus-visible { outline: 2px solid var(--cue-acce
   .commercial-home .cp-share-visibility { gap:8px; }
   .commercial-home .cp-share-private { font-size:8px; }
 }
+
+
+/* Mobile navigation is teleported above the page to avoid header clipping. */
+@media (max-width:850px) {
+  .cp-mobile-menu--portal { position:fixed!important; top:76px!important; right:0!important; bottom:0!important; left:0!important; z-index:100!important; display:none; grid-template-rows:1fr auto; gap:30px; padding:0 28px 30px; border-top:1px solid var(--cue-border); border-bottom:0; background:color-mix(in srgb,var(--cue-bg) 97%,transparent); overflow-y:auto; }
+  .cp-mobile-menu--portal.open { display:grid!important; }
+  .cp-mobile-menu--portal .cp-mobile-nav-links { align-self:center; border-top:1px solid var(--cue-border); }
+  .cp-mobile-menu--portal .cp-mobile-nav-links a { display:flex; align-items:center; justify-content:center; min-height:74px; padding:18px 8px; border-bottom:1px solid var(--cue-border); color:var(--cue-text); font-size:18px; font-weight:800; letter-spacing:.1em; text-align:center; text-transform:uppercase; }
+  .cp-mobile-menu--portal .cp-mobile-auth { display:grid; gap:10px; padding-top:22px; border-top:1px solid var(--cue-border); }
+  .cp-mobile-menu--portal .cp-mobile-login,.cp-mobile-menu--portal .cp-mobile-signup { display:flex; align-items:center; justify-content:center; width:100%; min-height:54px; border-radius:999px; font-size:11px; font-weight:900; letter-spacing:.1em; text-align:center; text-decoration:none; text-transform:uppercase; }
+  .cp-mobile-menu--portal .cp-mobile-login { border:1px solid var(--cue-border); color:var(--cue-text); }
+  .cp-mobile-menu--portal .cp-mobile-signup { box-shadow:0 13px 30px color-mix(in srgb,var(--cue-accent) 24%,transparent); }
+}
+@media (max-width:520px) {
+  .cp-mobile-menu--portal { top:66px!important; padding:0 22px 22px; }
+  .cp-mobile-menu--portal .cp-mobile-nav-links a { min-height:68px; font-size:16px; }
+  .cp-mobile-menu--portal .cp-mobile-login,.cp-mobile-menu--portal .cp-mobile-signup { min-height:52px; }
+}
