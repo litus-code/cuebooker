@@ -140,7 +140,7 @@ function scrollTo(id: string) {
 }
 function auth(mode: 'signin' | 'signup', placement: string) {
   analytics.track(mode === 'signup' ? 'signup_click' : 'login_click', { placement })
-  router.push(\`/access?mode=\${mode}\`)
+  router.push('/access?mode=' + mode)
 }
 function openApp(placement: string) {
   analytics.track('cta_click', { cta_name: 'workspace', placement, destination: '/app' })
