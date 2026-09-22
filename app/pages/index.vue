@@ -136,6 +136,7 @@ useHead(() => ({
         <p class="eyebrow">{{ copy.hero.eyebrow }}</p>
         <h1>{{ copy.hero.titleTop }}<br><em><span v-for="word in copy.hero.titleBottom.split(' ')" :key="word">{{ word }}</span></em></h1>
         <p class="lead">{{ copy.hero.body }}</p>
+        <p class="hero__manifesto"><span>RAW / MECHANICAL / HUMAN</span>{{ copy.hero.manifesto }}</p>
         <div class="hero__actions">
           <button class="button button--primary" @click="trackAuth('signup', 'hero'); trackCta('hero_primary', 'hero', '/access?mode=signup'); router.push('/access?mode=signup')">{{ copy.hero.primaryCta }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
           <button class="text-button" @click="trackCta('see_how_it_works', 'hero', '#product'); scrollTo('#product')">{{ copy.hero.secondaryCta }} <span class="arrow arrow--down" aria-hidden="true" /></button>
@@ -165,6 +166,10 @@ useHead(() => ({
 
       <p class="hero__edge mono">INPUT <span class="arrow arrow--right" aria-hidden="true" /> CONTEXT <span class="arrow arrow--right" aria-hidden="true" /> BOOKING <span class="arrow arrow--right" aria-hidden="true" /> FOLLOW-UP</p>
     </section>
+
+    <div class="home-ticker" aria-hidden="true">
+      <span>DISCOVERY</span><i /> <span>BOOKING</span><i /> <span>MANAGEMENT</span><i /> <span>RAW / PRECISE / HUMAN</span>
+    </div>
 
     <section id="problem" class="problem section-pad" data-analytics-section="problem">
       <div class="section-mark mono">{{ copy.problem.index }}</div>
