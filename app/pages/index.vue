@@ -21,7 +21,7 @@ const p = computed(() => locale.value === 'es' ? {
     accent: 'El booking ya está ocurriendo.',
     body: 'Cuebooker evita que una oportunidad se pierda.',
     flow: { channels: ['Instagram · 22:47', 'WhatsApp · 23:12', 'Formulario web · 00:06'], label: 'CUEBOOKER / NUEVA SOLICITUD', booking: 'Warehouse 23 / Barcelona', detail: '18 oct · Techno · 1.200 €', status: 'Pendiente de decisión' },
-    primary: 'Entrar en el sistema',
+    primary: 'Abrir mi espacio',
     secondary: 'Conoce tu CUE ID',
     note: 'Hecho para DJs, managers y las personas que hacen posible cada noche.'
   },
@@ -84,7 +84,7 @@ const p = computed(() => locale.value === 'es' ? {
     accent: 'Booking is already happening.',
     body: 'Cuebooker makes sure no opportunity gets lost.',
     flow: { channels: ['Instagram · 22:47', 'WhatsApp · 23:12', 'Web form · 00:06'], label: 'CUEBOOKER / NEW REQUEST', booking: 'Warehouse 23 / Barcelona', detail: '18 Oct · Techno · €1,200', status: 'Waiting for your decision' },
-    primary: 'Enter the system',
+    primary: 'Open my workspace',
     secondary: 'Meet your CUE ID',
     note: 'Made for DJs, managers and the people who make every night happen.'
   },
