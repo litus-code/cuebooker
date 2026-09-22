@@ -1101,3 +1101,9 @@ textarea:focus-visible, select:focus-visible { outline: 2px solid var(--cue-acce
 }
 
 .commercial-home .cp-ticker span:after { display:inline-block; width:5px; height:5px; margin-left:44px; padding:0; border-radius:50%; background:var(--cp-red); content:""; vertical-align:middle; }
+
+.commercial-home .cp-role-features div:before { left:0; top:16px; width:8px; height:8px; border-top:2px solid var(--cp-lime); border-right:2px solid var(--cp-lime); content:""; transform:rotate(45deg); }
+.commercial-home .cp-share-arrow { width:12px; height:12px; border-width:2px; color:var(--cp-red); }
+@media (max-width:520px) {
+  .commercial-home .cp-hero-content { padding-top:78px; }
+}
