@@ -1099,3 +1099,5 @@ textarea:focus-visible, select:focus-visible { outline: 2px solid var(--cue-acce
   .commercial-home .cp-booking span:not(.cp-booking-bar) { font-size:9px; }
   .commercial-home .cp-share-actions { gap:6px; }
 }
+
+.commercial-home .cp-ticker span:after { display:inline-block; width:5px; height:5px; margin-left:44px; padding:0; border-radius:50%; background:var(--cp-red); content:""; vertical-align:middle; }
