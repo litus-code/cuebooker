@@ -9688,12 +9688,12 @@ Key result:
 - V9 established the first usable shared male/female bootstrap with a hard torso lock and arm capsules;
 - V10 refines shoulder/axilla, wrist/forearm/hand and pelvis/groin/upper-leg transitions;
 - male V10 passed isolated bootstrap QA for shoulders, elbows, hips and knees;
-- female V9 passed the same isolated bootstrap QA and final female V10 regression remains the last freeze gate;
+- female V10 also passed isolated bootstrap QA for shoulders, elbows, hips and knees;
 - persistent QA actions are stored in the `.blend` via Fake User;
-- V10 is the selected working baseline, while `productionReady` remains `false`.
+- V10 is now the selected shared male/female working baseline, while `productionReady` remains `false`.
 
 The rig contract remains shared between male/female and no sex-specific user-facing catalogue is introduced.
 
-Do not start broad garment fitting until final male + female V10 exports are frozen.
+The rig QA gate is closed. Next: freeze the final male + female V10 outputs and integrate them in the lab-only CUE ID stage. Do not start broad garment fitting until that body integration is stable.
 
 Production remains untouched.
