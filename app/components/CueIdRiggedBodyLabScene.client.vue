@@ -394,4 +394,5 @@ onBeforeUnmount(() => {
 .cue-id-rigged-body-lab.ready{opacity:1;pointer-events:auto;cursor:grab}
 .cue-id-rigged-body-lab.ready:active{cursor:grabbing}
 .cue-id-rigged-body-lab :deep(canvas){display:block;width:100%!important;height:100%!important}
+@media(max-width:760px){.cue-id-rigged-body-lab{touch-action:pan-y pinch-zoom}.cue-id-rigged-body-lab.ready{cursor:default}}
 </style>
