@@ -15,6 +15,7 @@ const route = useRoute()
 const router = useRouter()
 
 type WorkspaceView = 'overview' | 'bookings' | 'calendar' | 'history' | 'profile'
+type ProfileEditSection = 'identity' | 'image' | 'sound' | 'links' | 'booking' | null
 type ManagedArtist = { id: string; stage_name: string; slug: string; role: 'owner' | 'manager' | 'editor' }
 type ManagedOrganization = { id: string; name: string; slug: string; type: 'agency' | 'promoter'; role: 'owner' | 'admin' | 'member' }
 
@@ -100,7 +101,7 @@ const profileSaving = ref(false)
 const profileMessage = ref('')
 const profileWelcome = ref(false)
 const profilePreviewOpen = ref(false)
-const profileEditOpen = ref(false)
+const profileEditSection = ref<ProfileEditSection>(null)
 const profileCoverUrl = ref('')
 const profileCoverUploading = ref(false)
 const profileCoverMessage = ref('')
@@ -120,7 +121,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   loading: 'Cargando workspace…', rosterEyebrow: 'ROSTER / PRIMER ARTISTA', addFirstArtist: 'Añade el primer artista de',
   rosterBody: 'Quedará asociado al roster y podrás empezar a gestionar su actividad.', artistName: 'Nombre artístico', identifier: 'Identificador', creating: 'Creando…', addArtist: 'Añadir artista',
   noArtist: 'No hay un artista gestionable en esta cuenta.', noArtistBody: 'Tu cuenta todavía no tiene un artista o roster asignado.',
-  overviewEyebrow: 'WORKSPACE / RESUMEN', overviewTitle: 'QUÉ NECESITA TU ATENCIÓN.', overviewBody: 'Una entrada rápida a los bookings y fechas del artista, sin convertir el calendario en todo el producto.', profileCard: 'Ficha profesional', profileCardBody: 'Completa o actualiza los datos del artista.',
+  overviewEyebrow: 'WORKSPACE / RESUMEN', overviewTitle: 'QUÉ NECESITA TU ATENCIÓN.', overviewBody: 'Una entrada rápida a los bookings y fechas del artista, sin convertir el calendario en todo el producto.', profileCard: 'Perfil público', profileCardBody: 'Construye y distribuye tu presencia como artista.',
   realBookings: 'Bookings reales', realBookingsBody: 'El workspace operativo todavía no está disponible para este artista.', holdsMonth: 'Holds este mes', holdsBody: 'Fechas pendientes de decisión.', confirmed: 'Confirmados', confirmedStatus: 'Confirmado', confirmedBody: 'Horarios confirmados este mes.', occupiedDays: 'Días ocupados', occupiedBody: 'Con al menos un horario registrado.',
   agendaEyebrow: 'AGENDA / ESTE MES', upcoming: 'Próximos horarios', viewCalendar: 'Ver calendario', privateSlot: 'Horario privado', noUpcoming: 'No hay horarios próximos registrados en este mes.', addSlot: 'Añadir horario',
   bookingsEyebrow: 'BOOKINGS / BANDEJA', bookingsTitle: 'TODOS TUS BOOKINGS. UN SOLO HILO.',
@@ -130,7 +131,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   historyEyebrow: 'WORKSPACE / ACTIVIDAD', historyTitle: 'TODO LO QUE HA PASADO.',
   historyBody: 'Mensajes, cambios de estado, holds y acciones ordenados por tiempo. Los bookings archivados siguen estando en Bookings → Archivados.',
   previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente',
-  profileEyebrow: 'ARTISTA / FICHA PROFESIONAL', profileTitle: 'TU INFORMACIÓN DE BOOKING.', profileBody: 'Edita lo que verá quien visite tu perfil público. Tus condiciones privadas de booking siguen siendo solo de tu workspace.',
+  profileEyebrow: 'ARTISTA / PRESENCIA PÚBLICA', profileTitle: 'CONSTRUYE TU PERFIL PÚBLICO.', profileBody: 'Esta es la presencia que verá un promoter cuando llegue a tu enlace. Edita cada bloque sin salir del resultado final.',
   profileOptional: 'Ficha opcional', profileOptionalBody: 'Tu workspace ya está creado. Puedes completar estos datos ahora o volver desde Perfil cuando quieras.', later: 'Ahora no', previewProfile: 'Vista previa', previewPrivate: 'VISTA PREVIA / PERFIL PÚBLICO', previewClose: 'Cerrar vista previa', previewBioEmpty: 'Tu biografía aparecerá aquí cuando la completes.', previewGenresEmpty: 'Añade géneros para verlos en la ficha.', previewFormats: 'Formatos', previewLinks: 'Escuchar y seguir',
   coverTitle: 'Tu sonido empieza por la imagen.', coverHint: 'Arrastra una foto o elígela. Si no añades ninguna, CueBooker usará esta portada acid y Detroit.', coverChoose: 'Añadir mi portada', coverChange: 'Cambiar portada', coverRemove: 'Usar portada CueBooker', coverPosition: 'Ajustar encuadre vertical', coverUploading: 'Subiendo portada…', coverSaved: 'Portada actualizada.', coverRemoved: 'Portada base restaurada.', coverInvalid: 'Usa JPG, PNG o WebP de hasta 8 MB.', coverError: 'No se pudo guardar la portada.',
   profilePublicSection: 'Identidad y ubicación', profilePublicHint: 'Esta información forma parte de tu perfil público cuando decidas publicarlo.',
@@ -152,7 +153,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   loading: 'Loading workspace…', rosterEyebrow: 'ROSTER / FIRST ARTIST', addFirstArtist: 'Add the first artist for',
   rosterBody: 'They will be linked to the roster so you can start managing their activity.', artistName: 'Artist name', identifier: 'Identifier', creating: 'Creating…', addArtist: 'Add artist',
   noArtist: 'There is no manageable artist in this account.', noArtistBody: 'Your account does not have an assigned artist or roster yet.',
-  overviewEyebrow: 'WORKSPACE / OVERVIEW', overviewTitle: 'WHAT NEEDS YOUR ATTENTION.', overviewBody: 'A quick view of the artist’s bookings and dates without making the calendar the whole product.', profileCard: 'Professional profile', profileCardBody: 'Complete or update the artist details.',
+  overviewEyebrow: 'WORKSPACE / OVERVIEW', overviewTitle: 'WHAT NEEDS YOUR ATTENTION.', overviewBody: 'A quick view of the artist’s bookings and dates without making the calendar the whole product.', profileCard: 'Public profile', profileCardBody: 'Build and distribute your artist presence.',
   realBookings: 'Real bookings', realBookingsBody: 'The operational workspace is not available for this artist yet.', holdsMonth: 'Holds this month', holdsBody: 'Dates waiting for a decision.', confirmed: 'Confirmed', confirmedStatus: 'Confirmed', confirmedBody: 'Confirmed slots this month.', occupiedDays: 'Occupied days', occupiedBody: 'With at least one registered slot.',
   agendaEyebrow: 'AGENDA / THIS MONTH', upcoming: 'Upcoming slots', viewCalendar: 'View calendar', privateSlot: 'Private slot', noUpcoming: 'There are no upcoming slots registered this month.', addSlot: 'Add slot',
   bookingsEyebrow: 'BOOKINGS / INBOX', bookingsTitle: 'ALL YOUR BOOKINGS. ONE THREAD.',
@@ -162,7 +163,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   historyEyebrow: 'WORKSPACE / ACTIVITY', historyTitle: 'EVERYTHING THAT HAPPENED.',
   historyBody: 'Messages, status changes, holds and actions ordered over time. Archived bookings remain under Bookings → Archived.',
   previousMonth: 'Previous month', nextMonth: 'Next month',
-  profileEyebrow: 'ARTIST / PROFESSIONAL PROFILE', profileTitle: 'YOUR BOOKING INFORMATION.', profileBody: 'Edit what people will see on your public artist profile. Your private booking terms remain visible only inside your workspace.',
+  profileEyebrow: 'ARTIST / PUBLIC PRESENCE', profileTitle: 'BUILD YOUR PUBLIC PROFILE.', profileBody: 'This is what a promoter sees when they land on your link. Edit each block without leaving the final result.',
   profileOptional: 'Optional profile', profileOptionalBody: 'Your workspace is ready. Complete these details now or return from Profile whenever you want.', later: 'Not now', previewProfile: 'Preview', previewPrivate: 'PREVIEW / PUBLIC PROFILE', previewClose: 'Close preview', previewBioEmpty: 'Your biography will appear here once completed.', previewGenresEmpty: 'Add genres to see them on the profile.', previewFormats: 'Formats', previewLinks: 'Listen and follow',
   coverTitle: 'Your sound starts with the image.', coverHint: 'Drop a photo or choose one. If you skip it, CueBooker will use this acid and Detroit cover.', coverChoose: 'Add my cover', coverChange: 'Change cover', coverRemove: 'Use CueBooker cover', coverPosition: 'Adjust vertical framing', coverUploading: 'Uploading cover…', coverSaved: 'Cover updated.', coverRemoved: 'Default cover restored.', coverInvalid: 'Use a JPG, PNG or WebP file up to 8 MB.', coverError: 'The cover could not be saved.',
   profilePublicSection: 'Identity and location', profilePublicHint: 'This information becomes part of your public profile when you choose to publish it.',
@@ -1400,14 +1401,12 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         />
       </section>
 
-      <section v-else class="view profile-view profile-view--hub">
-        <div class="view-heading profile-hub-heading">
+      <section v-else class="view profile-view profile-view--presence">
+        <div class="view-heading profile-presence-heading">
           <div>
-            <p class="eyebrow">{{ preferences.locale.value === 'es' ? 'ARTISTA / IDENTIDAD' : 'ARTIST / IDENTITY' }}</p>
-            <h1>{{ preferences.locale.value === 'es' ? 'TU PERFIL, SIN RUIDO.' : 'YOUR PROFILE, WITHOUT THE NOISE.' }}</h1>
-            <p>{{ preferences.locale.value === 'es'
-              ? 'Identidad, CUE ID, publicación y distribución en una sola vista. Los datos detallados se editan solo cuando los necesitas.'
-              : 'Identity, CUE ID, publishing and distribution in one view. Detailed fields only open when you need them.' }}</p>
+            <p class="eyebrow">{{ copy.profileEyebrow }}</p>
+            <h1>{{ copy.profileTitle }}</h1>
+            <p>{{ copy.profileBody }}</p>
           </div>
           <label v-if="hasArtistSelector" class="artist-select">
             <span>{{ copy.artist }}</span>
@@ -1425,119 +1424,123 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <p v-if="profileLoading" class="loading-message">{{ copy.loading }}</p>
 
         <template v-else>
-          <div class="profile-hub-grid">
-            <section class="profile-hub-card profile-hub-card--identity">
-              <div class="profile-hub-card__head">
-                <span>{{ preferences.locale.value === 'es' ? 'IDENTIDAD' : 'IDENTITY' }}</span>
-                <strong>{{ profileCompletion }}%</strong>
-              </div>
-              <div class="profile-hub-identity">
-                <div>
-                  <h2>{{ profileForm.stageName || selectedArtist?.stage_name }}</h2>
-                  <p>{{ [profileForm.city, profileForm.countryCode].filter(Boolean).join(' · ') || (preferences.locale.value === 'es' ? 'Ubicación pendiente' : 'Location pending') }}</p>
-                </div>
-                <div class="profile-hub-tags">
-                  <span v-for="genre in splitList(profileForm.primaryGenres, 3)" :key="genre">{{ genre }}</span>
-                  <span v-if="!splitList(profileForm.primaryGenres, 3).length">{{ preferences.locale.value === 'es' ? 'Añade tus géneros' : 'Add your genres' }}</span>
-                </div>
-              </div>
-              <div class="profile-hub-card__actions">
-                <button type="button" @click="profileEditOpen = !profileEditOpen">
-                  {{ profileEditOpen
-                    ? (preferences.locale.value === 'es' ? 'Cerrar edición' : 'Close editor')
-                    : (preferences.locale.value === 'es' ? 'Editar información' : 'Edit information') }}
-                </button>
-                <button type="button" @click="profilePreviewOpen = true">{{ copy.previewProfile }}</button>
-              </div>
-            </section>
+          <section class="profile-presence-status">
+            <div>
+              <span>{{ publicProfilePublished
+                ? (preferences.locale.value === 'es' ? 'PUBLICADO' : 'PUBLISHED')
+                : (preferences.locale.value === 'es' ? 'BORRADOR' : 'DRAFT') }}</span>
+              <strong v-if="selectedArtist">cuebooker.com/{{ selectedArtist.slug }}</strong>
+            </div>
+            <div class="profile-presence-status__actions">
+              <button type="button" @click="profilePreviewOpen = true">
+                {{ preferences.locale.value === 'es' ? 'Abrir fuera del editor' : 'Open outside editor' }}
+              </button>
+            </div>
+          </section>
 
-            <section class="profile-hub-card profile-hub-card--cue">
-              <div class="profile-hub-card__head">
-                <span>CUE ID</span>
-                <small>BODY V2</small>
-              </div>
-              <div class="profile-hub-cue-visual" aria-hidden="true">
-                <i class="profile-hub-cue-ring profile-hub-cue-ring--outer" />
-                <i class="profile-hub-cue-ring profile-hub-cue-ring--inner" />
-                <b>CUE ID</b>
-              </div>
-              <div class="profile-hub-card__copy">
-                <strong>{{ preferences.locale.value === 'es' ? 'Tu identidad visual modular.' : 'Your modular visual identity.' }}</strong>
-                <p>{{ preferences.locale.value === 'es'
-                  ? 'El avatar vivirá aquí como pieza visual del artista. El Creator se abre aparte para editar cuerpo, pelo, ropa y accesorios.'
-                  : 'Your avatar will live here as the artist visual layer. The Creator opens separately for body, hair, clothing and accessories.' }}</p>
-              </div>
-              <NuxtLink class="profile-hub-primary-link" to="/cue-id">
-                {{ preferences.locale.value === 'es' ? 'Editar CUE ID' : 'Edit CUE ID' }}
-                <span class="arrow arrow--ne" aria-hidden="true" />
-              </NuxtLink>
-            </section>
-
-            <section class="profile-hub-card profile-hub-card--public">
-              <div class="profile-hub-card__head">
-                <span>{{ preferences.locale.value === 'es' ? 'PERFIL PÚBLICO' : 'PUBLIC PROFILE' }}</span>
-                <i :class="{ active: publicProfilePublished }" />
-              </div>
-              <div class="profile-hub-card__copy">
-                <strong>{{ publicProfilePublished
-                  ? (preferences.locale.value === 'es' ? 'Publicado' : 'Published')
-                  : (preferences.locale.value === 'es' ? 'Privado' : 'Private') }}</strong>
-                <p v-if="selectedArtist">cuebooker.com/{{ selectedArtist.slug }}</p>
-                <small>{{ publicProfileAcceptingRequests
-                  ? (preferences.locale.value === 'es' ? 'Aceptando solicitudes' : 'Accepting enquiries')
-                  : (preferences.locale.value === 'es' ? 'Booking cerrado' : 'Booking closed') }}</small>
-              </div>
-              <div class="profile-hub-card__actions">
-                <button type="button" @click="profilePreviewOpen = true">{{ copy.previewProfile }}</button>
-              </div>
-            </section>
-
-            <section class="profile-hub-card profile-hub-card--distribution">
-              <div class="profile-hub-card__head">
-                <span>{{ preferences.locale.value === 'es' ? 'DISTRIBUCIÓN' : 'DISTRIBUTION' }}</span>
-                <small>LINK · QR · IFRAME</small>
-              </div>
-              <div class="profile-hub-card__copy">
-                <strong>{{ preferences.locale.value === 'es' ? 'Lleva Cuebooker fuera de Cuebooker.' : 'Take Cuebooker beyond Cuebooker.' }}</strong>
-                <p>{{ preferences.locale.value === 'es'
-                  ? 'Perfil, booking link, Instagram, QR, EPK y widget web terminan en el mismo Booking Core.'
-                  : 'Profile, booking link, Instagram, QR, EPK and website widget all land in the same Booking Core.' }}</p>
-              </div>
-              <div class="profile-hub-distribution-list" aria-hidden="true">
-                <span>LINK</span><span>INSTAGRAM</span><span>QR</span><span>IFRAME</span>
-              </div>
-            </section>
-          </div>
-
-          <PublicProfilePublishingControls
-            v-if="selectedArtist && canEditSelectedArtist"
-            class="profile-hub-publishing"
-            :slug="selectedArtist.slug"
-            :published="publicProfilePublished"
-            :accepting-requests="publicProfileAcceptingRequests"
-            :saving="publicPublishingSaving"
-            :locale="preferences.locale.value"
-            @preview="profilePreviewOpen = true"
-            @update-published="updatePublicProfilePublished"
-            @update-accepting-requests="updatePublicAcceptingRequests"
-          />
-          <p v-if="publicPublishingMessage" class="public-publishing-message">{{ publicPublishingMessage }}</p>
-
-          <form v-if="profileEditOpen" class="profile-form profile-form--editor" @submit.prevent="saveArtistProfile">
-            <div class="profile-editor-heading">
+          <section class="profile-presence-preview">
+            <div class="profile-presence-preview__head">
               <div>
-                <p class="eyebrow">{{ preferences.locale.value === 'es' ? 'EDITAR / DATOS DEL ARTISTA' : 'EDIT / ARTIST DETAILS' }}</p>
-                <h2>{{ preferences.locale.value === 'es' ? 'INFORMACIÓN PROFESIONAL.' : 'PROFESSIONAL INFORMATION.' }}</h2>
+                <span>{{ preferences.locale.value === 'es' ? 'PREVIEW REAL' : 'LIVE PREVIEW' }}</span>
+                <strong>{{ preferences.locale.value === 'es' ? 'Así te ve un promoter.' : 'This is what a promoter sees.' }}</strong>
               </div>
-              <button type="button" @click="profileEditOpen = false">×</button>
+              <small>{{ preferences.locale.value === 'es' ? 'El CTA de booking forma parte del mismo perfil.' : 'The booking CTA is part of the same profile.' }}</small>
+            </div>
+            <div class="profile-presence-preview__frame">
+              <PublicArtistProfile
+                :profile="publicProfilePreview"
+                :locale="preferences.locale.value"
+                preview
+              />
+            </div>
+          </section>
+
+          <section class="profile-builder">
+            <div class="profile-builder__head">
+              <div>
+                <span>{{ preferences.locale.value === 'es' ? 'CONSTRUYE TU PERFIL' : 'BUILD YOUR PROFILE' }}</span>
+                <strong>{{ preferences.locale.value === 'es' ? 'Edita por bloques, no rellenando una ficha.' : 'Edit in blocks, not through one long form.' }}</strong>
+              </div>
+              <small>{{ profileCompletion }}%</small>
             </div>
 
-            <p v-if="!canEditSelectedArtist" class="profile-readonly">{{ copy.profileReadOnly }}</p>
+            <div class="profile-builder__grid">
+              <button type="button" :class="{ active: profileEditSection === 'identity' }" @click="profileEditSection = profileEditSection === 'identity' ? null : 'identity'">
+                <span>01</span>
+                <strong>{{ preferences.locale.value === 'es' ? 'Identidad' : 'Identity' }}</strong>
+                <p>{{ profileForm.stageName || selectedArtist?.stage_name }} · {{ profileForm.city || (preferences.locale.value === 'es' ? 'ciudad pendiente' : 'city pending') }}</p>
+              </button>
+
+              <button type="button" :class="{ active: profileEditSection === 'image' }" @click="profileEditSection = profileEditSection === 'image' ? null : 'image'">
+                <span>02</span>
+                <strong>{{ preferences.locale.value === 'es' ? 'Imagen' : 'Image' }}</strong>
+                <p>{{ profileCoverUrl ? (preferences.locale.value === 'es' ? 'Portada personalizada' : 'Custom cover') : (preferences.locale.value === 'es' ? 'Portada Cuebooker' : 'Cuebooker cover') }}</p>
+              </button>
+
+              <NuxtLink class="profile-builder__cue-id" to="/cue-id">
+                <span>03</span>
+                <strong>CUE ID</strong>
+                <p>{{ preferences.locale.value === 'es' ? 'Construye tu identidad visual 3D.' : 'Build your 3D visual identity.' }}</p>
+              </NuxtLink>
+
+              <button type="button" :class="{ active: profileEditSection === 'sound' }" @click="profileEditSection = profileEditSection === 'sound' ? null : 'sound'">
+                <span>04</span>
+                <strong>{{ preferences.locale.value === 'es' ? 'Sonido' : 'Sound' }}</strong>
+                <p>{{ splitList(profileForm.primaryGenres, 3).join(' · ') || (preferences.locale.value === 'es' ? 'Géneros y formatos' : 'Genres and formats') }}</p>
+              </button>
+
+              <button type="button" :class="{ active: profileEditSection === 'links' }" @click="profileEditSection = profileEditSection === 'links' ? null : 'links'">
+                <span>05</span>
+                <strong>{{ preferences.locale.value === 'es' ? 'Links' : 'Links' }}</strong>
+                <p>Instagram · SoundCloud · Spotify · Web</p>
+              </button>
+
+              <button type="button" :class="{ active: profileEditSection === 'booking' }" @click="profileEditSection = profileEditSection === 'booking' ? null : 'booking'">
+                <span>06</span>
+                <strong>Booking</strong>
+                <p>{{ preferences.locale.value === 'es' ? 'Condiciones privadas y disponibilidad.' : 'Private terms and availability.' }}</p>
+              </button>
+            </div>
+          </section>
+
+          <form v-if="profileEditSection" class="profile-builder-editor" @submit.prevent="saveArtistProfile">
+            <header>
+              <div>
+                <p class="eyebrow">
+                  {{ profileEditSection === 'identity' ? '01 / IDENTITY'
+                    : profileEditSection === 'image' ? '02 / IMAGE'
+                    : profileEditSection === 'sound' ? '04 / SOUND'
+                    : profileEditSection === 'links' ? '05 / LINKS'
+                    : '06 / BOOKING' }}
+                </p>
+                <h2>
+                  {{ profileEditSection === 'identity'
+                    ? (preferences.locale.value === 'es' ? 'Identidad del artista' : 'Artist identity')
+                    : profileEditSection === 'image'
+                      ? (preferences.locale.value === 'es' ? 'Imagen y portada' : 'Image and cover')
+                      : profileEditSection === 'sound'
+                        ? (preferences.locale.value === 'es' ? 'Sonido y formatos' : 'Sound and formats')
+                        : profileEditSection === 'links'
+                          ? (preferences.locale.value === 'es' ? 'Canales y enlaces' : 'Channels and links')
+                          : (preferences.locale.value === 'es' ? 'Booking privado' : 'Private booking') }}
+                </h2>
+              </div>
+              <button type="button" :aria-label="copy.close" @click="profileEditSection = null">×</button>
+            </header>
+
             <fieldset class="profile-fieldset" :disabled="!canEditSelectedArtist">
-              <section class="profile-section">
-                <header><div><p class="eyebrow">01</p><h2>{{ copy.profilePublicSection }}</h2></div><p>{{ copy.profilePublicHint }}</p></header>
+              <div v-if="profileEditSection === 'identity'" class="profile-fields profile-fields--builder">
+                <label class="field-wide"><span>{{ copy.stageName }}</span><input v-model="profileForm.stageName" maxlength="120" required></label>
+                <label class="field-wide"><span>{{ copy.bio }}</span><textarea v-model="profileForm.bio" rows="5" maxlength="2000" :placeholder="copy.bioPlaceholder" /></label>
+                <label><span>{{ copy.baseCity }}</span><input v-model="profileForm.city" maxlength="120" autocomplete="address-level2"></label>
+                <label><span>{{ copy.countryCode }}</span><input v-model="profileForm.countryCode" maxlength="2" pattern="[A-Za-z]{2}" placeholder="ES" autocomplete="country"></label>
+                <label><span>{{ copy.timezone }}</span><input v-model="profileForm.timezone" maxlength="80" placeholder="Europe/Madrid"></label>
+                <div class="chip-field"><span>{{ copy.languages }}</span><ProfileChipInput v-model="profileForm.languages" :limit="8" placeholder="Español" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
+                <label><span>{{ copy.yearsActive }}</span><input v-model="profileForm.yearsActive" type="number" min="0" max="80"></label>
+              </div>
+
+              <div v-else-if="profileEditSection === 'image'" class="profile-builder-image">
                 <ProfileCoverUploader
-                  class="profile-cover-field"
                   :image-url="profileCoverUrl"
                   :position-y="profileForm.coverPositionY"
                   :disabled="!canEditSelectedArtist"
@@ -1554,62 +1557,62 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                   @update:position-y="profileForm.coverPositionY = $event"
                 />
                 <p v-if="profileCoverMessage" class="profile-cover-message" :class="{ success: profileCoverMessage === copy.coverSaved || profileCoverMessage === copy.coverRemoved }">{{ profileCoverMessage }}</p>
-                <div class="profile-fields">
-                  <label class="field-wide"><span>{{ copy.stageName }}</span><input v-model="profileForm.stageName" maxlength="120" required></label>
-                  <label class="field-wide"><span>{{ copy.bio }}</span><textarea v-model="profileForm.bio" rows="5" maxlength="2000" :placeholder="copy.bioPlaceholder" /></label>
-                  <label><span>{{ copy.baseCity }}</span><input v-model="profileForm.city" maxlength="120" autocomplete="address-level2"></label>
-                  <label><span>{{ copy.countryCode }}</span><input v-model="profileForm.countryCode" maxlength="2" pattern="[A-Za-z]{2}" placeholder="ES" autocomplete="country"></label>
-                  <label><span>{{ copy.timezone }}</span><input v-model="profileForm.timezone" maxlength="80" placeholder="Europe/Madrid"></label>
-                  <div class="chip-field"><span>{{ copy.languages }}</span><ProfileChipInput v-model="profileForm.languages" :limit="8" placeholder="Español" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
-                  <label><span>{{ copy.yearsActive }}</span><input v-model="profileForm.yearsActive" type="number" min="0" max="80"></label>
-                </div>
-              </section>
+              </div>
 
-              <section class="profile-section">
-                <header><div><p class="eyebrow">02</p><h2>{{ copy.profileSoundSection }}</h2></div></header>
-                <div class="profile-fields">
-                  <div class="chip-field"><span>{{ copy.primaryGenres }}</span><ProfileChipInput v-model="profileForm.primaryGenres" :limit="3" placeholder="Techno" :remove-label="copy.removeChip" /><small>{{ copy.primaryGenresHint }} {{ copy.addWithEnter }}</small></div>
-                  <div class="chip-field"><span>{{ copy.secondaryGenres }}</span><ProfileChipInput v-model="profileForm.secondaryGenres" :limit="8" placeholder="Trance" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
-                  <div class="chip-field"><span>{{ copy.performanceFormats }}</span><ProfileChipInput v-model="profileForm.performanceFormats" :limit="6" placeholder="DJ set" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
-                  <div class="chip-field"><span>{{ copy.eventTypes }}</span><ProfileChipInput v-model="profileForm.eventTypes" :limit="10" placeholder="Club" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
-                </div>
-              </section>
+              <div v-else-if="profileEditSection === 'sound'" class="profile-fields profile-fields--builder">
+                <div class="chip-field"><span>{{ copy.primaryGenres }}</span><ProfileChipInput v-model="profileForm.primaryGenres" :limit="3" placeholder="Techno" :remove-label="copy.removeChip" /><small>{{ copy.primaryGenresHint }} {{ copy.addWithEnter }}</small></div>
+                <div class="chip-field"><span>{{ copy.secondaryGenres }}</span><ProfileChipInput v-model="profileForm.secondaryGenres" :limit="8" placeholder="Trance" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
+                <div class="chip-field"><span>{{ copy.performanceFormats }}</span><ProfileChipInput v-model="profileForm.performanceFormats" :limit="6" placeholder="DJ set" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
+                <div class="chip-field"><span>{{ copy.eventTypes }}</span><ProfileChipInput v-model="profileForm.eventTypes" :limit="10" placeholder="Club" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
+              </div>
 
-              <section class="profile-section profile-section--private">
-                <header><div><p class="eyebrow">03 / PRIVADO</p><h2>{{ copy.profileBookingSection }}</h2></div><p>{{ copy.profileBookingHint }}</p></header>
-                <div class="profile-fields">
-                  <label><span>{{ copy.feeBasis }}</span><select v-model="profileForm.feeBasis"><option value="">—</option><option value="event">{{ copy.feeEvent }}</option><option value="set">{{ copy.feeSet }}</option><option value="hour">{{ copy.feeHour }}</option></select></label>
-                  <label><span>{{ copy.feeMin }}</span><input v-model="profileForm.feeMin" type="number" min="0" step="0.01"></label>
-                  <label><span>{{ copy.feeTypical }}</span><input v-model="profileForm.feeTypical" type="number" min="0" step="0.01"></label>
-                  <label><span>{{ copy.currency }}</span><input v-model="profileForm.currency" maxlength="3" pattern="[A-Za-z]{3}" placeholder="EUR"></label>
-                  <label><span>{{ copy.setDuration }}</span><div class="input-suffix"><input v-model="profileForm.setDurationMinutes" type="number" min="15" max="1440" step="15"><small>{{ copy.minutes }}</small></div></label>
-                  <label class="checkbox-field"><input v-model="profileForm.acceptsTravel" type="checkbox"><span>{{ copy.acceptsTravel }}</span></label>
-                  <div class="chip-field field-wide"><span>{{ copy.travelRegions }}</span><ProfileChipInput v-model="profileForm.travelRegions" :limit="20" placeholder="Catalunya" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
-                  <label class="field-wide"><span>{{ copy.equipmentNotes }}</span><textarea v-model="profileForm.equipmentNotes" rows="4" maxlength="2000" /></label>
-                </div>
-              </section>
+              <div v-else-if="profileEditSection === 'links'" class="profile-fields profile-fields--builder">
+                <label><span>{{ copy.website }}</span><input v-model="profileForm.websiteUrl" type="url" placeholder="https://"></label>
+                <label><span>{{ copy.instagram }}</span><input v-model="profileForm.instagramUrl" type="url" placeholder="https://instagram.com/"></label>
+                <label><span>{{ copy.soundcloud }}</span><input v-model="profileForm.soundcloudUrl" type="url" placeholder="https://soundcloud.com/"></label>
+                <label><span>{{ copy.mixcloud }}</span><input v-model="profileForm.mixcloudUrl" type="url" placeholder="https://mixcloud.com/"></label>
+                <label><span>{{ copy.youtube }}</span><input v-model="profileForm.youtubeUrl" type="url" placeholder="https://youtube.com/"></label>
+                <label><span>{{ copy.spotify }}</span><input v-model="profileForm.spotifyUrl" type="url" placeholder="https://open.spotify.com/"></label>
+                <label><span>{{ copy.technicalRider }}</span><input v-model="profileForm.technicalRiderUrl" type="url" placeholder="https://"></label>
+                <label><span>{{ copy.hospitalityRider }}</span><input v-model="profileForm.hospitalityRiderUrl" type="url" placeholder="https://"></label>
+              </div>
 
-              <section class="profile-section">
-                <header><div><p class="eyebrow">04</p><h2>{{ copy.profileLinksSection }}</h2></div></header>
-                <div class="profile-fields">
-                  <label><span>{{ copy.website }}</span><input v-model="profileForm.websiteUrl" type="url" placeholder="https://"></label>
-                  <label><span>{{ copy.instagram }}</span><input v-model="profileForm.instagramUrl" type="url" placeholder="https://instagram.com/"></label>
-                  <label><span>{{ copy.soundcloud }}</span><input v-model="profileForm.soundcloudUrl" type="url" placeholder="https://soundcloud.com/"></label>
-                  <label><span>{{ copy.mixcloud }}</span><input v-model="profileForm.mixcloudUrl" type="url" placeholder="https://mixcloud.com/"></label>
-                  <label><span>{{ copy.youtube }}</span><input v-model="profileForm.youtubeUrl" type="url" placeholder="https://youtube.com/"></label>
-                  <label><span>{{ copy.spotify }}</span><input v-model="profileForm.spotifyUrl" type="url" placeholder="https://open.spotify.com/"></label>
-                  <label><span>{{ copy.technicalRider }}</span><input v-model="profileForm.technicalRiderUrl" type="url" placeholder="https://"></label>
-                  <label><span>{{ copy.hospitalityRider }}</span><input v-model="profileForm.hospitalityRiderUrl" type="url" placeholder="https://"></label>
-                </div>
-              </section>
+              <div v-else class="profile-fields profile-fields--builder">
+                <label><span>{{ copy.feeBasis }}</span><select v-model="profileForm.feeBasis"><option value="">—</option><option value="event">{{ copy.feeEvent }}</option><option value="set">{{ copy.feeSet }}</option><option value="hour">{{ copy.feeHour }}</option></select></label>
+                <label><span>{{ copy.feeMin }}</span><input v-model="profileForm.feeMin" type="number" min="0" step="0.01"></label>
+                <label><span>{{ copy.feeTypical }}</span><input v-model="profileForm.feeTypical" type="number" min="0" step="0.01"></label>
+                <label><span>{{ copy.currency }}</span><input v-model="profileForm.currency" maxlength="3" pattern="[A-Za-z]{3}" placeholder="EUR"></label>
+                <label><span>{{ copy.setDuration }}</span><div class="input-suffix"><input v-model="profileForm.setDurationMinutes" type="number" min="15" max="1440" step="15"><small>{{ copy.minutes }}</small></div></label>
+                <label class="checkbox-field"><input v-model="profileForm.acceptsTravel" type="checkbox"><span>{{ copy.acceptsTravel }}</span></label>
+                <div class="chip-field field-wide"><span>{{ copy.travelRegions }}</span><ProfileChipInput v-model="profileForm.travelRegions" :limit="20" placeholder="Catalunya" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
+                <label class="field-wide"><span>{{ copy.equipmentNotes }}</span><textarea v-model="profileForm.equipmentNotes" rows="4" maxlength="2000" /></label>
+              </div>
             </fieldset>
 
-            <footer class="profile-savebar">
-              <div><span>{{ copy.profileCompletion }}</span><strong>{{ profileCompletion }}%</strong></div>
+            <footer>
               <p v-if="profileMessage" :class="{ success: profileMessage === copy.profileSaved }">{{ profileMessage }}</p>
-              <button class="primary-button" type="submit" :disabled="profileSaving || !canEditSelectedArtist">{{ profileSaving ? copy.saving : copy.saveProfile }}</button>
+              <button class="primary-button" type="submit" :disabled="profileSaving || !canEditSelectedArtist">{{ profileSaving ? copy.saving : (preferences.locale.value === 'es' ? 'Guardar cambios' : 'Save changes') }}</button>
             </footer>
           </form>
+
+          <section class="profile-presence-distribution">
+            <div class="profile-presence-distribution__head">
+              <span>{{ preferences.locale.value === 'es' ? 'DISTRIBUYE' : 'DISTRIBUTE' }}</span>
+              <strong>{{ preferences.locale.value === 'es' ? 'Tu perfil y tu booking, donde ya está tu gente.' : 'Your profile and booking, where your audience already is.' }}</strong>
+            </div>
+            <PublicProfilePublishingControls
+              v-if="selectedArtist && canEditSelectedArtist"
+              :slug="selectedArtist.slug"
+              :published="publicProfilePublished"
+              :accepting-requests="publicProfileAcceptingRequests"
+              :saving="publicPublishingSaving"
+              :locale="preferences.locale.value"
+              @preview="profilePreviewOpen = true"
+              @update-published="updatePublicProfilePublished"
+              @update-accepting-requests="updatePublicAcceptingRequests"
+            />
+            <p v-if="publicPublishingMessage" class="public-publishing-message">{{ publicPublishingMessage }}</p>
+          </section>
         </template>
       </section>
     </template>
@@ -1832,6 +1835,46 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .booking-detail { scroll-margin-top: 84px; }
 .booking-detail:focus { outline: none; }
 .profile-view { padding-bottom: 0; }
+.profile-view--presence { display:grid; gap:18px; }
+.profile-presence-heading { margin-bottom:2px; }
+.profile-presence-status { display:flex; justify-content:space-between; align-items:center; gap:18px; padding:14px 16px; border:1px solid var(--cue-border); background:var(--cue-surface); }
+.profile-presence-status > div:first-child { display:grid; gap:5px; }
+.profile-presence-status span { color:var(--cue-toggle); font:800 9px/1 monospace; letter-spacing:.12em; }
+.profile-presence-status strong { font-size:13px; overflow-wrap:anywhere; }
+.profile-presence-status__actions button { min-height:40px; padding:0 13px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); font-weight:800; cursor:pointer; }
+.profile-presence-preview { border:1px solid var(--cue-border); background:var(--cue-surface); overflow:hidden; }
+.profile-presence-preview__head { display:flex; justify-content:space-between; gap:18px; align-items:flex-end; padding:16px 18px; border-bottom:1px solid var(--cue-border); }
+.profile-presence-preview__head > div { display:grid; gap:6px; }
+.profile-presence-preview__head span,.profile-builder__head span,.profile-presence-distribution__head span { color:var(--cue-accent); font:800 9px/1.2 monospace; letter-spacing:.12em; }
+.profile-presence-preview__head strong,.profile-builder__head strong,.profile-presence-distribution__head strong { font-size:16px; }
+.profile-presence-preview__head small { max-width:360px; color:var(--cue-muted); text-align:right; line-height:1.4; }
+.profile-presence-preview__frame { max-height:720px; overflow:auto; background:#0b0b0b; }
+.profile-builder { display:grid; gap:12px; }
+.profile-builder__head { display:flex; justify-content:space-between; align-items:end; gap:16px; padding:8px 0 2px; }
+.profile-builder__head > div { display:grid; gap:6px; }
+.profile-builder__head > small { color:var(--cue-toggle); font:900 24px/1 monospace; }
+.profile-builder__grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.profile-builder__grid > button,.profile-builder__cue-id { display:grid; align-content:start; min-height:142px; padding:16px; border:1px solid var(--cue-border); background:var(--cue-surface); color:var(--cue-text); text-align:left; text-decoration:none; cursor:pointer; transition:border-color .16s ease,background .16s ease; }
+.profile-builder__grid > button:hover,.profile-builder__grid > button.active,.profile-builder__cue-id:hover { border-color:var(--cue-toggle); background:color-mix(in srgb,var(--cue-toggle) 5%,var(--cue-surface)); }
+.profile-builder__grid span,.profile-builder__cue-id span { color:var(--cue-muted); font:800 9px/1 monospace; letter-spacing:.12em; }
+.profile-builder__grid strong,.profile-builder__cue-id strong { margin-top:20px; font-size:19px; text-transform:uppercase; }
+.profile-builder__grid p,.profile-builder__cue-id p { margin:8px 0 0; color:var(--cue-muted); font-size:12px; line-height:1.45; }
+.profile-builder__cue-id { border-color:color-mix(in srgb,var(--cue-accent) 38%,var(--cue-border)); }
+.profile-builder__cue-id strong { color:var(--cue-accent); }
+.profile-builder-editor { border:1px solid var(--cue-toggle); background:var(--cue-surface); }
+.profile-builder-editor > header { display:flex; justify-content:space-between; gap:20px; align-items:flex-start; padding:18px; border-bottom:1px solid var(--cue-border); }
+.profile-builder-editor > header h2 { margin:6px 0 0; font-size:clamp(1.5rem,3vw,2.5rem); text-transform:uppercase; }
+.profile-builder-editor > header > button { width:40px; height:40px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); font-size:23px; cursor:pointer; }
+.profile-builder-editor .profile-fields--builder { border:0; }
+.profile-builder-image { padding:18px; }
+.profile-builder-image .profile-cover-message { margin:12px 0 0; }
+.profile-builder-editor > footer { display:flex; justify-content:flex-end; align-items:center; gap:14px; padding:14px 18px; border-top:1px solid var(--cue-border); }
+.profile-builder-editor > footer p { margin:0; color:#ff9b9b; font-size:12px; }
+.profile-builder-editor > footer p.success { color:#8ce99a; }
+.profile-builder-editor > footer .primary-button { min-width:170px; padding:0 16px; }
+.profile-presence-distribution { display:grid; gap:12px; padding-top:10px; }
+.profile-presence-distribution__head { display:grid; gap:6px; }
+
 .profile-view--hub { display:grid; gap:18px; }
 .profile-hub-heading { margin-bottom:4px; }
 .profile-hub-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
@@ -1997,6 +2040,17 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .booking-detail { scroll-margin-top: 74px; }
   .profile-progress { min-width: 0; margin-top: 20px; }
   .profile-heading-actions { min-width: 0; margin-top: 20px; }
+  .profile-presence-status { align-items:flex-start; flex-direction:column; }
+  .profile-presence-status__actions,.profile-presence-status__actions button { width:100%; }
+  .profile-presence-preview__head { align-items:flex-start; flex-direction:column; }
+  .profile-presence-preview__head small { text-align:left; }
+  .profile-presence-preview__frame { max-height:none; }
+  .profile-builder__grid { grid-template-columns:1fr 1fr; }
+  .profile-builder__grid > button,.profile-builder__cue-id { min-height:126px; padding:14px; }
+  .profile-builder__grid strong,.profile-builder__cue-id strong { margin-top:16px; font-size:16px; }
+  .profile-builder-editor > footer { align-items:stretch; flex-direction:column; }
+  .profile-builder-editor > footer .primary-button { width:100%; }
+
   .profile-hub-grid { grid-template-columns:1fr; gap:10px; }
   .profile-hub-card { min-height:0; padding:16px; }
   .profile-hub-card__head { margin-bottom:18px; }
