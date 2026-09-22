@@ -1540,9 +1540,9 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                 <p>{{ profileCoverUrl ? (preferences.locale.value === 'es' ? 'Portada personalizada' : 'Custom cover') : (preferences.locale.value === 'es' ? 'Portada Cuebooker' : 'Cuebooker cover') }}</p>
               </button>
 
-              <NuxtLink class="profile-builder__cue-id" to="/cue-id">
+              <NuxtLink class="profile-builder__cue-id" to="/cue-id?from=workspace">
                 <span>03</span>
-                <strong>CUE ID</strong>
+                <div class="profile-builder__cue-title"><strong>CUE ID</strong><small>BETA</small></div>
                 <p>{{ preferences.locale.value === 'es' ? 'Construye tu identidad visual 3D.' : 'Build your 3D visual identity.' }}</p>
               </NuxtLink>
 
@@ -1974,6 +1974,7 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-builder__grid p,.profile-builder__cue-id p { margin:8px 0 0; color:var(--cue-muted); font-size:12px; line-height:1.45; }
 .profile-builder__cue-id { border-color:color-mix(in srgb,var(--cue-accent) 38%,var(--cue-border)); }
 .profile-builder__cue-id strong { color:var(--cue-accent); }
+.profile-builder__cue-title{display:flex;align-items:center;gap:8px;margin-top:20px}.profile-builder__cue-title strong{margin-top:0}.profile-builder__cue-title small{padding:4px 6px;border:1px solid color-mix(in srgb,var(--cue-accent) 46%,var(--cue-border));border-radius:999px;color:var(--cue-accent);font:800 8px/1 monospace;letter-spacing:.08em}
 .profile-builder-editor { border:1px solid var(--cue-toggle); background:var(--cue-surface); }
 .profile-builder-editor > header { display:flex; justify-content:space-between; gap:20px; align-items:flex-start; padding:18px; border-bottom:1px solid var(--cue-border); }
 .profile-builder-editor > header h2 { margin:6px 0 0; font-size:clamp(1.5rem,3vw,2.5rem); text-transform:uppercase; }
