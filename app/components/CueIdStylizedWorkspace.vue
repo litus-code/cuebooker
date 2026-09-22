@@ -24,23 +24,35 @@ const props = withDefaults(defineProps<{
   modelValue: CueIdStylizedCreatorConfigV1
   locale?: Locale
   dirty?: boolean
+  section?: CueIdWorkspaceSection
 }>(), {
   locale: 'es',
-  dirty: false
+  dirty: false,
+  section: 'identity'
 })
 
 const emit = defineEmits<{
   'update:modelValue': [value: CueIdStylizedCreatorConfigV1]
   save: [value: CueIdStylizedCreatorConfigV1]
   reset: []
+  sectionChange: [section: CueIdWorkspaceSection]
 }>()
 
-const activeSection = ref<CueIdWorkspaceSection>('identity')
+const activeSection = ref<CueIdWorkspaceSection>(props.section)
 const labBodyReady = ref(false)
 const labBodyFailed = ref(false)
 const labBodyError = ref('')
 const labBodyProgress = ref(0)
 const labViewMode = ref<'body' | 'face'>('body')
+
+watch(() => props.section, section => {
+  if (section && section !== activeSection.value) activeSection.value = section
+})
+
+function selectSection(section: CueIdWorkspaceSection) {
+  activeSection.value = section
+  emit('sectionChange', section)
+}
 
 const copy = computed(() => props.locale === 'es' ? {
   title: 'CUE ID Creator',
@@ -408,7 +420,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
             type="button"
             :class="{ active: activeSection === section }"
             :aria-current="activeSection === section ? 'page' : undefined"
-            @click="activeSection = section"
+            @click="selectSection(section)"
           >
             {{ sectionLabels[section] }}
           </button>
