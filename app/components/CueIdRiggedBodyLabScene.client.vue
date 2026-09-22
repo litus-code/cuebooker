@@ -16,21 +16,37 @@ import {
 } from '../domain/cueIdBodyMaterials'
 import { getCueIdRiggedBodyLabAsset } from '../domain/cueIdRiggedBodyLab'
 
-const props = defineProps<{
+type ViewMode = 'body' | 'face'
+
+const props = withDefaults(defineProps<{
   config: CueIdStylizedCreatorConfigV1
-}>()
+  viewMode?: ViewMode
+}>(), {
+  viewMode: 'body'
+})
 
 const emit = defineEmits<{
   ready: []
   failed: [message: string]
+  progress: [value: number]
 }>()
 
 const scene = shallowRef<Object3D | null>(null)
 const ready = ref(false)
-let abortController: AbortController | null = null
+const displayScale = ref(1)
+const displayPosition = ref<[number, number, number]>([0, 0, 0])
+const rotationY = ref(0)
+const userZoom = ref(1)
 
+let abortController: AbortController | null = null
+let loadGeneration = 0
+let dragPointerId: number | null = null
+let dragX = 0
+let frameMetrics: { center: Vector3, size: Vector3, maxDimension: number } | null = null
+
+const bodyBufferCache = new Map<string, ArrayBuffer>()
 const asset = computed(() => getCueIdRiggedBodyLabAsset(props.config.body))
-const cameraPosition = [0, 0.2, 6.8] as const
+const cameraPosition = [0, 0.15, 6.8] as const
 
 const hairColors: Record<CueIdStylizedCreatorConfigV1['hairColor'], string> = {
   black: '#141311',
@@ -40,21 +56,6 @@ const hairColors: Record<CueIdStylizedCreatorConfigV1['hairColor'], string> = {
   platinum: '#dedbd2',
   red: '#9e3027',
   blue: '#1f63d9'
-}
-
-function frameScene(root: Object3D) {
-  const bounds = new Box3().setFromObject(root)
-  const size = bounds.getSize(new Vector3())
-  const center = bounds.getCenter(new Vector3())
-  const maxDimension = Math.max(size.x, size.y, size.z) || 1
-  const scale = 4.25 / maxDimension
-
-  root.scale.setScalar(scale)
-  root.position.set(
-    -center.x * scale,
-    -center.y * scale - 0.12,
-    -center.z * scale
-  )
 }
 
 function materialsFor(node: Object3D) {
@@ -120,6 +121,37 @@ function applySemanticState(root: Object3D) {
   }
 }
 
+function measureScene(root: Object3D) {
+  const bounds = new Box3().setFromObject(root)
+  const size = bounds.getSize(new Vector3())
+  const center = bounds.getCenter(new Vector3())
+  frameMetrics = {
+    center,
+    size,
+    maxDimension: Math.max(size.x, size.y, size.z) || 1
+  }
+  applyViewTransform()
+}
+
+function applyViewTransform() {
+  if (!frameMetrics) return
+
+  const { center, size, maxDimension } = frameMetrics
+  const faceMode = props.viewMode === 'face'
+  const baseScale = (faceMode ? 8.8 : 4.25) / maxDimension
+  const scale = baseScale * userZoom.value
+  const focusY = faceMode
+    ? center.y + size.y * 0.32
+    : center.y
+
+  displayScale.value = scale
+  displayPosition.value = [
+    -center.x * scale,
+    -focusY * scale - (faceMode ? 0.05 : 0.12),
+    -center.z * scale
+  ]
+}
+
 function disposeScene(root: Object3D | null) {
   if (!root) return
 
@@ -136,33 +168,102 @@ function disposeScene(root: Object3D | null) {
   })
 }
 
+async function fetchBodyBuffer(
+  path: string,
+  signal: AbortSignal,
+  fallbackBytes: number
+) {
+  const cached = bodyBufferCache.get(path)
+  if (cached) {
+    emit('progress', 80)
+    return cached.slice(0)
+  }
+
+  const response = await fetch(path, {
+    signal,
+    cache: 'force-cache'
+  })
+
+  if (!response.ok) {
+    throw new Error(`CUE ID body GLB returned ${response.status}`)
+  }
+
+  if (!response.body) {
+    const buffer = await response.arrayBuffer()
+    bodyBufferCache.set(path, buffer)
+    emit('progress', 80)
+    return buffer.slice(0)
+  }
+
+  const reader = response.body.getReader()
+  const contentLength = Number(response.headers.get('content-length')) || fallbackBytes || 0
+  const chunks: Uint8Array[] = []
+  let received = 0
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    if (!value) continue
+
+    chunks.push(value)
+    received += value.byteLength
+
+    if (contentLength > 0) {
+      emit('progress', Math.min(80, Math.max(1, Math.round((received / contentLength) * 80))))
+    }
+  }
+
+  const merged = new Uint8Array(received)
+  let offset = 0
+  for (const chunk of chunks) {
+    merged.set(chunk, offset)
+    offset += chunk.byteLength
+  }
+
+  const buffer = merged.buffer
+  bodyBufferCache.set(path, buffer)
+  emit('progress', 80)
+  return buffer.slice(0)
+}
+
 async function loadBody() {
   abortController?.abort()
   abortController = new AbortController()
+  const generation = ++loadGeneration
   ready.value = false
+  rotationY.value = 0
+  userZoom.value = 1
+  frameMetrics = null
+  emit('progress', 0)
+
+  const currentAsset = asset.value
 
   try {
-    const response = await fetch(asset.value.glbPath, {
-      signal: abortController.signal,
-      cache: 'force-cache'
-    })
-    if (!response.ok) {
-      throw new Error(`CUE ID body GLB returned ${response.status}`)
-    }
+    const buffer = await fetchBodyBuffer(
+      currentAsset.glbPath,
+      abortController.signal,
+      currentAsset.bytes
+    )
 
-    const buffer = await response.arrayBuffer()
+    if (generation !== loadGeneration) return
+    emit('progress', 86)
+
     const loader = new GLTFLoader()
     loader.setMeshoptDecoder(MeshoptDecoder)
-    const gltf = await loader.parseAsync(buffer, '/cue-id/lab/bodies/')
-    const parsed = gltf.scene
 
+    emit('progress', 90)
+    const gltf = await loader.parseAsync(buffer, '/cue-id/lab/bodies/')
+    if (generation !== loadGeneration) return
+
+    const parsed = gltf.scene
     applySemanticState(parsed)
-    frameScene(parsed)
+    measureScene(parsed)
+    emit('progress', 96)
 
     disposeScene(scene.value)
     scene.value = parsed
   } catch (error) {
-    if (abortController.signal.aborted) return
+    if (abortController.signal.aborted || generation !== loadGeneration) return
     console.error('[CUE ID] V10 lab body load failed', error)
     disposeScene(scene.value)
     scene.value = null
@@ -174,12 +275,52 @@ async function loadBody() {
 function handleRender() {
   if (!scene.value || ready.value) return
   ready.value = true
+  emit('progress', 100)
   emit('ready')
+}
+
+function handlePointerDown(event: PointerEvent) {
+  if (!ready.value) return
+  dragPointerId = event.pointerId
+  dragX = event.clientX
+  ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
+}
+
+function handlePointerMove(event: PointerEvent) {
+  if (!ready.value || dragPointerId !== event.pointerId) return
+  const delta = event.clientX - dragX
+  dragX = event.clientX
+  rotationY.value += delta * 0.009
+}
+
+function handlePointerEnd(event: PointerEvent) {
+  if (dragPointerId !== event.pointerId) return
+  dragPointerId = null
+  const target = event.currentTarget as HTMLElement
+  if (target.hasPointerCapture(event.pointerId)) {
+    target.releasePointerCapture(event.pointerId)
+  }
+}
+
+function handleWheel(event: WheelEvent) {
+  if (!ready.value) return
+  event.preventDefault()
+  const next = userZoom.value * (event.deltaY > 0 ? 0.94 : 1.06)
+  userZoom.value = Math.min(1.45, Math.max(0.78, next))
+  applyViewTransform()
 }
 
 watch(
   () => props.config.body,
   () => loadBody()
+)
+
+watch(
+  () => props.viewMode,
+  () => {
+    userZoom.value = 1
+    applyViewTransform()
+  }
 )
 
 watch(
@@ -203,7 +344,15 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="cue-id-rigged-body-lab" :class="{ ready }">
+  <div
+    class="cue-id-rigged-body-lab"
+    :class="{ ready }"
+    @pointerdown="handlePointerDown"
+    @pointermove="handlePointerMove"
+    @pointerup="handlePointerEnd"
+    @pointercancel="handlePointerEnd"
+    @wheel="handleWheel"
+  >
     <TresCanvas
       alpha
       :antialias="true"
@@ -219,16 +368,23 @@ onBeforeUnmount(() => {
       <TresDirectionalLight :position="[3.4, 5.5, 4.5]" :intensity="1.85" />
       <TresDirectionalLight :position="[-3, 2.4, 1.8]" :intensity="0.55" />
 
-      <primitive
-        v-if="scene"
-        :object="scene"
-      />
+      <TresGroup
+        :position="displayPosition"
+        :scale="[displayScale, displayScale, displayScale]"
+        :rotation="[0, rotationY, 0]"
+      >
+        <primitive
+          v-if="scene"
+          :object="scene"
+        />
+      </TresGroup>
     </TresCanvas>
   </div>
 </template>
 
 <style scoped>
-.cue-id-rigged-body-lab{position:absolute;inset:0;z-index:2;opacity:0;transition:opacity .22s ease;pointer-events:none}
-.cue-id-rigged-body-lab.ready{opacity:1}
+.cue-id-rigged-body-lab{position:absolute;inset:0;z-index:2;opacity:0;transition:opacity .22s ease;pointer-events:none;touch-action:none}
+.cue-id-rigged-body-lab.ready{opacity:1;pointer-events:auto;cursor:grab}
+.cue-id-rigged-body-lab.ready:active{cursor:grabbing}
 .cue-id-rigged-body-lab :deep(canvas){display:block;width:100%!important;height:100%!important}
 </style>
