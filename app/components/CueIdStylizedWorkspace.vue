@@ -36,12 +36,15 @@ const emit = defineEmits<{
 }>()
 
 const activeSection = ref<CueIdWorkspaceSection>('identity')
+const labBodyReady = ref(false)
+const labBodyFailed = ref(false)
 
 const copy = computed(() => props.locale === 'es' ? {
   title: 'CUE ID Creator',
   subtitle: 'Mismo catálogo. Tu identidad.',
-  rigPending: 'Preview 3D pendiente de rig',
-  rigBody: 'El cuerpo ya está definido. El rig físico se integrará aquí cuando pase la revisión de deformación.',
+  rigPending: 'Cargando body V10',
+  rigBody: 'El rig V10 ya está validado. Este stage usa el body real del laboratorio.',
+  rigFailed: 'Asset V10 pendiente de copiar al path lab',
   body: 'Body',
   skin: 'Piel',
   expression: 'Expresión',
@@ -88,8 +91,9 @@ const copy = computed(() => props.locale === 'es' ? {
 } : {
   title: 'CUE ID Creator',
   subtitle: 'Same catalogue. Your identity.',
-  rigPending: '3D preview pending rig',
-  rigBody: 'The body is already defined. The physical rig will appear here once deformation review passes.',
+  rigPending: 'Loading V10 body',
+  rigBody: 'The V10 rig is validated. This stage uses the real lab body.',
+  rigFailed: 'V10 asset still needs to be copied into the lab path',
   body: 'Body',
   skin: 'Skin',
   expression: 'Expression',
@@ -200,6 +204,8 @@ function patch<K extends keyof CueIdStylizedCreatorConfigV1>(
 }
 
 function setBody(body: CueIdStylizedBodyId) {
+  labBodyReady.value = false
+  labBodyFailed.value = false
   emit('update:modelValue', cueIdSwitchBody(props.modelValue, body))
 }
 
@@ -304,9 +310,19 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
             <i class="cue-workspace__stage-axis cue-workspace__stage-axis--x" />
             <i class="cue-workspace__stage-axis cue-workspace__stage-axis--y" />
           </div>
-          <div class="cue-workspace__pending">
+
+          <CueIdRiggedBodyLabScene
+            :config="modelValue"
+            @ready="labBodyReady = true; labBodyFailed = false"
+            @failed="labBodyReady = false; labBodyFailed = true"
+          />
+
+          <div
+            v-if="!labBodyReady"
+            class="cue-workspace__pending"
+          >
             <span class="cue-workspace__preview-kicker">{{ copy.previewBody }} · {{ currentBodyLabel }}</span>
-            <strong>{{ copy.rigPending }}</strong>
+            <strong>{{ labBodyFailed ? copy.rigFailed : copy.rigPending }}</strong>
             <span>{{ copy.rigBody }}</span>
             <small>{{ currentLookSummary }}</small>
           </div>
