@@ -16,6 +16,10 @@ const route = useRoute()
 const router = useRouter()
 
 type WorkspaceView = 'overview' | 'bookings' | 'calendar' | 'history' | 'profile'
+const WORKSPACE_VIEWS: WorkspaceView[] = ['overview', 'bookings', 'calendar', 'history', 'profile']
+function workspaceViewFromQuery(value: unknown): WorkspaceView {
+  return typeof value === 'string' && WORKSPACE_VIEWS.includes(value as WorkspaceView) ? value as WorkspaceView : 'overview'
+}
 type ProfileEditSection = 'identity' | 'image' | 'sound' | 'links' | 'booking' | 'distribution' | null
 type ManagedArtist = { id: string; stage_name: string; slug: string; role: 'owner' | 'manager' | 'editor' }
 type ManagedOrganization = { id: string; name: string; slug: string; type: 'agency' | 'promoter'; role: 'owner' | 'admin' | 'member' }
@@ -60,7 +64,7 @@ function emptyProfileForm(): ArtistProfileForm {
   }
 }
 
-const activeView = ref<WorkspaceView>('overview')
+const activeView = ref<WorkspaceView>(workspaceViewFromQuery(route.query.view))
 const artists = ref<ManagedArtist[]>([])
 const organizations = ref<ManagedOrganization[]>([])
 const selectedArtistId = ref('')
@@ -372,9 +376,9 @@ onMounted(async () => {
   bookingCoreSyncTimer = window.setInterval(() => { void refreshBookingCoreFromExternal() }, 30_000)
   window.addEventListener('focus', refreshBookingCoreFromExternal)
   document.addEventListener('visibilitychange', refreshBookingCoreFromExternal)
-  if (route.query.setup === 'profile') {
+  if (route.query.setup === 'profile' || route.query.view === 'profile') {
     activeView.value = 'profile'
-    profileWelcome.value = true
+    profileWelcome.value = route.query.setup === 'profile'
   }
   loading.value = false
 })
@@ -438,12 +442,12 @@ async function changeView(view: WorkspaceView) {
   settingsOpen.value = false
   activeView.value = view
 
-  if (view !== 'bookings' && route.query.booking) {
-    const { booking: _booking, ...query } = route.query
-    void router.replace({ query }).catch(() => {
-      // View navigation must not be blocked by URL state cleanup.
-    })
-  }
+  const nextQuery: Record<string, any> = { ...route.query, view }
+  delete nextQuery.setup
+  if (view !== 'bookings') delete nextQuery.booking
+  void router.replace({ query: nextQuery }).catch(() => {
+    // View navigation must not be blocked by URL state sync.
+  })
 
   await nextTick()
   const target = document.querySelector<HTMLElement>('.workspace .view')
@@ -1540,7 +1544,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                 <p>{{ profileCoverUrl ? (preferences.locale.value === 'es' ? 'Portada personalizada' : 'Custom cover') : (preferences.locale.value === 'es' ? 'Portada Cuebooker' : 'Cuebooker cover') }}</p>
               </button>
 
-              <NuxtLink class="profile-builder__cue-id" to="/cue-id?from=workspace">
+              <NuxtLink class="profile-builder__cue-id" to="/cue-id?from=workspace&section=identity">
                 <span>03</span>
                 <div class="profile-builder__cue-title"><strong>CUE ID</strong><small>BETA</small></div>
                 <p>{{ preferences.locale.value === 'es' ? 'Construye tu identidad visual 3D.' : 'Build your 3D visual identity.' }}</p>
