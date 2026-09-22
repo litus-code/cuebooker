@@ -9776,3 +9776,50 @@ Required next asset gate:
 The current browser delivery GLBs stay lab-only and `productionReady: false`.
 
 Production remains untouched.
+
+
+## 184. New neutral-bald Meshy masters received and audited
+
+New male/female Meshy body masters were supplied to replace the previous source-hair-contaminated bodies.
+
+Source characteristics from the uploaded GLBs:
+
+- male: one mesh, 148,270 vertices, 271,000 triangles, ~12 MB GLB;
+- female: one mesh, 114,124 vertices, 204,544 triangles, ~9.5 MB GLB;
+- both are unrigged: no skeleton, skin weights or animation actions are embedded;
+- both use one textured mesh and 2048px PBR texture sets in the FBX packages;
+- initial color/position audit found only ~0.45-0.48% dark faces in the head region, consistent with facial details rather than a large source-hair shell. This supports using them as neutral-bald candidates, but Blender/browser visual QA is still required before acceptance.
+
+A dedicated semantic split was added:
+
+```text
+scripts/3d/cue-id-bald-body-semantic-split.py
+```
+
+Unlike the previous source-hair pipeline, this split deliberately creates only:
+
+```text
+cue_<body>_skin
+cue_<body>_underwear
+```
+
+There is no `cue_<body>_hair` node in a neutral base. Brows/lashes and other facial texture detail remain part of skin until a dedicated face-material pass exists.
+
+Local semantic candidates generated from the uploaded masters preserve all source triangles:
+
+- male: 235,496 skin + 35,504 underwear = 271,000 total;
+- female: 186,076 skin + 18,468 underwear = 204,544 total.
+
+Next gate:
+
+1. visually approve the new bald masters in Blender;
+2. use these as V2 neutral body masters;
+3. transfer/rebuild the shared `cue_rig` and weights;
+4. repeat head/neck + shoulder/elbow/hip/knee QA;
+5. export new web-delivery GLBs;
+6. only then replace the current V10 lab bodies;
+7. author hair as independent modular assets.
+
+Do not reconnect embedded source hair to the body-base contract.
+
+Production remains untouched.
