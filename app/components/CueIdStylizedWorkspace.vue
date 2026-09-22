@@ -39,13 +39,19 @@ const activeSection = ref<CueIdWorkspaceSection>('identity')
 const labBodyReady = ref(false)
 const labBodyFailed = ref(false)
 const labBodyError = ref('')
+const labBodyProgress = ref(0)
+const labViewMode = ref<'body' | 'face'>('body')
 
 const copy = computed(() => props.locale === 'es' ? {
   title: 'CUE ID Creator',
   subtitle: 'Mismo catálogo. Tu identidad.',
   rigPending: 'Cargando body V10',
   rigBody: 'El rig V10 ya está validado. Este stage usa el body real del laboratorio.',
-  rigFailed: 'Asset V10 pendiente de copiar al path lab',
+  rigFailed: 'No se pudo cargar el body V10',
+  loadingProgress: 'Carga 3D',
+  fullBody: 'Cuerpo',
+  faceView: 'Cara',
+  rotateHint: 'Arrastra para girar · rueda para zoom',
   body: 'Body',
   skin: 'Piel',
   expression: 'Expresión',
@@ -94,7 +100,11 @@ const copy = computed(() => props.locale === 'es' ? {
   subtitle: 'Same catalogue. Your identity.',
   rigPending: 'Loading V10 body',
   rigBody: 'The V10 rig is validated. This stage uses the real lab body.',
-  rigFailed: 'V10 asset still needs to be copied into the lab path',
+  rigFailed: 'The V10 body could not be loaded',
+  loadingProgress: '3D loading',
+  fullBody: 'Body',
+  faceView: 'Face',
+  rotateHint: 'Drag to rotate · wheel to zoom',
   body: 'Body',
   skin: 'Skin',
   expression: 'Expression',
@@ -208,6 +218,7 @@ function setBody(body: CueIdStylizedBodyId) {
   labBodyReady.value = false
   labBodyFailed.value = false
   labBodyError.value = ''
+  labBodyProgress.value = 0
   emit('update:modelValue', cueIdSwitchBody(props.modelValue, body))
 }
 
@@ -291,17 +302,38 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
             <span>{{ copy.body }}</span>
             <strong>{{ currentBodyLabel }}</strong>
           </div>
-          <div class="cue-workspace__body-toggle" role="group" :aria-label="copy.body">
-            <button
-              v-for="body in CUE_ID_STYLIZED_CREATOR_CATALOGUE.bodies"
-              :key="body"
-              type="button"
-              :class="{ active: modelValue.body === body }"
-              :aria-pressed="modelValue.body === body"
-              @click="setBody(body)"
-            >
-              {{ body === 'male' ? 'Male' : 'Female' }}
-            </button>
+          <div class="cue-workspace__stage-controls">
+            <div class="cue-workspace__view-toggle" role="group" aria-label="CUE ID view">
+              <button
+                type="button"
+                :class="{ active: labViewMode === 'body' }"
+                :aria-pressed="labViewMode === 'body'"
+                @click="labViewMode = 'body'"
+              >
+                {{ copy.fullBody }}
+              </button>
+              <button
+                type="button"
+                :class="{ active: labViewMode === 'face' }"
+                :aria-pressed="labViewMode === 'face'"
+                @click="labViewMode = 'face'"
+              >
+                {{ copy.faceView }}
+              </button>
+            </div>
+
+            <div class="cue-workspace__body-toggle" role="group" :aria-label="copy.body">
+              <button
+                v-for="body in CUE_ID_STYLIZED_CREATOR_CATALOGUE.bodies"
+                :key="body"
+                type="button"
+                :class="{ active: modelValue.body === body }"
+                :aria-pressed="modelValue.body === body"
+                @click="setBody(body)"
+              >
+                {{ body === 'male' ? 'Male' : 'Female' }}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -315,7 +347,9 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 
           <CueIdRiggedBodyLabScene
             :config="modelValue"
-            @ready="labBodyReady = true; labBodyFailed = false; labBodyError = ''"
+            :view-mode="labViewMode"
+            @progress="value => labBodyProgress = value"
+            @ready="labBodyReady = true; labBodyFailed = false; labBodyError = ''; labBodyProgress = 100"
             @failed="message => { labBodyReady = false; labBodyFailed = true; labBodyError = message }"
           />
 
@@ -326,6 +360,12 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
             <span class="cue-workspace__preview-kicker">{{ copy.previewBody }} · {{ currentBodyLabel }}</span>
             <strong>{{ labBodyFailed ? copy.rigFailed : copy.rigPending }}</strong>
             <span>{{ copy.rigBody }}</span>
+            <div v-if="!labBodyFailed" class="cue-workspace__load-progress" role="progressbar" :aria-valuenow="labBodyProgress" aria-valuemin="0" aria-valuemax="100">
+              <div class="cue-workspace__load-progress-track">
+                <i :style="{ width: labBodyProgress + '%' }" />
+              </div>
+              <small>{{ copy.loadingProgress }} · {{ labBodyProgress }}%</small>
+            </div>
             <small v-if="labBodyFailed && labBodyError" class="cue-workspace__load-error">{{ labBodyError }}</small>
             <small>{{ currentLookSummary }}</small>
           </div>
@@ -333,6 +373,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 
         <div class="cue-workspace__shared-note">
           <span>{{ copy.sameCatalogue }}</span>
+          <small v-if="labBodyReady">{{ copy.rotateHint }}</small>
           <small>{{ copy.localDraft }}</small>
         </div>
       </section>
@@ -768,7 +809,11 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace__stage{display:grid;grid-template-rows:auto 1fr auto;overflow:hidden}
 .cue-workspace__stage-head{display:flex;justify-content:space-between;align-items:center;padding:18px;border-bottom:1px solid var(--cue-border)}
 .cue-workspace__stage-head span{display:block;color:var(--cue-muted);font-size:11px;text-transform:uppercase;letter-spacing:.1em}.cue-workspace__stage-head strong{font-size:1.1rem}
-.cue-workspace__body-toggle{display:flex;padding:3px;border:1px solid var(--cue-border);border-radius:999px}.cue-workspace__body-toggle button{min-height:40px;border:0;border-radius:999px;padding:8px 14px;background:transparent;color:var(--cue-muted);font-weight:800}.cue-workspace__body-toggle button.active{background:var(--cue-accent);color:#111}
+.cue-workspace__stage-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.cue-workspace__body-toggle,.cue-workspace__view-toggle{display:flex;padding:3px;border:1px solid var(--cue-border);border-radius:999px}
+.cue-workspace__body-toggle button,.cue-workspace__view-toggle button{min-height:40px;border:0;border-radius:999px;padding:8px 14px;background:transparent;color:var(--cue-muted);font-weight:800}
+.cue-workspace__body-toggle button.active{background:var(--cue-accent);color:#111}
+.cue-workspace__view-toggle button.active{background:color-mix(in srgb,var(--cue-accent) 14%,transparent);color:var(--cue-accent)}
 .cue-workspace__stage-placeholder{position:relative;display:grid;place-items:center;min-height:560px;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--cue-accent) 9%,transparent),transparent 38%),linear-gradient(180deg,color-mix(in srgb,var(--cue-text) 3%,transparent),transparent)}
 .cue-workspace__stage-graphic{position:absolute;inset:8%;opacity:.42;overflow:hidden}
 .cue-workspace__stage-graphic:before{content:"";position:absolute;inset:0;background-image:linear-gradient(color-mix(in srgb,var(--cue-text) 6%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--cue-text) 6%,transparent) 1px,transparent 1px);background-size:28px 28px;mask-image:radial-gradient(circle at center,#000 24%,transparent 72%)}
@@ -781,6 +826,10 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace__pending{position:relative;z-index:2;display:grid;gap:8px;max-width:360px;padding:18px;text-align:center;border:1px solid var(--cue-border);border-radius:16px;background:color-mix(in srgb,var(--cue-surface) 88%,transparent);backdrop-filter:blur(10px)}
 .cue-workspace__pending strong{font-size:1.05rem}.cue-workspace__pending span{color:var(--cue-muted);line-height:1.5}.cue-workspace__pending small{color:var(--cue-text);font:700 10px/1.4 monospace;letter-spacing:.04em}
 .cue-workspace__preview-kicker{color:var(--cue-accent)!important;font:800 9px/1.2 monospace;letter-spacing:.1em;text-transform:uppercase}
+.cue-workspace__load-progress{display:grid;gap:6px;width:100%}
+.cue-workspace__load-progress-track{height:4px;overflow:hidden;border-radius:999px;background:color-mix(in srgb,var(--cue-text) 10%,transparent)}
+.cue-workspace__load-progress-track i{display:block;height:100%;border-radius:inherit;background:var(--cue-accent);transition:width .18s ease}
+.cue-workspace__load-progress small{color:var(--cue-muted)!important}
 .cue-workspace__load-error{color:#ff8a8a!important;overflow-wrap:anywhere}
 .cue-workspace__shared-note{display:grid;gap:4px;margin:0;padding:14px 18px;border-top:1px solid var(--cue-border);color:var(--cue-muted);font-size:12px}.cue-workspace__shared-note small{font-size:10px;opacity:.78}
 .cue-workspace__editor{display:grid;grid-template-rows:auto 1fr;overflow:hidden}
@@ -811,10 +860,11 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
   .cue-workspace__save-state{grid-column:1 / -1;width:max-content}
   .cue-workspace__reset,.cue-workspace__save{width:100%;min-height:44px;padding:11px 13px}
   .cue-workspace__stage,.cue-workspace__editor{border-radius:14px}
-  .cue-workspace__stage-head{padding:12px;gap:10px}
+  .cue-workspace__stage-head{padding:12px;gap:10px;align-items:flex-start}
   .cue-workspace__stage-head strong{font-size:1rem}
-  .cue-workspace__body-toggle{flex:0 0 auto}
-  .cue-workspace__body-toggle button{min-height:38px;padding:7px 11px;font-size:12px}
+  .cue-workspace__stage-controls{gap:6px}
+  .cue-workspace__body-toggle,.cue-workspace__view-toggle{flex:0 0 auto}
+  .cue-workspace__body-toggle button,.cue-workspace__view-toggle button{min-height:38px;padding:7px 10px;font-size:12px}
   .cue-workspace__stage-placeholder{min-height:300px}
   .cue-workspace__stage-graphic{inset:6%}
   .cue-workspace__pending{max-width:calc(100% - 28px);padding:14px}
