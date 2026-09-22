@@ -16,10 +16,10 @@ const analytics = useAnalytics()
 const p = computed(() => locale.value === 'es' ? {
   nav: { system: 'El sistema', distribution: 'Distribución', identity: 'CUE ID', login: 'Iniciar sesión', signup: 'Crear cuenta' },
   hero: {
-    eyebrow: 'PARA ARTISTAS QUE SE TOMAN EN SERIO SU SONIDO',
+    eyebrow: 'PARA QUIEN MUEVE LA NOCHE',
     title: 'Que la música siga avanzando.',
-    accent: 'El booking ya está ocurriendo. Cuebooker evita que una oportunidad se pierda.',
-    body: 'Las señales que llegan por Instagram, WhatsApp, email o tu web entran en un mismo lugar. Tú decides qué pasa después.',
+    accent: 'El booking ya está ocurriendo.',
+    body: 'Cuebooker evita que una oportunidad se pierda.',
     flow: { channels: ['Instagram · 22:47', 'WhatsApp · 23:12', 'Formulario web · 00:06'], label: 'CUEBOOKER / NUEVA SOLICITUD', booking: 'Warehouse 23 / Barcelona', detail: '18 oct · Techno · 1.200 €', status: 'Pendiente de decisión' },
     primary: 'Entrar en el sistema',
     secondary: 'Conoce tu CUE ID',
@@ -79,10 +79,10 @@ const p = computed(() => locale.value === 'es' ? {
 } : {
   nav: { system: 'The system', distribution: 'Distribution', identity: 'CUE ID', login: 'Sign in', signup: 'Create account' },
   hero: {
-    eyebrow: 'FOR ARTISTS WHO TAKE THEIR SOUND SERIOUSLY',
+    eyebrow: 'FOR THE PEOPLE WHO MOVE THE NIGHT',
     title: 'Let the music keep moving.',
-    accent: 'Booking is already happening. Cuebooker makes sure no opportunity gets lost.',
-    body: 'Signals from Instagram, WhatsApp, email or your website land in one place. You decide what happens next.',
+    accent: 'Booking is already happening.',
+    body: 'Cuebooker makes sure no opportunity gets lost.',
     flow: { channels: ['Instagram · 22:47', 'WhatsApp · 23:12', 'Web form · 00:06'], label: 'CUEBOOKER / NEW REQUEST', booking: 'Warehouse 23 / Barcelona', detail: '18 Oct · Techno · €1,200', status: 'Waiting for your decision' },
     primary: 'Enter the system',
     secondary: 'Meet your CUE ID',
