@@ -199,11 +199,15 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
         </div>
       </div>
       <div id="cp-mobile-menu" class="cp-mobile-menu" :class="{ open: menuOpen }">
-        <a href="#system" @click.prevent="scrollTo('#system')">{{ p.nav.system }}</a>
-        <a href="#distribution" @click.prevent="scrollTo('#distribution')">{{ p.nav.distribution }}</a>
-        <a href="#cue-id" @click.prevent="scrollTo('#cue-id')">{{ p.nav.identity }}</a>
-        <NuxtLink to="/access?mode=signin" @click="menuOpen = false">{{ p.nav.login }}</NuxtLink>
-        <NuxtLink class="cp-cta" to="/access?mode=signup" @click="menuOpen = false">{{ p.nav.signup }}</NuxtLink>
+        <div class="cp-mobile-nav-links">
+          <a href="#system" @click.prevent="scrollTo('#system')">{{ p.nav.system }}</a>
+          <a href="#distribution" @click.prevent="scrollTo('#distribution')">{{ p.nav.distribution }}</a>
+          <a href="#cue-id" @click.prevent="scrollTo('#cue-id')">{{ p.nav.identity }}</a>
+        </div>
+        <div class="cp-mobile-auth">
+          <NuxtLink class="cp-mobile-login" to="/access?mode=signin" @click="menuOpen = false">{{ p.nav.login }}</NuxtLink>
+          <NuxtLink class="cp-cta cp-mobile-signup" to="/access?mode=signup" @click="menuOpen = false">{{ p.nav.signup }}</NuxtLink>
+        </div>
       </div>
     </nav>
 
