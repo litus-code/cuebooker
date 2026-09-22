@@ -38,6 +38,7 @@ const emit = defineEmits<{
 const activeSection = ref<CueIdWorkspaceSection>('identity')
 const labBodyReady = ref(false)
 const labBodyFailed = ref(false)
+const labBodyError = ref('')
 
 const copy = computed(() => props.locale === 'es' ? {
   title: 'CUE ID Creator',
@@ -206,6 +207,7 @@ function patch<K extends keyof CueIdStylizedCreatorConfigV1>(
 function setBody(body: CueIdStylizedBodyId) {
   labBodyReady.value = false
   labBodyFailed.value = false
+  labBodyError.value = ''
   emit('update:modelValue', cueIdSwitchBody(props.modelValue, body))
 }
 
@@ -313,8 +315,8 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 
           <CueIdRiggedBodyLabScene
             :config="modelValue"
-            @ready="labBodyReady = true; labBodyFailed = false"
-            @failed="labBodyReady = false; labBodyFailed = true"
+            @ready="labBodyReady = true; labBodyFailed = false; labBodyError = ''"
+            @failed="message => { labBodyReady = false; labBodyFailed = true; labBodyError = message }"
           />
 
           <div
@@ -324,6 +326,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
             <span class="cue-workspace__preview-kicker">{{ copy.previewBody }} · {{ currentBodyLabel }}</span>
             <strong>{{ labBodyFailed ? copy.rigFailed : copy.rigPending }}</strong>
             <span>{{ copy.rigBody }}</span>
+            <small v-if="labBodyFailed && labBodyError" class="cue-workspace__load-error">{{ labBodyError }}</small>
             <small>{{ currentLookSummary }}</small>
           </div>
         </div>
@@ -778,6 +781,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace__pending{position:relative;z-index:2;display:grid;gap:8px;max-width:360px;padding:18px;text-align:center;border:1px solid var(--cue-border);border-radius:16px;background:color-mix(in srgb,var(--cue-surface) 88%,transparent);backdrop-filter:blur(10px)}
 .cue-workspace__pending strong{font-size:1.05rem}.cue-workspace__pending span{color:var(--cue-muted);line-height:1.5}.cue-workspace__pending small{color:var(--cue-text);font:700 10px/1.4 monospace;letter-spacing:.04em}
 .cue-workspace__preview-kicker{color:var(--cue-accent)!important;font:800 9px/1.2 monospace;letter-spacing:.1em;text-transform:uppercase}
+.cue-workspace__load-error{color:#ff8a8a!important;overflow-wrap:anywhere}
 .cue-workspace__shared-note{display:grid;gap:4px;margin:0;padding:14px 18px;border-top:1px solid var(--cue-border);color:var(--cue-muted);font-size:12px}.cue-workspace__shared-note small{font-size:10px;opacity:.78}
 .cue-workspace__editor{display:grid;grid-template-rows:auto 1fr;overflow:hidden}
 .cue-workspace__tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px;border-bottom:1px solid var(--cue-border)}
