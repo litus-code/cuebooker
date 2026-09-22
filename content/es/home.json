@@ -39,7 +39,7 @@
     "statement": "CueBooker convierte lo que ya ocurre en un hilo que no se pierde."
   },
   "search": {
-    "index": "09 / VISIÓN",
+    "index": "10 / VISIÓN",
     "eyebrow": "MÁS ADELANTE · CUANDO EXISTA LA RED",
     "title": "La trayectoria primero. El discovery después.",
     "body": "Con una base real de bookings, relaciones y disponibilidad, CueBooker podrá añadir descubrimiento de artistas sin convertir seguidores o popularidad en una medida de valor. El núcleo seguirá siendo la trayectoria y el trabajo real del artista.",
@@ -131,7 +131,7 @@
     "note": "CueBooker no pretende sustituir WhatsApp, email o teléfono. Su trabajo es que ninguna oportunidad dependa de tu memoria."
   },
   "roles": {
-    "index": "06 / PARA QUIÉN",
+    "index": "07 / PARA QUIÉN",
     "eyebrow": "POCO VOLUMEN O MUCHO, EL PROBLEMA ES EL MISMO",
     "title": "Valor desde el primer booking. Profundidad cuando crece el trabajo.",
     "items": [
@@ -153,7 +153,7 @@
     ]
   },
   "access": {
-    "index": "07 / ACCESO",
+    "index": "08 / ACCESO",
     "eyebrow": "EL WORKSPACE ES DEL ARTISTA Y SU EQUIPO",
     "title": "Empieza simple. La estructura aparece cuando la necesitas.",
     "body": "Un DJ puede trabajar solo dentro de su workspace. Una agencia utiliza el mismo núcleo con varios artistas. El promotor no necesita adoptar CueBooker para que el DJ pueda mantener su seguimiento.",
@@ -206,7 +206,7 @@
     ]
   },
   "demo": {
-    "index": "08 / PRODUCTO",
+    "index": "09 / PRODUCTO",
     "eyebrow": "EL PRODUCTO",
     "title": "Ya puedes usar el núcleo real de CueBooker.",
     "body": "Captura una oportunidad, revisa lo que el sistema ha entendido y síguela en el mismo workspace hasta resolverla.",
@@ -295,7 +295,7 @@
     "note": "El promotor no necesita cuenta. Tú mantienes un solo booking y una sola historia."
   },
   "identity": {
-    "index": "05 / IDENTIDAD",
+    "index": "06 / IDENTIDAD",
     "eyebrow": "EL PERFIL NO ES UN DECORADO",
     "title": "Tu perfil. Tu trabajo. Tu identidad.",
     "body": "Foto, artwork y CUE ID pueden convivir. La identidad visual acompaña tu trayectoria; no la sustituye.",
@@ -317,5 +317,61 @@
       }
     ],
     "cueIdStatus": "CUE ID 3D sigue en laboratorio. CueBooker funciona sin avatar."
+  },
+  "workspace": {
+    "index": "05 / WORKSPACE",
+    "eyebrow": "EL BOOKING VIVE EN UN ESPACIO CLARO",
+    "title": "Tu semana, sin ruido.",
+    "body": "Solicitudes abiertas, fechas bloqueadas, confirmaciones y actividad reunidas en el mismo lugar. CueBooker convierte el trabajo invisible de cerrar fechas en una operación que puedes ver y seguir.",
+    "greeting": "Buenas tardes, Litus",
+    "subtitle": "Tu semana, sin ruido.",
+    "newBooking": "Nueva reserva",
+    "sidebar": [
+      "Resumen",
+      "Reservas 12",
+      "Calendario",
+      "Actividad",
+      "Perfil de artista",
+      "Ajustes"
+    ],
+    "stats": [
+      {
+        "label": "Solicitudes abiertas",
+        "value": "08",
+        "accent": false
+      },
+      {
+        "label": "Fechas bloqueadas",
+        "value": "04",
+        "accent": true
+      },
+      {
+        "label": "Confirmadas",
+        "value": "12",
+        "accent": false
+      }
+    ],
+    "bookings": [
+      {
+        "venue": "Warehouse 23 / Barcelona",
+        "meta": "18 oct · Techno · 1.200 €",
+        "status": "Nueva",
+        "tone": "lime"
+      },
+      {
+        "venue": "Club Mondo / Madrid",
+        "meta": "02 nov · Peak time · 1.800 €",
+        "status": "Pendiente",
+        "tone": "red"
+      },
+      {
+        "venue": "Pulse Room / Berlín",
+        "meta": "16 nov · Closing set · 2.100 €",
+        "status": "Confirmada",
+        "tone": "blue"
+      }
+    ],
+    "note": "La home explica la entrada. El workspace hace visible el trabajo.",
+    "cta": "Entrar al workspace"
   }
 }
