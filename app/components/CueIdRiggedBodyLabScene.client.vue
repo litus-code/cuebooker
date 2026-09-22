@@ -22,7 +22,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   ready: []
-  failed: []
+  failed: [message: string]
 }>()
 
 const scene = shallowRef<Object3D | null>(null)
@@ -166,7 +166,8 @@ async function loadBody() {
     console.error('[CUE ID] V10 lab body load failed', error)
     disposeScene(scene.value)
     scene.value = null
-    emit('failed')
+    const message = error instanceof Error ? error.message : String(error)
+    emit('failed', message)
   }
 }
 
