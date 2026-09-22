@@ -71,7 +71,7 @@ const p = computed(() => locale.value === 'es' ? {
     iframe: 'IFRAME', iframeTitle: '¿Ya tienes web? El formulario entra dentro.', iframeBody: 'Inserta el widget de Cuebooker en tu propia web. Tu imagen sigue siendo tuya y el flujo de booking funciona por detrás.',
     label: 'TU PERFIL ESTÁ LISTO PARA COMPARTIR', live: 'Público', dj: 'DJ / Barcelona', name: 'Litus', sound: 'Techno · Industrial · Peak time',
     copy: 'Copiar enlace', instagram: 'Compartir en Instagram', qr: 'Descargar QR',
-    kicker: 'UNA RUTA PARA CADA ARTISTA', title: 'Tu web, tu bio o una pegatina en la cabina.', detail: 'Cuebooker convierte cualquier punto de contacto en una oportunidad de contratación. El promotor puede llegar desde un enlace, escanear un QR o completar el formulario dentro de tu web.',
+    kicker: 'UNA RUTA PARA CADA ARTISTA', title: 'Todo contacto termina en una solicitud.', detail: 'Da igual desde dónde llegue un promotor. La información entra completa y tú la gestionas desde el mismo espacio.',
     items: [['Perfil público', 'Para quien todavía no tiene web.'], ['Enlace compartible', 'Para Instagram, redes, mensajes y newsletters.'], ['Widget embebible', 'Para quien ya tiene una web propia.'], ['QR de booking', 'Para carteles, flyers, tarjetas y eventos.']]
   },
   identity: { kicker: 'IDENTIDAD, NO DECORACIÓN', title: 'Tu sonido merece una señal.', body: 'CUE ID convierte el perfil de artista en algo reconocible, compartible y preparado para crecer contigo. Una capa visual para la persona que existe detrás de cada reserva.', cta: 'Ver el sistema en movimiento', profile: 'Perfil de artista', active: 'Señal activa' },
@@ -129,7 +129,7 @@ const p = computed(() => locale.value === 'es' ? {
     iframe: 'IFRAME', iframeTitle: 'Already have a website? Put the form inside it.', iframeBody: 'Embed the Cuebooker widget in your own site. Your image stays yours and the booking flow runs behind it.',
     label: 'YOUR PROFILE IS READY TO SHARE', live: 'Public', dj: 'DJ / Barcelona', name: 'Litus', sound: 'Techno · Industrial · Peak time',
     copy: 'Copy link', instagram: 'Share on Instagram', qr: 'Download QR',
-    kicker: 'A ROUTE FOR EVERY ARTIST', title: 'Your website, your bio or a sticker on the booth.', detail: 'Cuebooker turns every contact point into a booking opportunity. Promoters can arrive from a link, scan a QR or fill the form inside your website.',
+    kicker: 'A ROUTE FOR EVERY ARTIST', title: 'Every contact becomes a booking request.', detail: 'Wherever a promoter comes from, the details arrive complete and you manage them in the same workspace.',
     items: [['Public profile', 'For artists without a website.'], ['Shareable link', 'For Instagram, social, messages and newsletters.'], ['Embeddable widget', 'For artists with their own website.'], ['Booking QR', 'For posters, flyers, cards and events.']]
   },
   identity: { kicker: 'IDENTITY, NOT DECORATION', title: 'Your sound deserves a signal.', body: 'CUE ID turns an artist profile into something recognisable, shareable and ready to grow with you. A visual layer for the person behind every booking.', cta: 'See the system in motion', profile: 'Artist profile', active: 'Signal active' },
