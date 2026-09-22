@@ -1107,3 +1107,18 @@ textarea:focus-visible, select:focus-visible { outline: 2px solid var(--cue-acce
 @media (max-width:520px) {
   .commercial-home .cp-hero-content { padding-top:78px; }
 }
+
+.commercial-home .cp-signal-card:before,
+.commercial-home .cp-signal-card:after { display:none; }
+.commercial-home .cp-channel-card { position:relative; padding-right:110px; }
+.commercial-home .cp-channel-icon { position:absolute; top:23px; right:22px; display:block; width:58px; height:58px; border:1px solid color-mix(in srgb,var(--cp-lime) 55%,transparent); border-radius:15px; color:var(--cp-lime); }
+.commercial-home .cp-channel-icon:before,
+.commercial-home .cp-channel-icon:after { position:absolute; display:block; content:""; }
+.commercial-home .cp-channel-icon--profile:before { top:12px; left:21px; width:14px; height:14px; border:2px solid var(--cp-lime); border-radius:50%; }
+.commercial-home .cp-channel-icon--profile:after { left:14px; bottom:10px; width:28px; height:14px; border:2px solid var(--cp-lime); border-bottom:0; border-radius:18px 18px 0 0; }
+.commercial-home .cp-channel-icon--link:before,
+.commercial-home .cp-channel-icon--link:after { top:20px; width:25px; height:13px; border:2px solid var(--cp-lime); border-radius:999px; }
+.commercial-home .cp-channel-icon--link:before { left:7px; transform:rotate(-42deg); }
+.commercial-home .cp-channel-icon--link:after { right:7px; transform:rotate(-42deg); border-color:var(--cp-red); }
+.commercial-home .cp-channel-icon--iframe:before { inset:13px 10px 11px; border:2px solid var(--cp-lime); border-radius:5px; }
+.commercial-home .cp-channel-icon--iframe:after { top:20px; left:12px; width:32px; height:2px; background:var(--cp-red); box-shadow:0 7px 0 color-mix(in srgb,var(--cp-lime) 65%,transparent),0 14px 0 color-mix(in srgb,var(--cp-lime) 65%,transparent); }
