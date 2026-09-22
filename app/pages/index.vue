@@ -247,6 +247,7 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
     <section id="cue-id" class="cp-cue-id cp-section"><div class="cp-wrap cp-cue-grid"><div class="cp-cue-copy"><p class="cp-kicker">{{ p.identity.kicker }}</p><h2>{{ p.identity.title }}</h2><p>{{ p.identity.body }}</p><button class="cp-cta" type="button" @click="scrollTo('#top')">{{ p.identity.cta }} <span class="cp-arrow" aria-hidden="true" /></button></div><div class="cp-cue-card"><div class="cp-cue-ring"><span>CUE<br />ID 001</span></div><div class="cp-cue-meta"><span>{{ p.identity.profile }}</span><span>{{ p.identity.active }}</span></div></div></div></section>
 
     <section class="cp-closing cp-section"><div class="cp-wrap cp-closing-inner"><h2>{{ p.closing.title }}</h2><div><p>{{ p.closing.body }}</p><button class="cp-cta" type="button" @click="auth('signup', 'closing')">{{ p.closing.cta }} <span class="cp-arrow" aria-hidden="true" /></button></div></div></section>
+    <Transition name="cp-float"><button v-if="backToTopVisible" class="cp-back-top" type="button" :aria-label="locale === 'es' ? 'Volver arriba' : 'Back to top'" @click="scrollTo('#top')"><span class="cp-up-arrow" aria-hidden="true" /></button></Transition>
     <footer class="cp-footer"><div class="cp-wrap"><span class="cp-brand"><CueBrand /></span><span>{{ locale === 'es' ? 'Hecho para las personas que están detrás del sonido.' : 'Made for the people behind the sound.' }}</span><span>© 2026 Cuebooker</span></div></footer>
   </main>
 </template>
