@@ -17,6 +17,8 @@ export type CueIdRiggedBodyLabAsset = {
     knees: true
   }
   productionReady: false
+  bytes: number
+  sha256: string
 }
 
 export const CUE_ID_RIGGED_BODY_LAB_ASSETS: Record<
@@ -39,7 +41,9 @@ export const CUE_ID_RIGGED_BODY_LAB_ASSETS: Record<
       hips: true,
       knees: true
     },
-    productionReady: false
+    productionReady: false,
+    bytes: 24085652,
+    sha256: '141dbf541b2aafbfd17aab1e99a0f32a8e088aef2677dfb9122f80821b6052fb'
   },
   female: {
     body: 'female',
@@ -57,7 +61,9 @@ export const CUE_ID_RIGGED_BODY_LAB_ASSETS: Record<
       hips: true,
       knees: true
     },
-    productionReady: false
+    productionReady: false,
+    bytes: 29097972,
+    sha256: '8f314f2280d79a6024a2acc6cba95759375d2442b8d9416f628fc93875de580f'
   }
 }
 
