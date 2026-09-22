@@ -152,6 +152,16 @@ function openApp(placement: string) {
 function closeMenuOnEscape(event: KeyboardEvent) {
   if (event.key === 'Escape') menuOpen.value = false
 }
+function handleScroll() {
+  const currentY = window.scrollY
+  backToTopVisible.value = currentY > 520
+  if (menuOpen.value || currentY < 80) {
+    navHidden.value = false
+  } else {
+    navHidden.value = currentY > lastScrollY.value + 8
+  }
+  lastScrollY.value = currentY
+}
 watch(menuOpen, open => {
   if (import.meta.client) document.documentElement.classList.toggle('mobile-menu-open', open)
 })
