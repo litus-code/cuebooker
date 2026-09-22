@@ -100,6 +100,7 @@ const profileSaving = ref(false)
 const profileMessage = ref('')
 const profileWelcome = ref(false)
 const profilePreviewOpen = ref(false)
+const profileEditOpen = ref(false)
 const profileCoverUrl = ref('')
 const profileCoverUploading = ref(false)
 const profileCoverMessage = ref('')
@@ -1399,28 +1400,22 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         />
       </section>
 
-      <section v-else class="view profile-view">
-        <div class="view-heading">
-          <div><p class="eyebrow">{{ copy.profileEyebrow }}</p><h1>{{ copy.profileTitle }}</h1><p>{{ copy.profileBody }}</p></div>
-          <div class="profile-heading-actions">
-            <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
-            <div v-else class="profile-progress"><span>{{ copy.profileCompletion }}</span><strong>{{ profileCompletion }}%</strong><i><b :style="{ width: `${profileCompletion}%` }" /></i></div>
-            <button v-if="!canEditSelectedArtist" class="profile-preview-button" type="button" @click="profilePreviewOpen = true"><span>{{ copy.previewProfile }}</span><svg class="external-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></button>
+      <section v-else class="view profile-view profile-view--hub">
+        <div class="view-heading profile-hub-heading">
+          <div>
+            <p class="eyebrow">{{ preferences.locale.value === 'es' ? 'ARTISTA / IDENTIDAD' : 'ARTIST / IDENTITY' }}</p>
+            <h1>{{ preferences.locale.value === 'es' ? 'TU PERFIL, SIN RUIDO.' : 'YOUR PROFILE, WITHOUT THE NOISE.' }}</h1>
+            <p>{{ preferences.locale.value === 'es'
+              ? 'Identidad, CUE ID, publicación y distribución en una sola vista. Los datos detallados se editan solo cuando los necesitas.'
+              : 'Identity, CUE ID, publishing and distribution in one view. Detailed fields only open when you need them.' }}</p>
           </div>
+          <label v-if="hasArtistSelector" class="artist-select">
+            <span>{{ copy.artist }}</span>
+            <select v-model="selectedArtistId">
+              <option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option>
+            </select>
+          </label>
         </div>
-
-        <PublicProfilePublishingControls
-          v-if="selectedArtist && canEditSelectedArtist"
-          :slug="selectedArtist.slug"
-          :published="publicProfilePublished"
-          :accepting-requests="publicProfileAcceptingRequests"
-          :saving="publicPublishingSaving"
-          :locale="preferences.locale.value"
-          @preview="profilePreviewOpen = true"
-          @update-published="updatePublicProfilePublished"
-          @update-accepting-requests="updatePublicAcceptingRequests"
-        />
-        <p v-if="publicPublishingMessage" class="public-publishing-message">{{ publicPublishingMessage }}</p>
 
         <aside v-if="profileWelcome" class="profile-welcome">
           <div><span>{{ copy.profileOptional }}</span><strong>{{ copy.profileOptionalBody }}</strong></div>
@@ -1428,91 +1423,194 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         </aside>
 
         <p v-if="profileLoading" class="loading-message">{{ copy.loading }}</p>
-        <form v-else class="profile-form" @submit.prevent="saveArtistProfile">
-          <p v-if="!canEditSelectedArtist" class="profile-readonly">{{ copy.profileReadOnly }}</p>
-          <fieldset class="profile-fieldset" :disabled="!canEditSelectedArtist">
-          <section class="profile-section">
-            <header><div><p class="eyebrow">01</p><h2>{{ copy.profilePublicSection }}</h2></div><p>{{ copy.profilePublicHint }}</p></header>
-            <ProfileCoverUploader
-              class="profile-cover-field"
-              :image-url="profileCoverUrl"
-              :position-y="profileForm.coverPositionY"
-              :disabled="!canEditSelectedArtist"
-              :uploading="profileCoverUploading"
-              :title="copy.coverTitle"
-              :hint="copy.coverHint"
-              :choose-label="copy.coverChoose"
-              :change-label="copy.coverChange"
-              :remove-label="copy.coverRemove"
-              :position-label="copy.coverPosition"
-              :uploading-label="copy.coverUploading"
-              @select="selectProfileCover"
-              @remove="removeProfileCover"
-              @update:position-y="profileForm.coverPositionY = $event"
-            />
-            <p v-if="profileCoverMessage" class="profile-cover-message" :class="{ success: profileCoverMessage === copy.coverSaved || profileCoverMessage === copy.coverRemoved }">{{ profileCoverMessage }}</p>
-            <CueIdProfileEditor
-              class="profile-cue-id-field"
-              :artist-name="profileForm.stageName || selectedArtist?.stage_name || 'Artist'"
-              :locale="preferences.locale.value"
-              :disabled="!canEditSelectedArtist"
-            />
-            <div class="profile-fields">
-              <label class="field-wide"><span>{{ copy.stageName }}</span><input v-model="profileForm.stageName" maxlength="120" required></label>
-              <label class="field-wide"><span>{{ copy.bio }}</span><textarea v-model="profileForm.bio" rows="5" maxlength="2000" :placeholder="copy.bioPlaceholder" /></label>
-              <label><span>{{ copy.baseCity }}</span><input v-model="profileForm.city" maxlength="120" autocomplete="address-level2"></label>
-              <label><span>{{ copy.countryCode }}</span><input v-model="profileForm.countryCode" maxlength="2" pattern="[A-Za-z]{2}" placeholder="ES" autocomplete="country"></label>
-              <label><span>{{ copy.timezone }}</span><input v-model="profileForm.timezone" maxlength="80" placeholder="Europe/Madrid"></label>
-              <div class="chip-field"><span>{{ copy.languages }}</span><ProfileChipInput v-model="profileForm.languages" :limit="8" placeholder="Español" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
-              <label><span>{{ copy.yearsActive }}</span><input v-model="profileForm.yearsActive" type="number" min="0" max="80"></label>
-            </div>
-          </section>
 
-          <section class="profile-section">
-            <header><div><p class="eyebrow">02</p><h2>{{ copy.profileSoundSection }}</h2></div></header>
-            <div class="profile-fields">
-              <div class="chip-field"><span>{{ copy.primaryGenres }}</span><ProfileChipInput v-model="profileForm.primaryGenres" :limit="3" placeholder="Techno" :remove-label="copy.removeChip" /><small>{{ copy.primaryGenresHint }} {{ copy.addWithEnter }}</small></div>
-              <div class="chip-field"><span>{{ copy.secondaryGenres }}</span><ProfileChipInput v-model="profileForm.secondaryGenres" :limit="8" placeholder="Trance" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
-              <div class="chip-field"><span>{{ copy.performanceFormats }}</span><ProfileChipInput v-model="profileForm.performanceFormats" :limit="6" placeholder="DJ set" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
-              <div class="chip-field"><span>{{ copy.eventTypes }}</span><ProfileChipInput v-model="profileForm.eventTypes" :limit="10" placeholder="Club" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
-            </div>
-          </section>
+        <template v-else>
+          <div class="profile-hub-grid">
+            <section class="profile-hub-card profile-hub-card--identity">
+              <div class="profile-hub-card__head">
+                <span>{{ preferences.locale.value === 'es' ? 'IDENTIDAD' : 'IDENTITY' }}</span>
+                <strong>{{ profileCompletion }}%</strong>
+              </div>
+              <div class="profile-hub-identity">
+                <div>
+                  <h2>{{ profileForm.stageName || selectedArtist?.stage_name }}</h2>
+                  <p>{{ [profileForm.city, profileForm.countryCode].filter(Boolean).join(' · ') || (preferences.locale.value === 'es' ? 'Ubicación pendiente' : 'Location pending') }}</p>
+                </div>
+                <div class="profile-hub-tags">
+                  <span v-for="genre in splitList(profileForm.primaryGenres, 3)" :key="genre">{{ genre }}</span>
+                  <span v-if="!splitList(profileForm.primaryGenres, 3).length">{{ preferences.locale.value === 'es' ? 'Añade tus géneros' : 'Add your genres' }}</span>
+                </div>
+              </div>
+              <div class="profile-hub-card__actions">
+                <button type="button" @click="profileEditOpen = !profileEditOpen">
+                  {{ profileEditOpen
+                    ? (preferences.locale.value === 'es' ? 'Cerrar edición' : 'Close editor')
+                    : (preferences.locale.value === 'es' ? 'Editar información' : 'Edit information') }}
+                </button>
+                <button type="button" @click="profilePreviewOpen = true">{{ copy.previewProfile }}</button>
+              </div>
+            </section>
 
-          <section class="profile-section profile-section--private">
-            <header><div><p class="eyebrow">03 / PRIVADO</p><h2>{{ copy.profileBookingSection }}</h2></div><p>{{ copy.profileBookingHint }}</p></header>
-            <div class="profile-fields">
-              <label><span>{{ copy.feeBasis }}</span><select v-model="profileForm.feeBasis"><option value="">—</option><option value="event">{{ copy.feeEvent }}</option><option value="set">{{ copy.feeSet }}</option><option value="hour">{{ copy.feeHour }}</option></select></label>
-              <label><span>{{ copy.feeMin }}</span><input v-model="profileForm.feeMin" type="number" min="0" step="0.01"></label>
-              <label><span>{{ copy.feeTypical }}</span><input v-model="profileForm.feeTypical" type="number" min="0" step="0.01"></label>
-              <label><span>{{ copy.currency }}</span><input v-model="profileForm.currency" maxlength="3" pattern="[A-Za-z]{3}" placeholder="EUR"></label>
-              <label><span>{{ copy.setDuration }}</span><div class="input-suffix"><input v-model="profileForm.setDurationMinutes" type="number" min="15" max="1440" step="15"><small>{{ copy.minutes }}</small></div></label>
-              <label class="checkbox-field"><input v-model="profileForm.acceptsTravel" type="checkbox"><span>{{ copy.acceptsTravel }}</span></label>
-              <div class="chip-field field-wide"><span>{{ copy.travelRegions }}</span><ProfileChipInput v-model="profileForm.travelRegions" :limit="20" placeholder="Catalunya" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
-              <label class="field-wide"><span>{{ copy.equipmentNotes }}</span><textarea v-model="profileForm.equipmentNotes" rows="4" maxlength="2000" /></label>
-            </div>
-          </section>
+            <section class="profile-hub-card profile-hub-card--cue">
+              <div class="profile-hub-card__head">
+                <span>CUE ID</span>
+                <small>BODY V2</small>
+              </div>
+              <div class="profile-hub-cue-visual" aria-hidden="true">
+                <i class="profile-hub-cue-ring profile-hub-cue-ring--outer" />
+                <i class="profile-hub-cue-ring profile-hub-cue-ring--inner" />
+                <b>CUE ID</b>
+              </div>
+              <div class="profile-hub-card__copy">
+                <strong>{{ preferences.locale.value === 'es' ? 'Tu identidad visual modular.' : 'Your modular visual identity.' }}</strong>
+                <p>{{ preferences.locale.value === 'es'
+                  ? 'El avatar vivirá aquí como pieza visual del artista. El Creator se abre aparte para editar cuerpo, pelo, ropa y accesorios.'
+                  : 'Your avatar will live here as the artist visual layer. The Creator opens separately for body, hair, clothing and accessories.' }}</p>
+              </div>
+              <NuxtLink class="profile-hub-primary-link" to="/cue-id">
+                {{ preferences.locale.value === 'es' ? 'Editar CUE ID' : 'Edit CUE ID' }}
+                <span class="arrow arrow--ne" aria-hidden="true" />
+              </NuxtLink>
+            </section>
 
-          <section class="profile-section">
-            <header><div><p class="eyebrow">04</p><h2>{{ copy.profileLinksSection }}</h2></div></header>
-            <div class="profile-fields">
-              <label><span>{{ copy.website }}</span><input v-model="profileForm.websiteUrl" type="url" placeholder="https://"></label>
-              <label><span>{{ copy.instagram }}</span><input v-model="profileForm.instagramUrl" type="url" placeholder="https://instagram.com/"></label>
-              <label><span>{{ copy.soundcloud }}</span><input v-model="profileForm.soundcloudUrl" type="url" placeholder="https://soundcloud.com/"></label>
-              <label><span>{{ copy.mixcloud }}</span><input v-model="profileForm.mixcloudUrl" type="url" placeholder="https://mixcloud.com/"></label>
-              <label><span>{{ copy.youtube }}</span><input v-model="profileForm.youtubeUrl" type="url" placeholder="https://youtube.com/"></label>
-              <label><span>{{ copy.spotify }}</span><input v-model="profileForm.spotifyUrl" type="url" placeholder="https://open.spotify.com/"></label>
-              <label><span>{{ copy.technicalRider }}</span><input v-model="profileForm.technicalRiderUrl" type="url" placeholder="https://"></label>
-              <label><span>{{ copy.hospitalityRider }}</span><input v-model="profileForm.hospitalityRiderUrl" type="url" placeholder="https://"></label>
-            </div>
-          </section>
-          </fieldset>
+            <section class="profile-hub-card profile-hub-card--public">
+              <div class="profile-hub-card__head">
+                <span>{{ preferences.locale.value === 'es' ? 'PERFIL PÚBLICO' : 'PUBLIC PROFILE' }}</span>
+                <i :class="{ active: publicProfilePublished }" />
+              </div>
+              <div class="profile-hub-card__copy">
+                <strong>{{ publicProfilePublished
+                  ? (preferences.locale.value === 'es' ? 'Publicado' : 'Published')
+                  : (preferences.locale.value === 'es' ? 'Privado' : 'Private') }}</strong>
+                <p v-if="selectedArtist">cuebooker.com/{{ selectedArtist.slug }}</p>
+                <small>{{ publicProfileAcceptingRequests
+                  ? (preferences.locale.value === 'es' ? 'Aceptando solicitudes' : 'Accepting enquiries')
+                  : (preferences.locale.value === 'es' ? 'Booking cerrado' : 'Booking closed') }}</small>
+              </div>
+              <div class="profile-hub-card__actions">
+                <button type="button" @click="profilePreviewOpen = true">{{ copy.previewProfile }}</button>
+              </div>
+            </section>
 
-          <footer class="profile-savebar">
-            <div><span>{{ copy.profileCompletion }}</span><strong>{{ profileCompletion }}%</strong></div>
-            <p v-if="profileMessage" :class="{ success: profileMessage === copy.profileSaved }">{{ profileMessage }}</p>
-            <button class="primary-button" type="submit" :disabled="profileSaving || !canEditSelectedArtist">{{ profileSaving ? copy.saving : copy.saveProfile }}</button>
-          </footer>
-        </form>
+            <section class="profile-hub-card profile-hub-card--distribution">
+              <div class="profile-hub-card__head">
+                <span>{{ preferences.locale.value === 'es' ? 'DISTRIBUCIÓN' : 'DISTRIBUTION' }}</span>
+                <small>LINK · QR · IFRAME</small>
+              </div>
+              <div class="profile-hub-card__copy">
+                <strong>{{ preferences.locale.value === 'es' ? 'Lleva Cuebooker fuera de Cuebooker.' : 'Take Cuebooker beyond Cuebooker.' }}</strong>
+                <p>{{ preferences.locale.value === 'es'
+                  ? 'Perfil, booking link, Instagram, QR, EPK y widget web terminan en el mismo Booking Core.'
+                  : 'Profile, booking link, Instagram, QR, EPK and website widget all land in the same Booking Core.' }}</p>
+              </div>
+              <div class="profile-hub-distribution-list" aria-hidden="true">
+                <span>LINK</span><span>INSTAGRAM</span><span>QR</span><span>IFRAME</span>
+              </div>
+            </section>
+          </div>
+
+          <PublicProfilePublishingControls
+            v-if="selectedArtist && canEditSelectedArtist"
+            class="profile-hub-publishing"
+            :slug="selectedArtist.slug"
+            :published="publicProfilePublished"
+            :accepting-requests="publicProfileAcceptingRequests"
+            :saving="publicPublishingSaving"
+            :locale="preferences.locale.value"
+            @preview="profilePreviewOpen = true"
+            @update-published="updatePublicProfilePublished"
+            @update-accepting-requests="updatePublicAcceptingRequests"
+          />
+          <p v-if="publicPublishingMessage" class="public-publishing-message">{{ publicPublishingMessage }}</p>
+
+          <form v-if="profileEditOpen" class="profile-form profile-form--editor" @submit.prevent="saveArtistProfile">
+            <div class="profile-editor-heading">
+              <div>
+                <p class="eyebrow">{{ preferences.locale.value === 'es' ? 'EDITAR / DATOS DEL ARTISTA' : 'EDIT / ARTIST DETAILS' }}</p>
+                <h2>{{ preferences.locale.value === 'es' ? 'INFORMACIÓN PROFESIONAL.' : 'PROFESSIONAL INFORMATION.' }}</h2>
+              </div>
+              <button type="button" @click="profileEditOpen = false">×</button>
+            </div>
+
+            <p v-if="!canEditSelectedArtist" class="profile-readonly">{{ copy.profileReadOnly }}</p>
+            <fieldset class="profile-fieldset" :disabled="!canEditSelectedArtist">
+              <section class="profile-section">
+                <header><div><p class="eyebrow">01</p><h2>{{ copy.profilePublicSection }}</h2></div><p>{{ copy.profilePublicHint }}</p></header>
+                <ProfileCoverUploader
+                  class="profile-cover-field"
+                  :image-url="profileCoverUrl"
+                  :position-y="profileForm.coverPositionY"
+                  :disabled="!canEditSelectedArtist"
+                  :uploading="profileCoverUploading"
+                  :title="copy.coverTitle"
+                  :hint="copy.coverHint"
+                  :choose-label="copy.coverChoose"
+                  :change-label="copy.coverChange"
+                  :remove-label="copy.coverRemove"
+                  :position-label="copy.coverPosition"
+                  :uploading-label="copy.coverUploading"
+                  @select="selectProfileCover"
+                  @remove="removeProfileCover"
+                  @update:position-y="profileForm.coverPositionY = $event"
+                />
+                <p v-if="profileCoverMessage" class="profile-cover-message" :class="{ success: profileCoverMessage === copy.coverSaved || profileCoverMessage === copy.coverRemoved }">{{ profileCoverMessage }}</p>
+                <div class="profile-fields">
+                  <label class="field-wide"><span>{{ copy.stageName }}</span><input v-model="profileForm.stageName" maxlength="120" required></label>
+                  <label class="field-wide"><span>{{ copy.bio }}</span><textarea v-model="profileForm.bio" rows="5" maxlength="2000" :placeholder="copy.bioPlaceholder" /></label>
+                  <label><span>{{ copy.baseCity }}</span><input v-model="profileForm.city" maxlength="120" autocomplete="address-level2"></label>
+                  <label><span>{{ copy.countryCode }}</span><input v-model="profileForm.countryCode" maxlength="2" pattern="[A-Za-z]{2}" placeholder="ES" autocomplete="country"></label>
+                  <label><span>{{ copy.timezone }}</span><input v-model="profileForm.timezone" maxlength="80" placeholder="Europe/Madrid"></label>
+                  <div class="chip-field"><span>{{ copy.languages }}</span><ProfileChipInput v-model="profileForm.languages" :limit="8" placeholder="Español" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
+                  <label><span>{{ copy.yearsActive }}</span><input v-model="profileForm.yearsActive" type="number" min="0" max="80"></label>
+                </div>
+              </section>
+
+              <section class="profile-section">
+                <header><div><p class="eyebrow">02</p><h2>{{ copy.profileSoundSection }}</h2></div></header>
+                <div class="profile-fields">
+                  <div class="chip-field"><span>{{ copy.primaryGenres }}</span><ProfileChipInput v-model="profileForm.primaryGenres" :limit="3" placeholder="Techno" :remove-label="copy.removeChip" /><small>{{ copy.primaryGenresHint }} {{ copy.addWithEnter }}</small></div>
+                  <div class="chip-field"><span>{{ copy.secondaryGenres }}</span><ProfileChipInput v-model="profileForm.secondaryGenres" :limit="8" placeholder="Trance" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
+                  <div class="chip-field"><span>{{ copy.performanceFormats }}</span><ProfileChipInput v-model="profileForm.performanceFormats" :limit="6" placeholder="DJ set" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
+                  <div class="chip-field"><span>{{ copy.eventTypes }}</span><ProfileChipInput v-model="profileForm.eventTypes" :limit="10" placeholder="Club" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
+                </div>
+              </section>
+
+              <section class="profile-section profile-section--private">
+                <header><div><p class="eyebrow">03 / PRIVADO</p><h2>{{ copy.profileBookingSection }}</h2></div><p>{{ copy.profileBookingHint }}</p></header>
+                <div class="profile-fields">
+                  <label><span>{{ copy.feeBasis }}</span><select v-model="profileForm.feeBasis"><option value="">—</option><option value="event">{{ copy.feeEvent }}</option><option value="set">{{ copy.feeSet }}</option><option value="hour">{{ copy.feeHour }}</option></select></label>
+                  <label><span>{{ copy.feeMin }}</span><input v-model="profileForm.feeMin" type="number" min="0" step="0.01"></label>
+                  <label><span>{{ copy.feeTypical }}</span><input v-model="profileForm.feeTypical" type="number" min="0" step="0.01"></label>
+                  <label><span>{{ copy.currency }}</span><input v-model="profileForm.currency" maxlength="3" pattern="[A-Za-z]{3}" placeholder="EUR"></label>
+                  <label><span>{{ copy.setDuration }}</span><div class="input-suffix"><input v-model="profileForm.setDurationMinutes" type="number" min="15" max="1440" step="15"><small>{{ copy.minutes }}</small></div></label>
+                  <label class="checkbox-field"><input v-model="profileForm.acceptsTravel" type="checkbox"><span>{{ copy.acceptsTravel }}</span></label>
+                  <div class="chip-field field-wide"><span>{{ copy.travelRegions }}</span><ProfileChipInput v-model="profileForm.travelRegions" :limit="20" placeholder="Catalunya" :remove-label="copy.removeChip" /><small>{{ copy.addWithEnter }}</small></div>
+                  <label class="field-wide"><span>{{ copy.equipmentNotes }}</span><textarea v-model="profileForm.equipmentNotes" rows="4" maxlength="2000" /></label>
+                </div>
+              </section>
+
+              <section class="profile-section">
+                <header><div><p class="eyebrow">04</p><h2>{{ copy.profileLinksSection }}</h2></div></header>
+                <div class="profile-fields">
+                  <label><span>{{ copy.website }}</span><input v-model="profileForm.websiteUrl" type="url" placeholder="https://"></label>
+                  <label><span>{{ copy.instagram }}</span><input v-model="profileForm.instagramUrl" type="url" placeholder="https://instagram.com/"></label>
+                  <label><span>{{ copy.soundcloud }}</span><input v-model="profileForm.soundcloudUrl" type="url" placeholder="https://soundcloud.com/"></label>
+                  <label><span>{{ copy.mixcloud }}</span><input v-model="profileForm.mixcloudUrl" type="url" placeholder="https://mixcloud.com/"></label>
+                  <label><span>{{ copy.youtube }}</span><input v-model="profileForm.youtubeUrl" type="url" placeholder="https://youtube.com/"></label>
+                  <label><span>{{ copy.spotify }}</span><input v-model="profileForm.spotifyUrl" type="url" placeholder="https://open.spotify.com/"></label>
+                  <label><span>{{ copy.technicalRider }}</span><input v-model="profileForm.technicalRiderUrl" type="url" placeholder="https://"></label>
+                  <label><span>{{ copy.hospitalityRider }}</span><input v-model="profileForm.hospitalityRiderUrl" type="url" placeholder="https://"></label>
+                </div>
+              </section>
+            </fieldset>
+
+            <footer class="profile-savebar">
+              <div><span>{{ copy.profileCompletion }}</span><strong>{{ profileCompletion }}%</strong></div>
+              <p v-if="profileMessage" :class="{ success: profileMessage === copy.profileSaved }">{{ profileMessage }}</p>
+              <button class="primary-button" type="submit" :disabled="profileSaving || !canEditSelectedArtist">{{ profileSaving ? copy.saving : copy.saveProfile }}</button>
+            </footer>
+          </form>
+        </template>
       </section>
     </template>
 
@@ -1734,6 +1832,39 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .booking-detail { scroll-margin-top: 84px; }
 .booking-detail:focus { outline: none; }
 .profile-view { padding-bottom: 0; }
+.profile-view--hub { display:grid; gap:18px; }
+.profile-hub-heading { margin-bottom:4px; }
+.profile-hub-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.profile-hub-card { position:relative; display:grid; align-content:start; min-height:260px; padding:22px; border:1px solid var(--cue-border); background:var(--cue-surface); overflow:hidden; }
+.profile-hub-card__head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:26px; color:var(--cue-muted); font:800 9px/1.2 monospace; letter-spacing:.12em; text-transform:uppercase; }
+.profile-hub-card__head > strong { color:var(--cue-toggle); font-size:24px; letter-spacing:-.04em; }
+.profile-hub-card__head > small { color:var(--cue-accent); font:800 9px/1.2 monospace; }
+.profile-hub-card__head > i { width:9px; height:9px; border-radius:50%; background:var(--cue-dim); }
+.profile-hub-card__head > i.active { background:var(--cue-toggle); box-shadow:0 0 14px color-mix(in srgb,var(--cue-toggle) 55%,transparent); }
+.profile-hub-identity h2 { margin:0 0 8px; font-size:clamp(2rem,4vw,4rem); line-height:.9; letter-spacing:-.04em; text-transform:uppercase; }
+.profile-hub-identity p,.profile-hub-card__copy p { margin:0; color:var(--cue-muted); line-height:1.5; }
+.profile-hub-tags { display:flex; flex-wrap:wrap; gap:7px; margin-top:22px; }
+.profile-hub-tags span,.profile-hub-distribution-list span { padding:7px 9px; border:1px solid var(--cue-border); color:var(--cue-muted); font:800 9px/1 monospace; letter-spacing:.08em; text-transform:uppercase; }
+.profile-hub-card__actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:auto; padding-top:24px; }
+.profile-hub-card__actions button,.profile-hub-primary-link { min-height:42px; padding:0 14px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); font-weight:850; text-decoration:none; cursor:pointer; }
+.profile-hub-card__actions button:first-child,.profile-hub-primary-link { border-color:var(--cue-toggle); background:var(--cue-toggle); color:#090909; }
+.profile-hub-card--cue { background:radial-gradient(circle at 70% 35%,color-mix(in srgb,var(--cue-accent) 10%,transparent),transparent 38%),var(--cue-surface); }
+.profile-hub-cue-visual { position:relative; display:grid; place-items:center; min-height:116px; margin:-8px 0 20px; }
+.profile-hub-cue-visual b { position:relative; z-index:2; color:var(--cue-accent); font:900 20px/1 monospace; letter-spacing:.15em; }
+.profile-hub-cue-ring { position:absolute; border:1px solid color-mix(in srgb,var(--cue-accent) 28%,transparent); border-radius:50%; }
+.profile-hub-cue-ring--outer { width:170px; height:170px; }
+.profile-hub-cue-ring--inner { width:100px; height:100px; border-style:dashed; }
+.profile-hub-card__copy { display:grid; gap:8px; }
+.profile-hub-card__copy strong { font-size:18px; line-height:1.2; }
+.profile-hub-card__copy small { color:var(--cue-accent); font:800 9px/1.3 monospace; letter-spacing:.08em; text-transform:uppercase; }
+.profile-hub-primary-link { display:flex; align-items:center; justify-content:space-between; margin-top:22px; }
+.profile-hub-distribution-list { display:flex; flex-wrap:wrap; gap:7px; margin-top:auto; padding-top:24px; }
+.profile-hub-publishing { margin-top:2px; }
+.profile-form--editor { margin-top:8px; padding-top:18px; border-top:1px solid var(--cue-border); }
+.profile-editor-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:20px; padding:4px 0 18px; }
+.profile-editor-heading h2 { margin:7px 0 0; font-size:clamp(1.6rem,4vw,3rem); line-height:.95; text-transform:uppercase; }
+.profile-editor-heading > button { width:42px; height:42px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); font-size:24px; cursor:pointer; }
+
 .profile-progress { display: grid; min-width: 220px; gap: 7px; }
 .profile-progress > span, .profile-savebar span { color: var(--cue-muted); font: 700 10px/1.3 monospace; letter-spacing: .1em; text-transform: uppercase; }
 .profile-progress > strong { font-size: 28px; }
@@ -1866,6 +1997,15 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .booking-detail { scroll-margin-top: 74px; }
   .profile-progress { min-width: 0; margin-top: 20px; }
   .profile-heading-actions { min-width: 0; margin-top: 20px; }
+  .profile-hub-grid { grid-template-columns:1fr; gap:10px; }
+  .profile-hub-card { min-height:0; padding:16px; }
+  .profile-hub-card__head { margin-bottom:18px; }
+  .profile-hub-identity h2 { font-size:2.35rem; }
+  .profile-hub-cue-visual { min-height:92px; }
+  .profile-hub-cue-ring--outer { width:135px; height:135px; }
+  .profile-hub-cue-ring--inner { width:78px; height:78px; }
+  .profile-hub-card__actions { display:grid; grid-template-columns:1fr 1fr; }
+  .profile-hub-card__actions button,.profile-hub-primary-link { width:100%; }
   .profile-welcome, .profile-section > header { align-items: stretch; flex-direction: column; }
   .profile-welcome button { width: 100%; }
   .profile-fields { grid-template-columns: 1fr; padding: 18px; }
