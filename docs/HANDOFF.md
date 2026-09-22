@@ -9744,3 +9744,35 @@ Next gate:
 - then run desktop/mobile memory and rendering checks before any wardrobe fitting.
 
 Production remains untouched.
+
+
+## 183. CUE ID body-base correction: neutral bald geometry is mandatory
+
+Real browser inspection of the first V10 lab integration exposed an architectural problem in the current Meshy-derived body masters.
+
+Observed:
+
+- selecting `bald` on the male still exposes geometry/shape inherited from the authored fade haircut;
+- the female head/hair region can deform or render incorrectly in the lab;
+- the current semantic split can hide the explicit `cue_*_hair` node, but it cannot guarantee a truly neutral scalp because parts of the source hairstyle are still baked into or classified as body/skin geometry.
+
+Decision:
+
+- the CUE ID body base MUST be a genuinely bald, neutral head/scalp;
+- no hairstyle may define or deform the underlying head silhouette;
+- `fade`, `tied-back`, and every other hairstyle are modular hair assets layered onto the same neutral body;
+- the current male/female V10 files remain useful as rig/deformation QA references, but they are NOT the final Creator body masters until the neutral scalp issue is corrected;
+- do not paper over this with UI visibility toggles or texture masking: the geometry contract itself must be corrected.
+
+Required next asset gate:
+
+1. obtain or author neutral bald male/female body masters with the accepted body proportions;
+2. preserve the shared `cue_rig` contract and transfer/rebuild skin weights onto those neutral bodies;
+3. validate head/neck deformation again after the geometry swap;
+4. keep underwear as a separate semantic/modesty layer;
+5. extract/re-author hairstyles as independent assets attached to the head/rig, starting with fade and tied-back if those source meshes can be salvaged cleanly;
+6. only after this gate should the Creator's `bald` and hairstyle controls be considered visually valid.
+
+The current browser delivery GLBs stay lab-only and `productionReady: false`.
+
+Production remains untouched.
