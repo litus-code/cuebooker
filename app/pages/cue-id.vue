@@ -100,7 +100,7 @@ function resetLabDraft() {
 const copy = computed(() => preferences.locale.value === 'es' ? {
   back: 'Volver',
   continueWorkspace: 'Continuar al workspace',
-  backProfile: 'Volver al perfil',
+  backProfile: 'Volver',
   lab: 'BETA / LAB',
   status: 'CUE ID · CREATOR V1 LAB',
   saved: 'Draft guardado en este dispositivo',
@@ -112,7 +112,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
 } : {
   back: 'Back',
   continueWorkspace: 'Continue to workspace',
-  backProfile: 'Back to profile',
+  backProfile: 'Back',
   lab: 'BETA / LAB',
   status: 'CUE ID · CREATOR V1 LAB',
   saved: 'Draft saved on this device',
