@@ -93,8 +93,10 @@ function applySemanticState(root: Object3D) {
   const state = resolveCueIdBodySemanticState(props.config)
   const currentAsset = asset.value
 
+  const hairNode = currentAsset.semanticNodes.hair
+
   root.traverse(node => {
-    if (node.name === currentAsset.semanticNodes.hair) {
+    if (hairNode && node.name === hairNode) {
       node.visible = state.sourceHairVisible
     }
 
@@ -111,10 +113,10 @@ function applySemanticState(root: Object3D) {
     Math.min(0.42, skin.tintStrength * 0.52)
   )
 
-  if (state.sourceHairVisible) {
+  if (state.sourceHairVisible && hairNode) {
     tintNode(
       root,
-      currentAsset.semanticNodes.hair,
+      hairNode,
       hairColors[props.config.hairColor],
       0.52
     )
@@ -264,7 +266,7 @@ async function loadBody() {
     scene.value = parsed
   } catch (error) {
     if (abortController.signal.aborted || generation !== loadGeneration) return
-    console.error('[CUE ID] V10 lab body load failed', error)
+    console.error('[CUE ID] V2 lab body load failed', error)
     disposeScene(scene.value)
     scene.value = null
     const message = error instanceof Error ? error.message : String(error)
