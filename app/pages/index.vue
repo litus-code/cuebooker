@@ -64,7 +64,7 @@ const p = computed(() => locale.value === 'es' ? {
     managerFeatures: ['Cambia de artista sin cambiar de sistema', 'Controla el estado de cada oportunidad', 'Dale contexto al artista, no más trabajo administrativo']
   },
   distribution: {
-    heading: 'Lleva tu booking a cualquier lugar donde ya está tu público.',
+    heading: 'Tu web, tu bio o una pegatina en la cabina.',
     body: 'No necesitas rehacer tu web ni pedirle a la gente que busque cómo contactarte. Cuebooker se adapta a la forma en la que ya compartes tu música.',
     profile: 'VISIBILIDAD DEL PERFIL', profileTitle: 'Tu perfil, público cuando tú decides.', profileBody: 'Compártelo para recibir solicitudes o mantenlo privado mientras lo preparas.',
     link: 'ENLACE SOCIAL', linkTitle: 'Un enlace para Instagram, bio y redes.', linkBody: 'Publica una URL única en Instagram, TikTok, SoundCloud, WhatsApp o donde quieras.',
@@ -122,7 +122,7 @@ const p = computed(() => locale.value === 'es' ? {
     managerFeatures: ['Switch artists without switching systems', 'Track the state of every opportunity', 'Give the artist context, not more admin']
   },
   distribution: {
-    heading: 'Take your booking wherever your audience already is.',
+    heading: 'Your website, your bio or a sticker in the booth.',
     body: 'You do not need to rebuild your website or make people search for how to contact you. Cuebooker fits the way you already share your music.',
     profile: 'PROFILE VISIBILITY', profileTitle: 'Your profile, public when you decide.', profileBody: 'Share it to receive requests or keep it private while you prepare it.',
     link: 'SOCIAL LINK', linkTitle: 'One link for Instagram, bio and social.', linkBody: 'Publish one URL on Instagram, TikTok, SoundCloud, WhatsApp or anywhere else.',
@@ -202,7 +202,9 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
           <button class="cp-menu" type="button" :aria-expanded="menuOpen" aria-controls="cp-mobile-menu" @click="toggleMenu"><span /><span /></button>
         </div>
       </div>
-      <div id="cp-mobile-menu" class="cp-mobile-menu" :class="{ open: menuOpen }">
+    </nav>
+    <Teleport to="body">
+      <div id="cp-mobile-menu" class="cp-mobile-menu cp-mobile-menu--portal" :class="{ open: menuOpen }">
         <div class="cp-mobile-nav-links">
           <a href="#system" @click.prevent="scrollTo('#system')">{{ p.nav.system }}</a>
           <a href="#distribution" @click.prevent="scrollTo('#distribution')">{{ p.nav.distribution }}</a>
@@ -213,7 +215,7 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
           <NuxtLink class="cp-cta cp-mobile-signup" to="/access?mode=signup" @click="menuOpen = false">{{ p.nav.signup }}</NuxtLink>
         </div>
       </div>
-    </nav>
+    </Teleport>
 
     <section id="top" class="cp-hero">
       <div class="cp-hero-overlay" />
