@@ -9697,3 +9697,50 @@ The rig contract remains shared between male/female and no sex-specific user-fac
 The rig QA gate is closed. Next: freeze the final male + female V10 outputs and integrate them in the lab-only CUE ID stage. Do not start broad garment fitting until that body integration is stable.
 
 Production remains untouched.
+
+
+## 182. CUE ID V10 lab body integration started
+
+The shared male/female V10 rig baseline is now wired into the new stylized Creator lab path without touching the production catalogue.
+
+Added:
+
+```text
+app/domain/cueIdRiggedBodyLab.ts
+app/components/CueIdRiggedBodyLabScene.client.vue
+tests/cueIdRiggedBodyLab.test.ts
+public/cue-id/lab/bodies/README.md
+scripts/blender/cue-id-v10-web-export.py
+```
+
+Behavior:
+
+- the stylized Creator stage mounts one real rigged body at a time;
+- body switching remains semantic and preserves Creator config;
+- skin tone is bound to the semantic skin node;
+- authored source hair visibility follows the selected source hairstyle;
+- source hair color is tintable;
+- underwear remains the technical modesty layer;
+- failure to load a lab GLB falls back to an explicit lab asset state rather than fake human geometry;
+- production catalogue remains empty;
+- Booking / Calendar / Activity remain outside the 3D bundle boundary.
+
+The reviewed master GLBs are intentionally NOT committed directly as browser assets because the current files are approximately 64 MB (male) and 82 MB (female).
+
+A Blender 5.2 web-export step was added using `EXT_meshopt_compression` without mesh simplification or rig changes. The lab loader supports `MeshoptDecoder`.
+
+Expected delivery paths:
+
+```text
+public/cue-id/lab/bodies/cueid-male-body-master-v1-rigged-v10.glb
+public/cue-id/lab/bodies/cueid-female-body-master-v1-rigged-v10.glb
+```
+
+Next gate:
+
+- generate the Meshopt delivery GLBs from the accepted V10 `.blend` masters;
+- inspect resulting byte size;
+- smoke male/female loading in `/cue-id`;
+- then run desktop/mobile memory and rendering checks before any wardrobe fitting.
+
+Production remains untouched.
