@@ -33,3 +33,14 @@ test('stylized workspace mounts the lab-only V10 scene instead of a fake mannequ
   assert.match(source, /CueIdRiggedBodyLabScene/)
   assert.doesNotMatch(source, /procedural mannequin/i)
 })
+
+
+test('V10 lab loader supports Meshopt-compressed delivery GLBs', async () => {
+  const source = await readFile(
+    new URL('../app/components/CueIdRiggedBodyLabScene.client.vue', import.meta.url),
+    'utf8'
+  )
+
+  assert.match(source, /MeshoptDecoder/)
+  assert.match(source, /setMeshoptDecoder\(MeshoptDecoder\)/)
+})
