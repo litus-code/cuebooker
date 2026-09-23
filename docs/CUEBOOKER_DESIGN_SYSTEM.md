@@ -21,6 +21,81 @@ The system must preserve the following principles:
 - no decorative rave, gaming or influencer UI language;
 - accessibility and performance are part of the component definition.
 
+
+## Colour system
+
+Cuebooker separates primitive colours from semantic roles. Components should consume semantic tokens wherever possible, so Dark and Light can keep the same behaviour without hard-coded colour decisions.
+
+### Core palette
+
+| Role | Dark | Light | Purpose |
+| --- | --- | --- | --- |
+| Primary | `#d8f56b` | `#6f47ff` | main action, selected state, focus |
+| Primary ink | `#11120d` | `#ffffff` | text/icons on Primary |
+| Secondary | `#8e7dff` | `#5d3ed1` | supporting interaction, identity accent |
+| Brand red | `#f25f6b` | `#d94d5a` | Cuebooker brand detail, never generic state |
+| Warm accent | `#efa45e` | `#b85d1f` | editorial/warm supporting signal |
+| Background | `#070707` | `#e9e6df` | page/application background |
+| Surface | `#101010` | `#f4f1ea` | primary working surface |
+| Raised | `#171717` | `#dedbd4` | local elevation/grouping |
+| Text | `#f2f0eb` | `#151515` | primary text |
+| Muted text | `#979793` | `#62625e` | secondary text |
+| Dim text | `#5f5f5c` | `#8a8982` | tertiary/disabled metadata |
+| Border | `#2d2d2b` | `#c4c1ba` | dividers and component boundaries |
+
+### Semantic status palette
+
+These colours represent state and should not be reused decoratively.
+
+| Token | Value | Meaning |
+| --- | --- | --- |
+| `--cue-status-new` | `#ceff54` | new opportunity |
+| `--cue-status-conversation` | `#73b7ff` | active conversation |
+| `--cue-status-waiting` | `#ffbf5f` | waiting for response |
+| `--cue-status-confirmed` | `#55d98d` | confirmed / success |
+| `--cue-status-rejected` | `#ff6f7d` | rejected / negative |
+| `--cue-status-cancelled` | `#8e8e8e` | cancelled / inactive |
+
+### Semantic token rules
+
+- `Primary` means the strongest local interaction, not a decorative brand wash.
+- `Secondary` supports identity or secondary selection and should appear much less often than Primary.
+- Brand red belongs to the Cuebooker identity, logo details and selected brand moments. Do not use it to mean error by default.
+- Status colours keep one meaning across filters, booking rows, labels and detail views.
+- Surfaces stay neutral. Avoid chromatic cards unless the state itself is the content.
+- Selected rows should use a low-opacity tint derived from the semantic colour rather than a full fill.
+- Light mode may change the chromatic mapping when contrast requires it. Behaviour and meaning remain identical.
+- Never encode a state using colour alone. Pair it with text, iconography, border/rail or another explicit signal.
+
+### Recommended semantic CSS
+
+```css
+:root {
+  --cue-primary: #d8f56b;
+  --cue-primary-ink: #11120d;
+  --cue-secondary: #8e7dff;
+  --cue-brand-red: #f25f6b;
+  --cue-warm: #efa45e;
+
+  --cue-status-new: #ceff54;
+  --cue-status-conversation: #73b7ff;
+  --cue-status-waiting: #ffbf5f;
+  --cue-status-confirmed: #55d98d;
+  --cue-status-rejected: #ff6f7d;
+  --cue-status-cancelled: #8e8e8e;
+}
+
+:root[data-theme='light'] {
+  --cue-primary: #6f47ff;
+  --cue-primary-ink: #fff;
+  --cue-secondary: #5d3ed1;
+  --cue-brand-red: #d94d5a;
+  --cue-warm: #b85d1f;
+}
+```
+
+Existing `--cue-accent` remains supported during migration and should resolve to the same value as `--cue-primary`. New components should prefer the semantic name.
+
 ## 2. Geometry
 
 ### Radius scale
