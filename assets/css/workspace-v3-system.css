@@ -1842,3 +1842,21 @@
     padding:var(--cue-space-4);
   }
 }
+
+
+/* Calendar columns close on the same baseline. */
+.workspace .calendar-view .calendar-layout {
+  align-items:stretch !important;
+}
+
+.workspace .calendar-view .month-panel,
+.workspace .calendar-view .day-panel {
+  height:100%;
+}
+
+@media (max-width:1040px) {
+  .workspace .calendar-view .month-panel,
+  .workspace .calendar-view .day-panel {
+    height:auto;
+  }
+}
