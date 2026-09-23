@@ -855,19 +855,20 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace__body-toggle button,.cue-workspace__view-toggle button{min-height:40px;border:0;border-radius:999px;padding:8px 14px;background:transparent;color:var(--cue-muted);font-weight:800}
 .cue-workspace__body-toggle button.active{background:var(--cue-accent);color:#111}
 .cue-workspace__view-toggle button.active{background:color-mix(in srgb,var(--cue-accent) 14%,transparent);color:var(--cue-accent)}
-.cue-workspace__stage-placeholder{position:relative;display:grid;place-items:center;min-height:560px;overflow:hidden;background:linear-gradient(180deg,#161716 0%,#111211 68%,#0b0c0b 100%)}
-.cue-workspace__stage-graphic{position:absolute;inset:0;overflow:hidden;opacity:.88}
-.cue-workspace__garage:before{position:absolute;inset:0;background:radial-gradient(circle at 50% 36%,rgba(206,255,84,.07),transparent 28%),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:auto,34px 100%;content:""}
-.cue-workspace__garage-light{position:absolute;top:7%;left:50%;width:min(44%,320px);height:7px;transform:translateX(-50%);border-radius:999px;background:rgba(235,241,214,.72);box-shadow:0 0 22px rgba(235,241,214,.16),0 18px 70px rgba(206,255,84,.06)}
-.cue-workspace__garage-shutter{position:absolute;left:15%;right:15%;top:14%;bottom:23%;border:1px solid rgba(255,255,255,.06);background:repeating-linear-gradient(180deg,#1d1f1d 0 18px,#171917 18px 20px)}
-.cue-workspace__garage-shutter:after{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.38),transparent 16% 84%,rgba(0,0,0,.38));content:""}
-.cue-workspace__garage-wall{position:absolute;top:0;bottom:20%;width:16%;background:linear-gradient(180deg,#1a1b1a,#121312)}
-.cue-workspace__garage-wall--left{left:0;border-right:1px solid rgba(255,255,255,.05)}
-.cue-workspace__garage-wall--right{right:0;border-left:1px solid rgba(255,255,255,.05)}
-.cue-workspace__garage-floor{position:absolute;left:-10%;right:-10%;bottom:-2%;height:29%;transform:perspective(500px) rotateX(58deg);transform-origin:bottom;background:repeating-linear-gradient(90deg,rgba(255,255,255,.025) 0 1px,transparent 1px 56px),linear-gradient(180deg,#151615,#0b0c0b);border-top:1px solid rgba(255,255,255,.07)}
-.cue-workspace__garage-mark{position:absolute;bottom:11%;width:90px;height:3px;background:rgba(206,255,84,.18);filter:blur(.1px)}
-.cue-workspace__garage-mark--a{left:18%;transform:rotate(-18deg)}
-.cue-workspace__garage-mark--b{right:18%;transform:rotate(18deg)}
+.cue-workspace__stage-placeholder{position:relative;display:grid;place-items:center;min-height:560px;overflow:hidden;background:linear-gradient(180deg,#111312 0%,#0b0d0c 70%,#080909 100%)}
+.cue-workspace__stage-graphic{position:absolute;inset:0;overflow:hidden;opacity:1}
+.cue-workspace__garage:before{position:absolute;inset:0;background:radial-gradient(ellipse at 48% 30%,rgba(221,226,220,.055),transparent 32%),radial-gradient(circle at 14% 28%,rgba(255,255,255,.025),transparent 18%),repeating-linear-gradient(90deg,rgba(255,255,255,.014) 0 1px,transparent 1px 92px),linear-gradient(180deg,#171918 0%,#101211 72%,#0b0c0c 100%);content:""}
+.cue-workspace__garage-light{position:absolute;z-index:3;top:8%;left:31%;width:min(34%,250px);height:5px;transform:translateX(-50%);border-radius:2px;background:rgba(224,229,221,.72);box-shadow:0 0 10px rgba(224,229,221,.18),0 18px 48px rgba(207,214,207,.055)}
+.cue-workspace__garage-shutter{position:absolute;z-index:1;left:9%;right:9%;top:17%;bottom:21%;border:1px solid rgba(255,255,255,.055);background:linear-gradient(90deg,rgba(255,255,255,.018),transparent 22% 78%,rgba(0,0,0,.12)),repeating-linear-gradient(180deg,#202321 0 15px,#171a18 15px 17px);box-shadow:inset 0 0 60px rgba(0,0,0,.38),0 18px 42px rgba(0,0,0,.24)}
+.cue-workspace__garage-shutter:before{position:absolute;inset:0;background:linear-gradient(90deg,transparent 0 32%,rgba(255,255,255,.035) 32% 32.4%,transparent 32.4% 67.6%,rgba(255,255,255,.03) 67.6% 68%,transparent 68%);content:""}
+.cue-workspace__garage-shutter:after{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.3),transparent 12% 88%,rgba(0,0,0,.34)),linear-gradient(180deg,transparent 0 73%,rgba(0,0,0,.18) 100%);content:""}
+.cue-workspace__garage-wall{position:absolute;z-index:2;top:0;bottom:20%;width:10%;background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.035),transparent 20%),repeating-linear-gradient(180deg,rgba(255,255,255,.012) 0 1px,transparent 1px 54px),linear-gradient(180deg,#1a1c1b,#111312)}
+.cue-workspace__garage-wall--left{left:0;border-right:1px solid rgba(255,255,255,.045);box-shadow:18px 0 38px rgba(0,0,0,.22)}
+.cue-workspace__garage-wall--right{right:0;border-left:1px solid rgba(255,255,255,.045);box-shadow:-18px 0 38px rgba(0,0,0,.22)}
+.cue-workspace__garage-floor{position:absolute;z-index:2;left:0;right:0;bottom:0;height:24%;background:linear-gradient(90deg,transparent 0 24%,rgba(255,255,255,.022) 24% 24.15%,transparent 24.15% 74%,rgba(255,255,255,.018) 74% 74.15%,transparent 74.15%),linear-gradient(180deg,#111312 0%,#0a0b0b 100%);border-top:1px solid rgba(255,255,255,.055);box-shadow:inset 0 20px 34px rgba(0,0,0,.22)}
+.cue-workspace__garage-mark{position:absolute;z-index:3;bottom:9%;width:112px;height:1px;background:rgba(205,211,206,.12)}
+.cue-workspace__garage-mark--a{left:16%;transform:rotate(-13deg)}
+.cue-workspace__garage-mark--b{right:16%;transform:rotate(13deg)}
 .cue-workspace__pending{position:relative;z-index:2;display:grid;gap:8px;max-width:360px;padding:18px;text-align:center;border:1px solid var(--cue-border);border-radius:16px;background:color-mix(in srgb,var(--cue-surface) 88%,transparent);backdrop-filter:blur(10px)}
 .cue-workspace__pending strong{font-size:1.05rem}.cue-workspace__pending span{color:var(--cue-muted);line-height:1.5}.cue-workspace__pending small{color:var(--cue-text);font:700 10px/1.4 monospace;letter-spacing:.04em}
 .cue-workspace__preview-kicker{color:var(--cue-accent)!important;font:800 9px/1.2 monospace;letter-spacing:.1em;text-transform:uppercase}
@@ -914,7 +915,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
   .cue-workspace__body-toggle,.cue-workspace__view-toggle{flex:0 0 auto}
   .cue-workspace__body-toggle button,.cue-workspace__view-toggle button{min-height:38px;padding:7px 10px;font-size:12px}
   .cue-workspace__stage-placeholder{min-height:300px}
-  .cue-workspace__stage-graphic{inset:6%}
+  .cue-workspace__stage-graphic{inset:0}
   .cue-workspace__pending{max-width:calc(100% - 28px);padding:14px}
   .cue-workspace__pending span:not(.cue-workspace__preview-kicker){font-size:12px}
   .cue-workspace__shared-note{padding:11px 12px;font-size:11px}
