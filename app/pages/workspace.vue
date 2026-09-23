@@ -70,14 +70,8 @@ function emptyProfileForm(): ArtistProfileForm {
   }
 }
 
-const initialLoadingView = (() => {
-  if (import.meta.client) {
-    const params = new URLSearchParams(window.location.search)
-    return workspaceViewFromQuery(params.get('view'), params.get('booking'))
-  }
-  return workspaceViewFromQuery(route.query.view, route.query.booking)
-})()
-const activeView = ref<WorkspaceView>(initialLoadingView)
+const loadingView = ref<WorkspaceView | null>(null)
+const activeView = ref<WorkspaceView>(workspaceViewFromQuery(route.query.view, route.query.booking))
 const artists = ref<ManagedArtist[]>([])
 const organizations = ref<ManagedOrganization[]>([])
 const selectedArtistId = ref('')
@@ -386,6 +380,14 @@ const publicProfilePreview = computed<PublicArtistProfile>(() => {
   }
 })
 const hours = Array.from({ length: 24 }, (_, index) => `${String(index).padStart(2, '0')}:00`)
+
+onBeforeMount(() => {
+  if (!import.meta.client) return
+  const params = new URLSearchParams(window.location.search)
+  const resolvedView = workspaceViewFromQuery(params.get('view'), params.get('booking'))
+  loadingView.value = resolvedView
+  activeView.value = resolvedView
+})
 
 onMounted(async () => {
   if (import.meta.client) sidebarCollapsed.value = localStorage.getItem('cuebooker.sidebar.collapsed') === 'true'
@@ -1321,7 +1323,8 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-    <section v-if="loading && initialLoadingView === 'bookings'" class="workspace-skeleton workspace-skeleton--bookings" aria-busy="true" aria-live="polite">
+    <template v-if="loading">
+    <section v-if="loadingView === 'bookings'" class="workspace-skeleton workspace-skeleton--bookings" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
       <div class="workspace-skeleton__heading workspace-skeleton__heading--bookings">
         <i class="skeleton-line skeleton-line--eyebrow" />
@@ -1348,7 +1351,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       </div>
     </section>
 
-    <section v-else-if="loading && initialLoadingView === 'calendar'" class="workspace-skeleton workspace-skeleton--calendar" aria-busy="true" aria-live="polite">
+    <section v-else-if="loadingView === 'calendar'" class="workspace-skeleton workspace-skeleton--calendar" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
       <div class="workspace-skeleton__heading workspace-skeleton__heading--calendar">
         <i class="skeleton-line skeleton-line--eyebrow" />
@@ -1379,7 +1382,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       </div>
     </section>
 
-    <section v-else-if="loading" class="workspace-skeleton" aria-busy="true" aria-live="polite">
+    <section v-else class="workspace-skeleton" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
       <div class="workspace-skeleton__heading">
         <i class="skeleton-line skeleton-line--eyebrow" />
@@ -1398,6 +1401,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <i class="skeleton-panel skeleton-panel--cue" />
       </div>
     </section>
+    </template>
 
     <section v-else-if="!artists.length" class="empty-card">
       <p class="eyebrow">{{ copy.rosterEyebrow }}</p>
