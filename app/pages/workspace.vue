@@ -78,7 +78,7 @@ const selectedArtistId = ref('')
 const blocks = ref<AvailabilityBlock[]>([])
 const monthCursor = ref(new Date().toISOString().slice(0, 7) + '-01')
 const todayDate = new Date().toISOString().slice(0, 10)
-const selectedDate = ref(todayDate)
+const selectedDate = ref('')
 const loading = ref(true)
 const saving = ref(false)
 const errorMessage = ref('')
@@ -222,7 +222,9 @@ const canEditSelectedArtist = computed(() => ['owner', 'manager'].includes(selec
 const tourNamespace = computed(() => auth.session.value?.user.id && selectedArtistId.value ? `workspace-${auth.session.value.user.id}-${selectedArtistId.value}` : undefined)
 const dateLocale = computed(() => preferences.locale.value === 'es' ? 'es-ES' : 'en-GB')
 const monthLabel = computed(() => new Intl.DateTimeFormat(dateLocale.value, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${monthCursor.value}T12:00:00Z`)))
-const selectedDateLabel = computed(() => new Intl.DateTimeFormat(dateLocale.value, { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${selectedDate.value}T12:00:00Z`)))
+const selectedDateLabel = computed(() => selectedDate.value
+  ? new Intl.DateTimeFormat(dateLocale.value, { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${selectedDate.value}T12:00:00Z`))
+  : '')
 const monthRange = computed(() => {
   const start = new Date(`${monthCursor.value}T00:00:00Z`)
   const end = new Date(start)
@@ -1074,7 +1076,7 @@ function changeMonth(offset: number) {
   const date = new Date(`${monthCursor.value}T12:00:00Z`)
   date.setUTCMonth(date.getUTCMonth() + offset)
   monthCursor.value = date.toISOString().slice(0, 7) + '-01'
-  selectedDate.value = monthCursor.value
+  selectedDate.value = ''
   closeEditor()
 }
 
@@ -1525,28 +1527,35 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           </section>
 
           <section id="workspace-day-panel" class="day-panel panel">
-            <div class="day-heading"><div><p class="eyebrow">{{ copy.dayHours }}</p><h2>{{ selectedDateLabel }}</h2></div><button class="add-button" type="button" @click="openCreate()">{{ copy.add }}</button></div>
-            <div v-if="selectedDayDateOnlyCoreHolds.length || selectedDayDateOnlyConfirmedBookings.length" class="core-calendar-holds">
-              <article v-for="booking in selectedDayDateOnlyConfirmedBookings" :key="`confirmed-${booking.id}`" class="core-calendar-confirmed">
-                <i class="status-dot status-dot--confirmed" />
-                <div><strong>{{ coreBookingLabel(booking) }}</strong><span>{{ preferences.locale.value === 'es' ? 'Confirmado · horario pendiente' : 'Confirmed · schedule pending' }}</span></div>
-              </article>
-              <article v-for="hold in selectedDayDateOnlyCoreHolds" :key="hold.id">
-                <i class="status-dot status-dot--hold" />
-                <div><strong>{{ coreHoldLabel(hold) }}</strong><span>Hold · {{ hold.priority ? `P${hold.priority}` : (preferences.locale.value === 'es' ? 'Sin prioridad' : 'No priority') }}<template v-if="hold.expires_at"> · {{ preferences.locale.value === 'es' ? 'Caduca' : 'Expires' }} {{ coreHoldExpiry(hold) }}</template></span></div>
-              </article>
-            </div>
-            <div class="timeline" :aria-label="copy.selectedDaySchedule">
-              <button v-for="hour in hours" :key="hour" class="hour-row" type="button" :aria-label="`${copy.addAt} ${hour}`" @click="openCreate(hour)"><span>{{ hour }}</span></button>
-              <button v-for="block in dayBlocks" :key="block.id" class="timeline-block" :class="`timeline-block--${block.status}`" :style="blockStyle(block)" type="button" @click.stop="openCalendarBlock(block)">
-                <strong>{{ block.label || statusLabel(block.status) }}</strong><span>{{ time(block.starts_at) }}–{{ time(block.ends_at) }}</span>
-              </button>
-              <button v-for="hold in selectedDayTimedCoreHolds" :key="`core-hold-${hold.id}`" class="timeline-block timeline-block--hold core-timeline-hold" :style="coreHoldStyle(hold)" type="button" @click.stop="openRealBooking(hold.booking_id)">
-                <strong>{{ coreHoldLabel(hold) }}</strong><span>{{ hold.starts_at ? new Date(hold.starts_at).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' }) : '' }}–{{ hold.ends_at ? new Date(hold.ends_at).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' }) : '' }}</span>
-              </button>
-              <button v-for="booking in selectedDayTimedConfirmedBookings" :key="`core-confirmed-${booking.id}`" class="timeline-block timeline-block--confirmed core-timeline-confirmed" :style="coreBookingTimeStyle(booking)" type="button" @click.stop="openRealBooking(booking.id)">
-                <strong>{{ coreBookingLabel(booking) }}</strong><span>{{ booking.start_time?.slice(0, 5) }}–{{ booking.end_time?.slice(0, 5) }}</span>
-              </button>
+            <template v-if="selectedDate">
+              <div class="day-heading"><div><p class="eyebrow">{{ copy.dayHours }}</p><h2>{{ selectedDateLabel }}</h2></div><button class="add-button" type="button" @click="openCreate()">{{ copy.add }}</button></div>
+              <div v-if="selectedDayDateOnlyCoreHolds.length || selectedDayDateOnlyConfirmedBookings.length" class="core-calendar-holds">
+                <article v-for="booking in selectedDayDateOnlyConfirmedBookings" :key="`confirmed-${booking.id}`" class="core-calendar-confirmed">
+                  <i class="status-dot status-dot--confirmed" />
+                  <div><strong>{{ coreBookingLabel(booking) }}</strong><span>{{ preferences.locale.value === 'es' ? 'Confirmado · horario pendiente' : 'Confirmed · schedule pending' }}</span></div>
+                </article>
+                <article v-for="hold in selectedDayDateOnlyCoreHolds" :key="hold.id">
+                  <i class="status-dot status-dot--hold" />
+                  <div><strong>{{ coreHoldLabel(hold) }}</strong><span>Hold · {{ hold.priority ? `P${hold.priority}` : (preferences.locale.value === 'es' ? 'Sin prioridad' : 'No priority') }}<template v-if="hold.expires_at"> · {{ preferences.locale.value === 'es' ? 'Caduca' : 'Expires' }} {{ coreHoldExpiry(hold) }}</template></span></div>
+                </article>
+              </div>
+              <div class="timeline" :aria-label="copy.selectedDaySchedule">
+                <button v-for="hour in hours" :key="hour" class="hour-row" type="button" :aria-label="`${copy.addAt} ${hour}`" @click="openCreate(hour)"><span>{{ hour }}</span></button>
+                <button v-for="block in dayBlocks" :key="block.id" class="timeline-block" :class="`timeline-block--${block.status}`" :style="blockStyle(block)" type="button" @click.stop="openCalendarBlock(block)">
+                  <strong>{{ block.label || statusLabel(block.status) }}</strong><span>{{ time(block.starts_at) }}–{{ time(block.ends_at) }}</span>
+                </button>
+                <button v-for="hold in selectedDayTimedCoreHolds" :key="`core-hold-${hold.id}`" class="timeline-block timeline-block--hold core-timeline-hold" :style="coreHoldStyle(hold)" type="button" @click.stop="openRealBooking(hold.booking_id)">
+                  <strong>{{ coreHoldLabel(hold) }}</strong><span>{{ hold.starts_at ? new Date(hold.starts_at).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' }) : '' }}–{{ hold.ends_at ? new Date(hold.ends_at).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' }) : '' }}</span>
+                </button>
+                <button v-for="booking in selectedDayTimedConfirmedBookings" :key="`core-confirmed-${booking.id}`" class="timeline-block timeline-block--confirmed core-timeline-confirmed" :style="coreBookingTimeStyle(booking)" type="button" @click.stop="openRealBooking(booking.id)">
+                  <strong>{{ coreBookingLabel(booking) }}</strong><span>{{ booking.start_time?.slice(0, 5) }}–{{ booking.end_time?.slice(0, 5) }}</span>
+                </button>
+              </div>
+            </template>
+            <div v-else class="day-panel__empty">
+              <p class="eyebrow">{{ copy.dayHours }}</p>
+              <h2>{{ preferences.locale.value === 'es' ? 'Selecciona un día' : 'Select a day' }}</h2>
+              <p>{{ preferences.locale.value === 'es' ? 'El horario aparecerá aquí cuando elijas una fecha del calendario.' : 'The schedule will appear here when you choose a date from the calendar.' }}</p>
             </div>
           </section>
         </div>
