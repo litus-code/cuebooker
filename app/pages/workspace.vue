@@ -1308,7 +1308,10 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       <span class="sr-only">{{ copy.loading }}</span>
       <div class="workspace-skeleton__heading">
         <i class="skeleton-line skeleton-line--eyebrow" />
-        <i class="skeleton-line skeleton-line--title" />
+        <div class="workspace-skeleton__title-block" aria-hidden="true">
+          <i class="skeleton-line skeleton-line--title skeleton-line--title-primary" />
+          <i class="skeleton-line skeleton-line--title skeleton-line--title-secondary" />
+        </div>
         <i class="skeleton-line skeleton-line--body" />
       </div>
       <div class="workspace-skeleton__stats">
