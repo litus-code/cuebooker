@@ -1114,3 +1114,128 @@
     line-height:.94 !important;
   }
 }
+
+
+/* Bookings loading state mirrors the real inbox/detail geometry. */
+.workspace .workspace-skeleton--bookings {
+  padding-top:var(--cue-space-5) !important;
+}
+
+.workspace .workspace-skeleton__heading--bookings {
+  min-height:154px !important;
+  max-width:940px !important;
+  margin-bottom:var(--cue-space-3) !important;
+}
+
+.workspace .workspace-skeleton__heading--bookings .workspace-skeleton__title-block {
+  min-height:84px !important;
+}
+
+.workspace .workspace-skeleton__heading--bookings .skeleton-line--title {
+  height:38px !important;
+}
+
+.workspace .workspace-skeleton__heading--bookings .skeleton-line--title-primary {
+  width:min(660px,76%) !important;
+}
+
+.workspace .workspace-skeleton__heading--bookings .skeleton-line--title-secondary {
+  width:min(420px,52%) !important;
+}
+
+.workspace .skeleton-panel--booking-cue {
+  min-height:96px !important;
+  margin-bottom:var(--cue-space-3) !important;
+}
+
+.workspace .workspace-skeleton__booking-shell {
+  overflow:hidden;
+  border:1px solid var(--workspace-line);
+  border-radius:var(--cue-radius-panel);
+  background:var(--cue-surface);
+}
+
+.workspace .skeleton-panel--booking-toolbar {
+  min-height:92px !important;
+  border:0 !important;
+  border-bottom:1px solid var(--workspace-line) !important;
+  border-radius:0 !important;
+}
+
+.workspace .workspace-skeleton__booking-layout {
+  display:grid;
+  grid-template-columns:minmax(290px,340px) minmax(0,1fr);
+  min-height:620px;
+}
+
+.workspace .workspace-skeleton__booking-list {
+  border-right:1px solid var(--workspace-line);
+  background:color-mix(in srgb,var(--cue-bg) 34%,var(--cue-surface));
+}
+
+.workspace .skeleton-panel--booking-row {
+  min-height:74px !important;
+  border:0 !important;
+  border-bottom:1px solid var(--workspace-line) !important;
+  border-radius:0 !important;
+}
+
+.workspace .workspace-skeleton__booking-detail {
+  display:grid;
+  align-content:start;
+  gap:var(--cue-space-3);
+  padding:var(--cue-space-4);
+}
+
+.workspace .skeleton-panel--booking-head {
+  min-height:122px !important;
+}
+
+.workspace .skeleton-panel--booking-facts {
+  min-height:118px !important;
+}
+
+.workspace .skeleton-panel--booking-conversation {
+  min-height:300px !important;
+}
+
+.workspace .skeleton-panel--booking-followup {
+  min-height:180px !important;
+}
+
+@media (max-width:900px) {
+  .workspace .workspace-skeleton__booking-layout {
+    grid-template-columns:1fr;
+  }
+
+  .workspace .workspace-skeleton__booking-list {
+    border-right:0;
+    border-bottom:1px solid var(--workspace-line);
+  }
+
+  .workspace .skeleton-panel--booking-row:nth-child(n+4) {
+    display:none;
+  }
+}
+
+@media (max-width:620px) {
+  .workspace .workspace-skeleton__heading--bookings {
+    min-height:138px !important;
+  }
+
+  .workspace .workspace-skeleton__heading--bookings .workspace-skeleton__title-block {
+    min-height:74px !important;
+  }
+
+  .workspace .workspace-skeleton__heading--bookings .skeleton-line--title {
+    height:34px !important;
+  }
+
+  .workspace .skeleton-panel--booking-cue {
+    min-height:118px !important;
+  }
+
+  .workspace .workspace-skeleton__booking-detail {
+    padding:var(--cue-space-3);
+  }
+}
