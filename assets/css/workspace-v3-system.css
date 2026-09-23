@@ -734,3 +734,12 @@
     grid-column:1 / -1 !important;
   }
 }
+
+
+/* Secondary action hover: keep Design System behavior over legacy workspace button rules. */
+.workspace .attention-panel__empty--action button:hover,
+.workspace .attention-panel__empty--action button:focus-visible {
+  border-color:var(--cue-accent) !important;
+  color:var(--cue-accent) !important;
+  background:transparent !important;
+}
