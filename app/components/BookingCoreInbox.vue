@@ -654,10 +654,10 @@ async function selectBooking(bookingId: string) {
 .core-inbox__facts dd { margin:6px 0 0; overflow:hidden; text-overflow:ellipsis; font-size:14px; font-weight:650; line-height:1.25; }
 .core-inbox__facts dd.missing { color:var(--cue-accent); font-style:italic; }
 .core-inbox__contact-fact small { display:block; margin-top:4px; color:var(--cue-muted); font-size:10px; line-height:1.35; }
-.core-inbox__conversation { margin-top:var(--cue-space-4); padding-top:0; border-top:0; border-bottom:1px solid var(--cue-border); background:transparent; }
-.core-inbox__conversation-heading { padding:var(--cue-space-2) 0 var(--cue-space-3); border-bottom:0; }
-.core-inbox__conversation-heading span { display:block; font:800 12px monospace; text-transform:uppercase; letter-spacing:.08em; }
-.core-inbox__conversation-heading small { display:block; margin-top:4px; color:var(--cue-muted); font-size:9px; }
+.core-inbox__conversation { margin-top:var(--cue-space-4); padding-top:var(--cue-space-3); border-top:1px solid var(--cue-border); border-bottom:1px solid var(--cue-border); background:transparent; }
+.core-inbox__conversation-heading { padding:0 0 var(--cue-space-3); border-bottom:0; }
+.core-inbox__conversation-heading span { display:block; color:var(--cue-accent); font:800 10px monospace; text-transform:uppercase; letter-spacing:.1em; }
+.core-inbox__conversation-heading small { display:block; margin-top:5px; color:var(--cue-muted); font-size:10px; line-height:1.4; }
 .core-inbox__thread { min-height:240px; max-height:clamp(420px,56vh,640px); overflow-y:auto; overscroll-behavior-y:auto; scrollbar-gutter:stable; scrollbar-width:thin; padding:var(--cue-space-2) 0 var(--cue-space-3); }
 .thread-item { width:min(82%,720px); margin:0 0 8px; padding:10px 12px; border:0; border-left:2px solid var(--cue-border); border-radius:0 var(--cue-radius-sm) var(--cue-radius-sm) 0; background:color-mix(in srgb,var(--cue-raised) 58%,transparent); }
 .thread-item--outbound { margin-left:auto; border-left:0; border-right:2px solid color-mix(in srgb,var(--cue-status-conversation) 58%,var(--cue-border)); border-radius:var(--cue-radius-sm) 0 0 var(--cue-radius-sm); background:color-mix(in srgb,var(--cue-status-conversation) 4%,var(--cue-raised)); }
