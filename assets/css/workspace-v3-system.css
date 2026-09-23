@@ -849,3 +849,64 @@
     grid-column:1 / -1;
   }
 }
+
+
+/* Keep Overview header geometry stable while workspace data is loading. */
+.workspace .workspace-skeleton__heading {
+  min-height:188px !important;
+  align-content:start;
+}
+
+.workspace .workspace-skeleton__title-block {
+  display:grid;
+  gap:8px;
+  min-height:104px;
+}
+
+.workspace .skeleton-line--title {
+  height:46px !important;
+}
+
+.workspace .skeleton-line--title-primary {
+  width:min(540px,80%) !important;
+}
+
+.workspace .skeleton-line--title-secondary {
+  width:min(320px,52%) !important;
+}
+
+@media (max-width:960px) {
+  .workspace .workspace-skeleton__heading {
+    min-height:164px !important;
+  }
+
+  .workspace .workspace-skeleton__title-block {
+    min-height:88px;
+  }
+
+  .workspace .skeleton-line--title {
+    height:38px !important;
+  }
+}
+
+@media (max-width:620px) {
+  .workspace .workspace-skeleton__heading {
+    min-height:150px !important;
+  }
+
+  .workspace .workspace-skeleton__title-block {
+    min-height:80px;
+  }
+
+  .workspace .skeleton-line--title {
+    height:34px !important;
+  }
+
+  .workspace .skeleton-line--title-primary {
+    width:88% !important;
+  }
+
+  .workspace .skeleton-line--title-secondary {
+    width:58% !important;
+  }
+}
