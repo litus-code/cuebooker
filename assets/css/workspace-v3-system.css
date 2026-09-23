@@ -1750,3 +1750,55 @@
     min-height:520px;
   }
 }
+
+
+/* Calendar and its loading state must reserve the exact same split. */
+.workspace .calendar-view .calendar-layout,
+.workspace .workspace-skeleton__calendar-layout {
+  grid-template-columns:minmax(0,1.65fr) minmax(340px,.85fr) !important;
+  gap:var(--cue-space-4) !important;
+}
+
+.workspace .workspace-skeleton__calendar-month,
+.workspace .workspace-skeleton__calendar-day {
+  min-width:0;
+}
+
+.workspace .workspace-skeleton__calendar-grid {
+  grid-auto-rows:86px;
+}
+
+.workspace .skeleton-panel--calendar-day {
+  min-height:0 !important;
+  height:86px !important;
+}
+
+.workspace .workspace-skeleton__calendar-day {
+  align-self:start;
+}
+
+.workspace .workspace-skeleton__calendar-timeline {
+  min-height:590px !important;
+}
+
+.workspace .skeleton-panel--calendar-hour {
+  height:48px !important;
+  min-height:48px !important;
+}
+
+@media (max-width:1040px) {
+  .workspace .calendar-view .calendar-layout,
+  .workspace .workspace-skeleton__calendar-layout {
+    grid-template-columns:1fr !important;
+  }
+}
+
+@media (max-width:620px) {
+  .workspace .workspace-skeleton__calendar-grid {
+    grid-auto-rows:58px;
+  }
+
+  .workspace .skeleton-panel--calendar-day {
+    height:58px !important;
+  }
+}
