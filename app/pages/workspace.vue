@@ -1304,7 +1304,34 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-    <section v-if="loading" class="workspace-skeleton" aria-busy="true" aria-live="polite">
+    <section v-if="loading && activeView === 'bookings'" class="workspace-skeleton workspace-skeleton--bookings" aria-busy="true" aria-live="polite">
+      <span class="sr-only">{{ copy.loading }}</span>
+      <div class="workspace-skeleton__heading workspace-skeleton__heading--bookings">
+        <i class="skeleton-line skeleton-line--eyebrow" />
+        <div class="workspace-skeleton__title-block" aria-hidden="true">
+          <i class="skeleton-line skeleton-line--title skeleton-line--title-primary" />
+          <i class="skeleton-line skeleton-line--title skeleton-line--title-secondary" />
+        </div>
+        <i class="skeleton-line skeleton-line--body" />
+      </div>
+      <i class="skeleton-panel skeleton-panel--booking-cue" />
+      <div class="workspace-skeleton__booking-shell">
+        <i class="skeleton-panel skeleton-panel--booking-toolbar" />
+        <div class="workspace-skeleton__booking-layout">
+          <div class="workspace-skeleton__booking-list">
+            <i v-for="index in 5" :key="`booking-row-${index}`" class="skeleton-panel skeleton-panel--booking-row" />
+          </div>
+          <div class="workspace-skeleton__booking-detail">
+            <i class="skeleton-panel skeleton-panel--booking-head" />
+            <i class="skeleton-panel skeleton-panel--booking-facts" />
+            <i class="skeleton-panel skeleton-panel--booking-conversation" />
+            <i class="skeleton-panel skeleton-panel--booking-followup" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section v-else-if="loading" class="workspace-skeleton" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
       <div class="workspace-skeleton__heading">
         <i class="skeleton-line skeleton-line--eyebrow" />
