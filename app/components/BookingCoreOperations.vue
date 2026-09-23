@@ -303,10 +303,11 @@ async function convertHold(hold: Hold) {
 .core-ops__auto-reply small { display:block; margin-top:2px; color:var(--cue-muted); font-size:9px; line-height:1.35; overflow-wrap:normal; word-break:normal; }
 .core-ops__form-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:end; }
 .core-ops__form-row--hold { grid-template-columns:1fr 1fr; }
-.core-ops__form--hold > button { justify-self:start; }
+.core-ops__form--hold > button { justify-self:start; margin-top:4px; min-height:var(--cue-button-sm); padding-inline:14px; }
 .core-ops__form label span { display:block; margin-bottom:4px; color:var(--cue-muted); font:700 8px monospace; text-transform:uppercase; }
 .core-ops__form input:not([type="checkbox"]) { width:100%; min-height:var(--cue-input-md); box-sizing:border-box; border:1px solid color-mix(in srgb,var(--cue-border) 88%,transparent); border-radius:var(--cue-radius-control); background:var(--cue-surface); color:var(--cue-text); padding:0 10px; font-size:11px; }
 .core-ops__form > button, .core-ops__form-row > button { min-height:var(--cue-button-md); align-self:end; }
+.core-ops__form--hold > button { min-height:var(--cue-button-sm); }
 .core-ops__form > button { background:var(--cue-primary); color:var(--cue-primary-ink); border-color:var(--cue-primary); }
 .core-ops__empty { margin:0; padding:8px 10px; color:var(--cue-muted); font-size:10px; }
 .core-ops__holds article > span { color:var(--cue-primary); font:700 9px monospace; }
