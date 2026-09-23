@@ -131,12 +131,12 @@ const p = computed(() => locale.value === 'es' ? {
   },
   "identity": {
     "label": "04 / CUE ID",
-    "title": "Un perfil que se parezca a ti.",
-    "body": "Tu música, tu recorrido y tu forma de presentarte.",
+    "title": "Tu sonido ya tiene identidad.\nAhora puede tener cuerpo.",
+    "body": "Crea tu personaje 3D y convierte tu identidad artística en algo reconocible.",
     "beta": "BETA · EN EVOLUCIÓN",
-    "detail": "Estamos desarrollando el avatar personalizado de CUE ID. Una forma más de expresar quién está detrás del sonido.",
-    "visual": "TU IDENTIDAD\nTIENE SU ESPACIO.",
-    "caption": "Avatar personalizado en desarrollo"
+    "detail": "Estamos construyendo el creador de personajes de CUE ID: personaliza su apariencia, su estilo y su actitud para representar quién eres detrás del sonido.",
+    "visual": "CREA TU\nPERSONAJE 3D.",
+    "caption": "Creador de personajes en desarrollo"
   },
   "closing": {
     "title": "Hay mucho trabajo detrás de lo que haces.",
@@ -258,12 +258,12 @@ const p = computed(() => locale.value === 'es' ? {
   },
   "identity": {
     "label": "04 / CUE ID",
-    "title": "A profile that feels like you.",
-    "body": "Your music, your story and how you present yourself.",
+    "title": "Your sound already has an identity.\nNow it can take shape.",
+    "body": "Create your 3D character and turn your artistic identity into something recognisable.",
     "beta": "BETA · EVOLVING",
-    "detail": "We are developing the personalised CUE ID avatar. Another way to express who is behind the sound.",
-    "visual": "YOUR IDENTITY\nHAS ITS SPACE.",
-    "caption": "Personalised avatar in development"
+    "detail": "We are building the CUE ID character creator: shape its appearance, style and attitude to represent who you are behind the sound.",
+    "visual": "CREATE YOUR\n3D CHARACTER.",
+    "caption": "Character creator in development"
   },
   "closing": {
     "title": "There is a lot of work behind what you do.",
