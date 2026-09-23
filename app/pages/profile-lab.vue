@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { DEFAULT_CUE_ID_CONFIG } from '../domain/cueId'
+
 type EditSection = 'identity' | 'about' | 'sound' | 'booking' | 'links' | 'visual' | null
 
 const editSection = ref<EditSection>(null)
@@ -91,21 +93,28 @@ onBeforeUnmount(() => {
             <img src="/logo-full-dark.png" alt="">
           </div>
           <div class="artist-hero__industrial-grid" />
-          <div v-if="profile.cueId" class="artist-hero__cue-id" aria-hidden="true">
-            <div class="artist-hero__cue-head" />
-            <div class="artist-hero__cue-body" />
-            <span>CUE ID</span>
-          </div>
+          <CueIdStage
+            v-if="profile.cueId"
+            class="artist-hero__cue-id"
+            :config="DEFAULT_CUE_ID_CONFIG"
+            artist-name="LITS"
+            :interactive="false"
+            compact
+          />
         </div>
 
         <button v-if="!publicMode" type="button" class="edit-button edit-button--hero" @click="openEditor('visual')">
           <span>Editar visual</span>
-          <b>✎</b>
+          <b aria-hidden="true" />
         </button>
 
         <div class="artist-hero__content">
           <div class="artist-hero__identity">
-            <div v-if="profile.avatar" class="artist-avatar">
+            <button v-if="profile.avatar && !publicMode" type="button" class="artist-avatar artist-avatar--editable" @click="openEditor('visual')">
+              <div class="artist-avatar__placeholder">LI</div>
+              <span class="artist-avatar__edit" aria-hidden="true" />
+            </button>
+            <div v-else-if="profile.avatar" class="artist-avatar">
               <div class="artist-avatar__placeholder">LI</div>
             </div>
 
@@ -129,7 +138,7 @@ onBeforeUnmount(() => {
 
         <button v-if="!publicMode" type="button" class="edit-button edit-button--identity" @click="openEditor('identity')">
           <span>Editar identidad</span>
-          <b>✎</b>
+          <b aria-hidden="true" />
         </button>
       </section>
 
@@ -147,7 +156,7 @@ onBeforeUnmount(() => {
             <div><span>ACTIVE</span><strong>10+ YEARS</strong></div>
           </div>
         </div>
-        <button v-if="!publicMode" type="button" class="edit-button" @click="openEditor('about')"><b>✎</b></button>
+        <button v-if="!publicMode" type="button" class="edit-button" @click="openEditor('about')"><b aria-hidden="true" /></button>
       </section>
 
       <section id="sound" class="artist-section artist-section--sound">
@@ -163,24 +172,29 @@ onBeforeUnmount(() => {
           </div>
           <p class="sound-format">{{ profile.formats }}</p>
           <div class="sound-links">
-            <a href="#">SOUNDCLOUD ↗</a>
-            <a href="#">SPOTIFY ↗</a>
-            <a href="#">MIXCLOUD ↗</a>
+            <a href="#"><span>SOUNDCLOUD</span><i class="arrow arrow--ne" aria-hidden="true" /></a>
+            <a href="#"><span>SPOTIFY</span><i class="arrow arrow--ne" aria-hidden="true" /></a>
+            <a href="#"><span>MIXCLOUD</span><i class="arrow arrow--ne" aria-hidden="true" /></a>
           </div>
         </div>
-        <button v-if="!publicMode" type="button" class="edit-button" @click="openEditor('sound')"><b>✎</b></button>
+        <button v-if="!publicMode" type="button" class="edit-button" @click="openEditor('sound')"><b aria-hidden="true" /></button>
       </section>
 
-      <section v-if="profile.cueId" class="cue-id-band">
+      <section v-if="profile.cueId || !publicMode" class="cue-id-band" :class="{ 'cue-id-band--hidden': !profile.cueId }">
         <div class="cue-id-band__visual">
-          <div class="cue-id-band__figure" />
-          <div class="cue-id-band__scanline" />
+          <CueIdStage
+            :config="DEFAULT_CUE_ID_CONFIG"
+            artist-name="LITS"
+            :interactive="false"
+            compact
+          />
         </div>
         <div class="cue-id-band__copy">
           <span>CUE ID / BETA</span>
           <h2>YOUR DIGITAL<br>ARTIST IDENTITY.</h2>
           <p>Una identidad visual que conecta tu perfil, tu presencia pública y el universo Cuebooker.</p>
-          <NuxtLink to="/cue-id?from=workspace&section=identity">Editar CUE ID ↗</NuxtLink>
+          <NuxtLink to="/cue-id?from=workspace&section=identity">Gestionar CUE ID <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
+          <small v-if="!profile.cueId">Actualmente oculto en tu perfil público.</small>
         </div>
       </section>
 
@@ -201,7 +215,7 @@ onBeforeUnmount(() => {
           </div>
           <button type="button" class="artist-cta" @click="openBooking">REQUEST BOOKING</button>
         </div>
-        <button v-if="!publicMode" type="button" class="edit-button" @click="openEditor('booking')"><b>✎</b></button>
+        <button v-if="!publicMode" type="button" class="edit-button" @click="openEditor('booking')"><b aria-hidden="true" /></button>
       </section>
 
       <section id="links" class="artist-section artist-section--links">
@@ -209,13 +223,48 @@ onBeforeUnmount(() => {
           <span>04</span>
           <strong>LINKS / PRESS</strong>
         </div>
-        <div class="artist-section__content link-grid">
-          <a href="#"><span>INSTAGRAM</span><strong>{{ profile.instagram }}</strong><b>↗</b></a>
-          <a href="#"><span>SOUNDCLOUD</span><strong>{{ profile.soundcloud }}</strong><b>↗</b></a>
-          <a href="#"><span>SPOTIFY</span><strong>{{ profile.spotify }}</strong><b>↗</b></a>
-          <a href="#"><span>TECH RIDER</span><strong>PDF</strong><b>↗</b></a>
+        <div class="artist-section__content profile-links">
+          <article class="profile-link-card">
+            <div>
+              <span>INSTAGRAM</span>
+              <strong>{{ profile.instagram }}</strong>
+            </div>
+            <a href="#" aria-label="Abrir Instagram"><span class="arrow arrow--ne" aria-hidden="true" /></a>
+          </article>
+
+          <article class="profile-link-card profile-link-card--embed">
+            <div>
+              <span>SOUNDCLOUD</span>
+              <strong>{{ profile.soundcloud }}</strong>
+            </div>
+            <a href="#" aria-label="Abrir SoundCloud"><span class="arrow arrow--ne" aria-hidden="true" /></a>
+            <div class="profile-link-card__embed">
+              <span>SOUNDCLOUD EMBED</span>
+              <p>El reproductor aparecerá aquí cuando el enlace sea compatible.</p>
+            </div>
+          </article>
+
+          <article class="profile-link-card profile-link-card--embed">
+            <div>
+              <span>SPOTIFY</span>
+              <strong>{{ profile.spotify }}</strong>
+            </div>
+            <a href="#" aria-label="Abrir Spotify"><span class="arrow arrow--ne" aria-hidden="true" /></a>
+            <div class="profile-link-card__embed">
+              <span>SPOTIFY EMBED</span>
+              <p>Preview del contenido musical enlazado.</p>
+            </div>
+          </article>
+
+          <article class="profile-link-card">
+            <div>
+              <span>TECH RIDER</span>
+              <strong>PDF</strong>
+            </div>
+            <a href="#" aria-label="Abrir Technical Rider"><span class="arrow arrow--ne" aria-hidden="true" /></a>
+          </article>
         </div>
-        <button v-if="!publicMode" type="button" class="edit-button" @click="openEditor('links')"><b>✎</b></button>
+        <button v-if="!publicMode" type="button" class="edit-button" @click="openEditor('links')"><b aria-hidden="true" /></button>
       </section>
 
       <footer class="artist-footer">
@@ -733,6 +782,202 @@ onBeforeUnmount(() => {
 
   .booking-dialog__body {
     padding:14px;
+  }
+}
+
+
+/* Refined inline editing and media cards */
+.edit-button b,
+.artist-avatar__edit {
+  position:relative;
+  display:block;
+  width:14px;
+  height:14px;
+}
+
+.edit-button b::before,
+.artist-avatar__edit::before {
+  content:"";
+  position:absolute;
+  left:2px;
+  top:6px;
+  width:10px;
+  height:2px;
+  border-radius:1px;
+  background:var(--lime);
+  transform:rotate(-45deg);
+}
+
+.edit-button b::after,
+.artist-avatar__edit::after {
+  content:"";
+  position:absolute;
+  left:8px;
+  top:1px;
+  width:4px;
+  height:4px;
+  border:1px solid var(--lime);
+  transform:rotate(-45deg);
+}
+
+.artist-avatar {
+  position:relative;
+  width:132px;
+  height:132px;
+}
+
+.artist-avatar--editable {
+  appearance:none;
+  padding:5px;
+  cursor:pointer;
+  color:inherit;
+}
+
+.artist-avatar__edit {
+  position:absolute;
+  right:7px;
+  bottom:7px;
+  width:28px;
+  height:28px;
+  border:1px solid #4b4b4b;
+  border-radius:7px;
+  background:#0b0b0b;
+}
+
+.artist-avatar__edit::before {
+  left:7px;
+  top:13px;
+}
+
+.artist-avatar__edit::after {
+  left:14px;
+  top:8px;
+}
+
+.artist-hero__cue-id {
+  position:absolute !important;
+  z-index:1;
+  inset:54px 7% 28px 37% !important;
+  width:auto !important;
+  height:auto !important;
+  min-height:0 !important;
+  opacity:.76;
+  pointer-events:none;
+  border:0 !important;
+  background:transparent !important;
+}
+
+.artist-hero__cue-id :deep(.cue-id-stage__meta) {
+  display:none !important;
+}
+
+.cue-id-band__visual > .cue-id-stage {
+  width:100%;
+  min-height:440px;
+  height:100%;
+  border:0;
+}
+
+.cue-id-band--hidden {
+  opacity:.64;
+}
+
+.cue-id-band--hidden .cue-id-band__visual {
+  filter:grayscale(1);
+}
+
+.cue-id-band__copy a {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+
+.cue-id-band__copy small {
+  display:block;
+  margin-top:10px;
+  color:#777;
+  font:700 9px/1.4 monospace;
+  text-transform:uppercase;
+}
+
+.sound-links a {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+
+.profile-links {
+  display:grid;
+  gap:10px;
+}
+
+.profile-link-card {
+  position:relative;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 44px;
+  gap:14px;
+  padding:18px;
+  border:1px solid #303030;
+  background:#0b0b0b;
+}
+
+.profile-link-card > div:first-child {
+  display:grid;
+  gap:7px;
+  min-width:0;
+}
+
+.profile-link-card > div:first-child span,
+.profile-link-card__embed > span {
+  color:#747474;
+  font:800 8px/1 monospace;
+  letter-spacing:.08em;
+}
+
+.profile-link-card > div:first-child strong {
+  overflow-wrap:anywhere;
+  font-size:15px;
+}
+
+.profile-link-card > a {
+  display:grid;
+  place-items:center;
+  width:44px;
+  height:44px;
+  border:1px solid #353535;
+  border-radius:8px;
+  color:#ddd;
+  text-decoration:none;
+}
+
+.profile-link-card__embed {
+  grid-column:1/-1;
+  min-height:88px;
+  padding:14px;
+  border-top:1px solid #292929;
+  background:#0e0e0e;
+}
+
+.profile-link-card__embed p {
+  margin:8px 0 0;
+  color:#777;
+  font-size:11px;
+  line-height:1.45;
+}
+
+@media (max-width:560px) {
+  .artist-avatar {
+    width:112px;
+    height:112px;
+  }
+
+  .artist-hero__cue-id {
+    inset:112px -18% 210px 28% !important;
+    opacity:.56;
+  }
+
+  .profile-link-card {
+    grid-template-columns:minmax(0,1fr) 44px;
   }
 }
 </style>
