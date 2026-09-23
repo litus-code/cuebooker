@@ -1382,7 +1382,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       </div>
     </section>
 
-    <section v-else class="workspace-skeleton" aria-busy="true" aria-live="polite">
+    <section v-else-if="loadingView" class="workspace-skeleton" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
       <div class="workspace-skeleton__heading">
         <i class="skeleton-line skeleton-line--eyebrow" />
