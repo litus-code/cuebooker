@@ -234,9 +234,9 @@ function formatDateOnly(value: string) {
   }).format(new Date(`${value}T12:00:00`))
 }
 
-async function load() {
+async function load(options: { silent?: boolean } = {}) {
   if (!props.workspaceId) return
-  loading.value = true
+  if (!options.silent) loading.value = true
   try {
     const bookingIds = props.bookings.map(item => item.id)
     const [moves, holdRows, activityRows, notifications, deliveryRows] = await Promise.all([
@@ -256,13 +256,13 @@ async function load() {
       && !item.read_at
     )
   } finally {
-    loading.value = false
+    if (!options.silent) loading.value = false
   }
 }
 
-watch(() => props.workspaceId, load, { immediate: true })
-watch(() => props.bookings.length, load)
-watch(() => props.refreshKey, load)
+watch(() => props.workspaceId, () => load(), { immediate: true })
+watch(() => props.bookings.length, () => load({ silent: true }))
+watch(() => props.refreshKey, () => load({ silent: true }))
 
 async function resolve(item: (typeof items.value)[number]) {
   workingId.value = item.id
