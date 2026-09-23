@@ -642,15 +642,18 @@ async function selectBooking(bookingId: string) {
 .core-inbox__decisions .decision-reject { border-color:var(--cue-status-rejected); color:var(--cue-status-rejected); }
 .core-inbox__decisions .decision-cancel { border-color:var(--cue-border); color:var(--cue-muted); }
 .core-inbox__readonly { margin:12px 0; padding:10px 12px; border-left:2px solid var(--cue-muted); background:var(--cue-raised); color:var(--cue-muted); font-size:11px; }
-.core-inbox__details-block { border-bottom:0; }
-.core-inbox__details-heading { display:flex; align-items:center; justify-content:space-between; gap:var(--cue-space-3); padding:var(--cue-space-3) 0 var(--cue-space-2); }
+.core-inbox__details-block { margin-top:var(--cue-space-3); padding:0 var(--cue-space-4); border:1px solid var(--cue-border); border-right:0; border-left:0; background:color-mix(in srgb,var(--cue-raised) 26%,transparent); }
+.core-inbox__details-heading { display:flex; align-items:center; justify-content:space-between; gap:var(--cue-space-3); padding:var(--cue-space-3) 0; border-bottom:1px solid color-mix(in srgb,var(--cue-border) 72%,transparent); }
 .core-inbox__details-heading > strong { color:var(--cue-muted); font:800 9px monospace; text-transform:uppercase; letter-spacing:.08em; }
-.core-inbox__facts { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:var(--cue-space-5); margin:0; padding:0 0 var(--cue-space-3); border-bottom:1px solid var(--cue-border); }
-.core-inbox__facts > div { min-width:0; padding:var(--cue-space-1) 0; }
-.core-inbox__facts dt { color:var(--cue-muted); font:700 9px monospace; text-transform:uppercase; }
-.core-inbox__facts dd { margin:5px 0 0; overflow:hidden; text-overflow:ellipsis; font-size:12px; }
+.core-inbox__facts { display:grid; grid-template-columns:minmax(120px,.8fr) minmax(170px,1fr) minmax(230px,1.3fr) minmax(120px,.7fr); gap:0; margin:0; padding:var(--cue-space-3) 0; border-bottom:0; }
+.core-inbox__facts > div { min-width:0; min-height:74px; padding:var(--cue-space-1) var(--cue-space-4); }
+.core-inbox__facts > div:first-child { padding-left:0; }
+.core-inbox__facts > div:last-child { padding-right:0; }
+.core-inbox__facts > div + div { border-left:1px solid color-mix(in srgb,var(--cue-border) 70%,transparent); }
+.core-inbox__facts dt { color:var(--cue-muted); font:800 8px monospace; letter-spacing:.08em; text-transform:uppercase; }
+.core-inbox__facts dd { margin:6px 0 0; overflow:hidden; text-overflow:ellipsis; font-size:14px; font-weight:650; line-height:1.25; }
 .core-inbox__facts dd.missing { color:var(--cue-accent); font-style:italic; }
-.core-inbox__contact-fact small { display:block; margin-top:3px; color:var(--cue-muted); font-size:9px; line-height:1.3; }
+.core-inbox__contact-fact small { display:block; margin-top:4px; color:var(--cue-muted); font-size:10px; line-height:1.35; }
 .core-inbox__conversation { margin-top:var(--cue-space-4); padding-top:0; border-top:0; border-bottom:1px solid var(--cue-border); background:transparent; }
 .core-inbox__conversation-heading { padding:var(--cue-space-2) 0 var(--cue-space-3); border-bottom:0; }
 .core-inbox__conversation-heading span { display:block; font:800 12px monospace; text-transform:uppercase; letter-spacing:.08em; }
@@ -680,6 +683,9 @@ async function selectBooking(bookingId: string) {
   .core-inbox__detail { padding:14px; }
   .core-inbox__detail h3 { font-size:22px; }
   .core-inbox__facts { grid-template-columns:1fr 1fr; }
+  .core-inbox__facts > div { min-height:0; padding:var(--cue-space-3) 0; border-left:0 !important; }
+  .core-inbox__facts > div:nth-child(even) { padding-left:var(--cue-space-3); border-left:1px solid color-mix(in srgb,var(--cue-border) 70%,transparent) !important; }
+  .core-inbox__facts > div:nth-child(n+3) { border-top:1px solid color-mix(in srgb,var(--cue-border) 70%,transparent); }
   .core-inbox__tools { grid-template-columns:1fr; gap:8px; }
   .core-inbox__search, .core-inbox__filters--archive, .core-inbox__filters--status { grid-column:1; }
   .core-inbox__filters:not(.core-inbox__filters--archive) { display:flex; overflow-x:auto; padding-bottom:2px; }
