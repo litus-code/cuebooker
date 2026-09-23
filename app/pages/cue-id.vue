@@ -214,9 +214,7 @@ useHead(() => ({
 
       <div class="cue-id-page__header-actions">
         <CuePreferencesControl compact />
-        <button class="cue-id-page__back" type="button" @click="requestExit">
-          {{ fromOnboarding ? copy.continueWorkspace : copy.back }}
-        </button>
+        <button class="cue-id-page__back" type="button" @click="requestExit">VOLVER</button>
       </div>
     </header>
 
