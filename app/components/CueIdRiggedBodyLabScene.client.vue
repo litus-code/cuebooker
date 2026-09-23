@@ -36,6 +36,8 @@ const scene = shallowRef<Object3D | null>(null)
 const ready = ref(false)
 const displayScale = ref(1)
 const displayPosition = ref<[number, number, number]>([0, 0, 0])
+const displayFloorY = ref(-2.2)
+const floorRotation = [-Math.PI / 2, 0, 0] as const
 const rotationY = ref(0)
 const userZoom = ref(1)
 
@@ -148,11 +150,14 @@ function applyViewTransform() {
     : center.y
 
   displayScale.value = scale
-  displayPosition.value = [
+  const nextPosition: [number, number, number] = [
     -center.x * scale,
     -focusY * scale - (faceMode ? 0.05 : 0.12),
     -center.z * scale
   ]
+
+  displayPosition.value = nextPosition
+  displayFloorY.value = (center.y - size.y * 0.5) * scale + nextPosition[1] + 0.025
 }
 
 function disposeScene(root: Object3D | null) {
@@ -262,6 +267,17 @@ async function loadBody() {
     if (generation !== loadGeneration) return
 
     const parsed = gltf.scene
+    parsed.traverse(node => {
+      const mesh = node as Object3D & {
+        isMesh?: boolean
+        castShadow?: boolean
+        receiveShadow?: boolean
+      }
+
+      if (!mesh.isMesh) return
+      mesh.castShadow = true
+      mesh.receiveShadow = false
+    })
     applySemanticState(parsed)
     measureScene(parsed)
     emit('progress', 96)
@@ -363,6 +379,7 @@ onBeforeUnmount(() => {
   >
     <TresCanvas
       alpha
+      shadows
       :antialias="true"
       :dpr="1.5"
       :clear-alpha="0"
@@ -371,9 +388,27 @@ onBeforeUnmount(() => {
       :render-mode="ready ? 'on-demand' : 'always'"
     >
       <TresPerspectiveCamera :position="cameraPosition" :fov="38" />
-      <TresAmbientLight :intensity="0.78" />
-      <TresDirectionalLight :position="[3.4, 5.5, 4.5]" :intensity="1.85" />
-      <TresDirectionalLight :position="[-3, 2.4, 1.8]" :intensity="0.55" />
+      <TresHemisphereLight color="#dfe7e5" ground-color="#080a09" :intensity="0.4" />
+      <TresAmbientLight :intensity="0.34" />
+      <TresDirectionalLight
+        cast-shadow
+        color="#f1f3ef"
+        :position="[3.6, 5.8, 4.6]"
+        :intensity="1.42"
+        :shadow-bias="-0.00035"
+      />
+      <TresDirectionalLight color="#9eb2b7" :position="[-3.2, 2.8, 2.2]" :intensity="0.38" />
+      <TresDirectionalLight color="#c9d8d8" :position="[0.4, 4.1, -3.4]" :intensity="0.62" />
+
+      <TresMesh
+        v-if="viewMode === 'body'"
+        :position="[0, displayFloorY, 0]"
+        :rotation="floorRotation"
+        receive-shadow
+      >
+        <TresPlaneGeometry :args="[7, 7]" />
+        <TresShadowMaterial transparent :opacity="0.22" />
+      </TresMesh>
 
       <TresGroup
         :position="displayPosition"
