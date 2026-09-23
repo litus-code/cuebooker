@@ -653,7 +653,10 @@ async function selectBooking(bookingId: string) {
 .core-inbox__facts dt { color:var(--cue-muted); font:800 8px monospace; letter-spacing:.08em; text-transform:uppercase; }
 .core-inbox__facts dd { margin:6px 0 0; overflow:hidden; text-overflow:ellipsis; font-size:14px; font-weight:650; line-height:1.25; }
 .core-inbox__facts dd.missing { color:var(--cue-accent); font-style:italic; }
-.core-inbox__contact-fact small { display:block; margin-top:4px; color:var(--cue-muted); font-size:10px; line-height:1.35; }
+.core-inbox__contact-fact { padding-inline:var(--cue-space-5) !important; }
+.core-inbox__contact-fact dd { margin-top:7px; }
+.core-inbox__contact-fact small { display:block; margin-top:6px; color:var(--cue-muted); font-size:10px; line-height:1.4; }
+.core-inbox__contact-fact small + small { margin-top:3px; }
 .core-inbox__conversation { margin-top:var(--cue-space-4); padding-top:var(--cue-space-3); border-top:1px solid var(--cue-border); border-bottom:1px solid var(--cue-border); background:transparent; }
 .core-inbox__conversation-heading { padding:0 0 var(--cue-space-3); border-bottom:0; }
 .core-inbox__conversation-heading span { display:block; color:var(--cue-accent); font:800 10px monospace; text-transform:uppercase; letter-spacing:.1em; }
