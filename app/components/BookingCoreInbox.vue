@@ -364,15 +364,17 @@ async function selectBooking(bookingId: string) {
     </div>
 
     <div v-if="bookings.length" id="core-inbox-tools" class="core-inbox__tools">
-      <input v-model="realSearch" type="search" :placeholder="locale === 'es' ? 'Buscar booking, sala, contacto…' : 'Search booking, venue, contact…'">
-      <div class="core-inbox__archive-switch">
-        <div class="core-inbox__filters core-inbox__filters--archive">
-          <button type="button" :class="{ active: archiveView === 'active' }" @click="archiveView = 'active'">{{ copy.active }} · {{ bookings.filter(item => !item.archived_at).length }}</button>
-          <button type="button" :class="{ active: archiveView === 'archived' }" @click="archiveView = 'archived'">{{ copy.archived }} · {{ bookings.filter(item => !!item.archived_at).length }}</button>
-        </div>
-        <small>{{ copy.archiveHint }}</small>
+      <input
+        v-model="realSearch"
+        class="core-inbox__search"
+        type="search"
+        :placeholder="locale === 'es' ? 'Buscar booking, sala, contacto…' : 'Search booking, venue, contact…'"
+      >
+      <div class="core-inbox__filters core-inbox__filters--archive" :title="copy.archiveHint">
+        <button type="button" :class="{ active: archiveView === 'active' }" @click="archiveView = 'active'">{{ copy.active }} · {{ bookings.filter(item => !item.archived_at).length }}</button>
+        <button type="button" :class="{ active: archiveView === 'archived' }" @click="archiveView = 'archived'">{{ copy.archived }} · {{ bookings.filter(item => !!item.archived_at).length }}</button>
       </div>
-      <div class="core-inbox__filters">
+      <div class="core-inbox__filters core-inbox__filters--status">
         <button type="button" :class="['status-filter', 'status-filter--all', { active: realStatusFilter === 'all' }]" @click="realStatusFilter = 'all'">{{ locale === 'es' ? 'Todos' : 'All' }} · {{ visibleBookings.length }}</button>
         <button v-for="(label, status) in statusLabels" :key="status" type="button" :class="['status-filter', `status-filter--${status}`, { active: realStatusFilter === status }]" @click="realStatusFilter = status">{{ label }} · {{ bookings.filter(item => item.status === status).length }}</button>
       </div>
@@ -583,17 +585,15 @@ async function selectBooking(bookingId: string) {
 .core-inbox__zero > strong { max-width:560px; font-size:clamp(20px,3vw,30px); line-height:1.05; }
 .core-inbox__zero > p { max-width:600px; margin:0; color:var(--cue-muted); font-size:12px; line-height:1.5; }
 .core-inbox__zero > button { margin-top:5px; min-height:40px; padding:0 15px; border:1px solid var(--cue-accent); background:var(--cue-accent); color:#090909; cursor:pointer; font-weight:800; }
-.core-inbox__tools { display:grid; gap:8px; padding:10px; border-bottom:1px solid var(--cue-border); }
-.core-inbox__tools > input { min-height:36px; border:1px solid var(--cue-border); background:var(--cue-raised); color:var(--cue-text); padding:0 10px; }
-.core-inbox__archive-switch { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.core-inbox__archive-switch > small { color:var(--cue-dim); font-size:9px; line-height:1.35; text-align:right; }
-.core-inbox__filters { display:flex; gap:4px; overflow-x:auto; scrollbar-width:thin; }
-.core-inbox__filters button { flex:0 0 auto; min-height:29px; padding:0 8px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; text-transform:uppercase; }
+.core-inbox__tools { display:grid; grid-template-columns:minmax(260px,1.2fr) auto minmax(0,2fr); align-items:center; gap:10px; padding:10px 12px; border-bottom:1px solid var(--cue-border); }
+.core-inbox__search { min-width:0; min-height:36px; border:1px solid var(--cue-border); background:var(--cue-raised); color:var(--cue-text); padding:0 10px; }
+.core-inbox__filters { display:flex; align-items:center; gap:6px; min-width:0; overflow-x:auto; scrollbar-width:thin; }
+.core-inbox__filters button { flex:0 0 auto; min-height:32px; padding:0 10px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; text-transform:uppercase; white-space:nowrap; }
 .core-inbox__filters button.active { border-color:var(--cue-accent); color:var(--cue-accent); }
 .core-inbox__filters--archive button.active { background:var(--cue-raised); }
-.status-filter { border-color:var(--cue-border) !important; color:var(--cue-muted) !important; background:transparent; }
-.status-filter:hover { color:var(--cue-text) !important; border-color:color-mix(in srgb,var(--cue-text) 25%,var(--cue-border)) !important; }
-.status-filter.active { color:var(--cue-text) !important; background:var(--cue-raised); box-shadow:inset 0 -2px 0 var(--cue-accent); }
+.status-filter { border-color:color-mix(in srgb,var(--status-color,var(--cue-border)) 42%,var(--cue-border)) !important; color:color-mix(in srgb,var(--status-color,var(--cue-muted)) 72%,var(--cue-muted)) !important; background:transparent; }
+.status-filter:hover { border-color:color-mix(in srgb,var(--status-color,var(--cue-text)) 68%,var(--cue-border)) !important; color:var(--status-color,var(--cue-text)) !important; }
+.status-filter.active { border-color:color-mix(in srgb,var(--status-color,var(--cue-accent)) 78%,var(--cue-border)) !important; color:var(--status-color,var(--cue-text)) !important; background:color-mix(in srgb,var(--status-color,var(--cue-accent)) 7%,transparent); box-shadow:inset 0 -2px 0 var(--status-color,var(--cue-accent)); }
 .status-filter--all { --status-color:var(--cue-text); }
 .status-filter--new, .booking-status--new, .core-inbox__status--new { --status-color:#ceff54; }
 .status-filter--in_conversation, .booking-status--in_conversation, .core-inbox__status--in_conversation { --status-color:#73b7ff; }
@@ -620,7 +620,7 @@ async function selectBooking(bookingId: string) {
 .core-inbox__list time { color:var(--cue-muted); font:700 10px monospace; }
 .core-inbox__list span strong, .core-inbox__list span small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .core-inbox__list span small { margin-top:4px; color:var(--cue-muted); font-size:11px; }
-.core-inbox__list em { font:700 8px monospace; color:var(--cue-muted); text-transform:uppercase; font-style:normal; }
+.core-inbox__list em { font:700 8px monospace; color:var(--row-status,var(--cue-muted)); text-transform:uppercase; font-style:normal; }
 .core-inbox__detail { min-width:0; padding:22px 24px 26px; }
 .core-inbox__detail > header { display:flex; justify-content:space-between; gap:18px; padding-bottom:18px; border-bottom:1px solid var(--cue-border); }
 .core-inbox__detail > header span { color:var(--cue-accent); font:700 9px monospace; text-transform:uppercase; letter-spacing:.1em; }
@@ -667,6 +667,10 @@ async function selectBooking(bookingId: string) {
 .thread-item__delivery + time { margin-left:0; }
 .thread-item > p { margin:7px 0 0; font-size:12px; line-height:1.45; }
 .core-inbox__empty { margin:0; padding:18px; color:var(--cue-muted); font-size:12px; }
+@media (max-width: 1180px) {
+  .core-inbox__tools { grid-template-columns:minmax(220px,1fr) auto; }
+  .core-inbox__filters--status { grid-column:1 / -1; }
+}
 @media (max-width: 760px) {
   .core-inbox__layout { grid-template-columns:1fr; }
   .core-inbox__list { border-right:0; border-bottom:1px solid var(--cue-border); max-height:260px; overflow:auto; }
@@ -675,8 +679,8 @@ async function selectBooking(bookingId: string) {
   .core-inbox__detail { padding:14px; }
   .core-inbox__detail h3 { font-size:22px; }
   .core-inbox__facts { grid-template-columns:1fr 1fr; }
-  .core-inbox__archive-switch { align-items:stretch; flex-direction:column; }
-  .core-inbox__archive-switch > small { text-align:left; }
+  .core-inbox__tools { grid-template-columns:1fr; gap:8px; }
+  .core-inbox__search, .core-inbox__filters--archive, .core-inbox__filters--status { grid-column:1; }
   .core-inbox__filters:not(.core-inbox__filters--archive) { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); overflow:visible; }
   .core-inbox__filters:not(.core-inbox__filters--archive) button { width:100%; min-height:44px; white-space:normal; }
   .core-inbox__detail > header { flex-direction:column; gap:12px; }
