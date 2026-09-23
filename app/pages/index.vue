@@ -289,6 +289,7 @@ function stopSlides(group: SlideGroup) {
 }
 function playSlides(group: SlideGroup) {
   playback[group].stopped = false
+  playback[group].hover = false
   playback[group].progress = 0
 }
 function selectSlide(group: SlideGroup, index: number) {
@@ -346,7 +347,7 @@ onMounted(() => {
     for (const group of ['booking', 'sharing'] as const) {
       const state = playback[group]
       if (document.hidden || menuOpen.value || !state.visible || state.stopped || state.hover) continue
-      state.progress += elapsed / 6000
+      state.progress += elapsed / 4000
       if (state.progress >= 1) {
         state.progress = 0
         if (group === 'booking') demoStep.value = (demoStep.value + 1) % 3
