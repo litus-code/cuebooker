@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import garageBackdropUrl from '../assets/images/cue-id/cue-id-industrial-garage.webp'
 import {
   CUE_ID_STYLIZED_CREATOR_CATALOGUE,
   type CueIdStylizedCreatorConfigV1,
@@ -405,7 +406,13 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
           @pointerleave="resetGarageParallax"
         >
           <div class="cue-workspace__stage-graphic cue-workspace__garage" aria-hidden="true">
-            <i class="cue-workspace__garage-photo" />
+            <img
+              class="cue-workspace__garage-photo"
+              :src="garageBackdropUrl"
+              alt=""
+              aria-hidden="true"
+              draggable="false"
+            />
             <i class="cue-workspace__garage-haze" />
             <i class="cue-workspace__garage-vignette" />
             <i class="cue-workspace__avatar-shadow" />
@@ -888,7 +895,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace__view-toggle button.active{background:color-mix(in srgb,var(--cue-accent) 14%,transparent);color:var(--cue-accent)}
 .cue-workspace__stage-placeholder{--garage-shift-x:0px;--garage-shift-y:0px;position:relative;display:grid;place-items:center;min-height:560px;overflow:hidden;background:#070808;isolation:isolate}
 .cue-workspace__stage-graphic{position:absolute;z-index:0;inset:-1.5%;overflow:hidden;pointer-events:none}
-.cue-workspace__garage-photo{position:absolute;inset:-2%;background-image:url('/images/cue-id/cue-id-industrial-garage.webp');background-position:50% 52%;background-size:cover;background-repeat:no-repeat;filter:saturate(.72) contrast(1.05) brightness(.72);transform:translate3d(var(--garage-shift-x),var(--garage-shift-y),0) scale(1.055);transition:transform .18s ease-out;will-change:transform}
+.cue-workspace__garage-photo{position:absolute;inset:-2%;width:104%;height:104%;object-fit:cover;object-position:50% 52%;user-select:none;filter:saturate(.8) contrast(1.04) brightness(.88);transform:translate3d(var(--garage-shift-x),var(--garage-shift-y),0) scale(1.055);transition:transform .18s ease-out;will-change:transform}
 .cue-workspace__garage-haze{position:absolute;z-index:1;left:18%;right:18%;bottom:15%;height:34%;background:radial-gradient(ellipse at 50% 68%,rgba(214,224,222,.14),rgba(184,197,195,.05) 34%,transparent 70%);filter:blur(18px);opacity:.66;transform:translate3d(calc(var(--garage-shift-x) * -.22),calc(var(--garage-shift-y) * -.18),0) scale(1.05);transition:transform .22s ease-out}
 .cue-workspace__garage-vignette{position:absolute;z-index:2;inset:0;background:radial-gradient(ellipse at 50% 48%,transparent 33%,rgba(3,4,4,.1) 58%,rgba(3,4,4,.58) 100%),linear-gradient(180deg,rgba(2,3,3,.08),transparent 28%,transparent 72%,rgba(2,3,3,.28));box-shadow:inset 0 0 74px rgba(0,0,0,.3)}
 .cue-workspace__avatar-shadow{position:absolute;z-index:3;left:50%;bottom:4.5%;width:190px;height:42px;transform:translateX(-50%) perspective(320px) rotateX(66deg);border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.62) 0%,rgba(0,0,0,.34) 38%,transparent 72%);filter:blur(7px);opacity:.78;transition:opacity .2s ease}
@@ -940,7 +947,7 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
   .cue-workspace__body-toggle button,.cue-workspace__view-toggle button{min-height:38px;padding:7px 10px;font-size:12px}
   .cue-workspace__stage-placeholder{min-height:300px}
   .cue-workspace__stage-graphic{inset:-1%}
-  .cue-workspace__garage-photo{background-position:50% 50%;filter:saturate(.7) contrast(1.04) brightness(.68);transform:scale(1.07)}
+  .cue-workspace__garage-photo{object-position:50% 50%;filter:saturate(.78) contrast(1.03) brightness(.84);transform:scale(1.07)}
   .cue-workspace__garage-haze{opacity:.46}
   .cue-workspace__avatar-shadow{bottom:3%;width:132px;height:30px}
   @media(prefers-reduced-motion:reduce){.cue-workspace__garage-photo,.cue-workspace__garage-haze{transition:none;transform:none}}
