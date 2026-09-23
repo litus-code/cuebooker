@@ -488,7 +488,7 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
 
     <section tabindex="-1" id="system" class="ed-section cp-wrap">
       <div class="ed-intro"><p class="cp-kicker">{{ p.work.label }}</p><h2>{{ p.work.title }}</h2><p class="ed-deck">{{ p.work.intro }}</p><p>{{ p.work.body }}</p></div>
-      <div class="ed-carousel" data-slide-group="booking" @mouseenter="playback.booking.hover = true" @mouseleave="playback.booking.hover = false" @focusin="stopSlides('booking')">
+      <div class="ed-carousel" data-slide-group="booking" @pointerdown="stopSlides('booking')" @mouseenter="playback.booking.hover = true" @mouseleave="playback.booking.hover = false" @focusin="stopSlides('booking')">
 <div class="ed-playback">
 <button type="button" :disabled="playback.booking.stopped" @click="stopSlides('booking')">{{ locale === 'es' ? 'Pausar' : 'Pause' }}</button>
 <button type="button" :disabled="!playback.booking.stopped" @click="playSlides('booking')">{{ locale === 'es' ? 'Reproducir' : 'Play' }}</button>
@@ -516,7 +516,7 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
 
     <section tabindex="-1" id="distribution" class="ed-share ed-section">
       <div class="cp-wrap"><p class="cp-kicker">{{ p.share.label }}</p><h2>{{ p.share.title }}</h2><p class="ed-deck">{{ p.share.body }}</p>
-        <div class="ed-carousel" data-slide-group="sharing" @mouseenter="playback.sharing.hover = true" @mouseleave="playback.sharing.hover = false" @focusin="stopSlides('sharing')">
+        <div class="ed-carousel" data-slide-group="sharing" @pointerdown="stopSlides('sharing')" @mouseenter="playback.sharing.hover = true" @mouseleave="playback.sharing.hover = false" @focusin="stopSlides('sharing')">
 <div class="ed-playback">
 <button type="button" :disabled="playback.sharing.stopped" @click="stopSlides('sharing')">{{ locale === 'es' ? 'Pausar' : 'Pause' }}</button>
 <button type="button" :disabled="!playback.sharing.stopped" @click="playSlides('sharing')">{{ locale === 'es' ? 'Reproducir' : 'Play' }}</button>
