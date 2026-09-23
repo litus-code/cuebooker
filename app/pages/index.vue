@@ -493,10 +493,13 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
       <div class="ed-intro"><p class="cp-kicker">{{ p.work.label }}</p><h2>{{ p.work.title }}</h2><p class="ed-deck">{{ p.work.intro }}</p><p>{{ p.work.body }}</p></div>
       <div class="ed-carousel" data-slide-group="booking" @pointerdown="stopSlides('booking')" @mouseenter="playback.booking.hover = true" @mouseleave="playback.booking.hover = false" @focusin="stopSlides('booking')">
 <div class="ed-playback">
-<button type="button" :disabled="playback.booking.stopped" @click="stopSlides('booking')">{{ locale === 'es' ? 'Pausar' : 'Pause' }}</button>
-<button type="button" :disabled="!playback.booking.stopped" @click="playSlides('booking')">{{ locale === 'es' ? 'Reproducir' : 'Play' }}</button>
-<span>{{ demoStep + 1 }} / 3</span>
-<div class="ed-progress" aria-hidden="true"><span :style="{ transform: 'scaleX(' + playback.booking.progress + ')' }" /></div>
+  <div class="ed-slide-badges" :aria-label="locale === 'es' ? 'Pasos de la demo' : 'Demo steps'">
+    <button v-for="(step, i) in p.work.steps" :key="step" type="button" :class="{ active: demoStep === i }" :aria-label="step + ', ' + (i + 1) + (locale === 'es' ? ' de 3' : ' of 3')" :aria-current="demoStep === i ? 'step' : undefined" @click="selectSlide('booking', i)"><span aria-hidden="true" /></button>
+  </div>
+  <button class="ed-playback-toggle" type="button" :aria-label="playback.booking.stopped ? (locale === 'es' ? 'Reanudar pase automático' : 'Resume automatic slides') : (locale === 'es' ? 'Pausar pase automático' : 'Pause automatic slides')" @pointerdown.stop @focusin.stop @click="playback.booking.stopped ? playSlides('booking') : stopSlides('booking')">
+    <svg v-if="playback.booking.stopped" class="ed-play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z" /></svg>
+    <svg v-else viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v14M17 5v14" /></svg>
+  </button>
 </div>
 <div class="ed-work">
         <div class="ed-steps" role="tablist" aria-orientation="vertical" :aria-label="p.nav.system">
@@ -510,7 +513,6 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
             <div v-if="demoStep === 0" class="ed-request-data"><div class="ed-date"><b>18</b><span>OCT</span></div><dl><div><dt>{{ p.work.fee }}</dt><dd>{{ p.work.amount }}</dd></div><div><dt>{{ p.work.set }}</dt><dd>{{ p.work.time }}</dd></div><div><dt>{{ p.work.contact }}</dt><dd>{{ p.work.promoter }}</dd></div></dl></div>
             <div v-else-if="demoStep === 1" class="ed-calendar"><p class="ed-mono">{{ p.work.month }}</p><div class="ed-days"><span v-for="day in 31" :key="day" :class="{ chosen: day === 18 }">{{ day }}</span></div><p class="ed-available">{{ p.work.available }}</p></div>
             <div v-else class="ed-decision"><p>{{ p.work.decision }}</p><div v-for="option in p.work.options" :key="option" class="ed-option">{{ option }}<span class="cp-arrow" aria-hidden="true" /></div><small>{{ p.work.note }}</small></div>
-            <button class="ed-next" @click="selectSlide('booking', (demoStep + 1) % 3)">{{ demoStep === 2 ? p.work.restart : p.work.next }}<span class="cp-arrow" aria-hidden="true" /></button>
           </div>
           <p class="ed-demo-foot">{{ p.work.demo }}</p>
         </div>
@@ -521,10 +523,13 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
       <div class="cp-wrap"><p class="cp-kicker">{{ p.share.label }}</p><h2>{{ p.share.title }}</h2><p class="ed-deck">{{ p.share.body }}</p>
         <div class="ed-carousel" data-slide-group="sharing" @pointerdown="stopSlides('sharing')" @mouseenter="playback.sharing.hover = true" @mouseleave="playback.sharing.hover = false" @focusin="stopSlides('sharing')">
 <div class="ed-playback">
-<button type="button" :disabled="playback.sharing.stopped" @click="stopSlides('sharing')">{{ locale === 'es' ? 'Pausar' : 'Pause' }}</button>
-<button type="button" :disabled="!playback.sharing.stopped" @click="playSlides('sharing')">{{ locale === 'es' ? 'Reproducir' : 'Play' }}</button>
-<span>{{ shareTab + 1 }} / 3</span>
-<div class="ed-progress" aria-hidden="true"><span :style="{ transform: 'scaleX(' + playback.sharing.progress + ')' }" /></div>
+  <div class="ed-slide-badges" :aria-label="locale === 'es' ? 'Formas de compartir' : 'Ways to share'">
+    <button v-for="(label, i) in p.share.tabs" :key="label" type="button" :class="{ active: shareTab === i }" :aria-label="label + ', ' + (i + 1) + (locale === 'es' ? ' de 3' : ' of 3')" :aria-current="shareTab === i ? 'step' : undefined" @click="selectSlide('sharing', i)"><span aria-hidden="true" /></button>
+  </div>
+  <button class="ed-playback-toggle" type="button" :aria-label="playback.sharing.stopped ? (locale === 'es' ? 'Reanudar pase automático' : 'Resume automatic slides') : (locale === 'es' ? 'Pausar pase automático' : 'Pause automatic slides')" @pointerdown.stop @focusin.stop @click="playback.sharing.stopped ? playSlides('sharing') : stopSlides('sharing')">
+    <svg v-if="playback.sharing.stopped" class="ed-play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z" /></svg>
+    <svg v-else viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v14M17 5v14" /></svg>
+  </button>
 </div>
 <div class="ed-share-layout">
           <div><div class="ed-tabs" role="tablist" :aria-label="p.nav.distribution"><button v-for="(label,i) in p.share.tabs" :id="'share-'+i" :key="label" role="tab" :tabindex="shareTab === i ? 0 : -1" :aria-label="label + ', ' + (i + 1) + (locale === 'es' ? ' de 3' : ' of 3')" @keydown="slideKeys($event, 'sharing', i)" :aria-selected="shareTab === i" aria-controls="share-preview" :class="{selected: shareTab === i}" @click="selectSlide('sharing', i)">{{ label }}</button></div>
@@ -766,8 +771,14 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--cp-lime); outli
 .ed-playback button,.ed-menu-close { min-height:44px; padding:10px 18px; border:1px solid var(--cue-border); border-radius:6px; background:var(--cue-bg); color:var(--cue-text); cursor:pointer; font-size:14px; }
 .ed-playback button:disabled { opacity:.55; cursor:default; }
 .ed-playback > span { color:var(--cp-muted); font-size:13px; }
-.ed-progress { flex:1 1 100px; height:3px; background:var(--cp-line); overflow:hidden; }
-.ed-progress span { display:block; height:100%; background:var(--cp-lime); transform-origin:left; }
+.ed-slide-badges { display:flex; align-items:center; gap:2px; }
+.ed-slide-badges button { display:grid; place-items:center; width:44px; height:44px; padding:0; border:0; background:transparent; cursor:pointer; }
+.ed-slide-badges button span { width:10px; height:10px; border:1px solid var(--cp-muted); border-radius:50%; background:transparent; transition:background .2s,width .2s,border-color .2s; }
+.ed-slide-badges button.active span { width:22px; border-radius:10px; border-color:var(--cp-lime); background:var(--cp-lime); }
+.ed-playback-toggle { display:grid; place-items:center; width:44px; height:44px; padding:0!important; border-radius:50%!important; }
+.ed-playback-toggle svg { width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.ed-playback-toggle .ed-play-icon { fill:currentColor; stroke:none; }
+.ed-slide-badges button:focus-visible,.ed-playback-toggle:focus-visible { outline:2px solid var(--cp-lime); outline-offset:2px; }
 .cp-mobile-menu--portal { grid-template-rows:auto 1fr auto; }
 .ed-menu-close { justify-self:end; margin-top:16px; }
 .ed-menu-close span { margin-left:14px; }
