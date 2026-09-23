@@ -294,8 +294,8 @@ async function convertHold(hold: Hold) {
 .core-ops button:disabled { opacity:.45; cursor:wait; }
 .core-ops__form { display:grid; gap:6px; padding:7px 10px 9px; }
 .core-ops__form-main { min-width:0; }
-.core-ops__auto-reply { display:grid; grid-template-columns:20px minmax(0,1fr); align-items:start; gap:8px; width:100%; box-sizing:border-box; padding:1px 0; border:0; background:transparent; cursor:pointer; }
-.core-ops__auto-reply input { appearance:none; -webkit-appearance:none; width:20px; height:20px; min-width:20px; min-height:20px; margin:0; padding:0; border:1px solid var(--cue-border); border-radius:5px; background:var(--cue-surface); cursor:pointer; }
+.core-ops__auto-reply { display:grid; grid-template-columns:18px minmax(0,1fr); align-items:start; gap:8px; width:100%; box-sizing:border-box; padding:1px 0; border:0; background:transparent; cursor:pointer; }
+.core-ops__auto-reply input { appearance:none; -webkit-appearance:none; width:18px; height:18px; min-width:18px; min-height:18px; max-width:18px; max-height:18px; margin:0; padding:0; border:1px solid var(--cue-border); border-radius:5px; background:var(--cue-surface); cursor:pointer; }
 .core-ops__auto-reply input:checked { border-color:var(--cue-primary); background:var(--cue-primary); box-shadow:inset 0 0 0 4px var(--cue-surface); }
 .core-ops__auto-reply input:focus-visible { outline:2px solid var(--cue-primary); outline-offset:2px; }
 .core-ops__auto-reply > span { display:block; min-width:0; width:auto; }
@@ -305,7 +305,7 @@ async function convertHold(hold: Hold) {
 .core-ops__form-row--hold { grid-template-columns:1fr 1fr; }
 .core-ops__form--hold > button { justify-self:start; }
 .core-ops__form label span { display:block; margin-bottom:4px; color:var(--cue-muted); font:700 8px monospace; text-transform:uppercase; }
-.core-ops__form input { width:100%; min-height:var(--cue-input-md); box-sizing:border-box; border:1px solid color-mix(in srgb,var(--cue-border) 88%,transparent); border-radius:var(--cue-radius-control); background:var(--cue-surface); color:var(--cue-text); padding:0 10px; font-size:11px; }
+.core-ops__form input:not([type="checkbox"]) { width:100%; min-height:var(--cue-input-md); box-sizing:border-box; border:1px solid color-mix(in srgb,var(--cue-border) 88%,transparent); border-radius:var(--cue-radius-control); background:var(--cue-surface); color:var(--cue-text); padding:0 10px; font-size:11px; }
 .core-ops__form > button, .core-ops__form-row > button { min-height:var(--cue-button-md); align-self:end; }
 .core-ops__form > button { background:var(--cue-primary); color:var(--cue-primary-ink); border-color:var(--cue-primary); }
 .core-ops__empty { margin:0; padding:8px 10px; color:var(--cue-muted); font-size:10px; }
@@ -327,7 +327,7 @@ async function convertHold(hold: Hold) {
 
   .core-ops__auto-reply {
     display:grid !important;
-    grid-template-columns:20px minmax(0,1fr) !important;
+    grid-template-columns:18px minmax(0,1fr) !important;
     align-items:start !important;
     gap:8px !important;
     width:100% !important;
@@ -343,12 +343,12 @@ async function convertHold(hold: Hold) {
     -webkit-appearance:none !important;
     display:block !important;
     grid-column:1 !important;
-    width:20px !important;
-    height:20px !important;
-    min-width:20px !important;
-    min-height:20px !important;
-    max-width:20px !important;
-    max-height:20px !important;
+    width:18px !important;
+    height:18px !important;
+    min-width:18px !important;
+    min-height:18px !important;
+    max-width:18px !important;
+    max-height:18px !important;
     padding:0 !important;
     margin:0 !important;
     border:1px solid var(--cue-border) !important;
