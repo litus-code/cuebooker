@@ -14,6 +14,7 @@ const publicPublishing = usePublicArtistPublishing()
 const preferences = useCuePreferences()
 const route = useRoute()
 const router = useRouter()
+const requestUrl = useRequestURL()
 
 type WorkspaceView = 'overview' | 'bookings' | 'calendar' | 'history' | 'profile'
 const WORKSPACE_VIEWS: WorkspaceView[] = ['overview', 'bookings', 'calendar', 'history', 'profile']
@@ -70,8 +71,8 @@ function emptyProfileForm(): ArtistProfileForm {
   }
 }
 
-const loadingView = computed<WorkspaceView>(() => workspaceViewFromQuery(route.query.view, route.query.booking))
-const activeView = ref<WorkspaceView>(loadingView.value)
+const initialLoadingView = workspaceViewFromQuery(requestUrl.searchParams.get('view'), requestUrl.searchParams.get('booking'))
+const activeView = ref<WorkspaceView>(initialLoadingView)
 const artists = ref<ManagedArtist[]>([])
 const organizations = ref<ManagedOrganization[]>([])
 const selectedArtistId = ref('')
@@ -1315,7 +1316,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-    <section v-if="loading && loadingView === 'bookings'" class="workspace-skeleton workspace-skeleton--bookings" aria-busy="true" aria-live="polite">
+    <section v-if="loading && initialLoadingView === 'bookings'" class="workspace-skeleton workspace-skeleton--bookings" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
       <div class="workspace-skeleton__heading workspace-skeleton__heading--bookings">
         <i class="skeleton-line skeleton-line--eyebrow" />
@@ -1342,7 +1343,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       </div>
     </section>
 
-    <section v-else-if="loading && loadingView === 'calendar'" class="workspace-skeleton workspace-skeleton--calendar" aria-busy="true" aria-live="polite">
+    <section v-else-if="loading && initialLoadingView === 'calendar'" class="workspace-skeleton workspace-skeleton--calendar" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
       <div class="workspace-skeleton__heading workspace-skeleton__heading--calendar">
         <i class="skeleton-line skeleton-line--eyebrow" />
