@@ -12,6 +12,7 @@ const emit = defineEmits<{ openBooking: [bookingId: string] }>()
 const bookingCore = useBookingCore()
 const activities = ref<Activity[]>([])
 const loading = ref(false)
+const loadedOnce = ref(false)
 const search = ref('')
 const typeFilter = ref<'all' | 'communication' | 'operations' | 'system'>('all')
 const visibleLimit = ref(10)
@@ -143,13 +144,19 @@ function formatTime(value: string) {
 async function load() {
   if (!props.workspaceId || !props.bookings.length) {
     activities.value = []
+    loadedOnce.value = false
     return
   }
-  loading.value = true
+
+  const initialLoad = !loadedOnce.value
+  if (initialLoad) loading.value = true
+
   try {
-    activities.value = await bookingCore.listWorkspaceActivities(props.workspaceId, props.bookings.map(item => item.id), 300)
+    const nextActivities = await bookingCore.listWorkspaceActivities(props.workspaceId, props.bookings.map(item => item.id), 300)
+    activities.value = nextActivities
+    loadedOnce.value = true
   } finally {
-    loading.value = false
+    if (initialLoad) loading.value = false
   }
 }
 
