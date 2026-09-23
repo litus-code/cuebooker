@@ -1822,3 +1822,145 @@
     height:auto;
   }
 }
+
+
+/* Calendar skeleton must reserve the exact footprint of the final calendar layout. */
+.workspace .workspace-skeleton--calendar {
+  padding-top:var(--cue-space-5) !important;
+}
+
+.workspace .workspace-skeleton__heading--calendar {
+  max-width:900px !important;
+  min-height:150px !important;
+  margin-bottom:var(--cue-space-3) !important;
+}
+
+.workspace .workspace-skeleton__calendar-layout {
+  display:grid !important;
+  grid-template-columns:minmax(0,1.65fr) minmax(340px,.85fr) !important;
+  gap:var(--cue-space-4) !important;
+  align-items:stretch !important;
+  margin-top:var(--cue-space-3) !important;
+}
+
+.workspace .workspace-skeleton__calendar-month,
+.workspace .workspace-skeleton__calendar-day {
+  min-width:0 !important;
+  height:100% !important;
+  overflow:hidden !important;
+  border:1px solid var(--workspace-line) !important;
+  border-radius:var(--cue-radius-panel) !important;
+  background:var(--cue-surface) !important;
+}
+
+.workspace .workspace-skeleton__calendar-month {
+  display:grid !important;
+  grid-template-rows:60px 1fr auto !important;
+}
+
+.workspace .workspace-skeleton__calendar-grid {
+  display:grid !important;
+  grid-template-columns:repeat(7,minmax(0,1fr)) !important;
+  grid-template-rows:34px repeat(6,86px) !important;
+}
+
+.workspace .skeleton-panel--calendar-toolbar,
+.workspace .skeleton-panel--calendar-weekday,
+.workspace .skeleton-panel--calendar-day,
+.workspace .skeleton-panel--calendar-day-head,
+.workspace .skeleton-panel--calendar-hour {
+  margin:0 !important;
+}
+
+.workspace .skeleton-panel--calendar-toolbar {
+  width:100% !important;
+  height:60px !important;
+  min-height:60px !important;
+  border:0 !important;
+  border-bottom:1px solid var(--workspace-line) !important;
+  border-radius:0 !important;
+}
+
+.workspace .skeleton-panel--calendar-weekday {
+  width:100% !important;
+  height:34px !important;
+  min-height:34px !important;
+  border:0 !important;
+  border-right:1px solid var(--workspace-line) !important;
+  border-bottom:1px solid var(--workspace-line) !important;
+  border-radius:0 !important;
+}
+
+.workspace .skeleton-panel--calendar-day {
+  width:100% !important;
+  height:86px !important;
+  min-height:86px !important;
+  border:0 !important;
+  border-right:1px solid var(--workspace-line) !important;
+  border-bottom:1px solid var(--workspace-line) !important;
+  border-radius:0 !important;
+}
+
+.workspace .workspace-skeleton__calendar-legend {
+  min-height:42px !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:var(--cue-space-4) !important;
+  padding:var(--cue-space-3) var(--cue-space-4) !important;
+}
+
+.workspace .workspace-skeleton__calendar-day {
+  display:grid !important;
+  grid-template-rows:78px 1fr !important;
+}
+
+.workspace .skeleton-panel--calendar-day-head {
+  width:100% !important;
+  height:78px !important;
+  min-height:78px !important;
+  border:0 !important;
+  border-bottom:1px solid var(--workspace-line) !important;
+  border-radius:0 !important;
+}
+
+.workspace .workspace-skeleton__calendar-timeline {
+  display:grid !important;
+  grid-template-rows:repeat(12,48px) !important;
+  min-height:576px !important;
+}
+
+.workspace .skeleton-panel--calendar-hour {
+  width:100% !important;
+  height:48px !important;
+  min-height:48px !important;
+  border:0 !important;
+  border-bottom:1px solid var(--workspace-line) !important;
+  border-radius:0 !important;
+}
+
+@media (max-width:1040px) {
+  .workspace .workspace-skeleton__calendar-layout {
+    grid-template-columns:1fr !important;
+  }
+
+  .workspace .workspace-skeleton__calendar-month,
+  .workspace .workspace-skeleton__calendar-day {
+    height:auto !important;
+  }
+}
+
+@media (max-width:620px) {
+  .workspace .workspace-skeleton__calendar-grid {
+    grid-template-rows:32px repeat(6,58px) !important;
+  }
+
+  .workspace .skeleton-panel--calendar-day {
+    height:58px !important;
+    min-height:58px !important;
+  }
+
+  .workspace .workspace-skeleton__calendar-timeline {
+    grid-template-rows:repeat(10,48px) !important;
+    min-height:480px !important;
+  }
+}
