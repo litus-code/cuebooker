@@ -656,7 +656,7 @@ async function selectBooking(bookingId: string) {
 .core-inbox__conversation-heading { padding:10px 2px 12px; border-bottom:0; }
 .core-inbox__conversation-heading span { display:block; font:800 12px monospace; text-transform:uppercase; letter-spacing:.08em; }
 .core-inbox__conversation-heading small { display:block; margin-top:4px; color:var(--cue-muted); font-size:9px; }
-.core-inbox__thread { min-height:180px; max-height:clamp(340px,50vh,560px); overflow-y:auto; overscroll-behavior:contain; scrollbar-gutter:stable; scrollbar-width:thin; padding:7px 2px 10px; }
+.core-inbox__thread { min-height:180px; max-height:clamp(340px,50vh,560px); overflow-y:auto; overscroll-behavior-y:auto; scrollbar-gutter:stable; scrollbar-width:thin; padding:7px 2px 10px; }
 .thread-item { width:min(82%,720px); margin:0 0 10px; padding:12px 14px; border:0; border-left:2px solid var(--cue-border); border-radius:0 8px 8px 0; background:color-mix(in srgb,var(--cue-raised) 58%,transparent); }
 .thread-item--outbound { margin-left:auto; border-left:0; border-right:2px solid color-mix(in srgb,#73b7ff 58%,var(--cue-border)); border-radius:8px 0 0 8px; background:color-mix(in srgb,#73b7ff 4%,var(--cue-raised)); }
 .thread-item--inbound { margin-right:auto; border-left-color:color-mix(in srgb,var(--cue-accent) 62%,var(--cue-border)); background:color-mix(in srgb,var(--cue-accent) 3%,var(--cue-raised)); }
