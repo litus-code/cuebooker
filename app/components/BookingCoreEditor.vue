@@ -158,7 +158,7 @@ async function save() {
 </template>
 
 <style scoped>
-.booking-editor-entry__button { display:flex; align-items:center; gap:7px; min-height:34px; padding:0 11px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); cursor:pointer; font:700 9px monospace; text-transform:uppercase; }
+.booking-editor-entry__button { display:flex; align-items:center; gap:7px; min-height:var(--cue-button-sm); padding:0 var(--cue-space-3); border:1px solid var(--cue-border); border-radius:var(--cue-radius-control); background:transparent; color:var(--cue-text); cursor:pointer; font:700 9px monospace; text-transform:uppercase; }
 .booking-editor-entry__button:hover { border-color:var(--cue-accent); color:var(--cue-accent); }
 .booking-editor-entry__button svg { width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 .booking-editor-backdrop { position:fixed; z-index:95; inset:0; display:grid; place-items:center; padding:18px; background:rgba(0,0,0,.72); backdrop-filter:blur(4px); }
