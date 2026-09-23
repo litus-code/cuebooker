@@ -1402,44 +1402,66 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <section v-else-if="loadingView === 'history'" class="workspace-skeleton workspace-skeleton--history" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
-      <div class="workspace-skeleton__heading workspace-skeleton__heading--history">
-        <i class="skeleton-line skeleton-line--eyebrow" />
-        <div class="workspace-skeleton__title-block" aria-hidden="true">
-          <i class="skeleton-line skeleton-line--title skeleton-line--title-primary" />
-          <i class="skeleton-line skeleton-line--body" />
+
+      <div class="workspace-skeleton__history-page-heading">
+        <div class="workspace-skeleton__history-page-copy" aria-hidden="true">
+          <i class="skeleton-line skeleton-line--eyebrow" />
+          <i class="skeleton-line skeleton-line--history-page-title" />
+          <i class="skeleton-line skeleton-line--history-page-body" />
         </div>
-        <i class="skeleton-line skeleton-line--artist" />
+        <div class="workspace-skeleton__history-artist" aria-hidden="true">
+          <i class="skeleton-line skeleton-line--history-artist-label" />
+          <i class="skeleton-panel skeleton-panel--history-artist-icon" />
+          <i class="skeleton-line skeleton-line--history-artist-name" />
+        </div>
       </div>
 
-      <div class="workspace-skeleton__history-panel">
-        <div class="workspace-skeleton__history-head">
-          <div>
-            <i class="skeleton-line skeleton-line--eyebrow" />
+      <section class="workspace-skeleton__history-panel" aria-hidden="true">
+        <header class="workspace-skeleton__history-head">
+          <div class="workspace-skeleton__history-head-copy">
+            <i class="skeleton-line skeleton-line--history-kicker" />
             <i class="skeleton-line skeleton-line--history-title" />
             <i class="skeleton-line skeleton-line--history-body" />
           </div>
-          <i class="skeleton-line skeleton-line--history-count" />
-        </div>
+          <div class="workspace-skeleton__history-count">
+            <i class="skeleton-line skeleton-line--history-count-number" />
+            <i class="skeleton-line skeleton-line--history-count-label" />
+          </div>
+        </header>
 
         <div class="workspace-skeleton__history-tools">
-          <i class="skeleton-panel skeleton-panel--history-search" />
+          <div class="workspace-skeleton__history-search">
+            <i class="skeleton-panel skeleton-panel--history-search-icon" />
+            <i class="skeleton-line skeleton-line--history-search-text" />
+          </div>
+
           <div class="workspace-skeleton__history-filters">
-            <i v-for="index in 4" :key="`history-filter-${index}`" class="skeleton-panel skeleton-panel--history-filter" />
+            <i class="skeleton-panel skeleton-panel--history-filter skeleton-panel--history-filter-all" />
+            <i class="skeleton-panel skeleton-panel--history-filter skeleton-panel--history-filter-conversations" />
+            <i class="skeleton-panel skeleton-panel--history-filter skeleton-panel--history-filter-operations" />
+            <i class="skeleton-panel skeleton-panel--history-filter skeleton-panel--history-filter-system" />
           </div>
         </div>
 
-        <div class="workspace-skeleton__history-list">
-          <div v-for="index in 6" :key="`history-row-${index}`" class="workspace-skeleton__history-row">
-            <i class="skeleton-line skeleton-line--history-time" />
-            <i class="skeleton-panel skeleton-panel--history-dot" />
-            <div>
-              <i class="skeleton-line skeleton-line--history-type" />
+        <div class="workspace-skeleton__history-timeline">
+          <div v-for="index in 6" :key="`history-row-${index}`" class="workspace-skeleton__history-event">
+            <div class="workspace-skeleton__history-time">
+              <i class="skeleton-line" />
+            </div>
+            <div class="workspace-skeleton__history-rail">
+              <i class="skeleton-panel" />
+            </div>
+            <div class="workspace-skeleton__history-event-content">
+              <div class="workspace-skeleton__history-event-topline">
+                <i class="skeleton-line skeleton-line--history-type" />
+                <i class="skeleton-line skeleton-line--history-open" />
+              </div>
               <i class="skeleton-line skeleton-line--history-booking" />
               <i class="skeleton-line skeleton-line--history-detail" />
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </section>
 
     <section v-else-if="loadingView === 'overview'" class="workspace-skeleton" aria-busy="true" aria-live="polite">
