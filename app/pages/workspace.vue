@@ -1467,7 +1467,15 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
         <div id="workspace-calendar" class="calendar-layout" :class="{ 'tour-focus': tourStep === 7 }">
           <section class="month-panel panel">
-            <div class="calendar-toolbar"><button type="button" :aria-label="copy.previousMonth" @click="changeMonth(-1)">←</button><h2>{{ monthLabel }}</h2><button type="button" :aria-label="copy.nextMonth" @click="changeMonth(1)">→</button></div>
+            <div class="calendar-toolbar">
+              <button type="button" :aria-label="copy.previousMonth" @click="changeMonth(-1)">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+              <h2>{{ monthLabel }}</h2>
+              <button type="button" :aria-label="copy.nextMonth" @click="changeMonth(1)">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+            </div>
             <div class="calendar-grid">
               <div v-for="label in copy.weekdays" :key="label" class="weekday">{{ label }}</div>
               <button v-for="cell in monthCells" :key="cell.date" type="button" class="day" :class="{ muted: !cell.current, today: todayDate === cell.date, selected: selectedDate === cell.date }" @click="selectDay(cell.date)">
