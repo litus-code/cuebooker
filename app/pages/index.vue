@@ -8,6 +8,7 @@ const menuOpen = ref(false)
 const navHidden = ref(false)
 const backToTopVisible = ref(false)
 const lastScrollY = ref(0)
+let restoreMenuFocus = true
 let scrollDirection = 0
 let scrollDistance = 0
 const heroImage = `${useRuntimeConfig().app.baseURL}club-hero.webp`
@@ -363,10 +364,12 @@ onBeforeUnmount(() => {
 })
 
 function toggleMenu() {
+  restoreMenuFocus = true
   navHidden.value = false
   menuOpen.value = !menuOpen.value
 }
 function scrollTo(id: string) {
+  restoreMenuFocus = false
   menuOpen.value = false
   nextTick(() => {
     const target = document.querySelector<HTMLElement>(id)
@@ -418,7 +421,7 @@ watch(menuOpen, async open => {
     lastScrollY.value = Math.max(0, window.scrollY)
     await nextTick()
     if (open) document.querySelector<HTMLElement>('#cp-mobile-menu button')?.focus()
-    else document.querySelector<HTMLElement>('.cp-menu')?.focus({ preventScroll: true })
+    else if (restoreMenuFocus) document.querySelector<HTMLElement>('.cp-menu')?.focus({ preventScroll: true })
   }
 })
 onMounted(() => {
@@ -608,7 +611,7 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
 .cp-mobile-menu--portal .cp-mobile-nav-links a { text-decoration: none; }
 .cp-mobile-menu--portal { overscroll-behavior: contain; padding-bottom: max(24px, env(safe-area-inset-bottom)); }
 :global(html.mobile-menu-open), :global(html.mobile-menu-open body) { overflow: hidden; }
-:global(html[data-theme='light']) .cp-hero::before { opacity: .34; }
+:global(html[data-theme='light'] .commercial-home .cp-hero::before) { opacity: .34; }
 @media (max-width: 1100px) and (min-width: 851px) {
   .commercial-home .cp-hero h1 { max-width: 55%; font-size: 64px; }
   .cp-hero-accent { max-width: 55%; }
