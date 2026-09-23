@@ -70,7 +70,8 @@ function emptyProfileForm(): ArtistProfileForm {
   }
 }
 
-const activeView = ref<WorkspaceView>(workspaceViewFromQuery(route.query.view, route.query.booking))
+const loadingView = computed<WorkspaceView>(() => workspaceViewFromQuery(route.query.view, route.query.booking))
+const activeView = ref<WorkspaceView>(loadingView.value)
 const artists = ref<ManagedArtist[]>([])
 const organizations = ref<ManagedOrganization[]>([])
 const selectedArtistId = ref('')
@@ -1313,7 +1314,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-    <section v-if="loading && activeView === 'bookings'" class="workspace-skeleton workspace-skeleton--bookings" aria-busy="true" aria-live="polite">
+    <section v-if="loading && loadingView === 'bookings'" class="workspace-skeleton workspace-skeleton--bookings" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
       <div class="workspace-skeleton__heading workspace-skeleton__heading--bookings">
         <i class="skeleton-line skeleton-line--eyebrow" />
@@ -1340,7 +1341,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       </div>
     </section>
 
-    <section v-else-if="loading && activeView === 'calendar'" class="workspace-skeleton workspace-skeleton--calendar" aria-busy="true" aria-live="polite">
+    <section v-else-if="loading && loadingView === 'calendar'" class="workspace-skeleton workspace-skeleton--calendar" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
       <div class="workspace-skeleton__heading workspace-skeleton__heading--calendar">
         <i class="skeleton-line skeleton-line--eyebrow" />
@@ -1354,7 +1355,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <i class="skeleton-panel skeleton-panel--calendar-toolbar" />
           <div class="workspace-skeleton__calendar-grid">
             <i v-for="index in 7" :key="`calendar-weekday-${index}`" class="skeleton-panel skeleton-panel--calendar-weekday" />
-            <i v-for="index in 35" :key="`calendar-day-${index}`" class="skeleton-panel skeleton-panel--calendar-day" />
+            <i v-for="index in 42" :key="`calendar-day-${index}`" class="skeleton-panel skeleton-panel--calendar-day" />
           </div>
           <div class="workspace-skeleton__calendar-legend">
             <i class="skeleton-line" />
