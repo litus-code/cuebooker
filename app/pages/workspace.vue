@@ -76,7 +76,8 @@ const organizations = ref<ManagedOrganization[]>([])
 const selectedArtistId = ref('')
 const blocks = ref<AvailabilityBlock[]>([])
 const monthCursor = ref(new Date().toISOString().slice(0, 7) + '-01')
-const selectedDate = ref(new Date().toISOString().slice(0, 10))
+const todayDate = new Date().toISOString().slice(0, 10)
+const selectedDate = ref(todayDate)
 const loading = ref(true)
 const saving = ref(false)
 const errorMessage = ref('')
@@ -1469,7 +1470,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             <div class="calendar-toolbar"><button type="button" :aria-label="copy.previousMonth" @click="changeMonth(-1)">←</button><h2>{{ monthLabel }}</h2><button type="button" :aria-label="copy.nextMonth" @click="changeMonth(1)">→</button></div>
             <div class="calendar-grid">
               <div v-for="label in copy.weekdays" :key="label" class="weekday">{{ label }}</div>
-              <button v-for="cell in monthCells" :key="cell.date" type="button" class="day" :class="{ muted: !cell.current, selected: selectedDate === cell.date }" @click="selectDay(cell.date)">
+              <button v-for="cell in monthCells" :key="cell.date" type="button" class="day" :class="{ muted: !cell.current, today: todayDate === cell.date, selected: selectedDate === cell.date }" @click="selectDay(cell.date)">
                 <span>{{ cell.number }}</span>
                 <small v-if="cell.blocks.length || cell.holds.length || cell.confirmedBookings.length">{{ cell.blocks.length + cell.holds.length + cell.confirmedBookings.length }}</small>
                 <span v-if="cell.blocks.length || cell.holds.length || cell.confirmedBookings.length" class="day-statuses"><i v-for="block in cell.blocks.slice(0, 1)" :key="block.id" :class="`status-dot status-dot--${block.status}`" /><i v-if="cell.holds.length" class="status-dot status-dot--hold" /><i v-if="cell.confirmedBookings.length" class="status-dot status-dot--confirmed" /></span>
