@@ -64,6 +64,12 @@ function bookingLabel(activity: Activity) {
   return booking?.venue_name || booking?.event_name || (props.locale === 'es' ? 'Booking sin nombre' : 'Unnamed booking')
 }
 
+function activityGroup(activity: Activity) {
+  if (communicationTypes.has(activity.type)) return 'communication'
+  if (operationTypes.has(activity.type)) return 'operations'
+  return 'system'
+}
+
 function activityLabel(activity: Activity) {
   if (activity.type === 'system' && activity.metadata?.event === 'booking_details_updated') {
     return props.locale === 'es' ? 'Booking actualizado' : 'Booking updated'
@@ -153,53 +159,489 @@ watch(() => [props.workspaceId, props.refreshKey, props.bookings.map(item => ite
 <template>
   <section class="core-history">
     <header class="core-history__heading">
-      <div><p>{{ copy.eyebrow }}</p><h2>{{ copy.title }}</h2><span>{{ copy.body }}</span></div>
-      <strong>{{ filtered.length }}</strong>
+      <div class="core-history__heading-copy">
+        <p>{{ copy.eyebrow }}</p>
+        <h2>{{ copy.title }}</h2>
+        <span>{{ copy.body }}</span>
+      </div>
+      <div class="core-history__count" aria-label="Total activities">
+        <strong>{{ filtered.length }}</strong>
+        <span>{{ locale === 'es' ? 'eventos' : 'events' }}</span>
+      </div>
     </header>
+
     <div class="core-history__tools">
-      <input v-model="search" type="search" :placeholder="copy.search">
-      <div><button type="button" :class="{ active: typeFilter === 'all' }" @click="typeFilter = 'all'">{{ copy.all }}</button><button type="button" :class="{ active: typeFilter === 'communication' }" @click="typeFilter = 'communication'">{{ copy.communication }}</button><button type="button" :class="{ active: typeFilter === 'operations' }" @click="typeFilter = 'operations'">{{ copy.operations }}</button><button type="button" :class="{ active: typeFilter === 'system' }" @click="typeFilter = 'system'">{{ copy.system }}</button></div>
+      <label class="core-history__search">
+        <span class="sr-only">{{ copy.search }}</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
+        <input v-model="search" type="search" :placeholder="copy.search">
+      </label>
+
+      <div class="core-history__filters" role="group" :aria-label="locale === 'es' ? 'Filtrar actividad' : 'Filter activity'">
+        <button type="button" :class="{ active: typeFilter === 'all' }" @click="typeFilter = 'all'">{{ copy.all }}</button>
+        <button type="button" :class="{ active: typeFilter === 'communication' }" @click="typeFilter = 'communication'">{{ copy.communication }}</button>
+        <button type="button" :class="{ active: typeFilter === 'operations' }" @click="typeFilter = 'operations'">{{ copy.operations }}</button>
+        <button type="button" :class="{ active: typeFilter === 'system' }" @click="typeFilter = 'system'">{{ copy.system }}</button>
+      </div>
     </div>
-    <p v-if="loading" class="core-history__empty">…</p>
-    <div v-else-if="filtered.length" class="core-history__list">
-      <button v-for="activity in paged" :key="activity.id" type="button" @click="emit('openBooking', activity.booking_id)">
-        <time>{{ formatTime(activity.occurred_at) }}</time>
-        <i />
-        <div><span>{{ activityLabel(activity) }}</span><strong>{{ bookingLabel(activity) }}</strong><p v-if="activityDetail(activity)">{{ activityDetail(activity) }}</p><small>{{ copy.open }}</small></div>
+
+    <div v-if="loading" class="core-history__loading" aria-busy="true">
+      <i v-for="index in 6" :key="`history-loading-${index}`" />
+    </div>
+
+    <div v-else-if="filtered.length" class="core-history__timeline">
+      <button
+        v-for="activity in paged"
+        :key="activity.id"
+        class="core-history__event"
+        :class="`core-history__event--${activityGroup(activity)}`"
+        type="button"
+        @click="emit('openBooking', activity.booking_id)"
+      >
+        <div class="core-history__event-time">
+          <time>{{ formatTime(activity.occurred_at) }}</time>
+        </div>
+
+        <div class="core-history__rail" aria-hidden="true"><i /></div>
+
+        <div class="core-history__event-content">
+          <div class="core-history__event-topline">
+            <span>{{ activityLabel(activity) }}</span>
+            <small>{{ copy.open }}</small>
+          </div>
+          <strong>{{ bookingLabel(activity) }}</strong>
+          <p v-if="activityDetail(activity)">{{ activityDetail(activity) }}</p>
+        </div>
       </button>
+
       <div v-if="hasMore" class="core-history__load-more">
         <button type="button" @click="visibleLimit += 10">
           {{ locale === 'es' ? `Cargar 10 más · ${filtered.length - paged.length} restantes` : `Load 10 more · ${filtered.length - paged.length} remaining` }}
         </button>
       </div>
     </div>
-    <p v-else class="core-history__empty">{{ copy.empty }}</p>
+
+    <div v-else class="core-history__empty">
+      <span>{{ locale === 'es' ? 'SIN ACTIVIDAD' : 'NO ACTIVITY' }}</span>
+      <p>{{ copy.empty }}</p>
+    </div>
   </section>
 </template>
 
 <style scoped>
-.core-history { margin-bottom:18px; border:1px solid var(--cue-border); background:var(--cue-surface); }
-.core-history__heading { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; padding:16px 18px; border-bottom:1px solid var(--cue-border); }
-.core-history__heading p { margin:0; color:var(--cue-accent); font:700 9px monospace; letter-spacing:.1em; }
-.core-history__heading h2 { margin:5px 0 4px; font-size:20px; }
-.core-history__heading span { color:var(--cue-muted); font-size:11px; }
-.core-history__heading > strong { color:var(--cue-accent); font:700 12px monospace; }
-.core-history__tools { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px; border-bottom:1px solid var(--cue-border); }
-.core-history__tools input { flex:1; min-width:140px; min-height:34px; border:1px solid var(--cue-border); background:var(--cue-raised); color:var(--cue-text); padding:0 10px; }
-.core-history__tools > div { display:flex; gap:4px; flex-wrap:wrap; }
-.core-history__tools button { min-height:30px; padding:0 8px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; text-transform:uppercase; }
-.core-history__tools button.active { border-color:var(--cue-accent); color:var(--cue-accent); }
-.core-history__list > button { display:grid; grid-template-columns:125px 8px minmax(0,1fr); gap:12px; width:100%; padding:13px 15px; border:0; border-top:1px solid var(--cue-border); background:transparent; color:var(--cue-text); text-align:left; cursor:pointer; }
-.core-history__list > button:first-child { border-top:0; }
-.core-history__list time { color:var(--cue-muted); font:9px monospace; }
-.core-history__list > button > i { width:6px; height:6px; margin-top:3px; border-radius:50%; background:var(--cue-accent); }
-.core-history__list span { color:var(--cue-accent); font:700 8px monospace; text-transform:uppercase; }
-.core-history__list strong { display:block; margin-top:4px; font-size:12px; }
-.core-history__list p { margin:4px 0 0; color:var(--cue-muted); font-size:11px; line-height:1.4; }
-.core-history__list small { display:block; margin-top:6px; color:var(--cue-muted); font-size:9px; }
-.core-history__empty { margin:0; padding:18px; color:var(--cue-muted); font-size:11px; }
-.core-history__load-more { padding:10px; border-top:1px solid var(--cue-border); }
-.core-history__load-more button { width:100%; min-height:40px; border:1px solid var(--cue-border); background:var(--cue-raised); color:var(--cue-text); cursor:pointer; font:800 8px monospace; text-transform:uppercase; }
-.core-history__load-more button:hover { border-color:var(--cue-accent); color:var(--cue-accent); }
-@media (max-width:680px) { .core-history__tools { align-items:stretch; flex-direction:column; } .core-history__list > button { grid-template-columns:88px 6px minmax(0,1fr); gap:8px; } }
+.core-history {
+  margin-bottom:var(--cue-space-5);
+  overflow:hidden;
+  border:1px solid var(--workspace-line, var(--cue-border));
+  border-radius:var(--cue-radius-panel, 12px);
+  background:var(--cue-surface);
+}
+
+.core-history__heading {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:var(--cue-space-5);
+  padding:var(--cue-space-5);
+  border-bottom:1px solid var(--workspace-line, var(--cue-border));
+}
+
+.core-history__heading-copy {
+  min-width:0;
+}
+
+.core-history__heading p {
+  margin:0;
+  color:var(--cue-accent);
+  font:800 9px/1.1 monospace;
+  letter-spacing:.1em;
+}
+
+.core-history__heading h2 {
+  margin:var(--cue-space-2) 0 var(--cue-space-2);
+  font-size:22px;
+  line-height:1;
+  letter-spacing:-.02em;
+}
+
+.core-history__heading span {
+  display:block;
+  max-width:620px;
+  color:var(--cue-muted);
+  font-size:12px;
+  line-height:1.5;
+}
+
+.core-history__count {
+  display:grid;
+  justify-items:end;
+  gap:3px;
+  min-width:64px;
+  padding-top:2px;
+}
+
+.core-history__count strong {
+  color:var(--cue-text);
+  font-size:24px;
+  line-height:1;
+}
+
+.core-history__count span {
+  color:var(--cue-muted);
+  font:800 8px/1 monospace;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+
+.core-history__tools {
+  display:grid;
+  grid-template-columns:minmax(240px,1fr) auto;
+  align-items:center;
+  gap:var(--cue-space-3);
+  padding:var(--cue-space-3);
+  border-bottom:1px solid var(--workspace-line, var(--cue-border));
+  background:color-mix(in srgb,var(--cue-raised) 34%,transparent);
+}
+
+.core-history__search {
+  position:relative;
+  display:flex;
+  align-items:center;
+}
+
+.core-history__search svg {
+  position:absolute;
+  left:13px;
+  width:15px;
+  height:15px;
+  fill:none;
+  stroke:var(--cue-muted);
+  stroke-width:1.8;
+  pointer-events:none;
+}
+
+.core-history__search input {
+  width:100%;
+  min-width:0;
+  height:var(--cue-input-md,44px);
+  padding:0 14px 0 38px;
+  border:1px solid var(--cue-border);
+  border-radius:var(--cue-radius-control,8px);
+  outline:0;
+  background:var(--cue-surface);
+  color:var(--cue-text);
+  font-size:12px;
+}
+
+.core-history__search input:focus {
+  border-color:var(--cue-accent);
+}
+
+.core-history__filters {
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.core-history__filters button {
+  min-height:36px;
+  padding:0 12px;
+  border:1px solid var(--cue-border);
+  border-radius:var(--cue-radius-control,8px);
+  background:transparent;
+  color:var(--cue-muted);
+  cursor:pointer;
+  font:800 8px/1 monospace;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  transition:border-color .16s ease,color .16s ease,background .16s ease;
+}
+
+.core-history__filters button:hover,
+.core-history__filters button:focus-visible {
+  border-color:color-mix(in srgb,var(--cue-accent) 56%,var(--cue-border));
+  color:var(--cue-text);
+}
+
+.core-history__filters button.active {
+  border-color:var(--cue-accent);
+  background:color-mix(in srgb,var(--cue-accent) 9%,transparent);
+  color:var(--cue-accent);
+}
+
+.core-history__timeline {
+  position:relative;
+}
+
+.core-history__event {
+  display:grid;
+  grid-template-columns:132px 18px minmax(0,1fr);
+  gap:var(--cue-space-3);
+  width:100%;
+  min-height:88px;
+  padding:var(--cue-space-4) var(--cue-space-5);
+  border:0;
+  border-top:1px solid var(--workspace-line, var(--cue-border));
+  background:transparent;
+  color:var(--cue-text);
+  text-align:left;
+  cursor:pointer;
+  transition:background .16s ease;
+}
+
+.core-history__event:first-child {
+  border-top:0;
+}
+
+.core-history__event:hover,
+.core-history__event:focus-visible {
+  background:color-mix(in srgb,var(--cue-raised) 52%,transparent);
+  outline:0;
+}
+
+.core-history__event-time {
+  padding-top:2px;
+}
+
+.core-history__event time {
+  color:var(--cue-muted);
+  font:700 9px/1.35 monospace;
+}
+
+.core-history__rail {
+  position:relative;
+  display:flex;
+  justify-content:center;
+}
+
+.core-history__rail::before {
+  content:"";
+  position:absolute;
+  top:-16px;
+  bottom:-16px;
+  width:1px;
+  background:var(--workspace-line, var(--cue-border));
+}
+
+.core-history__event:first-child .core-history__rail::before {
+  top:8px;
+}
+
+.core-history__event:last-of-type .core-history__rail::before {
+  bottom:calc(100% - 11px);
+}
+
+.core-history__rail i {
+  position:relative;
+  z-index:1;
+  width:8px;
+  height:8px;
+  margin-top:5px;
+  border:2px solid var(--cue-surface);
+  border-radius:50%;
+  background:var(--cue-muted);
+  box-shadow:0 0 0 1px var(--cue-border);
+}
+
+.core-history__event--communication .core-history__rail i {
+  background:#6ea8ff;
+}
+
+.core-history__event--operations .core-history__rail i {
+  background:var(--cue-accent);
+}
+
+.core-history__event--system .core-history__rail i {
+  background:#8d8d94;
+}
+
+.core-history__event-content {
+  min-width:0;
+}
+
+.core-history__event-topline {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:var(--cue-space-3);
+}
+
+.core-history__event-topline > span {
+  color:var(--cue-muted);
+  font:800 8px/1 monospace;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+
+.core-history__event--communication .core-history__event-topline > span {
+  color:#8ab9ff;
+}
+
+.core-history__event--operations .core-history__event-topline > span {
+  color:var(--cue-accent);
+}
+
+.core-history__event-topline small {
+  flex:none;
+  color:var(--cue-muted);
+  font:800 8px/1 monospace;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  opacity:.78;
+}
+
+.core-history__event:hover .core-history__event-topline small,
+.core-history__event:focus-visible .core-history__event-topline small {
+  color:var(--cue-accent);
+  opacity:1;
+}
+
+.core-history__event-content > strong {
+  display:block;
+  margin-top:7px;
+  font-size:14px;
+  line-height:1.25;
+}
+
+.core-history__event-content > p {
+  max-width:760px;
+  margin:6px 0 0;
+  color:var(--cue-muted);
+  font-size:11px;
+  line-height:1.5;
+}
+
+.core-history__load-more {
+  padding:var(--cue-space-3);
+  border-top:1px solid var(--workspace-line, var(--cue-border));
+}
+
+.core-history__load-more button {
+  width:100%;
+  min-height:40px;
+  border:1px solid var(--cue-border);
+  border-radius:var(--cue-radius-control,8px);
+  background:var(--cue-raised);
+  color:var(--cue-text);
+  cursor:pointer;
+  font:800 8px/1 monospace;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+}
+
+.core-history__load-more button:hover,
+.core-history__load-more button:focus-visible {
+  border-color:var(--cue-accent);
+  color:var(--cue-accent);
+}
+
+.core-history__empty {
+  display:grid;
+  gap:var(--cue-space-2);
+  min-height:180px;
+  place-content:center;
+  padding:var(--cue-space-6);
+  text-align:center;
+}
+
+.core-history__empty span {
+  color:var(--cue-accent);
+  font:800 9px/1 monospace;
+  letter-spacing:.1em;
+}
+
+.core-history__empty p {
+  max-width:360px;
+  margin:0;
+  color:var(--cue-muted);
+  font-size:12px;
+  line-height:1.5;
+}
+
+.core-history__loading {
+  display:grid;
+}
+
+.core-history__loading i {
+  display:block;
+  min-height:88px;
+  border-top:1px solid var(--workspace-line, var(--cue-border));
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--cue-raised) 52%,transparent),transparent);
+  background-size:220% 100%;
+  animation:core-history-loading 1.35s ease-in-out infinite;
+}
+
+.core-history__loading i:first-child {
+  border-top:0;
+}
+
+@keyframes core-history-loading {
+  from { background-position:200% 0; }
+  to { background-position:-20% 0; }
+}
+
+@media (max-width:760px) {
+  .core-history__heading {
+    padding:var(--cue-space-4);
+  }
+
+  .core-history__tools {
+    grid-template-columns:1fr;
+  }
+
+  .core-history__filters {
+    justify-content:flex-start;
+  }
+
+  .core-history__event {
+    grid-template-columns:88px 14px minmax(0,1fr);
+    gap:var(--cue-space-2);
+    padding:var(--cue-space-4);
+  }
+}
+
+@media (max-width:520px) {
+  .core-history__heading {
+    gap:var(--cue-space-3);
+  }
+
+  .core-history__count strong {
+    font-size:20px;
+  }
+
+  .core-history__filters {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .core-history__filters button {
+    width:100%;
+  }
+
+  .core-history__event {
+    grid-template-columns:14px minmax(0,1fr);
+    min-height:96px;
+  }
+
+  .core-history__event-time {
+    grid-column:2;
+    grid-row:1;
+    padding:0;
+  }
+
+  .core-history__rail {
+    grid-column:1;
+    grid-row:1 / span 2;
+  }
+
+  .core-history__event-content {
+    grid-column:2;
+    grid-row:2;
+  }
+
+  .core-history__event-topline {
+    align-items:flex-start;
+  }
+}
 </style>
