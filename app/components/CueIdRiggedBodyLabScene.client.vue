@@ -428,6 +428,6 @@ onBeforeUnmount(() => {
 .cue-id-rigged-body-lab{position:absolute;inset:0;z-index:2;opacity:0;transition:opacity .22s ease;pointer-events:none;touch-action:none}
 .cue-id-rigged-body-lab.ready{opacity:1;pointer-events:auto;cursor:grab}
 .cue-id-rigged-body-lab.ready:active{cursor:grabbing}
-.cue-id-rigged-body-lab :deep(canvas){display:block;width:100%!important;height:100%!important}
+.cue-id-rigged-body-lab :deep(canvas){display:block;width:100%!important;height:100%!important;background:transparent!important}
 @media(max-width:760px){.cue-id-rigged-body-lab{touch-action:pan-y pinch-zoom}.cue-id-rigged-body-lab.ready{cursor:default}}
 </style>
