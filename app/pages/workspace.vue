@@ -130,6 +130,16 @@ const profileShareMessage = ref('')
 const tourCardStyle = ref<Record<string, string>>({})
 let tourPositionTimer: ReturnType<typeof setTimeout> | null = null
 
+const cuePassportBookings = computed(() =>
+  realBookings.value.filter(item => item.status === 'confirmed' && !item.archived_at)
+)
+const cuePassportCities = computed(() =>
+  Array.from(new Set(cuePassportBookings.value.map(item => item.city?.trim()).filter((value): value is string => Boolean(value)))).slice(0, 6)
+)
+const cuePassportVenues = computed(() =>
+  new Set(cuePassportBookings.value.map(item => item.venue_name?.trim()).filter(Boolean)).size
+)
+
 const copy = computed(() => preferences.locale.value === 'es' ? {
   overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Actividad', profile: 'Perfil', cueId: 'CUE ID',
   artist: 'Artista', role: 'DJ', settings: 'Ajustes', logout: 'Cerrar sesión',
@@ -148,6 +158,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   cueIdEyebrow: 'ARTISTA / IDENTIDAD VISUAL', cueIdTitle: 'TU CUE ID.', cueIdBody: 'Crea y gestiona tu identidad visual. Decide después qué parte quieres mostrar en tu perfil público.',
   cueIdCreate: 'Abrir editor CUE ID', cueIdProfile: 'Visibilidad en Perfil', cueIdProfileBody: 'Desde Perfil decides si tu avatar aparece públicamente. Aquí solo construyes y gestionas la identidad.',
   cueIdAssets: 'Assets y redes', cueIdAssetsBody: 'Renders, imágenes y formatos para compartir vivirán aquí en próximas iteraciones.', cueIdStatus: 'Estado actual', cueIdReady: 'CUE ID configurado', cueIdPending: 'Todavía sin configurar',
+  passportEyebrow: 'CUE PASSPORT / PREVIEW', passportTitle: 'TU TRAYECTORIA DEJA RASTRO.', passportBody: 'CUE Passport se irá construyendo con tu actividad real en Cuebooker. Fechas, ciudades, venues y conexiones pasan a formar parte de tu identidad profesional.', passportBookings: 'Bookings confirmados', passportVenues: 'Venues', passportCities: 'Ciudades', passportEmpty: 'A medida que confirmes bookings, tu Passport empezará a tomar forma.', passportFuture: 'Vista conceptual. Todavía no modifica ni publica datos.',
   previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente',
   profileEyebrow: 'ARTISTA / PRESENCIA PÚBLICA', profileTitle: 'CONSTRUYE TU PERFIL PÚBLICO.', profileBody: 'Esta es la presencia que verá un promoter cuando llegue a tu enlace. Edita cada bloque sin salir del resultado final.',
   profileOptional: 'Ficha opcional', profileOptionalBody: 'Tu workspace ya está creado. Puedes completar estos datos ahora o volver desde Perfil cuando quieras.', later: 'Ahora no', previewProfile: 'Vista previa', previewPrivate: 'VISTA PREVIA / PERFIL PÚBLICO', previewClose: 'Cerrar vista previa', previewBioEmpty: 'Tu biografía aparecerá aquí cuando la completes.', previewGenresEmpty: 'Añade géneros para verlos en la ficha.', previewFormats: 'Formatos', previewLinks: 'Escuchar y seguir',
@@ -1701,6 +1712,44 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               <small>{{ preferences.locale.value === 'es' ? 'EN DESARROLLO' : 'IN DEVELOPMENT' }}</small>
             </article>
           </div>
+
+          <section class="cue-passport">
+            <div class="cue-passport__copy">
+              <span>{{ copy.passportEyebrow }}</span>
+              <h2>{{ copy.passportTitle }}</h2>
+              <p>{{ copy.passportBody }}</p>
+              <small>{{ copy.passportFuture }}</small>
+            </div>
+
+            <div class="cue-passport__visual">
+              <div class="cue-passport__route" aria-hidden="true">
+                <i class="cue-passport__node cue-passport__node--one" />
+                <i class="cue-passport__node cue-passport__node--two" />
+                <i class="cue-passport__node cue-passport__node--three" />
+                <i class="cue-passport__node cue-passport__node--four" />
+              </div>
+
+              <div class="cue-passport__stats">
+                <div>
+                  <strong>{{ cuePassportBookings.length }}</strong>
+                  <span>{{ copy.passportBookings }}</span>
+                </div>
+                <div>
+                  <strong>{{ cuePassportVenues }}</strong>
+                  <span>{{ copy.passportVenues }}</span>
+                </div>
+                <div>
+                  <strong>{{ cuePassportCities.length }}</strong>
+                  <span>{{ copy.passportCities }}</span>
+                </div>
+              </div>
+
+              <div v-if="cuePassportCities.length" class="cue-passport__cities">
+                <span v-for="city in cuePassportCities" :key="city">{{ city }}</span>
+              </div>
+              <p v-else class="cue-passport__empty">{{ copy.passportEmpty }}</p>
+            </div>
+          </section>
         </section>
       </section>
 
