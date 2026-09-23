@@ -284,19 +284,21 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 <template>
   <section class="cue-workspace">
     <header class="cue-workspace__topbar">
-      <div>
-        <div class="cue-workspace__title-row">
-          <p>CUE ID</p>
-          <small>BETA</small>
+      <div class="cue-workspace__heading">
+        <div class="cue-workspace__meta-row">
+          <div class="cue-workspace__title-row">
+            <p>CUE ID</p>
+            <small>BETA</small>
+          </div>
+          <span
+            class="cue-workspace__save-state"
+            :class="{ dirty }"
+          >
+            {{ dirty ? copy.unsaved : copy.savedState }}
+          </span>
         </div>
         <h1>{{ copy.title }}</h1>
-        <span>{{ copy.subtitle }}</span>
-        <span
-          class="cue-workspace__save-state"
-          :class="{ dirty }"
-        >
-          {{ dirty ? copy.unsaved : copy.savedState }}
-        </span>
+        <span class="cue-workspace__subtitle">{{ copy.subtitle }}</span>
       </div>
       <div class="cue-workspace__actions">
         <button
@@ -368,11 +370,14 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
         </div>
 
         <div class="cue-workspace__stage-placeholder">
-          <div class="cue-workspace__stage-graphic" aria-hidden="true">
-            <i class="cue-workspace__stage-ring cue-workspace__stage-ring--outer" />
-            <i class="cue-workspace__stage-ring cue-workspace__stage-ring--inner" />
-            <i class="cue-workspace__stage-axis cue-workspace__stage-axis--x" />
-            <i class="cue-workspace__stage-axis cue-workspace__stage-axis--y" />
+          <div class="cue-workspace__stage-graphic cue-workspace__garage" aria-hidden="true">
+            <i class="cue-workspace__garage-light" />
+            <i class="cue-workspace__garage-shutter" />
+            <i class="cue-workspace__garage-wall cue-workspace__garage-wall--left" />
+            <i class="cue-workspace__garage-wall cue-workspace__garage-wall--right" />
+            <i class="cue-workspace__garage-floor" />
+            <i class="cue-workspace__garage-mark cue-workspace__garage-mark--a" />
+            <i class="cue-workspace__garage-mark cue-workspace__garage-mark--b" />
           </div>
 
           <CueIdRiggedBodyLabScene
@@ -831,11 +836,11 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace{display:grid;gap:18px;padding:24px 0 12px}
 .cue-workspace__topbar{display:flex;justify-content:space-between;align-items:flex-end;gap:16px}
 .cue-workspace__topbar p{margin:0 0 6px;color:var(--cue-accent);font:800 10px/1 monospace;letter-spacing:.18em}
-.cue-workspace__title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.cue-workspace__title-row p{margin:0}.cue-workspace__title-row small{padding:4px 6px;border:1px solid color-mix(in srgb,var(--cue-accent) 46%,var(--cue-border));border-radius:999px;color:var(--cue-accent);font:800 8px/1 monospace;letter-spacing:.08em}
+.cue-workspace__heading{display:grid;min-width:0}.cue-workspace__meta-row{display:flex;align-items:center;gap:18px;min-height:24px;margin-bottom:12px}.cue-workspace__title-row{display:flex;align-items:center;gap:8px;flex:0 0 auto}.cue-workspace__title-row p{margin:0}.cue-workspace__title-row small{padding:4px 6px;border:1px solid color-mix(in srgb,var(--cue-accent) 46%,var(--cue-border));border-radius:999px;color:var(--cue-accent);font:800 8px/1 monospace;letter-spacing:.08em}
 .cue-workspace__topbar h1{margin:0;font-size:clamp(1.9rem,4vw,3.2rem);line-height:.95}
-.cue-workspace__topbar > div:first-child > span:not(.cue-workspace__save-state){display:block;margin-top:8px;color:var(--cue-muted)}
+.cue-workspace__subtitle{display:block;margin-top:10px;color:var(--cue-muted)}
 .cue-workspace__actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
-.cue-workspace__save-state{display:inline-flex!important;align-items:center;gap:6px;width:max-content;margin-top:10px!important;padding:0;border:0;background:transparent;color:var(--cue-muted);font:800 8px/1 monospace!important;letter-spacing:.06em;text-transform:uppercase}.cue-workspace__save-state:before{width:5px;height:5px;border-radius:50%;background:currentColor;content:''}.cue-workspace__save-state.dirty{color:var(--cue-accent)}
+.cue-workspace__save-state{display:inline-flex;align-items:center;gap:6px;width:max-content;margin:0;padding:0;border:0;background:transparent;color:var(--cue-muted);font:800 8px/1 monospace;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}.cue-workspace__save-state:before{width:5px;height:5px;border-radius:50%;background:currentColor;content:''}.cue-workspace__save-state.dirty{color:var(--cue-accent)}
 .cue-workspace__reset{min-height:42px;border:1px solid var(--cue-border);border-radius:12px;padding:11px 14px;background:transparent;color:var(--cue-muted);font-weight:800}.cue-workspace__reset:hover{color:var(--cue-text)}
 .cue-workspace button:focus-visible{outline:2px solid var(--cue-accent);outline-offset:2px}
 .cue-workspace__save{min-height:42px;border:0;border-radius:12px;padding:11px 18px;background:var(--cue-accent);color:#111;font-weight:900}.cue-workspace__save:disabled{opacity:.38;cursor:not-allowed}
@@ -850,15 +855,19 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
 .cue-workspace__body-toggle button,.cue-workspace__view-toggle button{min-height:40px;border:0;border-radius:999px;padding:8px 14px;background:transparent;color:var(--cue-muted);font-weight:800}
 .cue-workspace__body-toggle button.active{background:var(--cue-accent);color:#111}
 .cue-workspace__view-toggle button.active{background:color-mix(in srgb,var(--cue-accent) 14%,transparent);color:var(--cue-accent)}
-.cue-workspace__stage-placeholder{position:relative;display:grid;place-items:center;min-height:560px;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--cue-accent) 9%,transparent),transparent 38%),linear-gradient(180deg,color-mix(in srgb,var(--cue-text) 3%,transparent),transparent)}
-.cue-workspace__stage-graphic{position:absolute;inset:8%;opacity:.42;overflow:hidden}
-.cue-workspace__stage-graphic:before{content:"";position:absolute;inset:0;background-image:linear-gradient(color-mix(in srgb,var(--cue-text) 6%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--cue-text) 6%,transparent) 1px,transparent 1px);background-size:28px 28px;mask-image:radial-gradient(circle at center,#000 24%,transparent 72%)}
-.cue-workspace__stage-ring{position:absolute;left:50%;top:50%;border:1px solid color-mix(in srgb,var(--cue-accent) 28%,transparent);border-radius:50%;transform:translate(-50%,-50%)}
-.cue-workspace__stage-ring--outer{width:min(72%,420px);aspect-ratio:1}
-.cue-workspace__stage-ring--inner{width:min(42%,240px);aspect-ratio:1;border-style:dashed;opacity:.8}
-.cue-workspace__stage-axis{position:absolute;left:50%;top:50%;background:color-mix(in srgb,var(--cue-accent) 18%,transparent);transform:translate(-50%,-50%)}
-.cue-workspace__stage-axis--x{width:min(76%,460px);height:1px}
-.cue-workspace__stage-axis--y{width:1px;height:min(76%,460px)}
+.cue-workspace__stage-placeholder{position:relative;display:grid;place-items:center;min-height:560px;overflow:hidden;background:linear-gradient(180deg,#161716 0%,#111211 68%,#0b0c0b 100%)}
+.cue-workspace__stage-graphic{position:absolute;inset:0;overflow:hidden;opacity:.88}
+.cue-workspace__garage:before{position:absolute;inset:0;background:radial-gradient(circle at 50% 36%,rgba(206,255,84,.07),transparent 28%),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:auto,34px 100%;content:""}
+.cue-workspace__garage-light{position:absolute;top:7%;left:50%;width:min(44%,320px);height:7px;transform:translateX(-50%);border-radius:999px;background:rgba(235,241,214,.72);box-shadow:0 0 22px rgba(235,241,214,.16),0 18px 70px rgba(206,255,84,.06)}
+.cue-workspace__garage-shutter{position:absolute;left:15%;right:15%;top:14%;bottom:23%;border:1px solid rgba(255,255,255,.06);background:repeating-linear-gradient(180deg,#1d1f1d 0 18px,#171917 18px 20px)}
+.cue-workspace__garage-shutter:after{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.38),transparent 16% 84%,rgba(0,0,0,.38));content:""}
+.cue-workspace__garage-wall{position:absolute;top:0;bottom:20%;width:16%;background:linear-gradient(180deg,#1a1b1a,#121312)}
+.cue-workspace__garage-wall--left{left:0;border-right:1px solid rgba(255,255,255,.05)}
+.cue-workspace__garage-wall--right{right:0;border-left:1px solid rgba(255,255,255,.05)}
+.cue-workspace__garage-floor{position:absolute;left:-10%;right:-10%;bottom:-2%;height:29%;transform:perspective(500px) rotateX(58deg);transform-origin:bottom;background:repeating-linear-gradient(90deg,rgba(255,255,255,.025) 0 1px,transparent 1px 56px),linear-gradient(180deg,#151615,#0b0c0b);border-top:1px solid rgba(255,255,255,.07)}
+.cue-workspace__garage-mark{position:absolute;bottom:11%;width:90px;height:3px;background:rgba(206,255,84,.18);filter:blur(.1px)}
+.cue-workspace__garage-mark--a{left:18%;transform:rotate(-18deg)}
+.cue-workspace__garage-mark--b{right:18%;transform:rotate(18deg)}
 .cue-workspace__pending{position:relative;z-index:2;display:grid;gap:8px;max-width:360px;padding:18px;text-align:center;border:1px solid var(--cue-border);border-radius:16px;background:color-mix(in srgb,var(--cue-surface) 88%,transparent);backdrop-filter:blur(10px)}
 .cue-workspace__pending strong{font-size:1.05rem}.cue-workspace__pending span{color:var(--cue-muted);line-height:1.5}.cue-workspace__pending small{color:var(--cue-text);font:700 10px/1.4 monospace;letter-spacing:.04em}
 .cue-workspace__preview-kicker{color:var(--cue-accent)!important;font:800 9px/1.2 monospace;letter-spacing:.1em;text-transform:uppercase}
@@ -892,6 +901,8 @@ function hairColorHex(id: CueIdStylizedCreatorConfigV1['hairColor']) {
   .cue-workspace{gap:12px;padding-top:14px}
   .cue-workspace__topbar{display:grid;grid-template-columns:1fr;align-items:start;gap:12px}
   .cue-workspace__topbar h1{font-size:2rem}
+  .cue-workspace__meta-row{align-items:flex-start;gap:10px;margin-bottom:10px}
+  .cue-workspace__save-state{margin-top:4px;font-size:7px}
   .cue-workspace__topbar span{font-size:13px}
   .cue-workspace__actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
   .cue-workspace__save-state{grid-column:1 / -1;width:max-content}
