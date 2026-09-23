@@ -3094,3 +3094,201 @@
     min-height:170px;
   }
 }
+
+
+/* CUE Passport concept preview */
+.workspace .cue-passport {
+  display:grid;
+  grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
+  min-height:360px;
+  overflow:hidden;
+  border:1px solid var(--workspace-line);
+  border-radius:var(--cue-radius-panel);
+  background:#090909;
+}
+
+.workspace .cue-passport__copy {
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:clamp(28px,5vw,60px);
+  border-right:1px solid var(--workspace-line);
+}
+
+.workspace .cue-passport__copy > span {
+  color:var(--cue-accent);
+  font:800 9px/1 monospace;
+  letter-spacing:.11em;
+}
+
+.workspace .cue-passport__copy h2 {
+  max-width:560px;
+  margin:14px 0;
+  font-size:clamp(2.1rem,4.2vw,4.3rem);
+  line-height:.88;
+  letter-spacing:-.05em;
+}
+
+.workspace .cue-passport__copy p {
+  max-width:560px;
+  margin:0;
+  color:var(--cue-muted);
+  font-size:13px;
+  line-height:1.6;
+}
+
+.workspace .cue-passport__copy small {
+  margin-top:20px;
+  color:#696969;
+  font:700 8px/1.4 monospace;
+  text-transform:uppercase;
+}
+
+.workspace .cue-passport__visual {
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  gap:18px;
+  min-height:360px;
+  padding:28px;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 68% 32%,color-mix(in srgb,var(--cue-accent) 12%,transparent),transparent 32%),
+    linear-gradient(145deg,#0c0c0c,#070707);
+}
+
+.workspace .cue-passport__visual::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  opacity:.14;
+  background-image:
+    linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);
+  background-size:42px 42px;
+}
+
+.workspace .cue-passport__route {
+  position:absolute;
+  inset:12% 8% 28%;
+}
+
+.workspace .cue-passport__route::before,
+.workspace .cue-passport__route::after {
+  content:"";
+  position:absolute;
+  left:12%;
+  top:50%;
+  width:72%;
+  height:1px;
+  transform:rotate(-12deg);
+  transform-origin:left center;
+  background:linear-gradient(90deg,transparent,var(--cue-accent),rgba(255,255,255,.16));
+  opacity:.55;
+}
+
+.workspace .cue-passport__route::after {
+  left:28%;
+  top:64%;
+  width:56%;
+  transform:rotate(18deg);
+  opacity:.28;
+}
+
+.workspace .cue-passport__node {
+  position:absolute;
+  width:12px;
+  height:12px;
+  border:2px solid var(--cue-accent);
+  border-radius:50%;
+  background:#080808;
+  box-shadow:0 0 0 7px color-mix(in srgb,var(--cue-accent) 8%,transparent);
+}
+
+.workspace .cue-passport__node--one { left:9%; top:58%; }
+.workspace .cue-passport__node--two { left:37%; top:36%; }
+.workspace .cue-passport__node--three { right:25%; top:54%; }
+.workspace .cue-passport__node--four { right:7%; top:24%; }
+
+.workspace .cue-passport__stats {
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:1px;
+  border:1px solid #2c2c2c;
+  background:#2c2c2c;
+}
+
+.workspace .cue-passport__stats > div {
+  display:grid;
+  gap:4px;
+  padding:14px;
+  background:#0a0a0a;
+}
+
+.workspace .cue-passport__stats strong {
+  color:var(--cue-accent);
+  font:900 24px/1 monospace;
+}
+
+.workspace .cue-passport__stats span {
+  color:#808080;
+  font:700 8px/1.25 monospace;
+  text-transform:uppercase;
+}
+
+.workspace .cue-passport__cities {
+  position:relative;
+  z-index:2;
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+}
+
+.workspace .cue-passport__cities span {
+  padding:7px 9px;
+  border:1px solid #333;
+  border-radius:var(--cue-radius-control);
+  background:#0b0b0b;
+  color:#cfcfcf;
+  font:800 9px/1 monospace;
+  text-transform:uppercase;
+}
+
+.workspace .cue-passport__empty {
+  position:relative;
+  z-index:2;
+  max-width:520px;
+  margin:0;
+  color:#777;
+  font-size:11px;
+  line-height:1.5;
+}
+
+@media (max-width:900px) {
+  .workspace .cue-passport {
+    grid-template-columns:1fr;
+  }
+
+  .workspace .cue-passport__copy {
+    border-right:0;
+    border-bottom:1px solid var(--workspace-line);
+  }
+}
+
+@media (max-width:560px) {
+  .workspace .cue-passport__copy,
+  .workspace .cue-passport__visual {
+    padding:22px 18px;
+  }
+
+  .workspace .cue-passport__stats strong {
+    font-size:20px;
+  }
+
+  .workspace .cue-passport__stats span {
+    font-size:7px;
+  }
+}
