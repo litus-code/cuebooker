@@ -1371,7 +1371,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <aside class="panel next-panel">
             <p class="eyebrow">{{ cueEntryCopy.eyebrow }}</p>
             <h2>{{ preferences.locale.value === 'es' ? '¿HA PASADO ALGO?' : 'DID SOMETHING HAPPEN?' }}</h2>
-            <p>{{ cueEntryCopy.body }}</p>
+            <p>{{ preferences.locale.value === 'es' ? 'Captura algo en segundos y continúa desde el booking.' : 'Capture it in seconds and continue from the booking.' }}</p>
             <button type="button" :disabled="!bookingCoreWorkspaceId" @click="cueOpen = true">+ CUE</button>
           </aside>
         </div>
