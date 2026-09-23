@@ -276,8 +276,8 @@ const p = computed(() => locale.value === 'es' ? {
 
 type SlideGroup = 'booking' | 'sharing'
 const playback = reactive({
-  booking: { stopped: false, hover: false, visible: false, progress: 0 },
-  sharing: { stopped: false, hover: false, visible: false, progress: 0 }
+  booking: { stopped: false, visible: false, progress: 0 },
+  sharing: { stopped: false, visible: false, progress: 0 }
 })
 const reducedMotion = ref(true)
 let slideObserver: IntersectionObserver | undefined
@@ -289,7 +289,6 @@ function stopSlides(group: SlideGroup) {
 }
 function playSlides(group: SlideGroup) {
   playback[group].stopped = false
-  playback[group].hover = false
   playback[group].progress = 0
 }
 function selectSlide(group: SlideGroup, index: number) {
@@ -346,8 +345,8 @@ onMounted(() => {
     previous = now
     for (const group of ['booking', 'sharing'] as const) {
       const state = playback[group]
-      if (document.hidden || menuOpen.value || !state.visible || state.stopped || state.hover) continue
-      state.progress += elapsed / 4000
+      if (document.hidden || menuOpen.value || !state.visible || state.stopped) continue
+      state.progress += elapsed / 3000
       if (state.progress >= 1) {
         state.progress = 0
         if (group === 'booking') demoStep.value = (demoStep.value + 1) % 3
@@ -492,7 +491,7 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
 
     <section tabindex="-1" id="system" class="ed-section cp-wrap">
       <div class="ed-intro"><p class="cp-kicker">{{ p.work.label }}</p><h2>{{ p.work.title }}</h2><p class="ed-deck">{{ p.work.intro }}</p><p>{{ p.work.body }}</p></div>
-      <div class="ed-carousel" data-slide-group="booking" @pointerdown="stopSlides('booking')" @mouseenter="playback.booking.hover = true" @mouseleave="playback.booking.hover = false" @focusin="stopSlides('booking')">
+      <div class="ed-carousel" data-slide-group="booking" @pointerdown="stopSlides('booking')" @focusin="stopSlides('booking')">
 <div class="ed-playback">
   <div class="ed-slide-badges" :aria-label="locale === 'es' ? 'Pasos de la demo' : 'Demo steps'">
     <button v-for="(step, i) in p.work.steps" :key="step" type="button" :class="{ active: demoStep === i }" :aria-label="step + ', ' + (i + 1) + (locale === 'es' ? ' de 3' : ' of 3')" :aria-current="demoStep === i ? 'step' : undefined" @click="selectSlide('booking', i)"><span aria-hidden="true" /></button>
@@ -522,7 +521,7 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
 
     <section tabindex="-1" id="distribution" class="ed-share ed-section">
       <div class="cp-wrap"><p class="cp-kicker">{{ p.share.label }}</p><h2>{{ p.share.title }}</h2><p class="ed-deck">{{ p.share.body }}</p>
-        <div class="ed-carousel" data-slide-group="sharing" @pointerdown="stopSlides('sharing')" @mouseenter="playback.sharing.hover = true" @mouseleave="playback.sharing.hover = false" @focusin="stopSlides('sharing')">
+        <div class="ed-carousel" data-slide-group="sharing" @pointerdown="stopSlides('sharing')" @focusin="stopSlides('sharing')">
 <div class="ed-playback">
   <div class="ed-slide-badges" :aria-label="locale === 'es' ? 'Formas de compartir' : 'Ways to share'">
     <button v-for="(label, i) in p.share.tabs" :key="label" type="button" :class="{ active: shareTab === i }" :aria-label="label + ', ' + (i + 1) + (locale === 'es' ? ' de 3' : ' of 3')" :aria-current="shareTab === i ? 'step' : undefined" @click="selectSlide('sharing', i)"><span aria-hidden="true" /></button>
