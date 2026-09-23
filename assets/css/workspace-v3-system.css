@@ -2507,3 +2507,111 @@
     grid-row:2;
   }
 }
+
+
+/* Activity loading state uses the same large visual masses as the final HTML. */
+.workspace .workspace-skeleton--history {
+  padding-top:var(--cue-space-5) !important;
+}
+
+.workspace .workspace-skeleton__history-page {
+  display:grid;
+  gap:var(--cue-space-2);
+  padding:0 0 var(--cue-space-4);
+}
+
+.workspace .workspace-skeleton__history-page .skeleton-line--eyebrow {
+  width:96px;
+}
+
+.workspace .skeleton-line--history-page-title {
+  width:min(690px,72%);
+  height:42px;
+}
+
+.workspace .skeleton-line--history-page-body {
+  width:min(640px,68%);
+  height:12px;
+}
+
+.workspace .workspace-skeleton__history-module {
+  overflow:hidden;
+  border:1px solid var(--workspace-line);
+  border-radius:var(--cue-radius-panel);
+  background:var(--cue-surface);
+}
+
+.workspace .skeleton-panel--history-heading-block {
+  display:block;
+  width:100%;
+  height:112px;
+  min-height:112px;
+  margin:0;
+  border:0;
+  border-bottom:1px solid var(--workspace-line);
+  border-radius:0;
+}
+
+.workspace .workspace-skeleton__history-tools-block {
+  display:grid;
+  grid-template-columns:minmax(240px,1fr) minmax(330px,.68fr);
+  gap:var(--cue-space-3);
+  padding:var(--cue-space-3);
+  border-bottom:1px solid var(--workspace-line);
+  background:color-mix(in srgb,var(--cue-raised) 34%,transparent);
+}
+
+.workspace .skeleton-panel--history-search-block,
+.workspace .skeleton-panel--history-filters-block {
+  width:100%;
+  height:44px;
+  min-height:44px;
+  margin:0;
+  border-radius:var(--cue-radius-control);
+}
+
+.workspace .workspace-skeleton__history-timeline-block {
+  display:grid;
+}
+
+.workspace .skeleton-panel--history-row-block {
+  display:block;
+  width:100%;
+  height:88px;
+  min-height:88px;
+  margin:0;
+  border:0;
+  border-top:1px solid var(--workspace-line);
+  border-radius:0;
+}
+
+.workspace .skeleton-panel--history-row-block:first-child {
+  border-top:0;
+}
+
+@media (max-width:760px) {
+  .workspace .workspace-skeleton__history-tools-block {
+    grid-template-columns:1fr;
+  }
+}
+
+@media (max-width:520px) {
+  .workspace .skeleton-line--history-page-title {
+    width:88%;
+    height:36px;
+  }
+
+  .workspace .skeleton-line--history-page-body {
+    width:84%;
+  }
+
+  .workspace .skeleton-panel--history-heading-block {
+    height:124px;
+    min-height:124px;
+  }
+
+  .workspace .skeleton-panel--history-row-block {
+    height:96px;
+    min-height:96px;
+  }
+}
