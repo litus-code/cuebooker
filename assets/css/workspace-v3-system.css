@@ -493,3 +493,244 @@
     margin-inline: 14px !important;
   }
 }
+
+
+/* Overview is the reference implementation for Cuebooker Design System v1. */
+.workspace .overview-view .view-heading {
+  grid-template-columns:minmax(0,1fr) auto !important;
+  align-items:end !important;
+  gap:var(--cue-space-6) !important;
+  padding:var(--cue-space-6) 0 var(--cue-space-5) !important;
+}
+
+.workspace .overview-view .view-heading > div:first-child {
+  max-width:760px !important;
+}
+
+.workspace .overview-view .view-heading h1 {
+  max-width:680px !important;
+  margin-bottom:var(--cue-space-3) !important;
+  font-size:clamp(2.7rem,4.8vw,4.7rem) !important;
+  line-height:.9 !important;
+}
+
+.workspace .overview-view .artist-identity {
+  display:flex !important;
+  align-items:center !important;
+  gap:var(--cue-space-2) !important;
+  min-width:0 !important;
+  width:auto !important;
+  padding:0 !important;
+  margin:0 0 2px !important;
+  border-top:0 !important;
+  white-space:nowrap;
+}
+
+.workspace .overview-view .artist-identity > span,
+.workspace .overview-view .artist-identity > small {
+  margin:0 !important;
+  font-size:8px !important;
+  line-height:1 !important;
+}
+
+.workspace .overview-view .artist-identity > span::after {
+  content:" /";
+}
+
+.workspace .overview-view .artist-identity strong {
+  margin:0 !important;
+  gap:6px !important;
+  font-size:13px !important;
+}
+
+.workspace .overview-view .artist-identity svg {
+  width:16px !important;
+  height:16px !important;
+}
+
+.workspace .overview-view .summary-grid {
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  gap:var(--cue-space-2) !important;
+  margin-top:var(--cue-space-4) !important;
+  border:0 !important;
+}
+
+.workspace .overview-view .summary-card {
+  min-height:108px !important;
+  padding:var(--cue-space-3) var(--cue-space-4) !important;
+  border:1px solid var(--workspace-line) !important;
+  border-radius:var(--cue-radius-panel) !important;
+  background:var(--cue-surface) !important;
+}
+
+.workspace .overview-view .summary-card--pending {
+  background:var(--cue-surface) !important;
+}
+
+.workspace .overview-view .summary-card > span {
+  font-size:8px !important;
+}
+
+.workspace .overview-view .summary-card strong {
+  margin:var(--cue-space-2) 0 var(--cue-space-1) !important;
+  font-size:clamp(1.9rem,2.5vw,2.7rem) !important;
+}
+
+.workspace .overview-view .summary-card--pending strong {
+  color:var(--cue-text) !important;
+}
+
+.workspace .overview-view .summary-card p {
+  max-width:none !important;
+  font-size:10px !important;
+  line-height:1.35 !important;
+}
+
+.workspace .overview-view .summary-card--profile {
+  border-color:color-mix(in srgb,var(--cue-toggle) 38%,var(--workspace-line)) !important;
+}
+
+.workspace .overview-view .summary-card--profile:hover,
+.workspace .overview-view .summary-card--profile:focus-visible {
+  background:color-mix(in srgb,var(--cue-toggle) 5%,var(--cue-surface)) !important;
+}
+
+.workspace .overview-view .attention-panel {
+  margin-top:var(--cue-space-3) !important;
+}
+
+.workspace .overview-view .overview-grid {
+  grid-template-columns:minmax(0,2fr) minmax(250px,.8fr) !important;
+  gap:var(--cue-space-3) !important;
+  margin-top:var(--cue-space-3) !important;
+}
+
+.workspace .overview-view .panel {
+  border-radius:var(--cue-radius-panel) !important;
+  overflow:hidden;
+}
+
+.workspace .overview-view .panel-heading {
+  align-items:center !important;
+  padding:var(--cue-space-4) !important;
+}
+
+.workspace .overview-view .panel-heading h2 {
+  font-size:18px !important;
+}
+
+.workspace .overview-view .panel-heading > button,
+.workspace .overview-view .panel-empty > button,
+.workspace .overview-view .next-panel > button {
+  min-height:var(--cue-button-sm) !important;
+  padding:0 var(--cue-space-3) !important;
+  border:1px solid var(--cue-border) !important;
+  border-radius:var(--cue-radius-control) !important;
+  background:transparent !important;
+  color:var(--cue-text) !important;
+  font-size:10px !important;
+  font-weight:800 !important;
+  text-decoration:none !important;
+  cursor:pointer;
+}
+
+.workspace .overview-view .panel-heading > button:hover,
+.workspace .overview-view .panel-empty > button:hover {
+  border-color:var(--cue-accent) !important;
+  color:var(--cue-accent) !important;
+}
+
+.workspace .overview-view .panel-empty {
+  min-height:108px !important;
+  padding:var(--cue-space-4) !important;
+}
+
+.workspace .overview-view .panel-empty p {
+  margin:0 0 var(--cue-space-3) !important;
+}
+
+.workspace .overview-view .next-panel {
+  display:grid;
+  align-content:start;
+  padding:var(--cue-space-4) !important;
+  background:var(--cue-surface) !important;
+  color:var(--cue-text) !important;
+}
+
+.workspace .overview-view .next-panel .eyebrow {
+  color:var(--cue-accent) !important;
+}
+
+.workspace .overview-view .next-panel h2 {
+  max-width:260px;
+  margin:var(--cue-space-2) 0 !important;
+  font-size:clamp(1.45rem,2vw,1.9rem) !important;
+  line-height:.95 !important;
+}
+
+.workspace .overview-view .next-panel > p {
+  max-width:340px;
+  margin:0 !important;
+  color:var(--cue-muted) !important;
+  font-size:11px !important;
+  line-height:1.45 !important;
+}
+
+.workspace .overview-view .next-panel > button {
+  justify-self:start;
+  margin-top:var(--cue-space-4) !important;
+  border-color:var(--cue-accent) !important;
+  background:var(--cue-accent) !important;
+  color:var(--cue-accent-ink) !important;
+}
+
+@media (max-width:1100px) {
+  .workspace .overview-view .summary-grid {
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  }
+
+  .workspace .overview-view .summary-card--profile {
+    grid-column:span 2;
+  }
+}
+
+@media (max-width:960px) {
+  .workspace .overview-view .view-heading {
+    grid-template-columns:1fr !important;
+    align-items:start !important;
+  }
+
+  .workspace .overview-view .artist-identity {
+    justify-self:start !important;
+  }
+
+  .workspace .overview-view .overview-grid {
+    grid-template-columns:1fr !important;
+  }
+}
+
+@media (max-width:620px) {
+  .workspace .overview-view .view-heading {
+    gap:var(--cue-space-3) !important;
+    padding-top:var(--cue-space-4) !important;
+  }
+
+  .workspace .overview-view .artist-identity {
+    flex-wrap:wrap;
+    white-space:normal;
+  }
+
+  .workspace .overview-view .summary-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  }
+
+  .workspace .overview-view .summary-card,
+  .workspace .overview-view .summary-card--profile {
+    grid-column:auto !important;
+    min-height:102px !important;
+  }
+
+  .workspace .overview-view .summary-card--profile {
+    grid-column:1 / -1 !important;
+  }
+}
