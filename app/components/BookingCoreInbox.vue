@@ -38,7 +38,6 @@ const copy = computed(() => props.locale === 'es' ? {
   noActivity: 'Todavía no hay conversación. Registra una nota, llamada, WhatsApp, Instagram o email para empezar el hilo.',
   confirm: 'Confirmar', reject: 'Rechazar', cancel: 'Cancelar',
   confirmQuestion: '¿Confirmar este booking?', rejectQuestion: '¿Rechazar este booking?', cancelQuestion: '¿Cancelar este booking?',
-  automaticState: 'Estado automático según la última interacción.',
   noDate: 'Sin fecha', noVenue: 'Sin sala definida', noContact: 'Sin contacto', noOffer: 'Sin oferta',
   active: 'En curso', archived: 'Archivados', archive: 'Archivar', restore: 'Restaurar', archiveHint: 'En curso es tu trabajo vivo. Archivados conserva bookings fuera de la operativa diaria.', archivedReadOnly: 'Booking archivado. La traza se conserva en modo lectura.'
 } : {
@@ -49,7 +48,6 @@ const copy = computed(() => props.locale === 'es' ? {
   noActivity: 'No conversation yet. Add a note, call, WhatsApp, Instagram or email to start the thread.',
   confirm: 'Confirm', reject: 'Reject', cancel: 'Cancel',
   confirmQuestion: 'Confirm this booking?', rejectQuestion: 'Reject this booking?', cancelQuestion: 'Cancel this booking?',
-  automaticState: 'Automatic state based on the latest interaction.',
   noDate: 'No date', noVenue: 'No venue defined', noContact: 'No contact', noOffer: 'No offer',
   active: 'In progress', archived: 'Archived', archive: 'Archive', restore: 'Restore', archiveHint: 'In progress is your live work. Archived keeps bookings outside day-to-day operations.', archivedReadOnly: 'Archived booking. Its trace is preserved in read-only mode.'
 })
@@ -415,7 +413,6 @@ async function selectBooking(bookingId: string) {
               <div :class="['core-inbox__status', `core-inbox__status--${selectedBooking.status}`]">
                 <span>{{ copy.status }}</span>
                 <strong>{{ statusLabels[selectedBooking.status] }}</strong>
-                <small v-if="['new','in_conversation','waiting_response'].includes(selectedBooking.status)">{{ copy.automaticState }}</small>
               </div>
               <div v-if="!['confirmed','rejected','cancelled'].includes(selectedBooking.status)" class="core-inbox__decisions">
                 <button type="button" class="decision-confirm" :disabled="updatingStatus" @click="decideStatus('confirmed')">{{ copy.confirm }}</button>
