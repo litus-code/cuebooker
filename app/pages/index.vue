@@ -272,13 +272,107 @@ const p = computed(() => locale.value === 'es' ? {
   }
 })
 
+
+type SlideGroup = 'booking' | 'sharing'
+const playback = reactive({
+  booking: { stopped: false, hover: false, visible: false, progress: 0 },
+  sharing: { stopped: false, hover: false, visible: false, progress: 0 }
+})
+const reducedMotion = ref(true)
+let slideObserver: IntersectionObserver | undefined
+let slideTimer: ReturnType<typeof setInterval> | undefined
+let motionQuery: MediaQueryList | undefined
+function stopSlides(group: SlideGroup) {
+  playback[group].stopped = true
+  playback[group].progress = 0
+}
+function playSlides(group: SlideGroup) {
+  playback[group].stopped = false
+  playback[group].progress = 0
+}
+function selectSlide(group: SlideGroup, index: number) {
+  stopSlides(group)
+  if (group === 'booking') demoStep.value = index
+  else shareTab.value = index
+}
+function slideKeys(event: KeyboardEvent, group: SlideGroup, index: number) {
+  const vertical = group === 'booking'
+  let next = index
+  if (event.key === 'Home') next = 0
+  else if (event.key === 'End') next = 2
+  else if (event.key === 'ArrowRight' || (vertical && event.key === 'ArrowDown')) next = (index + 1) % 3
+  else if (event.key === 'ArrowLeft' || (vertical && event.key === 'ArrowUp')) next = (index + 2) % 3
+  else return
+  event.preventDefault()
+  selectSlide(group, next)
+  document.getElementById((group === 'booking' ? 'step-' : 'share-') + next)?.focus()
+}
+function updateMotion() {
+  reducedMotion.value = motionQuery?.matches ?? true
+  if (reducedMotion.value) {
+    stopSlides('booking')
+    stopSlides('sharing')
+  }
+}
+function onMenuKey(event: KeyboardEvent) {
+  if (event.key === 'Escape') { event.preventDefault(); menuOpen.value = false; return }
+  if (event.key !== 'Tab') return
+  const items = Array.from(document.querySelectorAll<HTMLElement>('#cp-mobile-menu a, #cp-mobile-menu button'))
+  const first = items[0], last = items[items.length - 1]
+  if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() }
+  else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus() }
+}
+function handleResize() {
+  if (window.innerWidth > 850) menuOpen.value = false
+}
+onMounted(() => {
+  motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+  updateMotion()
+  motionQuery.addEventListener('change', updateMotion)
+  slideObserver = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      const group = (entry.target as HTMLElement).dataset.slideGroup as SlideGroup
+      playback[group].visible = entry.isIntersecting
+      playback[group].progress = 0
+    }
+  }, { threshold: 0.3 })
+  document.querySelectorAll('[data-slide-group]').forEach(el => slideObserver?.observe(el))
+  let previous = performance.now()
+  slideTimer = setInterval(() => {
+    const now = performance.now()
+    const elapsed = Math.min(now - previous, 250)
+    previous = now
+    for (const group of ['booking', 'sharing'] as const) {
+      const state = playback[group]
+      if (document.hidden || menuOpen.value || !state.visible || state.stopped || state.hover) continue
+      state.progress += elapsed / 6000
+      if (state.progress >= 1) {
+        state.progress = 0
+        if (group === 'booking') demoStep.value = (demoStep.value + 1) % 3
+        else shareTab.value = (shareTab.value + 1) % 3
+      }
+    }
+  }, 100)
+  window.addEventListener('resize', handleResize)
+})
+onBeforeUnmount(() => {
+  if (slideTimer) clearInterval(slideTimer)
+  slideObserver?.disconnect()
+  motionQuery?.removeEventListener('change', updateMotion)
+  window.removeEventListener('resize', handleResize)
+})
+
 function toggleMenu() {
   navHidden.value = false
   menuOpen.value = !menuOpen.value
 }
 function scrollTo(id: string) {
   menuOpen.value = false
-  document.querySelector(id)?.scrollIntoView({ behavior: 'smooth' })
+  nextTick(() => {
+    const target = document.querySelector<HTMLElement>(id)
+    target?.focus({ preventScroll: true })
+    target?.scrollIntoView({ behavior: reducedMotion.value ? 'auto' : 'smooth' })
+  })
 }
 function auth(mode: 'signin' | 'signup', placement: string) {
   analytics.track(mode === 'signup' ? 'signup_click' : 'login_click', { placement })
@@ -315,12 +409,17 @@ function handleScroll() {
     scrollDistance = 0
   }
 }
-watch(menuOpen, open => {
+watch(menuOpen, async open => {
   if (import.meta.client) document.documentElement.classList.toggle('mobile-menu-open', open)
   navHidden.value = false
   scrollDirection = 0
   scrollDistance = 0
-  if (import.meta.client) lastScrollY.value = Math.max(0, window.scrollY)
+  if (import.meta.client) {
+    lastScrollY.value = Math.max(0, window.scrollY)
+    await nextTick()
+    if (open) document.querySelector<HTMLElement>('#cp-mobile-menu button')?.focus()
+    else document.querySelector<HTMLElement>('.cp-menu')?.focus({ preventScroll: true })
+  }
 })
 onMounted(() => {
   lastScrollY.value = window.scrollY
@@ -337,8 +436,9 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
 </script>
 
 <template>
-  <main class="commercial-home">
-    <nav class="cp-nav" :class="{ 'cp-nav--hidden': navHidden }">
+  <main class="commercial-home" :inert="menuOpen">
+    <a class="ed-skip" href="#top" @click.prevent="scrollTo('#top')">{{ locale === 'es' ? 'Saltar al contenido' : 'Skip to content' }}</a>
+    <nav :aria-label="locale === 'es' ? 'Navegación principal' : 'Main navigation'" class="cp-nav" :class="{ 'cp-nav--hidden': navHidden }">
       <div class="cp-wrap cp-nav-inner">
         <NuxtLink class="cp-brand" to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink>
         <div class="cp-nav-links">
@@ -347,8 +447,8 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
           <a href="#cue-id" @click.prevent="scrollTo('#cue-id')">{{ p.nav.identity }}</a>
         </div>
         <div class="cp-nav-actions">
-          <div class="cp-locale"><button :class="{ active: locale === 'es' }" @click="setLocale('es')">ES</button><button :class="{ active: locale === 'en' }" @click="setLocale('en')">EN</button></div>
-          <button class="cp-theme" type="button" :aria-label="locale === 'es' ? 'Cambiar apariencia' : 'Change appearance'" @click="setTheme(theme === 'dark' ? 'light' : 'dark')"><span /></button>
+          <div class="cp-locale"><button aria-label="Español" :aria-pressed="locale === 'es'" :class="{ active: locale === 'es' }" @click="setLocale('es')">ES</button><button aria-label="English" :aria-pressed="locale === 'en'" :class="{ active: locale === 'en' }" @click="setLocale('en')">EN</button></div>
+          <button class="cp-theme" type="button" :aria-label="locale === 'es' ? (theme === 'dark' ? 'Activar apariencia clara' : 'Activar apariencia oscura') : (theme === 'dark' ? 'Switch to light appearance' : 'Switch to dark appearance')" @click="setTheme(theme === 'dark' ? 'light' : 'dark')"><span /></button>
           <NuxtLink class="cp-login" to="/access?mode=signin" @click="analytics.track('login_click', { placement: 'header' })">{{ p.nav.login }}</NuxtLink>
           <NuxtLink class="cp-cta cp-cta--nav" to="/access?mode=signup" @click="analytics.track('signup_click', { placement: 'header' })">{{ p.nav.signup }}</NuxtLink>
           <button class="cp-menu" :class="{ 'is-open': menuOpen }" type="button" :aria-label="locale === 'es' ? (menuOpen ? 'Cerrar menú' : 'Abrir menú') : (menuOpen ? 'Close menu' : 'Open menu')" :aria-expanded="menuOpen" aria-controls="cp-mobile-menu" @click="toggleMenu"><span /><span /></button>
@@ -356,7 +456,8 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
       </div>
     </nav>
     <Teleport to="body">
-      <div id="cp-mobile-menu" class="cp-mobile-menu cp-mobile-menu--portal" :class="{ open: menuOpen }">
+      <div v-if="menuOpen" role="dialog" aria-modal="true" :aria-label="locale === 'es' ? 'Menú de navegación' : 'Navigation menu'" @keydown="onMenuKey" id="cp-mobile-menu" class="cp-mobile-menu cp-mobile-menu--portal" :class="{ open: menuOpen }">
+        <button class="ed-menu-close" @click="menuOpen = false">{{ locale === 'es' ? 'Cerrar menú' : 'Close menu' }} <span aria-hidden="true">×</span></button>
         <div class="cp-mobile-nav-links">
           <a href="#system" @click.prevent="scrollTo('#system')">{{ p.nav.system }}</a>
           <a href="#distribution" @click.prevent="scrollTo('#distribution')">{{ p.nav.distribution }}</a>
@@ -369,7 +470,7 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
       </div>
     </Teleport>
 
-    <section id="top" class="cp-hero" :style="{ '--hero-image': `url(${heroImage})` }">
+    <section tabindex="-1" id="top" class="cp-hero" :style="{ '--hero-image': `url(${heroImage})` }">
       <div class="cp-hero-overlay" />
       <div class="cp-wrap cp-hero-content">
         <p class="cp-eyebrow">{{ p.hero.eyebrow }}</p>
@@ -385,13 +486,20 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
     </section>
 
 
-    <section id="system" class="ed-section cp-wrap">
+    <section tabindex="-1" id="system" class="ed-section cp-wrap">
       <div class="ed-intro"><p class="cp-kicker">{{ p.work.label }}</p><h2>{{ p.work.title }}</h2><p class="ed-deck">{{ p.work.intro }}</p><p>{{ p.work.body }}</p></div>
-      <div class="ed-work">
-        <div class="ed-steps" role="tablist" :aria-label="p.nav.system">
-          <button v-for="(step, i) in p.work.steps" :id="'step-'+i" :key="step" role="tab" :aria-selected="demoStep === i" aria-controls="booking-demo" :class="{ selected: demoStep === i }" @click="demoStep = i"><span class="ed-index">0{{ i + 1 }}</span><span><strong>{{ step }}</strong><small>{{ p.work.descriptions[i] }}</small></span><span class="cp-arrow" aria-hidden="true" /></button>
+      <div class="ed-carousel" data-slide-group="booking" @mouseenter="playback.booking.hover = true" @mouseleave="playback.booking.hover = false" @focusin="stopSlides('booking')">
+<div class="ed-playback">
+<button type="button" :disabled="playback.booking.stopped" @click="stopSlides('booking')">{{ locale === 'es' ? 'Pausar' : 'Pause' }}</button>
+<button type="button" :disabled="!playback.booking.stopped" @click="playSlides('booking')">{{ locale === 'es' ? 'Reproducir' : 'Play' }}</button>
+<span>{{ demoStep + 1 }} / 3</span>
+<div class="ed-progress" aria-hidden="true"><span :style="{ transform: 'scaleX(' + playback.booking.progress + ')' }" /></div>
+</div>
+<div class="ed-work">
+        <div class="ed-steps" role="tablist" aria-orientation="vertical" :aria-label="p.nav.system">
+          <button v-for="(step, i) in p.work.steps" :id="'step-'+i" :key="step" role="tab" :tabindex="demoStep === i ? 0 : -1" :aria-label="step + ', ' + (i + 1) + (locale === 'es' ? ' de 3' : ' of 3')" @keydown="slideKeys($event, 'booking', i)" :aria-selected="demoStep === i" aria-controls="booking-demo" :class="{ selected: demoStep === i }" @click="selectSlide('booking', i)"><span class="ed-index">0{{ i + 1 }}</span><span><strong>{{ step }}</strong><small>{{ p.work.descriptions[i] }}</small></span><span class="cp-arrow" aria-hidden="true" /></button>
         </div>
-        <div id="booking-demo" class="ed-console" role="tabpanel" :aria-labelledby="'step-'+demoStep">
+        <div id="booking-demo" tabindex="0" aria-live="off" class="ed-console" role="tabpanel" :aria-labelledby="'step-'+demoStep">
           <div class="ed-console-bar"><span class="ed-indicator" />{{ p.work.workspace }}<span class="ed-demo-tag">DEMO</span></div>
           <div class="ed-console-body">
             <div class="ed-console-heading"><span>{{ p.work.request }}</span><span class="ed-status">{{ p.work.status[demoStep] }}</span></div>
@@ -399,32 +507,39 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
             <div v-if="demoStep === 0" class="ed-request-data"><div class="ed-date"><b>18</b><span>OCT</span></div><dl><div><dt>{{ p.work.fee }}</dt><dd>{{ p.work.amount }}</dd></div><div><dt>{{ p.work.set }}</dt><dd>{{ p.work.time }}</dd></div><div><dt>{{ p.work.contact }}</dt><dd>{{ p.work.promoter }}</dd></div></dl></div>
             <div v-else-if="demoStep === 1" class="ed-calendar"><p class="ed-mono">{{ p.work.month }}</p><div class="ed-days"><span v-for="day in 31" :key="day" :class="{ chosen: day === 18 }">{{ day }}</span></div><p class="ed-available">{{ p.work.available }}</p></div>
             <div v-else class="ed-decision"><p>{{ p.work.decision }}</p><div v-for="option in p.work.options" :key="option" class="ed-option">{{ option }}<span class="cp-arrow" aria-hidden="true" /></div><small>{{ p.work.note }}</small></div>
-            <button class="ed-next" @click="demoStep = (demoStep + 1) % 3">{{ demoStep === 2 ? p.work.restart : p.work.next }}<span class="cp-arrow" aria-hidden="true" /></button>
+            <button class="ed-next" @click="selectSlide('booking', (demoStep + 1) % 3)">{{ demoStep === 2 ? p.work.restart : p.work.next }}<span class="cp-arrow" aria-hidden="true" /></button>
           </div>
           <p class="ed-demo-foot">{{ p.work.demo }}</p>
         </div>
-      </div>
+      </div></div>
     </section>
 
-    <section id="distribution" class="ed-share ed-section">
+    <section tabindex="-1" id="distribution" class="ed-share ed-section">
       <div class="cp-wrap"><p class="cp-kicker">{{ p.share.label }}</p><h2>{{ p.share.title }}</h2><p class="ed-deck">{{ p.share.body }}</p>
-        <div class="ed-share-layout">
-          <div><div class="ed-tabs" role="tablist" :aria-label="p.nav.distribution"><button v-for="(label,i) in p.share.tabs" :id="'share-'+i" :key="label" role="tab" :aria-selected="shareTab === i" aria-controls="share-preview" :class="{selected: shareTab === i}" @click="shareTab = i">{{ label }}</button></div>
+        <div class="ed-carousel" data-slide-group="sharing" @mouseenter="playback.sharing.hover = true" @mouseleave="playback.sharing.hover = false" @focusin="stopSlides('sharing')">
+<div class="ed-playback">
+<button type="button" :disabled="playback.sharing.stopped" @click="stopSlides('sharing')">{{ locale === 'es' ? 'Pausar' : 'Pause' }}</button>
+<button type="button" :disabled="!playback.sharing.stopped" @click="playSlides('sharing')">{{ locale === 'es' ? 'Reproducir' : 'Play' }}</button>
+<span>{{ shareTab + 1 }} / 3</span>
+<div class="ed-progress" aria-hidden="true"><span :style="{ transform: 'scaleX(' + playback.sharing.progress + ')' }" /></div>
+</div>
+<div class="ed-share-layout">
+          <div><div class="ed-tabs" role="tablist" :aria-label="p.nav.distribution"><button v-for="(label,i) in p.share.tabs" :id="'share-'+i" :key="label" role="tab" :tabindex="shareTab === i ? 0 : -1" :aria-label="label + ', ' + (i + 1) + (locale === 'es' ? ' de 3' : ' of 3')" @keydown="slideKeys($event, 'sharing', i)" :aria-selected="shareTab === i" aria-controls="share-preview" :class="{selected: shareTab === i}" @click="selectSlide('sharing', i)">{{ label }}</button></div>
             <h3>{{ p.share.titles[shareTab] }}</h3><p>{{ p.share.descriptions[shareTab] }}</p><p class="ed-privacy"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>{{ p.share.privacy }}</p><button class="cp-cta" @click="auth('signup', 'share')">{{ p.share.cta }}<span class="cp-arrow" aria-hidden="true" /></button>
           </div>
-          <div id="share-preview" class="ed-share-preview" role="tabpanel" :aria-labelledby="'share-'+shareTab">
+          <div id="share-preview" tabindex="0" aria-live="off" class="ed-share-preview" role="tabpanel" :aria-labelledby="'share-'+shareTab">
             <span class="ed-mono">{{ p.share.preview }}</span>
             <div v-if="shareTab === 0" class="ed-profile"><div class="ed-profile-cover"><span>CUE / ARTIST</span><svg viewBox="0 0 320 70" aria-hidden="true"><path d="M0 35h20l5-12 8 25 8-34 8 42 9-55 9 62 8-40 9 23 9-12h24l8-18 8 42 8-50 8 58 8-35 8 19 8-25 8 18h22l8-25 8 45 8-62 8 70 8-43 8 28 8-18h34"/></svg></div><h4>{{ p.share.artist }}</h4><p>{{ p.share.sound }}</p><div class="ed-form-button">{{ p.share.form }}<span class="cp-arrow" aria-hidden="true" /></div></div>
             <div v-else-if="shareTab === 1" class="ed-embed"><div class="ed-browser-bar"><i /><i /><i /><span>{{ p.share.embed }}</span></div><h4>{{ p.share.form }}</h4><div v-for="field in p.share.fields" :key="field" class="ed-field">{{ field }}</div><div class="ed-code">&lt;iframe … /&gt;</div></div>
             <div v-else class="ed-sticker"><span class="ed-mono">CUEBOOKER / BOOKING</span><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M28 8H8v20M72 8h20v20M8 72v20h20M92 72v20H72M30 50h40M56 36l14 14-14 14"/></svg><h4>{{ p.share.qr }}</h4><p>{{ p.share.qrNote }}</p><small>{{ locale === 'es' ? 'Concepto de soporte · No es un QR escaneable' : 'Display concept · Not a scannable QR' }}</small></div>
           </div>
         </div>
-      </div>
+      </div></div>
     </section>
 
     <section class="ed-section cp-wrap ed-control"><p class="cp-kicker">{{ p.control.label }}</p><h2>{{ p.control.title }}</h2><div class="ed-control-intro"><p class="ed-deck">{{ p.control.body }}</p><p>{{ p.control.support }}</p></div><div class="ed-responsibility"><div><h3>{{ p.control.left }}</h3><p v-for="item in p.control.tasks" :key="item">{{ item }}</p></div><div><h3>{{ p.control.right }}</h3><p v-for="item in p.control.decisions" :key="item">{{ item }}</p></div></div></section>
 
-    <section id="cue-id" class="ed-section ed-identity cp-wrap"><div><p class="cp-kicker">{{ p.identity.label }}</p><h2>{{ p.identity.title }}</h2><p class="ed-deck">{{ p.identity.body }}</p><p>{{ p.identity.detail }}</p><span class="cp-beta-note">{{ p.identity.beta }}</span></div><div class="ed-identity-poster"><span class="ed-mono">CUE ID / ARTIST PROFILE</span><strong>{{ p.identity.visual }}</strong><span>{{ p.identity.caption }}</span><span class="ed-poster-corner" aria-hidden="true">C /</span></div></section>
+    <section tabindex="-1" id="cue-id" class="ed-section ed-identity cp-wrap"><div><p class="cp-kicker">{{ p.identity.label }}</p><h2>{{ p.identity.title }}</h2><p class="ed-deck">{{ p.identity.body }}</p><p>{{ p.identity.detail }}</p><span class="cp-beta-note">{{ p.identity.beta }}</span></div><div class="ed-identity-poster"><span class="ed-mono">CUE ID / ARTIST PROFILE</span><strong>{{ p.identity.visual }}</strong><span>{{ p.identity.caption }}</span><span class="ed-poster-corner" aria-hidden="true">C /</span></div></section>
 
     <section class="ed-closing"><div class="cp-wrap"><p>{{ p.closing.title }}</p><h2>{{ p.closing.accent }}</h2><button class="cp-cta" @click="auth('signup','closing')">{{ p.closing.cta }}<span class="cp-arrow" aria-hidden="true" /></button></div></section>
     <Transition name="cp-float"><button v-if="backToTopVisible && !menuOpen" class="cp-back-top" type="button" :aria-label="locale === 'es' ? 'Volver arriba' : 'Back to top'" @click="scrollTo('#top')"><span class="cp-up-arrow" aria-hidden="true" /></button></Transition>
@@ -639,5 +754,30 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--cp-lime); outli
  .ed-control-intro,.ed-responsibility { grid-template-columns: 1fr; gap: 20px; }
  .ed-control-intro > p { margin-top: 0; }
  .ed-tabs { gap: 22px; }
+}
+</style>
+<style scoped>
+.ed-skip { position:fixed; top:8px; left:12px; z-index:200; padding:14px 20px; background:var(--cue-accent); color:var(--cue-accent-ink); transform:translateY(-160%); }
+.ed-skip:focus { transform:none; }
+.ed-playback { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-top:32px; }
+.ed-playback button,.ed-menu-close { min-height:44px; padding:10px 18px; border:1px solid var(--cue-border); border-radius:6px; background:var(--cue-bg); color:var(--cue-text); cursor:pointer; font-size:14px; }
+.ed-playback button:disabled { opacity:.55; cursor:default; }
+.ed-playback > span { color:var(--cp-muted); font-size:13px; }
+.ed-progress { flex:1 1 100px; height:3px; background:var(--cp-line); overflow:hidden; }
+.ed-progress span { display:block; height:100%; background:var(--cp-lime); transform-origin:left; }
+.cp-mobile-menu--portal { grid-template-rows:auto 1fr auto; }
+.ed-menu-close { justify-self:end; margin-top:16px; }
+.ed-menu-close span { margin-left:14px; }
+.cp-mobile-menu--portal a:focus-visible,.ed-menu-close:focus-visible { outline:2px solid var(--cue-accent); outline-offset:4px; }
+.commercial-home .cp-locale button,.commercial-home .cp-theme,.commercial-home .cp-menu { min-width:44px; min-height:44px; }
+.ed-next,.ed-tabs button { min-height:44px; }
+.ed-demo-foot,.ed-console .ed-demo-foot,.ed-demo-caption,.ed-mono { font-size:12px; }
+section:focus { outline:none; }
+@media(max-width:520px) {
+ .commercial-home .cp-brand { min-width:85px; max-width:105px; }
+ .commercial-home .cp-nav-actions { gap:3px; }
+}
+@media(prefers-reduced-motion:reduce) {
+ *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
 }
 </style>
