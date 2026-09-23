@@ -87,7 +87,10 @@ async function save() {
 </script>
 
 <template>
-  <button class="contact-editor-entry" type="button" @click="show">{{ copy.edit }}</button>
+  <button class="contact-editor-entry" type="button" @click="show">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4ZM13.5 6.5l4 4"/></svg>
+    <span>{{ copy.edit }}</span>
+  </button>
 
   <div v-if="open" class="contact-editor-backdrop" @click.self="close">
     <form class="contact-editor" role="dialog" aria-modal="true" @submit.prevent="save">
@@ -119,8 +122,9 @@ async function save() {
 </template>
 
 <style scoped>
-.contact-editor-entry { margin-top:7px; padding:0; border:0; background:transparent; color:var(--cue-muted); cursor:pointer; font:800 8px monospace; letter-spacing:.04em; text-transform:uppercase; transition:color .16s ease; }
+.contact-editor-entry { display:inline-flex; align-items:center; gap:6px; min-height:28px; margin-top:9px; padding:0 8px 0 0; border:0; border-radius:var(--cue-radius-control); background:transparent; color:var(--cue-muted); cursor:pointer; font:800 8px monospace; letter-spacing:.04em; text-transform:uppercase; transition:color .16s ease; }
 .contact-editor-entry:hover { color:var(--cue-accent); }
+.contact-editor-entry svg { width:12px; height:12px; flex:0 0 auto; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .contact-editor-backdrop { position:fixed; z-index:110; inset:0; display:grid; place-items:center; padding:18px; background:rgba(0,0,0,.74); backdrop-filter:blur(5px); }
 .contact-editor { width:min(640px,100%); max-height:90dvh; overflow:auto; border:1px solid var(--cue-border); background:var(--cue-surface); color:var(--cue-text); }
 .contact-editor > header { display:flex; justify-content:space-between; gap:16px; padding:20px; border-bottom:1px solid var(--cue-border); }
