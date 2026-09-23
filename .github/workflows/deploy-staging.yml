@@ -1,6 +1,9 @@
 name: Deploy Staging
 
 on:
+  push:
+    branches:
+      - feature/app-visual-system
   workflow_run:
     workflows:
       - CI
@@ -82,15 +85,29 @@ jobs:
 
   preview:
     name: Deploy PR preview
-    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+    if: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event_name == 'push' && github.ref_name == 'feature/app-visual-system') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
-      - name: Checkout pull request head
+      - name: Resolve preview revision
+        id: preview
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "sha=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+            echo "branch=pr-${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+            echo "url=https://pr-${{ github.event.pull_request.number }}.cuebooker-staging.pages.dev" >> "$GITHUB_OUTPUT"
+          else
+            echo "sha=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+            echo "branch=pr-75" >> "$GITHUB_OUTPUT"
+            echo "url=https://pr-75.cuebooker-staging.pages.dev" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout preview revision
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ steps.preview.outputs.sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
@@ -130,9 +147,9 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy .output/public --project-name=cuebooker-staging --branch=pr-${{ github.event.pull_request.number }} --commit-hash=${{ github.event.pull_request.head.sha }}
+          command: pages deploy .output/public --project-name=cuebooker-staging --branch=${{ steps.preview.outputs.branch }} --commit-hash=${{ steps.preview.outputs.sha }}
 
       - name: Record preview URL
         run: |
-          echo "Preview revision: ${{ github.event.pull_request.head.sha }}"
-          echo "Preview: https://pr-${{ github.event.pull_request.number }}.cuebooker-staging.pages.dev"
+          echo "Preview revision: ${{ steps.preview.outputs.sha }}"
+          echo "Preview: ${{ steps.preview.outputs.url }}"
