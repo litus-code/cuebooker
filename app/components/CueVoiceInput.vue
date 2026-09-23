@@ -36,7 +36,9 @@ const copy = computed(() => props.locale === 'es' ? {
   processing: 'Procesando audio…',
   hint: 'Habla con naturalidad. Puedes parar cuando termines.',
   fallbackHint: 'Dictado en directo. Al parar, Cuebooker intentará convertirlo en booking.',
-  error: 'No he podido acceder al micrófono. Puedes seguir escribiendo.'
+  error: 'No he podido acceder al micrófono. Puedes seguir escribiendo.',
+  unavailable: 'Voz no disponible',
+  unavailableHint: 'Este navegador o contexto no permite acceder al micrófono.'
 } : {
   start: 'Tell it by voice',
   stop: 'Stop and analyse',
@@ -44,12 +46,17 @@ const copy = computed(() => props.locale === 'es' ? {
   processing: 'Processing audio…',
   hint: 'Speak naturally. Stop when you are done.',
   fallbackHint: 'Live dictation. When you stop, Cuebooker will try to turn it into a booking.',
-  error: 'I could not access the microphone. You can keep typing.'
+  error: 'I could not access the microphone. You can keep typing.',
+  unavailable: 'Voice unavailable',
+  unavailableHint: 'This browser or context cannot access the microphone.'
 })
 
 onMounted(() => {
-  const hasRecorder = Boolean(window.MediaRecorder && navigator.mediaDevices?.getUserMedia)
   const browser = window as any
+  const hasRecorder = Boolean(
+    typeof browser.MediaRecorder !== 'undefined'
+    && typeof navigator.mediaDevices?.getUserMedia === 'function'
+  )
   const hasSpeech = Boolean(browser.SpeechRecognition || browser.webkitSpeechRecognition)
 
   mode.value = resolveVoiceCaptureMode(hasRecorder, hasSpeech)
@@ -301,19 +308,20 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div v-if="supported" class="cue-voice">
+  <div class="cue-voice">
     <button
       type="button"
       :class="{ active: recording }"
-      :disabled="processing && !recording"
+      :disabled="!supported || (processing && !recording)"
       @click="recording ? stop() : start()"
     >
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3ZM5 11v1a7 7 0 0 0 14 0v-1M12 19v3M9 22h6"/></svg>
-      <span>{{ recording ? copy.stop : processing ? copy.processing : copy.start }}</span>
+      <span>{{ !supported ? copy.unavailable : recording ? copy.stop : processing ? copy.processing : copy.start }}</span>
       <i v-if="recording">{{ copy.recording }} · {{ formatElapsed() }}</i>
     </button>
     <p v-if="recording">{{ copy.hint }}</p>
     <p v-else-if="mode === 'speech'">{{ copy.fallbackHint }}</p>
+    <p v-else-if="!supported" class="cue-voice__unsupported">{{ copy.unavailableHint }}</p>
     <p v-if="errorMessage" class="cue-voice__error">{{ errorMessage }}</p>
   </div>
 </template>
@@ -327,5 +335,6 @@ onBeforeUnmount(() => {
 .cue-voice svg { width:15px; height:15px; flex:0 0 auto; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 .cue-voice i { color:#aebd84; font-size:8px; font-style:normal; text-transform:none; }
 .cue-voice p { margin:0; color:#8f8f8f; font-size:9px; line-height:1.4; }
+.cue-voice .cue-voice__unsupported { color:#777; }
 .cue-voice .cue-voice__error { color:#ff9b9b; }
 </style>
