@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FeeBasis } from '../composables/useArtistProfile'
 import type { CoreBooking, Hold } from '../domain/bookingCore'
+import { cuePassportNextMilestones, cuePassportUnlockedMilestones, deriveCuePassportSnapshot } from '../domain/cuePassport'
 import type { CueNotification } from '../domain/notification'
 import { toPublicCueIdConfig, type PublicArtistProfile } from '../domain/publicArtistProfile'
 import { createBookingQrSvg } from '../services/bookingQr'
@@ -130,15 +131,13 @@ const profileShareMessage = ref('')
 const tourCardStyle = ref<Record<string, string>>({})
 let tourPositionTimer: ReturnType<typeof setTimeout> | null = null
 
-const cuePassportBookings = computed(() =>
-  realBookings.value.filter(item => item.status === 'confirmed' && !item.archived_at)
-)
-const cuePassportCities = computed(() =>
-  Array.from(new Set(cuePassportBookings.value.map(item => item.city?.trim()).filter((value): value is string => Boolean(value)))).slice(0, 6)
-)
-const cuePassportVenues = computed(() =>
-  new Set(cuePassportBookings.value.map(item => item.venue_name?.trim()).filter(Boolean)).size
-)
+const cuePassport = computed(() => deriveCuePassportSnapshot({
+  bookings: realBookings.value,
+  baseCountryCode: profileForm.value.countryCode
+}))
+const cuePassportUnlocked = computed(() => cuePassportUnlockedMilestones(cuePassport.value))
+const cuePassportNext = computed(() => cuePassportNextMilestones(cuePassport.value).slice(0, 3))
+const cuePassportCities = computed(() => cuePassport.value.cities.slice(0, 6))
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
   overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Actividad', profile: 'Perfil', cueId: 'CUE ID',
@@ -1731,11 +1730,11 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
               <div class="cue-passport__stats">
                 <div>
-                  <strong>{{ cuePassportBookings.length }}</strong>
+                  <strong>{{ cuePassport.confirmedBookings }}</strong>
                   <span>{{ copy.passportBookings }}</span>
                 </div>
                 <div>
-                  <strong>{{ cuePassportVenues }}</strong>
+                  <strong>{{ cuePassport.venues.length }}</strong>
                   <span>{{ copy.passportVenues }}</span>
                 </div>
                 <div>
@@ -1748,6 +1747,28 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                 <span v-for="city in cuePassportCities" :key="city">{{ city }}</span>
               </div>
               <p v-else class="cue-passport__empty">{{ copy.passportEmpty }}</p>
+
+              <div class="cue-passport__stickers">
+                <article
+                  v-for="milestone in cuePassportUnlocked.slice(0, 4)"
+                  :key="milestone.id"
+                  class="cue-passport-sticker"
+                >
+                  <span>UNLOCKED</span>
+                  <strong>{{ milestone.title }}</strong>
+                  <small>{{ milestone.subtitle }}</small>
+                </article>
+              </div>
+
+              <div v-if="cuePassportNext.length" class="cue-passport__next">
+                <span>{{ preferences.locale.value === 'es' ? 'PRÓXIMOS DESBLOQUEOS' : 'NEXT UNLOCKS' }}</span>
+                <div>
+                  <article v-for="milestone in cuePassportNext" :key="milestone.id">
+                    <strong>{{ milestone.title }}</strong>
+                    <small>{{ milestone.progressCurrent }} / {{ milestone.progressTarget }}</small>
+                  </article>
+                </div>
+              </div>
             </div>
           </section>
         </section>
