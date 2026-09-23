@@ -14,7 +14,6 @@ const publicPublishing = usePublicArtistPublishing()
 const preferences = useCuePreferences()
 const route = useRoute()
 const router = useRouter()
-const requestUrl = useRequestURL()
 
 type WorkspaceView = 'overview' | 'bookings' | 'calendar' | 'history' | 'profile'
 const WORKSPACE_VIEWS: WorkspaceView[] = ['overview', 'bookings', 'calendar', 'history', 'profile']
@@ -71,7 +70,13 @@ function emptyProfileForm(): ArtistProfileForm {
   }
 }
 
-const initialLoadingView = workspaceViewFromQuery(requestUrl.searchParams.get('view'), requestUrl.searchParams.get('booking'))
+const initialLoadingView = (() => {
+  if (import.meta.client) {
+    const params = new URLSearchParams(window.location.search)
+    return workspaceViewFromQuery(params.get('view'), params.get('booking'))
+  }
+  return workspaceViewFromQuery(route.query.view, route.query.booking)
+})()
 const activeView = ref<WorkspaceView>(initialLoadingView)
 const artists = ref<ManagedArtist[]>([])
 const organizations = ref<ManagedOrganization[]>([])
