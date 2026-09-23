@@ -138,6 +138,33 @@ const p = computed(() => locale.value === 'es' ? {
     "visual": "CREA TU\nPERSONAJE 3D.",
     "caption": "Creador de personajes en desarrollo"
   },
+  "roadmap": {
+    "label": "05 / AHORA Y DESPUÉS",
+    "title": "Todo lo que ocurre detrás de una fecha.",
+    "body": "Cuebooker empieza con el booking. Y crece alrededor de tu carrera.",
+    "available": "DISPONIBLE",
+    "evolving": "EN EVOLUCIÓN",
+    "next": "PRÓXIMAMENTE",
+    "availableItems": [
+      "Solicitudes de booking en un único espacio",
+      "Conversaciones, seguimiento e historial",
+      "Calendario y control de disponibilidad",
+      "Perfil público o privado",
+      "Enlace compartible, QR y formulario para tu web"
+    ],
+    "evolvingItems": [
+      "Gestión de varios artistas para managers y agentes",
+      "Automatización de seguimientos y tareas repetitivas",
+      "CUE ID y creador de personajes 3D",
+      "Mayor personalización del perfil artístico"
+    ],
+    "nextItems": [
+      "Buscador de DJs por estilo, ubicación y disponibilidad",
+      "Visibilidad siempre controlada por el artista",
+      "Perfiles profesionales para agencias y equipos"
+    ],
+    "closing": "Tú decides qué compartes. Cuebooker se encarga de que pueda encontrarse."
+  },
   "closing": {
     "title": "Hay mucho trabajo detrás de lo que haces.",
     "accent": "Dale su espacio.",
@@ -264,6 +291,33 @@ const p = computed(() => locale.value === 'es' ? {
     "detail": "We are building the CUE ID character creator: shape its appearance, style and attitude to represent who you are behind the sound.",
     "visual": "CREATE YOUR\n3D CHARACTER.",
     "caption": "Character creator in development"
+  },
+  "roadmap": {
+    "label": "05 / NOW AND NEXT",
+    "title": "Everything that happens behind a date.",
+    "body": "Cuebooker starts with booking. And grows around your career.",
+    "available": "AVAILABLE",
+    "evolving": "EVOLVING",
+    "next": "COMING NEXT",
+    "availableItems": [
+      "Booking requests in one workspace",
+      "Conversations, follow-up and history",
+      "Calendar and availability control",
+      "A public or private profile",
+      "Shareable link, QR and a form for your website"
+    ],
+    "evolvingItems": [
+      "Multi-artist management for managers and agents",
+      "Automated follow-ups and repetitive tasks",
+      "CUE ID and the 3D character creator",
+      "More ways to personalise your artist profile"
+    ],
+    "nextItems": [
+      "DJ discovery by style, location and availability",
+      "Visibility always controlled by the artist",
+      "Professional profiles for agencies and teams"
+    ],
+    "closing": "You decide what to share. Cuebooker makes sure it can be found."
   },
   "closing": {
     "title": "There is a lot of work behind what you do.",
@@ -547,6 +601,29 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
 
     <section tabindex="-1" id="cue-id" class="ed-section ed-identity cp-wrap"><div><p class="cp-kicker">{{ p.identity.label }}</p><h2>{{ p.identity.title }}</h2><p class="ed-deck">{{ p.identity.body }}</p><p>{{ p.identity.detail }}</p><span class="cp-beta-note">{{ p.identity.beta }}</span></div><div class="ed-identity-poster"><span class="ed-mono">CUE ID / ARTIST PROFILE</span><strong>{{ p.identity.visual }}</strong><span>{{ p.identity.caption }}</span><span class="ed-poster-corner" aria-hidden="true">C /</span></div></section>
 
+    <section class="ed-section ed-roadmap cp-wrap">
+      <div class="ed-roadmap-intro">
+        <p class="cp-kicker">{{ p.roadmap.label }}</p>
+        <h2>{{ p.roadmap.title }}</h2>
+        <p class="ed-deck">{{ p.roadmap.body }}</p>
+      </div>
+      <div class="ed-roadmap-grid">
+        <article class="ed-roadmap-column ed-roadmap-column--available">
+          <header><span class="ed-roadmap-status" aria-hidden="true" />{{ p.roadmap.available }}</header>
+          <ul><li v-for="item in p.roadmap.availableItems" :key="item">{{ item }}</li></ul>
+        </article>
+        <article class="ed-roadmap-column ed-roadmap-column--evolving">
+          <header><span class="ed-roadmap-status" aria-hidden="true" />{{ p.roadmap.evolving }}</header>
+          <ul><li v-for="item in p.roadmap.evolvingItems" :key="item">{{ item }}</li></ul>
+        </article>
+        <article class="ed-roadmap-column ed-roadmap-column--next">
+          <header><span class="ed-roadmap-status" aria-hidden="true" />{{ p.roadmap.next }}</header>
+          <ul><li v-for="item in p.roadmap.nextItems" :key="item">{{ item }}</li></ul>
+        </article>
+      </div>
+      <p class="ed-roadmap-closing">{{ p.roadmap.closing }}</p>
+    </section>
+
     <section class="ed-closing"><div class="cp-wrap"><p>{{ p.closing.title }}</p><h2>{{ p.closing.accent }}</h2><button class="cp-cta" @click="auth('signup','closing')">{{ p.closing.cta }}<span class="cp-arrow" aria-hidden="true" /></button></div></section>
     <Transition name="cp-float"><button v-if="backToTopVisible && !menuOpen" class="cp-back-top" type="button" :aria-label="locale === 'es' ? 'Volver arriba' : 'Back to top'" @click="scrollTo('#top')"><span class="cp-up-arrow" aria-hidden="true" /></button></Transition>
     <footer class="cp-footer"><div class="cp-wrap"><span class="cp-brand"><CueBrand /></span><span>{{ p.closing.footer }}</span><span>© 2026 Cuebooker</span></div></footer>
@@ -729,6 +806,21 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
 .ed-identity-poster strong { max-width: 290px; font-size: clamp(28px,3vw,44px); line-height: 1.05; letter-spacing: -.03em; white-space: pre-line; position: relative; z-index: 1; }
 .ed-identity-poster > span:not(.ed-poster-corner) { font-size: 10px; color: var(--cp-muted); }
 .ed-poster-corner { position: absolute; right: -12px; bottom: 35px; font-size: 130px; font-weight: 900; color: color-mix(in srgb,var(--cp-lime) 9%,transparent); }
+.ed-roadmap { border-top: 1px solid var(--cp-line); }
+.ed-roadmap-intro { max-width: 850px; }
+.ed-roadmap-intro .ed-deck { max-width: 680px; }
+.ed-roadmap-grid { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 18px; margin-top: 50px; }
+.ed-roadmap-column { padding: 26px; border: 1px solid var(--cp-line); border-radius: 14px; background: var(--cp-panel); }
+.ed-roadmap-column header { display: flex; align-items: center; gap: 10px; min-height: 28px; color: var(--cp-paper); font: 700 10px ui-monospace,monospace; letter-spacing: .12em; }
+.ed-roadmap-status { width: 8px; height: 8px; border-radius: 50%; background: var(--cp-muted); }
+.ed-roadmap-column--available { border-top-color: var(--cp-lime); }
+.ed-roadmap-column--available .ed-roadmap-status { background: var(--cp-lime); box-shadow: 0 0 14px color-mix(in srgb,var(--cp-lime) 55%,transparent); }
+.ed-roadmap-column--evolving .ed-roadmap-status { background: var(--cp-red); }
+.ed-roadmap-column ul { list-style: none; padding: 0; margin: 22px 0 0; }
+.ed-roadmap-column li { position: relative; padding: 14px 0 14px 20px; border-top: 1px solid var(--cp-line); color: var(--cp-muted); font-size: 14px; line-height: 1.45; }
+.ed-roadmap-column li::before { position: absolute; top: 20px; left: 1px; width: 7px; height: 7px; border: 1px solid currentColor; border-radius: 50%; content: ''; }
+.ed-roadmap-column--available li::before { border-color: var(--cp-lime); background: var(--cp-lime); }
+.ed-roadmap-closing { max-width: 900px; margin: 50px 0 0; padding-top: 30px; border-top: 1px solid var(--cp-line); color: var(--cp-paper)!important; font-size: clamp(22px,2.4vw,32px)!important; line-height: 1.35!important; }
 .ed-closing { padding: 90px 0; background: color-mix(in srgb,var(--cp-lime) 5%,var(--cp-black)); border-top: 1px solid var(--cp-line); }
 .ed-closing p { max-width: 600px; color: var(--cp-muted); font-size: clamp(20px,2.5vw,32px); }
 .ed-closing h2 { margin: 18px 0 35px; font-size: clamp(52px,8vw,110px); line-height: 1; letter-spacing: -.055em; }
@@ -740,6 +832,8 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--cp-lime); outli
  .ed-work { margin-top: 30px; }
  .ed-share-layout { margin-top: 30px; }
  .ed-identity-poster { min-height: 280px; }
+ .ed-roadmap-grid { grid-template-columns: 1fr; margin-top: 30px; }
+ .ed-roadmap-closing { margin-top: 30px; }
  .ed-closing { padding: 60px 0; }
 }
 @media (max-width: 520px) {
