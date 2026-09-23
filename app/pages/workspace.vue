@@ -71,15 +71,8 @@ function emptyProfileForm(): ArtistProfileForm {
 }
 
 const persistedWorkspaceView = useCookie<WorkspaceView | null>('cuebooker.workspace.view', { sameSite: 'lax' })
-const routeWorkspaceView = workspaceViewFromQuery(route.query.view, route.query.booking)
-const initialWorkspaceView: WorkspaceView = (
-  (typeof route.query.view === 'string' && WORKSPACE_VIEWS.includes(route.query.view as WorkspaceView))
-  || (typeof route.query.booking === 'string' && route.query.booking)
-)
-  ? routeWorkspaceView
-  : (persistedWorkspaceView.value && WORKSPACE_VIEWS.includes(persistedWorkspaceView.value) ? persistedWorkspaceView.value : routeWorkspaceView)
-const loadingView = ref<WorkspaceView>(initialWorkspaceView)
-const activeView = ref<WorkspaceView>(initialWorkspaceView)
+const loadingView = ref<WorkspaceView | null>(null)
+const activeView = ref<WorkspaceView>(workspaceViewFromQuery(route.query.view, route.query.booking))
 const artists = ref<ManagedArtist[]>([])
 const organizations = ref<ManagedOrganization[]>([])
 const selectedArtistId = ref('')
@@ -389,6 +382,25 @@ const publicProfilePreview = computed<PublicArtistProfile>(() => {
 })
 const hours = Array.from({ length: 24 }, (_, index) => `${String(index).padStart(2, '0')}:00`)
 
+onBeforeMount(() => {
+  if (!import.meta.client) return
+  const params = new URLSearchParams(window.location.search)
+  const explicitView = params.get('view')
+  const explicitBooking = params.get('booking')
+  const storedView = window.localStorage.getItem('cuebooker.workspace.view')
+
+  const resolvedView = explicitView || explicitBooking
+    ? workspaceViewFromQuery(explicitView, explicitBooking)
+    : (storedView && WORKSPACE_VIEWS.includes(storedView as WorkspaceView)
+      ? storedView as WorkspaceView
+      : (persistedWorkspaceView.value && WORKSPACE_VIEWS.includes(persistedWorkspaceView.value)
+        ? persistedWorkspaceView.value
+        : 'overview'))
+
+  loadingView.value = resolvedView
+  activeView.value = resolvedView
+})
+
 onMounted(async () => {
   if (import.meta.client) sidebarCollapsed.value = localStorage.getItem('cuebooker.sidebar.collapsed') === 'true'
   await auth.initialize()
@@ -426,6 +438,7 @@ watch(() => route.query.section, value => {
 })
 watch(activeView, async (view) => {
   persistedWorkspaceView.value = view
+  if (import.meta.client) window.localStorage.setItem('cuebooker.workspace.view', view)
   await nextTick()
   const nav = document.getElementById('workspace-navigation')
   const tab = nav?.querySelector<HTMLElement>(`[data-workspace-view="${view}"]`)
@@ -472,6 +485,8 @@ function prefersReducedMotion() {
 
 async function changeView(view: WorkspaceView) {
   settingsOpen.value = false
+  persistedWorkspaceView.value = view
+  if (import.meta.client) window.localStorage.setItem('cuebooker.workspace.view', view)
   activeView.value = view
 
   const nextQuery: Record<string, any> = { ...route.query, view }
@@ -1326,7 +1341,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-    <template v-if="loading">
+    <template v-if="loading && loadingView">
     <section v-if="loadingView === 'bookings'" class="workspace-skeleton workspace-skeleton--bookings" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
       <div class="workspace-skeleton__heading workspace-skeleton__heading--bookings">
