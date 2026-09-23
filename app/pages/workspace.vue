@@ -590,16 +590,29 @@ const cueEntryCopy = computed(() => preferences.locale.value === 'es' ? {
   saved: 'CUE saved. The booking is now part of your workspace.'
 })
 
+function collectionChanged<T>(current: T[], next: T[]) {
+  if (current.length !== next.length) return true
+  return JSON.stringify(current) !== JSON.stringify(next)
+}
+
 async function loadRealBookings() {
-  if (!bookingCoreWorkspaceId.value || !selectedArtistId.value) { realBookings.value = []; return }
-  realBookings.value = await bookingCore.listBookings(bookingCoreWorkspaceId.value, 100, selectedArtistId.value)
+  if (!bookingCoreWorkspaceId.value || !selectedArtistId.value) {
+    if (realBookings.value.length) realBookings.value = []
+    return
+  }
+  const rows = await bookingCore.listBookings(bookingCoreWorkspaceId.value, 100, selectedArtistId.value)
+  if (collectionChanged(realBookings.value, rows)) realBookings.value = rows
 }
 
 async function loadRealHolds() {
-  if (!bookingCoreWorkspaceId.value || !realBookings.value.length) { realHolds.value = []; return }
+  if (!bookingCoreWorkspaceId.value || !realBookings.value.length) {
+    if (realHolds.value.length) realHolds.value = []
+    return
+  }
   const bookingIds = new Set(realBookings.value.map(item => item.id))
-  const rows = await bookingCore.listHolds(bookingCoreWorkspaceId.value, undefined, true)
-  realHolds.value = rows.filter(hold => bookingIds.has(hold.booking_id))
+  const rows = (await bookingCore.listHolds(bookingCoreWorkspaceId.value, undefined, true))
+    .filter(hold => bookingIds.has(hold.booking_id))
+  if (collectionChanged(realHolds.value, rows)) realHolds.value = rows
 }
 
 async function ensureBookingCoreWorkspace() {
