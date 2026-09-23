@@ -46,6 +46,14 @@
   --cue-control-standard: 38px;
   --cue-control-primary: 40px;
   --cue-control-mobile: 42px;
+
+  /* Cuebooker UI system v1 */
+  --cue-button-sm: 36px;
+  --cue-button-md: 44px;
+  --cue-button-lg: 52px;
+  --cue-input-md: 44px;
+  --cue-radius-control: 8px;
+  --cue-radius-panel: 12px;
 }
 
 :root[data-theme='light'] {
