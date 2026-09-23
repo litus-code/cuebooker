@@ -11,136 +11,266 @@ const lastScrollY = ref(0)
 let scrollDirection = 0
 let scrollDistance = 0
 const heroImage = `${useRuntimeConfig().app.baseURL}club-hero.webp`
-const activeRole = ref<'artist' | 'manager'>('artist')
-const shareMode = ref<'profile' | 'website' | 'qr'>('profile')
+const demoStep = ref(0)
+const shareTab = ref(0)
 const router = useRouter()
 const analytics = useAnalytics()
 
 const p = computed(() => locale.value === 'es' ? {
-  nav: { system: 'Cómo funciona', distribution: 'Distribución', identity: 'CUE ID', login: 'Iniciar sesión', signup: 'Crear cuenta' },
-  hero: {
-    eyebrow: 'PARA QUIEN MUEVE LA NOCHE',
-    title: 'Que la música siga avanzando.',
-    accent: 'El booking ya está ocurriendo.',
-    body: 'Solicitudes, conversaciones y fechas en tu espacio de trabajo. Tú decides el siguiente paso.',
-    flow: { channels: ['Instagram · 22:47', 'WhatsApp · 23:12', 'Formulario web · 00:06'], label: 'CUEBOOKER / NUEVA SOLICITUD', booking: 'Warehouse 23 / Barcelona', detail: '18 oct · Techno · 1.200 €', status: 'Pendiente de decisión' },
-    primary: 'Abrir mi espacio',
-    secondary: 'Cómo funciona',
-    note: 'Hecho para DJs, managers y las personas que hacen posible cada noche.'
+  "nav": {
+    "system": "Cómo funciona",
+    "distribution": "Comparte tu perfil",
+    "identity": "CUE ID",
+    "login": "Iniciar sesión",
+    "signup": "Crear cuenta"
   },
-  ticker: ['Reservas', 'Conversaciones', 'Calendario', 'Perfil de artista', 'Automatización', 'CUE ID'],
-  system: {
-    title: 'La noche es la parte visible. Cuebooker gestiona todo lo que la hace posible.',
-    body: 'Cada solicitud, respuesta, fecha, contacto y decisión vive dentro del mismo sistema. Menos trabajo disperso. Más espacio para lo que realmente mueve tu carrera.',
-    cards: [
-      ['01 / CAPTURA', 'Cada oportunidad entra con contexto.', 'Fecha, caché, lugar y contacto, desde el primer mensaje.'],
-      ['02 / AVANCE', 'Cada conversación sabe cuál es su siguiente paso.', 'Responde, haz seguimiento, bloquea una fecha, confirma el bolo o archiva la oportunidad sin perder el contexto.'],
-      ['03 / AIRE', 'El trabajo repetitivo empieza a desaparecer.', 'Automatiza la parte mecánica mientras tú mantienes el control de las decisiones que marcan tu carrera.']
+  "hero": {
+    "eyebrow": "PARA QUIEN MUEVE LA NOCHE",
+    "title": "Que la música siga avanzando.",
+    "accent": "El booking ya está ocurriendo.",
+    "body": "Tu próxima fecha merece toda tu atención. Reúne solicitudes, conversaciones y calendario en un mismo espacio.",
+    "primary": "Crear mi espacio",
+    "secondary": "Ver cómo funciona",
+    "note": "Hecho para DJs, managers y quienes hacen posible cada noche."
+  },
+  "work": {
+    "label": "01 / DETRÁS DEL SET",
+    "title": "Hay mucho que no se ve.",
+    "intro": "Preparar música. Cuidar tu sonido. Encontrar tu sitio.",
+    "body": "Y, entre todo eso, responder propuestas y cuadrar fechas. Cuebooker te ayuda con el booking para que puedas dedicarle tiempo a lo que te mueve.",
+    "steps": [
+      "La propuesta",
+      "La fecha",
+      "Tu decisión"
+    ],
+    "descriptions": [
+      "Fecha, lugar, caché y contacto. Empieza con el contexto que necesitas.",
+      "Consulta tu calendario antes de comprometerte. Cada fecha, en su sitio.",
+      "Revisa la propuesta y decide cómo seguir. La última palabra es tuya."
+    ],
+    "demo": "Demo interactiva · Datos ficticios",
+    "workspace": "TU ESPACIO DE TRABAJO",
+    "request": "Solicitud de booking",
+    "status": [
+      "Por revisar",
+      "Disponibilidad",
+      "Pendiente de tu decisión"
+    ],
+    "venue": "Sala de ejemplo / Barcelona",
+    "date": "18 OCT",
+    "fee": "Caché propuesto",
+    "amount": "1.200 €",
+    "set": "Horario",
+    "time": "01:00 — 03:00",
+    "contact": "Contacto",
+    "promoter": "Promotor de ejemplo",
+    "month": "OCTUBRE / EJEMPLO",
+    "available": "18 oct · Sin reservas en este ejemplo",
+    "decision": "Tú eliges el siguiente paso.",
+    "options": [
+      "Responder",
+      "Proponer otra fecha",
+      "Rechazar"
+    ],
+    "note": "Esta vista explica el proceso. No envía mensajes ni crea reservas.",
+    "next": "Siguiente paso",
+    "restart": "Volver a la propuesta"
+  },
+  "share": {
+    "label": "02 / COMPARTE TU PERFIL",
+    "title": "Tu web, tu bio o una pegatina en la cabina.",
+    "body": "Que sepan dónde encontrarte. Y cómo proponerte una fecha.",
+    "tabs": [
+      "Tu perfil",
+      "En tu web",
+      "Tu QR"
+    ],
+    "titles": [
+      "Un enlace que habla de ti.",
+      "Tu web sigue siendo tuya.",
+      "De la cabina a tu próxima fecha."
+    ],
+    "descriptions": [
+      "Compártelo en Instagram, WhatsApp o donde compartas tu música. Tu perfil reúne tu presentación y el formulario de booking.",
+      "Incrusta el formulario con un iframe. El promotor te envía la propuesta sin salir de tu página.",
+      "Pon tu QR en una tarjeta, un flyer o una pegatina. Quien lo escanee llegará a tu enlace de booking."
+    ],
+    "privacy": "Público o privado. Tú decides cuándo compartir tu perfil.",
+    "preview": "VISTA PREVIA ILUSTRATIVA",
+    "artist": "Tu nombre artístico",
+    "sound": "Tu música. Tu recorrido.",
+    "form": "Proponer una fecha",
+    "embed": "TU WEB / BOOKING",
+    "fields": [
+      "Fecha del evento",
+      "Sala o evento",
+      "Email de contacto"
+    ],
+    "qr": "TU QR DE BOOKING",
+    "qrNote": "Tu enlace, también fuera de la pantalla.",
+    "cta": "Crear mi perfil"
+  },
+  "control": {
+    "label": "03 / A TU MANERA",
+    "title": "Tu sonido tiene criterio.\nTus decisiones también.",
+    "body": "Hay propuestas que encajan contigo y otras que no. Eso lo decides tú.",
+    "support": "Cuebooker te ayuda a mantener el seguimiento y el contexto de cada conversación.",
+    "left": "Tu espacio reúne",
+    "right": "Tú decides",
+    "tasks": [
+      "Solicitudes y conversaciones",
+      "Fechas y disponibilidad",
+      "Historial de cada propuesta"
+    ],
+    "decisions": [
+      "Qué propuesta encaja contigo",
+      "Qué condiciones aceptar",
+      "Cuándo confirmar una fecha"
     ]
   },
-  stage: {
-    kicker: 'UNA ÚNICA SUPERFICIE DE TRABAJO',
-    title: 'Tus reservas no son un problema de hojas de cálculo.',
-    body: 'Son un flujo de señales, personas, fechas y decisiones. Cuebooker les da un lugar donde aterrizar, un estado por el que avanzar y un historial en el que confiar.',
-    points: [['Solicitudes', 'Recibe el briefing antes de que empiece el intercambio interminable de mensajes.'], ['Actividad', 'Mantén juntos el hilo, la decisión y la siguiente acción.'], ['Calendario', 'Consulta tu disponibilidad real antes de comprometerte.']],
-    workspace: 'cuebooker / espacio de trabajo',
-    greeting: 'Buenas tardes, Litus',
-    week: 'Tu semana, sin ruido.',
-    newBooking: '+ Nueva reserva',
-    metrics: [['Solicitudes abiertas', '08', false], ['Fechas bloqueadas', '04', true], ['Confirmadas', '12', false]],
-    bookings: [['Warehouse 23 / Barcelona', '18 oct · Techno · 1.200 €', 'Nueva', 'lime'], ['Club Mondo / Madrid', '02 nov · Peak time · 1.800 €', 'Pendiente', 'red'], ['Pulse Room / Berlín', '16 nov · Closing set · 2.100 €', 'Confirmada', 'blue']]
+  "identity": {
+    "label": "04 / CUE ID",
+    "title": "Un perfil que se parezca a ti.",
+    "body": "Tu música, tu recorrido y tu forma de presentarte.",
+    "beta": "BETA · EN EVOLUCIÓN",
+    "detail": "Estamos desarrollando el avatar personalizado de CUE ID. Una forma más de expresar quién está detrás del sonido.",
+    "visual": "TU IDENTIDAD\nTIENE SU ESPACIO.",
+    "caption": "Avatar personalizado en desarrollo"
   },
-  manifesto: { kicker: 'LA FORMA CUEBOOKER DE HACERLO', title: 'Tú pones la energía. El sistema soporta el peso.', body: 'Tú sigues decidiendo qué encaja contigo, con quién quieres trabajar y hacia dónde quieres llevar tu sonido. Cuebooker despeja el trabajo repetitivo que rodea esas decisiones.' },
-  control: {
-    title: 'Más ayuda. Más control.',
-    body: 'El asistente aparece cuando el proceso se repite. El artista sigue presente cuando la decisión es personal.',
-    assistant: 'LA CAPA ASISTENTE',
-    assistantTitle: 'Mensajes que saben para qué están ahí.',
-    assistantBody: 'Mantén viva la conversación sin convertir cada respuesta en otra pequeña tarea que recordar.',
-    human: 'LA CAPA HUMANA',
-    humanTitle: 'Toma la decisión cuando importa.',
-    artist: 'Soy artista',
-    manager: 'Gestiono artistas',
-    artistBody: 'Crea un perfil que se parezca a ti, recibe mejores solicitudes y mantén fechas, contactos y decisiones en un único espacio de trabajo.',
-    managerBody: 'Trabaja con varios artistas sin perder el hilo. Mantén solicitudes, disponibilidad, contactos y seguimientos dentro del mismo espacio.',
-    artistFeatures: ['Perfil público con una vía clara para contratarte', 'Visibilidad del calendario antes de comprometerte', 'Historial de reservas que crece contigo'],
-    managerFeatures: ['Cambia de artista sin cambiar de sistema', 'Controla el estado de cada oportunidad', 'Dale contexto al artista, no más trabajo administrativo']
-  },
-  distribution: {
-    heading: 'Tu web, tu bio o una pegatina en la cabina.',
-    body: 'No necesitas rehacer tu web ni pedirle a la gente que busque cómo contactarte. Cuebooker se adapta a la forma en la que ya compartes tu música.',
-    profile: 'VISIBILIDAD DEL PERFIL', profileTitle: 'Tu perfil, público cuando tú decides.', profileBody: 'Compártelo para recibir solicitudes o mantenlo privado mientras lo preparas.',
-    link: 'ENLACE SOCIAL', linkTitle: 'Un enlace para Instagram, bio y redes.', linkBody: 'Publica una URL única en Instagram, TikTok, SoundCloud, WhatsApp o donde quieras.',
-    iframe: 'IFRAME', iframeTitle: '¿Ya tienes web? El formulario entra dentro.', iframeBody: 'Inserta el widget de Cuebooker en tu propia web. Tu imagen sigue siendo tuya y el flujo de booking funciona por detrás.',
-    label: 'VISIBILIDAD DEL PERFIL', live: 'Público', private: 'Privado', dj: 'ARTISTA / CIUDAD', name: 'Tu nombre', sound: 'Tus estilos',
-    copy: 'Copiar enlace', instagram: 'Compartir en Instagram', qr: 'Descargar QR',
-    kicker: 'UNA RUTA PARA CADA ARTISTA', title: 'Una misma puerta, estés donde estés.', detail: 'Da igual desde dónde llegue un promotor. La información entra completa y tú la gestionas desde el mismo espacio.',
-    items: [['Perfil público', 'Para quien todavía no tiene web.'], ['Enlace compartible', 'Para Instagram, redes, mensajes y newsletters.'], ['Widget embebible', 'Para quien ya tiene una web propia.'], ['QR de booking', 'Para carteles, flyers, tarjetas y eventos.']]
-  },
-  identity: { kicker: 'PERFIL DE ARTISTA', title: 'Tu perfil también tiene presencia.', body: 'CUE ID será la firma visual de tu perfil. El avatar y la personalización están en beta, para que tu identidad crezca sin convertirse en una plantilla.', profile: 'Perfil de artista', active: 'BETA · EN EVOLUCIÓN' },
-  closing: { title: 'Haz espacio para la parte que solo tú puedes hacer.', body: 'Cuebooker es la capa de trabajo entre la oportunidad y la noche. Empieza con tu próxima reserva.', cta: 'Crear mi espacio de trabajo' }
+  "closing": {
+    "title": "Hay mucho trabajo detrás de lo que haces.",
+    "accent": "Dale su espacio.",
+    "cta": "Crear mi espacio",
+    "footer": "Hecho para las personas que están detrás del sonido."
+  }
 } : {
-  nav: { system: 'How it works', distribution: 'Distribution', identity: 'CUE ID', login: 'Sign in', signup: 'Create account' },
-  hero: {
-    eyebrow: 'FOR THE PEOPLE WHO MOVE THE NIGHT',
-    title: 'Let the music keep moving.',
-    accent: 'Booking is already happening.',
-    body: 'Requests, conversations and dates in your workspace. You decide what happens next.',
-    flow: { channels: ['Instagram · 22:47', 'WhatsApp · 23:12', 'Web form · 00:06'], label: 'CUEBOOKER / NEW REQUEST', booking: 'Warehouse 23 / Barcelona', detail: '18 Oct · Techno · €1,200', status: 'Waiting for your decision' },
-    primary: 'Open my workspace',
-    secondary: 'How it works',
-    note: 'Made for DJs, managers and the people who make every night happen.'
+  "nav": {
+    "system": "How it works",
+    "distribution": "Share your profile",
+    "identity": "CUE ID",
+    "login": "Sign in",
+    "signup": "Create account"
   },
-  ticker: ['Bookings', 'Conversations', 'Calendar', 'Artist profile', 'Automation', 'CUE ID'],
-  system: {
-    title: 'The night is what people see. Cuebooker handles everything that makes it possible.',
-    body: 'Every request, reply, date, contact and decision lives in one system. Less scattered work. More room for what moves your career.',
-    cards: [
-      ['01 / CAPTURE', 'Every opportunity arrives with context.', 'Date, fee, venue and contact details, from the first message.'],
-      ['02 / MOVE FORWARD', 'Every conversation knows its next step.', 'Reply, follow up, hold a date, confirm the gig or archive the opportunity without losing context.'],
-      ['03 / AIR', 'Repetitive work starts to disappear.', 'Automate the mechanical part while you keep control of the decisions that shape your career.']
+  "hero": {
+    "eyebrow": "FOR THE PEOPLE WHO MOVE THE NIGHT",
+    "title": "Let the music keep moving.",
+    "accent": "Booking is already happening.",
+    "body": "Your next date deserves your attention. Keep requests, conversations and your calendar in one workspace.",
+    "primary": "Create my workspace",
+    "secondary": "See how it works",
+    "note": "Made for DJs, managers and the people who make every night happen."
+  },
+  "work": {
+    "label": "01 / BEHIND THE SET",
+    "title": "There is a lot you do not see.",
+    "intro": "Preparing music. Shaping your sound. Finding your place.",
+    "body": "And in between, answering proposals and arranging dates. Cuebooker helps with booking so you can spend time on what moves you.",
+    "steps": [
+      "The proposal",
+      "The date",
+      "Your decision"
+    ],
+    "descriptions": [
+      "Date, venue, fee and contact. Start with the context you need.",
+      "Check your calendar before committing. Every date in its place.",
+      "Review the proposal and decide what comes next. The final say is yours."
+    ],
+    "demo": "Interactive demo · Fictional data",
+    "workspace": "YOUR WORKSPACE",
+    "request": "Booking request",
+    "status": [
+      "To review",
+      "Availability",
+      "Waiting for your decision"
+    ],
+    "venue": "Example venue / Barcelona",
+    "date": "18 OCT",
+    "fee": "Proposed fee",
+    "amount": "€1,200",
+    "set": "Time",
+    "time": "01:00 — 03:00",
+    "contact": "Contact",
+    "promoter": "Example promoter",
+    "month": "OCTOBER / EXAMPLE",
+    "available": "18 Oct · No bookings in this example",
+    "decision": "You choose the next step.",
+    "options": [
+      "Reply",
+      "Suggest another date",
+      "Decline"
+    ],
+    "note": "This view explains the process. It does not send messages or create bookings.",
+    "next": "Next step",
+    "restart": "Back to the proposal"
+  },
+  "share": {
+    "label": "02 / SHARE YOUR PROFILE",
+    "title": "Your website, your bio or a sticker in the booth.",
+    "body": "Let them find you. And propose a date.",
+    "tabs": [
+      "Your profile",
+      "Your website",
+      "Your QR"
+    ],
+    "titles": [
+      "A link that speaks for you.",
+      "Your website stays yours.",
+      "From the booth to your next date."
+    ],
+    "descriptions": [
+      "Share it on Instagram, WhatsApp or wherever you share your music. Your profile brings your introduction and booking form together.",
+      "Embed the form with an iframe. A promoter can send a proposal without leaving your website.",
+      "Put your QR on a card, flyer or sticker. Scanning it takes people to your booking link."
+    ],
+    "privacy": "Public or private. You decide when to share your profile.",
+    "preview": "ILLUSTRATIVE PREVIEW",
+    "artist": "Your artist name",
+    "sound": "Your music. Your story.",
+    "form": "Propose a date",
+    "embed": "YOUR WEBSITE / BOOKING",
+    "fields": [
+      "Event date",
+      "Venue or event",
+      "Contact email"
+    ],
+    "qr": "YOUR BOOKING QR",
+    "qrNote": "Your link, beyond the screen.",
+    "cta": "Create my profile"
+  },
+  "control": {
+    "label": "03 / YOUR WAY",
+    "title": "Your sound has a point of view.\nSo do your decisions.",
+    "body": "Some proposals fit you. Others do not. You decide.",
+    "support": "Cuebooker helps you keep track of every conversation and its context.",
+    "left": "Your workspace brings together",
+    "right": "You decide",
+    "tasks": [
+      "Requests and conversations",
+      "Dates and availability",
+      "The history of each proposal"
+    ],
+    "decisions": [
+      "Which proposal fits you",
+      "Which terms to accept",
+      "When to confirm a date"
     ]
   },
-  stage: {
-    kicker: 'ONE WORKSPACE FOR THE WHOLE OPERATION',
-    title: 'Your bookings are not a spreadsheet problem.',
-    body: 'They are a flow of signals, people, dates and decisions. Cuebooker gives them somewhere to land, a status to move through and a history you can trust.',
-    points: [['Requests', 'Receive the briefing before the endless message exchange starts.'], ['Activity', 'Keep the thread, decision and next action together.'], ['Calendar', 'Check your real availability before committing.']],
-    workspace: 'cuebooker / workspace',
-    greeting: 'Good afternoon, Litus',
-    week: 'Your week, without the noise.',
-    newBooking: '+ New booking',
-    metrics: [['Open requests', '08', false], ['Held dates', '04', true], ['Confirmed', '12', false]],
-    bookings: [['Warehouse 23 / Barcelona', '18 Oct · Techno · €1,200', 'New', 'lime'], ['Club Mondo / Madrid', '02 Nov · Peak time · €1,800', 'Pending', 'red'], ['Pulse Room / Berlin', '16 Nov · Closing set · €2,100', 'Confirmed', 'blue']]
+  "identity": {
+    "label": "04 / CUE ID",
+    "title": "A profile that feels like you.",
+    "body": "Your music, your story and how you present yourself.",
+    "beta": "BETA · EVOLVING",
+    "detail": "We are developing the personalised CUE ID avatar. Another way to express who is behind the sound.",
+    "visual": "YOUR IDENTITY\nHAS ITS SPACE.",
+    "caption": "Personalised avatar in development"
   },
-  manifesto: { kicker: 'THE CUEBOOKER WAY', title: 'You bring the energy. The system carries the weight.', body: 'You still decide what fits, who you work with and where you want to take your sound. Cuebooker clears the repetitive work around those decisions.' },
-  control: {
-    title: 'More help. More control.',
-    body: 'The assistant appears when a process repeats. The artist stays present when the decision is personal.',
-    assistant: 'THE ASSISTANT LAYER', assistantTitle: 'Messages that know what they are for.', assistantBody: 'Keep the conversation alive without turning every reply into another small task to remember.',
-    human: 'THE HUMAN LAYER', humanTitle: 'Make the call when it matters.', artist: 'I am an artist', manager: 'I manage artists',
-    artistBody: 'Create a profile that feels like you, receive better requests and keep dates, contacts and decisions in one workspace.',
-    managerBody: 'Work with several artists without losing the thread. Keep requests, availability, contacts and follow-ups in the same place.',
-    artistFeatures: ['A public profile with a clear route to hire you', 'Calendar visibility before you commit', 'A booking history that grows with you'],
-    managerFeatures: ['Switch artists without switching systems', 'Track the state of every opportunity', 'Give the artist context, not more admin']
-  },
-  distribution: {
-    heading: 'Your website, your bio or a sticker in the booth.',
-    body: 'You do not need to rebuild your website or make people search for how to contact you. Cuebooker fits the way you already share your music.',
-    profile: 'PROFILE VISIBILITY', profileTitle: 'Your profile, public when you decide.', profileBody: 'Share it to receive requests or keep it private while you prepare it.',
-    link: 'SOCIAL LINK', linkTitle: 'One link for Instagram, bio and social.', linkBody: 'Publish one URL on Instagram, TikTok, SoundCloud, WhatsApp or anywhere else.',
-    iframe: 'IFRAME', iframeTitle: 'Already have a website? Put the form inside it.', iframeBody: 'Embed the Cuebooker widget in your own site. Your image stays yours and the booking flow runs behind it.',
-    label: 'PROFILE VISIBILITY', live: 'Public', private: 'Private', dj: 'ARTIST / CITY', name: 'Your name', sound: 'Your styles',
-    copy: 'Copy link', instagram: 'Share on Instagram', qr: 'Download QR',
-    kicker: 'A ROUTE FOR EVERY ARTIST', title: 'One entry point, wherever you are.', detail: 'Wherever a promoter comes from, the details arrive complete and you manage them in the same workspace.',
-    items: [['Public profile', 'For artists without a website.'], ['Shareable link', 'For Instagram, social, messages and newsletters.'], ['Embeddable widget', 'For artists with their own website.'], ['Booking QR', 'For posters, flyers, cards and events.']]
-  },
-  identity: { kicker: 'ARTIST PROFILE', title: 'Your profile has a presence too.', body: 'CUE ID will be the visual signature of your profile. Avatar and personalisation are in beta, so your identity can grow without becoming a template.', profile: 'Artist profile', active: 'BETA · EVOLVING' },
-  closing: { title: 'Make room for the part only you can do.', body: 'Cuebooker is the working layer between the opportunity and the night. Start with your next booking.', cta: 'Create my workspace' }
+  "closing": {
+    "title": "There is a lot of work behind what you do.",
+    "accent": "Give it space.",
+    "cta": "Create my workspace",
+    "footer": "Made for the people behind the sound."
+  }
 })
-
-const roleBody = computed(() => activeRole.value === 'artist' ? p.value.control.artistBody : p.value.control.managerBody)
-const roleFeatures = computed(() => activeRole.value === 'artist' ? p.value.control.artistFeatures : p.value.control.managerFeatures)
 
 function toggleMenu() {
   navHidden.value = false
@@ -254,45 +384,51 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
       </div>
     </section>
 
-    <div class="cp-ticker" aria-hidden="true"><div class="cp-ticker-track"><span v-for="(item, index) in [...p.ticker, ...p.ticker]" :key="index">{{ item }}</span></div></div>
 
-    <section id="system" class="cp-section">
-      <div class="cp-wrap">
-        <div class="cp-section-head"><h2>{{ p.system.title }}</h2><p>{{ p.system.body }}</p></div>
-        <div class="cp-booking-proof">
-          <p class="cp-kicker">{{ locale === 'es' ? 'DEL ENLACE A TU PRÓXIMA FECHA' : 'FROM YOUR LINK TO YOUR NEXT DATE' }}</p>
-          <div class="cp-hero-flow">
-            <div class="cp-hero-signals"><span v-for="channel in (locale === 'es' ? ['Enlace en tu bio', 'Formulario en tu web', 'QR en la cabina'] : ['Link in your bio', 'Form on your website', 'QR in the booth'])" :key="channel">{{ channel }}</span></div>
-            <div class="cp-hero-flow-line" aria-hidden="true" />
-            <div class="cp-hero-request"><div class="cp-hero-request-head"><span>{{ p.hero.flow.label }}</span><b>{{ p.hero.flow.status }}</b></div><strong>{{ p.hero.flow.booking }}</strong><small>{{ p.hero.flow.detail }}</small></div>
+    <section id="system" class="ed-section cp-wrap">
+      <div class="ed-intro"><p class="cp-kicker">{{ p.work.label }}</p><h2>{{ p.work.title }}</h2><p class="ed-deck">{{ p.work.intro }}</p><p>{{ p.work.body }}</p></div>
+      <div class="ed-work">
+        <div class="ed-steps" role="tablist" :aria-label="p.nav.system">
+          <button v-for="(step, i) in p.work.steps" :id="'step-'+i" :key="step" role="tab" :aria-selected="demoStep === i" aria-controls="booking-demo" :class="{ selected: demoStep === i }" @click="demoStep = i"><span class="ed-index">0{{ i + 1 }}</span><span><strong>{{ step }}</strong><small>{{ p.work.descriptions[i] }}</small></span><span class="cp-arrow" aria-hidden="true" /></button>
+        </div>
+        <div id="booking-demo" class="ed-console" role="tabpanel" :aria-labelledby="'step-'+demoStep">
+          <div class="ed-console-bar"><span class="ed-indicator" />{{ p.work.workspace }}<span class="ed-demo-tag">DEMO</span></div>
+          <div class="ed-console-body">
+            <div class="ed-console-heading"><span>{{ p.work.request }}</span><span class="ed-status">{{ p.work.status[demoStep] }}</span></div>
+            <h3>{{ p.work.venue }}</h3>
+            <div v-if="demoStep === 0" class="ed-request-data"><div class="ed-date"><b>18</b><span>OCT</span></div><dl><div><dt>{{ p.work.fee }}</dt><dd>{{ p.work.amount }}</dd></div><div><dt>{{ p.work.set }}</dt><dd>{{ p.work.time }}</dd></div><div><dt>{{ p.work.contact }}</dt><dd>{{ p.work.promoter }}</dd></div></dl></div>
+            <div v-else-if="demoStep === 1" class="ed-calendar"><p class="ed-mono">{{ p.work.month }}</p><div class="ed-days"><span v-for="day in 31" :key="day" :class="{ chosen: day === 18 }">{{ day }}</span></div><p class="ed-available">{{ p.work.available }}</p></div>
+            <div v-else class="ed-decision"><p>{{ p.work.decision }}</p><div v-for="option in p.work.options" :key="option" class="ed-option">{{ option }}<span class="cp-arrow" aria-hidden="true" /></div><small>{{ p.work.note }}</small></div>
+            <button class="ed-next" @click="demoStep = (demoStep + 1) % 3">{{ demoStep === 2 ? p.work.restart : p.work.next }}<span class="cp-arrow" aria-hidden="true" /></button>
           </div>
-          <p class="cp-demo-caption">{{ locale === 'es' ? 'Ejemplo ilustrativo · Datos ficticios' : 'Illustrative example · Fictional data' }}</p>
-        </div>
-        <div class="cp-signal-grid"><article v-for="card in p.system.cards" :key="card[0]" class="cp-signal-card"><span class="cp-signal-number">{{ card[0] }}</span><h3>{{ card[1] }}</h3><p>{{ card[2] }}</p></article></div>
-      </div>
-    </section>
-
-    <section id="start" class="cp-product-stage cp-section">
-      <div class="cp-wrap cp-stage-grid">
-        <div class="cp-stage-copy"><p class="cp-kicker">{{ p.stage.kicker }}</p><h2>{{ p.stage.title }}</h2><p>{{ p.stage.body }}</p><div class="cp-stage-points"><div v-for="point in p.stage.points" :key="point[0]" class="cp-stage-point"><b>{{ point[0] }}</b><span>{{ point[1] }}</span></div></div></div>
-        <div class="cp-app-window" aria-label="Cuebooker workspace preview">
-          <div class="cp-window-top"><span /><span /><span /><b>{{ p.stage.workspace }}</b></div>
-          <div class="cp-app-body"><aside class="cp-app-side"><div class="cp-side-brand">Cuebooker</div><div class="cp-side-item active">Resumen</div><div class="cp-side-item">Reservas <small>12</small></div><div class="cp-side-item">Calendario</div><div class="cp-side-item">Actividad</div><div class="cp-side-item">Perfil de artista</div><div class="cp-side-item">Ajustes</div></aside><div class="cp-app-main"><div class="cp-app-heading"><div><h3>{{ p.stage.greeting }}</h3><p>{{ p.stage.week }}</p></div><button class="cp-mini-button" type="button" @click="openApp('workspace_preview')">{{ p.stage.newBooking }}</button></div><div class="cp-metrics"><div v-for="metric in p.stage.metrics" :key="metric[0]" class="cp-metric"><small>{{ metric[0] }}</small><strong :class="{ lime: metric[2] }">{{ metric[1] }}</strong></div></div><div class="cp-booking-list"><div v-for="booking in p.stage.bookings" :key="booking[0]" class="cp-booking"><span class="cp-booking-bar" :class="booking[3]" /><div><b>{{ booking[0] }}</b><span>{{ booking[1] }}</span></div><em>{{ booking[2] }}</em></div></div></div></div>
+          <p class="ed-demo-foot">{{ p.work.demo }}</p>
         </div>
       </div>
     </section>
 
-    <section class="cp-manifesto cp-section"><div class="cp-wrap cp-manifesto-grid"><div><p class="cp-kicker">{{ p.manifesto.kicker }}</p><h2>{{ p.manifesto.title }}</h2></div><p>{{ p.manifesto.body }}</p></div></section>
+    <section id="distribution" class="ed-share ed-section">
+      <div class="cp-wrap"><p class="cp-kicker">{{ p.share.label }}</p><h2>{{ p.share.title }}</h2><p class="ed-deck">{{ p.share.body }}</p>
+        <div class="ed-share-layout">
+          <div><div class="ed-tabs" role="tablist" :aria-label="p.nav.distribution"><button v-for="(label,i) in p.share.tabs" :id="'share-'+i" :key="label" role="tab" :aria-selected="shareTab === i" aria-controls="share-preview" :class="{selected: shareTab === i}" @click="shareTab = i">{{ label }}</button></div>
+            <h3>{{ p.share.titles[shareTab] }}</h3><p>{{ p.share.descriptions[shareTab] }}</p><p class="ed-privacy"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>{{ p.share.privacy }}</p><button class="cp-cta" @click="auth('signup', 'share')">{{ p.share.cta }}<span class="cp-arrow" aria-hidden="true" /></button>
+          </div>
+          <div id="share-preview" class="ed-share-preview" role="tabpanel" :aria-labelledby="'share-'+shareTab">
+            <span class="ed-mono">{{ p.share.preview }}</span>
+            <div v-if="shareTab === 0" class="ed-profile"><div class="ed-profile-cover"><span>CUE / ARTIST</span><svg viewBox="0 0 320 70" aria-hidden="true"><path d="M0 35h20l5-12 8 25 8-34 8 42 9-55 9 62 8-40 9 23 9-12h24l8-18 8 42 8-50 8 58 8-35 8 19 8-25 8 18h22l8-25 8 45 8-62 8 70 8-43 8 28 8-18h34"/></svg></div><h4>{{ p.share.artist }}</h4><p>{{ p.share.sound }}</p><div class="ed-form-button">{{ p.share.form }}<span class="cp-arrow" aria-hidden="true" /></div></div>
+            <div v-else-if="shareTab === 1" class="ed-embed"><div class="ed-browser-bar"><i /><i /><i /><span>{{ p.share.embed }}</span></div><h4>{{ p.share.form }}</h4><div v-for="field in p.share.fields" :key="field" class="ed-field">{{ field }}</div><div class="ed-code">&lt;iframe … /&gt;</div></div>
+            <div v-else class="ed-sticker"><span class="ed-mono">CUEBOOKER / BOOKING</span><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M28 8H8v20M72 8h20v20M8 72v20h20M92 72v20H72M30 50h40M56 36l14 14-14 14"/></svg><h4>{{ p.share.qr }}</h4><p>{{ p.share.qrNote }}</p><small>{{ locale === 'es' ? 'Concepto de soporte · No es un QR escaneable' : 'Display concept · Not a scannable QR' }}</small></div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <section id="control" class="cp-control cp-section"><div class="cp-wrap"><div class="cp-section-head"><h2>{{ p.control.title }}</h2><p>{{ p.control.body }}</p></div><div class="cp-control-grid"><article class="cp-control-card"><p class="cp-kicker">{{ p.control.assistant }}</p><h3>{{ p.control.assistantTitle }}</h3><p>{{ p.control.assistantBody }}</p><div class="cp-chat"><div class="cp-bubble">{{ locale === 'es' ? 'Nueva solicitud recibida. Fecha, sala y caché listos para revisar.' : 'New request received. Date, venue and fee ready to review.' }}</div><div class="cp-bubble you">{{ locale === 'es' ? 'Bloquea la fecha y pide el technical rider.' : 'Hold the date and request the technical rider.' }}</div><div class="cp-bubble">{{ locale === 'es' ? 'Hecho. Seguimiento programado. Tú mantienes el control.' : 'Done. Follow-up scheduled. You keep control.' }}</div></div></article><article class="cp-control-card"><p class="cp-kicker">{{ p.control.human }}</p><h3>{{ p.control.humanTitle }}</h3><div class="cp-toggle"><button :class="{ active: activeRole === 'artist' }" @click="activeRole = 'artist'">{{ p.control.artist }}</button><button :class="{ active: activeRole === 'manager' }" @click="activeRole = 'manager'">{{ p.control.manager }}</button></div><p class="cp-role-copy">{{ roleBody }}</p><div class="cp-role-features"><div v-for="feature in roleFeatures" :key="feature">{{ feature }}</div></div></article></div></div></section>
+    <section class="ed-section cp-wrap ed-control"><p class="cp-kicker">{{ p.control.label }}</p><h2>{{ p.control.title }}</h2><div class="ed-control-intro"><p class="ed-deck">{{ p.control.body }}</p><p>{{ p.control.support }}</p></div><div class="ed-responsibility"><div><h3>{{ p.control.left }}</h3><p v-for="item in p.control.tasks" :key="item">{{ item }}</p></div><div><h3>{{ p.control.right }}</h3><p v-for="item in p.control.decisions" :key="item">{{ item }}</p></div></div></section>
 
-    <section id="distribution" class="cp-section"><div class="cp-wrap"><div class="cp-section-head"><h2>{{ p.distribution.heading }}</h2><p>{{ p.distribution.body }}</p></div><div class="cp-signal-grid"><article class="cp-signal-card cp-channel-card"><span class="cp-signal-number">01 / {{ p.distribution.profile }}</span><span class="cp-channel-icon cp-channel-icon--profile" aria-hidden="true" /><h3>{{ p.distribution.profileTitle }}</h3><p>{{ p.distribution.profileBody }}</p></article><article class="cp-signal-card cp-channel-card"><span class="cp-signal-number">02 / {{ p.distribution.link }}</span><span class="cp-channel-icon cp-channel-icon--link" aria-hidden="true" /><h3>{{ p.distribution.linkTitle }}</h3><p>{{ p.distribution.linkBody }}</p></article><article class="cp-signal-card cp-channel-card"><span class="cp-signal-number">03 / {{ p.distribution.iframe }}</span><span class="cp-channel-icon cp-channel-icon--iframe" aria-hidden="true" /><h3>{{ p.distribution.iframeTitle }}</h3><p>{{ p.distribution.iframeBody }}</p></article></div><div class="cp-distribution-detail"><div class="cp-distribution-ui"><div class="cp-share-header"><span>{{ p.distribution.label }}</span><div class="cp-share-visibility"><span class="cp-share-live"><i />{{ p.distribution.live }}</span><span class="cp-share-private">{{ p.distribution.private }}</span></div></div><div class="cp-share-preview"><div class="cp-share-avatar">CUE<small>ID 001</small></div><div><span>{{ p.distribution.dj }}</span><h3>{{ p.distribution.name }}</h3><p>{{ p.distribution.sound }}</p></div><span class="cp-arrow cp-share-arrow" aria-hidden="true" /></div><div class="cp-share-actions"><button :class="{ active: shareMode === 'profile' }" @click="shareMode = 'profile'">{{ p.distribution.copy }}</button><button :class="{ active: shareMode === 'website' }" @click="shareMode = 'website'">{{ p.distribution.instagram }}</button><button :class="{ active: shareMode === 'qr' }" @click="shareMode = 'qr'">{{ p.distribution.qr }}</button></div></div><div class="cp-distribution-copy"><p class="cp-kicker">{{ p.distribution.kicker }}</p><h3>{{ p.distribution.title }}</h3><p>{{ p.distribution.detail }}</p><div class="cp-distribution-list"><div v-for="item in p.distribution.items" :key="item[0]"><b>{{ item[0] }}</b><span>{{ item[1] }}</span></div></div></div></div></div></section>
+    <section id="cue-id" class="ed-section ed-identity cp-wrap"><div><p class="cp-kicker">{{ p.identity.label }}</p><h2>{{ p.identity.title }}</h2><p class="ed-deck">{{ p.identity.body }}</p><p>{{ p.identity.detail }}</p><span class="cp-beta-note">{{ p.identity.beta }}</span></div><div class="ed-identity-poster"><span class="ed-mono">CUE ID / ARTIST PROFILE</span><strong>{{ p.identity.visual }}</strong><span>{{ p.identity.caption }}</span><span class="ed-poster-corner" aria-hidden="true">C /</span></div></section>
 
-    <section id="cue-id" class="cp-cue-id cp-section"><div class="cp-wrap cp-cue-grid"><div class="cp-cue-copy"><p class="cp-kicker">{{ p.identity.kicker }}</p><h2>{{ p.identity.title }}</h2><p>{{ p.identity.body }}</p><span class="cp-beta-note">{{ p.identity.active }}</span></div><div class="cp-cue-card"><div class="cp-cue-ring"><span>CUE<br />ID 001</span></div><div class="cp-cue-meta"><span>{{ p.identity.profile }}</span><span>{{ p.identity.active }}</span></div></div></div></section>
-
-    <section class="cp-closing cp-section"><div class="cp-wrap cp-closing-inner"><h2>{{ p.closing.title }}</h2><div><p>{{ p.closing.body }}</p><button class="cp-cta" type="button" @click="auth('signup', 'closing')">{{ p.closing.cta }} <span class="cp-arrow" aria-hidden="true" /></button></div></div></section>
-    <Transition name="cp-float"><button v-if="backToTopVisible" class="cp-back-top" type="button" :aria-label="locale === 'es' ? 'Volver arriba' : 'Back to top'" @click="scrollTo('#top')"><span class="cp-up-arrow" aria-hidden="true" /></button></Transition>
-    <footer class="cp-footer"><div class="cp-wrap"><span class="cp-brand"><CueBrand /></span><span>{{ locale === 'es' ? 'Hecho para las personas que están detrás del sonido.' : 'Made for the people behind the sound.' }}</span><span>© 2026 Cuebooker</span></div></footer>
+    <section class="ed-closing"><div class="cp-wrap"><p>{{ p.closing.title }}</p><h2>{{ p.closing.accent }}</h2><button class="cp-cta" @click="auth('signup','closing')">{{ p.closing.cta }}<span class="cp-arrow" aria-hidden="true" /></button></div></section>
+    <Transition name="cp-float"><button v-if="backToTopVisible && !menuOpen" class="cp-back-top" type="button" :aria-label="locale === 'es' ? 'Volver arriba' : 'Back to top'" @click="scrollTo('#top')"><span class="cp-up-arrow" aria-hidden="true" /></button></Transition>
+    <footer class="cp-footer"><div class="cp-wrap"><span class="cp-brand"><CueBrand /></span><span>{{ p.closing.footer }}</span><span>© 2026 Cuebooker</span></div></footer>
   </main>
 </template>
 
@@ -384,5 +520,124 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
 @media (prefers-reduced-motion: reduce) {
   .commercial-home .cp-nav, .commercial-home .cp-cta, .cp-menu span { transition: none; }
   .cp-ticker-track { animation: none; }
+}
+</style>
+
+<style scoped>
+.ed-section { padding-top: 100px; padding-bottom: 100px; scroll-margin-top: 76px; }
+.ed-section h2 { max-width: 920px; margin: 20px 0 28px; font-size: clamp(36px, 4.8vw, 68px); line-height: 1.04; letter-spacing: -.045em; text-wrap: balance; white-space: pre-line; }
+.ed-section h3 { font-size: clamp(24px, 2.5vw, 34px); line-height: 1.16; letter-spacing: -.03em; }
+.ed-section p { color: var(--cp-muted); font-size: 17px; line-height: 1.65; }
+.ed-section .cp-kicker { color: var(--cp-lime); font-size: 10px; }
+.ed-section .ed-deck { color: var(--cp-paper); font-size: clamp(20px, 2vw, 26px); line-height: 1.5; }
+.ed-intro { max-width: 780px; }
+.ed-intro > p:last-child { max-width: 640px; }
+.ed-work { display: grid; grid-template-columns: .8fr 1.2fr; gap: 60px; align-items: center; margin-top: 54px; }
+.ed-steps { display: grid; }
+.ed-steps button { display: grid; grid-template-columns: 32px 1fr 10px; gap: 18px; padding: 26px 0; border: 0; border-top: 1px solid var(--cp-line); background: none; color: var(--cp-muted); text-align: left; cursor: pointer; }
+.ed-steps button:last-child { border-bottom: 1px solid var(--cp-line); }
+.ed-steps button.selected { color: var(--cp-paper); }
+.ed-index { font: 12px ui-monospace, monospace; padding-top: 5px; }
+.selected .ed-index { color: var(--cp-lime); }
+.ed-steps strong { display: block; font-size: 24px; font-weight: 700; letter-spacing: -.025em; }
+.ed-steps small { display: block; margin-top: 10px; line-height: 1.6; font-size: 14px; }
+.ed-steps .cp-arrow { margin-top: 10px; opacity: 0; }
+.ed-steps .selected .cp-arrow { opacity: 1; color: var(--cp-lime); }
+.ed-console { border: 1px solid var(--cp-line); border-radius: 18px; background: var(--cp-panel); box-shadow: 0 28px 70px var(--cue-shadow); overflow: hidden; }
+.ed-console-bar { display: flex; gap: 10px; align-items: center; padding: 18px 24px; border-bottom: 1px solid var(--cp-line); font: 10px ui-monospace, monospace; letter-spacing: .09em; }
+.ed-indicator { width: 7px; height: 7px; border-radius: 50%; background: var(--cp-lime); }
+.ed-demo-tag { margin-left: auto; color: var(--cp-muted); }
+.ed-console-body { padding: 26px; min-height: 395px; }
+.ed-console-heading { display: flex; justify-content: space-between; gap: 15px; font-size: 12px; color: var(--cp-muted); }
+.ed-status { color: var(--cp-lime); text-align: right; }
+.ed-console h3 { margin: 24px 0; font-size: 28px; }
+.ed-request-data { display: flex; gap: 24px; align-items: flex-start; min-height: 210px; }
+.ed-date { display: grid; place-items: center; width: 94px; min-height: 108px; background: var(--cp-lime); color: var(--cue-accent-ink); border-radius: 10px; padding: 12px; flex-shrink: 0; }
+.ed-date b { font-size: 44px; letter-spacing: -.05em; }
+.ed-date span { font: 12px ui-monospace, monospace; }
+.ed-request-data dl { margin: 0; flex: 1; }
+.ed-request-data dl div { display: flex; justify-content: space-between; gap: 15px; border-bottom: 1px solid var(--cp-line); padding: 13px 0; font-size: 12px; }
+.ed-request-data dt { color: var(--cp-muted); }
+.ed-request-data dd { margin: 0; text-align: right; }
+.ed-next { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 16px 0 0; border: 0; border-top: 1px solid var(--cp-line); background: none; color: var(--cp-lime); cursor: pointer; font-size: 13px; }
+.ed-console .ed-demo-foot { padding: 14px 26px; margin: 0; font-size: 10px; background: var(--cp-black); }
+.ed-calendar { min-height: 210px; }
+.ed-calendar .ed-mono { font-size: 10px; margin: 0 0 10px; }
+.ed-days { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+.ed-days span { display: grid; place-items: center; min-height: 24px; font: 11px ui-monospace,monospace; color: var(--cp-muted); }
+.ed-days .chosen { background: var(--cp-lime); color: var(--cue-accent-ink); border-radius: 5px; }
+.ed-calendar .ed-available { color: var(--cp-lime); font-size: 11px; }
+.ed-decision { min-height: 210px; }
+.ed-decision > p { font-size: 14px; }
+.ed-option { padding: 10px 0; display: flex; justify-content: space-between; border-bottom: 1px solid var(--cp-line); font-size: 13px; }
+.ed-option .cp-arrow { width: 6px; height: 6px; }
+.ed-decision small { display: block; color: var(--cp-muted); font-size: 10px; line-height: 1.4; margin: 12px 0; }
+.ed-share { border-block: 1px solid var(--cp-line); background: var(--cp-panel); }
+.ed-share h2 { max-width: 810px; }
+.ed-share-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 90px; align-items: center; margin-top: 50px; }
+.ed-tabs { display: flex; border-bottom: 1px solid var(--cp-line); gap: 22px; margin-bottom: 32px; }
+.ed-tabs button { min-height: 44px; padding: 0 0 12px; border: 0; border-bottom: 2px solid transparent; color: var(--cp-muted); background: none; font-size: 13px; cursor: pointer; }
+.ed-tabs button.selected { color: var(--cp-lime); border-bottom-color: var(--cp-lime); }
+.ed-share-layout h3 { margin: 0 0 18px; }
+.ed-share-layout .ed-privacy { display: flex; align-items: flex-start; gap: 10px; padding: 18px 0; font-size: 13px; }
+.ed-privacy svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 3px; fill: none; stroke: var(--cp-lime); stroke-width: 1.5; }
+.ed-share-preview { min-height: 420px; padding: 26px; background: var(--cp-black); border: 1px solid var(--cp-line); border-radius: 16px; }
+.ed-mono { color: var(--cp-muted); font: 10px ui-monospace, monospace; letter-spacing: .1em; }
+.ed-profile-cover { margin-top: 25px; height: 120px; padding: 20px; background: linear-gradient(130deg, color-mix(in srgb,var(--cp-lime) 15%,var(--cp-black)),var(--cp-black)); border-bottom: 1px solid var(--cp-lime); overflow: hidden; }
+.ed-profile-cover span { color: var(--cp-lime); font: 10px ui-monospace,monospace; letter-spacing: .14em; }
+.ed-profile-cover svg { width: 100%; height: 65px; fill: none; stroke: var(--cp-lime); stroke-width: 1; margin-top: 12px; }
+.ed-share-preview h4 { font-size: 28px; margin: 24px 0 8px; letter-spacing: -.025em; }
+.ed-share-preview p { margin-top: 0; font-size: 14px; }
+.ed-form-button { display: flex; align-items: center; justify-content: space-between; padding: 16px; margin-top: 24px; background: var(--cp-lime); color: var(--cue-accent-ink); border-radius: 6px; font-size: 13px; }
+.ed-browser-bar { display: flex; align-items: center; gap: 5px; border-bottom: 1px solid var(--cp-line); padding: 24px 0 14px; }
+.ed-browser-bar i { width: 5px; height: 5px; border-radius: 50%; background: var(--cp-muted); }
+.ed-browser-bar span { font: 9px ui-monospace,monospace; margin-left: 12px; color: var(--cp-muted); }
+.ed-field { border: 1px solid var(--cp-line); border-radius: 5px; padding: 13px; margin-top: 10px; color: var(--cp-muted); font-size: 12px; }
+.ed-code { margin-top: 16px; color: var(--cp-lime); font: 12px ui-monospace,monospace; }
+.ed-sticker { text-align: center; padding: 26px 10px; }
+.ed-sticker svg { display: block; width: 110px; margin: 24px auto; stroke: var(--cp-lime); fill: none; stroke-width: 3; }
+.ed-sticker small { color: var(--cp-muted); font-size: 10px; }
+.ed-control-intro { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; max-width: 1000px; }
+.ed-responsibility { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-top: 40px; }
+.ed-responsibility > div { border-top: 2px solid var(--cp-line); padding-top: 22px; }
+.ed-responsibility > div:last-child { border-color: var(--cp-lime); }
+.ed-responsibility h3 { font-size: 18px; }
+.ed-responsibility p { padding: 13px 0; margin: 0; border-bottom: 1px solid var(--cp-line); font-size: 15px; }
+.ed-identity { display: grid; grid-template-columns: 1.1fr .9fr; gap: 100px; align-items: center; border-top: 1px solid var(--cp-line); }
+.ed-identity-poster { position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 45px; min-height: 350px; padding: 32px; border: 1px solid var(--cp-line); border-left: 3px solid var(--cp-red); overflow: hidden; }
+.ed-identity-poster strong { max-width: 290px; font-size: clamp(28px,3vw,44px); line-height: 1.05; letter-spacing: -.03em; white-space: pre-line; position: relative; z-index: 1; }
+.ed-identity-poster > span:not(.ed-poster-corner) { font-size: 10px; color: var(--cp-muted); }
+.ed-poster-corner { position: absolute; right: -12px; bottom: 35px; font-size: 130px; font-weight: 900; color: color-mix(in srgb,var(--cp-lime) 9%,transparent); }
+.ed-closing { padding: 90px 0; background: color-mix(in srgb,var(--cp-lime) 5%,var(--cp-black)); border-top: 1px solid var(--cp-line); }
+.ed-closing p { max-width: 600px; color: var(--cp-muted); font-size: clamp(20px,2.5vw,32px); }
+.ed-closing h2 { margin: 18px 0 35px; font-size: clamp(52px,8vw,110px); line-height: 1; letter-spacing: -.055em; }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--cp-lime); outline-offset: 5px; }
+@media (max-width: 850px) {
+ .ed-section { padding-top: 60px; padding-bottom: 60px; }
+ .ed-work,.ed-share-layout,.ed-identity { grid-template-columns: 1fr; gap: 30px; }
+ .ed-control-intro,.ed-responsibility { gap: 30px; }
+ .ed-work { margin-top: 30px; }
+ .ed-share-layout { margin-top: 30px; }
+ .ed-identity-poster { min-height: 280px; }
+ .ed-closing { padding: 60px 0; }
+}
+@media (max-width: 520px) {
+ .ed-section h2 { font-size: 37px; }
+ .ed-section p { font-size: 15px; }
+ .ed-section .ed-deck { font-size: 20px; }
+ .ed-steps button { gap: 12px; padding: 20px 0; }
+ .ed-steps strong { font-size: 22px; }
+ .ed-console-body { padding: 20px; }
+ .ed-console-heading { font-size: 10px; }
+ .ed-console h3 { font-size: 24px; }
+ .ed-request-data { gap: 14px; }
+ .ed-date { width: 68px; }
+ .ed-request-data dl div { display: block; padding: 8px 0; }
+ .ed-request-data dd { text-align: left; margin-top: 5px; }
+ .ed-console .ed-demo-foot { padding: 14px 20px; }
+ .ed-share-preview { padding: 20px; }
+ .ed-control-intro,.ed-responsibility { grid-template-columns: 1fr; gap: 20px; }
+ .ed-control-intro > p { margin-top: 0; }
+ .ed-tabs { gap: 22px; }
 }
 </style>
