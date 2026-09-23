@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { DEFAULT_CUE_ID_CONFIG } from '../domain/cueId'
 
-type EditSection = 'identity' | 'about' | 'sound' | 'booking' | 'links' | 'visual' | null
+type EditSection = 'identity' | 'about' | 'sound' | 'booking' | 'links' | 'hero' | 'portrait' | null
 
 const editSection = ref<EditSection>(null)
 const publicMode = ref(false)
@@ -21,7 +21,10 @@ const profile = reactive({
   instagram: '@lits',
   soundcloud: 'soundcloud.com/lits',
   spotify: 'Spotify',
-  cueId: true
+  cueId: true,
+  heroImageUrl: '/images/profile/cuebooker-default-cover.webp',
+  portraitImageUrl: '',
+  visualMode: 'photo' as 'photo' | 'cue-id'
 })
 
 useHead({
@@ -40,6 +43,30 @@ function closeEditor() {
 
 function saveEditor() {
   editSection.value = null
+}
+
+function selectHeroImage(event: Event) {
+  const input = event.currentTarget as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  if (profile.heroImageUrl.startsWith('blob:')) URL.revokeObjectURL(profile.heroImageUrl)
+  profile.heroImageUrl = URL.createObjectURL(file)
+  input.value = ''
+}
+
+function resetHeroImage() {
+  if (profile.heroImageUrl.startsWith('blob:')) URL.revokeObjectURL(profile.heroImageUrl)
+  profile.heroImageUrl = '/images/profile/cuebooker-default-cover.webp'
+}
+
+function selectPortraitImage(event: Event) {
+  const input = event.currentTarget as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  if (profile.portraitImageUrl.startsWith('blob:')) URL.revokeObjectURL(profile.portraitImageUrl)
+  profile.portraitImageUrl = URL.createObjectURL(file)
+  profile.visualMode = 'photo'
+  input.value = ''
 }
 
 function openBooking() {
@@ -61,6 +88,8 @@ watch([editSection, bookingOpen], ([editor, booking]) => {
 
 onBeforeUnmount(() => {
   if (import.meta.client) document.body.style.overflow = ''
+  if (profile.heroImageUrl.startsWith('blob:')) URL.revokeObjectURL(profile.heroImageUrl)
+  if (profile.portraitImageUrl.startsWith('blob:')) URL.revokeObjectURL(profile.portraitImageUrl)
 })
 </script>
 
@@ -87,14 +116,14 @@ onBeforeUnmount(() => {
     <article class="artist-portfolio">
       <section class="artist-hero">
         <div class="artist-hero__media" aria-hidden="true">
-          <img src="/images/profile/cuebooker-default-cover.webp" alt="">
+          <img :src="profile.heroImageUrl" alt="">
           <div class="artist-hero__wash" />
           <div class="artist-hero__brand-mark">
-            <img src="/logo-full-dark.png" alt="">
+            <CueBrand variant="icon" decorative />
           </div>
           <div class="artist-hero__industrial-grid" />
           <CueIdStage
-            v-if="profile.cueId"
+            v-if="profile.cueId && profile.visualMode === 'cue-id'"
             class="artist-hero__cue-id"
             :config="DEFAULT_CUE_ID_CONFIG"
             artist-name="LITS"
@@ -103,19 +132,23 @@ onBeforeUnmount(() => {
           />
         </div>
 
-        <button v-if="!publicMode" type="button" class="edit-button edit-button--hero" @click="openEditor('visual')">
+        <button v-if="!publicMode" type="button" class="edit-button edit-button--hero" @click="openEditor('hero')">
           <span>Editar visual</span>
           <b aria-hidden="true" />
         </button>
 
         <div class="artist-hero__content">
           <div class="artist-hero__identity">
-            <button v-if="profile.avatar && !publicMode" type="button" class="artist-avatar artist-avatar--editable" @click="openEditor('visual')">
-              <div class="artist-avatar__placeholder">LI</div>
+            <button v-if="profile.avatar && !publicMode" type="button" class="artist-avatar artist-avatar--editable" @click="openEditor('portrait')">
+              <img v-if="profile.visualMode === 'photo' && profile.portraitImageUrl" :src="profile.portraitImageUrl" alt="LITS">
+              <div v-else-if="profile.visualMode === 'photo'" class="artist-avatar__placeholder">LI</div>
+              <div v-else class="artist-avatar__cue">CUE ID</div>
               <span class="artist-avatar__edit" aria-hidden="true" />
             </button>
             <div v-else-if="profile.avatar" class="artist-avatar">
-              <div class="artist-avatar__placeholder">LI</div>
+              <img v-if="profile.visualMode === 'photo' && profile.portraitImageUrl" :src="profile.portraitImageUrl" alt="LITS">
+              <div v-else-if="profile.visualMode === 'photo'" class="artist-avatar__placeholder">LI</div>
+              <div v-else class="artist-avatar__cue">CUE ID</div>
             </div>
 
             <div class="artist-hero__copy">
@@ -298,8 +331,9 @@ onBeforeUnmount(() => {
           <div>
             <span>EDIT PROFILE</span>
             <h2>
-              {{ editSection === 'visual' ? 'Imagen y portada'
-                : editSection === 'identity' ? 'Identidad'
+              {{ editSection === 'hero' ? 'Portada del perfil'
+                : editSection === 'portrait' ? 'Foto / CUE ID'
+                  : editSection === 'identity' ? 'Identidad'
                   : editSection === 'about' ? 'Sobre el artista'
                     : editSection === 'sound' ? 'Sonido'
                       : editSection === 'booking' ? 'Booking'
@@ -338,13 +372,49 @@ onBeforeUnmount(() => {
             <label><span>Spotify</span><input v-model="profile.spotify"></label>
           </template>
 
+          <template v-else-if="editSection === 'hero'">
+            <div class="visual-choice wide">
+              <strong>PORTADA / HERO</strong>
+              <p>La portada es independiente de tu foto de artista y de CUE ID.</p>
+            </div>
+            <label class="wide upload-field">
+              <span>Imagen de portada</span>
+              <input type="file" accept="image/jpeg,image/png,image/webp" @change="selectHeroImage">
+            </label>
+            <div class="wide editor-inline-actions">
+              <button type="button" class="profile-lab__secondary" @click="resetHeroImage">Usar portada Cuebooker</button>
+            </div>
+          </template>
+
           <template v-else>
             <div class="visual-choice wide">
-              <strong>PORTADA CUEBOOKER</strong>
-              <p>La portada por defecto forma parte del lenguaje visual del producto. Después podrá sustituirse por una portada propia.</p>
+              <strong>REPRESENTACIÓN DEL ARTISTA</strong>
+              <p>Elige si quieres mostrar una foto o tu CUE ID en el perfil. Esto no modifica la portada.</p>
             </div>
-            <label class="toggle-row wide"><input v-model="profile.avatar" type="checkbox"><span>Mostrar foto de perfil</span></label>
-            <label class="toggle-row wide"><input v-model="profile.cueId" type="checkbox"><span>Mostrar CUE ID en el portfolio</span></label>
+
+            <div class="visual-mode-picker wide">
+              <button type="button" :class="{ active: profile.visualMode === 'photo' }" @click="profile.visualMode = 'photo'">
+                FOTO
+              </button>
+              <button type="button" :class="{ active: profile.visualMode === 'cue-id' }" @click="profile.visualMode = 'cue-id'">
+                CUE ID
+              </button>
+            </div>
+
+            <label v-if="profile.visualMode === 'photo'" class="wide upload-field">
+              <span>Foto de artista</span>
+              <input type="file" accept="image/jpeg,image/png,image/webp" @change="selectPortraitImage">
+            </label>
+
+            <label class="toggle-row wide">
+              <input v-model="profile.avatar" type="checkbox">
+              <span>Mostrar representación del artista</span>
+            </label>
+
+            <label v-if="profile.visualMode === 'cue-id'" class="toggle-row wide">
+              <input v-model="profile.cueId" type="checkbox">
+              <span>Mostrar CUE ID en el perfil público</span>
+            </label>
           </template>
         </div>
 
@@ -978,6 +1048,93 @@ onBeforeUnmount(() => {
 
   .profile-link-card {
     grid-template-columns:minmax(0,1fr) 44px;
+  }
+}
+
+
+/* Separate hero cover from artist representation. */
+.artist-hero__brand-mark {
+  width:auto !important;
+}
+
+.artist-hero__brand-mark :deep(.cue-brand--icon) {
+  width:58px !important;
+  height:58px !important;
+}
+
+.artist-hero__brand-mark :deep(img) {
+  filter:none !important;
+}
+
+.artist-avatar {
+  overflow:hidden;
+}
+
+.artist-avatar > img {
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.artist-avatar__cue {
+  display:grid;
+  width:100%;
+  height:100%;
+  place-items:center;
+  background:
+    radial-gradient(circle at 50% 45%,rgba(223,255,53,.16),transparent 38%),
+    #111;
+  color:var(--lime);
+  font:900 13px/1 monospace;
+  letter-spacing:.12em;
+}
+
+.upload-field input[type="file"] {
+  min-height:44px;
+  padding:10px;
+  cursor:pointer;
+}
+
+.editor-inline-actions {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.editor-inline-actions .profile-lab__secondary {
+  width:auto;
+}
+
+.visual-mode-picker {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.visual-mode-picker button {
+  min-height:44px;
+  border:1px solid #353535;
+  border-radius:8px;
+  background:#111;
+  color:#aaa;
+  cursor:pointer;
+}
+
+.visual-mode-picker button.active {
+  border-color:var(--lime);
+  background:rgba(223,255,53,.08);
+  color:var(--lime);
+}
+
+@media (max-width:560px) {
+  .artist-hero__brand-mark {
+    width:auto !important;
+  }
+
+  .artist-hero__brand-mark :deep(.cue-brand--icon) {
+    width:50px !important;
+    height:50px !important;
   }
 }
 </style>
