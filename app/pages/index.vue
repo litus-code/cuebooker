@@ -8,6 +8,9 @@ const menuOpen = ref(false)
 const navHidden = ref(false)
 const backToTopVisible = ref(false)
 const lastScrollY = ref(0)
+let scrollDirection = 0
+let scrollDistance = 0
+const heroImage = `${useRuntimeConfig().app.baseURL}club-hero.webp`
 const activeRole = ref<'artist' | 'manager'>('artist')
 const shareMode = ref<'profile' | 'website' | 'qr'>('profile')
 const router = useRouter()
@@ -19,10 +22,10 @@ const p = computed(() => locale.value === 'es' ? {
     eyebrow: 'PARA QUIEN MUEVE LA NOCHE',
     title: 'Que la música siga avanzando.',
     accent: 'El booking ya está ocurriendo.',
-    body: 'Cuebooker evita que una oportunidad se pierda.',
+    body: 'Solicitudes, conversaciones y fechas en tu espacio de trabajo. Tú decides el siguiente paso.',
     flow: { channels: ['Instagram · 22:47', 'WhatsApp · 23:12', 'Formulario web · 00:06'], label: 'CUEBOOKER / NUEVA SOLICITUD', booking: 'Warehouse 23 / Barcelona', detail: '18 oct · Techno · 1.200 €', status: 'Pendiente de decisión' },
     primary: 'Abrir mi espacio',
-    secondary: 'Conoce tu CUE ID',
+    secondary: 'Cómo funciona',
     note: 'Hecho para DJs, managers y las personas que hacen posible cada noche.'
   },
   ticker: ['Reservas', 'Conversaciones', 'Calendario', 'Perfil de artista', 'Automatización', 'CUE ID'],
@@ -82,10 +85,10 @@ const p = computed(() => locale.value === 'es' ? {
     eyebrow: 'FOR THE PEOPLE WHO MOVE THE NIGHT',
     title: 'Let the music keep moving.',
     accent: 'Booking is already happening.',
-    body: 'Cuebooker makes sure no opportunity gets lost.',
+    body: 'Requests, conversations and dates in your workspace. You decide what happens next.',
     flow: { channels: ['Instagram · 22:47', 'WhatsApp · 23:12', 'Web form · 00:06'], label: 'CUEBOOKER / NEW REQUEST', booking: 'Warehouse 23 / Barcelona', detail: '18 Oct · Techno · €1,200', status: 'Waiting for your decision' },
     primary: 'Open my workspace',
-    secondary: 'Meet your CUE ID',
+    secondary: 'How it works',
     note: 'Made for DJs, managers and the people who make every night happen.'
   },
   ticker: ['Bookings', 'Conversations', 'Calendar', 'Artist profile', 'Automation', 'CUE ID'],
@@ -159,20 +162,39 @@ function closeMenuOnEscape(event: KeyboardEvent) {
   if (event.key === 'Escape') menuOpen.value = false
 }
 function handleScroll() {
-  const currentY = window.scrollY
+  // Clamp Safari overscroll before comparing direction.
+  const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight)
+  const currentY = Math.min(maxY, Math.max(0, window.scrollY))
+  const delta = currentY - lastScrollY.value
+  lastScrollY.value = currentY
   backToTopVisible.value = currentY > 520
   if (menuOpen.value || currentY < 80) {
     navHidden.value = false
-  } else {
-    navHidden.value = currentY > lastScrollY.value + 8
+    scrollDistance = 0
+    scrollDirection = 0
+    return
   }
-  lastScrollY.value = currentY
+  if (delta === 0) return
+  const direction = Math.sign(delta)
+  if (direction !== scrollDirection) scrollDistance = 0
+  scrollDirection = direction
+  scrollDistance += Math.abs(delta)
+  // Keep the current state through tiny events, including momentum scrolling.
+  if (scrollDistance >= (direction > 0 ? 24 : 12)) {
+    navHidden.value = direction > 0
+    scrollDistance = 0
+  }
 }
 watch(menuOpen, open => {
   if (import.meta.client) document.documentElement.classList.toggle('mobile-menu-open', open)
+  navHidden.value = false
+  scrollDirection = 0
+  scrollDistance = 0
+  if (import.meta.client) lastScrollY.value = Math.max(0, window.scrollY)
 })
 onMounted(() => {
   lastScrollY.value = window.scrollY
+  handleScroll()
   window.addEventListener('keydown', closeMenuOnEscape)
   window.addEventListener('scroll', handleScroll, { passive: true })
 })
@@ -199,7 +221,7 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
           <button class="cp-theme" type="button" :aria-label="locale === 'es' ? 'Cambiar apariencia' : 'Change appearance'" @click="setTheme(theme === 'dark' ? 'light' : 'dark')"><span /></button>
           <NuxtLink class="cp-login" to="/access?mode=signin" @click="analytics.track('login_click', { placement: 'header' })">{{ p.nav.login }}</NuxtLink>
           <NuxtLink class="cp-cta cp-cta--nav" to="/access?mode=signup" @click="analytics.track('signup_click', { placement: 'header' })">{{ p.nav.signup }}</NuxtLink>
-          <button class="cp-menu" type="button" :aria-expanded="menuOpen" aria-controls="cp-mobile-menu" @click="toggleMenu"><span /><span /></button>
+          <button class="cp-menu" :class="{ 'is-open': menuOpen }" type="button" :aria-label="locale === 'es' ? (menuOpen ? 'Cerrar menú' : 'Abrir menú') : (menuOpen ? 'Close menu' : 'Open menu')" :aria-expanded="menuOpen" aria-controls="cp-mobile-menu" @click="toggleMenu"><span /><span /></button>
         </div>
       </div>
     </nav>
@@ -217,17 +239,13 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
       </div>
     </Teleport>
 
-    <section id="top" class="cp-hero">
+    <section id="top" class="cp-hero" :style="{ '--hero-image': `url(${heroImage})` }">
       <div class="cp-hero-overlay" />
       <div class="cp-wrap cp-hero-content">
         <p class="cp-eyebrow">{{ p.hero.eyebrow }}</p>
-        <h1>{{ p.hero.title }} <em>{{ p.hero.accent }}</em></h1>
+        <h1>{{ p.hero.title }}</h1>
+        <p class="cp-hero-accent">{{ p.hero.accent }}</p>
         <p class="cp-hero-lead">{{ p.hero.body }}</p>
-        <div class="cp-hero-flow" aria-label="Booking flow preview">
-          <div class="cp-hero-signals"><span v-for="channel in p.hero.flow.channels" :key="channel">{{ channel }}</span></div>
-          <div class="cp-hero-flow-line" aria-hidden="true"><i /></div>
-          <div class="cp-hero-request"><div class="cp-hero-request-head"><span>{{ p.hero.flow.label }}</span><b>{{ p.hero.flow.status }}</b></div><strong>{{ p.hero.flow.booking }}</strong><small>{{ p.hero.flow.detail }}</small></div>
-        </div>
         <div class="cp-hero-actions">
           <button class="cp-cta" type="button" @click="auth('signup', 'hero')">{{ p.hero.primary }} <span class="cp-arrow" aria-hidden="true" /></button>
           <button class="cp-cta cp-cta--ghost" type="button" @click="scrollTo('#system')">{{ p.hero.secondary }}</button>
@@ -236,11 +254,20 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
       </div>
     </section>
 
-    <div class="cp-ticker" aria-hidden="true"><div class="cp-ticker-track"><span v-for="item in [...p.ticker, ...p.ticker]" :key="item + Math.random()">{{ item }}</span></div></div>
+    <div class="cp-ticker" aria-hidden="true"><div class="cp-ticker-track"><span v-for="(item, index) in [...p.ticker, ...p.ticker]" :key="index">{{ item }}</span></div></div>
 
     <section id="system" class="cp-section">
       <div class="cp-wrap">
         <div class="cp-section-head"><h2>{{ p.system.title }}</h2><p>{{ p.system.body }}</p></div>
+        <div class="cp-booking-proof">
+          <p class="cp-kicker">{{ locale === 'es' ? 'DEL ENLACE A TU PRÓXIMA FECHA' : 'FROM YOUR LINK TO YOUR NEXT DATE' }}</p>
+          <div class="cp-hero-flow">
+            <div class="cp-hero-signals"><span v-for="channel in (locale === 'es' ? ['Enlace en tu bio', 'Formulario en tu web', 'QR en la cabina'] : ['Link in your bio', 'Form on your website', 'QR in the booth'])" :key="channel">{{ channel }}</span></div>
+            <div class="cp-hero-flow-line" aria-hidden="true" />
+            <div class="cp-hero-request"><div class="cp-hero-request-head"><span>{{ p.hero.flow.label }}</span><b>{{ p.hero.flow.status }}</b></div><strong>{{ p.hero.flow.booking }}</strong><small>{{ p.hero.flow.detail }}</small></div>
+          </div>
+          <p class="cp-demo-caption">{{ locale === 'es' ? 'Ejemplo ilustrativo · Datos ficticios' : 'Illustrative example · Fictional data' }}</p>
+        </div>
         <div class="cp-signal-grid"><article v-for="card in p.system.cards" :key="card[0]" class="cp-signal-card"><span class="cp-signal-number">{{ card[0] }}</span><h3>{{ card[1] }}</h3><p>{{ card[2] }}</p></article></div>
       </div>
     </section>
@@ -268,3 +295,94 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
     <footer class="cp-footer"><div class="cp-wrap"><span class="cp-brand"><CueBrand /></span><span>{{ locale === 'es' ? 'Hecho para las personas que están detrás del sonido.' : 'Made for the people behind the sound.' }}</span><span>© 2026 Cuebooker</span></div></footer>
   </main>
 </template>
+
+<style scoped>
+/* Landing-only composition. Keep workspace styles untouched. */
+.commercial-home .cp-hero {
+  min-height: min(820px, 100svh);
+  align-items: center;
+  background: var(--cp-black);
+}
+.commercial-home .cp-hero::before {
+  background: var(--hero-image) 68% center / cover no-repeat;
+  opacity: 1;
+}
+.commercial-home .cp-hero::after { display: none; }
+.cp-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--cp-black) 0%, color-mix(in srgb, var(--cp-black) 90%, transparent) 26%, color-mix(in srgb, var(--cp-black) 45%, transparent) 48%, transparent 72%), linear-gradient(0deg, var(--cp-black), transparent 28%);
+}
+.commercial-home .cp-hero-content { padding: 132px 0 58px; }
+.commercial-home .cp-hero h1 {
+  max-width: 650px;
+  margin: 26px 0 22px;
+  font-size: clamp(62px, 6.8vw, 98px);
+  line-height: .98;
+  letter-spacing: -.055em;
+  text-wrap: balance;
+}
+.cp-hero-accent {
+  max-width: 650px;
+  margin: 0 0 20px;
+  color: var(--cp-lime);
+  font-size: clamp(23px, 2.4vw, 34px);
+  font-weight: 750;
+  line-height: 1.2;
+  letter-spacing: -.025em;
+}
+.commercial-home .cp-hero-lead { max-width: 455px; font-size: 18px; line-height: 1.5; }
+.commercial-home .cp-hero-actions { margin-top: 26px; }
+.commercial-home .cp-hero-note { max-width: 430px; margin-top: 25px; line-height: 1.5; }
+.commercial-home .cp-cta { min-height: 48px; box-shadow: 0 4px 0 color-mix(in srgb, var(--cp-lime) 45%, black), 0 14px 30px color-mix(in srgb, var(--cp-lime) 12%, transparent); }
+.commercial-home .cp-cta--ghost { background: color-mix(in srgb, var(--cp-black) 78%, transparent); box-shadow: none; }
+.commercial-home .cp-cta:active { transform: translateY(2px); }
+.commercial-home .cp-section { scroll-margin-top: 88px; }
+.commercial-home .cp-signal-card { border-radius: 16px; }
+.commercial-home .cp-channel-card { padding-right: 28px; }
+.commercial-home .cp-channel-icon { position: relative; inset: auto; margin: 20px 0; width: 58px; }
+.commercial-home .cp-channel-card h3 { max-width: none; padding-right: 0; }
+.commercial-home .cp-channel-card .cp-signal-number { padding-right: 0; }
+.cp-booking-proof { padding: 28px 0; margin-bottom: 35px; border-block: 1px solid var(--cp-line); }
+.commercial-home .cp-booking-proof .cp-hero-flow { max-width: 820px; border: 0; background: none; box-shadow: none; margin: 22px 0 14px; padding: 0; }
+.commercial-home .cp-booking-proof .cp-hero-signals span { font-size: 11px; padding: 12px; }
+.commercial-home .cp-booking-proof .cp-hero-request-head span,
+.commercial-home .cp-booking-proof .cp-hero-request small { font-size: 10px; }
+.commercial-home .cp-booking-proof .cp-hero-request-head b { font-size: 9px; }
+.cp-demo-caption { color: var(--cp-muted); font-size: 11px; }
+.commercial-home .cp-nav:has(:focus-visible) { transform: none; }
+.cp-menu span { transition: transform .2s; }
+.cp-menu.is-open span:first-child { transform: translateY(4px) rotate(45deg); }
+.cp-menu.is-open span:last-child { transform: translateY(-4px) rotate(-45deg); }
+.cp-mobile-menu--portal .cp-mobile-nav-links a { text-decoration: none; }
+.cp-mobile-menu--portal { overscroll-behavior: contain; padding-bottom: max(24px, env(safe-area-inset-bottom)); }
+:global(html.mobile-menu-open), :global(html.mobile-menu-open body) { overflow: hidden; }
+:global(html[data-theme='light']) .cp-hero::before { opacity: .34; }
+@media (max-width: 1100px) and (min-width: 851px) {
+  .commercial-home .cp-hero h1 { max-width: 55%; font-size: 64px; }
+  .cp-hero-accent { max-width: 55%; }
+}
+@media (max-width: 850px) {
+  .commercial-home .cp-hero { min-height: auto; }
+  .commercial-home .cp-hero::before { background-image: none; }
+  .commercial-home .cp-hero-content { padding: 110px 0 48px; }
+  .commercial-home .cp-hero h1 { max-width: 650px; font-size: clamp(48px, 9vw, 72px); }
+  .cp-mobile-menu--portal { min-height: 0; }
+}
+@media (max-width: 520px) {
+  .commercial-home .cp-hero-content { padding: 96px 0 38px; }
+  .commercial-home .cp-hero h1 { font-size: clamp(43px, 11.7vw, 60px); margin: 22px 0 18px; }
+  .cp-hero-accent { font-size: 25px; max-width: 320px; }
+  .commercial-home .cp-hero-lead { font-size: 16px; }
+  .commercial-home .cp-hero-note { font-size: 12px; }
+  .commercial-home .cp-booking-proof .cp-hero-flow { grid-template-columns: 1fr; gap: 18px; }
+  .commercial-home .cp-booking-proof .cp-hero-signals { grid-template-columns: repeat(3, 1fr); }
+  .commercial-home .cp-booking-proof .cp-hero-signals span { font-size: 10px; transform: none; padding: 10px 7px; line-height: 1.4; }
+  .cp-booking-proof .cp-hero-flow-line { display: none; }
+  .commercial-home .cp-booking-proof .cp-hero-request strong { font-size: 20px; line-height: 1.25; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .commercial-home .cp-nav, .commercial-home .cp-cta, .cp-menu span { transition: none; }
+  .cp-ticker-track { animation: none; }
+}
+</style>
