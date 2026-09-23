@@ -119,7 +119,8 @@ async function save() {
 </template>
 
 <style scoped>
-.contact-editor-entry { margin-top:5px; padding:0; border:0; background:transparent; color:var(--cue-accent); cursor:pointer; font:800 8px monospace; text-transform:uppercase; }
+.contact-editor-entry { margin-top:7px; padding:0; border:0; background:transparent; color:var(--cue-muted); cursor:pointer; font:800 8px monospace; letter-spacing:.04em; text-transform:uppercase; transition:color .16s ease; }
+.contact-editor-entry:hover { color:var(--cue-accent); }
 .contact-editor-backdrop { position:fixed; z-index:110; inset:0; display:grid; place-items:center; padding:18px; background:rgba(0,0,0,.74); backdrop-filter:blur(5px); }
 .contact-editor { width:min(640px,100%); max-height:90dvh; overflow:auto; border:1px solid var(--cue-border); background:var(--cue-surface); color:var(--cue-text); }
 .contact-editor > header { display:flex; justify-content:space-between; gap:16px; padding:20px; border-bottom:1px solid var(--cue-border); }
