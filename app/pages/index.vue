@@ -493,7 +493,7 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
 </script>
 
 <template>
-  <main class="commercial-home" :inert="menuOpen">
+  <main class="commercial-home">
     <a class="ed-skip" href="#top" @click.prevent="scrollTo('#top')">{{ locale === 'es' ? 'Saltar al contenido' : 'Skip to content' }}</a>
     <nav :aria-label="locale === 'es' ? 'Navegación principal' : 'Main navigation'" class="cp-nav" :class="{ 'cp-nav--hidden': navHidden }">
       <div class="cp-wrap cp-nav-inner">
@@ -1069,6 +1069,129 @@ section:focus { outline:none; }
 @media (prefers-reduced-motion: reduce) and (max-width: 850px) {
   .commercial-home .cp-hero::before {
     transform: none;
+  }
+}
+</style>
+
+
+<style scoped>
+/* Stronger mobile cover composition and working menu close control. */
+@media (max-width: 850px) {
+  .commercial-home .cp-hero {
+    min-height: 100svh !important;
+  }
+  .commercial-home .cp-hero::before {
+    inset: 0;
+    background-image: var(--hero-image);
+    background-position: 68% center;
+    background-size: cover;
+    opacity: 1;
+    transform: none;
+  }
+  .commercial-home .cp-hero-overlay {
+    background:
+      linear-gradient(180deg,
+        color-mix(in srgb, var(--cp-black) 95%, transparent) 0%,
+        color-mix(in srgb, var(--cp-black) 88%, transparent) 30%,
+        color-mix(in srgb, var(--cp-black) 62%, transparent) 63%,
+        color-mix(in srgb, var(--cp-black) 78%, transparent) 100%),
+      linear-gradient(90deg,
+        color-mix(in srgb, var(--cp-black) 88%, transparent) 0%,
+        color-mix(in srgb, var(--cp-black) 48%, transparent) 72%,
+        transparent 100%);
+  }
+  .commercial-home .cp-hero-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100svh !important;
+    padding: 104px 0 34px !important;
+  }
+  .commercial-home .cp-hero-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: min(100%, 520px);
+  }
+  .commercial-home .cp-hero-actions .cp-cta {
+    width: 100%;
+  }
+  .commercial-home .cp-hero-actions .cp-cta--ghost {
+    border-color: color-mix(in srgb, var(--cp-paper) 34%, transparent);
+    background: color-mix(in srgb, var(--cp-black) 66%, transparent);
+    backdrop-filter: blur(8px);
+  }
+  .commercial-home .cp-hero-note {
+    color: color-mix(in srgb, var(--cp-paper) 76%, transparent);
+  }
+}
+
+@media (max-width: 520px) {
+  .commercial-home .cp-hero {
+    min-height: 100svh !important;
+  }
+  .commercial-home .cp-hero::before {
+    background-position: 66% center;
+    background-size: cover;
+    opacity: 1;
+  }
+  .commercial-home .cp-hero-overlay {
+    background:
+      linear-gradient(180deg,
+        color-mix(in srgb, var(--cp-black) 97%, transparent) 0%,
+        color-mix(in srgb, var(--cp-black) 90%, transparent) 32%,
+        color-mix(in srgb, var(--cp-black) 58%, transparent) 66%,
+        color-mix(in srgb, var(--cp-black) 82%, transparent) 100%),
+      linear-gradient(90deg,
+        color-mix(in srgb, var(--cp-black) 90%, transparent) 0%,
+        color-mix(in srgb, var(--cp-black) 54%, transparent) 78%,
+        transparent 100%);
+  }
+  .commercial-home .cp-hero-content {
+    justify-content: flex-start;
+    min-height: 100svh !important;
+    padding: 92px 0 26px !important;
+  }
+  .commercial-home .cp-hero h1 {
+    max-width: 355px;
+    margin-top: 18px;
+    font-size: clamp(40px, 10.6vw, 50px);
+  }
+  .cp-hero-accent {
+    max-width: 300px;
+    font-size: 23px;
+  }
+  .commercial-home .cp-hero-lead {
+    max-width: 350px;
+    font-size: 15px;
+    line-height: 1.48;
+  }
+  .commercial-home .cp-hero-actions {
+    gap: 11px;
+    margin-top: 18px;
+  }
+  .commercial-home .cp-hero-actions .cp-cta {
+    min-height: 54px;
+  }
+  .commercial-home .cp-hero-note {
+    max-width: 315px;
+    margin-top: 18px;
+    padding: 12px 14px;
+    border-left: 2px solid var(--cp-red);
+    background: color-mix(in srgb, var(--cp-black) 64%, transparent);
+    backdrop-filter: blur(7px);
+  }
+  .commercial-home .cp-hero-note .cp-live-dot {
+    display: none;
+  }
+}
+
+@media (max-width: 380px), (max-height: 720px) and (max-width: 520px) {
+  .commercial-home .cp-hero {
+    min-height: auto !important;
+  }
+  .commercial-home .cp-hero-content {
+    min-height: auto !important;
+    padding-bottom: 24px !important;
   }
 }
 </style>
