@@ -360,7 +360,7 @@ function slideKeys(event: KeyboardEvent, group: SlideGroup, index: number) {
   else return
   event.preventDefault()
   selectSlide(group, next)
-  document.getElementById((group === 'booking' ? 'step-' : 'share-') + next)?.focus()
+  nextTick(() => document.getElementById((group === 'booking' ? 'step-' : 'share-') + next)?.focus())
 }
 function updateMotion() {
   reducedMotion.value = motionQuery?.matches ?? true
@@ -894,5 +894,181 @@ section:focus { outline:none; }
  .ed-section h2,.ed-closing h2,.cp-hero h1 { overflow-wrap:anywhere; }
  .ed-console-heading { flex-wrap:wrap; }
  .ed-console,.ed-share-preview,.ed-work,.ed-share-layout > div { min-width:0; }
+}
+</style>
+
+
+<style scoped>
+/* Mobile art direction: keep the desktop composition intact. */
+@media (max-width: 850px) {
+  .commercial-home .cp-hero {
+    min-height: 0 !important;
+    overflow: hidden;
+    isolation: isolate;
+    border-bottom: 1px solid var(--cp-line);
+  }
+  .commercial-home .cp-hero::before {
+    display: block;
+    background-image: var(--hero-image);
+    background-position: 69% bottom;
+    background-size: auto 58%;
+    background-repeat: no-repeat;
+    opacity: .72;
+    transform: scale(1.03);
+    transform-origin: right bottom;
+  }
+  .commercial-home .cp-hero-overlay {
+    background:
+      linear-gradient(180deg,
+        var(--cp-black) 0%,
+        color-mix(in srgb, var(--cp-black) 96%, transparent) 38%,
+        color-mix(in srgb, var(--cp-black) 66%, transparent) 68%,
+        color-mix(in srgb, var(--cp-black) 88%, transparent) 100%),
+      linear-gradient(90deg, var(--cp-black) 0%, color-mix(in srgb, var(--cp-black) 76%, transparent) 58%, transparent 100%);
+  }
+  .commercial-home .cp-hero-content {
+    min-height: 0 !important;
+    padding: 94px 0 30px !important;
+  }
+  .commercial-home .cp-hero h1 {
+    margin: 20px 0 16px;
+  }
+  .commercial-home .cp-hero-lead {
+    max-width: 520px;
+    margin-bottom: 0;
+  }
+  .commercial-home .cp-hero-actions {
+    margin-top: 22px;
+    gap: 10px;
+  }
+  .commercial-home .cp-hero-note {
+    max-width: 520px;
+    margin-top: 20px;
+    margin-bottom: 0;
+  }
+
+  #system.ed-section {
+    padding-top: 54px;
+  }
+  #system .ed-intro {
+    max-width: 680px;
+  }
+  #system .ed-carousel {
+    margin-top: 26px;
+  }
+  #system .ed-playback {
+    justify-content: space-between;
+    margin-top: 0;
+    margin-bottom: 12px;
+  }
+  #system .ed-work {
+    display: grid;
+    gap: 14px;
+    margin-top: 0;
+  }
+  #system .ed-steps button {
+    display: none;
+  }
+  #system .ed-steps button.selected {
+    display: grid;
+    padding: 18px;
+    border: 1px solid var(--cp-line);
+    border-top-color: var(--cp-lime);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--cp-panel) 88%, transparent);
+  }
+  #system .ed-steps small {
+    max-width: 560px;
+    margin-top: 7px;
+  }
+  #system .ed-console {
+    margin-top: 0;
+  }
+  #system .ed-console-body {
+    min-height: 310px;
+  }
+  #system .ed-request-data,
+  #system .ed-calendar,
+  #system .ed-decision {
+    min-height: 170px;
+  }
+}
+
+@media (max-width: 520px) {
+  .commercial-home .cp-hero::before {
+    background-position: 67% bottom;
+    background-size: auto 52%;
+    opacity: .68;
+  }
+  .commercial-home .cp-hero-overlay {
+    background:
+      linear-gradient(180deg,
+        var(--cp-black) 0%,
+        color-mix(in srgb, var(--cp-black) 97%, transparent) 40%,
+        color-mix(in srgb, var(--cp-black) 63%, transparent) 72%,
+        color-mix(in srgb, var(--cp-black) 90%, transparent) 100%),
+      linear-gradient(90deg, var(--cp-black) 0%, color-mix(in srgb, var(--cp-black) 72%, transparent) 72%, transparent 100%);
+  }
+  .commercial-home .cp-hero-content {
+    padding: 88px 0 24px !important;
+  }
+  .commercial-home .cp-hero h1 {
+    font-size: clamp(42px, 11vw, 54px);
+    line-height: .99;
+  }
+  .cp-hero-accent {
+    margin-bottom: 16px;
+    font-size: 24px;
+  }
+  .commercial-home .cp-hero-actions {
+    margin-top: 20px;
+  }
+  .commercial-home .cp-hero-note {
+    max-width: 330px;
+    margin-top: 18px;
+    padding-right: 12px;
+  }
+  #system.ed-section {
+    padding-top: 48px;
+  }
+  #system .ed-intro > p:last-child {
+    margin-bottom: 0;
+  }
+  #system .ed-carousel {
+    margin-top: 22px;
+  }
+  #system .ed-steps button.selected {
+    grid-template-columns: 28px 1fr 9px;
+    gap: 10px;
+    padding: 16px;
+  }
+  #system .ed-steps strong {
+    font-size: 21px;
+  }
+  #system .ed-steps small {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  #system .ed-console-bar {
+    padding: 15px 18px;
+  }
+  #system .ed-console-body {
+    min-height: 280px;
+    padding: 18px;
+  }
+  #system .ed-console h3 {
+    margin: 18px 0;
+  }
+  #system .ed-request-data,
+  #system .ed-calendar,
+  #system .ed-decision {
+    min-height: 150px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (max-width: 850px) {
+  .commercial-home .cp-hero::before {
+    transform: none;
+  }
 }
 </style>
