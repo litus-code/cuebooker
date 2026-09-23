@@ -13,6 +13,28 @@
   --cue-violet: #8e7dff;
   --cue-orange: #efa45e;
   --cue-shadow: rgba(0, 0, 0, .45);
+
+  --cue-radius-xs: 4px;
+  --cue-radius-sm: 6px;
+  --cue-radius-md: 8px;
+  --cue-radius-lg: 10px;
+  --cue-radius-xl: 12px;
+  --cue-radius-round: 999px;
+
+  --cue-space-1: 4px;
+  --cue-space-2: 8px;
+  --cue-space-3: 12px;
+  --cue-space-4: 16px;
+  --cue-space-5: 20px;
+  --cue-space-6: 24px;
+  --cue-space-8: 32px;
+  --cue-space-10: 40px;
+  --cue-space-12: 48px;
+
+  --cue-control-compact: 30px;
+  --cue-control-standard: 38px;
+  --cue-control-primary: 40px;
+  --cue-control-mobile: 42px;
 }
 
 :root[data-theme='light'] {
