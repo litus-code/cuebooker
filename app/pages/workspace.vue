@@ -17,8 +17,10 @@ const router = useRouter()
 
 type WorkspaceView = 'overview' | 'bookings' | 'calendar' | 'history' | 'profile'
 const WORKSPACE_VIEWS: WorkspaceView[] = ['overview', 'bookings', 'calendar', 'history', 'profile']
-function workspaceViewFromQuery(value: unknown): WorkspaceView {
-  return typeof value === 'string' && WORKSPACE_VIEWS.includes(value as WorkspaceView) ? value as WorkspaceView : 'overview'
+function workspaceViewFromQuery(value: unknown, booking?: unknown): WorkspaceView {
+  if (typeof value === 'string' && WORKSPACE_VIEWS.includes(value as WorkspaceView)) return value as WorkspaceView
+  if (typeof booking === 'string' && booking) return 'bookings'
+  return 'overview'
 }
 type ProfileEditSection = 'identity' | 'image' | 'sound' | 'links' | 'booking' | 'distribution' | null
 const PROFILE_EDIT_SECTIONS = ['identity', 'image', 'sound', 'links', 'booking', 'distribution'] as const
@@ -68,7 +70,7 @@ function emptyProfileForm(): ArtistProfileForm {
   }
 }
 
-const activeView = ref<WorkspaceView>(workspaceViewFromQuery(route.query.view))
+const activeView = ref<WorkspaceView>(workspaceViewFromQuery(route.query.view, route.query.booking))
 const artists = ref<ManagedArtist[]>([])
 const organizations = ref<ManagedOrganization[]>([])
 const selectedArtistId = ref('')
@@ -402,8 +404,8 @@ watch(selectedArtistId, async (artistId) => {
   await loadArtistProfile()
   await ensureBookingCoreWorkspace()
 })
-watch(() => route.query.view, value => {
-  const next = workspaceViewFromQuery(value)
+watch(() => [route.query.view, route.query.booking], ([value, booking]) => {
+  const next = workspaceViewFromQuery(value, booking)
   if (next !== activeView.value) activeView.value = next
   if (next === 'profile') profileEditSection.value = profileSectionFromQuery(route.query.section)
 })
@@ -702,6 +704,7 @@ function openRealBooking(bookingId: string) {
     void router.replace({
       query: {
         ...route.query,
+        view: 'bookings',
         artist: selectedArtistId.value || route.query.artist,
         booking: bookingId
       }
