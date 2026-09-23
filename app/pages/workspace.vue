@@ -15,8 +15,8 @@ const preferences = useCuePreferences()
 const route = useRoute()
 const router = useRouter()
 
-type WorkspaceView = 'overview' | 'bookings' | 'calendar' | 'history' | 'profile'
-const WORKSPACE_VIEWS: WorkspaceView[] = ['overview', 'bookings', 'calendar', 'history', 'profile']
+type WorkspaceView = 'overview' | 'bookings' | 'calendar' | 'history' | 'profile' | 'cue-id'
+const WORKSPACE_VIEWS: WorkspaceView[] = ['overview', 'bookings', 'calendar', 'history', 'profile', 'cue-id']
 function workspaceViewFromQuery(value: unknown, booking?: unknown): WorkspaceView {
   if (typeof value === 'string' && WORKSPACE_VIEWS.includes(value as WorkspaceView)) return value as WorkspaceView
   if (typeof booking === 'string' && booking) return 'bookings'
@@ -131,7 +131,7 @@ const tourCardStyle = ref<Record<string, string>>({})
 let tourPositionTimer: ReturnType<typeof setTimeout> | null = null
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
-  overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Actividad', profile: 'Perfil',
+  overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Actividad', profile: 'Perfil', cueId: 'CUE ID',
   artist: 'Artista', role: 'DJ', settings: 'Ajustes', logout: 'Cerrar sesión',
   loading: 'Cargando workspace…', rosterEyebrow: 'ROSTER / PRIMER ARTISTA', addFirstArtist: 'Añade el primer artista de',
   rosterBody: 'Quedará asociado al roster y podrás empezar a gestionar su actividad.', artistName: 'Nombre artístico', identifier: 'Identificador', creating: 'Creando…', addArtist: 'Añadir artista',
@@ -145,6 +145,9 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   calendarEyebrow: 'CALENDARIO / AGENDA', calendarTitle: 'FECHAS Y HORARIOS.', calendarBody: 'Los holds y bookings confirmados aparecen aquí automáticamente. Usa “Añadir bloqueo” para viajes, estudio o indisponibilidad que no nacen de un booking.', weekdays: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], unavailable: 'No disponible', dayHours: 'DÍA / 24 HORAS', add: 'Añadir bloqueo', selectedDaySchedule: 'Horario del día seleccionado', addAt: 'Añadir bloqueo a las',
   historyEyebrow: 'WORKSPACE / ACTIVIDAD', historyTitle: 'TODO LO QUE HA PASADO.',
   historyBody: 'Mensajes, cambios de estado, holds y acciones ordenados por tiempo. Los bookings archivados siguen estando en Bookings → Archivados.',
+  cueIdEyebrow: 'ARTISTA / IDENTIDAD VISUAL', cueIdTitle: 'TU CUE ID.', cueIdBody: 'Crea y gestiona tu identidad visual. Decide después qué parte quieres mostrar en tu perfil público.',
+  cueIdCreate: 'Abrir editor CUE ID', cueIdProfile: 'Visibilidad en Perfil', cueIdProfileBody: 'Desde Perfil decides si tu avatar aparece públicamente. Aquí solo construyes y gestionas la identidad.',
+  cueIdAssets: 'Assets y redes', cueIdAssetsBody: 'Renders, imágenes y formatos para compartir vivirán aquí en próximas iteraciones.', cueIdStatus: 'Estado actual', cueIdReady: 'CUE ID configurado', cueIdPending: 'Todavía sin configurar',
   previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente',
   profileEyebrow: 'ARTISTA / PRESENCIA PÚBLICA', profileTitle: 'CONSTRUYE TU PERFIL PÚBLICO.', profileBody: 'Esta es la presencia que verá un promoter cuando llegue a tu enlace. Edita cada bloque sin salir del resultado final.',
   profileOptional: 'Ficha opcional', profileOptionalBody: 'Tu workspace ya está creado. Puedes completar estos datos ahora o volver desde Perfil cuando quieras.', later: 'Ahora no', previewProfile: 'Vista previa', previewPrivate: 'VISTA PREVIA / PERFIL PÚBLICO', previewClose: 'Cerrar vista previa', previewBioEmpty: 'Tu biografía aparecerá aquí cuando la completes.', previewGenresEmpty: 'Añade géneros para verlos en la ficha.', previewFormats: 'Formatos', previewLinks: 'Escuchar y seguir',
@@ -163,7 +166,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   passwordLength: 'La nueva contraseña debe tener al menos 8 caracteres.', close: 'Cerrar', accountPrivate: 'CUENTA / PRIVADO',
   editSlot: 'EDITAR BLOQUEO MANUAL', newSlot: 'NUEVO BLOQUEO MANUAL', privateLabel: 'Qué bloqueas', privatePlaceholder: 'Estudio, viaje, no disponible…', start: 'Inicio', end: 'Fin', invalidTime: 'La hora de fin debe ser posterior a la hora de inicio.', status: 'Estado', saving: 'Guardando…', saveChanges: 'Guardar cambios', createSlot: 'Crear horario', deleteSlot: 'Eliminar horario', finish: 'Terminar', next: 'Siguiente', closeTour: 'Cerrar recorrido'
 } : {
-  overview: 'Overview', bookings: 'Bookings', calendar: 'Calendar', history: 'Activity', profile: 'Profile',
+  overview: 'Overview', bookings: 'Bookings', calendar: 'Calendar', history: 'Activity', profile: 'Profile', cueId: 'CUE ID',
   artist: 'Artist', role: 'DJ', settings: 'Settings', logout: 'Sign out',
   loading: 'Loading workspace…', rosterEyebrow: 'ROSTER / FIRST ARTIST', addFirstArtist: 'Add the first artist for',
   rosterBody: 'They will be linked to the roster so you can start managing their activity.', artistName: 'Artist name', identifier: 'Identifier', creating: 'Creating…', addArtist: 'Add artist',
@@ -1330,6 +1333,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <button :title="copy.calendar" data-workspace-view="calendar" :class="{ active: activeView === 'calendar' && !settingsOpen }" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
         <button :title="copy.history" data-workspace-view="history" :class="{ active: activeView === 'history' && !settingsOpen }" type="button" @click="changeView('history')">{{ copy.history }}</button>
         <button :title="copy.profile" data-workspace-view="profile" :class="{ active: activeView === 'profile' && !settingsOpen }" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
+        <button :title="copy.cueId" data-workspace-view="cue-id" :class="{ active: activeView === 'cue-id' && !settingsOpen }" type="button" @click="changeView('cue-id')">{{ copy.cueId }}</button>
         <button :title="copy.settings" data-workspace-view="settings" :class="{ active: settingsOpen }" type="button" @click="openSettings">{{ copy.settings }}</button>
       </nav>
       <div class="account-actions">
@@ -1420,6 +1424,19 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <div class="workspace-skeleton__history-timeline-block">
           <i v-for="index in 6" :key="`history-row-${index}`" class="skeleton-panel skeleton-panel--history-row-block" />
         </div>
+      </div>
+    </section>
+
+    <section v-else-if="loadingView === 'cue-id'" class="workspace-skeleton workspace-skeleton--cue-id" aria-busy="true" aria-live="polite">
+      <span class="sr-only">{{ copy.loading }}</span>
+      <div class="workspace-skeleton__cue-id-heading">
+        <i class="skeleton-line skeleton-line--eyebrow" />
+        <i class="skeleton-line skeleton-line--cue-id-title" />
+        <i class="skeleton-line skeleton-line--cue-id-body" />
+      </div>
+      <i class="skeleton-panel skeleton-panel--cue-id-hero" />
+      <div class="workspace-skeleton__cue-id-grid">
+        <i v-for="index in 3" :key="`cue-id-card-${index}`" class="skeleton-panel skeleton-panel--cue-id-card" />
       </div>
     </section>
 
@@ -1618,6 +1635,73 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           :refresh-key="bookingCoreOperationsRevision"
           @open-booking="openRealBooking"
         />
+      </section>
+
+      <section v-else-if="activeView === 'cue-id'" class="view cue-id-view">
+        <div class="view-heading cue-id-heading">
+          <div>
+            <p class="eyebrow">{{ copy.cueIdEyebrow }}</p>
+            <h1>{{ copy.cueIdTitle }}</h1>
+            <p>{{ copy.cueIdBody }}</p>
+          </div>
+          <label v-if="hasArtistSelector" class="artist-select">
+            <span>{{ copy.artist }}</span>
+            <select v-model="selectedArtistId">
+              <option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option>
+            </select>
+          </label>
+          <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
+        </div>
+
+        <section class="cue-id-hub">
+          <div class="cue-id-hub__hero">
+            <div class="cue-id-hub__signal" aria-hidden="true">
+              <span>CUE</span>
+              <strong>ID</strong>
+              <i />
+            </div>
+            <div class="cue-id-hub__hero-copy">
+              <span>{{ copy.cueIdStatus }}</span>
+              <h2>{{ publicProfilePreview.cueId ? copy.cueIdReady : copy.cueIdPending }}</h2>
+              <p>{{ preferences.locale.value === 'es'
+                ? 'Tu identidad visual vive separada del perfil público para que puedas construirla, cambiarla y reutilizarla sin afectar a tus bookings.'
+                : 'Your visual identity lives separately from the public profile, so you can build, change and reuse it without affecting bookings.' }}</p>
+              <NuxtLink class="cue-id-hub__primary" to="/cue-id?from=workspace&section=identity">
+                {{ copy.cueIdCreate }} <span class="arrow arrow--ne" aria-hidden="true" />
+              </NuxtLink>
+            </div>
+          </div>
+
+          <div class="cue-id-hub__grid">
+            <article>
+              <span>01 / PROFILE</span>
+              <strong>{{ copy.cueIdProfile }}</strong>
+              <p>{{ copy.cueIdProfileBody }}</p>
+              <button type="button" @click="changeView('profile')">
+                {{ preferences.locale.value === 'es' ? 'Ir a Perfil' : 'Go to Profile' }}
+                <span class="arrow arrow--ne" aria-hidden="true" />
+              </button>
+            </article>
+
+            <article>
+              <span>02 / CUE ID</span>
+              <strong>{{ preferences.locale.value === 'es' ? 'Editor visual' : 'Visual editor' }}</strong>
+              <p>{{ preferences.locale.value === 'es'
+                ? 'Avatar, cuerpo, outfit, accesorios, pose y lenguaje visual se gestionan desde el editor dedicado.'
+                : 'Avatar, body, outfit, accessories, pose and visual language are managed from the dedicated editor.' }}</p>
+              <NuxtLink to="/cue-id?from=workspace&section=identity">
+                {{ copy.cueIdCreate }} <span class="arrow arrow--ne" aria-hidden="true" />
+              </NuxtLink>
+            </article>
+
+            <article class="cue-id-hub__future">
+              <span>03 / SOON</span>
+              <strong>{{ copy.cueIdAssets }}</strong>
+              <p>{{ copy.cueIdAssetsBody }}</p>
+              <small>{{ preferences.locale.value === 'es' ? 'EN DESARROLLO' : 'IN DEVELOPMENT' }}</small>
+            </article>
+          </div>
+        </section>
       </section>
 
       <section v-else class="view profile-view profile-view--presence">
