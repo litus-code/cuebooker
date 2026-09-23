@@ -12,6 +12,17 @@
   --cue-toggle-ink: #11120d;
   --cue-violet: #8e7dff;
   --cue-orange: #efa45e;
+  --cue-primary: #d8f56b;
+  --cue-primary-ink: #11120d;
+  --cue-secondary: #8e7dff;
+  --cue-brand-red: #f25f6b;
+  --cue-warm: #efa45e;
+  --cue-status-new: #ceff54;
+  --cue-status-conversation: #73b7ff;
+  --cue-status-waiting: #ffbf5f;
+  --cue-status-confirmed: #55d98d;
+  --cue-status-rejected: #ff6f7d;
+  --cue-status-cancelled: #8e8e8e;
   --cue-shadow: rgba(0, 0, 0, .45);
 
   --cue-radius-xs: 4px;
@@ -49,6 +60,11 @@
   --cue-accent-ink: #fff;
   --cue-violet: #6f47ff;
   --cue-orange: #b85d1f;
+  --cue-primary: #6f47ff;
+  --cue-primary-ink: #fff;
+  --cue-secondary: #5d3ed1;
+  --cue-brand-red: #d94d5a;
+  --cue-warm: #b85d1f;
   --cue-shadow: rgba(31, 30, 27, .16);
 }
 
