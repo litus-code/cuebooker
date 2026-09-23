@@ -1314,9 +1314,10 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       <div class="workspace-skeleton__stats">
         <i v-for="index in 5" :key="`stat-${index}`" class="skeleton-card" />
       </div>
+      <i class="skeleton-panel skeleton-panel--attention" />
       <div class="workspace-skeleton__body">
-        <i class="skeleton-panel skeleton-panel--main" />
-        <i class="skeleton-panel" />
+        <i class="skeleton-panel skeleton-panel--agenda" />
+        <i class="skeleton-panel skeleton-panel--cue" />
       </div>
     </section>
 
