@@ -386,7 +386,7 @@ async function selectBooking(bookingId: string) {
           v-for="booking in pagedBookings"
           :key="booking.id"
           type="button"
-          :class="{ active: selectedBooking?.id === booking.id }"
+          :class="['core-inbox__booking-row', `core-inbox__booking-row--${booking.status}`, { active: selectedBooking?.id === booking.id }]"
           @click="selectBooking(booking.id)"
         >
           <time>{{ formatDate(booking.event_date) }}</time>
@@ -591,8 +591,9 @@ async function selectBooking(bookingId: string) {
 .core-inbox__filters button { flex:0 0 auto; min-height:29px; padding:0 8px; border:1px solid var(--cue-border); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; text-transform:uppercase; }
 .core-inbox__filters button.active { border-color:var(--cue-accent); color:var(--cue-accent); }
 .core-inbox__filters--archive button.active { background:var(--cue-raised); }
-.status-filter { border-color:color-mix(in srgb,var(--status-color,var(--cue-border)) 72%,var(--cue-border)) !important; color:var(--status-color,var(--cue-muted)) !important; }
-.status-filter.active { background:color-mix(in srgb, var(--status-color, var(--cue-accent)) 10%, transparent); box-shadow:inset 0 0 0 1px var(--status-color,var(--cue-accent)); }
+.status-filter { border-color:var(--cue-border) !important; color:var(--cue-muted) !important; background:transparent; }
+.status-filter:hover { color:var(--cue-text) !important; border-color:color-mix(in srgb,var(--cue-text) 25%,var(--cue-border)) !important; }
+.status-filter.active { color:var(--cue-text) !important; background:var(--cue-raised); box-shadow:inset 0 -2px 0 var(--cue-accent); }
 .status-filter--all { --status-color:var(--cue-text); }
 .status-filter--new, .booking-status--new, .core-inbox__status--new { --status-color:#ceff54; }
 .status-filter--in_conversation, .booking-status--in_conversation, .core-inbox__status--in_conversation { --status-color:#73b7ff; }
@@ -603,15 +604,24 @@ async function selectBooking(bookingId: string) {
 .core-inbox__layout { display:grid; grid-template-columns:minmax(260px,.75fr) minmax(0,1.65fr); }
 .core-inbox__list { border-right:1px solid var(--cue-border); }
 .core-inbox__list button { display:grid; grid-template-columns:82px minmax(0,1fr) auto; align-items:center; gap:12px; width:100%; min-height:72px; padding:12px 14px; border:0; border-bottom:1px solid var(--cue-border); background:transparent; color:var(--cue-text); text-align:left; cursor:pointer; }
-.core-inbox__list button.active { background:var(--cue-raised); }
+.core-inbox__booking-row { position:relative; }
+.core-inbox__booking-row:before { position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--row-status,var(--cue-border)); content:""; opacity:.82; }
+.core-inbox__booking-row--new { --row-status:#ceff54; }
+.core-inbox__booking-row--in_conversation { --row-status:#73b7ff; }
+.core-inbox__booking-row--waiting_response { --row-status:#ffbf5f; }
+.core-inbox__booking-row--confirmed { --row-status:#55d98d; }
+.core-inbox__booking-row--rejected { --row-status:#ff6f7d; }
+.core-inbox__booking-row--cancelled { --row-status:#777; }
+.core-inbox__list button.active { background:color-mix(in srgb,var(--row-status,var(--cue-accent)) 5%,var(--cue-raised)); }
+.core-inbox__list button.active:before { width:5px; opacity:1; }
 .core-inbox__load-more { padding:10px; border-top:1px solid var(--cue-border); }
 .core-inbox__load-more > button { display:block; width:100%; min-height:38px; padding:0 12px; border:1px solid var(--cue-border); background:var(--cue-raised); color:var(--cue-text); cursor:pointer; font:800 8px monospace; text-transform:uppercase; }
 .core-inbox__load-more > button:hover { border-color:var(--cue-accent); color:var(--cue-accent); }
 .core-inbox__list time { color:var(--cue-muted); font:700 10px monospace; }
 .core-inbox__list span strong, .core-inbox__list span small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .core-inbox__list span small { margin-top:4px; color:var(--cue-muted); font-size:11px; }
-.core-inbox__list em { font:700 9px monospace; color:var(--status-color,var(--cue-accent)); text-transform:uppercase; font-style:normal; }
-.core-inbox__detail { min-width:0; padding:18px; }
+.core-inbox__list em { font:700 8px monospace; color:var(--cue-muted); text-transform:uppercase; font-style:normal; }
+.core-inbox__detail { min-width:0; padding:22px 24px 26px; }
 .core-inbox__detail > header { display:flex; justify-content:space-between; gap:18px; padding-bottom:18px; border-bottom:1px solid var(--cue-border); }
 .core-inbox__detail > header span { color:var(--cue-accent); font:700 9px monospace; text-transform:uppercase; letter-spacing:.1em; }
 .core-inbox__detail h3 { margin:6px 0 3px; font-size:28px; line-height:1; }
@@ -632,7 +642,7 @@ async function selectBooking(bookingId: string) {
 .core-inbox__decisions .decision-cancel { border-color:#666; color:#aaa; }
 .core-inbox__readonly { margin:12px 0; padding:10px 12px; border-left:2px solid var(--cue-muted); background:var(--cue-raised); color:var(--cue-muted); font-size:11px; }
 .core-inbox__details-block { border-bottom:1px solid var(--cue-border); }
-.core-inbox__details-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0 8px; }
+.core-inbox__details-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 0 10px; }
 .core-inbox__details-heading > strong { font:800 10px monospace; text-transform:uppercase; letter-spacing:.08em; }
 .core-inbox__facts { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); margin:0; }
 .core-inbox__facts > div { min-width:0; padding:14px 12px 14px 0; }
@@ -640,15 +650,15 @@ async function selectBooking(bookingId: string) {
 .core-inbox__facts dd { margin:5px 0 0; overflow:hidden; text-overflow:ellipsis; font-size:12px; }
 .core-inbox__facts dd.missing { color:var(--cue-accent); font-style:italic; }
 .core-inbox__contact-fact small { display:block; margin-top:3px; color:var(--cue-muted); font-size:9px; line-height:1.3; }
-.core-inbox__conversation { margin-top:16px; border:1px solid var(--cue-border); background:color-mix(in srgb,var(--cue-raised) 45%,transparent); }
-.core-inbox__conversation-heading { padding:12px 14px; border-bottom:1px solid var(--cue-border); }
+.core-inbox__conversation { margin-top:20px; border-top:1px solid var(--cue-border); border-bottom:1px solid var(--cue-border); background:transparent; }
+.core-inbox__conversation-heading { padding:16px 2px 12px; border-bottom:0; }
 .core-inbox__conversation-heading span { display:block; font:800 11px monospace; text-transform:uppercase; letter-spacing:.08em; }
 .core-inbox__conversation-heading small { display:block; margin-top:4px; color:var(--cue-muted); font-size:9px; }
-.core-inbox__thread { max-height:clamp(280px,42vh,460px); overflow-y:auto; overscroll-behavior:contain; scrollbar-gutter:stable; scrollbar-width:thin; padding:10px 12px 2px; }
-.thread-item { width:min(86%,680px); margin:0 0 9px; padding:10px 11px; border:1px solid var(--cue-border); background:var(--cue-surface); }
-.thread-item--outbound { margin-left:auto; border-color:color-mix(in srgb,#73b7ff 55%,var(--cue-border)); }
-.thread-item--inbound { margin-right:auto; border-color:color-mix(in srgb,var(--cue-accent) 55%,var(--cue-border)); }
-.thread-item--internal { margin-right:auto; border-style:dashed; color:var(--cue-muted); }
+.core-inbox__thread { max-height:clamp(300px,46vh,520px); overflow-y:auto; overscroll-behavior:contain; scrollbar-gutter:stable; scrollbar-width:thin; padding:6px 2px 8px; }
+.thread-item { width:min(82%,720px); margin:0 0 10px; padding:12px 14px; border:1px solid var(--cue-border); border-radius:10px; background:color-mix(in srgb,var(--cue-surface) 88%,transparent); }
+.thread-item--outbound { margin-left:auto; border-color:color-mix(in srgb,#73b7ff 40%,var(--cue-border)); background:color-mix(in srgb,#73b7ff 4%,var(--cue-surface)); }
+.thread-item--inbound { margin-right:auto; border-color:color-mix(in srgb,var(--cue-accent) 40%,var(--cue-border)); background:color-mix(in srgb,var(--cue-accent) 3%,var(--cue-surface)); }
+.thread-item--internal { margin-right:auto; border-style:dashed; color:var(--cue-muted); background:transparent; }
 .thread-item__meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .thread-item__meta strong { color:var(--cue-text); font:800 9px monospace; text-transform:uppercase; }
 .thread-item__meta span { color:var(--cue-muted); font:700 8px monospace; text-transform:uppercase; }
