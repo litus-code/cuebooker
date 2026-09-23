@@ -320,9 +320,9 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .cue-voice { display:grid; gap:7px; }
-.cue-voice button { display:flex; align-items:center; gap:8px; min-height:44px; width:max-content; max-width:100%; padding:0 13px; border:1px solid #485135; background:rgba(206,255,84,.035); color:#ceff54; cursor:pointer; font:800 9px monospace; text-transform:uppercase; }
-.cue-voice button:hover { border-color:#ceff54; }
-.cue-voice button.active { border-color:#ceff54; background:rgba(206,255,84,.09); }
+.cue-voice button { display:flex; align-items:center; gap:8px; min-height:44px; width:max-content; max-width:100%; padding:0 13px; border:1px solid color-mix(in srgb,var(--cue-accent,#ceff54) 26%,#3b3b3b); background:color-mix(in srgb,var(--cue-accent,#ceff54) 3%,transparent); color:color-mix(in srgb,var(--cue-accent,#ceff54) 80%,#b8bbb2); cursor:pointer; font:800 9px monospace; text-transform:uppercase; }
+.cue-voice button:hover { border-color:color-mix(in srgb,var(--cue-accent,#ceff54) 55%,#444); }
+.cue-voice button.active { border-color:color-mix(in srgb,var(--cue-accent,#ceff54) 68%,#444); background:color-mix(in srgb,var(--cue-accent,#ceff54) 7%,transparent); }
 .cue-voice button:disabled { opacity:.5; cursor:wait; }
 .cue-voice svg { width:15px; height:15px; flex:0 0 auto; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 .cue-voice i { color:#aebd84; font-size:8px; font-style:normal; text-transform:none; }
