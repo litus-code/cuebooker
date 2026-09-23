@@ -244,11 +244,11 @@ async function convertHold(hold: Hold) {
         </form>
       </section>
 
-      <details class="core-ops__hold-box" :open="activeHolds.length > 0">
-        <summary>
+      <section class="core-ops__hold-box">
+        <header class="core-ops__hold-heading">
           <span><strong>{{ copy.hold }}</strong><small>{{ copy.holdHelp }}</small></span>
           <b v-if="activeHolds.length">{{ activeHolds.length }}</b>
-        </summary>
+        </header>
         <div v-if="activeHolds.length" class="core-ops__holds">
           <article v-for="hold in activeHolds" :key="hold.id">
             <div><strong>{{ dateOnly(hold.event_date) }}</strong><small>{{ hold.expires_at ? `${copy.expires}: ${localDateTime(hold.expires_at)}` : '—' }}</small></div>
@@ -264,7 +264,7 @@ async function convertHold(hold: Hold) {
           </div>
           <button type="submit" :disabled="saving">{{ saving ? copy.saving : copy.createHold }}</button>
         </form>
-      </details>
+      </section>
     </div>
     <p v-if="errorMessage" class="core-ops__error">{{ errorMessage }}</p>
   </section>
@@ -276,12 +276,11 @@ async function convertHold(hold: Hold) {
 .core-ops__grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .core-ops__grid > section, .core-ops__hold-box { min-width:0; border:1px solid var(--cue-border); background:var(--cue-raised); }
 .core-ops__grid header { padding:11px 12px; border-bottom:1px solid var(--cue-border); font-size:11px; text-transform:uppercase; letter-spacing:.05em; }
-.core-ops__hold-box > summary { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:11px 12px; cursor:pointer; list-style:none; }
-.core-ops__hold-box > summary::-webkit-details-marker { display:none; }
-.core-ops__hold-box > summary span { display:grid; gap:5px; }
-.core-ops__hold-box > summary strong { font-size:11px; text-transform:uppercase; letter-spacing:.05em; }
-.core-ops__hold-box > summary small { max-width:430px; color:var(--cue-muted); font-size:9px; line-height:1.4; }
-.core-ops__hold-box > summary b { color:var(--cue-accent); font:700 10px monospace; }
+.core-ops__hold-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:11px 12px; border-bottom:1px solid var(--cue-border); }
+.core-ops__hold-heading > span { display:grid; gap:5px; }
+.core-ops__hold-heading strong { font-size:11px; text-transform:uppercase; letter-spacing:.05em; }
+.core-ops__hold-heading small { max-width:430px; color:var(--cue-muted); font-size:9px; line-height:1.4; }
+.core-ops__hold-heading b { color:var(--cue-accent); font:700 10px monospace; }
 .core-ops__grid header small { display:block; margin-top:5px; max-width:430px; color:var(--cue-muted); font-size:9px; line-height:1.4; letter-spacing:0; text-transform:none; font-weight:400; }
 .core-ops__current, .core-ops__holds article { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:11px 12px; border-bottom:1px solid var(--cue-border); }
 .core-ops__current > div, .core-ops__holds article > div:first-child { min-width:0; }
@@ -294,11 +293,11 @@ async function convertHold(hold: Hold) {
 .core-ops button:disabled { opacity:.45; cursor:wait; }
 .core-ops__form { display:grid; gap:10px; padding:12px; }
 .core-ops__form-main { min-width:0; }
-.core-ops__auto-reply { display:flex; align-items:flex-start; gap:8px; padding:9px 10px; border:1px solid var(--cue-border); background:color-mix(in srgb,var(--cue-accent) 3%,transparent); cursor:pointer; }
-.core-ops__auto-reply input { flex:0 0 auto; width:15px; min-height:15px; margin:1px 0 0; accent-color:var(--cue-accent); }
-.core-ops__auto-reply > span { min-width:0; }
-.core-ops__auto-reply strong { display:block; color:var(--cue-text); font-size:10px; }
-.core-ops__auto-reply small { display:block; margin-top:3px; color:var(--cue-muted); font-size:9px; line-height:1.35; }
+.core-ops__auto-reply { display:grid; grid-template-columns:18px minmax(0,1fr); align-items:start; gap:10px; width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid var(--cue-border); background:color-mix(in srgb,var(--cue-accent) 3%,transparent); cursor:pointer; }
+.core-ops__auto-reply input { width:16px; height:16px; min-width:16px; min-height:16px; margin:1px 0 0; padding:0; accent-color:var(--cue-accent); }
+.core-ops__auto-reply > span { display:block; min-width:0; width:auto; }
+.core-ops__auto-reply strong { display:block; color:var(--cue-text); font-size:10px; line-height:1.35; overflow-wrap:normal; word-break:normal; }
+.core-ops__auto-reply small { display:block; margin-top:4px; color:var(--cue-muted); font-size:9px; line-height:1.4; overflow-wrap:normal; word-break:normal; }
 .core-ops__form-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:end; }
 .core-ops__form-row--hold { grid-template-columns:1fr 1fr; }
 .core-ops__form--hold > button { justify-self:start; }
