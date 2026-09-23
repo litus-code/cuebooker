@@ -12,8 +12,8 @@ const props = defineProps<{
 const emit = defineEmits<{ created: [] }>()
 const bookingCore = useBookingCore()
 const bookingEmail = useBookingEmail()
-const type = ref<ActivityType>('note')
-const direction = ref<ActivityDirection>('internal')
+const type = ref<ActivityType>('email')
+const direction = ref<ActivityDirection>('outbound')
 const subject = ref('')
 const body = ref('')
 const saving = ref(false)
@@ -63,11 +63,11 @@ const copy = computed(() => props.locale === 'es' ? {
 })
 
 const types = computed<Array<{ value: ActivityType; label: string }>>(() => [
-  { value: 'note', label: copy.value.note },
-  { value: 'phone', label: copy.value.phone },
-  { value: 'whatsapp', label: copy.value.whatsapp },
   { value: 'email', label: copy.value.email },
-  { value: 'instagram', label: copy.value.instagram }
+  { value: 'whatsapp', label: copy.value.whatsapp },
+  { value: 'instagram', label: copy.value.instagram },
+  { value: 'phone', label: copy.value.phone },
+  { value: 'note', label: copy.value.note }
 ])
 
 const sendsRealEmail = computed(() => type.value === 'email')
