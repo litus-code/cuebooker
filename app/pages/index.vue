@@ -784,3 +784,14 @@ section:focus { outline:none; }
  *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
 }
 </style>
+
+<style scoped>
+:global(html[data-theme='light'] .commercial-home) { --cp-lime:#5526cc; }
+@media (max-width:520px) {
+ .commercial-home .cp-nav-inner { gap:8px; }
+ .commercial-home .cp-brand { min-width:80px; max-width:90px; }
+ .ed-section h2,.ed-closing h2,.cp-hero h1 { overflow-wrap:anywhere; }
+ .ed-console-heading { flex-wrap:wrap; }
+ .ed-console,.ed-share-preview,.ed-work,.ed-share-layout > div { min-width:0; }
+}
+</style>
