@@ -590,6 +590,7 @@ async function selectBooking(bookingId: string) {
 .core-inbox__filters--archive button { background:transparent; }
 .core-inbox__filters--archive button:hover { color:var(--cue-text); background:var(--cue-raised); }
 .core-inbox__filters--archive button.active { border-color:color-mix(in srgb,var(--cue-accent) 35%,transparent); background:color-mix(in srgb,var(--cue-accent) 8%,var(--cue-raised)); color:var(--cue-accent); }
+.core-inbox__filters--status { grid-column:1 / -1; padding-top:var(--cue-space-1); }
 .status-filter { border-color:transparent !important; color:color-mix(in srgb,var(--status-color,var(--cue-muted)) 76%,var(--cue-muted)) !important; background:color-mix(in srgb,var(--cue-raised) 54%,transparent) !important; }
 .status-filter:hover { border-color:color-mix(in srgb,var(--status-color,var(--cue-text)) 28%,var(--cue-border)) !important; color:var(--status-color,var(--cue-text)) !important; background:color-mix(in srgb,var(--status-color,var(--cue-text)) 4%,var(--cue-raised)) !important; }
 .status-filter.active { border-color:color-mix(in srgb,var(--status-color,var(--cue-text)) 42%,var(--cue-border)) !important; color:var(--status-color,var(--cue-text)) !important; background:color-mix(in srgb,var(--status-color,var(--cue-text)) 8%,var(--cue-raised)) !important; box-shadow:none; }
@@ -684,7 +685,7 @@ async function selectBooking(bookingId: string) {
   .core-inbox__filters:not(.core-inbox__filters--archive) { display:flex; overflow-x:auto; padding-bottom:2px; }
   .core-inbox__filters:not(.core-inbox__filters--archive) button { width:auto; min-height:var(--cue-control-standard); white-space:nowrap; }
   .core-inbox__filters--archive { width:max-content; max-width:100%; }
-  .core-inbox__detail > header { flex-direction:column; gap:12px; }
+  .core-inbox__detail > header { grid-template-columns:1fr; gap:12px; }
   .core-inbox__header-actions { display:grid; grid-template-columns:1fr; width:100%; min-width:0; justify-content:stretch; }
   .core-inbox__archive { justify-self:start; }
   .core-inbox__decision-block { width:100%; min-width:0; }
