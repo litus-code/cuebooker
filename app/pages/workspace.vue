@@ -70,8 +70,16 @@ function emptyProfileForm(): ArtistProfileForm {
   }
 }
 
-const loadingView = ref<WorkspaceView | null>(null)
-const activeView = ref<WorkspaceView>(workspaceViewFromQuery(route.query.view, route.query.booking))
+const persistedWorkspaceView = useCookie<WorkspaceView | null>('cuebooker.workspace.view', { sameSite: 'lax' })
+const routeWorkspaceView = workspaceViewFromQuery(route.query.view, route.query.booking)
+const initialWorkspaceView: WorkspaceView = (
+  (typeof route.query.view === 'string' && WORKSPACE_VIEWS.includes(route.query.view as WorkspaceView))
+  || (typeof route.query.booking === 'string' && route.query.booking)
+)
+  ? routeWorkspaceView
+  : (persistedWorkspaceView.value && WORKSPACE_VIEWS.includes(persistedWorkspaceView.value) ? persistedWorkspaceView.value : routeWorkspaceView)
+const loadingView = ref<WorkspaceView>(initialWorkspaceView)
+const activeView = ref<WorkspaceView>(initialWorkspaceView)
 const artists = ref<ManagedArtist[]>([])
 const organizations = ref<ManagedOrganization[]>([])
 const selectedArtistId = ref('')
@@ -381,14 +389,6 @@ const publicProfilePreview = computed<PublicArtistProfile>(() => {
 })
 const hours = Array.from({ length: 24 }, (_, index) => `${String(index).padStart(2, '0')}:00`)
 
-onBeforeMount(() => {
-  if (!import.meta.client) return
-  const params = new URLSearchParams(window.location.search)
-  const resolvedView = workspaceViewFromQuery(params.get('view'), params.get('booking'))
-  loadingView.value = resolvedView
-  activeView.value = resolvedView
-})
-
 onMounted(async () => {
   if (import.meta.client) sidebarCollapsed.value = localStorage.getItem('cuebooker.sidebar.collapsed') === 'true'
   await auth.initialize()
@@ -425,6 +425,7 @@ watch(() => route.query.section, value => {
   if (activeView.value === 'profile') profileEditSection.value = profileSectionFromQuery(value)
 })
 watch(activeView, async (view) => {
+  persistedWorkspaceView.value = view
   await nextTick()
   const nav = document.getElementById('workspace-navigation')
   const tab = nav?.querySelector<HTMLElement>(`[data-workspace-view="${view}"]`)
@@ -477,9 +478,11 @@ async function changeView(view: WorkspaceView) {
   delete nextQuery.setup
   if (view !== 'bookings') delete nextQuery.booking
   if (view !== 'profile') delete nextQuery.section
-  void router.replace({ query: nextQuery }).catch(() => {
-    // View navigation must not be blocked by URL state sync.
-  })
+  try {
+    await router.replace({ query: nextQuery })
+  } catch {
+    // The selected workspace view is also persisted independently of the URL.
+  }
 
   await nextTick()
   const target = document.querySelector<HTMLElement>('.workspace .view')
@@ -1382,7 +1385,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       </div>
     </section>
 
-    <section v-else-if="loadingView" class="workspace-skeleton" aria-busy="true" aria-live="polite">
+    <section v-else-if="loadingView === 'overview'" class="workspace-skeleton" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
       <div class="workspace-skeleton__heading">
         <i class="skeleton-line skeleton-line--eyebrow" />
