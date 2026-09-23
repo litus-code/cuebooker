@@ -420,7 +420,7 @@ watch(menuOpen, async open => {
   if (import.meta.client) {
     lastScrollY.value = Math.max(0, window.scrollY)
     await nextTick()
-    if (open) document.querySelector<HTMLElement>('#cp-mobile-menu button')?.focus()
+    if (open) document.querySelector<HTMLElement>('#cp-mobile-menu a')?.focus()
     else if (restoreMenuFocus) document.querySelector<HTMLElement>('.cp-menu')?.focus({ preventScroll: true })
   }
 })
@@ -460,7 +460,6 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
     </nav>
     <Teleport to="body">
       <div v-if="menuOpen" role="dialog" aria-modal="true" :aria-label="locale === 'es' ? 'Menú de navegación' : 'Navigation menu'" @keydown="onMenuKey" id="cp-mobile-menu" class="cp-mobile-menu cp-mobile-menu--portal" :class="{ open: menuOpen }">
-        <button class="ed-menu-close" @click="menuOpen = false">{{ locale === 'es' ? 'Cerrar menú' : 'Close menu' }} <span aria-hidden="true">×</span></button>
         <div class="cp-mobile-nav-links">
           <a href="#system" @click.prevent="scrollTo('#system')">{{ p.nav.system }}</a>
           <a href="#distribution" @click.prevent="scrollTo('#distribution')">{{ p.nav.distribution }}</a>
@@ -768,7 +767,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--cp-lime); outli
 .ed-skip { position:fixed; top:8px; left:12px; z-index:200; padding:14px 20px; background:var(--cue-accent); color:var(--cue-accent-ink); transform:translateY(-160%); }
 .ed-skip:focus { transform:none; }
 .ed-playback { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-top:32px; }
-.ed-playback button,.ed-menu-close { min-height:44px; padding:10px 18px; border:1px solid var(--cue-border); border-radius:6px; background:var(--cue-bg); color:var(--cue-text); cursor:pointer; font-size:14px; }
+.ed-playback button { min-height:44px; padding:10px 18px; border:1px solid var(--cue-border); border-radius:6px; background:var(--cue-bg); color:var(--cue-text); cursor:pointer; font-size:14px; }
 .ed-playback button:disabled { opacity:.55; cursor:default; }
 .ed-playback > span { color:var(--cp-muted); font-size:13px; }
 .ed-slide-badges { display:flex; align-items:center; gap:2px; }
@@ -779,10 +778,8 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--cp-lime); outli
 .ed-playback-toggle svg { width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .ed-playback-toggle .ed-play-icon { fill:currentColor; stroke:none; }
 .ed-slide-badges button:focus-visible,.ed-playback-toggle:focus-visible { outline:2px solid var(--cp-lime); outline-offset:2px; }
-.cp-mobile-menu--portal { grid-template-rows:auto 1fr auto; }
-.ed-menu-close { justify-self:end; margin-top:16px; }
-.ed-menu-close span { margin-left:14px; }
-.cp-mobile-menu--portal a:focus-visible,.ed-menu-close:focus-visible { outline:2px solid var(--cue-accent); outline-offset:4px; }
+.cp-mobile-menu--portal { grid-template-rows:1fr auto; }
+.cp-mobile-menu--portal a:focus-visible { outline:2px solid var(--cue-accent); outline-offset:4px; }
 .commercial-home .cp-locale button,.commercial-home .cp-theme,.commercial-home .cp-menu { min-width:44px; min-height:44px; }
 .ed-next,.ed-tabs button { min-height:44px; }
 .ed-demo-foot,.ed-console .ed-demo-foot,.ed-demo-caption,.ed-mono { font-size:12px; }
