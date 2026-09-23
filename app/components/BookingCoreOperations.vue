@@ -273,7 +273,7 @@ async function convertHold(hold: Hold) {
 <style scoped>
 .core-ops { margin-top:12px; padding-top:12px; border-top:1px solid var(--cue-border); }
 .core-ops__eyebrow { margin-bottom:6px; color:var(--cue-muted); font:700 9px/1.2 monospace; letter-spacing:.11em; }
-.core-ops__grid { display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid var(--cue-border); border-radius:var(--cue-radius-lg); background:color-mix(in srgb,var(--cue-raised) 56%,transparent); overflow:hidden; }
+.core-ops__grid { display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid var(--cue-border); border-radius:var(--cue-radius-panel); background:color-mix(in srgb,var(--cue-raised) 42%,transparent); overflow:hidden; }
 .core-ops__grid > section, .core-ops__hold-box { min-width:0; border:0; background:transparent; }
 .core-ops__grid > section + section { border-left:1px solid var(--cue-border); }
 .core-ops__grid header { padding:8px 10px 4px; border-bottom:0; font-size:10px; text-transform:uppercase; letter-spacing:.05em; }
@@ -294,8 +294,8 @@ async function convertHold(hold: Hold) {
 .core-ops button:disabled { opacity:.45; cursor:wait; }
 .core-ops__form { display:grid; gap:6px; padding:7px 10px 9px; }
 .core-ops__form-main { min-width:0; }
-.core-ops__auto-reply { display:grid; grid-template-columns:18px minmax(0,1fr); align-items:start; gap:8px; width:100%; box-sizing:border-box; padding:1px 0; border:0; background:transparent; cursor:pointer; }
-.core-ops__auto-reply input { appearance:none; -webkit-appearance:none; width:18px; height:18px; min-width:18px; min-height:18px; margin:0; padding:0; border:1px solid var(--cue-border); border-radius:var(--cue-radius-xs); background:var(--cue-surface); cursor:pointer; }
+.core-ops__auto-reply { display:grid; grid-template-columns:20px minmax(0,1fr); align-items:start; gap:8px; width:100%; box-sizing:border-box; padding:1px 0; border:0; background:transparent; cursor:pointer; }
+.core-ops__auto-reply input { appearance:none; -webkit-appearance:none; width:20px; height:20px; min-width:20px; min-height:20px; margin:0; padding:0; border:1px solid var(--cue-border); border-radius:5px; background:var(--cue-surface); cursor:pointer; }
 .core-ops__auto-reply input:checked { border-color:var(--cue-primary); background:var(--cue-primary); box-shadow:inset 0 0 0 4px var(--cue-surface); }
 .core-ops__auto-reply input:focus-visible { outline:2px solid var(--cue-primary); outline-offset:2px; }
 .core-ops__auto-reply > span { display:block; min-width:0; width:auto; }
@@ -352,7 +352,7 @@ async function convertHold(hold: Hold) {
     padding:0 !important;
     margin:0 !important;
     border:1px solid var(--cue-border) !important;
-    border-radius:var(--cue-radius-xs) !important;
+    border-radius:5px !important;
     background:var(--cue-surface) !important;
     box-shadow:none !important;
   }
