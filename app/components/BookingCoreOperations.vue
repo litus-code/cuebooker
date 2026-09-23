@@ -107,7 +107,7 @@ async function load() {
   }
 }
 
-watch(() => [props.workspaceId, props.booking.id], () => {
+watch([() => props.workspaceId, () => props.booking.id], () => {
   if (!holdDate.value && props.booking.event_date) holdDate.value = props.booking.event_date
   autoCompleteOnReply.value = false
   void load()
