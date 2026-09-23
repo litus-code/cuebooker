@@ -4,6 +4,7 @@ type EditSection = 'identity' | 'about' | 'sound' | 'booking' | 'links' | 'visua
 const editSection = ref<EditSection>(null)
 const publicMode = ref(false)
 const published = ref(false)
+const bookingOpen = ref(false)
 
 const profile = reactive({
   stageName: 'LITS',
@@ -38,6 +39,27 @@ function closeEditor() {
 function saveEditor() {
   editSection.value = null
 }
+
+function openBooking() {
+  bookingOpen.value = true
+}
+
+function closeBooking() {
+  bookingOpen.value = false
+}
+
+function previewBookingSubmit() {
+  bookingOpen.value = false
+}
+
+watch([editSection, bookingOpen], ([editor, booking]) => {
+  if (!import.meta.client) return
+  document.body.style.overflow = editor || booking ? 'hidden' : ''
+})
+
+onBeforeUnmount(() => {
+  if (import.meta.client) document.body.style.overflow = ''
+})
 </script>
 
 <template>
@@ -69,6 +91,11 @@ function saveEditor() {
             <img src="/logo-full-dark.png" alt="">
           </div>
           <div class="artist-hero__industrial-grid" />
+          <div v-if="profile.cueId" class="artist-hero__cue-id" aria-hidden="true">
+            <div class="artist-hero__cue-head" />
+            <div class="artist-hero__cue-body" />
+            <span>CUE ID</span>
+          </div>
         </div>
 
         <button v-if="!publicMode" type="button" class="edit-button edit-button--hero" @click="openEditor('visual')">
@@ -94,7 +121,7 @@ function saveEditor() {
           </div>
 
           <div class="artist-hero__actions">
-            <button v-if="profile.acceptingBookings" type="button" class="artist-cta">REQUEST BOOKING</button>
+            <button v-if="profile.acceptingBookings" type="button" class="artist-cta" @click="openBooking">REQUEST BOOKING</button>
             <a href="#sound">LISTEN</a>
             <a href="#links">LINKS</a>
           </div>
@@ -172,7 +199,7 @@ function saveEditor() {
             <p>Typical set · 90 min</p>
             <p>Travel · Available</p>
           </div>
-          <button type="button" class="artist-cta">REQUEST BOOKING</button>
+          <button type="button" class="artist-cta" @click="openBooking">REQUEST BOOKING</button>
         </div>
         <button v-if="!publicMode" type="button" class="edit-button" @click="openEditor('booking')"><b>✎</b></button>
       </section>
@@ -196,6 +223,25 @@ function saveEditor() {
         <span>ARTIST PRESENCE / 2026</span>
       </footer>
     </article>
+
+    <div v-if="bookingOpen" class="booking-backdrop" @click.self="closeBooking">
+      <section class="booking-dialog" role="dialog" aria-modal="true" aria-label="Booking request">
+        <header class="booking-dialog__header">
+          <div>
+            <span>BOOKING / LITS</span>
+            <strong>Request a date</strong>
+          </div>
+          <button type="button" aria-label="Cerrar" @click="closeBooking">×</button>
+        </header>
+        <div class="booking-dialog__body">
+          <PublicBookingForm
+            artist-name="LITS"
+            locale="es"
+            @submit="previewBookingSubmit"
+          />
+        </div>
+      </section>
+    </div>
 
     <div v-if="editSection" class="editor-backdrop" @click.self="closeEditor">
       <section class="inline-editor" role="dialog" aria-modal="true">
@@ -406,5 +452,287 @@ function saveEditor() {
   .artist-facts { grid-template-columns:1fr; }
   .inline-editor__body { grid-template-columns:1fr; }
   .inline-editor label.wide,.visual-choice.wide { grid-column:1; }
+}
+
+
+/* Mobile lab polish and booking interaction */
+.artist-hero__brand-mark img {
+  filter: brightness(0) saturate(100%) invert(92%) sepia(85%) saturate(1098%) hue-rotate(19deg) brightness(108%) contrast(105%);
+}
+
+.artist-hero__cue-id {
+  position:absolute;
+  z-index:1;
+  top:96px;
+  left:50%;
+  width:280px;
+  height:440px;
+  transform:translateX(-8%);
+  opacity:.72;
+  pointer-events:none;
+}
+
+.artist-hero__cue-head,
+.artist-hero__cue-body {
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  border:1px solid rgba(223,255,53,.24);
+  background:linear-gradient(90deg,rgba(20,20,20,.3),rgba(223,255,53,.1),rgba(20,20,20,.3));
+  box-shadow:0 0 50px rgba(223,255,53,.05);
+}
+
+.artist-hero__cue-head {
+  top:0;
+  width:94px;
+  height:112px;
+  border-radius:46% 46% 42% 42%;
+}
+
+.artist-hero__cue-body {
+  top:94px;
+  width:186px;
+  height:330px;
+  border-radius:46% 46% 12% 12%;
+}
+
+.artist-hero__cue-id > span {
+  position:absolute;
+  right:-4px;
+  bottom:8px;
+  color:var(--lime);
+  font:800 8px/1 monospace;
+  letter-spacing:.18em;
+}
+
+.inline-editor input[type="checkbox"] {
+  appearance:none;
+  display:grid;
+  place-items:center;
+  width:19px;
+  height:19px;
+  min-height:19px;
+  padding:0;
+  border:1px solid #555;
+  border-radius:5px;
+  background:#0c0c0c;
+  cursor:pointer;
+}
+
+.inline-editor input[type="checkbox"]::after {
+  content:"";
+  width:9px;
+  height:5px;
+  border-left:2px solid #080808;
+  border-bottom:2px solid #080808;
+  transform:rotate(-45deg) scale(0);
+  transition:transform .12s ease;
+}
+
+.inline-editor input[type="checkbox"]:checked {
+  border-color:var(--lime);
+  background:var(--lime);
+}
+
+.inline-editor input[type="checkbox"]:checked::after {
+  transform:rotate(-45deg) scale(1);
+}
+
+.booking-backdrop {
+  position:fixed;
+  z-index:70;
+  inset:0;
+  display:grid;
+  place-items:center;
+  padding:24px;
+  background:rgba(0,0,0,.82);
+  backdrop-filter:blur(7px);
+}
+
+.booking-dialog {
+  width:min(760px,100%);
+  max-height:calc(100dvh - 48px);
+  overflow:auto;
+  border:1px solid #353535;
+  border-radius:12px;
+  background:#0b0b0b;
+  box-shadow:0 28px 90px rgba(0,0,0,.62);
+}
+
+.booking-dialog__header {
+  position:sticky;
+  top:0;
+  z-index:3;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  min-height:64px;
+  padding:0 18px;
+  border-bottom:1px solid #2d2d2d;
+  background:rgba(11,11,11,.96);
+  backdrop-filter:blur(12px);
+}
+
+.booking-dialog__header > div {
+  display:grid;
+  gap:4px;
+}
+
+.booking-dialog__header span {
+  color:var(--lime);
+  font:800 8px monospace;
+  letter-spacing:.1em;
+}
+
+.booking-dialog__header strong {
+  font-size:15px;
+}
+
+.booking-dialog__header > button {
+  width:36px;
+  height:36px;
+  border:1px solid #353535;
+  border-radius:8px;
+  background:#111;
+  color:#ddd;
+  cursor:pointer;
+  font-size:20px;
+}
+
+.booking-dialog__body {
+  padding:18px;
+}
+
+@media (max-width:900px) {
+  .profile-lab__topbar {
+    grid-template-columns:1fr !important;
+    align-items:stretch;
+    gap:10px;
+    padding:12px 16px;
+  }
+
+  .profile-lab__back {
+    width:max-content;
+  }
+
+  .profile-lab__topbar-actions {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    width:100%;
+  }
+
+  .profile-lab__secondary,
+  .profile-lab__primary {
+    width:100%;
+    min-height:42px;
+  }
+
+  .artist-hero {
+    min-height:680px;
+  }
+
+  .artist-hero__content {
+    min-height:680px;
+    padding:220px 22px 28px;
+    justify-content:flex-end;
+  }
+
+  .artist-hero__brand-mark {
+    top:28px;
+    right:22px;
+    width:148px;
+  }
+
+  .edit-button--hero {
+    top:86px;
+    right:22px;
+  }
+
+  .edit-button--identity {
+    right:18px;
+    bottom:18px;
+  }
+
+  .artist-hero__cue-id {
+    top:104px;
+    left:50%;
+    width:190px;
+    height:300px;
+    transform:translateX(-45%);
+    opacity:.5;
+  }
+
+  .artist-hero__cue-head {
+    width:64px;
+    height:76px;
+  }
+
+  .artist-hero__cue-body {
+    top:64px;
+    width:124px;
+    height:220px;
+  }
+}
+
+@media (max-width:560px) {
+  .profile-lab__topbar {
+    position:sticky;
+    top:0;
+  }
+
+  .profile-lab__topbar-actions {
+    gap:8px;
+  }
+
+  .profile-lab__secondary,
+  .profile-lab__primary {
+    padding:0 10px;
+    font-size:9px;
+  }
+
+  .artist-hero__actions {
+    display:grid;
+    grid-template-columns:1fr auto auto;
+    align-items:center;
+    width:100%;
+    gap:12px;
+    padding-right:0;
+  }
+
+  .artist-hero__actions .artist-cta {
+    width:100%;
+    min-width:0;
+    padding:0 14px;
+  }
+
+  .edit-button--identity {
+    position:static;
+    justify-self:end;
+    width:max-content;
+    margin-top:14px;
+  }
+
+  .artist-hero__content {
+    padding-top:230px;
+  }
+
+  .booking-backdrop {
+    display:block;
+    padding:0;
+    background:#0b0b0b;
+  }
+
+  .booking-dialog {
+    width:100%;
+    min-height:100%;
+    max-height:none;
+    border:0;
+    border-radius:0;
+    box-shadow:none;
+  }
+
+  .booking-dialog__body {
+    padding:14px;
+  }
 }
 </style>
