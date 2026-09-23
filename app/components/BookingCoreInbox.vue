@@ -438,17 +438,21 @@ async function selectBooking(bookingId: string) {
             <div><dt>{{ copy.date }}</dt><dd :class="{ missing: !selectedBooking.event_date }">{{ formatDate(selectedBooking.event_date) }}</dd></div>
             <div><dt>{{ copy.venue }}</dt><dd :class="{ missing: !selectedCounterparty?.name && !selectedBooking.venue_name }">{{ selectedCounterparty?.name || selectedBooking.venue_name || copy.noVenue }}</dd></div>
             <div class="core-inbox__contact-fact">
-              <dt>{{ copy.contact }}</dt>
-              <dd :class="{ missing: !loadingMeta && !selectedContact?.name }">{{ loadingMeta ? '…' : selectedContact?.name || copy.noContact }}</dd>
+              <div class="core-inbox__contact-head">
+                <div>
+                  <dt>{{ copy.contact }}</dt>
+                  <dd :class="{ missing: !loadingMeta && !selectedContact?.name }">{{ loadingMeta ? '…' : selectedContact?.name || copy.noContact }}</dd>
+                </div>
+                <BookingContactEditor
+                  v-if="selectedContact && !selectedBooking.archived_at"
+                  :workspace-id="workspaceId"
+                  :contact="selectedContact"
+                  :locale="locale"
+                  @saved="handleContactSaved"
+                />
+              </div>
               <small v-if="selectedContact?.email">{{ selectedContact.email }}</small>
               <small v-if="selectedContact?.phone">{{ selectedContact.phone }}</small>
-              <BookingContactEditor
-                v-if="selectedContact && !selectedBooking.archived_at"
-                :workspace-id="workspaceId"
-                :contact="selectedContact"
-                :locale="locale"
-                @saved="handleContactSaved"
-              />
             </div>
             <div><dt>{{ copy.offer }}</dt><dd :class="{ missing: selectedBooking.offer_amount_minor == null }">{{ formatMoney(selectedBooking) }}</dd></div>
           </dl>
@@ -654,6 +658,8 @@ async function selectBooking(bookingId: string) {
 .core-inbox__facts dd { margin:6px 0 0; overflow:hidden; text-overflow:ellipsis; font-size:14px; font-weight:650; line-height:1.25; }
 .core-inbox__facts dd.missing { color:var(--cue-accent); font-style:italic; }
 .core-inbox__contact-fact { padding-inline:var(--cue-space-5) !important; }
+.core-inbox__contact-head { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--cue-space-3); }
+.core-inbox__contact-head > div { min-width:0; }
 .core-inbox__contact-fact dd { margin-top:7px; }
 .core-inbox__contact-fact small { display:block; margin-top:6px; color:var(--cue-muted); font-size:10px; line-height:1.4; }
 .core-inbox__contact-fact small + small { margin-top:3px; }
