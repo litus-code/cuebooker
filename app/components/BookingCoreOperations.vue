@@ -271,15 +271,15 @@ async function convertHold(hold: Hold) {
 </template>
 
 <style scoped>
-.core-ops { margin-top:12px; padding-top:12px; border-top:1px solid var(--cue-border); }
-.core-ops__eyebrow { margin-bottom:6px; color:var(--cue-muted); font:700 9px/1.2 monospace; letter-spacing:.11em; }
+.core-ops { margin-top:var(--cue-space-4); padding-top:var(--cue-space-3); border-top:1px solid var(--cue-border); }
+.core-ops__eyebrow { margin-bottom:var(--cue-space-3); color:var(--cue-accent); font:800 10px/1.2 monospace; letter-spacing:.1em; text-transform:uppercase; }
 .core-ops__grid { display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid var(--cue-border); border-radius:var(--cue-radius-panel); background:color-mix(in srgb,var(--cue-raised) 42%,transparent); overflow:hidden; }
 .core-ops__grid > section, .core-ops__hold-box { min-width:0; border:0; background:transparent; }
 .core-ops__grid > section + section { border-left:1px solid var(--cue-border); }
-.core-ops__grid header { padding:8px 10px 4px; border-bottom:0; font-size:10px; text-transform:uppercase; letter-spacing:.05em; }
-.core-ops__hold-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; padding:8px 10px 4px; border-bottom:0; }
+.core-ops__grid header { padding:var(--cue-space-3) var(--cue-space-4) var(--cue-space-2); border-bottom:0; font-size:10px; text-transform:uppercase; letter-spacing:.05em; }
+.core-ops__hold-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; padding:var(--cue-space-3) var(--cue-space-4) var(--cue-space-2); border-bottom:0; }
 .core-ops__hold-heading > span { display:grid; gap:3px; }
-.core-ops__hold-heading strong { font-size:11px; text-transform:uppercase; letter-spacing:.05em; }
+.core-ops__hold-heading strong { color:var(--cue-accent); font-size:10px; text-transform:uppercase; letter-spacing:.08em; }
 .core-ops__hold-heading small { max-width:430px; color:var(--cue-muted); font-size:9px; line-height:1.4; }
 .core-ops__hold-heading b { color:var(--cue-accent); font:700 10px monospace; }
 .core-ops__grid header small { display:block; margin-top:5px; max-width:430px; color:var(--cue-muted); font-size:9px; line-height:1.4; letter-spacing:0; text-transform:none; font-weight:400; }
