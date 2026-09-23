@@ -2207,3 +2207,303 @@
     grid-column:2;
   }
 }
+
+
+/* Activity skeleton mirrors BookingCoreHistory DOM proportions. */
+.workspace .workspace-skeleton__history-page-heading {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:end;
+  gap:var(--cue-space-6);
+  padding:var(--cue-space-5) 0 var(--cue-space-4);
+}
+
+.workspace .workspace-skeleton__history-page-copy {
+  display:grid;
+  gap:var(--cue-space-2);
+  max-width:880px;
+}
+
+.workspace .skeleton-line--history-page-title {
+  width:min(690px,76%);
+  height:42px;
+}
+
+.workspace .skeleton-line--history-page-body {
+  width:min(650px,72%);
+  height:12px;
+}
+
+.workspace .workspace-skeleton__history-artist {
+  display:flex;
+  align-items:center;
+  gap:var(--cue-space-2);
+  margin-bottom:2px;
+  white-space:nowrap;
+}
+
+.workspace .skeleton-line--history-artist-label {
+  width:56px;
+  height:8px;
+}
+
+.workspace .skeleton-panel--history-artist-icon {
+  width:16px;
+  height:16px;
+  min-height:16px;
+  border-radius:50%;
+}
+
+.workspace .skeleton-line--history-artist-name {
+  width:96px;
+  height:13px;
+}
+
+.workspace .workspace-skeleton__history-panel {
+  overflow:hidden;
+  margin-bottom:var(--cue-space-5);
+  border:1px solid var(--workspace-line);
+  border-radius:var(--cue-radius-panel);
+  background:var(--cue-surface);
+}
+
+.workspace .workspace-skeleton__history-head {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:var(--cue-space-5);
+  padding:var(--cue-space-5);
+  border-bottom:1px solid var(--workspace-line);
+}
+
+.workspace .workspace-skeleton__history-head-copy {
+  display:grid;
+  gap:var(--cue-space-2);
+  min-width:0;
+  width:min(620px,72%);
+}
+
+.workspace .skeleton-line--history-kicker {
+  width:90px;
+  height:9px;
+}
+
+.workspace .skeleton-line--history-title {
+  width:230px;
+  height:22px;
+}
+
+.workspace .skeleton-line--history-body {
+  width:min(520px,92%);
+  height:12px;
+}
+
+.workspace .workspace-skeleton__history-count {
+  display:grid;
+  justify-items:end;
+  gap:5px;
+  min-width:64px;
+}
+
+.workspace .skeleton-line--history-count-number {
+  width:32px;
+  height:24px;
+}
+
+.workspace .skeleton-line--history-count-label {
+  width:42px;
+  height:8px;
+}
+
+.workspace .workspace-skeleton__history-tools {
+  display:grid;
+  grid-template-columns:minmax(240px,1fr) auto;
+  align-items:center;
+  gap:var(--cue-space-3);
+  padding:var(--cue-space-3);
+  border-bottom:1px solid var(--workspace-line);
+  background:color-mix(in srgb,var(--cue-raised) 34%,transparent);
+}
+
+.workspace .workspace-skeleton__history-search {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  height:44px;
+  padding:0 13px;
+  border:1px solid var(--cue-border);
+  border-radius:var(--cue-radius-control);
+  background:var(--cue-surface);
+}
+
+.workspace .skeleton-panel--history-search-icon {
+  width:15px;
+  height:15px;
+  min-height:15px;
+  border-radius:50%;
+}
+
+.workspace .skeleton-line--history-search-text {
+  width:150px;
+  height:10px;
+}
+
+.workspace .workspace-skeleton__history-filters {
+  display:flex;
+  justify-content:flex-end;
+  gap:6px;
+  flex-wrap:wrap;
+}
+
+.workspace .skeleton-panel--history-filter {
+  height:36px;
+  min-height:36px;
+  border-radius:var(--cue-radius-control);
+}
+
+.workspace .skeleton-panel--history-filter-all { width:58px; }
+.workspace .skeleton-panel--history-filter-conversations { width:112px; }
+.workspace .skeleton-panel--history-filter-operations { width:92px; }
+.workspace .skeleton-panel--history-filter-system { width:76px; }
+
+.workspace .workspace-skeleton__history-event {
+  display:grid;
+  grid-template-columns:132px 18px minmax(0,1fr);
+  gap:var(--cue-space-3);
+  min-height:88px;
+  padding:var(--cue-space-4) var(--cue-space-5);
+  border-top:1px solid var(--workspace-line);
+}
+
+.workspace .workspace-skeleton__history-event:first-child {
+  border-top:0;
+}
+
+.workspace .workspace-skeleton__history-time {
+  padding-top:2px;
+}
+
+.workspace .workspace-skeleton__history-time .skeleton-line {
+  width:96px;
+  height:9px;
+}
+
+.workspace .workspace-skeleton__history-rail {
+  position:relative;
+  display:flex;
+  justify-content:center;
+}
+
+.workspace .workspace-skeleton__history-rail::before {
+  content:"";
+  position:absolute;
+  top:-16px;
+  bottom:-16px;
+  width:1px;
+  background:var(--workspace-line);
+}
+
+.workspace .workspace-skeleton__history-event:first-child .workspace-skeleton__history-rail::before {
+  top:8px;
+}
+
+.workspace .workspace-skeleton__history-event:last-child .workspace-skeleton__history-rail::before {
+  bottom:calc(100% - 11px);
+}
+
+.workspace .workspace-skeleton__history-rail > i {
+  position:relative;
+  z-index:1;
+  width:8px;
+  height:8px;
+  min-height:8px;
+  margin-top:5px;
+  border-radius:50%;
+}
+
+.workspace .workspace-skeleton__history-event-content {
+  display:grid;
+  align-content:start;
+  gap:7px;
+  min-width:0;
+}
+
+.workspace .workspace-skeleton__history-event-topline {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:var(--cue-space-3);
+}
+
+.workspace .skeleton-line--history-type {
+  width:86px;
+  height:8px;
+}
+
+.workspace .skeleton-line--history-open {
+  width:72px;
+  height:8px;
+}
+
+.workspace .skeleton-line--history-booking {
+  width:210px;
+  height:14px;
+}
+
+.workspace .skeleton-line--history-detail {
+  width:min(520px,72%);
+  height:10px;
+}
+
+@media (max-width:760px) {
+  .workspace .workspace-skeleton__history-page-heading {
+    grid-template-columns:1fr;
+    gap:var(--cue-space-3);
+  }
+
+  .workspace .workspace-skeleton__history-tools {
+    grid-template-columns:1fr;
+  }
+
+  .workspace .workspace-skeleton__history-filters {
+    justify-content:flex-start;
+  }
+
+  .workspace .workspace-skeleton__history-event {
+    grid-template-columns:88px 14px minmax(0,1fr);
+    gap:var(--cue-space-2);
+    padding:var(--cue-space-4);
+  }
+}
+
+@media (max-width:520px) {
+  .workspace .workspace-skeleton__history-filters {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .workspace .skeleton-panel--history-filter {
+    width:100%;
+  }
+
+  .workspace .workspace-skeleton__history-event {
+    grid-template-columns:14px minmax(0,1fr);
+    min-height:96px;
+  }
+
+  .workspace .workspace-skeleton__history-time {
+    grid-column:2;
+    grid-row:1;
+    padding:0;
+  }
+
+  .workspace .workspace-skeleton__history-rail {
+    grid-column:1;
+    grid-row:1 / span 2;
+  }
+
+  .workspace .workspace-skeleton__history-event-content {
+    grid-column:2;
+    grid-row:2;
+  }
+}
