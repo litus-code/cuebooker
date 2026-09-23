@@ -122,7 +122,7 @@ async function save() {
 </template>
 
 <style scoped>
-.contact-editor-entry { display:inline-flex; align-items:center; gap:6px; min-height:28px; margin-top:9px; padding:0 8px 0 0; border:0; border-radius:var(--cue-radius-control); background:transparent; color:var(--cue-muted); cursor:pointer; font:800 8px monospace; letter-spacing:.04em; text-transform:uppercase; transition:color .16s ease; }
+.contact-editor-entry { display:inline-flex; align-items:center; gap:6px; min-height:28px; margin:0; padding:0; border:0; border-radius:var(--cue-radius-control); background:transparent; color:var(--cue-muted); cursor:pointer; font:800 8px monospace; letter-spacing:.04em; text-transform:uppercase; white-space:nowrap; transition:color .16s ease; }
 .contact-editor-entry:hover { color:var(--cue-accent); }
 .contact-editor-entry svg { width:12px; height:12px; flex:0 0 auto; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .contact-editor-backdrop { position:fixed; z-index:110; inset:0; display:grid; place-items:center; padding:18px; background:rgba(0,0,0,.74); backdrop-filter:blur(5px); }
