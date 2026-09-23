@@ -1229,9 +1229,14 @@ function coreBookingTimeStyle(booking: CoreBooking) {
   return { top: `${start * .8}px`, height: `${Math.max((end - start) * .8, 42)}px` }
 }
 
-function openUpcoming(block: AvailabilityBlock) {
-  activeView.value = 'calendar'
+async function openUpcoming(block: AvailabilityBlock) {
+  await changeView('calendar')
   startEdit(block)
+}
+
+async function openCalendarCreate() {
+  await changeView('calendar')
+  openCreate()
 }
 
 function openCalendarBlock(block: AvailabilityBlock) {
@@ -1335,6 +1340,37 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       </div>
     </section>
 
+    <section v-else-if="loading && activeView === 'calendar'" class="workspace-skeleton workspace-skeleton--calendar" aria-busy="true" aria-live="polite">
+      <span class="sr-only">{{ copy.loading }}</span>
+      <div class="workspace-skeleton__heading workspace-skeleton__heading--calendar">
+        <i class="skeleton-line skeleton-line--eyebrow" />
+        <div class="workspace-skeleton__title-block" aria-hidden="true">
+          <i class="skeleton-line skeleton-line--title skeleton-line--title-primary" />
+          <i class="skeleton-line skeleton-line--body" />
+        </div>
+      </div>
+      <div class="workspace-skeleton__calendar-layout">
+        <div class="workspace-skeleton__calendar-month">
+          <i class="skeleton-panel skeleton-panel--calendar-toolbar" />
+          <div class="workspace-skeleton__calendar-grid">
+            <i v-for="index in 7" :key="`calendar-weekday-${index}`" class="skeleton-panel skeleton-panel--calendar-weekday" />
+            <i v-for="index in 35" :key="`calendar-day-${index}`" class="skeleton-panel skeleton-panel--calendar-day" />
+          </div>
+          <div class="workspace-skeleton__calendar-legend">
+            <i class="skeleton-line" />
+            <i class="skeleton-line" />
+            <i class="skeleton-line" />
+          </div>
+        </div>
+        <div class="workspace-skeleton__calendar-day">
+          <i class="skeleton-panel skeleton-panel--calendar-day-head" />
+          <div class="workspace-skeleton__calendar-timeline">
+            <i v-for="index in 10" :key="`calendar-hour-${index}`" class="skeleton-panel skeleton-panel--calendar-hour" />
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section v-else-if="loading" class="workspace-skeleton" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
       <div class="workspace-skeleton__heading">
@@ -1405,7 +1441,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
         <div class="overview-grid">
           <section class="panel agenda-panel">
-            <div class="panel-heading"><div><p class="eyebrow">{{ copy.agendaEyebrow }}</p><h2>{{ copy.upcoming }}</h2></div><button type="button" @click="activeView = 'calendar'">{{ copy.viewCalendar }}</button></div>
+            <div class="panel-heading"><div><p class="eyebrow">{{ copy.agendaEyebrow }}</p><h2>{{ copy.upcoming }}</h2></div><button type="button" @click="changeView('calendar')">{{ copy.viewCalendar }}</button></div>
             <div v-if="upcomingBlocks.length" class="agenda-list">
               <button v-for="block in upcomingBlocks" :key="block.id" type="button" @click="openUpcoming(block)">
                 <time>{{ shortDate(block.starts_at) }}</time>
@@ -1413,7 +1449,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                 <i :class="`status-dot status-dot--${block.status}`" />
               </button>
             </div>
-            <div v-else class="panel-empty"><p>{{ copy.noUpcoming }}</p><button type="button" @click="activeView = 'calendar'; openCreate()">{{ copy.addSlot }}</button></div>
+            <div v-else class="panel-empty"><p>{{ copy.noUpcoming }}</p><button type="button" @click="openCalendarCreate()">{{ copy.addSlot }}</button></div>
           </section>
 
           <aside class="panel next-panel">
