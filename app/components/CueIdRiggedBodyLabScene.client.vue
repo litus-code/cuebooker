@@ -143,7 +143,9 @@ function applyViewTransform() {
 
   const { center, size, maxDimension } = frameMetrics
   const faceMode = props.viewMode === 'face'
-  const baseScale = (faceMode ? 8.8 : 4.25) / maxDimension
+  const compactViewport = import.meta.client && window.innerWidth <= 640
+  const bodyFrame = compactViewport ? 3.72 : 4.12
+  const baseScale = (faceMode ? 8.8 : bodyFrame) / maxDimension
   const scale = baseScale * userZoom.value
   const focusY = faceMode
     ? center.y + size.y * 0.32
@@ -152,7 +154,7 @@ function applyViewTransform() {
   displayScale.value = scale
   const nextPosition: [number, number, number] = [
     -center.x * scale,
-    -focusY * scale - (faceMode ? 0.05 : 0.12),
+    -focusY * scale + (faceMode ? -0.05 : compactViewport ? 0.09 : 0.02),
     -center.z * scale
   ]
 
