@@ -1802,3 +1802,43 @@
     height:58px !important;
   }
 }
+
+
+.workspace .calendar-view .day-panel__empty {
+  display:grid;
+  align-content:start;
+  min-height:668px;
+  padding:var(--cue-space-5);
+  background:color-mix(in srgb,var(--cue-bg) 18%,var(--cue-surface));
+}
+
+.workspace .calendar-view .day-panel__empty .eyebrow {
+  color:var(--cue-accent);
+  font-size:9px;
+}
+
+.workspace .calendar-view .day-panel__empty h2 {
+  margin:var(--cue-space-2) 0 var(--cue-space-2);
+  font-size:18px;
+}
+
+.workspace .calendar-view .day-panel__empty > p:last-child {
+  max-width:300px;
+  margin:0;
+  color:var(--cue-muted);
+  font-size:11px;
+  line-height:1.5;
+}
+
+@media (max-width:1040px) {
+  .workspace .calendar-view .day-panel__empty {
+    min-height:220px;
+  }
+}
+
+@media (max-width:620px) {
+  .workspace .calendar-view .day-panel__empty {
+    min-height:180px;
+    padding:var(--cue-space-4);
+  }
+}
