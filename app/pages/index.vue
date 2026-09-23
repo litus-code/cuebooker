@@ -2,7 +2,7 @@
 import es from '../../content/es/home.json'
 import en from '../../content/en/home.json'
 
-const { locale, theme, setLocale, setTheme } = useCuePreferences()
+const { locale } = useCuePreferences()
 const baseCopy = computed(() => locale.value === 'es' ? es : en)
 const menuOpen = ref(false)
 const navHidden = ref(false)
@@ -450,8 +450,7 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
           <a href="#cue-id" @click.prevent="scrollTo('#cue-id')">{{ p.nav.identity }}</a>
         </div>
         <div class="cp-nav-actions">
-          <div class="cp-locale"><button aria-label="Español" :aria-pressed="locale === 'es'" :class="{ active: locale === 'es' }" @click="setLocale('es')">ES</button><button aria-label="English" :aria-pressed="locale === 'en'" :class="{ active: locale === 'en' }" @click="setLocale('en')">EN</button></div>
-          <button class="cp-theme" type="button" :aria-label="locale === 'es' ? (theme === 'dark' ? 'Activar apariencia clara' : 'Activar apariencia oscura') : (theme === 'dark' ? 'Switch to light appearance' : 'Switch to dark appearance')" @click="setTheme(theme === 'dark' ? 'light' : 'dark')"><span /></button>
+          <CuePreferencesControl compact />
           <NuxtLink class="cp-login" to="/access?mode=signin" @click="analytics.track('login_click', { placement: 'header' })">{{ p.nav.login }}</NuxtLink>
           <NuxtLink class="cp-cta cp-cta--nav" to="/access?mode=signup" @click="analytics.track('signup_click', { placement: 'header' })">{{ p.nav.signup }}</NuxtLink>
           <button class="cp-menu" :class="{ 'is-open': menuOpen }" type="button" :aria-label="locale === 'es' ? (menuOpen ? 'Cerrar menú' : 'Abrir menú') : (menuOpen ? 'Close menu' : 'Open menu')" :aria-expanded="menuOpen" aria-controls="cp-mobile-menu" @click="toggleMenu"><span /><span /></button>
