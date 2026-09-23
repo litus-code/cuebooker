@@ -3400,3 +3400,128 @@
     max-width:150px;
   }
 }
+
+
+/* DJ-native Passport sticker families */
+.workspace .cue-passport__node {
+  transition:transform .16s ease, box-shadow .16s ease, background .16s ease;
+}
+
+.workspace .cue-passport__node.active {
+  transform:scale(1.35);
+  background:var(--cue-accent);
+  box-shadow:
+    0 0 0 9px color-mix(in srgb,var(--cue-accent) 12%,transparent),
+    0 0 28px color-mix(in srgb,var(--cue-accent) 32%,transparent);
+}
+
+.workspace .cue-passport-sticker {
+  appearance:none;
+  cursor:pointer;
+  color:var(--cue-text);
+  text-align:left;
+  transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease,opacity .14s ease;
+}
+
+.workspace .cue-passport-sticker:hover,
+.workspace .cue-passport-sticker.active {
+  border-color:var(--cue-accent);
+  box-shadow:
+    2px 3px 0 color-mix(in srgb,var(--cue-accent) 42%,transparent),
+    0 0 0 1px color-mix(in srgb,var(--cue-accent) 12%,transparent);
+}
+
+.workspace .cue-passport-sticker.active {
+  transform:rotate(0deg) translateY(-2px);
+}
+
+.workspace .cue-passport-sticker--city {
+  border-radius:50% / 42%;
+  min-width:126px;
+  min-height:92px;
+  place-content:center;
+  text-align:center;
+  border-style:dashed;
+  background:
+    radial-gradient(circle at 50% 50%,rgba(223,255,53,.08),transparent 52%),
+    #101010;
+}
+
+.workspace .cue-passport-sticker--city::before {
+  content:"";
+  position:absolute;
+  inset:7px;
+  border:1px solid #333;
+  border-radius:inherit;
+  pointer-events:none;
+}
+
+.workspace .cue-passport-sticker--venue {
+  position:relative;
+  border-radius:3px;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px),
+    #121212;
+  background-size:9px 100%;
+  box-shadow:
+    inset 0 0 0 1px #191919,
+    3px 3px 0 #242424;
+}
+
+.workspace .cue-passport-sticker--venue::before,
+.workspace .cue-passport-sticker--venue::after {
+  content:"";
+  position:absolute;
+  width:5px;
+  height:5px;
+  border:1px solid #5a5a5a;
+  border-radius:50%;
+  background:#080808;
+}
+
+.workspace .cue-passport-sticker--venue::before { left:6px; top:6px; }
+.workspace .cue-passport-sticker--venue::after { right:6px; bottom:6px; }
+
+.workspace .cue-passport-sticker--touring {
+  position:relative;
+  min-width:156px;
+  padding-left:18px;
+  border-radius:4px 12px 12px 4px;
+  background:
+    linear-gradient(90deg,var(--cue-accent) 0 5px,transparent 5px),
+    #111;
+}
+
+.workspace .cue-passport-sticker--touring::after {
+  content:"BAG / TOUR";
+  position:absolute;
+  right:8px;
+  top:8px;
+  color:#4f4f4f;
+  font:700 6px/1 monospace;
+  letter-spacing:.11em;
+}
+
+.workspace .cue-passport-sticker--milestone {
+  position:relative;
+  min-width:144px;
+  border-radius:2px;
+  background:
+    linear-gradient(180deg,#151515,#0d0d0d);
+}
+
+.workspace .cue-passport-sticker--milestone::before {
+  content:"";
+  position:absolute;
+  left:10px;
+  right:10px;
+  bottom:8px;
+  height:3px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      var(--cue-accent) 0 8px,
+      transparent 8px 12px
+    );
+  opacity:.55;
+}
