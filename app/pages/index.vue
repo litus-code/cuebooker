@@ -718,7 +718,7 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
 .ed-sticker { text-align: center; padding: 26px 10px; }
 .ed-sticker svg { display: block; width: 110px; margin: 24px auto; stroke: var(--cp-lime); fill: none; stroke-width: 3; }
 .ed-sticker small { color: var(--cp-muted); font-size: 10px; }
-.ed-control-intro { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; max-width: 1000px; }
+.ed-control-intro { display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 80px; max-width: 1000px; }\n.ed-control-intro > p { margin-top: 0; }
 .ed-responsibility { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-top: 40px; }
 .ed-responsibility > div { border-top: 2px solid var(--cp-line); padding-top: 22px; }
 .ed-responsibility > div:last-child { border-color: var(--cp-lime); }
