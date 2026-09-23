@@ -1964,3 +1964,246 @@
     min-height:480px !important;
   }
 }
+
+
+/* Activity follows the same compact artist identity language as the other workspace views. */
+.workspace .history-view .view-heading {
+  grid-template-columns:minmax(0,1fr) auto !important;
+  align-items:end !important;
+  gap:var(--cue-space-6) !important;
+  padding:var(--cue-space-5) 0 var(--cue-space-4) !important;
+}
+
+.workspace .history-view .artist-identity {
+  display:flex !important;
+  align-items:center !important;
+  gap:var(--cue-space-2) !important;
+  min-width:0 !important;
+  width:auto !important;
+  padding:0 !important;
+  margin:0 0 2px !important;
+  border-top:0 !important;
+  white-space:nowrap;
+}
+
+.workspace .history-view .artist-identity > span,
+.workspace .history-view .artist-identity > small {
+  margin:0 !important;
+  font-size:8px !important;
+  line-height:1 !important;
+}
+
+.workspace .history-view .artist-identity > span::after {
+  content:" /";
+}
+
+.workspace .history-view .artist-identity strong {
+  margin:0 !important;
+  gap:6px !important;
+  font-size:13px !important;
+}
+
+.workspace .history-view .artist-identity svg {
+  width:16px !important;
+  height:16px !important;
+}
+
+/* Activity skeleton mirrors the final operational timeline shell. */
+.workspace .workspace-skeleton--history {
+  padding-top:var(--cue-space-5) !important;
+}
+
+.workspace .workspace-skeleton__heading--history {
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) auto !important;
+  align-items:end !important;
+  gap:var(--cue-space-6) !important;
+  min-height:150px !important;
+  margin-bottom:var(--cue-space-3) !important;
+}
+
+.workspace .workspace-skeleton__heading--history .workspace-skeleton__title-block {
+  min-height:78px !important;
+}
+
+.workspace .workspace-skeleton__heading--history .skeleton-line--title-primary {
+  width:min(620px,74%) !important;
+  height:38px !important;
+}
+
+.workspace .workspace-skeleton__heading--history .skeleton-line--body {
+  width:min(520px,64%) !important;
+  height:12px !important;
+}
+
+.workspace .skeleton-line--artist {
+  width:150px !important;
+  height:13px !important;
+  margin:0 0 2px !important;
+}
+
+.workspace .workspace-skeleton__history-panel {
+  overflow:hidden;
+  border:1px solid var(--workspace-line);
+  border-radius:var(--cue-radius-panel);
+  background:var(--cue-surface);
+}
+
+.workspace .workspace-skeleton__history-head {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:var(--cue-space-5);
+  padding:var(--cue-space-5);
+  border-bottom:1px solid var(--workspace-line);
+}
+
+.workspace .workspace-skeleton__history-head > div {
+  display:grid;
+  gap:8px;
+  min-width:0;
+  width:min(620px,72%);
+}
+
+.workspace .skeleton-line--history-title {
+  width:220px !important;
+  height:22px !important;
+}
+
+.workspace .skeleton-line--history-body {
+  width:min(520px,90%) !important;
+  height:11px !important;
+}
+
+.workspace .skeleton-line--history-count {
+  width:44px !important;
+  height:28px !important;
+}
+
+.workspace .workspace-skeleton__history-tools {
+  display:grid;
+  grid-template-columns:minmax(240px,1fr) auto;
+  align-items:center;
+  gap:var(--cue-space-3);
+  padding:var(--cue-space-3);
+  border-bottom:1px solid var(--workspace-line);
+  background:color-mix(in srgb,var(--cue-raised) 34%,transparent);
+}
+
+.workspace .skeleton-panel--history-search {
+  height:44px !important;
+  min-height:44px !important;
+  border-radius:var(--cue-radius-control) !important;
+}
+
+.workspace .workspace-skeleton__history-filters {
+  display:flex;
+  gap:6px;
+}
+
+.workspace .skeleton-panel--history-filter {
+  width:92px !important;
+  height:36px !important;
+  min-height:36px !important;
+  border-radius:var(--cue-radius-control) !important;
+}
+
+.workspace .workspace-skeleton__history-row {
+  display:grid;
+  grid-template-columns:132px 18px minmax(0,1fr);
+  gap:var(--cue-space-3);
+  min-height:88px;
+  padding:var(--cue-space-4) var(--cue-space-5);
+  border-top:1px solid var(--workspace-line);
+}
+
+.workspace .workspace-skeleton__history-row:first-child {
+  border-top:0;
+}
+
+.workspace .skeleton-line--history-time {
+  width:92px !important;
+  height:9px !important;
+  margin-top:3px !important;
+}
+
+.workspace .skeleton-panel--history-dot {
+  width:8px !important;
+  height:8px !important;
+  min-height:8px !important;
+  margin:4px auto 0 !important;
+  border-radius:50% !important;
+}
+
+.workspace .workspace-skeleton__history-row > div {
+  display:grid;
+  align-content:start;
+  gap:7px;
+}
+
+.workspace .skeleton-line--history-type {
+  width:86px !important;
+  height:8px !important;
+}
+
+.workspace .skeleton-line--history-booking {
+  width:190px !important;
+  height:14px !important;
+}
+
+.workspace .skeleton-line--history-detail {
+  width:min(520px,72%) !important;
+  height:10px !important;
+}
+
+@media (max-width:760px) {
+  .workspace .history-view .view-heading,
+  .workspace .workspace-skeleton__heading--history {
+    grid-template-columns:1fr !important;
+    gap:var(--cue-space-3) !important;
+  }
+
+  .workspace .workspace-skeleton__history-tools {
+    grid-template-columns:1fr !important;
+  }
+
+  .workspace .workspace-skeleton__history-filters {
+    justify-content:flex-start;
+    flex-wrap:wrap;
+  }
+
+  .workspace .workspace-skeleton__history-row {
+    grid-template-columns:88px 14px minmax(0,1fr);
+    gap:var(--cue-space-2);
+    padding:var(--cue-space-4);
+  }
+}
+
+@media (max-width:520px) {
+  .workspace .workspace-skeleton__history-filters {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .workspace .skeleton-panel--history-filter {
+    width:100% !important;
+  }
+
+  .workspace .workspace-skeleton__history-row {
+    grid-template-columns:14px minmax(0,1fr);
+    min-height:96px;
+  }
+
+  .workspace .skeleton-line--history-time {
+    grid-column:2;
+  }
+
+  .workspace .skeleton-panel--history-dot {
+    grid-column:1;
+    grid-row:1 / span 2;
+  }
+
+  .workspace .workspace-skeleton__history-row > div {
+    grid-column:2;
+  }
+}
