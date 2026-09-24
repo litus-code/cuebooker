@@ -40,6 +40,7 @@ const copy = computed(() => props.locale === 'es' ? {
   holdDate: 'Fecha',
   expires: 'Caduca',
   priority: 'Prioridad',
+  noPriority: 'Sin prioridad',
   createHold: 'Reservar fecha',
   release: 'Liberar fecha',
   saving: 'Guardando…',
@@ -64,6 +65,7 @@ const copy = computed(() => props.locale === 'es' ? {
   holdDate: 'Date',
   expires: 'Expires',
   priority: 'Priority',
+  noPriority: 'No priority',
   createHold: 'Reserve date',
   release: 'Release date',
   saving: 'Saving…',
@@ -262,6 +264,13 @@ async function releaseHold(hold: Hold) {
           <div class="core-ops__form-row core-ops__form-row--hold">
             <label><span>{{ copy.holdDate }}</span><input v-model="holdDate" type="date"></label>
             <label><span>{{ copy.expires }}</span><input v-model="holdExpires" type="datetime-local"></label>
+            <label class="core-ops__priority-field">
+              <span>{{ copy.priority }}</span>
+              <select v-model="holdPriority">
+                <option value="">{{ copy.noPriority }}</option>
+                <option v-for="priority in 9" :key="priority" :value="String(priority)">P{{ priority }}</option>
+              </select>
+            </label>
           </div>
           <button type="submit" :disabled="saving">{{ saving ? copy.saving : copy.createHold }}</button>
         </form>
@@ -306,10 +315,12 @@ async function releaseHold(hold: Hold) {
 .core-ops__auto-reply strong { display:block; color:var(--cue-text); font-size:10px; line-height:1.35; overflow-wrap:normal; word-break:normal; }
 .core-ops__auto-reply small { display:block; margin-top:2px; color:var(--cue-muted); font-size:9px; line-height:1.35; overflow-wrap:normal; word-break:normal; }
 .core-ops__form-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:end; }
-.core-ops__form-row--hold { grid-template-columns:1fr 1fr; }
+.core-ops__form-row--hold { grid-template-columns:minmax(0,1fr) minmax(0,1fr) 112px; }
 .core-ops__form--hold > button { justify-self:start; width:auto; min-width:0; min-height:34px; height:34px; margin-top:12px; padding:0 12px; font-size:8px; }
 .core-ops__form label span { display:block; margin-bottom:4px; color:var(--cue-muted); font:700 8px monospace; text-transform:uppercase; }
-.core-ops__form input:not([type="checkbox"]) { width:100%; min-height:var(--cue-input-md); box-sizing:border-box; border:1px solid color-mix(in srgb,var(--cue-border) 88%,transparent); border-radius:var(--cue-radius-control); background:var(--cue-surface); color:var(--cue-text); padding:0 10px; font-size:11px; }
+.core-ops__form input:not([type="checkbox"]),
+.core-ops__form select { width:100%; min-height:var(--cue-input-md); box-sizing:border-box; border:1px solid color-mix(in srgb,var(--cue-border) 88%,transparent); border-radius:var(--cue-radius-control); background:var(--cue-surface); color:var(--cue-text); padding:0 10px; font-size:11px; }
+.core-ops__form select { cursor:pointer; }
 .core-ops__form > button, .core-ops__form-row > button { min-height:var(--cue-button-md); align-self:end; }
 .core-ops__form--hold > button { min-height:34px; }
 .core-ops__form > button { background:var(--cue-primary); color:var(--cue-primary-ink); border-color:var(--cue-primary); }
