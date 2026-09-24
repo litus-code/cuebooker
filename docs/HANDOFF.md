@@ -9952,3 +9952,24 @@ Implemented:
 Do not use direct checks such as `plan === 'artist_pro'` in feature UI. Use `can(entitlement)` / plan limits.
 
 Billing is still not connected and production remains untouched.
+
+
+## 24 Sep 2026 · Artist Pro automation boundary
+
+The first paid automation value is wired without restricting the Free booking loop.
+
+- `automation.advanced` gates the prepared stale follow-up draft.
+- Free still receives the stale-waiting attention signal and can write/send the email manually.
+- Email delivery retry remains Free because it recovers an operational failure.
+- `automation.advanced` gates `completion_trigger = inbound_activity` for next actions.
+- Manual next actions remain Free.
+- Existing automatic next-action rules continue to display and operate after downgrade.
+- Automatic conversational booking status remains Booking Core and is Free.
+- Confirm/reject/cancel remain explicit artist decisions.
+
+Validation:
+
+- HEAD `dd9fe94bb15bc62395252c8b9f11ca4e384a7df0`;
+- GitHub Actions run `36012306252`, attempt 2, completed successfully;
+- `Generate preview build` and PR preview deployment succeeded;
+- this workflow does not execute `npm test`, so tests are not claimed as run.
