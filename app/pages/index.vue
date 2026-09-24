@@ -157,18 +157,6 @@ const p = computed(() => locale.value === 'es' ? {
     "note": "El Passport básico está incluido. La media de eventos, los exports y los recaps avanzados forman parte de Artist Pro.",
     "visual": "BOOKING → EVENTO → TRAYECTORIA"
   },
-  "passport": {
-    "label": "05 / CUE PASSPORT",
-    "title": "Every date leaves a mark.",
-    "body": "Cuebooker turns confirmed bookings into cities, venues, milestones and memories from your trajectory.",
-    "features": [
-      { "title": "Constellation", "text": "Explore connected countries, cities, venues and dates." },
-      { "title": "Stickers", "text": "Milestones come from real activity. They are not filled in manually." },
-      { "title": "Timeline", "text": "Your trajectory grows in order and keeps the context of every stage." }
-    ],
-    "note": "Basic Passport is included. Event media, exports and advanced recaps are part of Artist Pro.",
-    "visual": "BOOKING → EVENT → TRAJECTORY"
-  },
   "identity": {
     "label": "06 / CUE ID",
     "title": "Tu sonido ya tiene identidad.\nAhora puede tener cuerpo.",
@@ -368,8 +356,20 @@ const p = computed(() => locale.value === 'es' ? {
       "When to confirm a date"
     ]
   },
+  "passport": {
+    "label": "05 / CUE PASSPORT",
+    "title": "Every date leaves a mark.",
+    "body": "Cuebooker turns confirmed bookings into cities, venues, milestones and memories from your trajectory.",
+    "features": [
+      { "title": "Constellation", "text": "Explore connected countries, cities, venues and dates." },
+      { "title": "Stickers", "text": "Milestones come from real activity. They are not filled in manually." },
+      { "title": "Timeline", "text": "Your trajectory grows in order and keeps the context of every stage." }
+    ],
+    "note": "Basic Passport is included. Event media, exports and advanced recaps are part of Artist Pro.",
+    "visual": "BOOKING → EVENT → TRAJECTORY"
+  },
   "identity": {
-    "label": "04 / CUE ID",
+    "label": "06 / CUE ID",
     "title": "Your sound already has an identity.\nNow it can take shape.",
     "body": "Create your 3D character and turn your artistic identity into something recognisable.",
     "beta": "BETA · EVOLVING",
