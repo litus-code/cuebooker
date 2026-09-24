@@ -563,7 +563,7 @@ async function selectBooking(bookingId: string) {
         </nav>
 
         <BookingCoreConflictNotice
-          v-if="!selectedBooking.archived_at"
+          v-if="!selectedBooking.archived_at && !['confirmed','rejected','cancelled'].includes(selectedBooking.status)"
           class="core-inbox__conflict-predecision"
           :workspace-id="workspaceId"
           :booking="selectedBooking"
@@ -599,7 +599,7 @@ async function selectBooking(bookingId: string) {
             <strong>{{ copy.details }}</strong>
             <div class="core-inbox__details-actions">
               <button
-                v-if="selectedBooking.event_date"
+                v-if="selectedBooking.event_date && !['rejected','cancelled'].includes(selectedBooking.status)"
                 class="core-inbox__calendar-link"
                 type="button"
                 @click="emit('calendarRequested', selectedBooking.event_date)"
