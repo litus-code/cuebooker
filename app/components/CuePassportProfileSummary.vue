@@ -42,6 +42,10 @@ const emit = defineEmits<{
 const visibleCities = computed(() => props.cities.slice(0, 5))
 const visibleMilestones = computed(() => props.milestones.slice(0, 3))
 const visibleMedia = computed(() => props.media.slice(0, 6))
+function mediaPreview(item: PassportMedia) {
+  if (item.thumbnailUrl) return item.thumbnailUrl
+  return item.mediaType === 'image' ? item.mediaUrl : null
+}
 </script>
 
 <template>
@@ -100,7 +104,7 @@ const visibleMedia = computed(() => props.media.slice(0, 6))
           rel="noopener noreferrer"
           :aria-label="item.caption || item.mediaType"
         >
-          <img v-if="item.thumbnailUrl || item.mediaUrl" :src="item.thumbnailUrl || item.mediaUrl || ''" alt="">
+          <img v-if="mediaPreview(item)" :src="mediaPreview(item) || ''" alt="">
           <span>{{ item.mediaType.toUpperCase() }}</span>
         </a>
       </div>
