@@ -49,6 +49,12 @@ function isoTime(value: string | null | undefined) {
   return value?.slice(11, 16) || null
 }
 
+function isHoldExpired(hold: Hold) {
+  if (!hold.expires_at) return false
+  const expiresAt = Date.parse(hold.expires_at)
+  return Number.isFinite(expiresAt) && expiresAt <= Date.now()
+}
+
 function overlapsTimedRange(
   ownStart: number | null,
   ownEnd: number | null,
@@ -67,6 +73,7 @@ const mismatchedOwnHolds = computed(() => {
   return holds.value.filter(hold =>
     hold.booking_id === props.booking.id
     && hold.status === 'active'
+    && !isHoldExpired(hold)
     && !holdMatchesBookingSchedule(props.booking, hold)
   )
 })
@@ -98,7 +105,7 @@ const conflicts = computed(() => {
   }
 
   for (const hold of holds.value) {
-    if (hold.booking_id === props.booking.id || hold.status !== 'active' || hold.event_date !== date) continue
+    if (hold.booking_id === props.booking.id || hold.status !== 'active' || isHoldExpired(hold) || hold.event_date !== date) continue
     if (!overlapsTimedRange(ownStart, ownEnd, hold.starts_at, hold.ends_at, date)) continue
     rows.push({
       id: `hold-${hold.id}`,
