@@ -248,7 +248,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   cueIdEyebrow: 'ARTISTA / IDENTIDAD VISUAL', cueIdTitle: 'TU CUE ID.', cueIdBody: 'Crea y gestiona tu identidad visual. Decide después qué parte quieres mostrar en tu perfil público.',
   cueIdCreate: 'Abrir editor CUE ID', cueIdProfile: 'Visibilidad en Perfil', cueIdProfileBody: 'Desde Perfil decides si tu avatar aparece públicamente. Aquí solo construyes y gestionas la identidad.',
   cueIdAssets: 'Assets y redes', cueIdAssetsBody: 'Renders, imágenes y formatos para compartir vivirán aquí en próximas iteraciones.', cueIdStatus: 'Estado actual', cueIdReady: 'CUE ID configurado', cueIdPending: 'Todavía sin configurar',
-  passportEyebrow: 'CUE PASSPORT / PREVIEW', passportTitle: 'TU TRAYECTORIA DEJA RASTRO.', passportBody: 'CUE Passport se irá construyendo con tu actividad real en Cuebooker. Fechas, ciudades, venues y conexiones pasan a formar parte de tu identidad profesional.', passportBookings: 'Bookings confirmados', passportVenues: 'Venues', passportCities: 'Ciudades', passportEmpty: 'A medida que confirmes bookings, tu Passport empezará a tomar forma.', passportFuture: 'Vista conceptual. Todavía no modifica ni publica datos.',
+  passportEyebrow: 'ARTISTA / CUE PASSPORT', passportTitle: 'TU TRAYECTORIA DEJA RASTRO.', passportBody: 'CUE Passport se construye con tu actividad real en Cuebooker. Fechas, ciudades, venues y media vinculada pasan a formar parte de tu trayectoria profesional.', passportBookings: 'Bookings confirmados', passportVenues: 'Venues', passportCities: 'Ciudades', passportEmpty: 'A medida que confirmes bookings, tu Passport empezará a tomar forma.', passportFuture: 'Se actualiza desde bookings confirmados. La visibilidad pública se controla desde Perfil.',
   previousMonth: 'Mes anterior', nextMonth: 'Mes siguiente',
   profileEyebrow: 'ARTISTA / PRESENCIA PÚBLICA', profileTitle: 'CONSTRUYE TU PERFIL PÚBLICO.', profileBody: 'Esta es la presencia que verá un promoter cuando llegue a tu enlace. Edita cada bloque sin salir del resultado final.',
   profileOptional: 'Ficha opcional', profileOptionalBody: 'Tu workspace ya está creado. Puedes completar estos datos ahora o volver desde Perfil cuando quieras.', later: 'Ahora no', previewProfile: 'Vista previa', previewPrivate: 'VISTA PREVIA / PERFIL PÚBLICO', previewClose: 'Cerrar vista previa', previewBioEmpty: 'Tu biografía aparecerá aquí cuando la completes.', previewGenresEmpty: 'Añade géneros para verlos en la ficha.', previewFormats: 'Formatos', previewLinks: 'Escuchar y seguir',
@@ -281,6 +281,10 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   calendarEyebrow: 'CALENDAR / SCHEDULE', calendarTitle: 'DATES AND TIMES.', calendarBody: 'Holds and confirmed bookings appear here automatically. Use “Add block” for travel, studio time or unavailability that does not come from a booking.', weekdays: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], unavailable: 'Unavailable', dayHours: 'DAY / 24 HOURS', add: 'Add block', selectedDaySchedule: 'Selected day schedule', addAt: 'Add block at',
   historyEyebrow: 'WORKSPACE / ACTIVITY', historyTitle: 'EVERYTHING THAT HAPPENED.',
   historyBody: 'Messages, status changes, holds and actions ordered over time. Archived bookings remain under Bookings → Archived.',
+  cueIdEyebrow: 'ARTIST / VISUAL IDENTITY', cueIdTitle: 'YOUR CUE ID.', cueIdBody: 'Create and manage your visual identity. Decide later what you want to show on your public profile.',
+  cueIdCreate: 'Open CUE ID editor', cueIdProfile: 'Profile visibility', cueIdProfileBody: 'Profile controls whether your avatar is public. This space is only for building and managing the identity.',
+  cueIdAssets: 'Assets and networks', cueIdAssetsBody: 'Renders, images and shareable formats will live here in later iterations.', cueIdStatus: 'Current state', cueIdReady: 'CUE ID configured', cueIdPending: 'Not configured yet',
+  passportEyebrow: 'ARTIST / CUE PASSPORT', passportTitle: 'YOUR TRAJECTORY LEAVES A TRACE.', passportBody: 'CUE Passport is built from your real Cuebooker activity. Dates, cities, venues and linked media become part of your professional trajectory.', passportBookings: 'Confirmed bookings', passportVenues: 'Venues', passportCities: 'Cities', passportEmpty: 'As you confirm bookings, your Passport will start taking shape.', passportFuture: 'It updates from confirmed bookings. Public visibility is controlled from Profile.',
   previousMonth: 'Previous month', nextMonth: 'Next month',
   profileEyebrow: 'ARTIST / PUBLIC PRESENCE', profileTitle: 'BUILD YOUR PUBLIC PROFILE.', profileBody: 'This is what a promoter sees when they land on your link. Edit each block without leaving the final result.',
   profileOptional: 'Optional profile', profileOptionalBody: 'Your workspace is ready. Complete these details now or return from Profile whenever you want.', later: 'Not now', previewProfile: 'Preview', previewPrivate: 'PREVIEW / PUBLIC PROFILE', previewClose: 'Close preview', previewBioEmpty: 'Your biography will appear here once completed.', previewGenresEmpty: 'Add genres to see them on the profile.', previewFormats: 'Formats', previewLinks: 'Listen and follow',
@@ -2018,8 +2022,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
           <section class="cue-passport">
             <div class="cue-passport__copy">
-              <span>{{ copy.passportEyebrow }}</span>
-              <h2>{{ copy.passportTitle }}</h2>
+              <span>WORKSPACE / PASSPORT</span>
               <p>{{ copy.passportBody }}</p>
               <small>{{ copy.passportFuture }}</small>
             </div>
