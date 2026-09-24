@@ -126,15 +126,21 @@ watch([realSearch, realStatusFilter, archiveView], () => {
   visibleLimit.value = 10
 })
 
-watch(() => props.focusBookingId, value => {
-  if (value && props.bookings.some(item => item.id === value)) {
+watch(
+  () => [props.focusBookingId, props.bookings] as const,
+  ([value]) => {
+    if (!value) return
+    const booking = props.bookings.find(item => item.id === value)
+    if (!booking) return
+
     realSearch.value = ''
     realStatusFilter.value = 'all'
-    archiveView.value = props.bookings.find(item => item.id === value)?.archived_at ? 'archived' : 'active'
+    archiveView.value = booking.archived_at ? 'archived' : 'active'
     selectedBookingId.value = value
     if (import.meta.client) void scrollToSelectedBooking(true)
-  }
-}, { immediate: true })
+  },
+  { immediate: true, deep: true }
+)
 
 watch(visibleBookings, value => {
   if (!value.length) {
