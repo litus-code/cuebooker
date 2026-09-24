@@ -20,6 +20,7 @@ const {
   currentPlan,
   demoOverrideEnabled,
   can: canEntitlement,
+  capacity: cueCapacity,
   limit: entitlementLimit,
   setBasePlan,
   setDemoPlan
@@ -115,6 +116,7 @@ const passportMediaItems = ref<import('../domain/cuePassportMedia').CuePassportM
 const cueOpen = ref(false)
 const cueCoreLoading = ref(false)
 const cueMessage = ref('')
+const cueCapacityBlocked = ref(false)
 const bookingCoreOperationsRevision = ref(0)
 const realBookingFocusId = ref('')
 let bookingCoreSyncTimer: ReturnType<typeof setInterval> | null = null
@@ -1054,8 +1056,25 @@ async function refreshBookingCoreFromExternal() {
   }
 }
 
+const liveBookingProcessCount = computed(() => realBookings.value.filter(booking =>
+  !booking.archived_at && ['new', 'in_conversation', 'waiting_response'].includes(booking.status)
+).length)
+
+const liveBookingCapacity = computed(() => cueCapacity('activeBookings', liveBookingProcessCount.value))
+
+function openCueCapture() {
+  if (!bookingCoreWorkspaceId.value) return
+  if (liveBookingCapacity.value.reached) {
+    cueCapacityBlocked.value = true
+    return
+  }
+  cueCapacityBlocked.value = false
+  cueOpen.value = true
+}
+
 async function handleCueCreated(booking: CoreBooking) {
   cueOpen.value = false
+  cueCapacityBlocked.value = false
   cueMessage.value = cueEntryCopy.value.saved
   analytics.track('booking_capture_created', {
     source: booking.source || 'manual',
@@ -2082,9 +2101,17 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             <p class="eyebrow">{{ cueEntryCopy.eyebrow }}</p>
             <h2>{{ preferences.locale.value === 'es' ? '¿HA PASADO ALGO?' : 'DID SOMETHING HAPPEN?' }}</h2>
             <p>{{ preferences.locale.value === 'es' ? 'Captura algo en segundos y continúa desde el booking.' : 'Capture it in seconds and continue from the booking.' }}</p>
-            <button type="button" :disabled="!bookingCoreWorkspaceId" @click="cueOpen = true">+ CUE</button>
+            <button type="button" :disabled="!bookingCoreWorkspaceId" @click="openCueCapture">+ CUE</button>
           </aside>
         </div>
+        <CueUpgradePrompt
+          v-if="cueCapacityBlocked"
+          entitlement="booking.unlimited"
+          :title="preferences.locale.value === 'es' ? 'Has alcanzado tus 5 procesos activos' : 'You have reached your 5 active processes'"
+          :description="preferences.locale.value === 'es'
+            ? 'Puedes seguir trabajando tus bookings actuales. Al cerrar una negociación tendrás espacio de nuevo; Artist Pro elimina este límite.'
+            : 'You can keep working on current bookings. Closing a negotiation frees capacity again; Artist Pro removes this limit.'"
+        />
       </section>
 
       <section v-else-if="activeView === 'bookings'" class="view bookings-view">
@@ -2102,9 +2129,17 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           </div>
           <div class="cue-entry-actions">
             <button class="cue-tour-action" type="button" :disabled="!realBookings.some(item => !item.archived_at)" @click="startTour">{{ copy.guidedTour }}</button>
-            <button type="button" @click="cueOpen = true">+ CUE</button>
+            <button type="button" @click="openCueCapture">+ CUE</button>
           </div>
         </section>
+        <CueUpgradePrompt
+          v-if="cueCapacityBlocked"
+          entitlement="booking.unlimited"
+          :title="preferences.locale.value === 'es' ? 'Has alcanzado tus 5 procesos activos' : 'You have reached your 5 active processes'"
+          :description="preferences.locale.value === 'es'
+            ? 'Puedes seguir trabajando y decidiendo los bookings actuales. Cuando uno deje de estar en negociación, volverás a tener espacio. Artist Pro elimina este límite.'
+            : 'You can keep working on and deciding current bookings. When one leaves negotiation, capacity becomes available again. Artist Pro removes this limit.'"
+        />
         <p v-if="cueMessage" class="cue-entry-message">{{ cueMessage }}</p>
 
         <BookingCoreInbox
@@ -2114,7 +2149,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           :locale="preferences.locale.value"
           :focus-booking-id="realBookingFocusId"
           @operations-changed="handleBookingCoreOperationsChanged"
-          @cue-requested="cueOpen = true"
+          @cue-requested="openCueCapture"
           @booking-opened="markBookingNotificationsRead"
           @calendar-requested="openBookingCalendar"
         />
