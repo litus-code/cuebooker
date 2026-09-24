@@ -88,6 +88,10 @@ useHead(() => ({ title: copy.value.title, htmlAttrs: { lang: locale.value } }))
         <label><span>{{ copy.password }}</span><input v-model="password" type="password" :autocomplete="mode === 'signin' ? 'current-password' : 'new-password'" minlength="8" required /></label>
         <p v-if="errorMessage" class="access-message access-message--error">{{ errorMessage }}</p>
         <p v-if="message" class="access-message">{{ message }}</p>
+        <p v-if="mode === 'signup'" class="access-privacy">
+          {{ locale === 'es' ? 'Usaremos tus datos para crear y gestionar tu cuenta.' : 'We will use your data to create and manage your account.' }}
+          <NuxtLink to="/privacidad">{{ locale === 'es' ? 'Consulta la política de privacidad.' : 'Read the privacy policy.' }}</NuxtLink>
+        </p>
         <button class="access-submit" type="submit" :disabled="auth.loading.value || !auth.configured.value">{{ auth.loading.value ? copy.processing : mode === 'signin' ? copy.signinSubmit : copy.signupSubmit }}</button>
       </form>
       <p v-if="!auth.configured.value" class="access-message access-message--error">{{ copy.configError }}</p>
@@ -101,6 +105,8 @@ useHead(() => ({ title: copy.value.title, htmlAttrs: { lang: locale.value } }))
 .access-kicker { margin:0 0 18px; color:var(--cue-accent); font:700 12px/1.2 monospace; letter-spacing:.12em; }
 h1 { margin:0; font-size:clamp(2.3rem,7vw,4.8rem); line-height:.92; text-transform:uppercase; }
 .access-copy { color:var(--cue-muted); line-height:1.55; }
+.access-privacy { margin:0; color:var(--cue-muted); font-size:12px; line-height:1.55; }
+.access-privacy a { color:var(--cue-accent); }
 .access-tabs { display:grid; grid-template-columns:1fr 1fr; margin:28px 0 20px; border:1px solid var(--cue-border); background:var(--cue-bg); }
 .access-tabs button { padding:12px; border:0; background:transparent; color:var(--cue-muted); cursor:pointer; }
 .access-tabs button.active { background:var(--cue-toggle); color:var(--cue-toggle-ink); font-weight:800; }
