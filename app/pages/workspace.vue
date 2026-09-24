@@ -368,12 +368,22 @@ const publicWidgetCode = computed(() => publicWidgetUrl.value
   : '')
 const publicQrSvg = computed(() => publicBookingUrl.value ? createBookingQrSvg(`${publicBookingUrl.value}&src=qr`) : '')
 
-async function toggleProfileEditSection(section: Exclude<ProfileEditSection, null>) {
-  profileEditSection.value = profileEditSection.value === section ? null : section
-  if (profileEditSection.value === 'passport') passportVisibilityDraft.value = publicPassportEnabled.value
+async function closeProfileEditor() {
+  profileEditSection.value = null
+  passportVisibilityDraft.value = publicPassportEnabled.value
   const query: Record<string, any> = { ...route.query, view: 'profile' }
-  if (profileEditSection.value) query.section = profileEditSection.value
-  else delete query.section
+  delete query.section
+  void router.replace({ query }).catch(() => {})
+}
+
+async function toggleProfileEditSection(section: Exclude<ProfileEditSection, null>) {
+  if (profileEditSection.value === section) {
+    await closeProfileEditor()
+    return
+  }
+  profileEditSection.value = section
+  if (section === 'passport') passportVisibilityDraft.value = publicPassportEnabled.value
+  const query: Record<string, any> = { ...route.query, view: 'profile', section }
   void router.replace({ query }).catch(() => {})
 }
 
@@ -1248,11 +1258,11 @@ async function saveArtistProfile() {
 async function saveProfileEditor() {
   if (profileEditSection.value === 'passport') {
     const saved = await updatePublicPassportVisibility(passportVisibilityDraft.value)
-    if (saved) profileEditSection.value = null
+    if (saved) await closeProfileEditor()
     return
   }
   const saved = await saveArtistProfile()
-  if (saved) profileEditSection.value = null
+  if (saved) await closeProfileEditor()
 }
 
 async function dismissProfileWelcome() {
@@ -2048,7 +2058,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             v-if="profileEditSection"
             class="profile-editor-backdrop"
             :class="{ 'profile-editor-backdrop--modal': ['image', 'portrait', 'booking'].includes(profileEditSection) }"
-            @click.self="profileEditSection = null"
+            @click.self="closeProfileEditor"
           >
             <form
               id="profile-builder-editor"
@@ -2088,7 +2098,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                               : (preferences.locale.value === 'es' ? 'Distribuye tu perfil' : 'Distribute your profile') }}
                 </h2>
               </div>
-              <button type="button" :aria-label="copy.close" @click="profileEditSection = null">×</button>
+              <button type="button" :aria-label="copy.close" @click="closeProfileEditor">×</button>
             </header>
 
             <fieldset class="profile-fieldset" :disabled="!canEditSelectedArtist">
