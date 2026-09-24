@@ -378,10 +378,73 @@ const selectedDayDateOnlyCoreHolds = computed(() => selectedDayCoreHolds.value.f
 const selectedDayConfirmedBookings = computed(() => calendarBookings.value.filter(booking => booking.event_date === selectedDate.value))
 const selectedDayTimedConfirmedBookings = computed(() => selectedDayConfirmedBookings.value.filter(booking => booking.start_time && booking.end_time))
 const selectedDayDateOnlyConfirmedBookings = computed(() => selectedDayConfirmedBookings.value.filter(booking => !booking.start_time || !booking.end_time))
-const upcomingBlocks = computed(() => blocks.value
-  .filter(block => block.ends_at >= new Date().toISOString())
-  .sort((a, b) => a.starts_at.localeCompare(b.starts_at))
-  .slice(0, 4))
+type OverviewAgendaItem = {
+  id: string
+  kind: 'block' | 'hold' | 'booking'
+  date: string
+  sortAt: string
+  label: string
+  detail: string
+  status: AvailabilityStatus | 'hold' | 'confirmed'
+  bookingId?: string
+  block?: AvailabilityBlock
+}
+
+const overviewAgendaItems = computed<OverviewAgendaItem[]>(() => {
+  const items: OverviewAgendaItem[] = []
+
+  for (const block of blocks.value) {
+    if (block.ends_at < new Date().toISOString()) continue
+    items.push({
+      id: `block-${block.id}`,
+      kind: 'block',
+      date: block.starts_at,
+      sortAt: block.starts_at,
+      label: block.label || copy.value.privateSlot,
+      detail: `${time(block.starts_at)}–${time(block.ends_at)}`,
+      status: block.status,
+      block
+    })
+  }
+
+  for (const hold of realHolds.value) {
+    if (hold.status !== 'active' || hold.event_date < todayDate) continue
+    const booking = calendarBookings.value.find(item => item.id === hold.booking_id)
+      || realBookings.value.find(item => item.id === hold.booking_id)
+    items.push({
+      id: `hold-${hold.id}`,
+      kind: 'hold',
+      date: hold.event_date,
+      sortAt: hold.starts_at || `${hold.event_date}T00:00:00`,
+      label: booking?.venue_name || booking?.event_name || (preferences.locale.value === 'es' ? 'Hold de booking' : 'Booking hold'),
+      detail: hold.starts_at && hold.ends_at
+        ? `${new Date(hold.starts_at).toLocaleTimeString(dateLocale.value, { hour: '2-digit', minute: '2-digit' })}–${new Date(hold.ends_at).toLocaleTimeString(dateLocale.value, { hour: '2-digit', minute: '2-digit' })}`
+        : (preferences.locale.value === 'es' ? 'Horario pendiente' : 'Schedule pending'),
+      status: 'hold',
+      bookingId: hold.booking_id
+    })
+  }
+
+  for (const booking of calendarBookings.value) {
+    if (!booking.event_date || booking.event_date < todayDate) continue
+    items.push({
+      id: `booking-${booking.id}`,
+      kind: 'booking',
+      date: booking.event_date,
+      sortAt: `${booking.event_date}T${booking.start_time || '00:00'}:00`,
+      label: coreBookingLabel(booking),
+      detail: booking.start_time && booking.end_time
+        ? `${booking.start_time.slice(0, 5)}–${booking.end_time.slice(0, 5)}`
+        : (preferences.locale.value === 'es' ? 'Horario pendiente' : 'Schedule pending'),
+      status: 'confirmed',
+      bookingId: booking.id
+    })
+  }
+
+  return items
+    .sort((a, b) => a.sortAt.localeCompare(b.sortAt))
+    .slice(0, 4)
+})
 const holdCount = computed(() => blocks.value.filter(block => block.status === 'hold').length + realHolds.value.filter(hold => hold.status === 'active').length)
 const confirmedCount = computed(() => blocks.value.filter(block => block.status === 'confirmed').length + calendarBookings.value.length)
 const occupiedDays = computed(() => new Set([...blocks.value.map(block => block.starts_at.slice(0, 10)), ...realHolds.value.filter(hold => hold.status === 'active').map(hold => hold.event_date), ...calendarBookings.value.filter(booking => booking.event_date).map(booking => booking.event_date as string)]).size)
@@ -1692,9 +1755,14 @@ function coreBookingTimeStyle(booking: CoreBooking) {
   return { top: `${start * .8}px`, height: `${Math.max((end - start) * .8, 42)}px` }
 }
 
-async function openUpcoming(block: AvailabilityBlock) {
+async function openOverviewAgenda(item: OverviewAgendaItem) {
+  if (item.bookingId) {
+    openRealBooking(item.bookingId)
+    return
+  }
+  if (!item.block) return
   await changeView('calendar')
-  startEdit(block)
+  startEdit(item.block)
 }
 
 async function openCalendarCreate() {
@@ -1958,11 +2026,11 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <div class="overview-grid">
           <section class="panel agenda-panel">
             <div class="panel-heading"><div><p class="eyebrow">{{ copy.agendaEyebrow }} · {{ monthLabel }}</p><h2>{{ copy.upcoming }}</h2></div><button type="button" @click="changeView('calendar')">{{ copy.viewCalendar }}</button></div>
-            <div v-if="upcomingBlocks.length" class="agenda-list">
-              <button v-for="block in upcomingBlocks" :key="block.id" type="button" @click="openUpcoming(block)">
-                <time>{{ shortDate(block.starts_at) }}</time>
-                <span><strong>{{ block.label || copy.privateSlot }}</strong><small>{{ time(block.starts_at) }}–{{ time(block.ends_at) }}</small></span>
-                <i :class="`status-dot status-dot--${block.status}`" />
+            <div v-if="overviewAgendaItems.length" class="agenda-list">
+              <button v-for="item in overviewAgendaItems" :key="item.id" type="button" @click="openOverviewAgenda(item)">
+                <time>{{ shortDate(item.date) }}</time>
+                <span><strong>{{ item.label }}</strong><small>{{ item.detail }}</small></span>
+                <i :class="`status-dot status-dot--${item.status}`" />
               </button>
             </div>
             <div v-else class="panel-empty"><p>{{ copy.noUpcoming }}</p><button type="button" @click="openCalendarCreate()">{{ copy.addSlot }}</button></div>
