@@ -253,7 +253,7 @@ async function load(options: { silent?: boolean } = {}) {
       bookingCore.listArtistActiveNextMoves(props.workspaceId, props.artistId),
       bookingCore.listArtistActiveHolds(props.workspaceId, props.artistId),
       bookingCore.listArtistWorkspaceActivities(props.workspaceId, props.artistId, 500),
-      notificationApi.list(500),
+      notificationApi.listWorkspaceUnread(props.workspaceId, 500),
       bookingCore.listArtistWorkspaceBookingEmailMessages(props.workspaceId, props.artistId, 500)
     ])
     const bookingIds = new Set(bookingRows.map(item => item.id))
