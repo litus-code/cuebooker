@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const route = useRoute()
 const auth = useCueAuth()
+const analytics = useAnalytics()
 const billingIntent = useBillingIntent()
 const { locale } = useCuePreferences()
 
@@ -65,7 +66,12 @@ async function submit() {
       await navigateTo(auth.accountDestination())
       return
     }
+    analytics.track('signup_started', { surface: 'access' })
     const result = await auth.signUp(email.value, password.value, displayName.value)
+    analytics.track('signup_completed', {
+      surface: 'access',
+      email_confirmation_required: result.emailConfirmationRequired
+    })
     if (result.emailConfirmationRequired) {
       message.value = copy.value.confirmation
       return
