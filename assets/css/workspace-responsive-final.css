@@ -1893,3 +1893,50 @@
     margin-left: 32px !important;
   }
 }
+
+
+/* Canonical workspace navigation selection.
+   Desktop uses a left rail; mobile/tablet uses an underline. */
+@media (min-width: 961px) {
+  .workspace .workspace-header nav button.active,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button.active {
+    border-color: transparent !important;
+    background: transparent !important;
+    color: var(--cue-accent) !important;
+    box-shadow: inset 2px 0 0 var(--cue-accent) !important;
+  }
+
+  .workspace .workspace-header nav button.active:hover,
+  .workspace .workspace-header nav button.active:focus-visible,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button.active:hover,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button.active:focus-visible {
+    border-color: transparent !important;
+    background: transparent !important;
+    color: var(--cue-accent) !important;
+    box-shadow: inset 2px 0 0 var(--cue-accent) !important;
+    transform: none !important;
+  }
+
+  .workspace .workspace-header nav button.active::before,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button.active::before {
+    display: none !important;
+  }
+}
+
+@media (max-width: 960px) {
+  .workspace .workspace-header nav button.active {
+    border-color: transparent !important;
+    background: transparent !important;
+    color: var(--cue-accent) !important;
+    box-shadow: inset 0 -2px 0 var(--cue-accent) !important;
+  }
+
+  .workspace .workspace-header nav button.active:hover,
+  .workspace .workspace-header nav button.active:focus-visible {
+    border-color: transparent !important;
+    background: transparent !important;
+    color: var(--cue-accent) !important;
+    box-shadow: inset 0 -2px 0 var(--cue-accent) !important;
+    transform: none !important;
+  }
+}
