@@ -10,12 +10,21 @@ const props = defineProps<{
 
 const emit = defineEmits<{ openBooking: [bookingId: string] }>()
 const bookingCore = useBookingCore()
+const entitlements = useCueEntitlements()
 const activities = ref<Activity[]>([])
 const loading = ref(false)
 const loadedOnce = ref(false)
 const search = ref('')
 const typeFilter = ref<'all' | 'communication' | 'operations' | 'system'>('all')
 const visibleLimit = ref(10)
+
+const historyDays = computed(() => entitlements.limit('historyDays'))
+const historyCutoff = computed(() => {
+  if (historyDays.value === null) return null
+  const cutoff = new Date()
+  cutoff.setUTCDate(cutoff.getUTCDate() - historyDays.value)
+  return cutoff.toISOString()
+})
 
 const copy = computed(() => props.locale === 'es' ? {
   eyebrow: 'ACTIVITY / REAL',
@@ -152,7 +161,12 @@ async function load() {
   if (initialLoad) loading.value = true
 
   try {
-    const nextActivities = await bookingCore.listWorkspaceActivities(props.workspaceId, props.bookings.map(item => item.id), 300)
+    const nextActivities = await bookingCore.listWorkspaceActivities(
+      props.workspaceId,
+      props.bookings.map(item => item.id),
+      300,
+      historyCutoff.value || undefined
+    )
     activities.value = nextActivities
     loadedOnce.value = true
   } finally {
@@ -160,7 +174,11 @@ async function load() {
   }
 }
 
-watch(() => [props.workspaceId, props.refreshKey, props.bookings.map(item => item.id).join(',')], load, { immediate: true })
+watch(
+  () => [props.workspaceId, props.refreshKey, props.bookings.map(item => item.id).join(','), historyCutoff.value],
+  load,
+  { immediate: true }
+)
 </script>
 
 <template>
@@ -176,6 +194,16 @@ watch(() => [props.workspaceId, props.refreshKey, props.bookings.map(item => ite
         <span>{{ locale === 'es' ? 'eventos' : 'events' }}</span>
       </div>
     </header>
+
+    <CueUpgradePrompt
+      v-if="!entitlements.can('booking.history_full')"
+      class="core-history__history-limit"
+      entitlement="booking.history_full"
+      :title="locale === 'es' ? `Historial de los últimos ${historyDays ?? 90} días` : `Last ${historyDays ?? 90} days of history`"
+      :description="locale === 'es'
+        ? 'Free conserva la actividad reciente. Artist Pro muestra el historial operativo completo del artista.'
+        : 'Free keeps recent activity. Artist Pro shows the artist full operational history.'"
+    />
 
     <div class="core-history__tools">
       <label class="core-history__search">
@@ -244,6 +272,9 @@ watch(() => [props.workspaceId, props.refreshKey, props.bookings.map(item => ite
   background:var(--cue-surface);
 }
 
+.core-history > :deep(.core-history__history-limit){
+  margin:var(--cue-space-3);
+}
 .core-history__heading {
   display:flex;
   align-items:flex-start;
