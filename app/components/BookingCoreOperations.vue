@@ -78,7 +78,16 @@ const copy = computed(() => props.locale === 'es' ? {
 })
 
 const activeNextMove = computed(() => nextMoves.value.find(item => !item.completed_at) || null)
-const activeHolds = computed(() => holds.value.filter(item => item.status === 'active'))
+
+function isHoldExpired(hold: Hold) {
+  if (!hold.expires_at) return false
+  const expiresAt = Date.parse(hold.expires_at)
+  return Number.isFinite(expiresAt) && expiresAt <= Date.now()
+}
+
+const activeHolds = computed(() => holds.value.filter(item =>
+  item.status === 'active' && !isHoldExpired(item)
+))
 
 function localDateTime(value: string | null) {
   if (!value) return '—'
