@@ -14,6 +14,7 @@ const props = defineProps<{
 
 const bookingCore = useBookingCore()
 const availability = useAvailability()
+const conflictBookings = ref<CoreBooking[]>([])
 const holds = ref<Hold[]>([])
 const blocks = ref<AvailabilityBlock[]>([])
 const loading = ref(false)
@@ -82,7 +83,7 @@ const conflicts = computed(() => {
   const ownEnd = timeToMinutes(props.booking.end_time)
   const rows: Array<{ id: string; kind: 'booking' | 'hold' | 'availability'; label: string; detail: string }> = []
 
-  for (const booking of props.bookings) {
+  for (const booking of conflictBookings.value) {
     if (booking.id === props.booking.id || booking.archived_at || booking.event_date !== date) continue
     if (booking.status === 'rejected' || booking.status === 'cancelled') continue
     if (!intervalsOverlap(ownStart, ownEnd, timeToMinutes(booking.start_time), timeToMinutes(booking.end_time))) continue
@@ -121,6 +122,7 @@ const conflicts = computed(() => {
 async function load() {
   const date = props.booking.event_date
   if (!props.workspaceId || !props.booking.artist_id) {
+    conflictBookings.value = []
     holds.value = []
     blocks.value = []
     return
@@ -128,6 +130,9 @@ async function load() {
   loading.value = true
   try {
     const holdPromise = bookingCore.listHolds(props.workspaceId, undefined, true)
+    const bookingPromise = date
+      ? bookingCore.listArtistBookingsForDate(props.workspaceId, props.booking.artist_id, date, 100)
+      : Promise.resolve([] as CoreBooking[])
     const blockPromise = date
       ? (() => {
           const from = `${date}T00:00:00`
@@ -138,10 +143,12 @@ async function load() {
         })()
       : Promise.resolve([] as AvailabilityBlock[])
 
-    const [holdRows, blockRows] = await Promise.all([holdPromise, blockPromise])
+    const [bookingRows, holdRows, blockRows] = await Promise.all([bookingPromise, holdPromise, blockPromise])
+    conflictBookings.value = bookingRows
     holds.value = holdRows
     blocks.value = blockRows
   } catch {
+    conflictBookings.value = []
     holds.value = []
     blocks.value = []
   } finally {
