@@ -111,6 +111,8 @@ const edges = computed(() => {
 
 const transform = computed(() => `translate(${offsetX.value} ${offsetY.value}) scale(${zoom.value})`)
 
+const selectedNode = computed(() => nodes.value.find(node => node.city.id === props.cityId) || null)
+
 function zoomBy(delta: number) {
   zoom.value = Math.min(1.8, Math.max(.7, Number((zoom.value + delta).toFixed(2))))
 }
@@ -223,6 +225,23 @@ watch(() => props.countryId, () => resetView())
           </g>
         </g>
       </svg>
+
+      <aside
+        v-if="selectedNode"
+        class="passport-constellation__tooltip"
+        :style="{
+          left: `${(selectedNode.x / 1000) * 100}%`,
+          top: `${(selectedNode.y / 520) * 100}%`
+        }"
+      >
+        <span>{{ selectedNode.city.countryCode }} / CITY</span>
+        <strong>{{ selectedNode.city.name }}</strong>
+        <div>
+          <small v-for="venue in selectedNode.city.venues.slice(0, 5)" :key="venue.id">
+            {{ venue.name }} · {{ venue.bookings.length }}
+          </small>
+        </div>
+      </aside>
 
       <div v-if="!nodes.length" class="passport-constellation__empty">
         {{ locale === 'es' ? 'La constelación aparecerá cuando haya ciudades confirmadas.' : 'The constellation will appear once there are confirmed cities.' }}
@@ -413,6 +432,66 @@ watch(() => props.countryId, () => resetView())
   .passport-constellation__hint {
     flex-direction:column;
     gap:5px;
+  }
+}
+
+
+.passport-constellation__tooltip {
+  position:absolute;
+  z-index:5;
+  display:grid;
+  gap:5px;
+  min-width:160px;
+  max-width:230px;
+  padding:10px 12px;
+  transform:translate(-50%,calc(-100% - 18px));
+  border:1px solid #353535;
+  border-radius:9px;
+  background:rgba(8,8,8,.96);
+  box-shadow:0 14px 34px rgba(0,0,0,.42);
+  pointer-events:none;
+}
+
+.passport-constellation__tooltip::after {
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:-6px;
+  width:10px;
+  height:10px;
+  transform:translateX(-50%) rotate(45deg);
+  border-right:1px solid #353535;
+  border-bottom:1px solid #353535;
+  background:#080808;
+}
+
+.passport-constellation__tooltip > span {
+  color:var(--pc-accent);
+  font:800 7px/1 monospace;
+  letter-spacing:.08em;
+}
+
+.passport-constellation__tooltip > strong {
+  font-size:13px;
+  text-transform:uppercase;
+}
+
+.passport-constellation__tooltip > div {
+  display:grid;
+  gap:4px;
+  margin-top:2px;
+}
+
+.passport-constellation__tooltip small {
+  color:#8a8a8a;
+  font:700 8px/1.3 monospace;
+}
+
+@media (max-width:620px) {
+  .passport-constellation__tooltip {
+    min-width:140px;
+    max-width:190px;
+    transform:translate(-50%,calc(-100% - 14px));
   }
 }
 </style>
