@@ -10257,3 +10257,30 @@ Validation:
 - GitHub Actions run `36041300782` completed successfully, including `Generate preview build` and PR preview deployment;
 - production remains untouched;
 - this preview workflow does not execute `npm test`.
+
+
+## 24 Sep 2026 · Attention independent from Inbox
+
+The Overview Attention surface is now artist-scoped and independent from the Booking Inbox page.
+
+Data sources:
+
+- up to 500 non-archived, non-rejected/non-cancelled artist bookings for attention evaluation;
+- active Next Moves filtered through `bookings.artist_id`;
+- active Holds filtered through `bookings.artist_id`;
+- artist Activity through the existing relational Activity query;
+- outbound email delivery rows filtered through the Booking relation;
+- unread notifications loaded by workspace and then crossed with the artist's attention booking set.
+
+This removes two hidden failure modes:
+
+- a stale/failed/overdue booking falling outside the 100-row Inbox window;
+- Agency data from another artist appearing in the selected artist's Attention panel.
+
+Validation:
+
+- final Attention HEAD `9cd333626ae088e9be542a2b043eed3be0dbd5f6`;
+- GitHub Actions run `36041753583` completed successfully;
+- `Generate preview build` and PR preview deployment passed;
+- production remains untouched;
+- automated `npm test` is still not executed by this preview workflow.
