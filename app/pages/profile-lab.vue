@@ -231,6 +231,20 @@ onBeforeUnmount(() => {
         </div>
       </section>
 
+      <CuePassportProfileSummary
+        :bookings="3"
+        :cities="['Barcelona', 'Madrid', 'Berlin']"
+        :venues="['Razzmatazz', 'Sala Apolo', 'Tresor']"
+        :milestones="[
+          { id: 'first-booking', title: 'FIRST BOOKING', subtitle: 'First confirmed date in Cuebooker' },
+          { id: 'first-city', title: 'BARCELONA', subtitle: 'First city added to the trajectory' },
+          { id: 'first-international', title: 'INTERNATIONAL', subtitle: 'First confirmed date outside your base country' }
+        ]"
+        locale="es"
+        :editable="!publicMode"
+        @manage="navigateTo('/workspace?view=cue-id')"
+      />
+
       <section class="artist-section artist-section--booking">
         <div class="artist-section__label">
           <span>03</span>
