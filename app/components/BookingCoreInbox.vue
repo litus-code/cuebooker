@@ -14,6 +14,7 @@ const props = defineProps<{
 const emit = defineEmits<{ operationsChanged: []; cueRequested: []; bookingOpened: [bookingId: string] }>()
 const { capacity: cueCapacity } = useCueEntitlements()
 const bookingCore = useBookingCore()
+const analytics = useAnalytics()
 const selectedBookingId = ref('')
 const contacts = ref<Contact[]>([])
 const counterparties = ref<Counterparty[]>([])
@@ -273,6 +274,19 @@ async function confirmDecision() {
   decisionError.value = ''
   try {
     await bookingCore.setBookingStatus(props.workspaceId, booking.id, status)
+    analytics.track('booking_decision_completed', { decision: status })
+    if (status === 'confirmed') {
+      const hasCity = Boolean(booking.city)
+      const hasVenue = Boolean(booking.venue_name)
+      analytics.track('booking_confirmed', {
+        source: booking.source || 'unknown',
+        has_city: hasCity,
+        has_venue: hasVenue
+      })
+      if (hasCity) {
+        analytics.track('passport_event_created', { has_venue: hasVenue })
+      }
+    }
     pendingDecision.value = null
     await loadActivity()
     emit('operationsChanged')
