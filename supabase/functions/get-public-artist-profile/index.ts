@@ -128,6 +128,7 @@ type PublicPassportMedia = {
 };
 
 type BookingPassportRow = {
+  id: string;
   city: string | null;
   venue_name: string | null;
   event_date: string | null;
@@ -301,7 +302,7 @@ Deno.serve(async request => {
     if (artist.passport_public_enabled && workspaceIds.length) {
       const workspaceFilter = workspaceIds.map((id) => `"${id}"`).join(",");
       const bookings = await serviceJson<BookingPassportRow[]>(
-        `${supabaseUrl}/rest/v1/bookings?artist_id=eq.${encodeURIComponent(artist.id)}&workspace_id=in.(${encodeURIComponent(workspaceFilter)})&status=eq.confirmed&archived_at=is.null&select=city,venue_name,event_date&order=event_date.asc.nullslast`,
+        `${supabaseUrl}/rest/v1/bookings?artist_id=eq.${encodeURIComponent(artist.id)}&workspace_id=in.(${encodeURIComponent(workspaceFilter)})&status=eq.confirmed&archived_at=is.null&select=id,city,venue_name,event_date&order=event_date.asc.nullslast`,
         { method: "GET" },
         serviceKey
       );
@@ -311,8 +312,10 @@ Deno.serve(async request => {
       };
 
       const selectedMediaIds = (artist.passport_public_media_ids || []).filter(Boolean);
-      if (selectedMediaIds.length) {
+      const confirmedBookingIds = bookings.map((booking) => booking.id).filter(Boolean);
+      if (selectedMediaIds.length && confirmedBookingIds.length) {
         const mediaFilter = selectedMediaIds.map((id) => `"${id}"`).join(",");
+        const bookingFilter = confirmedBookingIds.map((id) => `"${id}"`).join(",");
         const mediaRows = await serviceJson<Array<{
           id: string;
           booking_id: string;
@@ -324,7 +327,7 @@ Deno.serve(async request => {
           captured_at: string | null;
           status: string;
         }>>(
-          `${supabaseUrl}/rest/v1/passport_media?id=in.(${encodeURIComponent(mediaFilter)})&status=eq.linked&select=id,booking_id,media_type,permalink,media_url,thumbnail_url,caption,captured_at,status&order=captured_at.desc.nullslast,created_at.desc`,
+          `${supabaseUrl}/rest/v1/passport_media?id=in.(${encodeURIComponent(mediaFilter)})&booking_id=in.(${encodeURIComponent(bookingFilter)})&status=eq.linked&select=id,booking_id,media_type,permalink,media_url,thumbnail_url,caption,captured_at,status&order=captured_at.desc.nullslast,created_at.desc`,
           { method: "GET" },
           serviceKey
         );
