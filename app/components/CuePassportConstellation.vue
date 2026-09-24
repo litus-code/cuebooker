@@ -561,11 +561,20 @@ onBeforeUnmount(() => {
 .passport-constellation__node:hover .passport-constellation__halo,
 .passport-constellation__node:focus-visible .passport-constellation__halo,
 .passport-constellation__node.active .passport-constellation__halo {
-  opacity:.34;
+  opacity:.24;
 }
 
 .passport-constellation__node.active .passport-constellation__dot {
+  stroke-width:2.6;
+}
+
+.passport-constellation__node.tooltip-open .passport-constellation__halo {
+  opacity:.42;
+}
+
+.passport-constellation__node.tooltip-open .passport-constellation__dot {
   fill:var(--pc-accent);
+  stroke-width:2;
   filter:drop-shadow(0 0 10px color-mix(in srgb,var(--pc-accent) 55%,transparent));
 }
 
@@ -799,7 +808,7 @@ onBeforeUnmount(() => {
     transition:none;
   }
 
-  .passport-constellation__node.active .passport-constellation__dot {
+  .passport-constellation__node.tooltip-open .passport-constellation__dot {
     filter:none;
   }
 }
