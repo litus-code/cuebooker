@@ -3816,3 +3816,26 @@
     right:0;
   }
 }
+
+
+/* Neutralize legacy constellation layout after navigator extraction. */
+.workspace .cue-passport__constellation {
+  display:block !important;
+  min-height:0 !important;
+  overflow:visible !important;
+  padding-top:0 !important;
+}
+
+.workspace .cue-passport__constellation .cue-passport__route,
+.workspace .cue-passport__constellation .cue-passport__countries,
+.workspace .cue-passport__constellation .cue-passport__cities {
+  display:none !important;
+}
+
+.workspace .cue-passport__constellation > .passport-constellation {
+  width:100%;
+}
+
+.workspace .cue-passport__city-card {
+  margin-top:12px;
+}
