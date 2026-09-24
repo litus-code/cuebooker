@@ -141,6 +141,33 @@ export function cuePlanLimit<K extends keyof CuePlanLimits>(plan: CuePlan, key: 
   return CUE_PLANS[plan].limits[key]
 }
 
+export type CueCapacityState = {
+  used: number
+  limit: number | null
+  remaining: number | null
+  reached: boolean
+  exceeded: boolean
+}
+
+export function cueCapacityState<K extends keyof CuePlanLimits>(
+  plan: CuePlan,
+  key: K,
+  used: number
+): CueCapacityState {
+  const normalizedUsed = Math.max(0, Math.floor(Number.isFinite(used) ? used : 0))
+  const limit = cuePlanLimit(plan, key)
+  if (limit === null) {
+    return { used: normalizedUsed, limit: null, remaining: null, reached: false, exceeded: false }
+  }
+  return {
+    used: normalizedUsed,
+    limit,
+    remaining: Math.max(0, limit - normalizedUsed),
+    reached: normalizedUsed >= limit,
+    exceeded: normalizedUsed > limit
+  }
+}
+
 export function cueMinimumPlan(entitlement: CueEntitlement): CuePlan {
   if (CUE_PLANS.free.entitlements.has(entitlement)) return 'free'
   if (CUE_PLANS.artist_pro.entitlements.has(entitlement)) return 'artist_pro'
