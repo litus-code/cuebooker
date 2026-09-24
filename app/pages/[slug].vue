@@ -8,6 +8,7 @@ type BookingFormSubmission = Omit<PublicBookingRequestInput, 'artistSlug' | 'req
 const route = useRoute()
 const config = useRuntimeConfig()
 const preferences = useCuePreferences()
+const analytics = useAnalytics()
 
 const slug = computed(() => String(route.params.slug || '').trim().toLowerCase())
 const profile = ref<PublicArtistProfile | null>(null)
@@ -46,6 +47,10 @@ async function loadProfile() {
       return
     }
     profile.value = await getPublicArtistProfile(String(config.public.supabaseUrl || ''), slug.value)
+    analytics.track('artist_profile_viewed', {
+      entry_source: entrySource.value || 'direct',
+      embed: embedMode.value
+    })
   } catch (error) {
     const status = (error as Error & { status?: number })?.status
     loadError.value = status === 404 ? 'not_found' : 'failed'
@@ -63,6 +68,10 @@ async function submitBooking(payload: BookingFormSubmission) {
   if (!requestId.value) requestId.value = crypto.randomUUID()
 
   try {
+    analytics.track('booking_request_started', {
+      entry_source: entrySource.value || 'direct',
+      embed: embedMode.value
+    })
     const result = await submitPublicBookingRequest(String(config.public.supabaseUrl || ''), {
       ...payload,
       artistSlug: profile.value.slug,
@@ -73,6 +82,11 @@ async function submitBooking(payload: BookingFormSubmission) {
     bookingSent.value = true
     bookingConfirmationSent.value = result.confirmationSent ?? false
     bookingReference.value = result.reference || ''
+    analytics.track('booking_request_sent', {
+      entry_source: entrySource.value || 'direct',
+      embed: embedMode.value,
+      confirmation_sent: result.confirmationSent ?? false
+    })
   } catch (error) {
     bookingError.value = (error as Error)?.message || 'booking_request_failed'
   } finally {
