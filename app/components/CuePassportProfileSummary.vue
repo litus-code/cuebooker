@@ -12,13 +12,15 @@ const props = withDefaults(defineProps<{
   milestones?: PassportMilestone[]
   locale?: 'es' | 'en'
   editable?: boolean
+  publicEnabled?: boolean
 }>(), {
   bookings: 0,
   cities: () => [],
   venues: () => [],
   milestones: () => [],
   locale: 'es',
-  editable: false
+  editable: false,
+  publicEnabled: true
 })
 
 const emit = defineEmits<{
@@ -32,7 +34,12 @@ const visibleMilestones = computed(() => props.milestones.slice(0, 3))
 <template>
   <section class="profile-passport">
     <div class="profile-passport__copy">
-      <span>CUE PASSPORT</span>
+      <div class="profile-passport__eyebrow">
+        <span>CUE PASSPORT</span>
+        <small v-if="editable" :class="{ hidden: !publicEnabled }">
+          {{ publicEnabled ? (locale === 'es' ? 'PÚBLICO' : 'PUBLIC') : (locale === 'es' ? 'OCULTO' : 'HIDDEN') }}
+        </small>
+      </div>
       <h2>{{ locale === 'es' ? 'TRAYECTORIA, CONSTRUIDA CON FECHAS REALES.' : 'TRAJECTORY, BUILT FROM REAL DATES.' }}</h2>
       <p>{{ locale === 'es'
         ? 'Ciudades, venues e hitos aparecen a medida que tu actividad confirmada crece dentro de Cuebooker.'
@@ -95,11 +102,21 @@ const visibleMilestones = computed(() => props.milestones.slice(0, 3))
   padding:32px;
   border-right:1px solid #252525;
 }
-.profile-passport__copy>span{
+.profile-passport__eyebrow{display:flex;align-items:center;gap:9px}
+.profile-passport__eyebrow>span{
   color:var(--cue-accent);
   font:800 8px/1 monospace;
   letter-spacing:.1em;
 }
+.profile-passport__eyebrow small{
+  padding:4px 6px;
+  border:1px solid color-mix(in srgb,var(--cue-accent) 38%,#303030);
+  border-radius:6px;
+  color:var(--cue-accent);
+  font:800 6px/1 monospace;
+  letter-spacing:.08em;
+}
+.profile-passport__eyebrow small.hidden{border-color:#373737;color:#777}
 .profile-passport__copy h2{
   max-width:580px;
   margin:12px 0;
