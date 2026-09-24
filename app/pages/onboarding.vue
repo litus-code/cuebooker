@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const auth = useCueAuth()
+const billingIntent = useBillingIntent()
 const { locale } = useCuePreferences()
 const accountType = ref<'dj' | 'agency'>('dj')
 const cueIdNextStep = ref<'now' | 'later'>('later')
@@ -23,6 +24,7 @@ const copy = computed(() => locale.value === 'es'
       cueIdLater: 'Hacerlo más tarde',
       cueIdLaterBody: 'Entrar al workspace y crear tu CUE ID cuando quieras.',
       profileNote: 'Después podrás completar tu ficha profesional. CUE ID también seguirá disponible desde tu workspace.',
+      planIntent: 'Plan seleccionado', planPending: 'La activación de pago se realizará después de crear el workspace.',
       saving: 'Guardando…', submit: 'Crear workspace', genericError: 'No se pudo completar la configuración.',
       pageTitle: 'Configura tu cuenta | Cuebooker'
     }
@@ -39,6 +41,7 @@ const copy = computed(() => locale.value === 'es'
       cueIdLater: 'Do it later',
       cueIdLaterBody: 'Enter the workspace and create your CUE ID whenever you want.',
       profileNote: 'Afterwards you can complete your professional profile. CUE ID will also remain available from your workspace.',
+      planIntent: 'Selected plan', planPending: 'Paid activation will happen after the workspace is created.',
       saving: 'Saving…', submit: 'Create workspace', genericError: 'Setup could not be completed.',
       pageTitle: 'Set up your account | Cuebooker'
     })
@@ -56,6 +59,8 @@ function slugify(value: string) {
 watch(entityName, value => { entitySlug.value = slugify(value) })
 
 onMounted(async () => {
+  billingIntent.initialize()
+  if (billingIntent.plan.value === 'agency') accountType.value = 'agency'
   await auth.initialize()
   if (!auth.signedIn.value) {
     await navigateTo('/access')
@@ -146,6 +151,12 @@ useHead(() => ({ title: copy.value.pageTitle, htmlAttrs: { lang: locale.value } 
         </section>
       </template>
 
+      <aside v-if="billingIntent.plan.value && billingIntent.plan.value !== 'free'" class="billing-intent">
+        <span>{{ copy.planIntent }}</span>
+        <strong>{{ billingIntent.plan.value === 'artist_pro' ? 'ARTIST PRO' : 'AGENCY' }}</strong>
+        <small>{{ copy.planPending }}</small>
+      </aside>
+
       <form class="onboarding-form" @submit.prevent="submit">
         <label><span>{{ copy.yourName }}</span><input v-model="displayName" minlength="2" autocomplete="name" required /></label>
         <label><span>{{ accountType === 'dj' ? copy.artistName : copy.agencyName }}</span><input v-model="entityName" minlength="2" required /></label>
@@ -182,6 +193,10 @@ h1 { margin:0; font-size:clamp(2.6rem,8vw,5.5rem); line-height:.9; text-transfor
 .cue-id-choice__grid strong { display:block; margin-bottom:7px; }
 .cue-id-choice__grid span { color:var(--cue-muted); font-size:12px; line-height:1.4; }
 .cue-id-choice button:focus-visible { outline:2px solid var(--cue-accent); outline-offset:2px; }
+.billing-intent { width:min(760px,100%); margin:16px auto 0; box-sizing:border-box; display:grid; gap:6px; padding:14px 16px; border:1px solid color-mix(in srgb,var(--cue-accent) 40%,var(--cue-border)); background:color-mix(in srgb,var(--cue-accent) 4%,var(--cue-surface)); }
+.billing-intent span { color:var(--cue-muted); font:800 8px/1 monospace; letter-spacing:.1em; text-transform:uppercase; }
+.billing-intent strong { color:var(--cue-accent); font:900 14px/1.2 monospace; }
+.billing-intent small { color:var(--cue-muted); font-size:10px; line-height:1.4; }
 .onboarding-form { display:grid; gap:16px; margin-top:18px; padding:26px; border:1px solid var(--cue-border); background:var(--cue-surface); box-shadow:0 24px 80px var(--cue-shadow); }
 label { display:grid; gap:7px; }
 label span { color:var(--cue-muted); font:700 11px/1.2 monospace; text-transform:uppercase; letter-spacing:.1em; }
