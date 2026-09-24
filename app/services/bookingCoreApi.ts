@@ -284,7 +284,6 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         artist_id: `eq.${artistId}`,
         and: `(event_date.gte.${fromDate},event_date.lt.${toDate})`,
         status: 'eq.confirmed',
-        archived_at: 'is.null',
         select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
         order: 'event_date.asc,start_time.asc.nullslast,created_at.asc',
         limit: String(Math.min(Math.max(limit, 1), 500))
