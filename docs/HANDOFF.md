@@ -10209,3 +10209,30 @@ Event Media is now manageable from the dedicated Passport workspace view.
 Binary upload is not opened in this iteration. Staging currently has a private `artist-media` bucket limited to JPG/PNG/WebP and 8 MB, so it is not being repurposed as an Event Media video pipeline.
 
 Validation: HEAD `5bb4e86c366c530c04e652c8246c4580ecf366ae`, GitHub Actions run `36038535320`, preview build and deployment succeeded.
+
+
+## 24 Sep 2026 · Booking Core beta hardening
+
+This pass removes several hidden dependencies on the 100-row Inbox window and tightens decision/delivery semantics.
+
+Implemented:
+
+- exact booking retrieval exists in Booking Core API;
+- notification targets use exact booking retrieval, then merge the target into Inbox if it is outside the recent page;
+- initial booking deep-links use the same exact retrieval fallback;
+- date-conflict detection queries artist bookings for the selected date instead of using Inbox rows;
+- active hold conflict checks are scoped by artist/date, avoiding cross-artist false positives inside Agency workspaces;
+- Hold UI exposes reserve/release only; booking confirmation remains a single explicit Booking decision path;
+- automatic activity transitions remain limited to operational states and never confirm/reject/cancel;
+- email delivery UI distinguishes provider submission from final delivery;
+- failure/deferred/delivered states have distinct visual treatment;
+- `soft_bounce` is aligned with retry semantics and returns the latest waiting-response Booking to in-conversation;
+- migration `20260924201500_include_soft_bounce_in_delivery_failure.sql` was applied to staging only and verified from the deployed function definition;
+- Relationship Memory queries up to 200 bookings for the selected artist/entity/contact independently from Inbox pagination, including archived history.
+
+Validation:
+
+- product HEAD `c1d734fff6f48ae8d5bd79cbe65cbdedf85c38f1` passed `Generate preview build` and PR preview deployment in GitHub Actions run `36040211375`;
+- staging database soft-bounce trigger was applied and inspected;
+- production was not touched;
+- current preview workflow still does not execute `npm test`, so automated test execution is not claimed.
