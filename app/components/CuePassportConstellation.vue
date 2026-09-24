@@ -15,6 +15,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   selectCountry: [countryId: string]
   selectCity: [cityId: string]
+  emptyAction: []
 }>()
 
 const zoom = ref(1)
@@ -312,7 +313,14 @@ watch(() => props.countryId, () => resetView())
       </aside>
 
       <div v-if="!nodes.length" class="passport-constellation__empty">
-        {{ locale === 'es' ? 'La constelación aparecerá cuando haya ciudades confirmadas.' : 'The constellation will appear once there are confirmed cities.' }}
+        <span>FIRST STAMP</span>
+        <strong>{{ locale === 'es' ? 'TU PASSPORT EMPIEZA CON UNA FECHA CONFIRMADA.' : 'YOUR PASSPORT STARTS WITH A CONFIRMED DATE.' }}</strong>
+        <p>{{ locale === 'es'
+          ? 'Confirma un booking con ciudad y venue para que Cuebooker pueda construir tu primera parada real.'
+          : 'Confirm a booking with a city and venue so Cuebooker can build your first real stop.' }}</p>
+        <button type="button" @click.stop="emit('emptyAction')">
+          {{ locale === 'es' ? 'Ir a Bookings' : 'Go to Bookings' }}
+        </button>
       </div>
     </div>
 
@@ -465,11 +473,34 @@ watch(() => props.countryId, () => resetView())
   position:absolute;
   inset:0;
   display:grid;
-  place-items:center;
-  padding:24px;
-  color:#777;
-  font-size:11px;
+  place-content:center;
+  justify-items:center;
+  gap:9px;
+  padding:28px;
   text-align:center;
+}
+.passport-constellation__empty>span{
+  color:var(--pc-accent);
+  font:800 7px/1 monospace;
+  letter-spacing:.1em;
+}
+.passport-constellation__empty>strong{
+  max-width:430px;
+  color:#d8d8d8;
+  font-size:16px;
+  line-height:1.05;
+}
+.passport-constellation__empty>p{
+  max-width:440px;
+  margin:0;
+  color:#777;
+  font-size:10px;
+  line-height:1.5;
+}
+.passport-constellation__empty>button{
+  margin-top:4px;
+  border-color:var(--pc-accent);
+  color:var(--pc-accent);
 }
 
 .passport-constellation__hint {
