@@ -3681,3 +3681,138 @@
     grid-template-columns:88px minmax(0,1fr);
   }
 }
+
+
+/* Drillable Passport world */
+.workspace .cue-passport__world {
+  position:relative;
+  display:flex;
+  min-height:100%;
+  flex-direction:column;
+  justify-content:flex-end;
+  gap:12px;
+}
+
+.workspace .cue-passport__countries {
+  position:absolute;
+  z-index:4;
+  top:0;
+  left:0;
+  display:flex;
+  gap:6px;
+  max-width:100%;
+  overflow:auto;
+  padding-bottom:2px;
+}
+
+.workspace .cue-passport__countries button {
+  flex:none;
+  min-width:38px;
+  min-height:30px;
+  padding:0 8px;
+  border:1px solid #313131;
+  border-radius:7px;
+  background:#0a0a0a;
+  color:#777;
+  cursor:pointer;
+  font:800 8px/1 monospace;
+}
+
+.workspace .cue-passport__countries button.active {
+  border-color:var(--cue-accent);
+  color:var(--cue-accent);
+}
+
+.workspace .cue-passport__cities button.active {
+  border-color:var(--cue-accent);
+  color:var(--cue-accent);
+  background:color-mix(in srgb,var(--cue-accent) 5%,#0b0b0b);
+}
+
+.workspace .cue-passport__city-card {
+  position:relative;
+  z-index:4;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:12px 18px;
+  padding:14px;
+  border:1px solid #303030;
+  border-radius:10px;
+  background:rgba(9,9,9,.92);
+  backdrop-filter:blur(10px);
+}
+
+.workspace .cue-passport__city-card > div:first-child {
+  display:grid;
+  gap:5px;
+}
+
+.workspace .cue-passport__city-card > div:first-child span {
+  color:var(--cue-accent);
+  font:800 7px/1 monospace;
+  letter-spacing:.09em;
+}
+
+.workspace .cue-passport__city-card > div:first-child strong {
+  font-size:15px;
+}
+
+.workspace .cue-passport__city-card dl {
+  display:flex;
+  gap:14px;
+  margin:0;
+}
+
+.workspace .cue-passport__city-card dl div {
+  display:grid;
+  gap:3px;
+}
+
+.workspace .cue-passport__city-card dt {
+  color:#666;
+  font:700 7px/1 monospace;
+}
+
+.workspace .cue-passport__city-card dd {
+  margin:0;
+  color:var(--cue-accent);
+  font:900 14px/1 monospace;
+}
+
+.workspace .cue-passport__venue-list {
+  grid-column:1/-1;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+
+.workspace .cue-passport__venue-list span {
+  padding:6px 8px;
+  border:1px solid #2e2e2e;
+  border-radius:7px;
+  color:#8b8b8b;
+  font:700 8px/1 monospace;
+}
+
+.workspace .cue-passport__node--dynamic-1 { left:8%; top:62%; }
+.workspace .cue-passport__node--dynamic-2 { left:22%; top:30%; }
+.workspace .cue-passport__node--dynamic-3 { left:39%; top:53%; }
+.workspace .cue-passport__node--dynamic-4 { left:54%; top:18%; }
+.workspace .cue-passport__node--dynamic-5 { left:66%; top:48%; }
+.workspace .cue-passport__node--dynamic-6 { left:77%; top:27%; }
+.workspace .cue-passport__node--dynamic-7 { left:86%; top:58%; }
+.workspace .cue-passport__node--dynamic-8 { left:93%; top:36%; }
+
+@media (max-width:560px) {
+  .workspace .cue-passport__city-card {
+    grid-template-columns:1fr;
+  }
+
+  .workspace .cue-passport__city-card dl {
+    justify-content:flex-start;
+  }
+
+  .workspace .cue-passport__countries {
+    right:0;
+  }
+}
