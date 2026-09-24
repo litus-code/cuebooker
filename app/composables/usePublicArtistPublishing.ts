@@ -82,8 +82,9 @@ export function usePublicArtistPublishing() {
     return Boolean(rows[0].passport_public_enabled)
   }
 
-  async function setPassportPublicSelection(
+  async function setPassportPublicSettings(
     artistId: string,
+    enabled: boolean,
     milestoneIds: string[] | null,
     mediaIds: string[]
   ) {
@@ -92,12 +93,14 @@ export function usePublicArtistPublishing() {
       headers: { ...headers(), Prefer: 'return=representation' },
       query: { id: `eq.${artistId}`, select: 'id,public_profile_enabled,passport_public_enabled,passport_public_milestone_ids,passport_public_media_ids' },
       body: {
+        passport_public_enabled: enabled,
         passport_public_milestone_ids: milestoneIds,
         passport_public_media_ids: mediaIds
       }
     })
     if (!rows[0]) throw new Error('passport_public_selection_not_updated')
     return {
+      enabled: Boolean(rows[0].passport_public_enabled),
       milestoneIds: rows[0].passport_public_milestone_ids ?? null,
       mediaIds: rows[0].passport_public_media_ids || []
     }
@@ -124,5 +127,5 @@ export function usePublicArtistPublishing() {
     return Boolean(rows[0].accepting_requests)
   }
 
-  return { load, setPublicProfileEnabled, setPassportPublicEnabled, setPassportPublicSelection, setAcceptingRequests }
+  return { load, setPublicProfileEnabled, setPassportPublicEnabled, setPassportPublicSettings, setAcceptingRequests }
 }
