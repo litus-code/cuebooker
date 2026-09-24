@@ -14,9 +14,28 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{ action: [] }>()
+const analytics = useAnalytics()
 const entitlements = useCueEntitlements()
 const visible = computed(() => props.showWhenAvailable || !entitlements.can(props.entitlement))
 const targetPlan = computed(() => CUE_PLANS[entitlements.minimumPlan(props.entitlement)].label)
+const trackedVisible = ref(false)
+
+watch(visible, isVisible => {
+  if (!isVisible || trackedVisible.value) return
+  trackedVisible.value = true
+  analytics.track('upgrade_prompt_viewed', {
+    entitlement: props.entitlement,
+    target_plan: entitlements.minimumPlan(props.entitlement)
+  })
+}, { immediate: true })
+
+function handleAction() {
+  analytics.track('upgrade_prompt_action', {
+    entitlement: props.entitlement,
+    target_plan: entitlements.minimumPlan(props.entitlement)
+  })
+  emit('action')
+}
 </script>
 
 <template>
@@ -27,7 +46,7 @@ const targetPlan = computed(() => CUE_PLANS[entitlements.minimumPlan(props.entit
     </div>
     <strong>{{ title }}</strong>
     <p>{{ description }}</p>
-    <button v-if="actionLabel" type="button" @click="emit('action')">{{ actionLabel }}</button>
+    <button v-if="actionLabel" type="button" @click="handleAction">{{ actionLabel }}</button>
   </aside>
 </template>
 
