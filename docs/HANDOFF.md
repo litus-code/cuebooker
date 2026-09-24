@@ -10084,3 +10084,48 @@ Validation:
 - GitHub Actions run `36032641715`;
 - `Generate preview build` passed;
 - production was not touched.
+
+
+## 24 Sep 2026 · Passport staging backend applied
+
+Passport backend work is now applied to staging only.
+
+Target:
+
+```text
+cuebooker-staging
+lycprjeuuynfzwskycwv
+```
+
+Applied:
+
+- CUE Passport media schema and RLS;
+- public Passport visibility;
+- public milestone/media selections;
+- `passport_media.created_by` FK index;
+- `get-public-artist-profile` version 17.
+
+Security verification:
+
+- `passport_media` RLS enabled;
+- member-only SELECT;
+- editor-only INSERT/UPDATE/DELETE;
+- artist public Passport columns remain protected by the existing manager UPDATE policy;
+- no new Passport-specific security advisor findings.
+
+Performance verification:
+
+- initial advisor exposed missing index on `passport_media.created_by`;
+- migration `20260924174500_index_passport_media_creator.sql` added and applied;
+- the unindexed-FK finding is now gone.
+
+Data sanity:
+
+- published staging artist `lits` currently resolves to 1 confirmed booking, 1 city and 1 venue;
+- no public media is selected yet.
+
+Limit of this validation:
+
+- this session could not reach the public staging hostname over HTTP, so the real public JSON response still needs a browser/device smoke;
+- production Supabase was not touched;
+- billing migration was not applied.
