@@ -560,6 +560,7 @@ async function selectBooking(bookingId: string) {
         />
 
         <BookingRelationshipMemory
+          :workspace-id="workspaceId"
           :booking="selectedBooking"
           :bookings="bookings"
           :contact-name="selectedContact?.name"
