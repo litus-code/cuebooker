@@ -3096,11 +3096,10 @@
 }
 
 
-/* CUE Passport concept preview */
+/* CUE Passport workspace */
 .workspace .cue-passport {
-  display:grid;
-  grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
-  min-height:360px;
+  display:block;
+  min-height:0;
   overflow:hidden;
   border:1px solid var(--workspace-line);
   border-radius:var(--cue-radius-panel);
@@ -3150,7 +3149,7 @@
   flex-direction:column;
   justify-content:flex-end;
   gap:18px;
-  min-height:360px;
+  min-height:480px;
   padding:28px;
   overflow:hidden;
   background:
@@ -3268,20 +3267,15 @@
 }
 
 @media (max-width:900px) {
-  .workspace .cue-passport {
-    grid-template-columns:1fr;
-  }
-
-  .workspace .cue-passport__copy {
-    border-right:0;
-    border-bottom:1px solid var(--workspace-line);
+  .workspace .cue-passport__visual {
+    min-height:420px;
   }
 }
 
 @media (max-width:560px) {
-  .workspace .cue-passport__copy,
   .workspace .cue-passport__visual {
-    padding:22px 18px;
+    min-height:360px;
+    padding:18px;
   }
 
   .workspace .cue-passport__stats strong {
