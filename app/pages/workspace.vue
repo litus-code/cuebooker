@@ -25,8 +25,8 @@ const {
 const route = useRoute()
 const router = useRouter()
 
-type WorkspaceView = 'overview' | 'bookings' | 'calendar' | 'history' | 'profile' | 'cue-id'
-const WORKSPACE_VIEWS: WorkspaceView[] = ['overview', 'bookings', 'calendar', 'history', 'profile', 'cue-id']
+type WorkspaceView = 'overview' | 'bookings' | 'calendar' | 'history' | 'profile' | 'passport' | 'cue-id'
+const WORKSPACE_VIEWS: WorkspaceView[] = ['overview', 'bookings', 'calendar', 'history', 'profile', 'passport', 'cue-id']
 function workspaceViewFromQuery(value: unknown, booking?: unknown): WorkspaceView {
   if (typeof value === 'string' && WORKSPACE_VIEWS.includes(value as WorkspaceView)) return value as WorkspaceView
   if (typeof booking === 'string' && booking) return 'bookings'
@@ -231,7 +231,7 @@ function setPassportMilestoneAuto(enabled: boolean) {
 }
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
-  overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Actividad', profile: 'Perfil', cueId: 'CUE ID',
+  overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Actividad', profile: 'Perfil', passport: 'Passport', cueId: 'CUE ID',
   artist: 'Artista', role: 'DJ', settings: 'Ajustes', logout: 'Cerrar sesión',
   loading: 'Cargando workspace…', rosterEyebrow: 'ROSTER / PRIMER ARTISTA', addFirstArtist: 'Añade el primer artista de',
   rosterBody: 'Quedará asociado al roster y podrás empezar a gestionar su actividad.', artistName: 'Nombre artístico', identifier: 'Identificador', creating: 'Creando…', addArtist: 'Añadir artista',
@@ -267,7 +267,7 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   passwordLength: 'La nueva contraseña debe tener al menos 8 caracteres.', close: 'Cerrar', accountPrivate: 'CUENTA / PRIVADO',
   editSlot: 'EDITAR BLOQUEO MANUAL', newSlot: 'NUEVO BLOQUEO MANUAL', privateLabel: 'Qué bloqueas', privatePlaceholder: 'Estudio, viaje, no disponible…', start: 'Inicio', end: 'Fin', invalidTime: 'La hora de fin debe ser posterior a la hora de inicio.', status: 'Estado', saving: 'Guardando…', saveChanges: 'Guardar cambios', createSlot: 'Crear horario', deleteSlot: 'Eliminar horario', finish: 'Terminar', next: 'Siguiente', closeTour: 'Cerrar recorrido'
 } : {
-  overview: 'Overview', bookings: 'Bookings', calendar: 'Calendar', history: 'Activity', profile: 'Profile', cueId: 'CUE ID',
+  overview: 'Overview', bookings: 'Bookings', calendar: 'Calendar', history: 'Activity', profile: 'Profile', passport: 'Passport', cueId: 'CUE ID',
   artist: 'Artist', role: 'DJ', settings: 'Settings', logout: 'Sign out',
   loading: 'Loading workspace…', rosterEyebrow: 'ROSTER / FIRST ARTIST', addFirstArtist: 'Add the first artist for',
   rosterBody: 'They will be linked to the roster so you can start managing their activity.', artistName: 'Artist name', identifier: 'Identifier', creating: 'Creating…', addArtist: 'Add artist',
@@ -1609,6 +1609,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <button :title="copy.calendar" data-workspace-view="calendar" :class="{ active: activeView === 'calendar' && !settingsOpen }" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
         <button :title="copy.history" data-workspace-view="history" :class="{ active: activeView === 'history' && !settingsOpen }" type="button" @click="changeView('history')">{{ copy.history }}</button>
         <button :title="copy.profile" data-workspace-view="profile" :class="{ active: activeView === 'profile' && !settingsOpen }" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
+        <button :title="copy.passport" data-workspace-view="passport" :class="{ active: activeView === 'passport' && !settingsOpen }" type="button" @click="changeView('passport')">{{ copy.passport }}</button>
         <button :title="copy.cueId" data-workspace-view="cue-id" :class="{ active: activeView === 'cue-id' && !settingsOpen }" type="button" @click="changeView('cue-id')">{{ copy.cueId }}</button>
         <button :title="copy.settings" data-workspace-view="settings" :class="{ active: settingsOpen }" type="button" @click="openSettings">{{ copy.settings }}</button>
       </nav>
@@ -1700,6 +1701,19 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <div class="workspace-skeleton__history-timeline-block">
           <i v-for="index in 6" :key="`history-row-${index}`" class="skeleton-panel skeleton-panel--history-row-block" />
         </div>
+      </div>
+    </section>
+
+    <section v-else-if="loadingView === 'passport'" class="workspace-skeleton workspace-skeleton--cue-id" aria-busy="true" aria-live="polite">
+      <span class="sr-only">{{ copy.loading }}</span>
+      <div class="workspace-skeleton__cue-id-heading">
+        <i class="skeleton-line skeleton-line--eyebrow" />
+        <i class="skeleton-line skeleton-line--cue-id-title" />
+        <i class="skeleton-line skeleton-line--cue-id-body" />
+      </div>
+      <i class="skeleton-panel skeleton-panel--cue-id-hero" />
+      <div class="workspace-skeleton__cue-id-grid">
+        <i v-for="index in 3" :key="`passport-card-${index}`" class="skeleton-panel skeleton-panel--cue-id-card" />
       </div>
     </section>
 
@@ -1978,6 +1992,30 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             </article>
           </div>
 
+
+        </section>
+      </section>
+
+      <section v-else-if="activeView === 'passport'" class="view passport-view">
+        <div class="view-heading passport-heading">
+          <div>
+            <p class="eyebrow">{{ copy.passportEyebrow }}</p>
+            <h1>{{ copy.passportTitle }}</h1>
+            <p>{{ copy.passportBody }}</p>
+          </div>
+          <label v-if="hasArtistSelector" class="artist-select">
+            <span>{{ copy.artist }}</span>
+            <select v-model="selectedArtistId">
+              <option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option>
+            </select>
+          </label>
+          <div v-else class="artist-identity">
+            <span>{{ copy.artist }}</span>
+            <small>{{ copy.role }}</small>
+            <strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong>
+          </div>
+        </div>
+
           <section class="cue-passport">
             <div class="cue-passport__copy">
               <span>{{ copy.passportEyebrow }}</span>
@@ -2086,7 +2124,6 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               </div>
             </div>
           </section>
-        </section>
       </section>
 
       <section v-else class="view profile-view profile-view--presence">
