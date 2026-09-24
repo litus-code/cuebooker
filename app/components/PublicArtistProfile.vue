@@ -86,7 +86,7 @@ function closeBooking() {
 watch(requestOpen, open => {
   if (!import.meta.client) return
   document.body.style.overflow = open ? 'hidden' : ''
-})
+}, { immediate: true })
 
 onBeforeUnmount(() => {
   if (import.meta.client) document.body.style.overflow = ''
