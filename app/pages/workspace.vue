@@ -139,6 +139,7 @@ const cuePassportUnlocked = computed(() => cuePassportUnlockedMilestones(cuePass
 const cuePassportNext = computed(() => cuePassportNextMilestones(cuePassport.value).slice(0, 3))
 const cuePassportCities = computed(() => cuePassport.value.cities.slice(0, 6))
 const cuePassportFocusedId = ref<string | null>(null)
+const cuePassportTab = ref<'constellation' | 'stickers' | 'timeline'>('constellation')
 
 function passportStickerClass(kind: string) {
   if (kind === 'first_city' || kind === 'city_count') return 'cue-passport-sticker--city'
@@ -1729,14 +1730,13 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             </div>
 
             <div class="cue-passport__visual">
-              <div class="cue-passport__route" aria-hidden="true">
-                <i :class="['cue-passport__node','cue-passport__node--one',{ active: cuePassportFocusedId === cuePassportUnlocked[0]?.id }]" />
-                <i :class="['cue-passport__node','cue-passport__node--two',{ active: cuePassportFocusedId === cuePassportUnlocked[1]?.id }]" />
-                <i :class="['cue-passport__node','cue-passport__node--three',{ active: cuePassportFocusedId === cuePassportUnlocked[2]?.id }]" />
-                <i :class="['cue-passport__node','cue-passport__node--four',{ active: cuePassportFocusedId === cuePassportUnlocked[3]?.id }]" />
-              </div>
+              <nav class="cue-passport__tabs" aria-label="Cue Passport">
+                <button type="button" :class="{ active: cuePassportTab === 'constellation' }" @click="cuePassportTab = 'constellation'">CONSTELLATION</button>
+                <button type="button" :class="{ active: cuePassportTab === 'stickers' }" @click="cuePassportTab = 'stickers'">STICKERS</button>
+                <button type="button" :class="{ active: cuePassportTab === 'timeline' }" @click="cuePassportTab = 'timeline'">TIMELINE</button>
+              </nav>
 
-              <div class="cue-passport__stats">
+              <div class="cue-passport__stats cue-passport__stats--external">
                 <div>
                   <strong>{{ cuePassport.confirmedBookings }}</strong>
                   <span>{{ copy.passportBookings }}</span>
@@ -1751,43 +1751,70 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                 </div>
               </div>
 
-              <div v-if="cuePassportCities.length" class="cue-passport__cities">
-                <span v-for="city in cuePassportCities" :key="city">{{ city }}</span>
-              </div>
-              <p v-else class="cue-passport__empty">{{ copy.passportEmpty }}</p>
-
-              <div class="cue-passport__stickers">
-                <button
-                  v-for="milestone in cuePassportUnlocked.slice(0, 4)"
-                  :key="milestone.id"
-                  type="button"
-                  :class="[
-                    'cue-passport-sticker',
-                    passportStickerClass(milestone.kind),
-                    { active: cuePassportFocusedId === milestone.id }
-                  ]"
-                  @click="cuePassportFocusedId = cuePassportFocusedId === milestone.id ? null : milestone.id"
-                >
-                  <span>{{ milestone.kind === 'first_city' || milestone.kind === 'city_count'
-                    ? 'CITY STAMP'
-                    : milestone.kind === 'first_venue' || milestone.kind === 'venue_count'
-                      ? 'VENUE CASE'
-                      : milestone.kind === 'first_international'
-                        ? 'TOURING TAG'
-                        : 'MILESTONE' }}</span>
-                  <strong>{{ milestone.title }}</strong>
-                  <small>{{ milestone.subtitle }}</small>
-                </button>
-              </div>
-
-              <div v-if="cuePassportNext.length" class="cue-passport__next">
-                <span>{{ preferences.locale.value === 'es' ? 'PRÓXIMOS DESBLOQUEOS' : 'NEXT UNLOCKS' }}</span>
-                <div>
-                  <article v-for="milestone in cuePassportNext" :key="milestone.id">
-                    <strong>{{ milestone.title }}</strong>
-                    <small>{{ milestone.progressCurrent }} / {{ milestone.progressTarget }}</small>
-                  </article>
+              <div v-if="cuePassportTab === 'constellation'" class="cue-passport__constellation">
+                <div class="cue-passport__route" aria-hidden="true">
+                  <i :class="['cue-passport__node','cue-passport__node--one',{ active: cuePassportFocusedId === cuePassportUnlocked[0]?.id }]" />
+                  <i :class="['cue-passport__node','cue-passport__node--two',{ active: cuePassportFocusedId === cuePassportUnlocked[1]?.id }]" />
+                  <i :class="['cue-passport__node','cue-passport__node--three',{ active: cuePassportFocusedId === cuePassportUnlocked[2]?.id }]" />
+                  <i :class="['cue-passport__node','cue-passport__node--four',{ active: cuePassportFocusedId === cuePassportUnlocked[3]?.id }]" />
                 </div>
+
+                <div v-if="cuePassportCities.length" class="cue-passport__cities">
+                  <button
+                    v-for="(city, index) in cuePassportCities"
+                    :key="city"
+                    type="button"
+                    @click="cuePassportFocusedId = cuePassportUnlocked[index]?.id || null"
+                  >{{ city }}</button>
+                </div>
+                <p v-else class="cue-passport__empty">{{ copy.passportEmpty }}</p>
+              </div>
+
+              <div v-else-if="cuePassportTab === 'stickers'" class="cue-passport__collection">
+                <div class="cue-passport__stickers">
+                  <button
+                    v-for="milestone in cuePassportUnlocked"
+                    :key="milestone.id"
+                    type="button"
+                    :class="[
+                      'cue-passport-sticker',
+                      passportStickerClass(milestone.kind),
+                      { active: cuePassportFocusedId === milestone.id }
+                    ]"
+                    @click="cuePassportFocusedId = cuePassportFocusedId === milestone.id ? null : milestone.id"
+                  >
+                    <span>{{ milestone.kind === 'first_city' || milestone.kind === 'city_count'
+                      ? 'CITY STAMP'
+                      : milestone.kind === 'first_venue' || milestone.kind === 'venue_count'
+                        ? 'VENUE CASE'
+                        : milestone.kind === 'first_international'
+                          ? 'TOURING TAG'
+                          : 'MILESTONE' }}</span>
+                    <strong>{{ milestone.title }}</strong>
+                    <small>{{ milestone.subtitle }}</small>
+                  </button>
+                </div>
+
+                <div v-if="cuePassportNext.length" class="cue-passport__next">
+                  <span>{{ preferences.locale.value === 'es' ? 'PRÓXIMOS DESBLOQUEOS' : 'NEXT UNLOCKS' }}</span>
+                  <div>
+                    <article v-for="milestone in cuePassportNext" :key="milestone.id">
+                      <strong>{{ milestone.title }}</strong>
+                      <small>{{ milestone.progressCurrent }} / {{ milestone.progressTarget }}</small>
+                    </article>
+                  </div>
+                </div>
+              </div>
+
+              <div v-else class="cue-passport__timeline">
+                <article v-for="milestone in cuePassportUnlocked" :key="milestone.id">
+                  <span>{{ milestone.unlockedAt || '—' }}</span>
+                  <div>
+                    <strong>{{ milestone.title }}</strong>
+                    <small>{{ milestone.subtitle }}</small>
+                  </div>
+                </article>
+                <p v-if="!cuePassportUnlocked.length" class="cue-passport__empty">{{ copy.passportEmpty }}</p>
               </div>
             </div>
           </section>
