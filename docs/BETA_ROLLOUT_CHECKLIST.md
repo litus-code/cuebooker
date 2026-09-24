@@ -52,6 +52,19 @@ REQUEST
 → CUE PASSPORT
 ```
 
+### Hardened in code
+
+- [x] Exact booking deep-links are independent from Inbox pagination.
+- [x] Notification targets can open bookings outside the 100-row Inbox window.
+- [x] Date-conflict bookings are queried directly by artist/date.
+- [x] Hold conflicts are scoped to the selected artist, not the whole agency workspace.
+- [x] Booking decisions have a single explicit confirmation path.
+- [x] Operational activity cannot automatically enter confirmed/rejected/cancelled states.
+- [x] Failed latest outbound delivery returns waiting-response bookings to in-conversation.
+- [x] Soft bounce follows the same retry/failure semantics as the retry UI.
+- [x] Email thread distinguishes provider send, accepted, delivered, deferred and failure states.
+- [x] Relationship Memory is independent from Inbox pagination and scoped to the selected artist.
+
 ### Manual staging gate
 
 - [ ] Submit a public booking request without an account.
