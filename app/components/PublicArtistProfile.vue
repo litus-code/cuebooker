@@ -157,6 +157,29 @@ onBeforeUnmount(() => {
       </dl>
     </section>
 
+    <section class="public-artist-profile__sound">
+      <span>SOUND</span>
+      <div>
+        <strong v-for="genre in genres.slice(0, 4)" :key="genre">{{ genre }}</strong>
+        <strong v-if="!genres.length">{{ locale === 'es' ? 'SONIDO PENDIENTE' : 'SOUND PENDING' }}</strong>
+      </div>
+      <p>{{ profile.performanceFormats.join(' · ') || 'DJ SET' }}</p>
+    </section>
+
+    <section v-if="showCueId" class="public-artist-profile__cue">
+      <div aria-hidden="true">
+        <span>CUE</span>
+        <strong>ID</strong>
+      </div>
+      <div>
+        <span>CUE ID</span>
+        <h2>{{ locale === 'es' ? 'IDENTIDAD VISUAL DIGITAL.' : 'DIGITAL ARTIST IDENTITY.' }}</h2>
+        <p>{{ locale === 'es'
+          ? 'Esta identidad visual forma parte de la presencia pública del artista en Cuebooker.'
+          : 'This visual identity is part of the artist public presence on Cuebooker.' }}</p>
+      </div>
+    </section>
+
     <CuePassportProfileSummary
       v-if="profile.passport"
       :bookings="profile.passport.confirmedBookings"
@@ -176,6 +199,23 @@ onBeforeUnmount(() => {
           <span class="arrow arrow--ne" aria-hidden="true" />
         </a>
       </nav>
+    </section>
+
+    <section class="public-artist-profile__booking-band">
+      <div>
+        <span>BOOKING</span>
+        <h2>{{ profile.acceptingRequests || preview ? (locale === 'es' ? 'SOLICITAR FECHA.' : 'REQUEST A DATE.') : (locale === 'es' ? 'BOOKING PAUSADO.' : 'BOOKING PAUSED.') }}</h2>
+        <p>{{ locale === 'es'
+          ? 'La solicitud entra directamente en el Booking Core del artista.'
+          : 'Your enquiry goes directly into the artist Booking Core.' }}</p>
+      </div>
+      <button
+        type="button"
+        :disabled="!profile.acceptingRequests && !preview"
+        @click="openBooking"
+      >
+        {{ profile.acceptingRequests || preview ? copy.booking : copy.bookingClosed }}
+      </button>
     </section>
 
     <Teleport to="body">
@@ -258,10 +298,27 @@ onBeforeUnmount(() => {
 .public-artist-profile__story dl { display: grid; align-content: start; gap: 24px; margin: 0; }
 .public-artist-profile__story dl div { padding-top: 12px; border-top: 1px solid var(--cue-border, #333); }
 .public-artist-profile__story dd { margin: 7px 0 0; font-size: 14px; line-height: 1.45; }
+.public-artist-profile__sound { display:grid; grid-template-columns:140px minmax(0,1fr); gap:24px; padding:34px clamp(18px,6vw,90px); border-bottom:1px solid var(--cue-border,#2c2c2c); }
+.public-artist-profile__sound>span,.public-artist-profile__cue>div:last-child>span,.public-artist-profile__booking-band>div>span { color:var(--cue-accent,#e8ff2f); font:800 9px/1 monospace; letter-spacing:.1em; }
+.public-artist-profile__sound>div { display:flex; flex-wrap:wrap; gap:8px; }
+.public-artist-profile__sound strong { padding:9px 11px; border:1px solid var(--cue-border,#333); border-radius:8px; font:900 13px/1 monospace; text-transform:uppercase; }
+.public-artist-profile__sound p { grid-column:2; margin:0; color:var(--cue-muted,#888); font:800 9px/1.4 monospace; text-transform:uppercase; }
+.public-artist-profile__cue { display:grid; grid-template-columns:minmax(220px,.7fr) 1fr; min-height:260px; border-bottom:1px solid var(--cue-border,#2c2c2c); background:#0c0c0c; }
+.public-artist-profile__cue>div:first-child { display:grid; place-content:center; background:radial-gradient(circle,color-mix(in srgb,var(--cue-accent,#e8ff2f) 14%,transparent),transparent 44%),#070707; }
+.public-artist-profile__cue>div:first-child span,.public-artist-profile__cue>div:first-child strong { font:900 54px/.8 monospace; letter-spacing:-.08em; }
+.public-artist-profile__cue>div:first-child strong { color:var(--cue-accent,#e8ff2f); }
+.public-artist-profile__cue>div:last-child { display:grid; align-content:center; gap:10px; padding:32px; }
+.public-artist-profile__cue h2 { max-width:520px; margin:0; font-size:clamp(28px,4vw,48px); line-height:.95; }
+.public-artist-profile__cue p { max-width:620px; margin:0; color:var(--cue-muted,#888); font-size:12px; line-height:1.55; }
 .public-artist-profile__links { padding: 34px clamp(18px, 6vw, 90px) 48px; border-bottom: 1px solid var(--cue-border, #2c2c2c); }
 .public-artist-profile__links nav { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 17px; }
 .public-artist-profile__links a { display: inline-flex; align-items: center; gap: 7px; min-height: 42px; padding: 0 13px; border: 1px solid var(--cue-border, #333); color: var(--cue-text, #f2f0eb); text-decoration: none; font-size: 12px; font-weight: 800; }
 .public-artist-profile__links a:hover { border-color: var(--cue-accent, #e8ff2f); color: var(--cue-accent, #e8ff2f); }
+.public-artist-profile__booking-band { display:flex; align-items:end; justify-content:space-between; gap:24px; padding:36px clamp(18px,6vw,90px); border-bottom:1px solid var(--cue-border,#2c2c2c); background:linear-gradient(110deg,color-mix(in srgb,var(--cue-accent,#e8ff2f) 7%,#090909),#090909 55%); }
+.public-artist-profile__booking-band h2 { margin:8px 0 5px; font-size:clamp(28px,4vw,48px); line-height:.95; }
+.public-artist-profile__booking-band p { max-width:620px; margin:0; color:var(--cue-muted,#888); font-size:12px; line-height:1.5; }
+.public-artist-profile__booking-band button { min-height:52px; padding:0 18px; border:1px solid var(--cue-accent,#e8ff2f); border-radius:8px; background:var(--cue-accent,#e8ff2f); color:#080808; cursor:pointer; font-weight:900; }
+.public-artist-profile__booking-band button:disabled { border-color:var(--cue-border,#333); background:transparent; color:var(--cue-muted,#777); cursor:default; }
 .public-artist-profile__booking-backdrop { position:fixed; z-index:80; inset:0; display:grid; place-items:center; padding:24px; background:rgba(0,0,0,.72); backdrop-filter:blur(8px); }
 .public-artist-profile__booking-modal { width:min(760px,100%); max-height:min(860px,calc(100dvh - 48px)); overflow:hidden; border:1px solid var(--cue-border,#2c2c2c); border-radius:12px; background:var(--cue-bg,#080808); box-shadow:0 28px 90px rgba(0,0,0,.58); }
 .public-artist-profile__booking-header { display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:64px; padding:12px 16px; border-bottom:1px solid var(--cue-border,#2c2c2c); background:#0c0c0c; }
@@ -308,6 +365,9 @@ onBeforeUnmount(() => {
   .public-artist-profile__genres { margin-top:18px; }
   .public-artist-profile__booking-cta { margin-top:22px; }
   .public-artist-profile__story { grid-template-columns:1fr; }
+  .public-artist-profile__cue { grid-template-columns:1fr; }
+  .public-artist-profile__cue>div:first-child { min-height:190px; }
+  .public-artist-profile__booking-band { align-items:stretch; flex-direction:column; }
 }
 @media (max-width: 520px) {
   .public-artist-profile__booking-backdrop { place-items:stretch; padding:0; }
@@ -332,5 +392,10 @@ onBeforeUnmount(() => {
   .public-artist-profile__story { padding:30px 18px 40px; gap:26px; }
   .public-artist-profile__story p { font-size:clamp(1.15rem,5.5vw,1.6rem); line-height:1.24; }
   .public-artist-profile__links { padding:28px 18px 36px; }
+  .public-artist-profile__sound { grid-template-columns:1fr; gap:14px; padding:28px 18px; }
+  .public-artist-profile__sound p { grid-column:1; }
+  .public-artist-profile__cue>div:last-child { padding:24px 18px; }
+  .public-artist-profile__booking-band { padding:28px 18px; }
+  .public-artist-profile__booking-band button { width:100%; }
 }
 </style>
