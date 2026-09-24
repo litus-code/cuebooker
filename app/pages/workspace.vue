@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { FeeBasis } from '../composables/useArtistProfile'
 import type { CoreBooking, Hold } from '../domain/bookingCore'
-import { cuePassportNextMilestones, cuePassportUnlockedMilestones, deriveCuePassportSnapshot } from '../domain/cuePassport'
+import { buildCuePassportWorld, cuePassportNextMilestones, cuePassportUnlockedMilestones, deriveCuePassportSnapshot } from '../domain/cuePassport'
 import type { CueNotification } from '../domain/notification'
 import { toPublicCueIdConfig, type PublicArtistProfile } from '../domain/publicArtistProfile'
 import { createBookingQrSvg } from '../services/bookingQr'
@@ -140,6 +140,42 @@ const cuePassportNext = computed(() => cuePassportNextMilestones(cuePassport.val
 const cuePassportCities = computed(() => cuePassport.value.cities.slice(0, 6))
 const cuePassportFocusedId = ref<string | null>(null)
 const cuePassportTab = ref<'constellation' | 'stickers' | 'timeline'>('constellation')
+const cuePassportWorld = computed(() => buildCuePassportWorld(realBookings.value))
+const cuePassportCountryId = ref('')
+const cuePassportCityId = ref('')
+
+const cuePassportCountry = computed(() =>
+  cuePassportWorld.value.countries.find(country => country.id === cuePassportCountryId.value)
+    || cuePassportWorld.value.countries[0]
+    || null
+)
+
+const cuePassportVisibleCities = computed(() => cuePassportCountry.value?.cities || [])
+
+const cuePassportCity = computed(() =>
+  cuePassportVisibleCities.value.find(city => city.id === cuePassportCityId.value)
+    || cuePassportVisibleCities.value[0]
+    || null
+)
+
+watch(cuePassportWorld, world => {
+  if (!world.countries.length) {
+    cuePassportCountryId.value = ''
+    cuePassportCityId.value = ''
+    return
+  }
+  if (!world.countries.some(country => country.id === cuePassportCountryId.value)) {
+    cuePassportCountryId.value = world.countries[0]?.id || ''
+  }
+  const activeCountry = world.countries.find(country => country.id === cuePassportCountryId.value) || world.countries[0]
+  if (!activeCountry?.cities.some(city => city.id === cuePassportCityId.value)) {
+    cuePassportCityId.value = activeCountry?.cities[0]?.id || ''
+  }
+}, { immediate: true })
+
+watch(cuePassportCountryId, () => {
+  cuePassportCityId.value = cuePassportCountry.value?.cities[0]?.id || ''
+})
 
 function passportStickerClass(kind: string) {
   if (kind === 'first_city' || kind === 'city_count') return 'cue-passport-sticker--city'
@@ -1752,20 +1788,58 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               </div>
 
               <div v-if="cuePassportTab === 'constellation'" class="cue-passport__constellation">
-                <div class="cue-passport__route" aria-hidden="true">
-                  <i :class="['cue-passport__node','cue-passport__node--one',{ active: cuePassportFocusedId === cuePassportUnlocked[0]?.id }]" />
-                  <i :class="['cue-passport__node','cue-passport__node--two',{ active: cuePassportFocusedId === cuePassportUnlocked[1]?.id }]" />
-                  <i :class="['cue-passport__node','cue-passport__node--three',{ active: cuePassportFocusedId === cuePassportUnlocked[2]?.id }]" />
-                  <i :class="['cue-passport__node','cue-passport__node--four',{ active: cuePassportFocusedId === cuePassportUnlocked[3]?.id }]" />
-                </div>
+                <div v-if="cuePassportWorld.countries.length" class="cue-passport__world">
+                  <div class="cue-passport__countries">
+                    <button
+                      v-for="country in cuePassportWorld.countries"
+                      :key="country.id"
+                      type="button"
+                      :class="{ active: cuePassportCountry?.id === country.id }"
+                      @click="cuePassportCountryId = country.id"
+                    >
+                      {{ country.code }}
+                    </button>
+                  </div>
 
-                <div v-if="cuePassportCities.length" class="cue-passport__cities">
-                  <button
-                    v-for="(city, index) in cuePassportCities"
-                    :key="city"
-                    type="button"
-                    @click="cuePassportFocusedId = cuePassportUnlocked[index]?.id || null"
-                  >{{ city }}</button>
+                  <div class="cue-passport__route" aria-hidden="true">
+                    <i
+                      v-for="(city, index) in cuePassportVisibleCities.slice(0, 8)"
+                      :key="city.id"
+                      :class="[
+                        'cue-passport__node',
+                        `cue-passport__node--dynamic-${index + 1}`,
+                        { active: cuePassportCity?.id === city.id }
+                      ]"
+                    />
+                  </div>
+
+                  <div class="cue-passport__cities">
+                    <button
+                      v-for="city in cuePassportVisibleCities"
+                      :key="city.id"
+                      type="button"
+                      :class="{ active: cuePassportCity?.id === city.id }"
+                      @click="cuePassportCityId = city.id"
+                    >
+                      {{ city.name }}
+                    </button>
+                  </div>
+
+                  <aside v-if="cuePassportCity" class="cue-passport__city-card">
+                    <div>
+                      <span>{{ cuePassportCity.countryCode }} / CITY NODE</span>
+                      <strong>{{ cuePassportCity.name }}</strong>
+                    </div>
+                    <dl>
+                      <div><dt>VENUES</dt><dd>{{ cuePassportCity.venues.length }}</dd></div>
+                      <div><dt>DATES</dt><dd>{{ cuePassportCity.bookings.length }}</dd></div>
+                    </dl>
+                    <div class="cue-passport__venue-list">
+                      <span v-for="venue in cuePassportCity.venues.slice(0, 4)" :key="venue.id">
+                        {{ venue.name }} · {{ venue.bookings.length }}
+                      </span>
+                    </div>
+                  </aside>
                 </div>
                 <p v-else class="cue-passport__empty">{{ copy.passportEmpty }}</p>
               </div>
