@@ -24,7 +24,9 @@ const offsetY = ref(0)
 const dragging = ref(false)
 const tooltipCityId = ref('')
 const viewportEl = ref<HTMLElement | null>(null)
+const tooltipEl = ref<HTMLElement | null>(null)
 const viewportSize = reactive({ width: 1000, height: 520 })
+const tooltipSize = reactive({ width: 230, height: 150 })
 const dragStart = reactive({ x: 0, y: 0, offsetX: 0, offsetY: 0 })
 
 const activeCountry = computed(() =>
@@ -133,9 +135,24 @@ const selectedNodePosition = computed(() => {
   const x = offsetX.value + selectedNode.value.x * zoom.value
   const y = offsetY.value + selectedNode.value.y * zoom.value
 
+  const anchorX = letterboxX + x * renderScale
+  const anchorY = letterboxY + y * renderScale
+  const horizontalPadding = 10
+  const verticalPadding = 10
+  const halfTooltipWidth = Math.max(80, tooltipSize.width / 2)
+
+  const left = Math.min(
+    viewportWidth - halfTooltipWidth - horizontalPadding,
+    Math.max(halfTooltipWidth + horizontalPadding, anchorX)
+  )
+  const top = Math.min(
+    viewportHeight - verticalPadding,
+    Math.max(tooltipSize.height + 22 + verticalPadding, anchorY)
+  )
+
   return {
-    left: `${letterboxX + x * renderScale}px`,
-    top: `${letterboxY + y * renderScale}px`
+    left: `${left}px`,
+    top: `${top}px`
   }
 })
 
@@ -209,6 +226,12 @@ function syncViewportSize() {
   viewportSize.height = viewportEl.value.clientHeight || 520
 }
 
+function syncTooltipSize() {
+  if (!tooltipEl.value) return
+  tooltipSize.width = tooltipEl.value.offsetWidth || 230
+  tooltipSize.height = tooltipEl.value.offsetHeight || 150
+}
+
 function startDrag(event: PointerEvent) {
   if ((event.target as Element)?.closest('button, a, [role="button"], .passport-constellation__tooltip')) return
   closeTooltip()
@@ -243,7 +266,14 @@ watch(nodes, currentNodes => {
   }
 })
 
+watch(selectedNode, async node => {
+  if (!node) return
+  await nextTick()
+  syncTooltipSize()
+})
+
 let viewportObserver: ResizeObserver | null = null
+let tooltipObserver: ResizeObserver | null = null
 
 onMounted(() => {
   syncViewportSize()
@@ -252,9 +282,21 @@ onMounted(() => {
   viewportObserver.observe(viewportEl.value)
 })
 
+watch(tooltipEl, element => {
+  tooltipObserver?.disconnect()
+  tooltipObserver = null
+  if (!element) return
+  syncTooltipSize()
+  if (typeof ResizeObserver === 'undefined') return
+  tooltipObserver = new ResizeObserver(syncTooltipSize)
+  tooltipObserver.observe(element)
+})
+
 onBeforeUnmount(() => {
   viewportObserver?.disconnect()
+  tooltipObserver?.disconnect()
   viewportObserver = null
+  tooltipObserver = null
 })
 </script>
 
@@ -341,6 +383,7 @@ onBeforeUnmount(() => {
 
       <aside
         v-if="selectedNode"
+        ref="tooltipEl"
         class="passport-constellation__tooltip"
         :style="selectedNodePosition"
         @pointerdown.stop
