@@ -16,6 +16,7 @@ type CueSession = {
   refresh_token: string
   expires_at: number
   started_at: number
+  recovery?: boolean
   user: CueUser
 }
 
@@ -95,13 +96,14 @@ export function useCueAuth() {
 
     try {
       const startedAt = session.value.started_at
+      const recovery = session.value.recovery === true
       const payload = await $fetch<AuthResponse>(`${supabaseUrl.value}/auth/v1/token?grant_type=refresh_token`, {
         method: 'POST',
         headers: baseHeaders(),
         body: { refresh_token: session.value.refresh_token }
       })
       const next = normalizeSession(payload, startedAt)
-      saveSession(next)
+      saveSession(next ? { ...next, recovery } : null)
       return next
     } catch {
       saveSession(null)
@@ -166,12 +168,16 @@ export function useCueAuth() {
     if (!configured.value) throw new Error('supabase_not_configured')
     const normalizedEmail = email.trim()
     if (!normalizedEmail) throw new Error('email_required')
-
-    await $fetch(`${supabaseUrl.value}/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`, {
-      method: 'POST',
-      headers: baseHeaders(),
-      body: { email: normalizedEmail }
-    })
+    loading.value = true
+    try {
+      await $fetch(`${supabaseUrl.value}/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`, {
+        method: 'POST',
+        headers: baseHeaders(),
+        body: { email: normalizedEmail }
+      })
+    } finally {
+      loading.value = false
+    }
   }
 
   async function consumePasswordRecoveryFromUrl() {
@@ -199,7 +205,7 @@ export function useCueAuth() {
       user
     })
     if (!next) throw new Error('invalid_recovery_session')
-    saveSession(next)
+    saveSession({ ...next, recovery: true })
     profile.value = null
 
     const cleanUrl = `${window.location.pathname}${window.location.search}`
@@ -209,7 +215,7 @@ export function useCueAuth() {
 
   async function setRecoveredPassword(newPassword: string) {
     const current = await ensureFreshSession()
-    if (!current) throw new Error('recovery_session_required')
+    if (!current?.recovery) throw new Error('recovery_session_required')
     if (newPassword.length < 8) throw new Error('password_too_short')
 
     await $fetch(`${supabaseUrl.value}/auth/v1/user`, {
