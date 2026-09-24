@@ -39,46 +39,6 @@
     "file": "fechas_artistas_FINAL_v8.xlsx",
     "statement": "CueBooker convierte lo que ya ocurre en un hilo que no se pierde."
   },
-  "search": {
-    "index": "10 / VISIÓN",
-    "eyebrow": "MÁS ADELANTE · CUANDO EXISTA LA RED",
-    "title": "La trayectoria primero. El discovery después.",
-    "body": "Con una base real de bookings, relaciones y disponibilidad, CueBooker podrá añadir descubrimiento de artistas sin convertir seguidores o popularidad en una medida de valor. El núcleo seguirá siendo la trayectoria y el trabajo real del artista.",
-    "where": "Dónde",
-    "when": "Cuándo",
-    "sound": "Sonido",
-    "budget": "Presupuesto",
-    "button": "Simular búsqueda",
-    "searching": "Buscando DJs disponibles",
-    "resultCount": "3 artistas disponibles",
-    "resultHint": "Vista conceptual de una función futura. El presupuesto filtra coincidencias, pero el caché de cada DJ permanece privado. Los artistas y resultados son ficticios.",
-    "visibility": "DISPONIBILIDAD VOLUNTARIA",
-    "available": "Disponible para solicitudes",
-    "request": "Ver perfil y solicitar fecha",
-    "why": "Por qué encaja",
-    "reasons": [
-      "Disponible en tu fecha",
-      "Sonido compatible",
-      "Dentro del presupuesto"
-    ],
-    "artists": [
-      {
-        "name": "NØRA",
-        "city": "BARCELONA",
-        "sound": "HYPNOTIC · TECHNO"
-      },
-      {
-        "name": "KAIRO",
-        "city": "GIRONA",
-        "sound": "DETROIT · GROOVE"
-      },
-      {
-        "name": "MARA V",
-        "city": "BARCELONA",
-        "sound": "INDUSTRIAL · LIVE"
-      }
-    ]
-  },
   "flow": {
     "index": "02 / CÓMO FUNCIONA",
     "eyebrow": "DE UNA CONVERSACIÓN A UN BOOKING SEGUIMIENTO",
