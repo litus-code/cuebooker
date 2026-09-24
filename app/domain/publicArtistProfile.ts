@@ -16,6 +16,19 @@ export function toPublicCueIdConfig(config: CueIdConfigV1): PublicCueIdConfig {
   }
 }
 
+export type PublicPassportMilestone = {
+  id: string
+  title: string
+  subtitle: string
+}
+
+export type PublicPassportSummary = {
+  confirmedBookings: number
+  cities: string[]
+  venues: string[]
+  milestones: PublicPassportMilestone[]
+}
+
 export type PublicArtistProfile = {
   stageName: string
   slug: string
@@ -44,6 +57,7 @@ export type PublicArtistProfile = {
   artistImageScale: number
   visualMode?: 'photo' | 'artwork' | 'cue_id'
   cueId?: PublicCueIdConfig | null
+  passport?: PublicPassportSummary | null
   acceptingRequests: boolean
 }
 
