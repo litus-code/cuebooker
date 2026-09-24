@@ -537,6 +537,7 @@ onMounted(async () => {
   bookingCoreSyncTimer = window.setInterval(() => { void refreshBookingCoreFromExternal() }, 30_000)
   window.addEventListener('focus', refreshBookingCoreFromExternal)
   document.addEventListener('visibilitychange', refreshBookingCoreFromExternal)
+  window.addEventListener('keydown', handleWorkspaceKeydown)
   if (route.query.setup === 'profile' || route.query.view === 'profile') {
     activeView.value = 'profile'
     profileWelcome.value = route.query.setup === 'profile'
@@ -588,6 +589,7 @@ onBeforeUnmount(() => {
   if (bookingCoreSyncTimer) window.clearInterval(bookingCoreSyncTimer)
   if (import.meta.client) window.removeEventListener('focus', refreshBookingCoreFromExternal)
   if (import.meta.client) document.removeEventListener('visibilitychange', refreshBookingCoreFromExternal)
+  if (import.meta.client) window.removeEventListener('keydown', handleWorkspaceKeydown)
   if (tourPositionTimer) window.clearTimeout(tourPositionTimer)
   document.querySelectorAll<HTMLElement>('.tour-focus').forEach(element => element.classList.remove('tour-focus'))
 })
@@ -608,6 +610,24 @@ function toggleSidebar() {
 
 function prefersReducedMotion() {
   return import.meta.client && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+function handleWorkspaceKeydown(event: KeyboardEvent) {
+  if (event.key !== 'Escape') return
+  if (profileEditSection.value) {
+    event.stopPropagation()
+    void closeProfileEditor()
+    return
+  }
+  if (profilePreviewOpen.value) {
+    profilePreviewOpen.value = false
+    return
+  }
+  if (settingsOpen.value) {
+    settingsOpen.value = false
+    return
+  }
+  if (editorOpen.value) closeEditor()
 }
 
 async function changeView(view: WorkspaceView) {
