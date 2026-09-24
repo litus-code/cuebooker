@@ -12,6 +12,7 @@ export const useAnalytics = () => {
   const config = useRuntimeConfig()
   const consent = useState<AnalyticsConsent>('analytics-consent', () => 'unknown')
   const initialized = useState<boolean>('analytics-initialized', () => false)
+  const preferencesOpen = useState<boolean>('analytics-preferences-open', () => false)
 
   const gtmId = computed(() => String(config.public.gtmId || '').trim())
   const enabled = computed(() => Boolean(gtmId.value))
@@ -54,6 +55,7 @@ export const useAnalytics = () => {
   const accept = () => {
     if (!import.meta.client) return
     consent.value = 'granted'
+    preferencesOpen.value = false
     localStorage.setItem(CONSENT_STORAGE_KEY, 'granted')
     loadGtm()
   }
@@ -61,7 +63,16 @@ export const useAnalytics = () => {
   const deny = () => {
     if (!import.meta.client) return
     consent.value = 'denied'
+    preferencesOpen.value = false
     localStorage.setItem(CONSENT_STORAGE_KEY, 'denied')
+  }
+
+  const openPreferences = () => {
+    preferencesOpen.value = true
+  }
+
+  const closePreferences = () => {
+    preferencesOpen.value = false
   }
 
   const track = (event: string, payload: AnalyticsPayload = {}) => {
@@ -75,10 +86,13 @@ export const useAnalytics = () => {
 
   return {
     consent,
+    preferencesOpen,
     enabled,
     init,
     accept,
     deny,
+    openPreferences,
+    closePreferences,
     track
   }
 }
