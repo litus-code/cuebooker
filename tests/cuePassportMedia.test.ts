@@ -75,3 +75,18 @@ test('Passport media matching treats nearby dates as suggestions, not truth', ()
   assert.equal(suggestion.score, 60)
   assert.deepEqual(suggestion.reasons, ['within_1_day', 'city_match'])
 })
+
+test('Passport media suggestions still use archived confirmed dates', () => {
+  const suggestions = suggestCuePassportMedia([
+    booking({ archived_at: '2026-09-30T00:00:00.000Z' })
+  ], [{
+    externalId: 'ig-archived',
+    source: 'instagram',
+    mediaType: 'reel',
+    capturedAt: '2026-09-20T23:00:00Z',
+    caption: 'Apolo Barcelona'
+  }])
+
+  assert.equal(suggestions.length, 1)
+  assert.equal(suggestions[0]?.bookingId, 'booking-1')
+})
