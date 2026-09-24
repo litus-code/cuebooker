@@ -9,7 +9,8 @@
     "roles": "For whom",
     "tryProduct": "Available now",
     "login": "Sign in",
-    "signup": "Create account"
+    "signup": "Create account",
+    "pricing": "Pricing"
   },
   "hero": {
     "eyebrow": "REAL BOOKINGS. LESS MEMORY. MORE CONTROL.",
@@ -39,7 +40,7 @@
     "statement": "CueBooker turns what already happens into one thread that stays intact."
   },
   "search": {
-    "index": "09 / VISION",
+    "index": "10 / VISION",
     "eyebrow": "LATER · WHEN A REAL NETWORK EXISTS",
     "title": "Trajectory first. Discovery later.",
     "body": "Once real bookings, relationships and availability exist, CueBooker can add artist discovery without turning followers or popularity into a measure of value. The core remains the artist's real work and trajectory.",
@@ -219,7 +220,8 @@
       "Next Move, holds and calendar kept together",
       "Outbound email and replies linked back to the same booking",
       "Public profile and booking form for new opportunities",
-      "History, archive/restore and relationship memory"
+      "History, archive/restore and relationship memory",
+      "CUE Passport trajectory generated from confirmed bookings"
     ],
     "realTitle": "In progress",
     "real": [
@@ -311,11 +313,76 @@
         "body": "Your visual identity. Now or later."
       },
       {
-        "label": "LATER",
+        "label": "NOW",
         "name": "CUE Passport",
-        "body": "Trajectory built from real work, not followers."
+        "body": "Your trajectory is built from confirmed bookings, cities, venues and real milestones."
       }
     ],
     "cueIdStatus": "CUE ID 3D remains in the lab. CueBooker works without an avatar."
+  },
+  "pricing": {
+    "index": "09 / PRICING",
+    "eyebrow": "START FREE. PAY WHEN THE WORK GROWS.",
+    "title": "A plan for each level of operation.",
+    "body": "Free lets you complete the real booking loop. Artist Pro removes capacity limits and adds automation and advanced presentation. Agency brings the same core to multiple artists and teams.",
+    "billingNote": "Launch pricing is defined. Checkout is not enabled in this version yet; you can create your Free account now and keep your work when you activate a paid plan.",
+    "founding": "FOUNDING ARTIST · €7.99/MONTH OR €79/YEAR FOR THE INITIAL COHORT",
+    "monthly": "month",
+    "annual": "per year",
+    "annualLabel": "Annual",
+    "recommended": "RECOMMENDED",
+    "plans": [
+      {
+        "id": "free",
+        "name": "Free",
+        "price": "€0",
+        "period": "forever",
+        "body": "Start with real bookings without a card.",
+        "features": [
+          "1 artist and 1 user",
+          "Up to 5 active bookings",
+          "Booking Core, holds and calendar",
+          "Public profile and booking form",
+          "Basic CUE Passport",
+          "Basic CUE ID",
+          "Monthly Smart Capture allowance"
+        ],
+        "cta": "Create Free account"
+      },
+      {
+        "id": "artist_pro",
+        "name": "Artist Pro",
+        "price": "€9.99",
+        "period": "/ month",
+        "annual": "€99 / year",
+        "body": "For DJs managing ongoing professional activity.",
+        "features": [
+          "Unlimited active bookings",
+          "Full operational history",
+          "Prepared follow-ups and advanced automation",
+          "More Smart Capture",
+          "Advanced CUE Passport + Event Media",
+          "Analytics, exports and advanced customization"
+        ],
+        "cta": "Create account for Artist Pro"
+      },
+      {
+        "id": "agency",
+        "name": "Agency",
+        "price": "€39",
+        "period": "/ month",
+        "annual": "€390 / year",
+        "body": "For managers and agencies working across multiple artists.",
+        "features": [
+          "Multi-artist workspace",
+          "Team, roles and permissions",
+          "Shared inbox",
+          "Roster calendar",
+          "Roster reporting",
+          "Agency templates and Pro capabilities"
+        ],
+        "cta": "Create account for Agency"
+      }
+    ]
   }
 }
