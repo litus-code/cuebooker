@@ -14,6 +14,12 @@ const notifications = useNotifications()
 const artistProfiles = useArtistProfile()
 const publicPublishing = usePublicArtistPublishing()
 const preferences = useCuePreferences()
+const {
+  currentPlan,
+  demoOverrideEnabled,
+  can: canEntitlement,
+  setDemoPlan
+} = useCueEntitlements()
 const route = useRoute()
 const router = useRouter()
 
@@ -2302,7 +2308,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                 <section class="profile-passport-editor__selection">
                   <div class="profile-passport-editor__selection-head">
                     <div>
-                      <span>EVENT MEDIA <small>PRO</small></span>
+                      <span>EVENT MEDIA <CuePlanBadge entitlement="passport.media" /></span>
                       <strong>{{ preferences.locale.value === 'es' ? 'Media pública' : 'Public media' }}</strong>
                     </div>
                     <em>{{ passportMediaIdsDraft.length }}/6</em>
@@ -2313,13 +2319,22 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                         v-model="passportMediaIdsDraft"
                         type="checkbox"
                         :value="item.id"
-                        :disabled="!passportMediaIdsDraft.includes(item.id) && passportMediaIdsDraft.length >= 6"
+                        :disabled="!canEntitlement('passport.media') || (!passportMediaIdsDraft.includes(item.id) && passportMediaIdsDraft.length >= 6)"
                       >
-                      <img v-if="item.thumbnail_url || item.media_url" :src="item.thumbnail_url || item.media_url || ''" alt="">
+                      <img
+                        v-if="item.thumbnail_url || (item.media_type === 'image' && item.media_url)"
+                        :src="item.thumbnail_url || (item.media_type === 'image' ? item.media_url : '') || ''"
+                        alt=""
+                      >
                       <span>{{ item.media_type.toUpperCase() }}</span>
                     </label>
                   </div>
                   <p v-else>{{ preferences.locale.value === 'es' ? 'Vincula media a un booking para poder seleccionarla aquí.' : 'Link media to a booking before selecting it here.' }}</p>
+                  <p v-if="!canEntitlement('passport.media')" class="profile-passport-editor__pro-note">
+                    {{ preferences.locale.value === 'es'
+                      ? 'Artist Pro permite elegir fotos y reels vinculados a fechas reales para mostrarlos en tu Passport público.'
+                      : 'Artist Pro lets you select photos and reels linked to real dates for your public Passport.' }}
+                  </p>
                 </section>
               </div>
 
@@ -2423,6 +2438,15 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <div class="editor-heading"><div><p class="eyebrow">{{ copy.accountPrivate }}</p><h2 id="settings-title">{{ copy.settingsTitle }}</h2></div><button type="button" :aria-label="copy.close" @click="settingsOpen = false">×</button></div>
         <section class="settings-group"><span>{{ copy.language }}</span><div class="settings-options"><button :class="{ active: preferences.locale.value === 'es' }" type="button" @click="preferences.setLocale('es')">ES</button><button :class="{ active: preferences.locale.value === 'en' }" type="button" @click="preferences.setLocale('en')">EN</button></div></section>
         <section class="settings-group"><span>{{ copy.appearance }}</span><div class="settings-options"><button :class="{ active: preferences.theme.value === 'dark' }" type="button" @click="preferences.setTheme('dark')">{{ copy.dark }}</button><button :class="{ active: preferences.theme.value === 'light' }" type="button" @click="preferences.setTheme('light')">{{ copy.light }}</button></div></section>
+        <section v-if="demoOverrideEnabled" class="settings-group settings-group--demo">
+          <span>DEMO PLAN / {{ currentPlan.toUpperCase().replace('_', ' ') }}</span>
+          <div class="settings-options settings-options--three">
+            <button :class="{ active: currentPlan === 'free' }" type="button" @click="setDemoPlan('free')">FREE</button>
+            <button :class="{ active: currentPlan === 'artist_pro' }" type="button" @click="setDemoPlan('artist_pro')">ARTIST PRO</button>
+            <button :class="{ active: currentPlan === 'agency' }" type="button" @click="setDemoPlan('agency')">AGENCY</button>
+          </div>
+          <small>{{ preferences.locale.value === 'es' ? 'Solo staging/demo. No modifica billing.' : 'Staging/demo only. Billing is unchanged.' }}</small>
+        </section>
         <form class="password-form" @submit.prevent="savePassword">
           <p class="eyebrow">{{ copy.password }}</p>
           <label><span>{{ copy.currentPassword }}</span><input v-model="passwordCurrent" type="password" autocomplete="current-password" required></label>
@@ -2675,7 +2699,7 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-presence-toggle span { color:var(--cue-text); font:800 10px/1.2 sans-serif; letter-spacing:0; }
 .profile-booking-public-toggle { border-color:color-mix(in srgb,var(--cue-toggle) 40%,var(--cue-border)) !important; }
 .profile-builder-note { margin:0; padding:11px 13px; border:1px dashed var(--cue-border); color:var(--cue-muted); font-size:12px; line-height:1.45; }
-.profile-passport-editor{display:grid;gap:16px;padding:18px}.profile-passport-editor__summary{display:grid;gap:8px;padding:16px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:var(--cue-bg)}.profile-passport-editor__summary>span,.profile-passport-editor__preview>span{color:var(--cue-accent);font:800 8px/1 monospace;letter-spacing:.08em}.profile-passport-editor__summary>strong{font-size:16px;line-height:1.25}.profile-passport-editor__summary>p{margin:0;color:var(--cue-muted);font-size:12px;line-height:1.5}.profile-passport-editor__toggle{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:var(--cue-bg);cursor:pointer}.profile-passport-editor__toggle input{width:18px;height:18px;accent-color:var(--cue-accent)}.profile-passport-editor__toggle>span{display:grid;gap:4px}.profile-passport-editor__toggle strong{font-size:12px}.profile-passport-editor__toggle small{color:var(--cue-muted);font-size:10px;line-height:1.35}.profile-passport-editor__preview{display:grid;gap:7px;padding:16px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:linear-gradient(135deg,color-mix(in srgb,var(--cue-accent) 6%,var(--cue-bg)),var(--cue-bg))}.profile-passport-editor__preview>strong{font:900 26px/1 monospace}.profile-passport-editor__preview>small{color:var(--cue-muted);font:700 8px/1.3 monospace}.profile-passport-editor__selection{display:grid;gap:10px;padding:16px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:var(--cue-bg)}.profile-passport-editor__selection>p{margin:0;color:var(--cue-muted);font-size:11px;line-height:1.45}.profile-passport-editor__selection-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.profile-passport-editor__selection-head>div{display:grid;gap:5px}.profile-passport-editor__selection-head>div>span{color:var(--cue-accent);font:800 8px/1 monospace;letter-spacing:.08em}.profile-passport-editor__selection-head>div>span small{padding:3px 5px;border:1px solid var(--cue-accent);border-radius:5px;font-size:6px}.profile-passport-editor__selection-head>div>strong{font-size:13px}.profile-passport-editor__selection-head>label{display:flex;align-items:center;gap:7px;color:var(--cue-muted);font-size:10px}.profile-passport-editor__selection-head>label input{accent-color:var(--cue-accent)}.profile-passport-editor__selection-head>em{color:var(--cue-muted);font:800 9px/1 monospace;font-style:normal}.profile-passport-editor__options{display:grid;gap:7px}.profile-passport-editor__options>label{display:flex;align-items:flex-start;gap:9px;padding:10px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control);cursor:pointer}.profile-passport-editor__options>label input{margin-top:2px;accent-color:var(--cue-accent)}.profile-passport-editor__options>label>span{display:grid;gap:3px}.profile-passport-editor__options strong{font-size:10px}.profile-passport-editor__options small{color:var(--cue-muted);font-size:8px;line-height:1.35}.profile-passport-editor__media-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.profile-passport-editor__media-grid>label{position:relative;min-height:88px;overflow:hidden;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control);background:#0a0a0a;cursor:pointer}.profile-passport-editor__media-grid input{position:absolute;z-index:2;top:7px;left:7px;accent-color:var(--cue-accent)}.profile-passport-editor__media-grid img{width:100%;height:88px;object-fit:cover;opacity:.75}.profile-passport-editor__media-grid span{position:absolute;right:6px;bottom:6px;padding:4px 5px;border:1px solid #3a3a3a;border-radius:5px;background:rgba(8,8,8,.84);font:800 6px/1 monospace}
+.profile-passport-editor{display:grid;gap:16px;padding:18px}.profile-passport-editor__summary{display:grid;gap:8px;padding:16px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:var(--cue-bg)}.profile-passport-editor__summary>span,.profile-passport-editor__preview>span{color:var(--cue-accent);font:800 8px/1 monospace;letter-spacing:.08em}.profile-passport-editor__summary>strong{font-size:16px;line-height:1.25}.profile-passport-editor__summary>p{margin:0;color:var(--cue-muted);font-size:12px;line-height:1.5}.profile-passport-editor__toggle{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:var(--cue-bg);cursor:pointer}.profile-passport-editor__toggle input{width:18px;height:18px;accent-color:var(--cue-accent)}.profile-passport-editor__toggle>span{display:grid;gap:4px}.profile-passport-editor__toggle strong{font-size:12px}.profile-passport-editor__toggle small{color:var(--cue-muted);font-size:10px;line-height:1.35}.profile-passport-editor__preview{display:grid;gap:7px;padding:16px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:linear-gradient(135deg,color-mix(in srgb,var(--cue-accent) 6%,var(--cue-bg)),var(--cue-bg))}.profile-passport-editor__preview>strong{font:900 26px/1 monospace}.profile-passport-editor__preview>small{color:var(--cue-muted);font:700 8px/1.3 monospace}.profile-passport-editor__selection{display:grid;gap:10px;padding:16px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:var(--cue-bg)}.profile-passport-editor__selection>p{margin:0;color:var(--cue-muted);font-size:11px;line-height:1.45}.profile-passport-editor__pro-note{padding:10px 11px;border:1px dashed color-mix(in srgb,var(--cue-accent) 40%,var(--cue-border));border-radius:var(--cue-radius-control);color:var(--cue-text)!important}.profile-passport-editor__selection-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.profile-passport-editor__selection-head>div{display:grid;gap:5px}.profile-passport-editor__selection-head>div>span{color:var(--cue-accent);font:800 8px/1 monospace;letter-spacing:.08em}.profile-passport-editor__selection-head>div>span small{padding:3px 5px;border:1px solid var(--cue-accent);border-radius:5px;font-size:6px}.profile-passport-editor__selection-head>div>strong{font-size:13px}.profile-passport-editor__selection-head>label{display:flex;align-items:center;gap:7px;color:var(--cue-muted);font-size:10px}.profile-passport-editor__selection-head>label input{accent-color:var(--cue-accent)}.profile-passport-editor__selection-head>em{color:var(--cue-muted);font:800 9px/1 monospace;font-style:normal}.profile-passport-editor__options{display:grid;gap:7px}.profile-passport-editor__options>label{display:flex;align-items:flex-start;gap:9px;padding:10px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control);cursor:pointer}.profile-passport-editor__options>label input{margin-top:2px;accent-color:var(--cue-accent)}.profile-passport-editor__options>label>span{display:grid;gap:3px}.profile-passport-editor__options strong{font-size:10px}.profile-passport-editor__options small{color:var(--cue-muted);font-size:8px;line-height:1.35}.profile-passport-editor__media-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.profile-passport-editor__media-grid>label{position:relative;min-height:88px;overflow:hidden;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control);background:#0a0a0a;cursor:pointer}.profile-passport-editor__media-grid input{position:absolute;z-index:2;top:7px;left:7px;accent-color:var(--cue-accent)}.profile-passport-editor__media-grid img{width:100%;height:88px;object-fit:cover;opacity:.75}.profile-passport-editor__media-grid span{position:absolute;right:6px;bottom:6px;padding:4px 5px;border:1px solid #3a3a3a;border-radius:5px;background:rgba(8,8,8,.84);font:800 6px/1 monospace}
 .profile-distribution-editor { display:grid; gap:16px; padding:18px; }
 .profile-distribution-editor > p { max-width:760px; margin:0; color:var(--cue-muted); line-height:1.55; }
 .profile-distribution-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
@@ -2787,6 +2811,8 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .settings-group { display: grid; gap: 10px; padding: 18px 0; border-top: 1px solid var(--cue-border); }
 .settings-group > span { color: var(--cue-muted); font: 700 10px monospace; letter-spacing: .1em; text-transform: uppercase; }
 .settings-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.settings-options--three { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.settings-group--demo > small { color:var(--cue-muted); font-size:10px; line-height:1.4; }
 .settings-options button { min-height: 44px; border: 1px solid var(--cue-border); background: transparent; color: var(--cue-muted); cursor: pointer; font-weight: 800; }
 .settings-options button.active { border-color: var(--cue-toggle); background: var(--cue-toggle); color: #070707; }
 .password-form { display: grid; gap: 16px; margin-top: 14px; padding-top: 24px; border-top: 1px solid var(--cue-border); }
