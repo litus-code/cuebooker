@@ -39,7 +39,7 @@ function booking(overrides: Partial<CoreBooking>): CoreBooking {
   }
 }
 
-test('Passport only derives trajectory from active confirmed bookings', () => {
+test('Passport preserves archived confirmed bookings as career history', () => {
   const snapshot = deriveCuePassportSnapshot({
     baseCountryCode: 'ES',
     bookings: [
@@ -49,9 +49,9 @@ test('Passport only derives trajectory from active confirmed bookings', () => {
     ]
   })
 
-  assert.equal(snapshot.confirmedBookings, 1)
-  assert.deepEqual(snapshot.cities, ['Barcelona'])
-  assert.deepEqual(snapshot.venues, ['Sala A'])
+  assert.equal(snapshot.confirmedBookings, 2)
+  assert.deepEqual(snapshot.cities, ['Barcelona', 'Paris'])
+  assert.deepEqual(snapshot.venues, ['Sala A', 'Club C'])
 })
 
 test('Passport unlocks international milestone from base country comparison', () => {
