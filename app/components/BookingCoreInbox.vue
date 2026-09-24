@@ -120,7 +120,7 @@ watch(() => props.focusBookingId, value => {
     realStatusFilter.value = 'all'
     archiveView.value = props.bookings.find(item => item.id === value)?.archived_at ? 'archived' : 'active'
     selectedBookingId.value = value
-    if (import.meta.client) void scrollToSelectedBooking()
+    if (import.meta.client) void scrollToSelectedBooking(true)
   }
 }, { immediate: true })
 
@@ -361,8 +361,12 @@ function prefersReducedMotion() {
   return import.meta.client && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-async function scrollToSelectedBooking() {
-  if (!import.meta.client) return
+function usesStackedBookingLayout() {
+  return import.meta.client && window.matchMedia('(max-width: 760px)').matches
+}
+
+async function scrollToSelectedBooking(force = false) {
+  if (!import.meta.client || (!force && !usesStackedBookingLayout())) return
   await nextTick()
   const detail = document.getElementById('core-inbox-detail')
   if (!detail) return
@@ -371,6 +375,18 @@ async function scrollToSelectedBooking() {
   const top = detail.getBoundingClientRect().top + window.scrollY - offset
   window.scrollTo({ top: Math.max(0, top), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
   detail.focus({ preventScroll: true })
+}
+
+async function scrollToBookingList() {
+  if (!import.meta.client) return
+  await nextTick()
+  const list = document.getElementById('core-inbox-list')
+  if (!list) return
+  const header = document.getElementById('workspace-header')
+  const offset = (header?.getBoundingClientRect().height || 0) + 10
+  const top = list.getBoundingClientRect().top + window.scrollY - offset
+  window.scrollTo({ top: Math.max(0, top), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+  list.querySelector<HTMLElement>('.core-inbox__booking-row.active')?.focus({ preventScroll: true })
 }
 
 async function selectBooking(bookingId: string) {
@@ -453,7 +469,14 @@ async function selectBooking(bookingId: string) {
         </div>
       </div>
 
-      <article v-if="selectedBooking" id="core-inbox-detail" class="core-inbox__detail">
+      <article v-if="selectedBooking" id="core-inbox-detail" class="core-inbox__detail" tabindex="-1">
+        <div class="core-inbox__mobile-nav">
+          <button type="button" @click="scrollToBookingList">
+            <span aria-hidden="true">←</span>
+            {{ locale === 'es' ? 'Volver a bookings' : 'Back to bookings' }}
+          </button>
+          <small>{{ statusLabels[selectedBooking.status] }}</small>
+        </div>
         <header>
           <div>
             <span>{{ sourceLabels[selectedBooking.source] || selectedBooking.source }}</span>
@@ -692,7 +715,8 @@ async function selectBooking(bookingId: string) {
 .core-inbox__list span strong, .core-inbox__list span small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .core-inbox__list span small { margin-top:4px; color:var(--cue-muted); font-size:11px; }
 .core-inbox__list em { grid-column:2; justify-self:start; margin-top:-2px; font:700 8px monospace; color:var(--row-status,var(--cue-muted)); text-transform:uppercase; font-style:normal; }
-.core-inbox__detail { min-width:0; padding:var(--cue-space-4); background:var(--cue-surface); }
+.core-inbox__detail { min-width:0; padding:var(--cue-space-4); background:var(--cue-surface); outline:none; }
+.core-inbox__mobile-nav { display:none; }
 .core-inbox__detail > header { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:var(--cue-space-4); padding-bottom:var(--cue-space-3); border-bottom:1px solid var(--cue-border); }
 .core-inbox__detail > header span { color:var(--cue-accent); font:700 9px monospace; text-transform:uppercase; letter-spacing:.1em; }
 .core-inbox__detail h3 { margin:4px 0 3px; font-size:clamp(28px,2.4vw,36px); line-height:.96; letter-spacing:-.03em; }
@@ -756,6 +780,10 @@ async function selectBooking(bookingId: string) {
 }
 @media (max-width: 760px) {
   .core-inbox__layout { grid-template-columns:1fr; }
+  .core-inbox__mobile-nav { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:-2px 0 14px; padding-bottom:12px; border-bottom:1px solid var(--cue-border); }
+  .core-inbox__mobile-nav button { min-height:40px; padding:0; border:0; background:transparent; color:var(--cue-accent); cursor:pointer; font:800 9px/1 monospace; text-transform:uppercase; }
+  .core-inbox__mobile-nav button span { margin-right:6px; font-size:14px; }
+  .core-inbox__mobile-nav small { color:var(--cue-muted); font:800 8px/1 monospace; text-transform:uppercase; }
   .core-inbox__list { border-right:0; border-bottom:1px solid var(--cue-border); max-height:260px; overflow:auto; }
   .core-inbox__list button { grid-template-columns:70px minmax(0,1fr); min-height:62px; }
   .core-inbox__list em { grid-column:2; margin-top:-4px; }
