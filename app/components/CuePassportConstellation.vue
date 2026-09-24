@@ -218,6 +218,7 @@ watch(() => props.countryId, () => resetView())
       @pointermove="moveDrag"
       @pointerup="stopDrag"
       @pointercancel="stopDrag"
+      @lostpointercapture="stopDrag"
     >
       <svg viewBox="0 0 1000 520" role="img" :aria-label="locale === 'es' ? 'Constelación de ciudades del artista' : 'Artist city constellation'">
         <defs>
@@ -517,7 +518,8 @@ watch(() => props.countryId, () => resetView())
   border-radius:9px;
   background:rgba(8,8,8,.96);
   box-shadow:0 14px 34px rgba(0,0,0,.42);
-  pointer-events:none;
+  pointer-events:auto;
+  overscroll-behavior:contain;
 }
 
 .passport-constellation__tooltip::after {
@@ -567,6 +569,7 @@ watch(() => props.countryId, () => resetView())
     max-height:154px;
     overflow:auto;
     transform:none;
+    touch-action:pan-y;
   }
 
   .passport-constellation__tooltip::after {
