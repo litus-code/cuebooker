@@ -158,3 +158,23 @@ Still intentionally deferred until the operational loop is validated:
 - production CUE ID 3D rollout.
 
 Commercial-site copy should reflect current staging truth and must not present deferred discovery or unproven launch/commercial promises as available product.
+
+
+## 24 September 2026 launch execution override
+
+The active execution order is now defined in `docs/V1_LAUNCH_EXECUTION.md`.
+
+This supersedes older sequencing for new product work while preserving the historical roadmap above.
+
+Current order:
+
+1. close CUE Passport V1;
+2. move Profile Lab direction into the real Profile;
+3. apply Free / Artist Pro / Agency presentation using centralized entitlements;
+4. close the automation capabilities that carry Artist Pro value;
+5. finish commercial site + Pricing;
+6. connect billing / Stripe to entitlements;
+7. instrument commercial analytics;
+8. run a small external beta.
+
+Broad discovery, 3D Passport, automatic Instagram ingestion and marketplace/network expansion remain post-V1 unless they become a direct launch blocker.
