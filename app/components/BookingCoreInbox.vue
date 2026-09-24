@@ -22,6 +22,7 @@ const activities = ref<Activity[]>([])
 const emailMessages = ref<BookingEmailMessage[]>([])
 const conversationThread = ref<HTMLElement | null>(null)
 const decisionModal = ref<HTMLElement | null>(null)
+const decisionTrigger = ref<HTMLElement | null>(null)
 const loadingMeta = ref(false)
 const loadingActivity = ref(false)
 const updatingStatus = ref(false)
@@ -259,16 +260,21 @@ async function handleActivityCreated() {
 
 async function decideStatus(status: Extract<CoreBookingStatus, 'confirmed' | 'rejected' | 'cancelled'>) {
   if (!selectedBooking.value || selectedBooking.value.status === status) return
+  decisionTrigger.value = import.meta.client && document.activeElement instanceof HTMLElement ? document.activeElement : null
   decisionError.value = ''
   pendingDecision.value = status
   await nextTick()
   decisionModal.value?.focus({ preventScroll: true })
 }
 
-function closeDecisionModal() {
+async function closeDecisionModal() {
   if (updatingStatus.value) return
+  const trigger = decisionTrigger.value
   pendingDecision.value = null
   decisionError.value = ''
+  decisionTrigger.value = null
+  await nextTick()
+  if (trigger?.isConnected) trigger.focus({ preventScroll: true })
 }
 
 async function confirmDecision() {
