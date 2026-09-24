@@ -279,3 +279,14 @@ Before implementing a new feature, classify it as one of:
 5. post-V1 exploration.
 
 If it is category 5, it should normally wait until the current execution sequence is complete.
+
+
+### Product beta readiness update · 24 Sep 2026
+
+- Password recovery request and completion flow is implemented.
+- Recovery password mutation requires an explicit recovery session, not a normal authenticated session.
+- Password reset request uses a non-enumerating success message.
+- PR preview build for the recovery flow succeeded.
+- Staging Auth redirect allow-list and a real QA reset email still require manual verification.
+- Product-side beta gates are tracked in `docs/BETA_ROLLOUT_CHECKLIST.md`.
+- Legal, cookie, Pricing, checkout and Stripe launch dependencies remain owned by Work and are intentionally not duplicated here.
