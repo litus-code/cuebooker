@@ -35,6 +35,8 @@ const copy = computed(() => props.locale === 'es' ? {
   search: 'Buscar en Activity…',
   all: 'Todo', communication: 'Conversaciones', operations: 'Operativa', system: 'Sistema',
   empty: 'Todavía no hay actividad real para este artista.',
+  noResults: 'No hay actividad que coincida con estos filtros.',
+  clearFilters: 'Limpiar filtros',
   open: 'Abrir booking'
 } : {
   eyebrow: 'ACTIVITY / REAL',
@@ -43,6 +45,8 @@ const copy = computed(() => props.locale === 'es' ? {
   search: 'Search Activity…',
   all: 'All', communication: 'Conversations', operations: 'Operations', system: 'System',
   empty: 'No real activity for this artist yet.',
+  noResults: 'No activity matches these filters.',
+  clearFilters: 'Clear filters',
   open: 'Open booking'
 })
 
@@ -70,6 +74,12 @@ const filtered = computed(() => {
 })
 const paged = computed(() => filtered.value.slice(0, visibleLimit.value))
 const hasMore = computed(() => visibleLimit.value < filtered.value.length)
+const hasActiveFilters = computed(() => Boolean(search.value.trim()) || typeFilter.value !== 'all')
+
+function clearFilters() {
+  search.value = ''
+  typeFilter.value = 'all'
+}
 
 watch([search, typeFilter], () => {
   visibleLimit.value = 10
@@ -107,9 +117,28 @@ function activityLabel(activity: Activity) {
 function activityDetail(activity: Activity) {
   if (activity.body) return activity.body
   if (activity.type === 'status_change') {
-    const from = activity.metadata?.from_status
-    const to = activity.metadata?.to_status
-    if (from && to) return `${from} → ${to}`
+    const from = String(activity.metadata?.from_status || '')
+    const to = String(activity.metadata?.to_status || '')
+    if (from && to) {
+      const es: Record<string, string> = {
+        new: 'Nueva',
+        in_conversation: 'En conversación',
+        waiting_response: 'Esperando respuesta',
+        confirmed: 'Confirmada',
+        rejected: 'Rechazada',
+        cancelled: 'Cancelada'
+      }
+      const en: Record<string, string> = {
+        new: 'New',
+        in_conversation: 'In conversation',
+        waiting_response: 'Waiting response',
+        confirmed: 'Confirmed',
+        rejected: 'Rejected',
+        cancelled: 'Cancelled'
+      }
+      const labels = props.locale === 'es' ? es : en
+      return `${labels[from] || from} → ${labels[to] || to}`
+    }
   }
   if (activity.type === 'system' && activity.metadata?.event === 'booking_details_updated') {
     const fields = Array.isArray(activity.metadata.changed_fields) ? activity.metadata.changed_fields : []
@@ -263,8 +292,9 @@ watch(
     </div>
 
     <div v-else class="core-history__empty">
-      <span>{{ locale === 'es' ? 'SIN ACTIVIDAD' : 'NO ACTIVITY' }}</span>
-      <p>{{ copy.empty }}</p>
+      <span>{{ hasActiveFilters ? (locale === 'es' ? 'SIN RESULTADOS' : 'NO RESULTS') : (locale === 'es' ? 'SIN ACTIVIDAD' : 'NO ACTIVITY') }}</span>
+      <p>{{ hasActiveFilters ? copy.noResults : copy.empty }}</p>
+      <button v-if="hasActiveFilters" type="button" @click="clearFilters">{{ copy.clearFilters }}</button>
     </div>
   </section>
 </template>
@@ -601,6 +631,27 @@ watch(
   color:var(--cue-muted);
   font-size:12px;
   line-height:1.5;
+}
+
+.core-history__empty button {
+  justify-self:center;
+  min-height:40px;
+  padding:0 14px;
+  border:1px solid var(--cue-border);
+  border-radius:var(--cue-radius-control,8px);
+  background:transparent;
+  color:var(--cue-text);
+  cursor:pointer;
+  font:800 8px/1 monospace;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+}
+
+.core-history__empty button:hover,
+.core-history__empty button:focus-visible {
+  border-color:var(--cue-accent);
+  color:var(--cue-accent);
+  outline:0;
 }
 
 .core-history__loading {
