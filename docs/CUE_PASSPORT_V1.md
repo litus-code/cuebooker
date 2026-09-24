@@ -1,7 +1,7 @@
 # CUE Passport V1
 
 Updated: 24 September 2026  
-Status: CODE COMPLETE · BACKEND APPLY + FINAL VISUAL VALIDATION PENDING
+Status: CODE COMPLETE · FRONTEND PREVIEW VALIDATED · BACKEND APPLY + DEVICE QA PENDING
 
 ## Product role
 
@@ -130,3 +130,25 @@ Agency inherits Artist Pro Passport capabilities where relevant.
 - Public profile remains static-first.
 - Public profile includes a summarized Passport surface built from real confirmed activity.
 - Final V1 validation includes mobile tooltip scrolling, linked-media interaction, pointer-capture recovery, empty states and dense city/venue cases.
+
+
+## Workspace navigation
+
+CUE Passport is now a first-class Workspace view and no longer lives inside CUE ID.
+
+Rules:
+
+- CUE ID and CUE Passport have separate navigation entries and separate responsibilities.
+- Profile shows a summarized Passport block.
+- `Open Passport` enters the dedicated Passport workspace.
+- `Public settings` opens the Profile Passport publication editor.
+- Leaving Profile clears any open Profile editor state so hidden overlays cannot keep body scroll locked.
+- Passport empty state points back to Booking Core and never renders fabricated trajectory data.
+
+Frontend preview validation:
+
+- HEAD `1316cbe7ef4d77972365c611e6fcfe3b7ba79a15`;
+- GitHub Actions run `36031829227`;
+- `Generate preview build` passed;
+- PR preview deployment passed;
+- this does not apply the pending Supabase migrations or Edge Function update.
