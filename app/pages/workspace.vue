@@ -568,6 +568,50 @@ watch(() => [route.query.view, route.query.booking], ([value, booking]) => {
   if (next !== activeView.value) activeView.value = next
   if (next === 'profile') profileEditSection.value = profileSectionFromQuery(route.query.section)
 })
+
+watch(() => route.query.artist, artistValue => {
+  const artistId = typeof artistValue === 'string' ? artistValue : ''
+  if (!artistId || artistId === selectedArtistId.value) return
+  if (!artists.value.some(item => item.id === artistId)) return
+  selectedArtistId.value = artistId
+})
+
+let routeBookingSyncSequence = 0
+watch(
+  () => [route.query.booking, bookingCoreWorkspaceId.value, selectedArtistId.value] as const,
+  async ([bookingValue, workspaceId]) => {
+    const bookingId = typeof bookingValue === 'string' ? bookingValue : ''
+    const sequence = ++routeBookingSyncSequence
+
+    if (!bookingId) {
+      realBookingFocusId.value = ''
+      return
+    }
+    if (!workspaceId) return
+    if (bookingId === realBookingFocusId.value && realBookings.value.some(item => item.id === bookingId)) return
+
+    const existing = realBookings.value.find(item => item.id === bookingId)
+    if (existing) {
+      realBookingFocusId.value = bookingId
+      activeView.value = 'bookings'
+      markBookingNotificationsRead(bookingId)
+      return
+    }
+
+    try {
+      const booking = await loadExactBookingIntoInbox(workspaceId, bookingId)
+      if (sequence !== routeBookingSyncSequence) return
+      realBookingFocusId.value = booking.id
+      activeView.value = 'bookings'
+      markBookingNotificationsRead(booking.id)
+    } catch {
+      if (sequence !== routeBookingSyncSequence) return
+      errorMessage.value = preferences.locale.value === 'es'
+        ? 'Este booking no existe o ya no tienes acceso.'
+        : 'This booking does not exist or you no longer have access.'
+    }
+  }
+)
 watch(() => route.query.section, value => {
   if (activeView.value === 'profile') profileEditSection.value = profileSectionFromQuery(value)
 })
