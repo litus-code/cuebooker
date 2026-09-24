@@ -940,6 +940,30 @@ function markBookingNotificationsRead(bookingId: string) {
     })
 }
 
+function mergeBookingIntoInbox(rows: CoreBooking[], booking: CoreBooking) {
+  return [booking, ...rows.filter(item => item.id !== booking.id)]
+}
+
+async function loadExactBookingIntoInbox(workspaceId: string, bookingId: string) {
+  const booking = await bookingCore.getBooking(workspaceId, bookingId)
+  if (!booking) throw new Error('booking_not_found')
+
+  if (selectedArtistId.value !== booking.artist_id) {
+    selectedArtistId.value = booking.artist_id
+    await nextTick()
+  }
+
+  bookingCoreWorkspaceId.value = workspaceId
+  await syncWorkspaceBillingPlan(workspaceId)
+
+  const rows = await bookingCore.listBookings(workspaceId, 100, booking.artist_id)
+  realBookings.value = mergeBookingIntoInbox(rows, booking)
+  await loadPassportBookings()
+  await loadRealHolds()
+  await loadPassportMedia()
+  return booking
+}
+
 function openRealBooking(bookingId: string) {
   realBookingFocusId.value = bookingId
   activeView.value = 'bookings'
@@ -961,21 +985,8 @@ function openRealBooking(bookingId: string) {
 
 async function openNotificationBooking(notification: CueNotification) {
   try {
-    const rows = await bookingCore.listBookings(notification.workspace_id, 100)
-    const booking = rows.find(item => item.id === notification.booking_id)
-    if (!booking) throw new Error('notification_booking_not_found')
-
-    bookingCoreWorkspaceId.value = notification.workspace_id
-    await syncWorkspaceBillingPlan(notification.workspace_id)
-    if (selectedArtistId.value !== booking.artist_id) {
-      selectedArtistId.value = booking.artist_id
-      await nextTick()
-    }
-
-    realBookings.value = rows.filter(item => item.artist_id === booking.artist_id)
-    await loadRealHolds()
+    const booking = await loadExactBookingIntoInbox(notification.workspace_id, notification.booking_id)
     openRealBooking(booking.id)
-
   } catch (error: any) {
     console.warn('[notifications] booking open failed', error?.message || error)
     errorMessage.value = preferences.locale.value === 'es'
@@ -1002,8 +1013,19 @@ async function loadWorkspaceIdentity() {
       await ensureBookingCoreWorkspace()
 
       const requestedBookingId = typeof route.query.booking === 'string' ? route.query.booking : ''
-      if (requestedBookingId && realBookings.value.some(item => item.id === requestedBookingId)) {
-        openRealBooking(requestedBookingId)
+      if (requestedBookingId) {
+        if (realBookings.value.some(item => item.id === requestedBookingId)) {
+          openRealBooking(requestedBookingId)
+        } else if (bookingCoreWorkspaceId.value) {
+          try {
+            const booking = await loadExactBookingIntoInbox(bookingCoreWorkspaceId.value, requestedBookingId)
+            openRealBooking(booking.id)
+          } catch {
+            errorMessage.value = preferences.locale.value === 'es'
+              ? 'Este booking no existe o ya no tienes acceso.'
+              : 'This booking does not exist or you no longer have access.'
+          }
+        }
       }
     }
   } catch (error: any) {
