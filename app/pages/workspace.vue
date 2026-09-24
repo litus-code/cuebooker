@@ -108,6 +108,7 @@ const sidebarCollapsed = ref(false)
 const bookingCoreWorkspaceId = ref('')
 const realBookings = ref<CoreBooking[]>([])
 const passportBookings = ref<CoreBooking[]>([])
+const calendarBookings = ref<CoreBooking[]>([])
 const realHolds = ref<Hold[]>([])
 const passportMediaItems = ref<import('../domain/cuePassportMedia').CuePassportMedia[]>([])
 const cueOpen = ref(false)
@@ -361,7 +362,7 @@ const monthCells = computed(() => {
       current: day.getUTCMonth() === cursor.getUTCMonth(),
       blocks: blocks.value.filter(block => block.starts_at.slice(0, 10) === date),
       holds: realHolds.value.filter(hold => hold.status === 'active' && hold.event_date === date),
-      confirmedBookings: realBookings.value.filter(booking => !booking.archived_at && booking.status === 'confirmed' && booking.event_date === date)
+      confirmedBookings: calendarBookings.value.filter(booking => booking.event_date === date)
     }
   })
 })
@@ -374,7 +375,7 @@ const selectedDayCoreHolds = computed(() => realHolds.value
   .sort((a, b) => (a.starts_at || a.event_date).localeCompare(b.starts_at || b.event_date)))
 const selectedDayTimedCoreHolds = computed(() => selectedDayCoreHolds.value.filter(hold => hold.starts_at && hold.ends_at))
 const selectedDayDateOnlyCoreHolds = computed(() => selectedDayCoreHolds.value.filter(hold => !hold.starts_at || !hold.ends_at))
-const selectedDayConfirmedBookings = computed(() => realBookings.value.filter(booking => !booking.archived_at && booking.status === 'confirmed' && booking.event_date === selectedDate.value))
+const selectedDayConfirmedBookings = computed(() => calendarBookings.value.filter(booking => booking.event_date === selectedDate.value))
 const selectedDayTimedConfirmedBookings = computed(() => selectedDayConfirmedBookings.value.filter(booking => booking.start_time && booking.end_time))
 const selectedDayDateOnlyConfirmedBookings = computed(() => selectedDayConfirmedBookings.value.filter(booking => !booking.start_time || !booking.end_time))
 const upcomingBlocks = computed(() => blocks.value
@@ -382,8 +383,8 @@ const upcomingBlocks = computed(() => blocks.value
   .sort((a, b) => a.starts_at.localeCompare(b.starts_at))
   .slice(0, 4))
 const holdCount = computed(() => blocks.value.filter(block => block.status === 'hold').length + realHolds.value.filter(hold => hold.status === 'active').length)
-const confirmedCount = computed(() => blocks.value.filter(block => block.status === 'confirmed').length + realBookings.value.filter(booking => !booking.archived_at && booking.status === 'confirmed').length)
-const occupiedDays = computed(() => new Set([...blocks.value.map(block => block.starts_at.slice(0, 10)), ...realHolds.value.filter(hold => hold.status === 'active').map(hold => hold.event_date), ...realBookings.value.filter(booking => !booking.archived_at && booking.status === 'confirmed' && booking.event_date).map(booking => booking.event_date as string)]).size)
+const confirmedCount = computed(() => blocks.value.filter(block => block.status === 'confirmed').length + calendarBookings.value.length)
+const occupiedDays = computed(() => new Set([...blocks.value.map(block => block.starts_at.slice(0, 10)), ...realHolds.value.filter(hold => hold.status === 'active').map(hold => hold.event_date), ...calendarBookings.value.filter(booking => booking.event_date).map(booking => booking.event_date as string)]).size)
 const validTimeRange = computed(() => endTime.value > startTime.value)
 const currentTour = computed(() => tourStep.value >= 0 ? tourSteps.value[tourStep.value] : null)
 const hasArtistSelector = computed(() => artists.value.length > 1)
@@ -553,7 +554,8 @@ onMounted(async () => {
 })
 
 watch([selectedArtistId, monthCursor], async () => {
-  if (selectedArtistId.value) await loadBlocks()
+  if (!selectedArtistId.value) return
+  await Promise.all([loadBlocks(), loadCalendarCore()])
 })
 watch(selectedArtistId, async (artistId) => {
   bookingCoreWorkspaceId.value = ''
@@ -848,15 +850,37 @@ async function loadPassportBookings() {
   if (collectionChanged(passportBookings.value, rows)) passportBookings.value = rows
 }
 
-async function loadRealHolds() {
-  if (!bookingCoreWorkspaceId.value || !realBookings.value.length) {
+async function loadCalendarCore() {
+  if (!bookingCoreWorkspaceId.value || !selectedArtistId.value) {
+    if (calendarBookings.value.length) calendarBookings.value = []
     if (realHolds.value.length) realHolds.value = []
     return
   }
-  const bookingIds = new Set(realBookings.value.map(item => item.id))
-  const rows = (await bookingCore.listHolds(bookingCoreWorkspaceId.value, undefined, true))
-    .filter(hold => bookingIds.has(hold.booking_id))
-  if (collectionChanged(realHolds.value, rows)) realHolds.value = rows
+
+  const fromDate = monthRange.value.from.slice(0, 10)
+  const toDate = monthRange.value.to.slice(0, 10)
+  const [bookingRows, holdRows] = await Promise.all([
+    bookingCore.listArtistCalendarBookings(
+      bookingCoreWorkspaceId.value,
+      selectedArtistId.value,
+      fromDate,
+      toDate,
+      500
+    ),
+    bookingCore.listArtistCalendarHolds(
+      bookingCoreWorkspaceId.value,
+      selectedArtistId.value,
+      fromDate,
+      toDate
+    )
+  ])
+
+  if (collectionChanged(calendarBookings.value, bookingRows)) calendarBookings.value = bookingRows
+  if (collectionChanged(realHolds.value, holdRows)) realHolds.value = holdRows
+}
+
+async function loadRealHolds() {
+  await loadCalendarCore()
 }
 
 async function loadPassportMedia() {
@@ -925,6 +949,7 @@ async function ensureBookingCoreWorkspace() {
     setBasePlan('free')
     realBookings.value = []
     passportBookings.value = []
+    calendarBookings.value = []
     realHolds.value = []
     console.warn('[booking-core] workspace bootstrap unavailable', error?.message || error)
   } finally {
@@ -1576,9 +1601,7 @@ async function saveBlock() {
     && toMinutes(time(block.starts_at)) < proposedEnd
     && toMinutes(time(block.ends_at)) > proposedStart)
 
-  const confirmedOverlap = realBookings.value.find(booking => !booking.archived_at
-    && booking.status === 'confirmed'
-    && booking.event_date === selectedDate.value
+  const confirmedOverlap = calendarBookings.value.find(booking => booking.event_date === selectedDate.value
     && (!booking.start_time || !booking.end_time
       || (toMinutes(booking.start_time) < proposedEnd && toMinutes(booking.end_time) > proposedStart)))
 
