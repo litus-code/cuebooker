@@ -115,6 +115,62 @@ function activityLabel(activity: Activity) {
 }
 
 function activityDetail(activity: Activity) {
+  if (activity.type === 'hold_created') {
+    const date = String(activity.metadata?.event_date || '')
+    const priority = activity.metadata?.priority
+    const expiresAt = String(activity.metadata?.expires_at || '')
+    const parts: string[] = []
+    if (date) {
+      const formattedDate = new Intl.DateTimeFormat(props.locale === 'es' ? 'es-ES' : 'en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'UTC'
+      }).format(new Date(`${date}T12:00:00Z`))
+      parts.push(formattedDate)
+    }
+    if (priority) parts.push(`P${priority}`)
+    if (expiresAt) {
+      const expiry = formatTime(expiresAt)
+      parts.push(props.locale === 'es' ? `Caduca ${expiry}` : `Expires ${expiry}`)
+    }
+    return parts.join(' · ')
+  }
+
+  if (activity.type === 'hold_converted' && activity.metadata?.reason === 'booking_confirmed') {
+    return props.locale === 'es'
+      ? 'Convertido automáticamente al confirmar el booking.'
+      : 'Automatically converted when the booking was confirmed.'
+  }
+
+  if (activity.type === 'hold_released' && activity.metadata?.reason === 'booking_confirmed') {
+    return props.locale === 'es'
+      ? 'Liberado automáticamente al confirmar otra opción de este booking.'
+      : 'Automatically released when another option for this booking was confirmed.'
+  }
+
+  if (activity.type === 'next_move_created' && activity.body) {
+    const dueAt = String(activity.metadata?.due_at || '')
+    if (!dueAt) return activity.body
+    return props.locale === 'es'
+      ? `${activity.body} · Vence ${formatTime(dueAt)}`
+      : `${activity.body} · Due ${formatTime(dueAt)}`
+  }
+
+  if (activity.type === 'next_move_completed' && activity.body) {
+    if (activity.metadata?.reason === 'inbound_activity_received') {
+      return props.locale === 'es'
+        ? `${activity.body} · Completado automáticamente al recibir respuesta.`
+        : `${activity.body} · Automatically completed when a reply arrived.`
+    }
+    if (activity.metadata?.reason === 'replaced') {
+      return props.locale === 'es'
+        ? `${activity.body} · Sustituido por un nuevo siguiente paso.`
+        : `${activity.body} · Replaced by a new next move.`
+    }
+    return activity.body
+  }
+
   if (activity.body) return activity.body
   if (activity.type === 'status_change') {
     const from = String(activity.metadata?.from_status || '')
