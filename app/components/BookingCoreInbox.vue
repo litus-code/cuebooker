@@ -165,6 +165,14 @@ function threadIsNearBottom() {
   return element.scrollHeight - element.scrollTop - element.clientHeight < 72
 }
 
+function activitySyncSignature(rows: Activity[]) {
+  return rows.map(item => `${item.id}:${item.occurred_at}:${item.type}:${item.direction || ''}`).join('|')
+}
+
+function emailSyncSignature(rows: BookingEmailMessage[]) {
+  return rows.map(item => `${item.id}:${item.delivery_status || ''}`).join('|')
+}
+
 async function scrollThreadToLatest() {
   await nextTick()
   const element = conversationThread.value
@@ -174,6 +182,9 @@ async function scrollThreadToLatest() {
 async function loadActivity(options: { silent?: boolean } = {}) {
   const bookingId = selectedBooking.value?.id
   const keepPinnedToLatest = !options.silent || threadIsNearBottom()
+  const previousActivitySignature = options.silent ? activitySyncSignature(activities.value) : ''
+  const previousEmailSignature = options.silent ? emailSyncSignature(emailMessages.value) : ''
+
   if (!options.silent) {
     activities.value = []
     emailMessages.value = []
@@ -186,9 +197,16 @@ async function loadActivity(options: { silent?: boolean } = {}) {
       bookingCore.listBookingEmailMessages(props.workspaceId, bookingId)
     ])
     if (selectedBooking.value?.id !== bookingId) return
+
+    const externalChange = options.silent && (
+      activitySyncSignature(activityRows) !== previousActivitySignature
+      || emailSyncSignature(emailRows) !== previousEmailSignature
+    )
+
     activities.value = activityRows
     emailMessages.value = emailRows
     if (keepPinnedToLatest) await scrollThreadToLatest()
+    if (externalChange) emit('operationsChanged')
   } finally {
     if (!options.silent) loadingActivity.value = false
   }
