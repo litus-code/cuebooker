@@ -21,6 +21,7 @@ const counterparties = ref<Counterparty[]>([])
 const activities = ref<Activity[]>([])
 const emailMessages = ref<BookingEmailMessage[]>([])
 const conversationThread = ref<HTMLElement | null>(null)
+const decisionModal = ref<HTMLElement | null>(null)
 const loadingMeta = ref(false)
 const loadingActivity = ref(false)
 const updatingStatus = ref(false)
@@ -256,10 +257,12 @@ async function handleActivityCreated() {
   await loadActivity()
 }
 
-function decideStatus(status: Extract<CoreBookingStatus, 'confirmed' | 'rejected' | 'cancelled'>) {
+async function decideStatus(status: Extract<CoreBookingStatus, 'confirmed' | 'rejected' | 'cancelled'>) {
   if (!selectedBooking.value || selectedBooking.value.status === status) return
   decisionError.value = ''
   pendingDecision.value = status
+  await nextTick()
+  decisionModal.value?.focus({ preventScroll: true })
 }
 
 function closeDecisionModal() {
@@ -585,7 +588,13 @@ async function selectBooking(bookingId: string) {
   </section>
 
   <div v-if="pendingDecision" class="core-decision-modal" @click.self="closeDecisionModal">
-    <article role="dialog" aria-modal="true" aria-labelledby="core-decision-title">
+    <article
+      ref="decisionModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="core-decision-title"
+      tabindex="-1"
+    >
       <span>{{ locale === 'es' ? 'DECISIÓN DE BOOKING' : 'BOOKING DECISION' }}</span>
       <h3 id="core-decision-title">
         {{ pendingDecision === 'confirmed'
