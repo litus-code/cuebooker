@@ -1,6 +1,13 @@
 <script setup lang="ts">
 type ProfileSection = 'identity' | 'image' | 'sound' | 'links' | 'booking' | 'distribution'
 
+type ProfilePassport = {
+  confirmedBookings: number
+  cities: string[]
+  venues: string[]
+  milestones: Array<{ id: string; title: string; subtitle: string }>
+}
+
 type ProfileView = {
   stageName: string
   bio: string | null
@@ -31,11 +38,18 @@ const props = withDefaults(defineProps<{
   editable?: boolean
   saving?: boolean
   locale?: 'es' | 'en'
+  passport?: ProfilePassport
 }>(), {
   published: false,
   editable: true,
   saving: false,
-  locale: 'es'
+  locale: 'es',
+  passport: () => ({
+    confirmedBookings: 0,
+    cities: [],
+    venues: [],
+    milestones: []
+  })
 })
 
 const emit = defineEmits<{
@@ -44,6 +58,7 @@ const emit = defineEmits<{
   togglePublished: [value: boolean]
   toggleRequests: [value: boolean]
   cueId: []
+  passport: []
 }>()
 
 const genres = computed(() => [...props.profile.primaryGenres, ...props.profile.secondaryGenres].slice(0, 5))
@@ -167,6 +182,16 @@ const links = computed(() => [
           <button type="button" @click="emit('cueId')">{{ locale === 'es' ? 'Gestionar CUE ID' : 'Manage CUE ID' }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
         </div>
       </section>
+
+      <CuePassportProfileSummary
+        :bookings="passport.confirmedBookings"
+        :cities="passport.cities"
+        :venues="passport.venues"
+        :milestones="passport.milestones"
+        :locale="locale"
+        :editable="editable"
+        @manage="emit('passport')"
+      />
 
       <section class="artist-workspace-profile__section artist-workspace-profile__section--links">
         <div class="artist-workspace-profile__section-label"><span>03</span><strong>LINKS</strong></div>
