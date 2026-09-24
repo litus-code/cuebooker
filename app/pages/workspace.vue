@@ -9,6 +9,7 @@ import { createBookingQrSvg } from '../services/bookingQr'
 const auth = useCueAuth()
 const availability = useAvailability()
 const bookingCore = useBookingCore()
+const passportMediaApi = usePassportMedia()
 const notifications = useNotifications()
 const artistProfiles = useArtistProfile()
 const publicPublishing = usePublicArtistPublishing()
@@ -97,6 +98,7 @@ const sidebarCollapsed = ref(false)
 const bookingCoreWorkspaceId = ref('')
 const realBookings = ref<CoreBooking[]>([])
 const realHolds = ref<Hold[]>([])
+const passportMediaItems = ref<import('../domain/cuePassportMedia').CuePassportMedia[]>([])
 const cueOpen = ref(false)
 const cueCoreLoading = ref(false)
 const cueMessage = ref('')
@@ -140,7 +142,7 @@ const cuePassportNext = computed(() => cuePassportNextMilestones(cuePassport.val
 const cuePassportCities = computed(() => cuePassport.value.cities.slice(0, 6))
 const cuePassportFocusedId = ref<string | null>(null)
 const cuePassportTab = ref<'constellation' | 'stickers' | 'timeline'>('constellation')
-const cuePassportWorld = computed(() => buildCuePassportWorld(realBookings.value))
+const cuePassportWorld = computed(() => buildCuePassportWorld(realBookings.value, passportMediaItems.value))
 const cuePassportCountryId = ref('')
 const cuePassportCityId = ref('')
 
@@ -705,6 +707,22 @@ async function loadRealHolds() {
   if (collectionChanged(realHolds.value, rows)) realHolds.value = rows
 }
 
+async function loadPassportMedia() {
+  if (!bookingCoreWorkspaceId.value) {
+    passportMediaItems.value = []
+    return
+  }
+
+  try {
+    const rows = await passportMediaApi.listWorkspaceMedia(bookingCoreWorkspaceId.value)
+    const bookingIds = new Set(realBookings.value.map(item => item.id))
+    passportMediaItems.value = rows.filter(item => bookingIds.has(item.booking_id))
+  } catch (error: any) {
+    passportMediaItems.value = []
+    console.warn('[cue-passport] media unavailable', error?.message || error)
+  }
+}
+
 async function ensureBookingCoreWorkspace() {
   if (!selectedArtistId.value) return
   cueCoreLoading.value = true
@@ -731,6 +749,7 @@ async function ensureBookingCoreWorkspace() {
     bookingCoreWorkspaceId.value = resolvedWorkspaceId
     await loadRealBookings()
     await loadRealHolds()
+    await loadPassportMedia()
   } catch (error: any) {
     // Legacy manager/admin accounts may need the owner to bootstrap once.
     // Do not block the existing workspace while that transition is incomplete.
