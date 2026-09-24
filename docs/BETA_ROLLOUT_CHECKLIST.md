@@ -103,6 +103,10 @@ REQUEST
 - [x] Stickers / milestones.
 - [x] Timeline.
 - [x] Linked Event Media.
+- [x] Event Media manager for confirmed bookings.
+- [x] External image/video/reel URL validation.
+- [x] Link / hide / relink media without automatic public publication.
+- [x] Passport confirmed-booking source is independent from Inbox pagination.
 - [x] Public Passport visibility control.
 - [x] Automatic or explicit public milestone selection.
 - [x] Public Event Media opt-in selection.
