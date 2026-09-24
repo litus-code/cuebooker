@@ -129,6 +129,7 @@ const passwordConfirm = ref('')
 const passwordSaving = ref(false)
 const passwordMessage = ref('')
 const profileForm = ref<ArtistProfileForm>(emptyProfileForm())
+const profileEditorFormSnapshot = ref<ArtistProfileForm | null>(null)
 const profileLoading = ref(false)
 const profileSaving = ref(false)
 const profileMessage = ref('')
@@ -518,7 +519,15 @@ const publicWidgetCode = computed(() => publicWidgetUrl.value
   : '')
 const publicQrSvg = computed(() => publicBookingUrl.value ? createBookingQrSvg(`${publicBookingUrl.value}&src=qr`) : '')
 
-async function closeProfileEditor() {
+async function closeProfileEditor(options: { discard?: boolean } = {}) {
+  const section = profileEditSection.value
+  const discard = options.discard !== false
+
+  if (discard && profileEditorFormSnapshot.value && section && ['identity', 'sound', 'links', 'booking'].includes(section)) {
+    profileForm.value = { ...profileEditorFormSnapshot.value }
+  }
+
+  profileEditorFormSnapshot.value = null
   profileEditSection.value = null
   passportVisibilityDraft.value = publicPassportEnabled.value
   passportMilestoneAutoDraft.value = publicPassportMilestoneIds.value === null
@@ -539,6 +548,7 @@ async function toggleProfileEditSection(section: Exclude<ProfileEditSection, nul
     await closeProfileEditor()
     return
   }
+  profileEditorFormSnapshot.value = { ...profileForm.value }
   profileEditSection.value = section
   if (section === 'passport') {
     passportVisibilityDraft.value = publicPassportEnabled.value
@@ -1634,11 +1644,11 @@ async function saveArtistProfile() {
 async function saveProfileEditor() {
   if (profileEditSection.value === 'passport') {
     const saved = await savePublicPassportSettings()
-    if (saved) await closeProfileEditor()
+    if (saved) await closeProfileEditor({ discard: false })
     return
   }
   const saved = await saveArtistProfile()
-  if (saved) await closeProfileEditor()
+  if (saved) await closeProfileEditor({ discard: false })
 }
 
 async function dismissProfileWelcome() {
