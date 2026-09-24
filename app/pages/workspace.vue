@@ -1938,9 +1938,9 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
         <div class="summary-grid">
           <article class="summary-card summary-card--pending"><span>{{ copy.realBookings }}</span><strong>{{ cueCoreLoading ? '…' : realBookings.filter(item => !item.archived_at).length }}</strong><p>{{ bookingCoreWorkspaceId ? (preferences.locale.value === 'es' ? 'Bookings guardados en tu workspace.' : 'Bookings saved in your workspace.') : copy.realBookingsBody }}</p></article>
-          <article class="summary-card"><span>{{ copy.holdsMonth }}</span><strong>{{ holdCount }}</strong><p>{{ copy.holdsBody }}</p></article>
-          <article class="summary-card"><span>{{ copy.confirmed }}</span><strong>{{ confirmedCount }}</strong><p>{{ copy.confirmedBody }}</p></article>
-          <article class="summary-card"><span>{{ copy.occupiedDays }}</span><strong>{{ occupiedDays }}</strong><p>{{ copy.occupiedBody }}</p></article>
+          <article class="summary-card"><span>{{ copy.holdsMonth }} · {{ monthLabel }}</span><strong>{{ holdCount }}</strong><p>{{ copy.holdsBody }}</p></article>
+          <article class="summary-card"><span>{{ copy.confirmed }} · {{ monthLabel }}</span><strong>{{ confirmedCount }}</strong><p>{{ copy.confirmedBody }}</p></article>
+          <article class="summary-card"><span>{{ copy.occupiedDays }} · {{ monthLabel }}</span><strong>{{ occupiedDays }}</strong><p>{{ copy.occupiedBody }}</p></article>
           <button class="summary-card summary-card--profile" type="button" @click="activeView = 'profile'"><span>{{ copy.profileCard }}</span><strong>{{ profileCompletion }}%</strong><p>{{ copy.profileCardBody }} →</p></button>
         </div>
 
@@ -1957,7 +1957,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
         <div class="overview-grid">
           <section class="panel agenda-panel">
-            <div class="panel-heading"><div><p class="eyebrow">{{ copy.agendaEyebrow }}</p><h2>{{ copy.upcoming }}</h2></div><button type="button" @click="changeView('calendar')">{{ copy.viewCalendar }}</button></div>
+            <div class="panel-heading"><div><p class="eyebrow">{{ copy.agendaEyebrow }} · {{ monthLabel }}</p><h2>{{ copy.upcoming }}</h2></div><button type="button" @click="changeView('calendar')">{{ copy.viewCalendar }}</button></div>
             <div v-if="upcomingBlocks.length" class="agenda-list">
               <button v-for="block in upcomingBlocks" :key="block.id" type="button" @click="openUpcoming(block)">
                 <time>{{ shortDate(block.starts_at) }}</time>
