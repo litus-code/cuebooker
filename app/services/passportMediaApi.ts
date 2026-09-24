@@ -28,6 +28,19 @@ export type CreatePassportMediaInput = {
   metadata?: Record<string, unknown>
 }
 
+function httpUrl(value: string | null | undefined) {
+  const candidate = value?.trim()
+  if (!candidate) return null
+  try {
+    const parsed = new URL(candidate)
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error('invalid_media_url')
+    return parsed.toString()
+  } catch (error) {
+    if (error instanceof Error && error.message === 'invalid_media_url') throw error
+    throw new Error('invalid_media_url')
+  }
+}
+
 export function createPassportMediaApi(options: PassportMediaApiOptions) {
   const baseUrl = options.baseUrl.replace(/\/$/, '')
 
@@ -70,9 +83,9 @@ export function createPassportMediaApi(options: PassportMediaApiOptions) {
         media_type: input.mediaType,
         status: input.status || 'suggested',
         external_id: input.externalId || null,
-        permalink: input.permalink || null,
-        media_url: input.mediaUrl || null,
-        thumbnail_url: input.thumbnailUrl || null,
+        permalink: httpUrl(input.permalink),
+        media_url: httpUrl(input.mediaUrl),
+        thumbnail_url: httpUrl(input.thumbnailUrl),
         caption: input.caption || null,
         captured_at: input.capturedAt || null,
         suggested_match_score: input.suggestedMatchScore ?? null,
