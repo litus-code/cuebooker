@@ -444,7 +444,7 @@ Deno.serve(async request => {
         passport: artist.passport_public_enabled ? passport : null,
         acceptingRequests: Boolean(routes[0]?.accepting_requests)
       }
-    }, 200, { "Cache-Control": "public, max-age=60, s-maxage=300" });
+    }, 200, { "Cache-Control": "private, no-cache, max-age=0, must-revalidate" });
   } catch (error) {
     console.error("get-public-artist-profile", error);
     return json({ error: "public_profile_failed" }, 500, { "Cache-Control": "no-store" });
