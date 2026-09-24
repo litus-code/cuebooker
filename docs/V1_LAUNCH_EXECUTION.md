@@ -127,6 +127,7 @@ Implemented so far:
 - staging/demo plan override, disabled in production;
 - Passport Event Media capability gating;
 - Smart Capture extended-capacity presentation.
+- Free 90-day Activity history / Pro full history;
 
 ### 4. Close Artist Pro automation value
 
