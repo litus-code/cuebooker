@@ -57,6 +57,8 @@ const copy = computed(() => props.locale === 'es' ? {
   active: 'In progress', archived: 'Archived', archive: 'Archive', restore: 'Restore', archiveHint: 'In progress is your live work. Archived keeps bookings outside day-to-day operations.', archivedReadOnly: 'Archived booking. Its trace is preserved in read-only mode.'
 })
 
+const ACTIVE_BOOKING_PROCESS_STATUSES = new Set<CoreBookingStatus>(['new', 'in_conversation', 'waiting_response'])
+
 const statusLabels = computed<Record<CoreBookingStatus, string>>(() => props.locale === 'es' ? {
   new: 'Nueva', in_conversation: 'En conversación', waiting_response: 'Esperando respuesta', confirmed: 'Confirmada', rejected: 'Rechazada', cancelled: 'Cancelada'
 } : {
@@ -95,7 +97,9 @@ const visibleBookings = computed(() => realStatusFilter.value === 'all'
 const pagedBookings = computed(() => visibleBookings.value.slice(0, visibleLimit.value))
 const hasMoreBookings = computed(() => visibleLimit.value < visibleBookings.value.length)
 const hasActiveInboxFilters = computed(() => Boolean(realSearch.value.trim()) || realStatusFilter.value !== 'all')
-const activeBookingCount = computed(() => props.bookings.filter(item => !item.archived_at).length)
+const activeBookingCount = computed(() => props.bookings.filter(item =>
+  !item.archived_at && ACTIVE_BOOKING_PROCESS_STATUSES.has(item.status)
+).length)
 const activeBookingCapacity = computed(() => cueCapacity('activeBookings', activeBookingCount.value))
 const selectedBooking = computed(() => visibleBookings.value.find(item => item.id === selectedBookingId.value) || visibleBookings.value[0] || null)
 const selectedContact = computed(() => selectedBooking.value?.primary_contact_id ? contacts.value.find(item => item.id === selectedBooking.value?.primary_contact_id) || null : null)
@@ -465,10 +469,10 @@ async function selectBooking(bookingId: string) {
       </div>
       <div class="core-inbox__heading-meta">
         <CueCapacityIndicator
-          :used="bookings.filter(item => !item.archived_at).length"
+          :used="activeBookingCount"
           limit-key="activeBookings"
           upgrade-entitlement="booking.unlimited"
-          :label="locale === 'es' ? 'Activos' : 'Active'"
+          :label="locale === 'es' ? 'Procesos activos' : 'Active processes'"
         />
         <b>{{ bookings.length }}</b>
       </div>
