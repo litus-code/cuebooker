@@ -22,6 +22,7 @@ const zoom = ref(1)
 const offsetX = ref(0)
 const offsetY = ref(0)
 const dragging = ref(false)
+const dragMoved = ref(false)
 const tooltipCityId = ref('')
 const viewportEl = ref<HTMLElement | null>(null)
 const tooltipEl = ref<HTMLElement | null>(null)
@@ -234,8 +235,8 @@ function syncTooltipSize() {
 
 function startDrag(event: PointerEvent) {
   if ((event.target as Element)?.closest('button, a, [role="button"], .passport-constellation__tooltip')) return
-  closeTooltip()
   dragging.value = true
+  dragMoved.value = false
   dragStart.x = event.clientX
   dragStart.y = event.clientY
   dragStart.offsetX = offsetX.value
@@ -245,13 +246,24 @@ function startDrag(event: PointerEvent) {
 
 function moveDrag(event: PointerEvent) {
   if (!dragging.value) return
+  const deltaX = event.clientX - dragStart.x
+  const deltaY = event.clientY - dragStart.y
+  if (Math.hypot(deltaX, deltaY) > 4) dragMoved.value = true
   const scale = 1000 / Math.max((event.currentTarget as HTMLElement).clientWidth, 1)
-  offsetX.value = dragStart.offsetX + (event.clientX - dragStart.x) * scale
-  offsetY.value = dragStart.offsetY + (event.clientY - dragStart.y) * scale
+  offsetX.value = dragStart.offsetX + deltaX * scale
+  offsetY.value = dragStart.offsetY + deltaY * scale
 }
 
 function stopDrag() {
   dragging.value = false
+  dragMoved.value = false
+}
+
+function finishDrag() {
+  if (!dragging.value) return
+  const wasDrag = dragMoved.value
+  stopDrag()
+  if (!wasDrag) closeTooltip()
 }
 
 watch(() => props.countryId, () => {
@@ -329,7 +341,7 @@ onBeforeUnmount(() => {
       :class="{ dragging }"
       @pointerdown="startDrag"
       @pointermove="moveDrag"
-      @pointerup="stopDrag"
+      @pointerup="finishDrag"
       @pointercancel="stopDrag"
       @lostpointercapture="stopDrag"
     >
