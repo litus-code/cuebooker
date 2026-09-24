@@ -18,6 +18,13 @@ const type = ref<ActivityType>('email')
 const direction = ref<ActivityDirection>('outbound')
 const subject = ref('')
 const body = ref('')
+const channelDrafts = reactive<Record<'email' | 'whatsapp' | 'instagram' | 'phone' | 'note', string>>({
+  email: '',
+  whatsapp: '',
+  instagram: '',
+  phone: '',
+  note: ''
+})
 const saving = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
@@ -74,9 +81,15 @@ const types = computed<Array<{ value: ActivityType; label: string }>>(() => [
 
 const sendsRealEmail = computed(() => type.value === 'email')
 
-watch(type, value => {
+watch(type, (value, previousValue) => {
   successMessage.value = ''
   errorMessage.value = ''
+
+  if (previousValue && previousValue in channelDrafts) {
+    channelDrafts[previousValue as keyof typeof channelDrafts] = body.value
+  }
+  body.value = channelDrafts[value as keyof typeof channelDrafts] || ''
+
   if (value === 'note') direction.value = 'internal'
   else if (value === 'email') direction.value = 'outbound'
   else if (direction.value === 'internal') direction.value = 'inbound'
@@ -89,6 +102,7 @@ watch(direction, () => {
 
 function applyEmailDraft(draft: { subject: string; body: string } | null | undefined) {
   if (!draft) return
+  channelDrafts.email = draft.body
   type.value = 'email'
   direction.value = 'outbound'
   subject.value = draft.subject
@@ -131,6 +145,7 @@ async function submit() {
       })
       subject.value = ''
       body.value = ''
+      channelDrafts.email = ''
       successMessage.value = copy.value.sent
       analytics.track('booking_response_sent', { channel: 'email' })
       emit('created')
@@ -146,6 +161,7 @@ async function submit() {
       body: text
     })
     body.value = ''
+    channelDrafts[type.value as keyof typeof channelDrafts] = ''
     emit('created')
   } catch (error: any) {
     errorMessage.value = sendsRealEmail.value
