@@ -32,6 +32,21 @@ export function createNotificationApi(options: NotificationApiOptions) {
     })
   }
 
+  async function listWorkspaceUnread(workspaceId: string, limit = 500) {
+    const id = workspaceId.trim()
+    if (!id) return [] as CueNotification[]
+    return $fetch<CueNotification[]>(`${baseUrl}/rest/v1/notifications`, {
+      headers: authHeaders(),
+      query: {
+        workspace_id: `eq.${id}`,
+        read_at: 'is.null',
+        select: 'id,workspace_id,recipient_user_id,booking_id,activity_id,kind,dedupe_key,metadata,read_at,created_at',
+        order: 'created_at.desc',
+        limit: String(Math.min(Math.max(limit, 1), 500))
+      }
+    })
+  }
+
   async function unreadCount() {
     const response = await $fetch.raw<CueNotification[]>(`${baseUrl}/rest/v1/notifications`, {
       method: 'GET',
@@ -100,6 +115,7 @@ export function createNotificationApi(options: NotificationApiOptions) {
 
   return {
     list,
+    listWorkspaceUnread,
     unreadCount,
     markRead,
     markAllRead,
