@@ -106,6 +106,7 @@ const rosterSubmitting = ref(false)
 const sidebarCollapsed = ref(false)
 const bookingCoreWorkspaceId = ref('')
 const realBookings = ref<CoreBooking[]>([])
+const passportBookings = ref<CoreBooking[]>([])
 const realHolds = ref<Hold[]>([])
 const passportMediaItems = ref<import('../domain/cuePassportMedia').CuePassportMedia[]>([])
 const cueOpen = ref(false)
@@ -152,7 +153,7 @@ const tourCardStyle = ref<Record<string, string>>({})
 let tourPositionTimer: ReturnType<typeof setTimeout> | null = null
 
 const cuePassport = computed(() => deriveCuePassportSnapshot({
-  bookings: realBookings.value,
+  bookings: passportBookings.value,
   baseCountryCode: profileForm.value.countryCode
 }))
 const cuePassportUnlocked = computed(() => cuePassportUnlockedMilestones(cuePassport.value))
@@ -180,7 +181,7 @@ const publicPassportMedia = computed(() => linkedPassportMedia.value
 const cuePassportCities = computed(() => cuePassport.value.cities.slice(0, 6))
 const cuePassportFocusedId = ref<string | null>(null)
 const cuePassportTab = ref<'constellation' | 'stickers' | 'timeline'>('constellation')
-const cuePassportWorld = computed(() => buildCuePassportWorld(realBookings.value, passportMediaItems.value))
+const cuePassportWorld = computed(() => buildCuePassportWorld(passportBookings.value, passportMediaItems.value))
 const cuePassportCountryId = ref('')
 const cuePassportCityId = ref('')
 
@@ -789,6 +790,19 @@ async function loadRealBookings() {
   if (collectionChanged(realBookings.value, rows)) realBookings.value = rows
 }
 
+async function loadPassportBookings() {
+  if (!bookingCoreWorkspaceId.value || !selectedArtistId.value) {
+    if (passportBookings.value.length) passportBookings.value = []
+    return
+  }
+  const rows = await bookingCore.listArtistPassportBookings(
+    bookingCoreWorkspaceId.value,
+    selectedArtistId.value,
+    500
+  )
+  if (collectionChanged(passportBookings.value, rows)) passportBookings.value = rows
+}
+
 async function loadRealHolds() {
   if (!bookingCoreWorkspaceId.value || !realBookings.value.length) {
     if (realHolds.value.length) realHolds.value = []
@@ -808,7 +822,7 @@ async function loadPassportMedia() {
 
   try {
     const rows = await passportMediaApi.listWorkspaceMedia(bookingCoreWorkspaceId.value)
-    const bookingIds = new Set(realBookings.value.map(item => item.id))
+    const bookingIds = new Set(passportBookings.value.map(item => item.id))
     passportMediaItems.value = rows.filter(item => bookingIds.has(item.booking_id))
   } catch (error: any) {
     passportMediaItems.value = []
@@ -856,6 +870,7 @@ async function ensureBookingCoreWorkspace() {
     bookingCoreWorkspaceId.value = resolvedWorkspaceId
     await syncWorkspaceBillingPlan(resolvedWorkspaceId)
     await loadRealBookings()
+    await loadPassportBookings()
     await loadRealHolds()
     await loadPassportMedia()
   } catch (error: any) {
@@ -864,6 +879,7 @@ async function ensureBookingCoreWorkspace() {
     bookingCoreWorkspaceId.value = ''
     setBasePlan('free')
     realBookings.value = []
+    passportBookings.value = []
     realHolds.value = []
     console.warn('[booking-core] workspace bootstrap unavailable', error?.message || error)
   } finally {
@@ -876,7 +892,9 @@ async function refreshBookingCoreFromExternal() {
   if (!bookingCoreWorkspaceId.value || !selectedArtistId.value || cueCoreLoading.value) return
   try {
     await loadRealBookings()
+    await loadPassportBookings()
     await loadRealHolds()
+    await loadPassportMedia()
     bookingCoreOperationsRevision.value += 1
   } catch (error: any) {
     console.warn('[booking-core] background refresh failed', error?.message || error)
@@ -893,7 +911,9 @@ async function handleCueCreated(booking: CoreBooking) {
     has_venue: Boolean(booking.venue_name)
   })
   await loadRealBookings()
+  await loadPassportBookings()
   await loadRealHolds()
+  await loadPassportMedia()
   bookingCoreOperationsRevision.value += 1
   await nextTick()
   openRealBooking(booking.id)
