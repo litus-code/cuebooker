@@ -249,6 +249,22 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     })
   }
 
+  async function listArtistPassportBookings(workspaceId: string, artistId: string, limit = 500) {
+    if (!workspaceId || !artistId) return [] as CoreBooking[]
+    return $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/bookings`, {
+      headers: authHeaders(),
+      query: {
+        workspace_id: `eq.${workspaceId}`,
+        artist_id: `eq.${artistId}`,
+        status: 'eq.confirmed',
+        archived_at: 'is.null',
+        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
+        order: 'event_date.asc.nullslast,created_at.asc',
+        limit: String(Math.min(Math.max(limit, 1), 500))
+      }
+    })
+  }
+
   async function createBooking(input: CreateBookingInput) {
     if (input.offerAmountMinor != null && (!Number.isSafeInteger(input.offerAmountMinor) || input.offerAmountMinor < 0)) {
       throw new Error('invalid_offer_amount_minor')
@@ -601,6 +617,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     listCounterparties,
     createCounterparty,
     listBookings,
+    listArtistPassportBookings,
     createBooking,
     createManualBooking,
     updateBookingDetails,
