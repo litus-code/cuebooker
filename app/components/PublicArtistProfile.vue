@@ -61,13 +61,18 @@ const location = computed(() => [props.profile.city, props.profile.countryCode].
 const portrait = computed(() => props.profile.artistCutoutUrl || props.profile.artistImageUrl)
 const visualMode = computed(() => props.profile.visualMode || 'photo')
 const showCueId = computed(() => visualMode.value === 'cue_id' && Boolean(props.profile.cueId))
+function safeExternalUrl(value: string | null) {
+  if (!value) return null
+  return /^https?:\/\//i.test(value.trim()) ? value.trim() : null
+}
+
 const socialLinks = computed(() => [
-  ['Website', props.profile.websiteUrl],
-  ['Instagram', props.profile.instagramUrl],
-  ['SoundCloud', props.profile.soundcloudUrl],
-  ['Mixcloud', props.profile.mixcloudUrl],
-  ['YouTube', props.profile.youtubeUrl],
-  ['Spotify', props.profile.spotifyUrl]
+  ['Website', safeExternalUrl(props.profile.websiteUrl)],
+  ['Instagram', safeExternalUrl(props.profile.instagramUrl)],
+  ['SoundCloud', safeExternalUrl(props.profile.soundcloudUrl)],
+  ['Mixcloud', safeExternalUrl(props.profile.mixcloudUrl)],
+  ['YouTube', safeExternalUrl(props.profile.youtubeUrl)],
+  ['Spotify', safeExternalUrl(props.profile.spotifyUrl)]
 ].filter((item): item is [string, string] => Boolean(item[1])))
 
 function openBooking() {
