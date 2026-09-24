@@ -139,6 +139,17 @@ function normalizeLabel(value: string | null | undefined) {
   return value?.trim() || "";
 }
 
+function safePublicUrl(value: string | null | undefined) {
+  const candidate = value?.trim();
+  if (!candidate) return null;
+  try {
+    const parsed = new URL(candidate);
+    return parsed.protocol === "http:" || parsed.protocol === "https:" ? parsed.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 function uniqueLabels(values: Array<string | null | undefined>) {
   const seen = new Map<string, string>();
   for (const value of values) {
@@ -378,9 +389,9 @@ Deno.serve(async request => {
           id: item.id,
           bookingId: item.booking_id,
           mediaType: item.media_type,
-          permalink: item.permalink,
-          mediaUrl: item.media_url,
-          thumbnailUrl: item.thumbnail_url,
+          permalink: safePublicUrl(item.permalink),
+          mediaUrl: safePublicUrl(item.media_url),
+          thumbnailUrl: safePublicUrl(item.thumbnail_url),
           caption: item.caption,
           capturedAt: item.captured_at
         }));
