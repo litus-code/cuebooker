@@ -18,7 +18,7 @@ const text = computed(() => locale.value === 'es' ? {
   listen: 'Escuchar', live: 'Directo', dates: 'Fechas', epk: 'EPK', request: 'Solicitar fecha',
   title: 'Cuéntanos la fecha. Sin registrarte.', intro: 'Los datos llegan ordenados al DJ. Recibirás su respuesta en tu correo y podrás continuar desde un enlace seguro.',
   name: 'Tu nombre', email: 'Email de respuesta', phone: 'Teléfono opcional', event: 'Evento', venue: 'Sala', cityLabel: 'Ciudad', date: 'Fecha', capacity: 'Aforo', offer: 'Oferta', schedule: 'Horario propuesto', message: 'Mensaje para el DJ', files: 'Adjuntar rider, propuesta o información', send: 'Enviar solicitud', sending: 'Guardando solicitud',
-  privacy: 'Demo local: los datos se guardan únicamente en este navegador. En el producto real se enviarán de forma segura al artista.',
+  privacy: 'Demo local: los datos se guardan únicamente en este navegador. En el producto real, Cuebooker los comunicará al artista para gestionar la solicitud.', privacyLink: 'Consulta la política de privacidad.',
   sent: 'Solicitud enviada', sentBody: 'Así de simple debería ser para el promotor. Ahora puedes comprobar cómo llega al panel del DJ y cómo continúa la respuesta.', promoterView: 'Ver seguimiento del promotor', djView: 'Abrir bandeja del DJ'
 } : {
   back: 'Back', demo: 'Fictional profile · functional flow', city: 'Berlin',
@@ -26,7 +26,7 @@ const text = computed(() => locale.value === 'es' ? {
   listen: 'Listen', live: 'Live', dates: 'Dates', epk: 'EPK', request: 'Request a date',
   title: 'Tell us about the date. No account required.', intro: 'The DJ receives structured details. Their reply reaches your email and you can continue through a secure link.',
   name: 'Your name', email: 'Reply email', phone: 'Optional phone', event: 'Event', venue: 'Venue', cityLabel: 'City', date: 'Date', capacity: 'Capacity', offer: 'Offer', schedule: 'Proposed schedule', message: 'Message for the DJ', files: 'Attach rider, proposal or information', send: 'Send request', sending: 'Saving request',
-  privacy: 'Local demo: data is stored only in this browser. The real product will send it securely to the artist.',
+  privacy: 'Local demo: data is stored only in this browser. In the real product, Cuebooker will share it with the artist to manage the request.', privacyLink: 'Read the privacy policy.',
   sent: 'Request sent', sentBody: 'This is how simple it should feel for the promoter. Now check how it reaches the DJ and how the reply continues.', promoterView: 'View promoter follow-up', djView: 'Open DJ inbox'
 })
 
@@ -101,7 +101,7 @@ useHead(() => ({
         <label>{{ text.schedule }}<input v-model="form.schedule" placeholder="02:00–04:00"></label>
         <label class="request-demo__message">{{ text.message }}<textarea v-model="form.message" required rows="5" placeholder="Contexto, propuesta, producción y cualquier dato que ayude a decidir."></textarea></label>
         <label class="file-field"><span>{{ text.files }}</span><input multiple type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip" @change="selectFiles"><small v-if="attachments.length">{{ attachments.map(file => file.name).join(' · ') }}</small></label>
-        <p class="form-privacy">{{ text.privacy }}</p>
+        <p class="form-privacy">{{ text.privacy }} <NuxtLink to="/privacidad">{{ text.privacyLink }}</NuxtLink></p>
         <button class="button button--primary" :disabled="sending">{{ sending ? text.sending : text.send }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
       </form>
 
@@ -114,3 +114,7 @@ useHead(() => ({
     <NuxtLink class="profile-back" to="/"><span class="arrow arrow--left" aria-hidden="true" /> {{ text.back }}</NuxtLink>
   </main>
 </template>
+
+<style scoped>
+.form-privacy a { color:var(--cue-accent); }
+</style>
