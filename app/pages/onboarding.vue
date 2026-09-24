@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const auth = useCueAuth()
+const analytics = useAnalytics()
 const billingIntent = useBillingIntent()
 const { locale } = useCuePreferences()
 const accountType = ref<'dj' | 'agency'>('dj')
@@ -83,6 +84,10 @@ async function submit() {
       displayName: displayName.value,
       entityName: entityName.value,
       entitySlug: entitySlug.value
+    })
+    analytics.track('onboarding_completed', {
+      account_type: accountType.value,
+      cue_id_next_step: accountType.value === 'dj' ? cueIdNextStep.value : null
     })
     if (accountType.value === 'dj' && cueIdNextStep.value === 'now') {
       await navigateTo('/cue-id?from=onboarding')
