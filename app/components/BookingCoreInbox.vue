@@ -659,6 +659,7 @@ async function selectBooking(bookingId: string) {
           :workspace-id="workspaceId"
           :booking="selectedBooking"
           :locale="locale"
+          :refresh-key="activities.length"
           @changed="handleOperationsChanged"
         />
 
