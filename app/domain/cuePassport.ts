@@ -1,4 +1,5 @@
 import type { CoreBooking } from './bookingCore'
+import type { CuePassportMedia } from './cuePassportMedia'
 
 export type CuePassportMilestoneKind =
   | 'first_booking'
@@ -34,6 +35,7 @@ export type CuePassportBookingNode = {
   id: string
   eventName: string | null
   eventDate: string | null
+  media: CuePassportMedia[]
 }
 
 export type CuePassportVenueNode = {
@@ -207,7 +209,7 @@ export function cuePassportNextMilestones(snapshot: CuePassportSnapshot) {
 }
 
 
-export function buildCuePassportWorld(bookings: CoreBooking[]): CuePassportWorld {
+export function buildCuePassportWorld(bookings: CoreBooking[], media: CuePassportMedia[] = []): CuePassportWorld {
   const confirmed = bookings
     .filter(booking => booking.status === 'confirmed' && !booking.archived_at)
     .sort((a, b) => bookingDateValue(a).localeCompare(bookingDateValue(b)))
@@ -242,7 +244,8 @@ export function buildCuePassportWorld(bookings: CoreBooking[]): CuePassportWorld
     const bookingNode: CuePassportBookingNode = {
       id: booking.id,
       eventName: booking.event_name,
-      eventDate: booking.event_date
+      eventDate: booking.event_date,
+      media: media.filter(item => item.booking_id === booking.id && item.status === 'linked')
     }
     city.bookings.push(bookingNode)
 
