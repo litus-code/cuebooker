@@ -2060,6 +2060,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                     :locale="preferences.locale.value"
                     @select-country="cuePassportCountryId = $event"
                     @select-city="cuePassportCityId = $event"
+                    @empty-action="changeView('bookings')"
                   />
 
                   <aside v-if="cuePassportCity" class="cue-passport__city-card">
