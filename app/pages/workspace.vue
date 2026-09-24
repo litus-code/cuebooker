@@ -2015,6 +2015,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <BookingCoreAttention
           v-if="bookingCoreWorkspaceId"
           :workspace-id="bookingCoreWorkspaceId"
+          :artist-id="selectedArtistId"
           :bookings="realBookings.filter(item => !item.archived_at)"
           :locale="preferences.locale.value"
           :refresh-key="bookingCoreOperationsRevision"
