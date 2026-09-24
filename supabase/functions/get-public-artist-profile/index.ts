@@ -130,6 +130,7 @@ type PublicPassportMedia = {
 type BookingPassportRow = {
   id: string;
   city: string | null;
+  country_code: string | null;
   venue_name: string | null;
   event_date: string | null;
 };
@@ -149,11 +150,24 @@ function uniqueLabels(values: Array<string | null | undefined>) {
   return [...seen.values()];
 }
 
-function derivePublicPassport(bookings: BookingPassportRow[], selectedMilestoneIds: string[] | null) {
+function derivePublicPassport(
+  bookings: BookingPassportRow[],
+  selectedMilestoneIds: string[] | null,
+  baseCountryCode: string | null
+) {
   const cities = uniqueLabels(bookings.map((booking) => booking.city));
   const venues = uniqueLabels(bookings.map((booking) => booking.venue_name));
-  const milestones: PublicPassportMilestone[] = [];
+  const baseCountry = normalizeLabel(baseCountryCode).toUpperCase();
+  const firstCity = bookings.find((booking) => normalizeLabel(booking.city));
+  const firstVenue = bookings.find((booking) => normalizeLabel(booking.venue_name));
+  const firstInternational = baseCountry
+    ? bookings.find((booking) => {
+        const country = normalizeLabel(booking.country_code).toUpperCase();
+        return Boolean(country && country !== baseCountry);
+      })
+    : undefined;
 
+  const milestones: PublicPassportMilestone[] = [];
   if (bookings.length) {
     milestones.push({
       id: "first-booking",
@@ -161,18 +175,46 @@ function derivePublicPassport(bookings: BookingPassportRow[], selectedMilestoneI
       subtitle: "First confirmed date in Cuebooker"
     });
   }
-  if (cities[0]) {
+  if (firstCity?.city) {
     milestones.push({
       id: "first-city",
-      title: cities[0].toUpperCase(),
+      title: firstCity.city.toUpperCase(),
       subtitle: "First city added to the trajectory"
     });
   }
-  if (venues[0]) {
+  if (firstVenue?.venue_name) {
     milestones.push({
       id: "first-venue",
-      title: venues[0].toUpperCase(),
+      title: firstVenue.venue_name.toUpperCase(),
       subtitle: "First venue added to the Passport"
+    });
+  }
+  if (bookings.length >= 10) {
+    milestones.push({
+      id: "bookings-10",
+      title: "10 BOOKINGS",
+      subtitle: "Confirm 10 dates"
+    });
+  }
+  if (cities.length >= 5) {
+    milestones.push({
+      id: "cities-5",
+      title: "5 CITIES",
+      subtitle: "Play in 5 different cities"
+    });
+  }
+  if (venues.length >= 10) {
+    milestones.push({
+      id: "venues-10",
+      title: "10 VENUES",
+      subtitle: "Add 10 different venues to your trajectory"
+    });
+  }
+  if (firstInternational) {
+    milestones.push({
+      id: "first-international",
+      title: "INTERNATIONAL",
+      subtitle: "First confirmed date outside your base country"
     });
   }
 
@@ -302,12 +344,12 @@ Deno.serve(async request => {
     if (artist.passport_public_enabled && workspaceIds.length) {
       const workspaceFilter = workspaceIds.map((id) => `"${id}"`).join(",");
       const bookings = await serviceJson<BookingPassportRow[]>(
-        `${supabaseUrl}/rest/v1/bookings?artist_id=eq.${encodeURIComponent(artist.id)}&workspace_id=in.(${encodeURIComponent(workspaceFilter)})&status=eq.confirmed&archived_at=is.null&select=id,city,venue_name,event_date&order=event_date.asc.nullslast`,
+        `${supabaseUrl}/rest/v1/bookings?artist_id=eq.${encodeURIComponent(artist.id)}&workspace_id=in.(${encodeURIComponent(workspaceFilter)})&status=eq.confirmed&archived_at=is.null&select=id,city,country_code,venue_name,event_date&order=event_date.asc.nullslast`,
         { method: "GET" },
         serviceKey
       );
       passport = {
-        ...derivePublicPassport(bookings, artist.passport_public_milestone_ids),
+        ...derivePublicPassport(bookings, artist.passport_public_milestone_ids, artist.country_code),
         media: []
       };
 
