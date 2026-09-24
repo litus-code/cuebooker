@@ -236,6 +236,13 @@ watch(() => props.countryId, () => {
   resetView()
 })
 
+watch(nodes, currentNodes => {
+  if (!tooltipCityId.value) return
+  if (!currentNodes.some(node => node.city.id === tooltipCityId.value)) {
+    closeTooltip()
+  }
+})
+
 let viewportObserver: ResizeObserver | null = null
 
 onMounted(() => {
