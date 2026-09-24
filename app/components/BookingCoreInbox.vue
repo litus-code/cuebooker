@@ -28,6 +28,7 @@ const loadingActivity = ref(false)
 const updatingStatus = ref(false)
 const pendingDecision = ref<Extract<CoreBookingStatus, 'confirmed' | 'rejected' | 'cancelled'> | null>(null)
 const decisionError = ref('')
+const selectedBookingHasConflict = ref(false)
 const archiving = ref(false)
 const archiveView = ref<'active' | 'archived'>('active')
 const realSearch = ref('')
@@ -532,6 +533,7 @@ async function selectBooking(bookingId: string) {
           :bookings="bookings"
           :locale="locale"
           :refresh-key="activities.length"
+          @state-changed="selectedBookingHasConflict = $event"
         />
 
         <header>
@@ -695,6 +697,11 @@ async function selectBooking(bookingId: string) {
         {{ selectedBooking?.event_date
           ? (locale === 'es' ? 'La fecha quedará confirmada y aparecerá en Calendario. Si existe un hold de esta fecha, se convertirá automáticamente.' : 'The date will be confirmed and shown in Calendar. A matching hold will be converted automatically.')
           : (locale === 'es' ? 'Este booking todavía no tiene fecha. Añádela en “Datos del booking” antes de confirmarlo.' : 'This booking does not have a date yet. Add one under “Booking details” before confirming.') }}
+      </p>
+      <p v-if="pendingDecision === 'confirmed' && selectedBookingHasConflict" class="core-decision-modal__warning">
+        {{ locale === 'es'
+          ? 'Hay un posible solape o un hold desalineado en esta fecha. Puedes confirmar igualmente, pero conviene revisar la agenda antes de continuar.'
+          : 'There is a possible conflict or a misaligned hold on this date. You can still confirm, but review the schedule before continuing.' }}
       </p>
       <p v-else>{{ locale === 'es' ? 'La decisión quedará registrada en la actividad del booking.' : 'The decision will be recorded in booking activity.' }}</p>
       <p v-if="decisionError" class="core-decision-modal__error">{{ decisionError }}</p>
@@ -901,6 +908,7 @@ async function selectBooking(bookingId: string) {
 .core-decision-modal h3 { margin:10px 0 12px; font-size:26px; line-height:1.05; text-transform:uppercase; }
 .core-decision-modal p { margin:0; color:var(--cue-muted); font-size:12px; line-height:1.55; }
 .core-decision-modal__error { margin-top:14px !important; padding:10px 12px; border-left:2px solid var(--cue-status-rejected); color:color-mix(in srgb,var(--cue-status-rejected) 72%,white) !important; background:color-mix(in srgb,var(--cue-status-rejected) 6%,transparent); }
+.core-decision-modal__warning { margin-top:14px !important; padding:10px 12px; border-left:2px solid #ffb84d; color:var(--cue-text) !important; background:color-mix(in srgb,#ffb84d 8%,transparent); }
 .core-decision-modal article > div { display:flex; justify-content:flex-end; gap:8px; margin-top:22px; }
 .core-decision-modal button { min-height:42px; padding:0 14px; cursor:pointer; font:800 9px monospace; text-transform:uppercase; }
 .core-decision-modal__secondary { border:1px solid var(--cue-border); background:transparent; color:var(--cue-text); }
