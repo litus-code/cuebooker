@@ -6,6 +6,15 @@ type ProfilePassport = {
   cities: string[]
   venues: string[]
   milestones: Array<{ id: string; title: string; subtitle: string }>
+  media: Array<{
+    id: string
+    mediaType: 'image' | 'video' | 'reel'
+    permalink: string | null
+    mediaUrl: string | null
+    thumbnailUrl: string | null
+    caption: string | null
+    capturedAt: string | null
+  }>
 }
 
 type ProfileView = {
@@ -50,7 +59,8 @@ const props = withDefaults(defineProps<{
     confirmedBookings: 0,
     cities: [],
     venues: [],
-    milestones: []
+    milestones: [],
+    media: []
   })
 })
 
@@ -190,6 +200,7 @@ const links = computed(() => [
         :cities="passport.cities"
         :venues="passport.venues"
         :milestones="passport.milestones"
+        :media="passport.media"
         :locale="locale"
         :editable="editable"
         :public-enabled="passportPublicEnabled"
