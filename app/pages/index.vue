@@ -196,31 +196,35 @@ const p = computed(() => locale.value === 'es' ? {
   "pricing": {
     "label": "07 / PLANES",
     "title": "Empieza gratis. Crece cuando el trabajo lo pida.",
-    "body": "El primer booking, el calendario, el perfil y el Passport básico forman parte de Free.",
+    "body": "Free incluye hasta 3 bookings confirmados al mes. Las solicitudes y conversaciones siguen entrando siempre.",
     "plans": [
       {
         "name": "FREE",
         "price": "0 €",
         "description": "Para vivir el circuito real desde el primer día.",
-        "items": ["Booking Core básico", "Perfil y formulario público", "Calendario básico", "CUE Passport y CUE ID básicos"],
+        "items": ["Hasta 3 bookings confirmados al mes", "Solicitudes y conversaciones sin límite", "Perfil, formulario y calendario básico", "CUE Passport y CUE ID básicos"],
         "cta": "Crear cuenta"
       },
       {
         "name": "ARTIST PRO",
-        "price": "9,99 € / mes",
+        "badge": "FOUNDING ARTIST · PRIMEROS 100",
+        "originalPrice": "9,99 € / mes",
+        "price": "7,99 € / mes",
+        "annual": "79 € / año",
+        "foundingNote": "Conserva este precio mientras mantengas activa tu suscripción.",
         "description": "Para artistas con actividad recurrente.",
-        "items": ["Mayor capacidad e historial completo", "Automatizaciones y Smart Capture ampliado", "Passport avanzado y media de eventos", "Analytics, exports y personalización"],
-        "cta": "Conocer Artist Pro"
+        "items": ["Bookings sin límite e historial completo", "Smart Capture y automatizaciones", "Passport avanzado · próximamente", "Analytics y exports · próximamente"],
+        "cta": "Quiero ser Founding Artist"
       },
       {
         "name": "AGENCY",
+        "status": "PRÓXIMAMENTE",
         "price": "39 € / mes",
         "description": "Para managers y equipos que coordinan varios artistas.",
         "items": ["Workspace multiartista", "Equipo, roles y permisos", "Inbox y calendario de roster", "Reporting y plantillas de agencia"],
         "cta": "Conocer Agency"
       }
-    ],
-    "founding": "Founding Artist Pro: 7,99 € al mes o 79 € al año para la cohorte inicial."
+    ]
   },
   "closing": {
     "title": "Hay mucho trabajo detrás de lo que haces.",
@@ -407,31 +411,35 @@ const p = computed(() => locale.value === 'es' ? {
   "pricing": {
     "label": "07 / PLANS",
     "title": "Start free. Grow when the work demands it.",
-    "body": "Your first booking, calendar, profile and basic Passport are included in Free.",
+    "body": "Free includes up to 3 confirmed bookings per month. Requests and conversations always keep coming in.",
     "plans": [
       {
         "name": "FREE",
         "price": "€0",
         "description": "Experience the real flow from day one.",
-        "items": ["Basic Booking Core", "Public profile and form", "Basic calendar", "Basic CUE Passport and CUE ID"],
+        "items": ["Up to 3 confirmed bookings per month", "Unlimited requests and conversations", "Profile, form and basic calendar", "Basic CUE Passport and CUE ID"],
         "cta": "Create account"
       },
       {
         "name": "ARTIST PRO",
-        "price": "€9.99 / month",
+        "badge": "FOUNDING ARTIST · FIRST 100",
+        "originalPrice": "€9.99 / month",
+        "price": "€7.99 / month",
+        "annual": "€79 / year",
+        "foundingNote": "Keep this price while your subscription remains active.",
         "description": "For artists managing recurring activity.",
-        "items": ["Higher capacity and full history", "Automation and extended Smart Capture", "Advanced Passport and event media", "Analytics, exports and customisation"],
-        "cta": "Explore Artist Pro"
+        "items": ["Unlimited bookings and full history", "Smart Capture and automation", "Advanced Passport · coming soon", "Analytics and exports · coming soon"],
+        "cta": "Become a Founding Artist"
       },
       {
         "name": "AGENCY",
+        "status": "COMING SOON",
         "price": "€39 / month",
         "description": "For managers and teams coordinating several artists.",
         "items": ["Multi-artist workspace", "Team roles and permissions", "Shared inbox and roster calendar", "Reporting and agency templates"],
         "cta": "Explore Agency"
       }
-    ],
-    "founding": "Founding Artist Pro: €7.99 per month or €79 per year for the initial cohort."
+    ]
   },
   "closing": {
     "title": "There is a lot of work behind what you do.",
@@ -767,13 +775,24 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
       </div>
       <div class="ed-pricing-grid">
         <article v-for="(plan, i) in p.pricing.plans" :key="plan.name" class="ed-price-card" :class="{ 'ed-price-card--featured': i === 1 }">
-          <header><span>{{ plan.name }}</span><strong>{{ plan.price }}</strong></header>
+          <header>
+            <div class="ed-price-card-heading">
+              <span>{{ plan.name }}</span>
+              <em v-if="plan.status">{{ plan.status }}</em>
+            </div>
+            <span v-if="plan.badge" class="ed-founding-badge">{{ plan.badge }}</span>
+            <div class="ed-price-value">
+              <del v-if="plan.originalPrice">{{ plan.originalPrice }}</del>
+              <strong>{{ plan.price }}</strong>
+              <small v-if="plan.annual">{{ locale === 'es' ? 'o ' : 'or ' }}{{ plan.annual }}</small>
+            </div>
+            <p v-if="plan.foundingNote" class="ed-founding-note">{{ plan.foundingNote }}</p>
+          </header>
           <p>{{ plan.description }}</p>
           <ul><li v-for="item in plan.items" :key="item">{{ item }}</li></ul>
           <button class="cp-cta" :class="{ 'cp-cta--ghost': i !== 1 }" type="button" @click="auth('signup', 'pricing-' + plan.name.toLowerCase().replace(' ', '-'))">{{ plan.cta }}<span class="cp-arrow" aria-hidden="true" /></button>
         </article>
       </div>
-      <p class="ed-pricing-founding">{{ p.pricing.founding }}</p>
     </section>
 
     <section class="ed-closing"><div class="cp-wrap"><p>{{ p.closing.title }}</p><h2>{{ p.closing.accent }}</h2><button class="cp-cta" @click="auth('signup','closing')">{{ p.closing.cta }}<span class="cp-arrow" aria-hidden="true" /></button></div></section>
@@ -1575,15 +1594,59 @@ section:focus { outline:none; }
   padding-bottom: 22px;
   border-bottom: 1px solid var(--cp-line);
 }
-.ed-price-card header span {
+.ed-price-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ed-price-card-heading > span {
   color: var(--cp-lime);
   font: 700 11px ui-monospace, monospace;
   letter-spacing: .12em;
 }
-.ed-price-card header strong {
+.ed-price-card-heading > em {
+  padding: 6px 8px;
+  border: 1px solid var(--cp-line);
+  border-radius: 999px;
+  color: var(--cp-muted);
+  font: normal 9px ui-monospace, monospace;
+  letter-spacing: .1em;
+}
+.ed-founding-badge {
+  width: fit-content;
+  padding: 8px 10px;
+  border: 1px solid var(--cp-lime);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cp-lime) 11%, transparent);
+  color: var(--cp-lime);
+  font: 700 10px ui-monospace, monospace;
+  letter-spacing: .1em;
+}
+.ed-price-value {
+  display: grid;
+  gap: 4px;
+}
+.ed-price-value del {
+  color: var(--cp-muted);
+  font-size: 13px;
+}
+.ed-price-value strong {
   color: var(--cp-paper);
-  font-size: clamp(25px, 2.3vw, 34px);
-  letter-spacing: -.035em;
+  font-size: clamp(29px, 2.7vw, 40px);
+  letter-spacing: -.04em;
+}
+.ed-price-value small {
+  color: var(--cp-lime);
+  font: 700 12px ui-monospace, monospace;
+}
+.ed-founding-note {
+  margin: 4px 0 0;
+  padding-left: 12px;
+  border-left: 2px solid var(--cp-red);
+  color: var(--cp-paper);
+  font-size: 12px;
+  line-height: 1.5;
 }
 .ed-price-card > p {
   min-height: 86px;
@@ -1616,13 +1679,6 @@ section:focus { outline:none; }
 }
 .ed-price-card .cp-cta {
   width: 100%;
-}
-.ed-pricing-founding {
-  margin: 28px 0 0;
-  padding: 20px 24px;
-  border-left: 2px solid var(--cp-red);
-  background: color-mix(in srgb, var(--cp-panel) 80%, transparent);
-  font-size: 13px !important;
 }
 
 @media (max-width: 1050px) and (min-width: 851px) {
