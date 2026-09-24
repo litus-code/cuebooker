@@ -45,6 +45,10 @@ export type WorkspaceArtist = {
   created_at: string
 }
 
+export type WorkspaceActivityHistoryRow = Activity & {
+  bookings: Pick<CoreBooking, 'id' | 'artist_id' | 'event_name' | 'venue_name' | 'city'>
+}
+
 export type EnsureBookingWorkspaceInput =
   | { organizationId: string; artistId?: never }
   | { organizationId?: never; artistId: string }
@@ -442,6 +446,26 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     })
   }
 
+  async function listArtistWorkspaceActivities(
+    workspaceId: string,
+    artistId: string,
+    limit = 300,
+    occurredSince?: string
+  ) {
+    if (!workspaceId || !artistId) return [] as WorkspaceActivityHistoryRow[]
+    return $fetch<WorkspaceActivityHistoryRow[]>(`${baseUrl}/rest/v1/activities`, {
+      headers: authHeaders(),
+      query: {
+        workspace_id: `eq.${workspaceId}`,
+        'bookings.artist_id': `eq.${artistId}`,
+        ...(occurredSince ? { occurred_at: `gte.${occurredSince}` } : {}),
+        select: 'id,workspace_id,booking_id,type,direction,contact_id,actor_user_id,body,metadata,visibility,occurred_at,created_by,created_at,bookings!inner(id,artist_id,event_name,venue_name,city)',
+        order: 'occurred_at.desc',
+        limit: String(Math.min(Math.max(limit, 1), 500))
+      }
+    })
+  }
+
   async function createActivity(input: CreateActivityInput) {
     const userId = currentUserId()
     const rows = await $fetch<Activity[]>(`${baseUrl}/rest/v1/activities`, {
@@ -586,6 +610,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     listBookingEmailMessages,
     listWorkspaceBookingEmailMessages,
     listWorkspaceActivities,
+    listArtistWorkspaceActivities,
     createActivity,
     listNextMoves,
     setNextMove,
