@@ -113,6 +113,16 @@ const transform = computed(() => `translate(${offsetX.value} ${offsetY.value}) s
 
 const selectedNode = computed(() => nodes.value.find(node => node.city.id === props.cityId) || null)
 
+const selectedNodePosition = computed(() => {
+  if (!selectedNode.value) return { left: '50%', top: '50%' }
+  const x = offsetX.value + selectedNode.value.x * zoom.value
+  const y = offsetY.value + selectedNode.value.y * zoom.value
+  return {
+    left: `${Math.min(94, Math.max(6, (x / 1000) * 100))}%`,
+    top: `${Math.min(86, Math.max(14, (y / 520) * 100))}%`
+  }
+})
+
 const selectedMedia = computed(() => {
   if (!selectedNode.value) return []
   const seen = new Set<string>()
@@ -260,10 +270,8 @@ watch(() => props.countryId, () => resetView())
       <aside
         v-if="selectedNode"
         class="passport-constellation__tooltip"
-        :style="{
-          left: `${(selectedNode.x / 1000) * 100}%`,
-          top: `${(selectedNode.y / 520) * 100}%`
-        }"
+        :style="selectedNodePosition"
+        @pointerdown.stop
       >
         <span>{{ selectedNode.city.countryCode }} / CITY</span>
         <strong>{{ selectedNode.city.name }}</strong>
@@ -444,7 +452,7 @@ watch(() => props.countryId, () => resetView())
   font:800 12px/1 monospace;
   letter-spacing:.02em;
   text-transform:uppercase;
-  pointer-events:none;
+  pointer-events:auto;
 }
 
 .passport-constellation__node .passport-constellation__count {
@@ -479,13 +487,14 @@ watch(() => props.countryId, () => resetView())
   }
 
   .passport-constellation__controls {
-    justify-content:flex-end;
+    justify-content:flex-start;
+    overflow:auto;
   }
 
   .passport-constellation__viewport,
   .passport-constellation svg {
-    height:320px;
-    min-height:320px;
+    height:300px;
+    min-height:300px;
   }
 
   .passport-constellation__hint {
@@ -548,9 +557,20 @@ watch(() => props.countryId, () => resetView())
 
 @media (max-width:620px) {
   .passport-constellation__tooltip {
-    min-width:140px;
-    max-width:190px;
-    transform:translate(-50%,calc(-100% - 14px));
+    left:12px !important;
+    right:12px;
+    top:auto !important;
+    bottom:12px;
+    width:auto;
+    min-width:0;
+    max-width:none;
+    max-height:154px;
+    overflow:auto;
+    transform:none;
+  }
+
+  .passport-constellation__tooltip::after {
+    display:none;
   }
 }
 
@@ -620,5 +640,16 @@ watch(() => props.countryId, () => resetView())
   color:#cfcfcf;
   font:800 7px/1 monospace;
   white-space:nowrap;
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .passport-constellation__halo,
+  .passport-constellation__dot {
+    transition:none;
+  }
+
+  .passport-constellation__node.active .passport-constellation__dot {
+    filter:none;
+  }
 }
 </style>
