@@ -231,6 +231,13 @@ const p = computed(() => locale.value === 'es' ? {
     "accent": "Dale su espacio.",
     "cta": "Crear mi espacio",
     "footer": "Hecho para las personas que están detrás del sonido."
+  },
+  "legal": {
+    "contact": "Contacto",
+    "privacy": "Privacidad",
+    "cookies": "Cookies",
+    "notice": "Aviso legal",
+    "settings": "Configurar cookies"
   }
 } : {
   "nav": {
@@ -446,6 +453,13 @@ const p = computed(() => locale.value === 'es' ? {
     "accent": "Give it space.",
     "cta": "Create my workspace",
     "footer": "Made for the people behind the sound."
+  },
+  "legal": {
+    "contact": "Contact",
+    "privacy": "Privacy",
+    "cookies": "Cookies",
+    "notice": "Legal notice",
+    "settings": "Cookie settings"
   }
 })
 
@@ -797,11 +811,73 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
 
     <section class="ed-closing"><div class="cp-wrap"><p>{{ p.closing.title }}</p><h2>{{ p.closing.accent }}</h2><button class="cp-cta" @click="auth('signup','closing')">{{ p.closing.cta }}<span class="cp-arrow" aria-hidden="true" /></button></div></section>
     <Transition name="cp-float"><button v-if="backToTopVisible && !menuOpen" class="cp-back-top" type="button" :aria-label="locale === 'es' ? 'Volver arriba' : 'Back to top'" @click="scrollTo('#top')"><span class="cp-up-arrow" aria-hidden="true" /></button></Transition>
-    <footer class="cp-footer"><div class="cp-wrap"><span class="cp-brand"><CueBrand /></span><span>{{ p.closing.footer }}</span><span>© 2026 Cuebooker</span></div></footer>
+    <footer class="cp-footer">
+      <div class="cp-wrap cp-footer-layout">
+        <div class="cp-footer-brand"><span class="cp-brand"><CueBrand /></span><span>{{ p.closing.footer }}</span></div>
+        <nav class="cp-footer-links" :aria-label="locale === 'es' ? 'Información legal y contacto' : 'Legal information and contact'">
+          <a href="mailto:contacto@cuebooker.com">{{ p.legal.contact }}: contacto@cuebooker.com</a>
+          <NuxtLink to="/privacidad">{{ p.legal.privacy }}</NuxtLink>
+          <NuxtLink to="/cookies">{{ p.legal.cookies }}</NuxtLink>
+          <NuxtLink to="/aviso-legal">{{ p.legal.notice }}</NuxtLink>
+          <button type="button" @click="analytics.openPreferences">{{ p.legal.settings }}</button>
+        </nav>
+        <span>© 2026 Cuebooker</span>
+      </div>
+    </footer>
   </main>
 </template>
 
 <style scoped>
+
+.cp-footer-layout {
+  display:grid;
+  grid-template-columns:minmax(230px,1fr) auto auto;
+  gap:28px;
+  align-items:center;
+}
+.cp-footer-brand {
+  display:flex;
+  align-items:center;
+  gap:18px;
+}
+.cp-footer-brand .cp-brand {
+  flex:0 0 auto;
+}
+.cp-footer-links {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:10px 18px;
+}
+.cp-footer-links a,
+.cp-footer-links button {
+  padding:0;
+  border:0;
+  background:transparent;
+  color:var(--cp-muted);
+  font:inherit;
+  font-size:11px;
+  text-decoration:none;
+  cursor:pointer;
+}
+.cp-footer-links a:hover,
+.cp-footer-links button:hover {
+  color:var(--cp-lime);
+}
+@media(max-width:900px) {
+  .cp-footer-layout {
+    grid-template-columns:1fr;
+    justify-items:start;
+  }
+  .cp-footer-brand {
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .cp-footer-links {
+    justify-content:flex-start;
+  }
+}
+
 /* Landing-only composition. Keep workspace styles untouched. */
 .commercial-home .cp-hero {
   min-height: min(820px, 100svh);
