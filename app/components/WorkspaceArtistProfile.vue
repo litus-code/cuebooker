@@ -204,7 +204,8 @@ const links = computed(() => [
         :locale="locale"
         :editable="editable"
         :public-enabled="passportPublicEnabled"
-        @manage="emit('passport')"
+        @open="emit('passport')"
+        @settings="emit('edit','passport')"
       />
 
       <section class="artist-workspace-profile__section artist-workspace-profile__section--links">
