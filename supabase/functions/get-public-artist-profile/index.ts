@@ -133,6 +133,8 @@ type BookingPassportRow = {
   country_code: string | null;
   venue_name: string | null;
   event_date: string | null;
+  updated_at: string;
+  created_at: string;
 };
 
 function normalizeLabel(value: string | null | undefined) {
@@ -148,6 +150,11 @@ function safePublicUrl(value: string | null | undefined) {
   } catch {
     return null;
   }
+}
+
+function bookingDateValue(booking: BookingPassportRow) {
+  const value = booking.event_date || booking.updated_at || booking.created_at;
+  return value.slice(0, 10);
 }
 
 function uniqueLabels(values: Array<string | null | undefined>) {
@@ -166,13 +173,14 @@ function derivePublicPassport(
   selectedMilestoneIds: string[] | null,
   baseCountryCode: string | null
 ) {
-  const cities = uniqueLabels(bookings.map((booking) => booking.city));
-  const venues = uniqueLabels(bookings.map((booking) => booking.venue_name));
+  const orderedBookings = [...bookings].sort((a, b) => bookingDateValue(a).localeCompare(bookingDateValue(b)));
+  const cities = uniqueLabels(orderedBookings.map((booking) => booking.city));
+  const venues = uniqueLabels(orderedBookings.map((booking) => booking.venue_name));
   const baseCountry = normalizeLabel(baseCountryCode).toUpperCase();
-  const firstCity = bookings.find((booking) => normalizeLabel(booking.city));
-  const firstVenue = bookings.find((booking) => normalizeLabel(booking.venue_name));
+  const firstCity = orderedBookings.find((booking) => normalizeLabel(booking.city));
+  const firstVenue = orderedBookings.find((booking) => normalizeLabel(booking.venue_name));
   const firstInternational = baseCountry
-    ? bookings.find((booking) => {
+    ? orderedBookings.find((booking) => {
         const country = normalizeLabel(booking.country_code).toUpperCase();
         return Boolean(country && country !== baseCountry);
       })
@@ -355,7 +363,7 @@ Deno.serve(async request => {
     if (artist.passport_public_enabled && workspaceIds.length) {
       const workspaceFilter = workspaceIds.map((id) => `"${id}"`).join(",");
       const bookings = await serviceJson<BookingPassportRow[]>(
-        `${supabaseUrl}/rest/v1/bookings?artist_id=eq.${encodeURIComponent(artist.id)}&workspace_id=in.(${encodeURIComponent(workspaceFilter)})&status=eq.confirmed&select=id,city,country_code,venue_name,event_date&order=event_date.asc.nullslast`,
+        `${supabaseUrl}/rest/v1/bookings?artist_id=eq.${encodeURIComponent(artist.id)}&workspace_id=in.(${encodeURIComponent(workspaceFilter)})&status=eq.confirmed&select=id,city,country_code,venue_name,event_date,updated_at,created_at`,
         { method: "GET" },
         serviceKey
       );
