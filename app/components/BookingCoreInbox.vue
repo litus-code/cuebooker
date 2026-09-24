@@ -198,11 +198,21 @@ function emailDeliveryLabel(activity: Activity) {
   const message = emailMessages.value.find(item => item.id === emailId)
   if (!message) return ''
   const status = message.delivery_status
-  if (!status) return props.locale === 'es' ? 'Enviado' : 'Sent'
+  if (!status) return props.locale === 'es' ? 'Enviado al proveedor' : 'Sent to provider'
   const labels: Record<string, string> = props.locale === 'es'
     ? { accepted:'Aceptado', delivered:'Entregado', deferred:'En espera', soft_bounce:'Rebote temporal', hard_bounce:'Rebotado', blocked:'Bloqueado', spam:'Spam', invalid:'Email inválido', error:'Error de entrega' }
     : { accepted:'Accepted', delivered:'Delivered', deferred:'Deferred', soft_bounce:'Soft bounce', hard_bounce:'Bounced', blocked:'Blocked', spam:'Spam', invalid:'Invalid email', error:'Delivery error' }
   return labels[status] || status
+}
+
+function emailDeliveryTone(activity: Activity) {
+  if (activity.type !== 'email' || activity.direction !== 'outbound') return ''
+  const emailId = typeof activity.metadata?.email_message_id === 'string' ? activity.metadata.email_message_id : ''
+  const status = emailMessages.value.find(item => item.id === emailId)?.delivery_status || ''
+  if (status === 'delivered') return 'success'
+  if (['soft_bounce', 'hard_bounce', 'blocked', 'spam', 'invalid', 'error'].includes(status)) return 'error'
+  if (status === 'deferred') return 'warning'
+  return 'pending'
 }
 
 watch(() => selectedBooking.value?.id, () => loadActivity(), { immediate: true })
@@ -518,7 +528,10 @@ async function selectBooking(bookingId: string) {
                       ? ((locale === 'es' ? 'Tú' : 'You') + ' → ' + activityContactName(activity))
                       : (locale === 'es' ? 'Nota interna' : 'Internal note') }}
                 </span>
-                <em v-if="emailDeliveryLabel(activity)" class="thread-item__delivery">{{ emailDeliveryLabel(activity) }}</em>
+                <em
+                  v-if="emailDeliveryLabel(activity)"
+                  :class="['thread-item__delivery', `thread-item__delivery--${emailDeliveryTone(activity)}`]"
+                >{{ emailDeliveryLabel(activity) }}</em>
                 <time>{{ formatTime(activity.occurred_at) }}</time>
               </div>
               <p>{{ activity.body }}</p>
@@ -714,6 +727,10 @@ async function selectBooking(bookingId: string) {
 .thread-item__meta span { color:var(--cue-muted); font:700 8px monospace; text-transform:uppercase; }
 .thread-item__meta time { margin-left:auto; color:var(--cue-muted); font:8px monospace; }
 .thread-item__delivery { margin-left:auto; padding:3px 6px; border:1px solid var(--cue-border); color:var(--cue-muted); font:800 7px monospace; font-style:normal; text-transform:uppercase; }
+.thread-item__delivery--success { border-color:color-mix(in srgb,var(--cue-status-confirmed) 50%,var(--cue-border)); color:var(--cue-status-confirmed); }
+.thread-item__delivery--warning { border-color:color-mix(in srgb,var(--cue-status-waiting) 52%,var(--cue-border)); color:var(--cue-status-waiting); }
+.thread-item__delivery--error { border-color:color-mix(in srgb,var(--cue-status-rejected) 58%,var(--cue-border)); color:var(--cue-status-rejected); }
+.thread-item__delivery--pending { color:var(--cue-muted); }
 .thread-item__delivery + time { margin-left:0; }
 .thread-item > p { margin:7px 0 0; font-size:12px; line-height:1.45; }
 .core-inbox__empty { margin:0; padding:18px; color:var(--cue-muted); font-size:12px; }
