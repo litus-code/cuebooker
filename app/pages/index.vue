@@ -5,10 +5,7 @@ import en from '../../content/en/home.json'
 const { locale, theme, setLocale, setTheme } = useCuePreferences()
 const copy = computed(() => locale.value === 'es' ? es : en)
 const menuOpen = ref(false)
-const searchState = ref<'idle' | 'searching' | 'found'>('idle')
-const discoveryBudget = ref(1500)
 const activeRole = ref(0)
-const discoveryVisible = ref(false)
 const backToTopVisible = ref(false)
 const router = useRouter()
 const analytics = useAnalytics()
@@ -28,23 +25,6 @@ function trackAuth(kind: 'signup' | 'login', placement: string) {
 }
 
 const activeRoleData = computed(() => copy.value.access.roles[activeRole.value] ?? copy.value.access.roles[0]!)
-const discoveryArtists = computed(() => copy.value.search.artists
-  .map((artist, index) => ({ ...artist, fee: [900, 1400, 2200][index] ?? 1500 }))
-  .filter(artist => artist.fee <= discoveryBudget.value))
-const formattedBudget = computed(() => new Intl.NumberFormat(locale.value === 'es' ? 'es-ES' : 'en-GB', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(discoveryBudget.value))
-const discoveryCount = computed(() => locale.value === 'es'
-  ? `${discoveryArtists.value.length} ${discoveryArtists.value.length === 1 ? 'artista disponible' : 'artistas disponibles'}`
-  : `${discoveryArtists.value.length} available ${discoveryArtists.value.length === 1 ? 'artist' : 'artists'}`)
-const noDiscoveryResults = computed(() => locale.value === 'es'
-  ? 'No hay artistas ficticios dentro del presupuesto seleccionado.'
-  : 'No fictional artists match the selected budget.')
-
-const networkLabel = computed(() => {
-  if (searchState.value === 'searching') return copy.value.hero.networkSearching
-  if (searchState.value === 'found') return copy.value.hero.networkFound
-  return copy.value.hero.networkIdle
-})
-
 function scrollTo(id: string) {
   menuOpen.value = false
   document.querySelector(id)?.scrollIntoView({ behavior: 'smooth' })
@@ -86,16 +66,6 @@ function closeMenuOnEscape(event: KeyboardEvent) {
 watch(menuOpen, open => {
   if (import.meta.client) document.documentElement.classList.toggle('mobile-menu-open', open)
 })
-
-function discoverArtists() {
-  analytics.track('discovery_simulate', { budget_eur: discoveryBudget.value })
-  searchState.value = 'searching'
-  discoveryVisible.value = false
-  window.setTimeout(() => {
-    searchState.value = 'found'
-    discoveryVisible.value = true
-  }, 550)
-}
 
 useHead(() => ({
   htmlAttrs: { lang: locale.value },
@@ -331,38 +301,6 @@ useHead(() => ({
       <div class="pricing-foot">
         <strong>{{ copy.pricing.founding }}</strong>
         <p>{{ copy.pricing.billingNote }}</p>
-      </div>
-    </section>
-
-    <section class="discovery section-pad" data-analytics-section="discovery">
-      <div class="section-mark mono">{{ copy.search.index }}</div>
-      <div class="section-heading discovery__heading">
-        <p class="eyebrow">{{ copy.search.eyebrow }}</p>
-        <h2>{{ copy.search.title }}</h2>
-        <p>{{ copy.search.body }}</p>
-      </div>
-      <form class="search-panel" @submit.prevent="discoverArtists">
-        <label>{{ copy.search.where }}<input type="text" value="Barcelona"></label>
-        <label>{{ copy.search.when }}<input type="text" value="24 OCT 2026"></label>
-        <label>{{ copy.search.sound }}<input type="text" value="Techno"></label>
-        <label class="range-field">{{ copy.search.budget }}<output>{{ formattedBudget }}</output><input v-model.number="discoveryBudget" type="range" min="300" max="3000" step="100"></label>
-        <button class="button button--primary" type="submit">{{ searchState === 'searching' ? copy.search.searching : copy.search.button }} <span class="arrow arrow--ne" aria-hidden="true" /></button>
-      </form>
-      <div class="results" :class="{ 'results--visible': discoveryVisible }" aria-live="polite">
-        <header><strong>{{ discoveryCount }}</strong><span>{{ copy.search.visibility }}</span></header>
-        <p class="demo-note">{{ copy.search.resultHint }}</p>
-        <div class="artist-grid">
-          <article v-for="(artist, index) in discoveryArtists" :key="artist.name" class="artist-result" :class="{ active: index === 0 }">
-            <div class="artist-result__visual"><span>0{{ index + 1 }} / PROFILE</span><i /></div>
-            <p class="mono">{{ artist.city }}</p>
-            <h3>{{ artist.name }}</h3>
-            <p>{{ artist.sound }}</p>
-            <span class="availability"><i />{{ copy.search.available }}</span>
-            <details><summary>{{ copy.search.why }}</summary><ul><li v-for="reason in copy.search.reasons" :key="reason">{{ reason }}</li></ul></details>
-            <NuxtLink class="artist-link" to="/artist">{{ copy.search.request }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
-          </article>
-          <p v-if="!discoveryArtists.length" class="discovery-empty">{{ noDiscoveryResults }}</p>
-        </div>
       </div>
     </section>
 
