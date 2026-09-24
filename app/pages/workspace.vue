@@ -2833,7 +2833,7 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .brand { color: inherit; text-decoration: none; font-weight: 900; letter-spacing: .08em; }
 .brand span { color: var(--cue-toggle); }
 .eyebrow { color: var(--cue-accent); }
-.workspace-header nav { display: flex; flex-wrap: nowrap; gap: 3px; min-width: 0; max-width: min(620px, 52vw); padding: 3px; overflow-x: auto; border: 1px solid var(--cue-border); border-radius: 999px; background: var(--cue-surface); scrollbar-width: none; }
+.workspace-header nav { display: flex; flex-wrap: nowrap; gap: 3px; min-width: 0; max-width: min(620px, 52vw); box-sizing:border-box; padding: 3px; overflow-x: auto; overscroll-behavior-x:contain; scroll-padding-inline:8px; border: 1px solid var(--cue-border); border-radius: 999px; background: var(--cue-surface); scrollbar-width: none; }
 .workspace-header nav::-webkit-scrollbar { display: none; }
 .workspace-header nav button { flex: 0 0 auto; min-height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--cue-muted); cursor: pointer; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .workspace-header nav button.active { background: var(--cue-toggle); color: #070707; box-shadow: 0 0 18px color-mix(in srgb, var(--cue-toggle) 28%, transparent); }
@@ -3183,7 +3183,10 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .profile-builder-editor--panel>footer{z-index:3}
 
   .workspace { padding: 0 14px 24px; }
-  .workspace-header { min-height: 62px; margin-inline: -14px; }
+  .workspace-header { min-height: 62px; margin-inline: -14px; padding-inline:14px; }
+  .workspace-header nav { width:100%; }
+  .workspace-header nav button { min-height:40px; scroll-snap-align:center; }
+  .workspace-header nav { scroll-snap-type:x proximity; }
   .account-actions { gap: 8px; }
   .view-heading { display: block; padding: 20px 0 20px; }
   h1 { font-size: clamp(2.7rem, 16vw, 4.8rem); }
