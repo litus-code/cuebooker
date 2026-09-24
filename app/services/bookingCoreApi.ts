@@ -285,6 +285,29 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     return rows[0] || null
   }
 
+  async function listRelationshipBookings(
+    workspaceId: string,
+    artistId: string,
+    counterpartyId?: string | null,
+    contactId?: string | null,
+    limit = 200
+  ) {
+    if (!workspaceId || !artistId || (!counterpartyId && !contactId)) return [] as CoreBooking[]
+    return $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/bookings`, {
+      headers: authHeaders(),
+      query: {
+        workspace_id: `eq.${workspaceId}`,
+        artist_id: `eq.${artistId}`,
+        ...(counterpartyId
+          ? { counterparty_id: `eq.${counterpartyId}` }
+          : { primary_contact_id: `eq.${contactId}` }),
+        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
+        order: 'event_date.desc.nullslast,updated_at.desc',
+        limit: String(Math.min(Math.max(limit, 1), 200))
+      }
+    })
+  }
+
   async function listArtistPassportBookings(workspaceId: string, artistId: string, limit = 500) {
     if (!workspaceId || !artistId) return [] as CoreBooking[]
     return $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/bookings`, {
@@ -675,6 +698,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     listArtistBookingsForDate,
     getBooking,
     listArtistPassportBookings,
+    listRelationshipBookings,
     createBooking,
     createManualBooking,
     updateBookingDetails,
