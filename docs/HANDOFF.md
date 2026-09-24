@@ -10189,3 +10189,23 @@ The Activity view no longer uses the Booking Inbox's loaded booking IDs as its q
 - Booking Inbox remains capped independently and no longer truncates History.
 
 Validation: HEAD `d700c4ba9fee451aadb998cbeae0a91a5bbacd37`, GitHub Actions run `36037867112`, preview build and deployment succeeded.
+
+
+## 24 Sep 2026 · Passport Event Media management
+
+Event Media is now manageable from the dedicated Passport workspace view.
+
+- Passport trajectory no longer derives from the Inbox's 100 loaded bookings.
+- Dedicated confirmed-booking query loads up to 500 artist bookings for Passport V1.
+- Media loading is scoped to those Passport bookings.
+- Booking decisions immediately refresh Passport bookings and Event Media.
+- Artist Pro can add image/video/reel links to confirmed bookings.
+- URL fields reject non-HTTP/HTTPS schemes before persistence.
+- Media can be linked, hidden and re-linked.
+- Adding media never selects it for the public Profile automatically.
+- Public selection remains a separate Profile/Passport setting.
+- Free sees existing media but cannot mutate Event Media state.
+
+Binary upload is not opened in this iteration. Staging currently has a private `artist-media` bucket limited to JPG/PNG/WebP and 8 MB, so it is not being repurposed as an Event Media video pipeline.
+
+Validation: HEAD `5bb4e86c366c530c04e652c8246c4580ecf366ae`, GitHub Actions run `36038535320`, preview build and deployment succeeded.
