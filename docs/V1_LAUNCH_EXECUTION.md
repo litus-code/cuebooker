@@ -100,7 +100,7 @@ The final Profile must remain usable without CUE ID.
 
 ### 3. Apply commercial presentation
 
-Status: PREPARED, UI PENDING
+Status: IN PROGRESS
 
 Source of truth:
 
@@ -119,6 +119,14 @@ Deliver reusable presentation primitives for:
 Do not scatter direct plan-name checks through feature components.
 
 Premium capabilities should generally remain visible so a Free user can understand their value.
+
+Implemented so far:
+
+- reusable entitlement composable;
+- reusable PRO / AGENCY badge;
+- staging/demo plan override, disabled in production;
+- Passport Event Media capability gating;
+- Smart Capture extended-capacity presentation.
 
 ### 4. Close Artist Pro automation value
 
