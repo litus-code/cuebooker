@@ -20,6 +20,7 @@ const {
   currentPlan,
   demoOverrideEnabled,
   can: canEntitlement,
+  limit: entitlementLimit,
   setBasePlan,
   setDemoPlan
 } = useCueEntitlements()
@@ -2208,6 +2209,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             :locale="preferences.locale.value"
             :editable="canEditSelectedArtist"
             :enabled="canEntitlement('passport.media')"
+            :limit="entitlementLimit('passportMediaItems')"
             @changed="loadPassportMedia"
           />
       </section>
