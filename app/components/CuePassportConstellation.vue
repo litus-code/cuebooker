@@ -126,6 +126,24 @@ const selectedMedia = computed(() => {
     .slice(0, 4)
 })
 
+const selectedDates = computed(() =>
+  [...(selectedNode.value?.city.bookings || [])]
+    .filter(booking => Boolean(booking.eventDate))
+    .sort((a, b) => String(b.eventDate).localeCompare(String(a.eventDate)))
+    .slice(0, 4)
+)
+
+function formatPassportDate(value: string | null) {
+  if (!value) return ''
+  const date = new Date(`${value}T12:00:00`)
+  if (Number.isNaN(date.getTime())) return value
+  return new Intl.DateTimeFormat(props.locale === 'es' ? 'es-ES' : 'en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  }).format(date)
+}
+
 function zoomBy(delta: number) {
   zoom.value = Math.min(1.8, Math.max(.7, Number((zoom.value + delta).toFixed(2))))
 }
@@ -249,9 +267,17 @@ watch(() => props.countryId, () => resetView())
       >
         <span>{{ selectedNode.city.countryCode }} / CITY</span>
         <strong>{{ selectedNode.city.name }}</strong>
-        <div>
+        <div class="passport-constellation__venues">
           <small v-for="venue in selectedNode.city.venues.slice(0, 5)" :key="venue.id">
             {{ venue.name }} · {{ venue.bookings.length }}
+          </small>
+        </div>
+
+        <div v-if="selectedDates.length" class="passport-constellation__dates">
+          <span>{{ locale === 'es' ? 'FECHAS' : 'DATES' }}</span>
+          <small v-for="booking in selectedDates" :key="booking.id">
+            <b>{{ formatPassportDate(booking.eventDate) }}</b>
+            {{ booking.eventName || (locale === 'es' ? 'Evento confirmado' : 'Confirmed event') }}
           </small>
         </div>
 
@@ -561,5 +587,38 @@ watch(() => props.countryId, () => resetView())
 .passport-constellation__media span {
   font:800 6px/1 monospace;
   letter-spacing:.06em;
+}
+
+
+.passport-constellation__venues,
+.passport-constellation__dates {
+  display:grid;
+  gap:4px;
+}
+
+.passport-constellation__dates {
+  margin-top:3px;
+  padding-top:7px;
+  border-top:1px solid #292929;
+}
+
+.passport-constellation__dates > span {
+  color:#606060;
+  font:800 6px/1 monospace;
+  letter-spacing:.08em;
+}
+
+.passport-constellation__dates small {
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:7px;
+  align-items:baseline;
+  color:#8a8a8a;
+}
+
+.passport-constellation__dates b {
+  color:#cfcfcf;
+  font:800 7px/1 monospace;
+  white-space:nowrap;
 }
 </style>
