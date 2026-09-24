@@ -91,6 +91,9 @@ Deliver:
 - booking CTA;
 - public visibility controls;
 - coherent navigation to dedicated CUE ID;
+- summarized public CUE Passport with independent visibility control;
+- centered booking modal on desktop and fullscreen booking sheet on mobile;
+- side-panel editing on desktop and fullscreen editing on mobile;
 - mobile pass.
 
 The final Profile must remain usable without CUE ID.
