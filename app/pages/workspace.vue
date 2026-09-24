@@ -128,7 +128,12 @@ const profileArtistImageUrl = ref('')
 const profileArtistCutoutUrl = ref('')
 const publicProfilePublished = ref(false)
 const publicPassportEnabled = ref(true)
+const publicPassportMilestoneIds = ref<string[] | null>(null)
+const publicPassportMediaIds = ref<string[]>([])
 const passportVisibilityDraft = ref(true)
+const passportMilestoneAutoDraft = ref(true)
+const passportMilestoneIdsDraft = ref<string[]>([])
+const passportMediaIdsDraft = ref<string[]>([])
 const publicProfileAcceptingRequests = ref(false)
 const publicProfileWorkspaceId = ref('')
 const publicPublishingSaving = ref(false)
@@ -143,6 +148,26 @@ const cuePassport = computed(() => deriveCuePassportSnapshot({
 }))
 const cuePassportUnlocked = computed(() => cuePassportUnlockedMilestones(cuePassport.value))
 const cuePassportNext = computed(() => cuePassportNextMilestones(cuePassport.value).slice(0, 3))
+const linkedPassportMedia = computed(() => passportMediaItems.value.filter(item => item.status === 'linked'))
+const publicPassportMilestones = computed(() => {
+  const source = cuePassportUnlocked.value
+  const ids = publicPassportMilestoneIds.value
+  const selected = ids === null ? source.slice(0, 3) : source.filter(item => ids.includes(item.id)).slice(0, 3)
+  return selected.map(item => ({ id: item.id, title: item.title, subtitle: item.subtitle }))
+})
+const publicPassportMedia = computed(() => linkedPassportMedia.value
+  .filter(item => publicPassportMediaIds.value.includes(item.id))
+  .slice(0, 6)
+  .map(item => ({
+    id: item.id,
+    bookingId: item.booking_id,
+    mediaType: item.media_type,
+    permalink: item.permalink,
+    mediaUrl: item.media_url,
+    thumbnailUrl: item.thumbnail_url,
+    caption: item.caption,
+    capturedAt: item.captured_at
+  })))
 const cuePassportCities = computed(() => cuePassport.value.cities.slice(0, 6))
 const cuePassportFocusedId = ref<string | null>(null)
 const cuePassportTab = ref<'constellation' | 'stickers' | 'timeline'>('constellation')
@@ -371,6 +396,9 @@ const publicQrSvg = computed(() => publicBookingUrl.value ? createBookingQrSvg(`
 async function closeProfileEditor() {
   profileEditSection.value = null
   passportVisibilityDraft.value = publicPassportEnabled.value
+  passportMilestoneAutoDraft.value = publicPassportMilestoneIds.value === null
+  passportMilestoneIdsDraft.value = publicPassportMilestoneIds.value ? [...publicPassportMilestoneIds.value] : []
+  passportMediaIdsDraft.value = [...publicPassportMediaIds.value]
   const query: Record<string, any> = { ...route.query, view: 'profile' }
   delete query.section
   void router.replace({ query }).catch(() => {})
@@ -382,7 +410,12 @@ async function toggleProfileEditSection(section: Exclude<ProfileEditSection, nul
     return
   }
   profileEditSection.value = section
-  if (section === 'passport') passportVisibilityDraft.value = publicPassportEnabled.value
+  if (section === 'passport') {
+    passportVisibilityDraft.value = publicPassportEnabled.value
+    passportMilestoneAutoDraft.value = publicPassportMilestoneIds.value === null
+    passportMilestoneIdsDraft.value = publicPassportMilestoneIds.value ? [...publicPassportMilestoneIds.value] : []
+    passportMediaIdsDraft.value = [...publicPassportMediaIds.value]
+  }
   const query: Record<string, any> = { ...route.query, view: 'profile', section }
   void router.replace({ query }).catch(() => {})
 }
@@ -443,11 +476,8 @@ const publicProfilePreview = computed<PublicArtistProfile>(() => {
       confirmedBookings: cuePassport.value.confirmedBookings,
       cities: cuePassport.value.cities,
       venues: cuePassport.value.venues,
-      milestones: cuePassportUnlocked.value.slice(0, 3).map(item => ({
-        id: item.id,
-        title: item.title,
-        subtitle: item.subtitle
-      }))
+      milestones: publicPassportMilestones.value,
+      media: publicPassportMedia.value
     } : null,
     acceptingRequests: publicProfileAcceptingRequests.value
   }
@@ -925,7 +955,12 @@ async function loadProfileVisualMedia(artistImagePath: string | null, artistCuto
 async function loadPublicPublishingState() {
   publicProfilePublished.value = false
   publicPassportEnabled.value = true
+  publicPassportMilestoneIds.value = null
+  publicPassportMediaIds.value = []
   passportVisibilityDraft.value = true
+  passportMilestoneAutoDraft.value = true
+  passportMilestoneIdsDraft.value = []
+  passportMediaIdsDraft.value = []
   publicProfileAcceptingRequests.value = false
   publicProfileWorkspaceId.value = ''
   publicPublishingMessage.value = ''
@@ -934,7 +969,12 @@ async function loadPublicPublishingState() {
     const state = await publicPublishing.load(selectedArtistId.value)
     publicProfilePublished.value = state.publicProfileEnabled
     publicPassportEnabled.value = state.passportPublicEnabled
+    publicPassportMilestoneIds.value = state.passportPublicMilestoneIds
+    publicPassportMediaIds.value = state.passportPublicMediaIds
     passportVisibilityDraft.value = state.passportPublicEnabled
+    passportMilestoneAutoDraft.value = state.passportPublicMilestoneIds === null
+    passportMilestoneIdsDraft.value = state.passportPublicMilestoneIds ? [...state.passportPublicMilestoneIds] : []
+    passportMediaIdsDraft.value = [...state.passportPublicMediaIds]
     publicProfileAcceptingRequests.value = state.acceptingRequests
     publicProfileWorkspaceId.value = state.workspaceId || ''
   } catch (error: any) {
@@ -1152,21 +1192,28 @@ async function updatePublicProfilePublished(enabled: boolean) {
   }
 }
 
-async function updatePublicPassportVisibility(enabled: boolean) {
+async function savePublicPassportSettings() {
   if (!selectedArtistId.value || !canEditSelectedArtist.value) return false
   publicPublishingSaving.value = true
   publicPublishingMessage.value = ''
   try {
-    publicPassportEnabled.value = await publicPublishing.setPassportPublicEnabled(selectedArtistId.value, enabled)
-    passportVisibilityDraft.value = publicPassportEnabled.value
+    const result = await publicPublishing.setPassportPublicSettings(
+      selectedArtistId.value,
+      passportVisibilityDraft.value,
+      passportMilestoneAutoDraft.value ? null : passportMilestoneIdsDraft.value.slice(0, 3),
+      passportMediaIdsDraft.value.slice(0, 6)
+    )
+    publicPassportEnabled.value = result.enabled
+    publicPassportMilestoneIds.value = result.milestoneIds
+    publicPassportMediaIds.value = result.mediaIds
     publicPublishingMessage.value = preferences.locale.value === 'es'
-      ? (enabled ? 'CUE Passport visible en el perfil público.' : 'CUE Passport oculto en el perfil público.')
-      : (enabled ? 'CUE Passport visible on the public profile.' : 'CUE Passport hidden from the public profile.')
+      ? 'CUE Passport público actualizado.'
+      : 'Public CUE Passport updated.'
     return true
   } catch (error: any) {
     publicPublishingMessage.value = error?.message || (preferences.locale.value === 'es'
-      ? 'No se pudo actualizar la visibilidad de CUE Passport.'
-      : 'CUE Passport visibility could not be updated.')
+      ? 'No se pudo actualizar CUE Passport público.'
+      : 'Public CUE Passport could not be updated.')
     await loadPublicPublishingState()
     return false
   } finally {
@@ -1257,7 +1304,7 @@ async function saveArtistProfile() {
 
 async function saveProfileEditor() {
   if (profileEditSection.value === 'passport') {
-    const saved = await updatePublicPassportVisibility(passportVisibilityDraft.value)
+    const saved = await savePublicPassportSettings()
     if (saved) await closeProfileEditor()
     return
   }
@@ -2043,7 +2090,8 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               confirmedBookings: cuePassport.confirmedBookings,
               cities: cuePassport.cities,
               venues: cuePassport.venues,
-              milestones: cuePassportUnlocked.slice(0, 3)
+              milestones: publicPassportMilestones,
+              media: publicPassportMedia
             }"
             :passport-public-enabled="publicPassportEnabled"
             @edit="toggleProfileEditSection($event)"
@@ -2213,6 +2261,55 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                   <strong>{{ passportVisibilityDraft ? 'VISIBLE' : (preferences.locale.value === 'es' ? 'OCULTO' : 'HIDDEN') }}</strong>
                   <small>{{ cuePassport.confirmedBookings }} BOOKINGS · {{ cuePassport.venues.length }} VENUES · {{ cuePassport.cities.length }} CITIES</small>
                 </div>
+
+                <section class="profile-passport-editor__selection">
+                  <div class="profile-passport-editor__selection-head">
+                    <div>
+                      <span>MILESTONES</span>
+                      <strong>{{ preferences.locale.value === 'es' ? 'Hitos públicos' : 'Public milestones' }}</strong>
+                    </div>
+                    <label>
+                      <input v-model="passportMilestoneAutoDraft" type="checkbox">
+                      <span>{{ preferences.locale.value === 'es' ? 'Automático' : 'Automatic' }}</span>
+                    </label>
+                  </div>
+                  <div v-if="!passportMilestoneAutoDraft" class="profile-passport-editor__options">
+                    <label v-for="milestone in cuePassportUnlocked" :key="milestone.id">
+                      <input
+                        v-model="passportMilestoneIdsDraft"
+                        type="checkbox"
+                        :value="milestone.id"
+                        :disabled="!passportMilestoneIdsDraft.includes(milestone.id) && passportMilestoneIdsDraft.length >= 3"
+                      >
+                      <span><strong>{{ milestone.title }}</strong><small>{{ milestone.subtitle }}</small></span>
+                    </label>
+                    <p v-if="!cuePassportUnlocked.length">{{ preferences.locale.value === 'es' ? 'Todavía no hay hitos disponibles.' : 'No milestones available yet.' }}</p>
+                  </div>
+                  <p v-else>{{ preferences.locale.value === 'es' ? 'Cuebooker selecciona hasta tres hitos representativos.' : 'Cuebooker selects up to three representative milestones.' }}</p>
+                </section>
+
+                <section class="profile-passport-editor__selection">
+                  <div class="profile-passport-editor__selection-head">
+                    <div>
+                      <span>EVENT MEDIA <small>PRO</small></span>
+                      <strong>{{ preferences.locale.value === 'es' ? 'Media pública' : 'Public media' }}</strong>
+                    </div>
+                    <em>{{ passportMediaIdsDraft.length }}/6</em>
+                  </div>
+                  <div v-if="linkedPassportMedia.length" class="profile-passport-editor__media-grid">
+                    <label v-for="item in linkedPassportMedia" :key="item.id">
+                      <input
+                        v-model="passportMediaIdsDraft"
+                        type="checkbox"
+                        :value="item.id"
+                        :disabled="!passportMediaIdsDraft.includes(item.id) && passportMediaIdsDraft.length >= 6"
+                      >
+                      <img v-if="item.thumbnail_url || item.media_url" :src="item.thumbnail_url || item.media_url || ''" alt="">
+                      <span>{{ item.media_type.toUpperCase() }}</span>
+                    </label>
+                  </div>
+                  <p v-else>{{ preferences.locale.value === 'es' ? 'Vincula media a un booking para poder seleccionarla aquí.' : 'Link media to a booking before selecting it here.' }}</p>
+                </section>
               </div>
 
               <div v-else-if="profileEditSection === 'booking'" class="profile-fields profile-fields--builder">
@@ -2567,7 +2664,7 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-presence-toggle span { color:var(--cue-text); font:800 10px/1.2 sans-serif; letter-spacing:0; }
 .profile-booking-public-toggle { border-color:color-mix(in srgb,var(--cue-toggle) 40%,var(--cue-border)) !important; }
 .profile-builder-note { margin:0; padding:11px 13px; border:1px dashed var(--cue-border); color:var(--cue-muted); font-size:12px; line-height:1.45; }
-.profile-passport-editor{display:grid;gap:16px;padding:18px}.profile-passport-editor__summary{display:grid;gap:8px;padding:16px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:var(--cue-bg)}.profile-passport-editor__summary>span,.profile-passport-editor__preview>span{color:var(--cue-accent);font:800 8px/1 monospace;letter-spacing:.08em}.profile-passport-editor__summary>strong{font-size:16px;line-height:1.25}.profile-passport-editor__summary>p{margin:0;color:var(--cue-muted);font-size:12px;line-height:1.5}.profile-passport-editor__toggle{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:var(--cue-bg);cursor:pointer}.profile-passport-editor__toggle input{width:18px;height:18px;accent-color:var(--cue-accent)}.profile-passport-editor__toggle>span{display:grid;gap:4px}.profile-passport-editor__toggle strong{font-size:12px}.profile-passport-editor__toggle small{color:var(--cue-muted);font-size:10px;line-height:1.35}.profile-passport-editor__preview{display:grid;gap:7px;padding:16px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:linear-gradient(135deg,color-mix(in srgb,var(--cue-accent) 6%,var(--cue-bg)),var(--cue-bg))}.profile-passport-editor__preview>strong{font:900 26px/1 monospace}.profile-passport-editor__preview>small{color:var(--cue-muted);font:700 8px/1.3 monospace}
+.profile-passport-editor{display:grid;gap:16px;padding:18px}.profile-passport-editor__summary{display:grid;gap:8px;padding:16px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:var(--cue-bg)}.profile-passport-editor__summary>span,.profile-passport-editor__preview>span{color:var(--cue-accent);font:800 8px/1 monospace;letter-spacing:.08em}.profile-passport-editor__summary>strong{font-size:16px;line-height:1.25}.profile-passport-editor__summary>p{margin:0;color:var(--cue-muted);font-size:12px;line-height:1.5}.profile-passport-editor__toggle{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:var(--cue-bg);cursor:pointer}.profile-passport-editor__toggle input{width:18px;height:18px;accent-color:var(--cue-accent)}.profile-passport-editor__toggle>span{display:grid;gap:4px}.profile-passport-editor__toggle strong{font-size:12px}.profile-passport-editor__toggle small{color:var(--cue-muted);font-size:10px;line-height:1.35}.profile-passport-editor__preview{display:grid;gap:7px;padding:16px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:linear-gradient(135deg,color-mix(in srgb,var(--cue-accent) 6%,var(--cue-bg)),var(--cue-bg))}.profile-passport-editor__preview>strong{font:900 26px/1 monospace}.profile-passport-editor__preview>small{color:var(--cue-muted);font:700 8px/1.3 monospace}.profile-passport-editor__selection{display:grid;gap:10px;padding:16px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:var(--cue-bg)}.profile-passport-editor__selection>p{margin:0;color:var(--cue-muted);font-size:11px;line-height:1.45}.profile-passport-editor__selection-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.profile-passport-editor__selection-head>div{display:grid;gap:5px}.profile-passport-editor__selection-head>div>span{color:var(--cue-accent);font:800 8px/1 monospace;letter-spacing:.08em}.profile-passport-editor__selection-head>div>span small{padding:3px 5px;border:1px solid var(--cue-accent);border-radius:5px;font-size:6px}.profile-passport-editor__selection-head>div>strong{font-size:13px}.profile-passport-editor__selection-head>label{display:flex;align-items:center;gap:7px;color:var(--cue-muted);font-size:10px}.profile-passport-editor__selection-head>label input{accent-color:var(--cue-accent)}.profile-passport-editor__selection-head>em{color:var(--cue-muted);font:800 9px/1 monospace;font-style:normal}.profile-passport-editor__options{display:grid;gap:7px}.profile-passport-editor__options>label{display:flex;align-items:flex-start;gap:9px;padding:10px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control);cursor:pointer}.profile-passport-editor__options>label input{margin-top:2px;accent-color:var(--cue-accent)}.profile-passport-editor__options>label>span{display:grid;gap:3px}.profile-passport-editor__options strong{font-size:10px}.profile-passport-editor__options small{color:var(--cue-muted);font-size:8px;line-height:1.35}.profile-passport-editor__media-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.profile-passport-editor__media-grid>label{position:relative;min-height:88px;overflow:hidden;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control);background:#0a0a0a;cursor:pointer}.profile-passport-editor__media-grid input{position:absolute;z-index:2;top:7px;left:7px;accent-color:var(--cue-accent)}.profile-passport-editor__media-grid img{width:100%;height:88px;object-fit:cover;opacity:.75}.profile-passport-editor__media-grid span{position:absolute;right:6px;bottom:6px;padding:4px 5px;border:1px solid #3a3a3a;border-radius:5px;background:rgba(8,8,8,.84);font:800 6px/1 monospace}
 .profile-distribution-editor { display:grid; gap:16px; padding:18px; }
 .profile-distribution-editor > p { max-width:760px; margin:0; color:var(--cue-muted); line-height:1.55; }
 .profile-distribution-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
