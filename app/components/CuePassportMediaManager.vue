@@ -9,6 +9,7 @@ const props = defineProps<{
   locale: 'es' | 'en'
   editable: boolean
   enabled: boolean
+  limit: number | null
 }>()
 
 const emit = defineEmits<{ changed: [] }>()
@@ -52,7 +53,8 @@ const copy = computed(() => props.locale === 'es' ? {
   updated: 'Estado actualizado.',
   error: 'No se pudo actualizar Event Media.',
   proTitle: 'Event Media en CUE Passport',
-  proBody: 'Artist Pro permite vincular fotos, vídeos y reels a fechas reales y elegir cuáles aparecen en tu Passport público.'
+  proBody: 'Artist Pro permite vincular fotos, vídeos y reels a fechas reales y elegir cuáles aparecen en tu Passport público.',
+  limitReached: 'Has alcanzado el límite de Event Media de tu plan.'
 } : {
   eyebrow: 'EVENT MEDIA',
   title: 'Link content to real dates.',
@@ -80,8 +82,11 @@ const copy = computed(() => props.locale === 'es' ? {
   updated: 'Status updated.',
   error: 'Event Media could not be updated.',
   proTitle: 'Event Media in CUE Passport',
-  proBody: 'Artist Pro lets you link photos, videos and reels to real dates and choose which items appear on your public Passport.'
+  proBody: 'Artist Pro lets you link photos, videos and reels to real dates and choose which items appear on your public Passport.',
+  limitReached: 'You have reached the Event Media limit for your plan.'
 })
+
+const capacityReached = computed(() => props.limit !== null && props.media.length >= props.limit)
 
 const sortedBookings = computed(() => [...props.bookings].sort((a, b) =>
   String(b.event_date || b.created_at).localeCompare(String(a.event_date || a.created_at))
@@ -108,6 +113,12 @@ function previewUrl(item: CuePassportMedia) {
   return ''
 }
 
+function mediaLink(item: CuePassportMedia) {
+  if (safeHttp(item.permalink)) return item.permalink
+  if (safeHttp(item.media_url)) return item.media_url
+  return ''
+}
+
 function resetForm() {
   bookingId.value = ''
   mediaType.value = 'image'
@@ -120,7 +131,7 @@ function resetForm() {
 }
 
 function openAdd() {
-  if (!props.editable || !props.enabled) return
+  if (!props.editable || !props.enabled || capacityReached.value) return
   resetForm()
   bookingId.value = sortedBookings.value[0]?.id || ''
   adding.value = true
@@ -200,6 +211,7 @@ async function toggleStatus(item: CuePassportMedia) {
         v-if="editable && enabled && sortedBookings.length"
         type="button"
         class="passport-media-manager__add"
+        :disabled="capacityReached"
         @click="adding ? closeAdd() : openAdd()"
       >
         {{ adding ? copy.cancel : copy.add }}
@@ -212,6 +224,8 @@ async function toggleStatus(item: CuePassportMedia) {
       :title="copy.proTitle"
       :description="copy.proBody"
     />
+
+    <p v-else-if="capacityReached" class="passport-media-manager__capacity">{{ copy.limitReached }}</p>
 
     <form v-if="adding" class="passport-media-manager__form" @submit.prevent="createMedia">
       <label class="passport-media-manager__wide">
@@ -267,8 +281,8 @@ async function toggleStatus(item: CuePassportMedia) {
     <div v-if="media.length" class="passport-media-manager__grid">
       <article v-for="item in media" :key="item.id" :class="`is-${item.status}`">
         <a
-          v-if="safeHttp(item.permalink || item.media_url)"
-          :href="item.permalink || item.media_url || undefined"
+          v-if="mediaLink(item)"
+          :href="mediaLink(item) || undefined"
           target="_blank"
           rel="noopener noreferrer"
           class="passport-media-manager__preview"
@@ -416,6 +430,14 @@ async function toggleStatus(item: CuePassportMedia) {
   text-transform:uppercase;
 }
 .passport-media-manager__grid article>button:hover{color:var(--cue-accent)}
+.passport-media-manager__capacity{
+  margin:0;
+  padding:10px 12px;
+  border:1px solid var(--cue-border);
+  color:var(--cue-muted);
+  font-size:10px;
+  line-height:1.45;
+}
 .passport-media-manager__message,
 .passport-media-manager__empty{
   margin:0;
