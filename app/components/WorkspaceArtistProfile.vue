@@ -1,5 +1,5 @@
 <script setup lang="ts">
-type ProfileSection = 'identity' | 'image' | 'portrait' | 'sound' | 'links' | 'booking' | 'distribution'
+type ProfileSection = 'identity' | 'image' | 'portrait' | 'sound' | 'links' | 'booking' | 'distribution' | 'passport'
 
 type ProfilePassport = {
   confirmedBookings: number
@@ -39,11 +39,13 @@ const props = withDefaults(defineProps<{
   saving?: boolean
   locale?: 'es' | 'en'
   passport?: ProfilePassport
+  passportPublicEnabled?: boolean
 }>(), {
   published: false,
   editable: true,
   saving: false,
   locale: 'es',
+  passportPublicEnabled: true,
   passport: () => ({
     confirmedBookings: 0,
     cities: [],
@@ -190,6 +192,7 @@ const links = computed(() => [
         :milestones="passport.milestones"
         :locale="locale"
         :editable="editable"
+        :public-enabled="passportPublicEnabled"
         @manage="emit('passport')"
       />
 
