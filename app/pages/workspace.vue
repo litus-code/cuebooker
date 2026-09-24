@@ -215,6 +215,13 @@ function passportStickerClass(kind: string) {
   return 'cue-passport-sticker--milestone'
 }
 
+function setPassportMilestoneAuto(enabled: boolean) {
+  passportMilestoneAutoDraft.value = enabled
+  if (!enabled && !passportMilestoneIdsDraft.value.length) {
+    passportMilestoneIdsDraft.value = cuePassportUnlocked.value.slice(0, 3).map(item => item.id)
+  }
+}
+
 const copy = computed(() => preferences.locale.value === 'es' ? {
   overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Actividad', profile: 'Perfil', cueId: 'CUE ID',
   artist: 'Artista', role: 'DJ', settings: 'Ajustes', logout: 'Cerrar sesión',
@@ -2269,7 +2276,11 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                       <strong>{{ preferences.locale.value === 'es' ? 'Hitos públicos' : 'Public milestones' }}</strong>
                     </div>
                     <label>
-                      <input v-model="passportMilestoneAutoDraft" type="checkbox">
+                      <input
+                        :checked="passportMilestoneAutoDraft"
+                        type="checkbox"
+                        @change="setPassportMilestoneAuto(($event.currentTarget as HTMLInputElement).checked)"
+                      >
                       <span>{{ preferences.locale.value === 'es' ? 'Automático' : 'Automatic' }}</span>
                     </label>
                   </div>
