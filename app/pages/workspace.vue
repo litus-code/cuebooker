@@ -96,6 +96,7 @@ const loading = ref(true)
 const saving = ref(false)
 const errorMessage = ref('')
 const editorOpen = ref(false)
+const calendarEditorTrigger = ref<HTMLElement | null>(null)
 const startTime = ref('18:00')
 const endTime = ref('20:00')
 const blockStatus = ref<AvailabilityStatus>('unavailable')
@@ -119,6 +120,7 @@ const realBookingFocusId = ref('')
 let bookingCoreSyncTimer: ReturnType<typeof setInterval> | null = null
 const tourStep = ref(-1)
 const settingsOpen = ref(false)
+const settingsTrigger = ref<HTMLElement | null>(null)
 const passwordCurrent = ref('')
 const passwordNew = ref('')
 const passwordConfirm = ref('')
@@ -742,10 +744,10 @@ function handleWorkspaceKeydown(event: KeyboardEvent) {
     return
   }
   if (settingsOpen.value) {
-    settingsOpen.value = false
+    void closeSettings()
     return
   }
-  if (editorOpen.value) closeEditor()
+  if (editorOpen.value) void closeEditor()
 }
 
 async function changeView(view: WorkspaceView) {
@@ -775,10 +777,19 @@ async function changeView(view: WorkspaceView) {
 }
 
 async function openSettings() {
+  settingsTrigger.value = import.meta.client && document.activeElement instanceof HTMLElement ? document.activeElement : null
   settingsOpen.value = true
   await nextTick()
   document.querySelector<HTMLElement>('.settings-panel')?.focus({ preventScroll: true })
   window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+}
+
+async function closeSettings() {
+  const trigger = settingsTrigger.value
+  settingsOpen.value = false
+  settingsTrigger.value = null
+  await nextTick()
+  if (trigger?.isConnected) trigger.focus({ preventScroll: true })
 }
 
 function scheduleTourPosition(delay = 280) {
@@ -1636,6 +1647,7 @@ async function focusCalendarEditor() {
 }
 
 function openCreate(start = '18:00') {
+  calendarEditorTrigger.value = import.meta.client && document.activeElement instanceof HTMLElement ? document.activeElement : null
   const startMinutes = Number(start.slice(0, 2)) * 60 + Number(start.slice(3, 5))
   const endMinutes = Math.min(startMinutes + 120, 23 * 60 + 59)
   startTime.value = start
@@ -1648,6 +1660,7 @@ function openCreate(start = '18:00') {
 }
 
 function startEdit(block: AvailabilityBlock) {
+  calendarEditorTrigger.value = import.meta.client && document.activeElement instanceof HTMLElement ? document.activeElement : null
   selectedDate.value = block.starts_at.slice(0, 10)
   startTime.value = block.starts_at.slice(11, 16)
   endTime.value = block.ends_at.slice(11, 16)
@@ -1658,9 +1671,13 @@ function startEdit(block: AvailabilityBlock) {
   void focusCalendarEditor()
 }
 
-function closeEditor() {
+async function closeEditor() {
+  const trigger = calendarEditorTrigger.value
   editorOpen.value = false
   editingBlockId.value = null
+  calendarEditorTrigger.value = null
+  await nextTick()
+  if (trigger?.isConnected) trigger.focus({ preventScroll: true })
 }
 
 async function saveBlock() {
@@ -2773,9 +2790,9 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       </article>
     </div>
 
-    <div v-if="settingsOpen" class="editor-backdrop" @click.self="settingsOpen = false">
+    <div v-if="settingsOpen" class="editor-backdrop" @click.self="closeSettings">
       <aside class="editor-panel settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title" tabindex="-1">
-        <div class="editor-heading"><div><p class="eyebrow">{{ copy.accountPrivate }}</p><h2 id="settings-title">{{ copy.settingsTitle }}</h2></div><button type="button" :aria-label="copy.close" @click="settingsOpen = false">×</button></div>
+        <div class="editor-heading"><div><p class="eyebrow">{{ copy.accountPrivate }}</p><h2 id="settings-title">{{ copy.settingsTitle }}</h2></div><button type="button" :aria-label="copy.close" @click="closeSettings">×</button></div>
         <section class="settings-group"><span>{{ copy.language }}</span><div class="settings-options"><button :class="{ active: preferences.locale.value === 'es' }" type="button" @click="preferences.setLocale('es')">ES</button><button :class="{ active: preferences.locale.value === 'en' }" type="button" @click="preferences.setLocale('en')">EN</button></div></section>
         <section class="settings-group"><span>{{ copy.appearance }}</span><div class="settings-options"><button :class="{ active: preferences.theme.value === 'dark' }" type="button" @click="preferences.setTheme('dark')">{{ copy.dark }}</button><button :class="{ active: preferences.theme.value === 'light' }" type="button" @click="preferences.setTheme('light')">{{ copy.light }}</button></div></section>
         <section v-if="demoOverrideEnabled" class="settings-group settings-group--demo">
