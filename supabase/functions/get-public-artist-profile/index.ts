@@ -355,7 +355,7 @@ Deno.serve(async request => {
     if (artist.passport_public_enabled && workspaceIds.length) {
       const workspaceFilter = workspaceIds.map((id) => `"${id}"`).join(",");
       const bookings = await serviceJson<BookingPassportRow[]>(
-        `${supabaseUrl}/rest/v1/bookings?artist_id=eq.${encodeURIComponent(artist.id)}&workspace_id=in.(${encodeURIComponent(workspaceFilter)})&status=eq.confirmed&archived_at=is.null&select=id,city,country_code,venue_name,event_date&order=event_date.asc.nullslast`,
+        `${supabaseUrl}/rest/v1/bookings?artist_id=eq.${encodeURIComponent(artist.id)}&workspace_id=in.(${encodeURIComponent(workspaceFilter)})&status=eq.confirmed&select=id,city,country_code,venue_name,event_date&order=event_date.asc.nullslast`,
         { method: "GET" },
         serviceKey
       );
