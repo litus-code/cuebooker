@@ -113,6 +113,7 @@ useHead(() => ({
         <a href="#problem" @click.prevent="scrollTo('#problem')">{{ copy.nav.problem }}</a>
         <a href="#product" @click.prevent="scrollTo('#product')">{{ copy.nav.product }}</a>
         <a href="#roles" @click.prevent="scrollTo('#roles')">{{ copy.nav.roles }}</a>
+        <a href="#pricing" @click.prevent="scrollTo('#pricing')">{{ copy.nav.pricing }}</a>
         <a href="#try" @click.prevent="scrollTo('#try')">{{ copy.nav.tryProduct }}</a>
         <div class="mobile-menu-auth">
           <NuxtLink class="mobile-menu-login" to="/access" @click="menuOpen = false; trackAuth('login', 'mobile_menu')">{{ copy.nav.login }}</NuxtLink>
@@ -279,6 +280,57 @@ useHead(() => ({
       <div class="demo-reality__actions">
         <NuxtLink class="button button--primary" to="/access?mode=signup" @click="trackAuth('signup', 'product_status'); trackCta('product_signup', 'product_status', '/access?mode=signup')">{{ copy.demo.panelButton }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
         <NuxtLink class="button button--ghost" to="/artist" @click="trackCta('view_public_form', 'product_status', '/artist')">{{ copy.demo.requestButton }} <span class="arrow arrow--ne" aria-hidden="true" /></NuxtLink>
+      </div>
+    </section>
+
+    <section id="pricing" class="pricing section-pad" data-analytics-section="pricing">
+      <div class="section-mark mono">{{ copy.pricing.index }}</div>
+      <div class="section-heading">
+        <p class="eyebrow">{{ copy.pricing.eyebrow }}</p>
+        <h2>{{ copy.pricing.title }}</h2>
+        <p>{{ copy.pricing.body }}</p>
+      </div>
+
+      <div class="pricing-grid">
+        <article
+          v-for="plan in copy.pricing.plans"
+          :key="plan.id"
+          class="pricing-card"
+          :class="{ 'pricing-card--featured': plan.id === 'artist_pro' }"
+        >
+          <header>
+            <div>
+              <span class="mono">{{ plan.id === 'free' ? 'FREE' : plan.id === 'artist_pro' ? 'PRO' : 'AGENCY' }}</span>
+              <small v-if="plan.id === 'artist_pro'">{{ copy.pricing.recommended }}</small>
+            </div>
+            <strong>{{ plan.name }}</strong>
+          </header>
+
+          <div class="pricing-card__price">
+            <b>{{ plan.price }}</b>
+            <span>{{ plan.period }}</span>
+          </div>
+          <p>{{ plan.body }}</p>
+          <em v-if="plan.annual">{{ plan.annual }}</em>
+
+          <ul>
+            <li v-for="feature in plan.features" :key="feature"><span>+</span>{{ feature }}</li>
+          </ul>
+
+          <NuxtLink
+            class="button"
+            :class="plan.id === 'artist_pro' ? 'button--primary' : 'button--ghost'"
+            :to="`/access?mode=signup&plan=${plan.id}`"
+            @click="trackAuth('signup', `pricing_${plan.id}`); trackCta(`pricing_${plan.id}`, 'pricing', `/access?mode=signup&plan=${plan.id}`)"
+          >
+            {{ plan.cta }} <span class="arrow arrow--ne" aria-hidden="true" />
+          </NuxtLink>
+        </article>
+      </div>
+
+      <div class="pricing-foot">
+        <strong>{{ copy.pricing.founding }}</strong>
+        <p>{{ copy.pricing.billingNote }}</p>
       </div>
     </section>
 
