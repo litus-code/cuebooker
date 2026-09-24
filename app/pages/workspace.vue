@@ -2188,6 +2188,17 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               </div>
             </div>
           </section>
+
+          <CuePassportMediaManager
+            v-if="bookingCoreWorkspaceId"
+            :workspace-id="bookingCoreWorkspaceId"
+            :bookings="passportBookings"
+            :media="passportMediaItems"
+            :locale="preferences.locale.value"
+            :editable="canEditSelectedArtist"
+            :enabled="canEntitlement('passport.media')"
+            @changed="loadPassportMedia"
+          />
       </section>
 
       <section v-else class="view profile-view profile-view--presence">
