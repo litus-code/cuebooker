@@ -1350,7 +1350,7 @@ section:focus { outline:none; }
 
 
 <style scoped>
-/* Product circuit, Passport and commercial plans. */
+/* Product circuit, Passport and commercial plans, aligned with the V1 launch model. */
 .ed-circuit {
   border-top: 1px solid var(--cp-line);
 }
