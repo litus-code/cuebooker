@@ -10,6 +10,8 @@ const props = defineProps<{
 const emit = defineEmits<{ saved: [contact: Contact] }>()
 const bookingCore = useBookingCore()
 const open = ref(false)
+const triggerButton = ref<HTMLButtonElement | null>(null)
+const contactDialog = ref<HTMLElement | null>(null)
 const saving = ref(false)
 const errorMessage = ref('')
 const form = reactive({
@@ -43,15 +45,19 @@ function sync() {
   errorMessage.value = ''
 }
 
-function show() {
+async function show() {
   sync()
   open.value = true
+  await nextTick()
+  contactDialog.value?.focus({ preventScroll: true })
 }
 
-function close() {
+async function close() {
   if (saving.value) return
   open.value = false
   errorMessage.value = ''
+  await nextTick()
+  triggerButton.value?.focus({ preventScroll: true })
 }
 
 async function save() {
@@ -78,6 +84,8 @@ async function save() {
     })
     open.value = false
     emit('saved', updated)
+    await nextTick()
+    triggerButton.value?.focus({ preventScroll: true })
   } catch {
     errorMessage.value = copy.value.error
   } finally {
@@ -87,13 +95,13 @@ async function save() {
 </script>
 
 <template>
-  <button class="contact-editor-entry" type="button" @click="show">
+  <button ref="triggerButton" class="contact-editor-entry" type="button" @click="show">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4ZM13.5 6.5l4 4"/></svg>
     <span>{{ copy.edit }}</span>
   </button>
 
   <div v-if="open" class="contact-editor-backdrop" @click.self="close">
-    <form class="contact-editor" role="dialog" aria-modal="true" @submit.prevent="save">
+    <form ref="contactDialog" class="contact-editor" role="dialog" aria-modal="true" tabindex="-1" @submit.prevent="save">
       <header>
         <div>
           <span>CUE / CONTACT</span>
