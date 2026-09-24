@@ -17,6 +17,7 @@ const emit = defineEmits<{
 const bookingCore = useBookingCore()
 const captureEngine = useCaptureEngine()
 const analytics = useAnalytics()
+const { can: canEntitlement } = useCueEntitlements()
 const voiceInput = ref<{ setProcessing: (value: boolean) => void } | null>(null)
 const submitting = ref(false)
 const analyzing = ref(false)
@@ -445,8 +446,16 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
             <div class="cue-capture__smart-actions">
               <CueVoiceInput ref="voiceInput" v-model="initialNote" :locale="locale" @captured="onVoiceCaptured" @audio-captured="onAudioCaptured" />
               <div class="cue-capture__interpret">
-                <button type="button" :disabled="!initialNote.trim() || analyzing" @click="interpretNote">{{ analyzing ? (locale === 'es' ? 'Analizando…' : 'Analysing…') : 'Smart Capture' }}</button>
+                <div class="cue-capture__interpret-head">
+                  <button type="button" :disabled="!initialNote.trim() || analyzing" @click="interpretNote">{{ analyzing ? (locale === 'es' ? 'Analizando…' : 'Analysing…') : 'Smart Capture' }}</button>
+                  <CuePlanBadge v-if="!canEntitlement('capture.smart_extended')" entitlement="capture.smart_extended" />
+                </div>
                 <p>{{ locale === 'es' ? 'Una sola captura para voz o texto. Revisa siempre antes de aplicar.' : 'One capture flow for voice or text. Always review before applying.' }}</p>
+                <small v-if="!canEntitlement('capture.smart_extended')" class="cue-capture__commercial-note">
+                  {{ locale === 'es'
+                    ? 'Free incluye una cuota mensual de Smart Capture. Artist Pro amplía esta capacidad.'
+                    : 'Free includes a monthly Smart Capture allowance. Artist Pro extends this capacity.' }}
+                </small>
                 <p v-if="interpretationMessage" aria-live="polite">{{ interpretationMessage }}</p>
               </div>
             </div>
@@ -570,6 +579,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 .cue-capture__tell-head small { color:#8f8f8f; font-size:10px; line-height:1.4; }
 .cue-capture__tell textarea { width:100%; min-height:96px; box-sizing:border-box; padding:12px; border:1px solid #3d3d3d; background:#111; color:#f4f3ef; resize:vertical; font:inherit; line-height:1.45; }
 .cue-capture__smart-actions { display:flex; align-items:flex-start; gap:8px; flex-wrap:wrap; }
+.cue-capture__interpret-head{display:flex;align-items:center;gap:8px}.cue-capture__commercial-note{display:block;color:#818181;font-size:9px;line-height:1.4}
 .cue-capture__interpret { display:flex; align-items:center; gap:10px; margin-top:-4px; padding-bottom:10px; }
 .cue-capture__interpret button { min-height:34px; padding:0 11px; border:1px solid color-mix(in srgb,var(--capture-accent) 28%,#353535); background:color-mix(in srgb,var(--capture-accent) 3%,transparent); color:color-mix(in srgb,var(--capture-accent) 78%,#b7b9b1); cursor:pointer; font:700 9px monospace; text-transform:uppercase; }
 .cue-capture__interpret button:disabled { opacity:.35; cursor:not-allowed; }
