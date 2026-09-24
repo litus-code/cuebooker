@@ -70,16 +70,27 @@ const socialLinks = computed(() => [
   ['Spotify', props.profile.spotifyUrl]
 ].filter((item): item is [string, string] => Boolean(item[1])))
 
-async function openBooking() {
+function openBooking() {
   if (!props.profile.acceptingRequests && !props.preview) return
   analytics.track('public_booking_open', {
     artist_slug: props.profile.slug,
     preview: props.preview
   })
   requestOpen.value = true
-  await nextTick()
-  document.querySelector('#artist-booking-request')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
+
+function closeBooking() {
+  requestOpen.value = false
+}
+
+watch(requestOpen, open => {
+  if (!import.meta.client) return
+  document.body.style.overflow = open ? 'hidden' : ''
+})
+
+onBeforeUnmount(() => {
+  if (import.meta.client) document.body.style.overflow = ''
+})
 </script>
 
 <template>
@@ -166,19 +177,48 @@ async function openBooking() {
       </nav>
     </section>
 
-    <div v-if="requestOpen" id="artist-booking-request" class="public-artist-profile__booking">
-      <PublicBookingForm
-        :artist-name="profile.stageName"
-        :locale="locale"
-        :submitting="bookingSubmitting"
-        :sent="bookingSent"
-        :confirmation-sent="bookingConfirmationSent"
-        :reference="bookingReference"
-        :error="bookingError"
-        :preview="preview"
-        @submit="emit('submitBooking', $event)"
-      />
-    </div>
+    <Teleport to="body">
+      <div
+        v-if="requestOpen"
+        class="public-artist-profile__booking-backdrop"
+        role="presentation"
+        @click.self="closeBooking"
+      >
+        <section
+          id="artist-booking-request"
+          class="public-artist-profile__booking-modal"
+          role="dialog"
+          aria-modal="true"
+          :aria-label="locale === 'es' ? 'Solicitar fecha' : 'Request booking'"
+        >
+          <header class="public-artist-profile__booking-header">
+            <div>
+              <span>BOOKING REQUEST</span>
+              <strong>{{ profile.stageName }}</strong>
+            </div>
+            <button
+              type="button"
+              :aria-label="locale === 'es' ? 'Cerrar' : 'Close'"
+              @click="closeBooking"
+            >×</button>
+          </header>
+
+          <div class="public-artist-profile__booking-body">
+            <PublicBookingForm
+              :artist-name="profile.stageName"
+              :locale="locale"
+              :submitting="bookingSubmitting"
+              :sent="bookingSent"
+              :confirmation-sent="bookingConfirmationSent"
+              :reference="bookingReference"
+              :error="bookingError"
+              :preview="preview"
+              @submit="emit('submitBooking', $event)"
+            />
+          </div>
+        </section>
+      </div>
+    </Teleport>
   </main>
 </template>
 
@@ -221,7 +261,14 @@ async function openBooking() {
 .public-artist-profile__links nav { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 17px; }
 .public-artist-profile__links a { display: inline-flex; align-items: center; gap: 7px; min-height: 42px; padding: 0 13px; border: 1px solid var(--cue-border, #333); color: var(--cue-text, #f2f0eb); text-decoration: none; font-size: 12px; font-weight: 800; }
 .public-artist-profile__links a:hover { border-color: var(--cue-accent, #e8ff2f); color: var(--cue-accent, #e8ff2f); }
-.public-artist-profile__booking { scroll-margin-top: 12px; }
+.public-artist-profile__booking-backdrop { position:fixed; z-index:80; inset:0; display:grid; place-items:center; padding:24px; background:rgba(0,0,0,.72); backdrop-filter:blur(8px); }
+.public-artist-profile__booking-modal { width:min(760px,100%); max-height:min(860px,calc(100dvh - 48px)); overflow:hidden; border:1px solid var(--cue-border,#2c2c2c); border-radius:12px; background:var(--cue-bg,#080808); box-shadow:0 28px 90px rgba(0,0,0,.58); }
+.public-artist-profile__booking-header { display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:64px; padding:12px 16px; border-bottom:1px solid var(--cue-border,#2c2c2c); background:#0c0c0c; }
+.public-artist-profile__booking-header>div { display:grid; gap:5px; }
+.public-artist-profile__booking-header span { color:var(--cue-accent,#e8ff2f); font:800 8px/1 monospace; letter-spacing:.1em; }
+.public-artist-profile__booking-header strong { font-size:16px; text-transform:uppercase; }
+.public-artist-profile__booking-header button { width:38px; height:38px; padding:0; border:1px solid #343434; border-radius:8px; background:#111; color:#ddd; cursor:pointer; font-size:22px; line-height:1; }
+.public-artist-profile__booking-body { max-height:calc(min(860px,100dvh - 48px) - 65px); overflow:auto; overscroll-behavior:contain; }
 @media (max-width: 900px) {
   .public-artist-profile__hero {
     position:relative;
@@ -262,6 +309,10 @@ async function openBooking() {
   .public-artist-profile__story { grid-template-columns:1fr; }
 }
 @media (max-width: 520px) {
+  .public-artist-profile__booking-backdrop { place-items:stretch; padding:0; }
+  .public-artist-profile__booking-modal { width:100%; max-height:100dvh; min-height:100dvh; border:0; border-radius:0; box-shadow:none; }
+  .public-artist-profile__booking-header { position:sticky; top:0; z-index:2; min-height:60px; padding:10px 14px; }
+  .public-artist-profile__booking-body { max-height:calc(100dvh - 60px); }
   .public-artist-profile__topbar { min-height:56px; }
   .public-artist-profile__hero,
   .public-artist-profile__identity { min-height:72svh; }
