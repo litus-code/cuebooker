@@ -142,8 +142,12 @@ function toIsoOrNull(value: string) {
 }
 
 async function setNextMove() {
+  if (saving.value) return
   const label = nextLabel.value.trim()
+  const dueAt = toIsoOrNull(nextDue.value)
+  const completionTrigger = canEntitlement('automation.advanced') && autoCompleteOnReply.value ? 'inbound_activity' : 'manual'
   if (!label) { errorMessage.value = copy.value.invalidNext; return }
+
   saving.value = true
   errorMessage.value = ''
   try {
@@ -151,16 +155,16 @@ async function setNextMove() {
       workspaceId: props.workspaceId,
       bookingId: props.booking.id,
       label,
-      dueAt: toIsoOrNull(nextDue.value),
-      completionTrigger: canEntitlement('automation.advanced') && autoCompleteOnReply.value ? 'inbound_activity' : 'manual'
+      dueAt,
+      completionTrigger
     })
     nextLabel.value = ''
     nextDue.value = ''
     autoCompleteOnReply.value = false
     await load()
     emit('changed')
-  } catch (error: any) {
-    errorMessage.value = error?.message || copy.value.error
+  } catch {
+    errorMessage.value = copy.value.error
   } finally {
     saving.value = false
   }
@@ -181,25 +185,30 @@ async function completeNextMove() {
 }
 
 async function createHold() {
-  if (!holdDate.value) { errorMessage.value = copy.value.invalidHold; return }
-  const priority = holdPriority.value ? Number(holdPriority.value) : null
+  if (saving.value) return
+  const eventDate = holdDate.value
+  const expiresAt = toIsoOrNull(holdExpires.value)
+  const priorityValue = holdPriority.value ? Number(holdPriority.value) : null
+  const priority = priorityValue && Number.isInteger(priorityValue) ? priorityValue : null
+  if (!eventDate) { errorMessage.value = copy.value.invalidHold; return }
+
   saving.value = true
   errorMessage.value = ''
   try {
     await bookingCore.createHold({
       workspaceId: props.workspaceId,
       bookingId: props.booking.id,
-      eventDate: holdDate.value,
-      expiresAt: toIsoOrNull(holdExpires.value),
-      priority: priority && Number.isInteger(priority) ? priority : null
+      eventDate,
+      expiresAt,
+      priority
     })
     holdDate.value = ''
     holdExpires.value = ''
     holdPriority.value = ''
     await load()
     emit('changed')
-  } catch (error: any) {
-    errorMessage.value = error?.message || copy.value.error
+  } catch {
+    errorMessage.value = copy.value.error
   } finally {
     saving.value = false
   }
@@ -237,12 +246,12 @@ async function releaseHold(hold: Hold) {
         </div>
         <p v-else class="core-ops__empty">{{ copy.noNext }}</p>
         <form class="core-ops__form" @submit.prevent="setNextMove">
-          <label class="core-ops__form-main"><span>{{ copy.nextMove }}</span><input v-model="nextLabel" :placeholder="copy.nextPlaceholder" maxlength="240"></label>
+          <label class="core-ops__form-main"><span>{{ copy.nextMove }}</span><input v-model="nextLabel" :placeholder="copy.nextPlaceholder" maxlength="240" :disabled="saving"></label>
           <label class="core-ops__auto-reply" :class="{ 'core-ops__auto-reply--locked': !canEntitlement('automation.advanced') }">
             <input
               v-model="autoCompleteOnReply"
               type="checkbox"
-              :disabled="!canEntitlement('automation.advanced')"
+              :disabled="saving || !canEntitlement('automation.advanced')"
             >
             <span>
               <strong>{{ copy.autoReply }} <CuePlanBadge entitlement="automation.advanced" /></strong>
@@ -257,7 +266,7 @@ async function releaseHold(hold: Hold) {
               : 'Artist Pro can complete this next action when Cuebooker detects a real reply in the booking.'"
           />
           <div class="core-ops__form-row">
-            <label><span>{{ copy.due }}</span><input v-model="nextDue" type="datetime-local"></label>
+            <label><span>{{ copy.due }}</span><input v-model="nextDue" type="datetime-local" :disabled="saving"></label>
             <button type="submit" :disabled="saving">{{ saving ? copy.saving : copy.saveNext }}</button>
           </div>
         </form>
@@ -282,11 +291,11 @@ async function releaseHold(hold: Hold) {
         <p v-else-if="!loading" class="core-ops__empty">{{ copy.noHold }}</p>
         <form class="core-ops__form core-ops__form--hold" @submit.prevent="createHold">
           <div class="core-ops__form-row core-ops__form-row--hold">
-            <label><span>{{ copy.holdDate }}</span><input v-model="holdDate" type="date"></label>
-            <label><span>{{ copy.expires }}</span><input v-model="holdExpires" type="datetime-local"></label>
+            <label><span>{{ copy.holdDate }}</span><input v-model="holdDate" type="date" :disabled="saving"></label>
+            <label><span>{{ copy.expires }}</span><input v-model="holdExpires" type="datetime-local" :disabled="saving"></label>
             <label class="core-ops__priority-field">
               <span>{{ copy.priority }}</span>
-              <select v-model="holdPriority">
+              <select v-model="holdPriority" :disabled="saving">
                 <option value="">{{ copy.noPriority }}</option>
                 <option v-for="priority in 9" :key="priority" :value="String(priority)">P{{ priority }}</option>
               </select>
@@ -348,6 +357,9 @@ async function releaseHold(hold: Hold) {
 .core-ops__empty { margin:0; padding:8px 10px; color:var(--cue-muted); font-size:10px; }
 .core-ops__holds article > span { color:var(--cue-primary); font:700 9px monospace; }
 .core-ops__hold-actions { display:flex; gap:4px; }
+.core-ops input:disabled,
+.core-ops select:disabled { opacity:.55; cursor:wait; }
+
 .core-ops__error { margin:8px 0 0; color:var(--cue-status-rejected); font-size:11px; }
 @media (max-width:900px) {
   .core-ops__grid { grid-template-columns:1fr; }
