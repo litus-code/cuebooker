@@ -39,14 +39,32 @@ function hash(value: string) {
 
 const nodes = computed(() => {
   const cities = activeCountry.value?.cities || []
-  const count = Math.max(cities.length, 1)
+  const count = cities.length
 
   return cities.map((city, index) => {
+    if (count === 1) {
+      return {
+        city,
+        x: 500,
+        y: 245,
+        size: Math.min(22, 11 + city.bookings.length * 2)
+      }
+    }
+
+    if (count === 2) {
+      return {
+        city,
+        x: index === 0 ? 340 : 660,
+        y: index === 0 ? 225 : 285,
+        size: Math.min(22, 11 + city.bookings.length * 2)
+      }
+    }
+
     const angle = (index / count) * Math.PI * 2 - Math.PI / 2
     const seed = hash(city.id)
     const radialOffset = (seed % 46) - 23
-    const x = 500 + Math.cos(angle) * (320 + radialOffset)
-    const y = 255 + Math.sin(angle) * (150 + radialOffset * .45)
+    const x = 500 + Math.cos(angle) * (300 + radialOffset)
+    const y = 255 + Math.sin(angle) * (140 + radialOffset * .4)
 
     return {
       city,
@@ -222,6 +240,8 @@ watch(() => props.countryId, () => resetView())
 .passport-constellation {
   --pc-accent:var(--cue-accent,#dfff35);
   display:grid;
+  width:100%;
+  min-width:0;
   gap:10px;
 }
 
@@ -271,7 +291,9 @@ watch(() => props.countryId, () => resetView())
 
 .passport-constellation__viewport {
   position:relative;
-  min-height:340px;
+  width:100%;
+  height:360px;
+  min-height:360px;
   overflow:hidden;
   border:1px solid #272727;
   border-radius:10px;
@@ -290,8 +312,8 @@ watch(() => props.countryId, () => resetView())
 .passport-constellation svg {
   display:block;
   width:100%;
-  height:100%;
-  min-height:340px;
+  height:360px;
+  min-height:360px;
   color:var(--pc-accent);
 }
 
@@ -384,7 +406,8 @@ watch(() => props.countryId, () => resetView())
 
   .passport-constellation__viewport,
   .passport-constellation svg {
-    min-height:300px;
+    height:320px;
+    min-height:320px;
   }
 
   .passport-constellation__hint {
