@@ -5,6 +5,7 @@ import { deriveBookingAttentionSignals, deriveEmailDeliveryAttentionSignals, typ
 
 const props = defineProps<{
   workspaceId: string
+  artistId: string
   bookings: CoreBooking[]
   locale: 'es' | 'en'
   refreshKey?: number
@@ -13,6 +14,7 @@ const props = defineProps<{
 const emit = defineEmits<{ changed: []; openBookings: []; openBooking: [bookingId: string] }>()
 const bookingCore = useBookingCore()
 const notificationApi = useNotifications()
+const attentionBookings = ref<CoreBooking[]>([])
 const nextMoves = ref<NextMove[]>([])
 const holds = ref<Hold[]>([])
 const activities = ref<Activity[]>([])
@@ -84,7 +86,7 @@ const items = computed(() => {
   }> = []
 
   for (const move of nextMoves.value) {
-    const booking = props.bookings.find(item => item.id === move.booking_id)
+    const booking = attentionBookings.value.find(item => item.id === move.booking_id)
     const urgency = urgencyFor(move.due_at)
     const dueTime = move.due_at ? new Date(move.due_at).getTime() : null
     if (dueTime && urgency === 'normal' && dueTime > Date.now() + ATTENTION_WINDOW_MS) continue
@@ -104,7 +106,7 @@ const items = computed(() => {
 
   for (const hold of holds.value) {
     if (!hold.expires_at) continue
-    const booking = props.bookings.find(item => item.id === hold.booking_id)
+    const booking = attentionBookings.value.find(item => item.id === hold.booking_id)
     const urgency = urgencyFor(hold.expires_at)
     const expiryTime = new Date(hold.expires_at).getTime()
     if (urgency === 'normal' && expiryTime > Date.now() + ATTENTION_WINDOW_MS) continue
@@ -124,7 +126,7 @@ const items = computed(() => {
 
   for (const notification of notificationItems.value) {
     if (notification.read_at) continue
-    const booking = props.bookings.find(item => item.id === notification.booking_id)
+    const booking = attentionBookings.value.find(item => item.id === notification.booking_id)
     if (!booking || booking.archived_at) continue
     const kind: BookingAttentionSignalKind = notification.kind === 'promoter_reply_received'
       ? 'reply_received'
@@ -143,8 +145,8 @@ const items = computed(() => {
     })
   }
 
-  for (const signal of deriveEmailDeliveryAttentionSignals(props.bookings, emailMessages.value)) {
-    const booking = props.bookings.find(item => item.id === signal.bookingId)
+  for (const signal of deriveEmailDeliveryAttentionSignals(attentionBookings.value, emailMessages.value)) {
+    const booking = attentionBookings.value.find(item => item.id === signal.bookingId)
     const context = booking?.venue_name || booking?.event_name || copy.value.noDate
     rows.push({
       id: signal.id,
@@ -159,9 +161,9 @@ const items = computed(() => {
     })
   }
 
-  for (const signal of deriveBookingAttentionSignals(props.bookings, activities.value)) {
+  for (const signal of deriveBookingAttentionSignals(attentionBookings.value, activities.value)) {
     if (signal.kind !== 'stale_waiting') continue
-    const booking = props.bookings.find(item => item.id === signal.bookingId)
+    const booking = attentionBookings.value.find(item => item.id === signal.bookingId)
     const context = booking?.venue_name || booking?.event_name || copy.value.noDate
     rows.push({
       id: signal.id,
@@ -235,24 +237,34 @@ function formatDateOnly(value: string) {
 }
 
 async function load(options: { silent?: boolean } = {}) {
-  if (!props.workspaceId) return
+  if (!props.workspaceId || !props.artistId) {
+    attentionBookings.value = []
+    nextMoves.value = []
+    holds.value = []
+    activities.value = []
+    emailMessages.value = []
+    notificationItems.value = []
+    return
+  }
   if (!options.silent) loading.value = true
   try {
-    const bookingIds = props.bookings.map(item => item.id)
-    const [moves, holdRows, activityRows, notifications, deliveryRows] = await Promise.all([
-      bookingCore.listNextMoves(props.workspaceId, undefined, true),
-      bookingCore.listHolds(props.workspaceId, undefined, true),
-      bookingCore.listWorkspaceActivities(props.workspaceId, bookingIds, 500),
-      notificationApi.list(100),
-      bookingCore.listWorkspaceBookingEmailMessages(props.workspaceId, bookingIds)
+    const [bookingRows, moves, holdRows, activityRows, notifications, deliveryRows] = await Promise.all([
+      bookingCore.listArtistAttentionBookings(props.workspaceId, props.artistId, 500),
+      bookingCore.listArtistActiveNextMoves(props.workspaceId, props.artistId),
+      bookingCore.listArtistActiveHolds(props.workspaceId, props.artistId),
+      bookingCore.listArtistWorkspaceActivities(props.workspaceId, props.artistId, 500),
+      notificationApi.list(500),
+      bookingCore.listArtistWorkspaceBookingEmailMessages(props.workspaceId, props.artistId, 500)
     ])
+    const bookingIds = new Set(bookingRows.map(item => item.id))
+    attentionBookings.value = bookingRows
     nextMoves.value = moves
     holds.value = holdRows
     activities.value = activityRows
     emailMessages.value = deliveryRows
     notificationItems.value = notifications.filter(item =>
       item.workspace_id === props.workspaceId
-      && bookingIds.includes(item.booking_id)
+      && bookingIds.has(item.booking_id)
       && !item.read_at
     )
   } finally {
@@ -260,8 +272,7 @@ async function load(options: { silent?: boolean } = {}) {
   }
 }
 
-watch(() => props.workspaceId, () => load(), { immediate: true })
-watch(() => props.bookings.length, () => load({ silent: true }))
+watch(() => [props.workspaceId, props.artistId], () => load(), { immediate: true })
 watch(() => props.refreshKey, () => load({ silent: true }))
 
 async function resolve(item: (typeof items.value)[number]) {
