@@ -566,21 +566,20 @@ async function selectBooking(bookingId: string) {
             <h3>{{ bookingTitle(selectedBooking) }}</h3>
             <p>{{ selectedBooking.event_name || selectedBooking.city || '—' }}</p>
           </div>
-          <div class="core-inbox__header-actions">
-            <button class="core-inbox__archive" type="button" :disabled="archiving" @click="toggleArchive">{{ selectedBooking.archived_at ? copy.restore : copy.archive }}</button>
-            <div v-if="!selectedBooking.archived_at" class="core-inbox__decision-block">
-              <div :class="['core-inbox__status', `core-inbox__status--${selectedBooking.status}`]">
-                <span>{{ copy.status }}</span>
-                <strong>{{ statusLabels[selectedBooking.status] }}</strong>
-              </div>
-              <div v-if="!['confirmed','rejected','cancelled'].includes(selectedBooking.status)" class="core-inbox__decisions">
-                <button type="button" class="decision-confirm" :disabled="updatingStatus" @click="decideStatus('confirmed')">{{ copy.confirm }}</button>
-                <button type="button" class="decision-reject" :disabled="updatingStatus" @click="decideStatus('rejected')">{{ copy.reject }}</button>
-                <button type="button" class="decision-cancel" :disabled="updatingStatus" @click="decideStatus('cancelled')">{{ copy.cancel }}</button>
-              </div>
-            </div>
-          </div>
+          <button class="core-inbox__archive" type="button" :disabled="archiving" @click="toggleArchive">{{ selectedBooking.archived_at ? copy.restore : copy.archive }}</button>
         </header>
+
+        <section v-if="!selectedBooking.archived_at" class="core-inbox__decision-strip">
+          <div :class="['core-inbox__status', `core-inbox__status--${selectedBooking.status}`]">
+            <span>{{ copy.status }}</span>
+            <strong>{{ statusLabels[selectedBooking.status] }}</strong>
+          </div>
+          <div v-if="!['confirmed','rejected','cancelled'].includes(selectedBooking.status)" class="core-inbox__decisions">
+            <button type="button" class="decision-confirm" :disabled="updatingStatus" @click="decideStatus('confirmed')">{{ copy.confirm }}</button>
+            <button type="button" class="decision-reject" :disabled="updatingStatus" @click="decideStatus('rejected')">{{ copy.reject }}</button>
+            <button type="button" class="decision-cancel" :disabled="updatingStatus" @click="decideStatus('cancelled')">{{ copy.cancel }}</button>
+          </div>
+        </section>
 
         <section class="core-inbox__details-block">
           <div class="core-inbox__details-heading">
@@ -608,10 +607,7 @@ async function selectBooking(bookingId: string) {
             <div><dt>{{ copy.venue }}</dt><dd :class="{ missing: !selectedCounterparty?.name && !selectedBooking.venue_name }">{{ selectedCounterparty?.name || selectedBooking.venue_name || copy.noVenue }}</dd></div>
             <div class="core-inbox__contact-fact">
               <div class="core-inbox__contact-head">
-                <div>
-                  <dt>{{ copy.contact }}</dt>
-                  <dd :class="{ missing: !loadingMeta && !selectedContact?.name }">{{ loadingMeta ? '…' : selectedContact?.name || copy.noContact }}</dd>
-                </div>
+                <dt>{{ copy.contact }}</dt>
                 <BookingContactEditor
                   v-if="selectedContact && !selectedBooking.archived_at"
                   :workspace-id="workspaceId"
@@ -620,6 +616,7 @@ async function selectBooking(bookingId: string) {
                   @saved="handleContactSaved"
                 />
               </div>
+              <dd :class="{ missing: !loadingMeta && !selectedContact?.name }">{{ loadingMeta ? '…' : selectedContact?.name || copy.noContact }}</dd>
               <small v-if="selectedContact?.email">{{ selectedContact.email }}</small>
               <small v-if="selectedContact?.phone">{{ selectedContact.phone }}</small>
             </div>
@@ -814,10 +811,9 @@ async function selectBooking(bookingId: string) {
 .core-inbox__detail > header span { color:var(--cue-accent); font:700 9px monospace; text-transform:uppercase; letter-spacing:.1em; }
 .core-inbox__detail h3 { margin:4px 0 3px; font-size:clamp(28px,2.4vw,36px); line-height:.96; letter-spacing:-.03em; }
 .core-inbox__detail header p { margin:0; color:var(--cue-muted); font-size:12px; }
-.core-inbox__header-actions { display:flex; align-items:flex-start; justify-content:flex-end; gap:var(--cue-space-2); flex-wrap:wrap; }
-.core-inbox__archive { min-height:var(--cue-button-sm); padding:0 var(--cue-space-3); border:0; border-radius:var(--cue-radius-control); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; text-transform:uppercase; }
+.core-inbox__archive { align-self:start; min-height:var(--cue-button-sm); padding:0 var(--cue-space-3); border:0; border-radius:var(--cue-radius-control); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; text-transform:uppercase; }
 .core-inbox__archive:hover { color:var(--cue-accent); }
-.core-inbox__decision-block { display:grid; grid-template-columns:auto auto; align-items:center; gap:var(--cue-space-2); min-width:0; }
+.core-inbox__decision-strip { display:grid; grid-template-columns:minmax(150px,.45fr) minmax(0,1fr); align-items:center; gap:var(--cue-space-3); padding:var(--cue-space-3) 0; border-bottom:1px solid var(--cue-border); }
 .core-inbox__status { display:grid; gap:2px; align-self:center; min-width:132px; padding:2px 0 2px 9px; border:0; border-left:2px solid var(--status-color,var(--cue-border)); background:transparent; }
 .core-inbox__status > span { color:var(--cue-muted); font:700 7px monospace; letter-spacing:.08em; text-transform:uppercase; }
 .core-inbox__status > strong { color:var(--status-color,var(--cue-text)); font:800 10px monospace; text-transform:uppercase; }
@@ -846,7 +842,7 @@ async function selectBooking(bookingId: string) {
 .core-inbox__facts dd.missing { color:var(--cue-accent); font-style:italic; }
 .core-inbox__contact-fact { padding-inline:var(--cue-space-5) !important; }
 .core-inbox__contact-head { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--cue-space-3); }
-.core-inbox__contact-head > div { min-width:0; }
+.core-inbox__contact-head dt { min-width:0; }
 .core-inbox__contact-fact dd { margin-top:7px; }
 .core-inbox__contact-fact small { display:block; margin-top:6px; color:var(--cue-muted); font-size:10px; line-height:1.4; }
 .core-inbox__contact-fact small + small { margin-top:3px; }
@@ -907,18 +903,16 @@ async function selectBooking(bookingId: string) {
   .core-inbox__filters:not(.core-inbox__filters--archive) { display:flex; overflow-x:auto; padding-bottom:2px; }
   .core-inbox__filters:not(.core-inbox__filters--archive) button { width:auto; min-height:var(--cue-control-standard); white-space:nowrap; }
   .core-inbox__filters--archive { width:max-content; max-width:100%; }
-  .core-inbox__detail > header { display:flex; flex-direction:column; gap:12px; padding-bottom:16px; }
-  .core-inbox__header-actions { display:grid; grid-template-columns:1fr; gap:10px; width:100%; min-width:0; }
-  .core-inbox__archive { justify-self:start; min-height:34px; padding-inline:0; }
-  .core-inbox__decision-block { display:grid; grid-template-columns:1fr; gap:10px; width:100%; min-width:0; }
-  .core-inbox__status { min-width:0; margin:0; padding:8px 0 8px 10px; }
+  .core-inbox__detail > header { grid-template-columns:minmax(0,1fr) auto; gap:10px; padding-bottom:12px; }
+  .core-inbox__archive { min-height:32px; padding-inline:0; }
+  .core-inbox__decision-strip { display:grid; grid-template-columns:1fr; gap:10px; padding:12px 0 14px; }
+  .core-inbox__status { min-width:0; margin:0; padding:7px 0 7px 10px; }
   .core-inbox__decisions { width:100%; }
   .core-inbox__decisions button { min-height:46px; }
   .core-inbox__contact-fact { padding-inline:0 !important; }
-  .core-inbox__contact-head { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:10px; }
-  .core-inbox__contact-head > div { min-width:0; }
-  .core-inbox__contact-head :deep(.contact-editor-entry) { align-self:start; justify-self:end; min-height:28px; margin-top:-2px; }
-  .core-inbox__contact-fact dd { overflow:visible; text-overflow:clip; white-space:normal; word-break:break-word; }
+  .core-inbox__contact-head { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:10px; }
+  .core-inbox__contact-head :deep(.contact-editor-entry) { justify-self:end; min-height:28px; }
+  .core-inbox__contact-fact dd { margin-top:8px; overflow:visible; text-overflow:clip; white-space:normal; word-break:break-word; }
   .core-inbox__contact-fact small { overflow-wrap:anywhere; }
   .core-inbox__decisions { grid-template-columns:repeat(3,minmax(0,1fr)); min-width:0; }
   .core-inbox__decisions button,
