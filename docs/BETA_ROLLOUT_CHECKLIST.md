@@ -81,6 +81,10 @@ REQUEST
 - [x] Manual availability overlap checks use the same monthly Booking Core sources.
 - [x] Overview month KPIs identify the month they represent.
 - [x] Overview upcoming agenda combines manual blocks, active holds and confirmed bookings.
+- [x] Overview Attention queries operational data directly by selected artist.
+- [x] Attention Next Moves and Holds are artist-scoped in Agency workspaces.
+- [x] Attention email-delivery state is artist-scoped.
+- [x] Attention unread notifications are loaded by workspace and crossed with the artist booking set.
 - [ ] Reject a separate booking manually.
 - [ ] Archive and restore a booking.
 - [ ] Verify archived bookings remain readable but operationally protected.
