@@ -115,16 +115,47 @@ test('Passport world groups bookings by country, city and venue', () => {
   assert.equal(spain?.cities[0]?.venues[0]?.bookings.length, 2)
 })
 
-test('Passport world keeps unknown location data navigable without inventing geography', () => {
+test('Passport world counts confirmed bookings without inventing missing geography', () => {
   const world = buildCuePassportWorld([
     booking({ id: 'b1', city: null, country_code: null, venue_name: null })
   ])
 
-  assert.equal(world.countries[0]?.code, 'XX')
-  assert.equal(world.countries[0]?.cities[0]?.name, 'Unknown city')
-  assert.equal(world.countries[0]?.cities[0]?.venues[0]?.name, 'Unknown venue')
+  assert.equal(world.bookingCount, 1)
+  assert.equal(world.countries.length, 0)
 })
 
+
+test('Passport milestone dates stay calendar-shaped when event date is missing', () => {
+  const snapshot = deriveCuePassportSnapshot({
+    bookings: [
+      booking({
+        event_date: null,
+        created_at: '2026-04-05T21:42:10.000Z',
+        updated_at: '2026-04-06T09:15:00.000Z'
+      })
+    ]
+  })
+
+  assert.equal(snapshot.milestones.find(item => item.id === 'first-booking')?.unlockedAt, '2026-04-06')
+})
+
+test('Passport world preserves dense city sets and unresolved venue labels without fake cities', () => {
+  const bookings = Array.from({ length: 12 }, (_, index) => booking({
+    id: `dense-${index}`,
+    city: `City ${String(index).padStart(2, '0')}`,
+    country_code: 'ES',
+    venue_name: index % 2 === 0 ? null : `Venue ${index}`,
+    event_date: `2026-05-${String(index + 1).padStart(2, '0')}`
+  }))
+
+  const world = buildCuePassportWorld(bookings)
+  const spain = world.countries.find(country => country.code === 'ES')
+
+  assert.equal(world.bookingCount, 12)
+  assert.equal(spain?.cities.length, 12)
+  assert.equal(spain?.cities[0]?.name, 'City 00')
+  assert.equal(spain?.cities[0]?.venues[0]?.name, 'Unknown venue')
+})
 
 test('Passport world attaches only linked media to each booking node', () => {
   const media = [{
