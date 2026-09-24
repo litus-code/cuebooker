@@ -129,7 +129,9 @@ async function load() {
   }
   loading.value = true
   try {
-    const holdPromise = bookingCore.listHolds(props.workspaceId, undefined, true)
+    const holdPromise = date
+      ? bookingCore.listArtistHoldsForDate(props.workspaceId, props.booking.artist_id, date)
+      : Promise.resolve([] as Hold[])
     const bookingPromise = date
       ? bookingCore.listArtistBookingsForDate(props.workspaceId, props.booking.artist_id, date, 100)
       : Promise.resolve([] as CoreBooking[])
