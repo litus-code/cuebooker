@@ -24,8 +24,8 @@ function workspaceViewFromQuery(value: unknown, booking?: unknown): WorkspaceVie
   if (typeof booking === 'string' && booking) return 'bookings'
   return 'overview'
 }
-type ProfileEditSection = 'identity' | 'image' | 'portrait' | 'sound' | 'links' | 'booking' | 'distribution' | null
-const PROFILE_EDIT_SECTIONS = ['identity', 'image', 'portrait', 'sound', 'links', 'booking', 'distribution'] as const
+type ProfileEditSection = 'identity' | 'image' | 'portrait' | 'sound' | 'links' | 'booking' | 'passport' | 'distribution' | null
+const PROFILE_EDIT_SECTIONS = ['identity', 'image', 'portrait', 'sound', 'links', 'booking', 'passport', 'distribution'] as const
 function profileSectionFromQuery(value: unknown): Exclude<ProfileEditSection, null> | null {
   return typeof value === 'string' && PROFILE_EDIT_SECTIONS.includes(value as any) ? value as Exclude<ProfileEditSection, null> : null
 }
@@ -127,6 +127,8 @@ const profilePortraitMessage = ref('')
 const profileArtistImageUrl = ref('')
 const profileArtistCutoutUrl = ref('')
 const publicProfilePublished = ref(false)
+const publicPassportEnabled = ref(true)
+const passportVisibilityDraft = ref(true)
 const publicProfileAcceptingRequests = ref(false)
 const publicProfileWorkspaceId = ref('')
 const publicPublishingSaving = ref(false)
@@ -368,6 +370,7 @@ const publicQrSvg = computed(() => publicBookingUrl.value ? createBookingQrSvg(`
 
 async function toggleProfileEditSection(section: Exclude<ProfileEditSection, null>) {
   profileEditSection.value = profileEditSection.value === section ? null : section
+  if (profileEditSection.value === 'passport') passportVisibilityDraft.value = publicPassportEnabled.value
   const query: Record<string, any> = { ...route.query, view: 'profile' }
   if (profileEditSection.value) query.section = profileEditSection.value
   else delete query.section
@@ -426,7 +429,7 @@ const publicProfilePreview = computed<PublicArtistProfile>(() => {
     artistImageScale: persisted?.artist_image_scale ?? 1,
     visualMode: persisted?.visual_mode || 'photo',
     cueId: persisted?.cue_id_config ? toPublicCueIdConfig(persisted.cue_id_config) : null,
-    passport: {
+    passport: publicPassportEnabled.value ? {
       confirmedBookings: cuePassport.value.confirmedBookings,
       cities: cuePassport.value.cities,
       venues: cuePassport.value.venues,
@@ -435,7 +438,7 @@ const publicProfilePreview = computed<PublicArtistProfile>(() => {
         title: item.title,
         subtitle: item.subtitle
       }))
-    },
+    } : null,
     acceptingRequests: publicProfileAcceptingRequests.value
   }
 })
@@ -911,6 +914,8 @@ async function loadProfileVisualMedia(artistImagePath: string | null, artistCuto
 
 async function loadPublicPublishingState() {
   publicProfilePublished.value = false
+  publicPassportEnabled.value = true
+  passportVisibilityDraft.value = true
   publicProfileAcceptingRequests.value = false
   publicProfileWorkspaceId.value = ''
   publicPublishingMessage.value = ''
@@ -918,6 +923,8 @@ async function loadPublicPublishingState() {
   try {
     const state = await publicPublishing.load(selectedArtistId.value)
     publicProfilePublished.value = state.publicProfileEnabled
+    publicPassportEnabled.value = state.passportPublicEnabled
+    passportVisibilityDraft.value = state.passportPublicEnabled
     publicProfileAcceptingRequests.value = state.acceptingRequests
     publicProfileWorkspaceId.value = state.workspaceId || ''
   } catch (error: any) {
@@ -1135,6 +1142,28 @@ async function updatePublicProfilePublished(enabled: boolean) {
   }
 }
 
+async function updatePublicPassportVisibility(enabled: boolean) {
+  if (!selectedArtistId.value || !canEditSelectedArtist.value) return false
+  publicPublishingSaving.value = true
+  publicPublishingMessage.value = ''
+  try {
+    publicPassportEnabled.value = await publicPublishing.setPassportPublicEnabled(selectedArtistId.value, enabled)
+    passportVisibilityDraft.value = publicPassportEnabled.value
+    publicPublishingMessage.value = preferences.locale.value === 'es'
+      ? (enabled ? 'CUE Passport visible en el perfil público.' : 'CUE Passport oculto en el perfil público.')
+      : (enabled ? 'CUE Passport visible on the public profile.' : 'CUE Passport hidden from the public profile.')
+    return true
+  } catch (error: any) {
+    publicPublishingMessage.value = error?.message || (preferences.locale.value === 'es'
+      ? 'No se pudo actualizar la visibilidad de CUE Passport.'
+      : 'CUE Passport visibility could not be updated.')
+    await loadPublicPublishingState()
+    return false
+  } finally {
+    publicPublishingSaving.value = false
+  }
+}
+
 async function updatePublicAcceptingRequests(enabled: boolean) {
   if (!selectedArtistId.value || !canEditSelectedArtist.value || (enabled && !publicProfilePublished.value)) return
   publicPublishingSaving.value = true
@@ -1162,7 +1191,7 @@ async function updatePublicAcceptingRequests(enabled: boolean) {
 }
 
 async function saveArtistProfile() {
-  if (!selectedArtistId.value || !canEditSelectedArtist.value) return
+  if (!selectedArtistId.value || !canEditSelectedArtist.value) return false
   profileSaving.value = true
   profileMessage.value = ''
   const form = profileForm.value
@@ -1207,11 +1236,23 @@ async function saveArtistProfile() {
     profileMessage.value = copy.value.profileSaved
     profileWelcome.value = false
     await router.replace({ query: { ...route.query, setup: undefined } })
+    return true
   } catch (error: any) {
     profileMessage.value = error?.data?.message || error?.message || copy.value.profileSaveError
+    return false
   } finally {
     profileSaving.value = false
   }
+}
+
+async function saveProfileEditor() {
+  if (profileEditSection.value === 'passport') {
+    const saved = await updatePublicPassportVisibility(passportVisibilityDraft.value)
+    if (saved) profileEditSection.value = null
+    return
+  }
+  const saved = await saveArtistProfile()
+  if (saved) profileEditSection.value = null
 }
 
 async function dismissProfileWelcome() {
@@ -1994,16 +2035,17 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               venues: cuePassport.venues,
               milestones: cuePassportUnlocked.slice(0, 3)
             }"
+            :passport-public-enabled="publicPassportEnabled"
             @edit="toggleProfileEditSection($event)"
             @preview="profilePreviewOpen = true"
             @toggle-published="updatePublicProfilePublished($event)"
             @toggle-requests="updatePublicAcceptingRequests($event)"
             @cue-id="changeView('cue-id')"
-            @passport="changeView('cue-id')"
+            @passport="toggleProfileEditSection('passport')"
           />
 
           <div v-if="profileEditSection" class="profile-editor-backdrop" @click.self="profileEditSection = null">
-            <form id="profile-builder-editor" class="profile-builder-editor profile-builder-editor--panel" role="dialog" aria-modal="true" @submit.prevent="saveArtistProfile">
+            <form id="profile-builder-editor" class="profile-builder-editor profile-builder-editor--panel" role="dialog" aria-modal="true" @submit.prevent="saveProfileEditor">
             <header>
               <div>
                 <p class="eyebrow">
@@ -2013,7 +2055,8 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                     : profileEditSection === 'sound' ? '04 / SOUND'
                     : profileEditSection === 'links' ? '05 / LINKS'
                     : profileEditSection === 'booking' ? '06 / BOOKING'
-                    : '07 / DISTRIBUTION' }}
+                    : profileEditSection === 'passport' ? '07 / PASSPORT'
+                    : '08 / DISTRIBUTION' }}
                 </p>
                 <h2>
                   {{ profileEditSection === 'identity'
@@ -2028,7 +2071,9 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                           ? (preferences.locale.value === 'es' ? 'Canales y enlaces' : 'Channels and links')
                           : profileEditSection === 'booking'
                             ? (preferences.locale.value === 'es' ? 'Booking privado' : 'Private booking')
-                            : (preferences.locale.value === 'es' ? 'Distribuye tu perfil' : 'Distribute your profile') }}
+                            : profileEditSection === 'passport'
+                              ? (preferences.locale.value === 'es' ? 'CUE Passport público' : 'Public CUE Passport')
+                              : (preferences.locale.value === 'es' ? 'Distribuye tu perfil' : 'Distribute your profile') }}
                 </h2>
               </div>
               <button type="button" :aria-label="copy.close" @click="profileEditSection = null">×</button>
@@ -2122,6 +2167,30 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                 <label><span>{{ copy.spotify }}</span><input v-model="profileForm.spotifyUrl" type="url" placeholder="https://open.spotify.com/"></label>
                 <label><span>{{ copy.technicalRider }}</span><input v-model="profileForm.technicalRiderUrl" type="url" placeholder="https://"></label>
                 <label><span>{{ copy.hospitalityRider }}</span><input v-model="profileForm.hospitalityRiderUrl" type="url" placeholder="https://"></label>
+              </div>
+
+              <div v-else-if="profileEditSection === 'passport'" class="profile-passport-editor">
+                <div class="profile-passport-editor__summary">
+                  <span>CUE PASSPORT / PROFILE</span>
+                  <strong>{{ preferences.locale.value === 'es' ? 'Decide si tu trayectoria aparece en tu perfil público.' : 'Choose whether your trajectory appears on your public profile.' }}</strong>
+                  <p>{{ preferences.locale.value === 'es'
+                    ? 'Ocultarlo no elimina ciudades, venues, fechas ni hitos. El Passport seguirá construyéndose con tu actividad real dentro de Cuebooker.'
+                    : 'Hiding it does not delete cities, venues, dates or milestones. Passport keeps building from your real Cuebooker activity.' }}</p>
+                </div>
+                <label class="profile-passport-editor__toggle">
+                  <input v-model="passportVisibilityDraft" type="checkbox">
+                  <span>
+                    <strong>{{ preferences.locale.value === 'es' ? 'Mostrar CUE Passport' : 'Show CUE Passport' }}</strong>
+                    <small>{{ preferences.locale.value === 'es'
+                      ? 'Incluye el resumen de trayectoria en el perfil público.'
+                      : 'Include the trajectory summary on the public profile.' }}</small>
+                  </span>
+                </label>
+                <div class="profile-passport-editor__preview">
+                  <span>{{ preferences.locale.value === 'es' ? 'ESTADO PÚBLICO' : 'PUBLIC STATE' }}</span>
+                  <strong>{{ passportVisibilityDraft ? 'VISIBLE' : (preferences.locale.value === 'es' ? 'OCULTO' : 'HIDDEN') }}</strong>
+                  <small>{{ cuePassport.confirmedBookings }} BOOKINGS · {{ cuePassport.venues.length }} VENUES · {{ cuePassport.cities.length }} CITIES</small>
+                </div>
               </div>
 
               <div v-else-if="profileEditSection === 'booking'" class="profile-fields profile-fields--builder">
@@ -2470,6 +2539,7 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-presence-toggle span { color:var(--cue-text); font:800 10px/1.2 sans-serif; letter-spacing:0; }
 .profile-booking-public-toggle { border-color:color-mix(in srgb,var(--cue-toggle) 40%,var(--cue-border)) !important; }
 .profile-builder-note { margin:0; padding:11px 13px; border:1px dashed var(--cue-border); color:var(--cue-muted); font-size:12px; line-height:1.45; }
+.profile-passport-editor{display:grid;gap:16px;padding:18px}.profile-passport-editor__summary{display:grid;gap:8px;padding:16px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:var(--cue-bg)}.profile-passport-editor__summary>span,.profile-passport-editor__preview>span{color:var(--cue-accent);font:800 8px/1 monospace;letter-spacing:.08em}.profile-passport-editor__summary>strong{font-size:16px;line-height:1.25}.profile-passport-editor__summary>p{margin:0;color:var(--cue-muted);font-size:12px;line-height:1.5}.profile-passport-editor__toggle{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:var(--cue-bg);cursor:pointer}.profile-passport-editor__toggle input{width:18px;height:18px;accent-color:var(--cue-accent)}.profile-passport-editor__toggle>span{display:grid;gap:4px}.profile-passport-editor__toggle strong{font-size:12px}.profile-passport-editor__toggle small{color:var(--cue-muted);font-size:10px;line-height:1.35}.profile-passport-editor__preview{display:grid;gap:7px;padding:16px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:linear-gradient(135deg,color-mix(in srgb,var(--cue-accent) 6%,var(--cue-bg)),var(--cue-bg))}.profile-passport-editor__preview>strong{font:900 26px/1 monospace}.profile-passport-editor__preview>small{color:var(--cue-muted);font:700 8px/1.3 monospace}
 .profile-distribution-editor { display:grid; gap:16px; padding:18px; }
 .profile-distribution-editor > p { max-width:760px; margin:0; color:var(--cue-muted); line-height:1.55; }
 .profile-distribution-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
