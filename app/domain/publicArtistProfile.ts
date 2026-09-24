@@ -22,11 +22,23 @@ export type PublicPassportMilestone = {
   subtitle: string
 }
 
+export type PublicPassportMedia = {
+  id: string
+  bookingId: string
+  mediaType: 'image' | 'video' | 'reel'
+  permalink: string | null
+  mediaUrl: string | null
+  thumbnailUrl: string | null
+  caption: string | null
+  capturedAt: string | null
+}
+
 export type PublicPassportSummary = {
   confirmedBookings: number
   cities: string[]
   venues: string[]
   milestones: PublicPassportMilestone[]
+  media: PublicPassportMedia[]
 }
 
 export type PublicArtistProfile = {
