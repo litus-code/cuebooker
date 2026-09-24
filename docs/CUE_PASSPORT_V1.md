@@ -152,3 +152,29 @@ Frontend preview validation:
 - `Generate preview build` passed;
 - PR preview deployment passed;
 - this does not apply the pending Supabase migrations or Edge Function update.
+
+
+## Staging backend applied on 24 Sep 2026
+
+Applied only to `cuebooker-staging` (`lycprjeuuynfzwskycwv`):
+
+- `passport_media` table, enums, indexes and RLS policies;
+- `artists.passport_public_enabled`;
+- `artists.passport_public_milestone_ids`;
+- `artists.passport_public_media_ids`;
+- creator FK index for `passport_media.created_by`;
+- `get-public-artist-profile` Edge Function version 17 with Passport summary/media support.
+
+Validation:
+
+- RLS is enabled on `passport_media`;
+- select is limited to workspace members;
+- insert/update/delete require workspace edit permission;
+- Artist update policy remains `private.can_manage_artist(id)`;
+- Supabase security advisor shows no new Passport-specific warning;
+- the new unindexed-FK warning was removed after adding `passport_media_created_by_idx`;
+- staging has a published profile with a confirmed booking that resolves to 1 city and 1 venue.
+
+The HTTP response itself was not invoked from this session because its network runtime cannot reach the staging hostname. Do not describe the public endpoint as fully smoke-tested until it is opened from the real PR preview/device.
+
+Production was not touched.
