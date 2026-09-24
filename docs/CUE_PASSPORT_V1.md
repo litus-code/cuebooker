@@ -1,7 +1,7 @@
 # CUE Passport V1
 
 Updated: 24 September 2026  
-Status: IN PROGRESS
+Status: CODE COMPLETE · VALIDATION PENDING
 
 ## Product role
 
@@ -111,3 +111,5 @@ Agency inherits Artist Pro Passport capabilities where relevant.
 - Future 3D Passport should be dynamically loaded only inside an explicit Passport experience.
 - Mobile/reduced/static representations must remain first-class fallbacks.
 - Public profile remains static-first.
+- Public profile includes a summarized Passport surface built from real confirmed activity.
+- Final V1 validation includes mobile tooltip scrolling, linked-media interaction, pointer-capture recovery, empty states and dense city/venue cases.
