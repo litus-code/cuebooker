@@ -41,7 +41,7 @@ Booking Core is the operational product. Artist Profile is the professional pres
 
 ### 1. Close CUE Passport V1
 
-Status: CODE COMPLETE · FRONTEND PREVIEW VALIDATED · BACKEND APPLY + DEVICE QA PENDING
+Status: CODE COMPLETE · STAGING BACKEND APPLIED · DEVICE/HTTP QA PENDING
 
 Deliver:
 
