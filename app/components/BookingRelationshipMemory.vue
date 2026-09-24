@@ -3,6 +3,7 @@ import type { CoreBooking } from '../domain/bookingCore'
 import { deriveRelationshipMemory } from '../services/relationshipMemory'
 
 const props = defineProps<{
+  workspaceId: string
   booking: CoreBooking
   bookings: CoreBooking[]
   contactName?: string | null
@@ -36,9 +37,51 @@ const copy = computed(() => props.locale === 'es' ? {
   noFee: 'No previous fee'
 })
 
-const relationshipName = computed(() => props.counterpartyName || props.contactName || props.booking.venue_name || props.booking.event_name || '—')
+const bookingCore = useBookingCore()
+const relationshipRows = ref<CoreBooking[]>([])
+const relationshipLoaded = ref(false)
 
-const memory = computed(() => deriveRelationshipMemory(props.booking, props.bookings))
+const relationshipName = computed(() => props.counterpartyName || props.contactName || props.booking.venue_name || props.booking.event_name || '—')
+const memorySource = computed(() => relationshipLoaded.value ? relationshipRows.value : props.bookings)
+const memory = computed(() => deriveRelationshipMemory(props.booking, memorySource.value))
+
+async function loadRelationship() {
+  relationshipLoaded.value = false
+  relationshipRows.value = []
+  if (!props.workspaceId || (!props.booking.counterparty_id && !props.booking.primary_contact_id)) {
+    relationshipLoaded.value = true
+    relationshipRows.value = [props.booking]
+    return
+  }
+  try {
+    const rows = await bookingCore.listRelationshipBookings(
+      props.workspaceId,
+      props.booking.artist_id,
+      props.booking.counterparty_id,
+      props.booking.primary_contact_id,
+      200
+    )
+    relationshipRows.value = rows.some(item => item.id === props.booking.id)
+      ? rows
+      : [props.booking, ...rows]
+  } catch {
+    relationshipRows.value = props.bookings
+  } finally {
+    relationshipLoaded.value = true
+  }
+}
+
+watch(
+  () => [
+    props.workspaceId,
+    props.booking.id,
+    props.booking.artist_id,
+    props.booking.counterparty_id,
+    props.booking.primary_contact_id
+  ],
+  () => { void loadRelationship() },
+  { immediate: true }
+)
 const previousBookings = computed(() => memory.value.previousBookings)
 const relationshipBookings = computed(() => memory.value.relationshipBookings)
 const confirmedCount = computed(() => memory.value.confirmedCount)
