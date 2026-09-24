@@ -509,6 +509,8 @@ async function toggleProfileEditSection(section: Exclude<ProfileEditSection, nul
   }
   const query: Record<string, any> = { ...route.query, view: 'profile', section }
   void router.replace({ query }).catch(() => {})
+  await nextTick()
+  document.getElementById('profile-builder-editor')?.focus({ preventScroll: true })
 }
 
 type ProfileShareMethod = 'profile_link' | 'booking_link' | 'instagram_link' | 'embed'
@@ -2427,6 +2429,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             <form
               id="profile-builder-editor"
               class="profile-builder-editor profile-builder-editor--panel"
+              tabindex="-1"
               :class="{ 'profile-builder-editor--modal': ['image', 'portrait', 'booking'].includes(profileEditSection) }"
               role="dialog"
               aria-modal="true"
