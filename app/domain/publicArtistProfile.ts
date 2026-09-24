@@ -38,7 +38,7 @@ export type PublicPassportSummary = {
   cities: string[]
   venues: string[]
   milestones: PublicPassportMilestone[]
-  media: PublicPassportMedia[]
+  media?: PublicPassportMedia[]
 }
 
 export type PublicArtistProfile = {
