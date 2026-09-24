@@ -546,7 +546,7 @@ async function selectBooking(bookingId: string) {
         <nav class="core-inbox__mobile-section-nav" :aria-label="locale === 'es' ? 'Secciones del booking' : 'Booking sections'">
           <button type="button" @click="scrollToBookingSection('core-inbox-facts')">{{ locale === 'es' ? 'Datos' : 'Details' }}</button>
           <button type="button" @click="scrollToBookingSection('core-inbox-conversation')">{{ locale === 'es' ? 'Conversación' : 'Conversation' }}</button>
-          <button v-if="!selectedBooking.archived_at" type="button" @click="scrollToBookingSection('core-inbox-operations')">{{ locale === 'es' ? 'Seguimiento' : 'Follow-up' }}</button>
+          <button v-if="!selectedBooking.archived_at && !['confirmed','rejected','cancelled'].includes(selectedBooking.status)" type="button" @click="scrollToBookingSection('core-inbox-operations')">{{ locale === 'es' ? 'Seguimiento' : 'Follow-up' }}</button>
         </nav>
 
         <BookingCoreConflictNotice
@@ -675,7 +675,7 @@ async function selectBooking(bookingId: string) {
 
         <BookingCoreOperations
           id="core-inbox-operations"
-          v-if="!selectedBooking.archived_at"
+          v-if="!selectedBooking.archived_at && !['confirmed','rejected','cancelled'].includes(selectedBooking.status)"
           :key="`operations-${selectedBooking.id}`"
           :workspace-id="workspaceId"
           :booking="selectedBooking"
