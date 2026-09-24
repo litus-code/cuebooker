@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const route = useRoute()
 const auth = useCueAuth()
+const billingIntent = useBillingIntent()
 const { locale } = useCuePreferences()
 
 const mode = ref<'signin' | 'signup'>('signin')
@@ -39,7 +40,13 @@ watch(() => route.query.mode, (requestedMode) => {
   mode.value = requestedMode === 'signup' ? 'signup' : 'signin'
 }, { immediate: true })
 
+watch(() => route.query.plan, value => {
+  billingIntent.capture(value)
+})
+
 onMounted(async () => {
+  billingIntent.initialize()
+  billingIntent.capture(route.query.plan)
   const refCode = typeof route.query.ref === 'string' ? route.query.ref : ''
   auth.captureReferral(refCode, route.fullPath)
   await auth.initialize()
