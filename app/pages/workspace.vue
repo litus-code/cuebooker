@@ -612,6 +612,7 @@ function prefersReducedMotion() {
 
 async function changeView(view: WorkspaceView) {
   settingsOpen.value = false
+  if (view !== 'profile') profileEditSection.value = null
   persistedWorkspaceView.value = view
   if (import.meta.client) window.localStorage.setItem('cuebooker.workspace.view', view)
   activeView.value = view
