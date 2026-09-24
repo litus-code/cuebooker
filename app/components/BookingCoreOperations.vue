@@ -9,6 +9,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{ changed: [] }>()
 const bookingCore = useBookingCore()
+const { can: canEntitlement } = useCueEntitlements()
 const nextMoves = ref<NextMove[]>([])
 const holds = ref<Hold[]>([])
 const loading = ref(false)
@@ -135,7 +136,7 @@ async function setNextMove() {
       bookingId: props.booking.id,
       label,
       dueAt: toIsoOrNull(nextDue.value),
-      completionTrigger: autoCompleteOnReply.value ? 'inbound_activity' : 'manual'
+      completionTrigger: canEntitlement('automation.advanced') && autoCompleteOnReply.value ? 'inbound_activity' : 'manual'
     })
     nextLabel.value = ''
     nextDue.value = ''
@@ -233,10 +234,24 @@ async function convertHold(hold: Hold) {
         <p v-else class="core-ops__empty">{{ copy.noNext }}</p>
         <form class="core-ops__form" @submit.prevent="setNextMove">
           <label class="core-ops__form-main"><span>{{ copy.nextMove }}</span><input v-model="nextLabel" :placeholder="copy.nextPlaceholder" maxlength="240"></label>
-          <label class="core-ops__auto-reply">
-            <input v-model="autoCompleteOnReply" type="checkbox">
-            <span><strong>{{ copy.autoReply }}</strong><small>{{ copy.autoReplyHint }}</small></span>
+          <label class="core-ops__auto-reply" :class="{ 'core-ops__auto-reply--locked': !canEntitlement('automation.advanced') }">
+            <input
+              v-model="autoCompleteOnReply"
+              type="checkbox"
+              :disabled="!canEntitlement('automation.advanced')"
+            >
+            <span>
+              <strong>{{ copy.autoReply }} <CuePlanBadge entitlement="automation.advanced" /></strong>
+              <small>{{ copy.autoReplyHint }}</small>
+            </span>
           </label>
+          <CueUpgradePrompt
+            entitlement="automation.advanced"
+            :title="locale === 'es' ? 'Cierre automático por respuesta' : 'Automatic completion on reply'"
+            :description="locale === 'es'
+              ? 'Artist Pro puede cerrar esta próxima acción cuando Cuebooker detecta una respuesta real en el booking.'
+              : 'Artist Pro can complete this next action when Cuebooker detects a real reply in the booking.'"
+          />
           <div class="core-ops__form-row">
             <label><span>{{ copy.due }}</span><input v-model="nextDue" type="datetime-local"></label>
             <button type="submit" :disabled="saving">{{ saving ? copy.saving : copy.saveNext }}</button>
@@ -298,6 +313,9 @@ async function convertHold(hold: Hold) {
 .core-ops__auto-reply input { appearance:none; -webkit-appearance:none; width:18px; height:18px; min-width:18px; min-height:18px; max-width:18px; max-height:18px; margin:0; padding:0; border:1px solid var(--cue-border); border-radius:5px; background:var(--cue-surface); cursor:pointer; }
 .core-ops__auto-reply input:checked { border-color:var(--cue-primary); background:var(--cue-primary); box-shadow:inset 0 0 0 4px var(--cue-surface); }
 .core-ops__auto-reply input:focus-visible { outline:2px solid var(--cue-primary); outline-offset:2px; }
+.core-ops__auto-reply--locked{opacity:.72;cursor:default}
+.core-ops__auto-reply--locked input{cursor:not-allowed}
+.core-ops__form > :deep(.cue-upgrade-prompt){margin-top:3px}
 .core-ops__auto-reply > span { display:block; min-width:0; width:auto; }
 .core-ops__auto-reply strong { display:block; color:var(--cue-text); font-size:10px; line-height:1.35; overflow-wrap:normal; word-break:normal; }
 .core-ops__auto-reply small { display:block; margin-top:2px; color:var(--cue-muted); font-size:9px; line-height:1.35; overflow-wrap:normal; word-break:normal; }
