@@ -93,6 +93,7 @@ const visibleBookings = computed(() => realStatusFilter.value === 'all'
   : archiveScopedBookings.value.filter(booking => booking.status === realStatusFilter.value))
 const pagedBookings = computed(() => visibleBookings.value.slice(0, visibleLimit.value))
 const hasMoreBookings = computed(() => visibleLimit.value < visibleBookings.value.length)
+const hasActiveInboxFilters = computed(() => Boolean(realSearch.value.trim()) || realStatusFilter.value !== 'all')
 const activeBookingCount = computed(() => props.bookings.filter(item => !item.archived_at).length)
 const activeBookingCapacity = computed(() => cueCapacity('activeBookings', activeBookingCount.value))
 const selectedBooking = computed(() => visibleBookings.value.find(item => item.id === selectedBookingId.value) || visibleBookings.value[0] || null)
@@ -135,7 +136,11 @@ watch(() => props.focusBookingId, value => {
 }, { immediate: true })
 
 watch(visibleBookings, value => {
-  if (value.length && !value.some(item => item.id === selectedBookingId.value)) selectedBookingId.value = value[0].id
+  if (!value.length) {
+    selectedBookingId.value = ''
+    return
+  }
+  if (!value.some(item => item.id === selectedBookingId.value)) selectedBookingId.value = value[0].id
 }, { deep: true })
 
 watch(() => props.workspaceId, async value => {
@@ -399,6 +404,11 @@ async function scrollToBookingList() {
   list.querySelector<HTMLElement>('.core-inbox__booking-row.active')?.focus({ preventScroll: true })
 }
 
+function clearInboxFilters() {
+  realSearch.value = ''
+  realStatusFilter.value = 'all'
+}
+
 async function scrollToBookingSection(targetId: string) {
   if (!import.meta.client) return
   await nextTick()
@@ -470,7 +480,15 @@ async function selectBooking(bookingId: string) {
         : 'You can keep working on current bookings. Artist Pro removes the active-booking capacity limit.'"
     />
 
-    <p v-if="bookings.length && !visibleBookings.length" class="core-inbox__empty">{{ locale === 'es' ? 'No hay bookings con estos filtros.' : 'No bookings match these filters.' }}</p>
+    <div v-if="bookings.length && !visibleBookings.length" class="core-inbox__empty core-inbox__empty--filtered">
+      <p>{{ locale === 'es' ? 'No hay bookings con estos filtros.' : 'No bookings match these filters.' }}</p>
+      <button v-if="hasActiveInboxFilters" type="button" @click="clearInboxFilters">
+        {{ locale === 'es' ? 'Limpiar filtros' : 'Clear filters' }}
+      </button>
+      <button v-else-if="archiveView === 'archived'" type="button" @click="archiveView = 'active'">
+        {{ locale === 'es' ? 'Volver a en curso' : 'Back to in progress' }}
+      </button>
+    </div>
 
     <div v-else-if="bookings.length" class="core-inbox__layout">
       <div id="core-inbox-list" class="core-inbox__list">
@@ -817,6 +835,11 @@ async function selectBooking(bookingId: string) {
 .thread-item__delivery + time { margin-left:0; }
 .thread-item > p { margin:7px 0 0; font-size:12px; line-height:1.45; }
 .core-inbox__empty { margin:0; padding:18px; color:var(--cue-muted); font-size:12px; }
+.core-inbox__empty--filtered { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.core-inbox__empty--filtered p { margin:0; }
+.core-inbox__empty--filtered button { flex:0 0 auto; min-height:38px; padding:0 12px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-control); background:transparent; color:var(--cue-text); cursor:pointer; font:800 8px monospace; text-transform:uppercase; }
+.core-inbox__empty--filtered button:hover,
+.core-inbox__empty--filtered button:focus-visible { border-color:var(--cue-accent); color:var(--cue-accent); outline:none; }
 @media (max-width: 1180px) {
   .core-inbox__tools { grid-template-columns:minmax(220px,1fr) auto; }
   .core-inbox__filters--status { grid-column:1 / -1; padding-top:var(--cue-space-1); }
@@ -864,6 +887,8 @@ async function selectBooking(bookingId: string) {
   .core-inbox__facts { grid-template-columns:1fr 1fr; }
   .core-inbox__thread { max-height:min(52vh,380px); }
   .thread-item { width:auto; max-width:92%; }
+  .core-inbox__empty--filtered { align-items:flex-start; flex-direction:column; }
+  .core-inbox__empty--filtered button { width:100%; min-height:44px; }
 }
 
 .core-decision-modal { position:fixed; z-index:120; inset:0; display:grid; place-items:center; padding:20px; background:rgba(0,0,0,.76); backdrop-filter:blur(7px); }
