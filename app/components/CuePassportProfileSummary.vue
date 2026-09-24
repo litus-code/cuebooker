@@ -36,7 +36,8 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{
-  manage: []
+  open: []
+  settings: []
 }>()
 
 const visibleCities = computed(() => props.cities.slice(0, 5))
@@ -77,10 +78,15 @@ function mediaLink(item: PassportMedia) {
         <div><strong>{{ cities.length }}</strong><span>CITIES</span></div>
       </div>
 
-      <button v-if="editable" type="button" @click="emit('manage')">
-        {{ locale === 'es' ? 'Gestionar Passport' : 'Manage Passport' }}
-        <span class="arrow arrow--ne" aria-hidden="true" />
-      </button>
+      <div v-if="editable" class="profile-passport__actions">
+        <button type="button" class="primary" @click="emit('open')">
+          {{ locale === 'es' ? 'Abrir Passport' : 'Open Passport' }}
+          <span class="arrow arrow--ne" aria-hidden="true" />
+        </button>
+        <button type="button" @click="emit('settings')">
+          {{ locale === 'es' ? 'Ajustes públicos' : 'Public settings' }}
+        </button>
+      </div>
     </div>
 
     <div class="profile-passport__visual" aria-label="CUE Passport summary">
@@ -171,13 +177,19 @@ function mediaLink(item: PassportMedia) {
   font-size:12px;
   line-height:1.55;
 }
+.profile-passport__actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:18px;
+}
 .profile-passport__copy button{
   align-self:flex-start;
   display:inline-flex;
   align-items:center;
   gap:8px;
   min-height:36px;
-  margin-top:18px;
+  margin-top:0;
   padding:0 11px;
   border:1px solid #383838;
   border-radius:8px;
@@ -189,6 +201,11 @@ function mediaLink(item: PassportMedia) {
 .profile-passport__copy button:hover{
   border-color:var(--cue-accent);
   color:var(--cue-accent);
+}
+.profile-passport__copy button.primary{
+  border-color:var(--cue-accent);
+  background:var(--cue-accent);
+  color:#060606;
 }
 .profile-passport__stats{
   display:grid;
