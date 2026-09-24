@@ -22,6 +22,9 @@ const zoom = ref(1)
 const offsetX = ref(0)
 const offsetY = ref(0)
 const dragging = ref(false)
+const tooltipCityId = ref('')
+const viewportEl = ref<HTMLElement | null>(null)
+const viewportSize = reactive({ width: 1000, height: 520 })
 const dragStart = reactive({ x: 0, y: 0, offsetX: 0, offsetY: 0 })
 
 const activeCountry = computed(() =>
@@ -112,15 +115,27 @@ const edges = computed(() => {
 
 const transform = computed(() => `translate(${offsetX.value} ${offsetY.value}) scale(${zoom.value})`)
 
-const selectedNode = computed(() => nodes.value.find(node => node.city.id === props.cityId) || null)
+const selectedNode = computed(() => nodes.value.find(node => node.city.id === tooltipCityId.value) || null)
 
 const selectedNodePosition = computed(() => {
   if (!selectedNode.value) return { left: '50%', top: '50%' }
+
+  const viewportWidth = Math.max(viewportSize.width, 1)
+  const viewportHeight = Math.max(viewportSize.height, 1)
+  const viewBoxWidth = 1000
+  const viewBoxHeight = 520
+  const renderScale = Math.min(viewportWidth / viewBoxWidth, viewportHeight / viewBoxHeight)
+  const renderWidth = viewBoxWidth * renderScale
+  const renderHeight = viewBoxHeight * renderScale
+  const letterboxX = (viewportWidth - renderWidth) / 2
+  const letterboxY = (viewportHeight - renderHeight) / 2
+
   const x = offsetX.value + selectedNode.value.x * zoom.value
   const y = offsetY.value + selectedNode.value.y * zoom.value
+
   return {
-    left: `${Math.min(94, Math.max(6, (x / 1000) * 100))}%`,
-    top: `${Math.min(86, Math.max(14, (y / 520) * 100))}%`
+    left: `${letterboxX + x * renderScale}px`,
+    top: `${letterboxY + y * renderScale}px`
   }
 })
 
@@ -179,8 +194,24 @@ function resetView() {
   offsetY.value = 0
 }
 
+function selectNode(cityId: string) {
+  tooltipCityId.value = cityId
+  emit('selectCity', cityId)
+}
+
+function closeTooltip() {
+  tooltipCityId.value = ''
+}
+
+function syncViewportSize() {
+  if (!viewportEl.value) return
+  viewportSize.width = viewportEl.value.clientWidth || 1000
+  viewportSize.height = viewportEl.value.clientHeight || 520
+}
+
 function startDrag(event: PointerEvent) {
-  if ((event.target as Element)?.closest('button, a, [role="button"]')) return
+  if ((event.target as Element)?.closest('button, a, [role="button"], .passport-constellation__tooltip')) return
+  closeTooltip()
   dragging.value = true
   dragStart.x = event.clientX
   dragStart.y = event.clientY
@@ -200,7 +231,24 @@ function stopDrag() {
   dragging.value = false
 }
 
-watch(() => props.countryId, () => resetView())
+watch(() => props.countryId, () => {
+  closeTooltip()
+  resetView()
+})
+
+let viewportObserver: ResizeObserver | null = null
+
+onMounted(() => {
+  syncViewportSize()
+  if (typeof ResizeObserver === 'undefined' || !viewportEl.value) return
+  viewportObserver = new ResizeObserver(syncViewportSize)
+  viewportObserver.observe(viewportEl.value)
+})
+
+onBeforeUnmount(() => {
+  viewportObserver?.disconnect()
+  viewportObserver = null
+})
 </script>
 
 <template>
@@ -227,6 +275,7 @@ watch(() => props.countryId, () => resetView())
     </header>
 
     <div
+      ref="viewportEl"
       class="passport-constellation__viewport"
       :class="{ dragging }"
       @pointerdown="startDrag"
@@ -264,14 +313,14 @@ watch(() => props.countryId, () => resetView())
             v-for="node in nodes"
             :key="node.city.id"
             class="passport-constellation__node"
-            :class="{ active: node.city.id === cityId }"
+            :class="{ active: node.city.id === cityId, 'tooltip-open': node.city.id === tooltipCityId }"
             :transform="`translate(${node.x} ${node.y})`"
             role="button"
             tabindex="0"
             :aria-label="`${node.city.name}, ${node.city.bookings.length} dates`"
-            @click.stop="emit('selectCity', node.city.id)"
-            @keydown.enter.prevent="emit('selectCity', node.city.id)"
-            @keydown.space.prevent="emit('selectCity', node.city.id)"
+            @click.stop="selectNode(node.city.id)"
+            @keydown.enter.prevent="selectNode(node.city.id)"
+            @keydown.space.prevent="selectNode(node.city.id)"
           >
             <circle class="passport-constellation__halo" :r="node.size + 18" />
             <circle class="passport-constellation__dot" :r="node.size" />
@@ -340,7 +389,7 @@ watch(() => props.countryId, () => resetView())
 
     <footer v-if="nodes.length" class="passport-constellation__hint">
       <span>{{ locale === 'es' ? 'ARRASTRA PARA EXPLORAR' : 'DRAG TO EXPLORE' }}</span>
-      <span>{{ locale === 'es' ? 'SELECCIONA UN NODO PARA ENTRAR' : 'SELECT A NODE TO ENTER' }}</span>
+      <span>{{ locale === 'es' ? 'HAZ CLICK EN UN NODO PARA VER DETALLES' : 'CLICK A NODE TO VIEW DETAILS' }}</span>
     </footer>
   </section>
 </template>
