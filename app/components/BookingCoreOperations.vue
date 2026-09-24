@@ -5,6 +5,7 @@ const props = defineProps<{
   workspaceId: string
   booking: CoreBooking
   locale: 'es' | 'en'
+  refreshKey?: number
 }>()
 
 const emit = defineEmits<{ changed: [] }>()
@@ -123,6 +124,11 @@ watch([() => props.workspaceId, () => props.booking.id], () => {
   autoCompleteOnReply.value = false
   void load()
 }, { immediate: true })
+
+watch(() => props.refreshKey, (next, previous) => {
+  if (next === previous || next == null) return
+  void load()
+})
 
 watch(() => props.booking.event_date, (nextDate, previousDate) => {
   if (!nextDate) return
