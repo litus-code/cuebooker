@@ -109,6 +109,69 @@ function sanitizeCueIdConfig(value: unknown): PublicCueIdConfig | null {
   };
 }
 
+
+type PublicPassportMilestone = {
+  id: string;
+  title: string;
+  subtitle: string;
+};
+
+type BookingPassportRow = {
+  city: string | null;
+  venue_name: string | null;
+  event_date: string | null;
+};
+
+function normalizeLabel(value: string | null | undefined) {
+  return value?.trim() || "";
+}
+
+function uniqueLabels(values: Array<string | null | undefined>) {
+  const seen = new Map<string, string>();
+  for (const value of values) {
+    const label = normalizeLabel(value);
+    if (!label) continue;
+    const key = label.toLocaleLowerCase();
+    if (!seen.has(key)) seen.set(key, label);
+  }
+  return [...seen.values()];
+}
+
+function derivePublicPassport(bookings: BookingPassportRow[]) {
+  const cities = uniqueLabels(bookings.map((booking) => booking.city));
+  const venues = uniqueLabels(bookings.map((booking) => booking.venue_name));
+  const milestones: PublicPassportMilestone[] = [];
+
+  if (bookings.length) {
+    milestones.push({
+      id: "first-booking",
+      title: "FIRST BOOKING",
+      subtitle: "First confirmed date in Cuebooker"
+    });
+  }
+  if (cities[0]) {
+    milestones.push({
+      id: "first-city",
+      title: cities[0].toUpperCase(),
+      subtitle: "First city added to the trajectory"
+    });
+  }
+  if (venues[0]) {
+    milestones.push({
+      id: "first-venue",
+      title: venues[0].toUpperCase(),
+      subtitle: "First venue added to the Passport"
+    });
+  }
+
+  return {
+    confirmedBookings: bookings.length,
+    cities,
+    venues,
+    milestones: milestones.slice(0, 3)
+  };
+}
+
 type ArtistRow = {
   id: string;
   stage_name: string;
@@ -199,6 +262,30 @@ Deno.serve(async request => {
       serviceKey
     );
 
+    const workspaceArtists = await serviceJson<Array<{ workspace_id: string }>>(
+      `${supabaseUrl}/rest/v1/workspace_artists?artist_id=eq.${encodeURIComponent(artist.id)}&select=workspace_id`,
+      { method: "GET" },
+      serviceKey
+    );
+
+    const workspaceIds = workspaceArtists.map((item) => item.workspace_id).filter(Boolean);
+    let passport = {
+      confirmedBookings: 0,
+      cities: [] as string[],
+      venues: [] as string[],
+      milestones: [] as PublicPassportMilestone[]
+    };
+
+    if (workspaceIds.length) {
+      const workspaceFilter = workspaceIds.map((id) => `"${id}"`).join(",");
+      const bookings = await serviceJson<BookingPassportRow[]>(
+        `${supabaseUrl}/rest/v1/bookings?artist_id=eq.${encodeURIComponent(artist.id)}&workspace_id=in.(${encodeURIComponent(workspaceFilter)})&status=eq.confirmed&archived_at=is.null&select=city,venue_name,event_date&order=event_date.asc.nullslast`,
+        { method: "GET" },
+        serviceKey
+      );
+      passport = derivePublicPassport(bookings);
+    }
+
     const cueId = sanitizeCueIdConfig(artist.cue_id_config);
     const visualMode =
       artist.visual_source === "cue_id"
@@ -242,6 +329,7 @@ Deno.serve(async request => {
         artistImageScale: artist.artist_image_scale,
         visualMode,
         cueId: visualMode === "cue_id" ? cueId : null,
+        passport,
         acceptingRequests: Boolean(routes[0]?.accepting_requests)
       }
     }, 200, { "Cache-Control": "public, max-age=60, s-maxage=300" });
