@@ -262,8 +262,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
       query: {
         workspace_id: `eq.${workspaceId}`,
         artist_id: `eq.${artistId}`,
-        event_date: `gte.${fromDate}`,
-        and: `(event_date.lt.${toDate})`,
+        and: `(event_date.gte.${fromDate},event_date.lt.${toDate})`,
         status: 'eq.confirmed',
         archived_at: 'is.null',
         select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
@@ -655,8 +654,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
       headers: authHeaders(),
       query: {
         workspace_id: `eq.${workspaceId}`,
-        event_date: `gte.${fromDate}`,
-        and: `(event_date.lt.${toDate})`,
+        and: `(event_date.gte.${fromDate},event_date.lt.${toDate})`,
         status: 'eq.active',
         'bookings.artist_id': `eq.${artistId}`,
         select: 'id,workspace_id,booking_id,event_date,starts_at,ends_at,event_timezone,expires_at,priority,status,released_at,converted_at,created_by,created_at,updated_at,bookings!inner(id)',
