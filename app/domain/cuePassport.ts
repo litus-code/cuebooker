@@ -121,7 +121,7 @@ function countMilestone(
 
 export function deriveCuePassportSnapshot({ bookings, baseCountryCode }: PassportInput): CuePassportSnapshot {
   const confirmed = bookings
-    .filter(booking => booking.status === 'confirmed' && !booking.archived_at)
+    .filter(booking => booking.status === 'confirmed')
     .sort((a, b) => bookingDateValue(a).localeCompare(bookingDateValue(b)))
 
   const cities = uniqueLabels(confirmed.map(booking => booking.city))
@@ -212,7 +212,7 @@ export function cuePassportNextMilestones(snapshot: CuePassportSnapshot) {
 
 export function buildCuePassportWorld(bookings: CoreBooking[], media: CuePassportMedia[] = []): CuePassportWorld {
   const confirmed = bookings
-    .filter(booking => booking.status === 'confirmed' && !booking.archived_at)
+    .filter(booking => booking.status === 'confirmed')
     .sort((a, b) => bookingDateValue(a).localeCompare(bookingDateValue(b)))
 
   const countries = new Map<string, CuePassportCountryNode>()
