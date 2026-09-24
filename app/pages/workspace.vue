@@ -2029,12 +2029,6 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         </div>
 
           <section class="cue-passport">
-            <div class="cue-passport__copy">
-              <span>WORKSPACE / PASSPORT</span>
-              <p>{{ copy.passportBody }}</p>
-              <small>{{ copy.passportFuture }}</small>
-            </div>
-
             <div class="cue-passport__visual">
               <nav class="cue-passport__tabs" aria-label="Cue Passport">
                 <button type="button" :class="{ active: cuePassportTab === 'constellation' }" @click="cuePassportTab = 'constellation'">CONSTELLATION</button>
