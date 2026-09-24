@@ -1280,11 +1280,14 @@ section:focus { outline:none; }
   }
   .commercial-home .cp-hero-actions {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     width: min(100%, 520px);
   }
   .commercial-home .cp-hero-actions .cp-cta {
     width: 100%;
+    padding-inline: 12px;
+    font-size: clamp(10px, 2.8vw, 12px);
+    white-space: nowrap;
   }
   .commercial-home .cp-hero-actions .cp-cta--ghost {
     border-color: color-mix(in srgb, var(--cp-paper) 34%, transparent);
@@ -1353,6 +1356,15 @@ section:focus { outline:none; }
   }
   .commercial-home .cp-hero-note .cp-live-dot {
     display: none;
+  }
+}
+
+@media (max-width: 340px) {
+  .commercial-home .cp-hero-actions {
+    grid-template-columns: 1fr;
+  }
+  .commercial-home .cp-hero-actions .cp-cta {
+    font-size: 11px;
   }
 }
 
