@@ -389,6 +389,19 @@ async function scrollToBookingList() {
   list.querySelector<HTMLElement>('.core-inbox__booking-row.active')?.focus({ preventScroll: true })
 }
 
+async function scrollToBookingSection(targetId: string) {
+  if (!import.meta.client) return
+  await nextTick()
+  const target = document.getElementById(targetId)
+  if (!target) return
+  const header = document.getElementById('workspace-header')
+  const localNav = document.querySelector<HTMLElement>('.core-inbox__mobile-section-nav')
+  const offset = (header?.getBoundingClientRect().height || 0) + (localNav?.getBoundingClientRect().height || 0) + 18
+  const top = target.getBoundingClientRect().top + window.scrollY - offset
+  window.scrollTo({ top: Math.max(0, top), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+  target.focus({ preventScroll: true })
+}
+
 async function selectBooking(bookingId: string) {
   selectedBookingId.value = bookingId
   emit('bookingOpened', bookingId)
@@ -477,6 +490,11 @@ async function selectBooking(bookingId: string) {
           </button>
           <small>{{ statusLabels[selectedBooking.status] }}</small>
         </div>
+        <nav class="core-inbox__mobile-section-nav" :aria-label="locale === 'es' ? 'Secciones del booking' : 'Booking sections'">
+          <button type="button" @click="scrollToBookingSection('core-inbox-facts')">{{ locale === 'es' ? 'Datos' : 'Details' }}</button>
+          <button type="button" @click="scrollToBookingSection('core-inbox-conversation')">{{ locale === 'es' ? 'Conversación' : 'Conversation' }}</button>
+          <button v-if="!selectedBooking.archived_at" type="button" @click="scrollToBookingSection('core-inbox-operations')">{{ locale === 'es' ? 'Seguimiento' : 'Follow-up' }}</button>
+        </nav>
         <header>
           <div>
             <span>{{ sourceLabels[selectedBooking.source] || selectedBooking.source }}</span>
@@ -510,7 +528,7 @@ async function selectBooking(bookingId: string) {
               @saved="handleBookingSaved"
             />
           </div>
-          <dl id="core-inbox-facts" class="core-inbox__facts">
+          <dl id="core-inbox-facts" class="core-inbox__facts" tabindex="-1">
             <div><dt>{{ copy.date }}</dt><dd :class="{ missing: !selectedBooking.event_date }">{{ formatDate(selectedBooking.event_date) }}</dd></div>
             <div><dt>{{ copy.venue }}</dt><dd :class="{ missing: !selectedCounterparty?.name && !selectedBooking.venue_name }">{{ selectedCounterparty?.name || selectedBooking.venue_name || copy.noVenue }}</dd></div>
             <div class="core-inbox__contact-fact">
@@ -534,7 +552,7 @@ async function selectBooking(bookingId: string) {
           </dl>
         </section>
 
-        <section class="core-inbox__conversation">
+        <section id="core-inbox-conversation" class="core-inbox__conversation" tabindex="-1">
           <div class="core-inbox__conversation-heading">
             <div>
               <span>{{ copy.activity }}</span>
@@ -717,6 +735,7 @@ async function selectBooking(bookingId: string) {
 .core-inbox__list em { grid-column:2; justify-self:start; margin-top:-2px; font:700 8px monospace; color:var(--row-status,var(--cue-muted)); text-transform:uppercase; font-style:normal; }
 .core-inbox__detail { min-width:0; padding:var(--cue-space-4); background:var(--cue-surface); outline:none; }
 .core-inbox__mobile-nav { display:none; }
+.core-inbox__mobile-section-nav { display:none; }
 .core-inbox__detail > header { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:var(--cue-space-4); padding-bottom:var(--cue-space-3); border-bottom:1px solid var(--cue-border); }
 .core-inbox__detail > header span { color:var(--cue-accent); font:700 9px monospace; text-transform:uppercase; letter-spacing:.1em; }
 .core-inbox__detail h3 { margin:4px 0 3px; font-size:clamp(28px,2.4vw,36px); line-height:.96; letter-spacing:-.03em; }
@@ -784,6 +803,13 @@ async function selectBooking(bookingId: string) {
   .core-inbox__mobile-nav button { min-height:40px; padding:0; border:0; background:transparent; color:var(--cue-accent); cursor:pointer; font:800 9px/1 monospace; text-transform:uppercase; }
   .core-inbox__mobile-nav button span { margin-right:6px; font-size:14px; }
   .core-inbox__mobile-nav small { color:var(--cue-muted); font:800 8px/1 monospace; text-transform:uppercase; }
+  .core-inbox__mobile-section-nav { position:sticky; z-index:8; top:0; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin:0 0 14px; padding:8px 0; background:color-mix(in srgb,var(--cue-surface) 94%,transparent); backdrop-filter:blur(8px); }
+  .core-inbox__mobile-section-nav button { min-height:38px; padding:0 6px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-control); background:var(--cue-raised); color:var(--cue-muted); cursor:pointer; font:800 8px/1 monospace; text-transform:uppercase; }
+  .core-inbox__mobile-section-nav button:hover,
+  .core-inbox__mobile-section-nav button:focus-visible { border-color:var(--cue-accent); color:var(--cue-accent); outline:none; }
+  .core-inbox__facts:focus,
+  .core-inbox__conversation:focus,
+  #core-inbox-operations:focus { outline:none; }
   .core-inbox__list { border-right:0; border-bottom:1px solid var(--cue-border); max-height:260px; overflow:auto; }
   .core-inbox__list button { grid-template-columns:70px minmax(0,1fr); min-height:62px; }
   .core-inbox__list em { grid-column:2; margin-top:-4px; }
