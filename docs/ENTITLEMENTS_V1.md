@@ -197,3 +197,24 @@ Reusable commercial primitives now exist:
 - `capture.smart_extended` is presented as Artist Pro capacity while basic Smart Capture remains available on Free.
 
 Real billing is still intentionally disconnected. The base plan remains Free until `workspace_billing` is reconciled with the freemium model.
+
+
+## Automation boundary
+
+`automation.advanced` currently covers mechanical assistance that removes repeat work while leaving final decisions to the artist.
+
+Artist Pro:
+
+- prepares an editable follow-up draft when a booking has been waiting for a reply long enough;
+- can mark a saved next action as completed when a real inbound reply arrives.
+
+Free remains able to:
+
+- see stale-waiting attention;
+- write and send email manually;
+- create and complete next actions manually;
+- create and manage holds;
+- retry a failed email delivery;
+- receive automatic operational status transitions from real inbound/outbound activity.
+
+Confirmation, rejection, cancellation and final economic decisions are never automated by this entitlement.
