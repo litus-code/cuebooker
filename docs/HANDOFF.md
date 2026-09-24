@@ -10236,3 +10236,24 @@ Validation:
 - staging database soft-bounce trigger was applied and inspected;
 - production was not touched;
 - current preview workflow still does not execute `npm test`, so automated test execution is not claimed.
+
+
+## 24 Sep 2026 · Calendar and Overview decoupled from Inbox
+
+Calendar no longer uses the Booking Inbox page as its source of confirmed dates or holds.
+
+- Dedicated artist/month query returns up to 500 confirmed non-archived bookings.
+- Dedicated artist/month hold query uses the Booking relationship so Agency workspaces do not mix artists.
+- PostgREST date ranges use the canonical `and=(event_date.gte...,event_date.lt...)` form.
+- Month cells, selected-day timeline and manual-block overlap checks use the monthly Booking Core sources.
+- Overview confirmed/hold/occupied-day KPIs use those same sources and show the month being counted.
+- Overview upcoming agenda now combines manual availability blocks, active holds and confirmed bookings instead of showing only manual blocks.
+- Booking/hold agenda items open the real Booking; manual blocks open Calendar editing.
+
+Validation:
+
+- calendar decoupling HEAD `94a39c5aabb18efb0b63c493c040286d31a8e7c3` passed its PR preview;
+- final Overview agenda HEAD `59b2809458d625425e5bad80651b8ded9db53292`;
+- GitHub Actions run `36041300782` completed successfully, including `Generate preview build` and PR preview deployment;
+- production remains untouched;
+- this preview workflow does not execute `npm test`.
