@@ -2519,6 +2519,10 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-builder__cue-id { border-color:color-mix(in srgb,var(--cue-accent) 38%,var(--cue-border)); }
 .profile-builder__cue-id strong { color:var(--cue-accent); }
 .profile-builder__cue-title{display:flex;align-items:center;gap:8px;margin-top:14px}.profile-builder__cue-title strong{margin-top:0}.profile-builder__cue-title small{padding:4px 6px;border:1px solid color-mix(in srgb,var(--cue-accent) 46%,var(--cue-border));border-radius:var(--cue-radius-sm);color:var(--cue-accent);font:800 8px/1 monospace;letter-spacing:.08em}
+.profile-editor-backdrop{position:fixed;z-index:70;inset:0;display:flex;justify-content:flex-end;background:rgba(0,0,0,.68);backdrop-filter:blur(6px)}
+.profile-builder-editor--panel{display:grid;grid-template-rows:auto minmax(0,1fr) auto;width:min(520px,100%);max-height:100dvh;overflow:hidden;border:0;border-left:1px solid var(--cue-border);box-shadow:-28px 0 80px rgba(0,0,0,.5)}
+.profile-builder-editor--panel>.profile-fieldset{overflow-y:auto;overscroll-behavior:contain}
+.profile-builder-editor--panel>footer{position:sticky;bottom:0;background:var(--cue-surface)}
 .profile-builder-editor { border:1px solid var(--cue-toggle); background:var(--cue-surface); }
 .profile-builder-editor > header { display:flex; justify-content:space-between; gap:20px; align-items:flex-start; padding:18px; border-bottom:1px solid var(--cue-border); }
 .profile-builder-editor > header h2 { margin:6px 0 0; font-size:clamp(1.5rem,3vw,2.5rem); text-transform:uppercase; }
@@ -2681,6 +2685,11 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 }
 
 @media (max-width: 680px) {
+  .profile-editor-backdrop{display:block;background:var(--cue-surface);backdrop-filter:none}
+  .profile-builder-editor--panel{width:100%;min-height:100dvh;max-height:100dvh;border-left:0}
+  .profile-builder-editor--panel>header{position:sticky;top:0;z-index:3;background:var(--cue-surface)}
+  .profile-builder-editor--panel>footer{z-index:3}
+
   .workspace { padding: 0 14px 24px; }
   .workspace-header { min-height: 62px; margin-inline: -14px; }
   .account-actions { gap: 8px; }
