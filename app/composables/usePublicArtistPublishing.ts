@@ -1,5 +1,6 @@
 type PublicPublishingState = {
   publicProfileEnabled: boolean
+  passportPublicEnabled: boolean
   acceptingRequests: boolean
   workspaceId: string | null
 }
@@ -7,6 +8,7 @@ type PublicPublishingState = {
 type ArtistPublicRow = {
   id: string
   public_profile_enabled: boolean
+  passport_public_enabled: boolean
 }
 
 type ArtistBookingRouteRow = {
@@ -35,7 +37,7 @@ export function usePublicArtistPublishing() {
     const [artists, routes] = await Promise.all([
       $fetch<ArtistPublicRow[]>(`${supabaseUrl.value}/rest/v1/artists`, {
         headers: headers(),
-        query: { id: `eq.${artistId}`, select: 'id,public_profile_enabled', limit: '1' }
+        query: { id: `eq.${artistId}`, select: 'id,public_profile_enabled,passport_public_enabled', limit: '1' }
       }),
       $fetch<ArtistBookingRouteRow[]>(`${supabaseUrl.value}/rest/v1/artist_booking_routes`, {
         headers: headers(),
@@ -46,6 +48,7 @@ export function usePublicArtistPublishing() {
     if (!artists[0]) throw new Error('artist_not_found_or_forbidden')
     return {
       publicProfileEnabled: Boolean(artists[0].public_profile_enabled),
+      passportPublicEnabled: Boolean(artists[0].passport_public_enabled),
       acceptingRequests: Boolean(routes[0]?.accepting_requests),
       workspaceId: routes[0]?.workspace_id || null
     }
@@ -55,11 +58,22 @@ export function usePublicArtistPublishing() {
     const rows = await $fetch<ArtistPublicRow[]>(`${supabaseUrl.value}/rest/v1/artists`, {
       method: 'PATCH',
       headers: { ...headers(), Prefer: 'return=representation' },
-      query: { id: `eq.${artistId}`, select: 'id,public_profile_enabled' },
+      query: { id: `eq.${artistId}`, select: 'id,public_profile_enabled,passport_public_enabled' },
       body: { public_profile_enabled: enabled }
     })
     if (!rows[0]) throw new Error('public_profile_not_updated')
     return Boolean(rows[0].public_profile_enabled)
+  }
+
+  async function setPassportPublicEnabled(artistId: string, enabled: boolean) {
+    const rows = await $fetch<ArtistPublicRow[]>(`${supabaseUrl.value}/rest/v1/artists`, {
+      method: 'PATCH',
+      headers: { ...headers(), Prefer: 'return=representation' },
+      query: { id: `eq.${artistId}`, select: 'id,public_profile_enabled,passport_public_enabled' },
+      body: { passport_public_enabled: enabled }
+    })
+    if (!rows[0]) throw new Error('passport_public_visibility_not_updated')
+    return Boolean(rows[0].passport_public_enabled)
   }
 
   async function setAcceptingRequests(artistId: string, workspaceId: string, enabled: boolean) {
@@ -83,5 +97,5 @@ export function usePublicArtistPublishing() {
     return Boolean(rows[0].accepting_requests)
   }
 
-  return { load, setPublicProfileEnabled, setAcceptingRequests }
+  return { load, setPublicProfileEnabled, setPassportPublicEnabled, setAcceptingRequests }
 }
