@@ -1,5 +1,5 @@
 <script setup lang="ts">
-type ProfileSection = 'identity' | 'image' | 'sound' | 'links' | 'booking' | 'distribution'
+type ProfileSection = 'identity' | 'image' | 'portrait' | 'sound' | 'links' | 'booking' | 'distribution'
 
 type ProfilePassport = {
   confirmedBookings: number
@@ -111,7 +111,7 @@ const links = computed(() => [
         </button>
 
         <div class="artist-workspace-profile__hero-content">
-          <button v-if="editable" type="button" class="artist-workspace-profile__portrait editable" @click="emit('edit','image')">
+          <button v-if="editable" type="button" class="artist-workspace-profile__portrait editable" @click="emit('edit','portrait')">
             <img v-if="portrait" :src="portrait" :alt="profile.stageName">
             <span v-else>{{ initials }}</span>
             <i aria-hidden="true" />
