@@ -124,3 +124,52 @@ test('Passport world keeps unknown location data navigable without inventing geo
   assert.equal(world.countries[0]?.cities[0]?.name, 'Unknown city')
   assert.equal(world.countries[0]?.cities[0]?.venues[0]?.name, 'Unknown venue')
 })
+
+
+test('Passport world attaches only linked media to each booking node', () => {
+  const media = [{
+    id: 'media-1',
+    workspace_id: 'workspace',
+    booking_id: 'b1',
+    source: 'instagram' as const,
+    media_type: 'reel' as const,
+    status: 'linked' as const,
+    external_id: 'ig-1',
+    permalink: 'https://example.com/reel',
+    media_url: null,
+    thumbnail_url: 'https://example.com/thumb.jpg',
+    caption: 'Apolo night',
+    captured_at: '2026-01-01T23:00:00Z',
+    suggested_match_score: 100,
+    metadata: {},
+    created_by: 'user',
+    created_at: '2026-01-02T00:00:00Z',
+    updated_at: '2026-01-02T00:00:00Z'
+  }, {
+    id: 'media-2',
+    workspace_id: 'workspace',
+    booking_id: 'b1',
+    source: 'instagram' as const,
+    media_type: 'image' as const,
+    status: 'suggested' as const,
+    external_id: 'ig-2',
+    permalink: null,
+    media_url: 'https://example.com/image.jpg',
+    thumbnail_url: null,
+    caption: null,
+    captured_at: '2026-01-01T20:00:00Z',
+    suggested_match_score: 70,
+    metadata: {},
+    created_by: 'user',
+    created_at: '2026-01-02T00:00:00Z',
+    updated_at: '2026-01-02T00:00:00Z'
+  }]
+
+  const world = buildCuePassportWorld([
+    booking({ id: 'b1', city: 'Barcelona', venue_name: 'Apolo' })
+  ], media)
+
+  const node = world.countries[0]?.cities[0]?.bookings[0]
+  assert.equal(node?.media.length, 1)
+  assert.equal(node?.media[0]?.id, 'media-1')
+})
