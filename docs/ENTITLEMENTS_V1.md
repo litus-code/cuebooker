@@ -232,6 +232,8 @@ Free:
 
 Artist Pro / Agency:
 
-- load the full available workspace Activity history.
+- load artist Activity independently from the Booking Inbox page;
+- do not inherit the Inbox booking cap;
+- load up to 500 Activity rows per V1 request.
 
-The limit is applied at the API query through `occurred_at`, rather than loading older records and hiding them client-side.
+The Free date limit is applied at the API query through `occurred_at`, rather than loading older records and hiding them client-side. The current V1 history load cap is explicit and should not be described as infinite retention/search.
