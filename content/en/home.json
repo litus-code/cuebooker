@@ -39,46 +39,6 @@
     "file": "artist_dates_FINAL_v8.xlsx",
     "statement": "CueBooker turns what already happens into one thread that stays intact."
   },
-  "search": {
-    "index": "10 / VISION",
-    "eyebrow": "LATER · WHEN A REAL NETWORK EXISTS",
-    "title": "Trajectory first. Discovery later.",
-    "body": "Once real bookings, relationships and availability exist, CueBooker can add artist discovery without turning followers or popularity into a measure of value. The core remains the artist's real work and trajectory.",
-    "where": "Where",
-    "when": "When",
-    "sound": "Sound",
-    "budget": "Budget",
-    "button": "Simulate search",
-    "searching": "Finding available DJs",
-    "resultCount": "3 available artists",
-    "resultHint": "Concept view of a future feature. Budget filters matches, but each DJ's fee remains private. Artists and results are fictional.",
-    "visibility": "OPT-IN AVAILABILITY",
-    "available": "Available for requests",
-    "request": "View profile and request date",
-    "why": "Why it fits",
-    "reasons": [
-      "Available on your date",
-      "Sound match",
-      "Within budget"
-    ],
-    "artists": [
-      {
-        "name": "NØRA",
-        "city": "BARCELONA",
-        "sound": "HYPNOTIC · TECHNO"
-      },
-      {
-        "name": "KAIRO",
-        "city": "GIRONA",
-        "sound": "DETROIT · GROOVE"
-      },
-      {
-        "name": "MARA V",
-        "city": "BARCELONA",
-        "sound": "INDUSTRIAL · LIVE"
-      }
-    ]
-  },
   "flow": {
     "index": "02 / HOW IT WORKS",
     "eyebrow": "FROM A CONVERSATION TO A TRACKABLE BOOKING",
