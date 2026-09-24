@@ -21,6 +21,7 @@ const p = computed(() => locale.value === 'es' ? {
   "nav": {
     "system": "Cómo funciona",
     "distribution": "Comparte tu perfil",
+    "passport": "CUE Passport",
     "identity": "CUE ID",
     "login": "Iniciar sesión",
     "signup": "Crear cuenta"
@@ -77,8 +78,23 @@ const p = computed(() => locale.value === 'es' ? {
     "next": "Siguiente paso",
     "restart": "Volver a la propuesta"
   },
+  "circuit": {
+    "label": "02 / EL CIRCUITO",
+    "title": "De la primera señal a una fecha que cuenta.",
+    "body": "Cuebooker mantiene unido todo el proceso. Tú decides cuándo avanzar.",
+    "steps": [
+      { "title": "Solicitud", "text": "Llega desde tu perfil, tu web, un enlace o un QR." },
+      { "title": "Conversación", "text": "Mensajes y contexto permanecen unidos a la propuesta." },
+      { "title": "Hold", "text": "Reserva provisionalmente la fecha sin confirmarla." },
+      { "title": "Decisión", "text": "Revisa condiciones y elige cómo seguir." },
+      { "title": "Booking", "text": "Confirma cuando todo encaja." },
+      { "title": "Evento", "text": "La fecha pasa al calendario y al historial." },
+      { "title": "Passport", "text": "La ciudad, el venue y tu recorrido crecen con actividad real." }
+    ],
+    "closing": "Una oportunidad deja de ser un mensaje suelto y pasa a formar parte de tu trayectoria."
+  },
   "share": {
-    "label": "02 / COMPARTE TU PERFIL",
+    "label": "03 / COMPARTE TU PERFIL",
     "title": "Tu web, tu bio o una pegatina en la cabina.",
     "body": "Que sepan dónde encontrarte. Y cómo proponerte una fecha.",
     "tabs": [
@@ -112,7 +128,7 @@ const p = computed(() => locale.value === 'es' ? {
     "cta": "Crear mi perfil"
   },
   "control": {
-    "label": "03 / A TU MANERA",
+    "label": "04 / A TU MANERA",
     "title": "Tu sonido tiene criterio.\nTus decisiones también.",
     "body": "Hay propuestas que encajan contigo y otras que no. Eso lo decides tú.",
     "support": "Cuebooker te ayuda a mantener el seguimiento y el contexto de cada conversación.",
@@ -129,8 +145,32 @@ const p = computed(() => locale.value === 'es' ? {
       "Cuándo confirmar una fecha"
     ]
   },
+  "passport": {
+    "label": "05 / CUE PASSPORT",
+    "title": "Cada fecha deja huella.",
+    "body": "Cuebooker convierte bookings confirmados en ciudades, venues, hitos y recuerdos de tu recorrido.",
+    "features": [
+      { "title": "Constelación", "text": "Explora países, ciudades, venues y fechas conectadas." },
+      { "title": "Stickers", "text": "Los hitos se consiguen con actividad real, no se rellenan a mano." },
+      { "title": "Timeline", "text": "Tu recorrido crece en orden y conserva el contexto de cada etapa." }
+    ],
+    "note": "El Passport básico está incluido. La media de eventos, los exports y los recaps avanzados forman parte de Artist Pro.",
+    "visual": "BOOKING → EVENTO → TRAYECTORIA"
+  },
+  "passport": {
+    "label": "05 / CUE PASSPORT",
+    "title": "Every date leaves a mark.",
+    "body": "Cuebooker turns confirmed bookings into cities, venues, milestones and memories from your trajectory.",
+    "features": [
+      { "title": "Constellation", "text": "Explore connected countries, cities, venues and dates." },
+      { "title": "Stickers", "text": "Milestones come from real activity. They are not filled in manually." },
+      { "title": "Timeline", "text": "Your trajectory grows in order and keeps the context of every stage." }
+    ],
+    "note": "Basic Passport is included. Event media, exports and advanced recaps are part of Artist Pro.",
+    "visual": "BOOKING → EVENT → TRAJECTORY"
+  },
   "identity": {
-    "label": "04 / CUE ID",
+    "label": "06 / CUE ID",
     "title": "Tu sonido ya tiene identidad.\nAhora puede tener cuerpo.",
     "body": "Crea tu personaje 3D y convierte tu identidad artística en algo reconocible.",
     "beta": "BETA · EN EVOLUCIÓN",
@@ -165,6 +205,35 @@ const p = computed(() => locale.value === 'es' ? {
     ],
     "closing": "Tú decides qué compartes. Cuebooker se encarga de que pueda encontrarse."
   },
+  "pricing": {
+    "label": "07 / PLANES",
+    "title": "Empieza gratis. Crece cuando el trabajo lo pida.",
+    "body": "El primer booking, el calendario, el perfil y el Passport básico forman parte de Free.",
+    "plans": [
+      {
+        "name": "FREE",
+        "price": "0 €",
+        "description": "Para vivir el circuito real desde el primer día.",
+        "items": ["Booking Core básico", "Perfil y formulario público", "Calendario básico", "CUE Passport y CUE ID básicos"],
+        "cta": "Crear cuenta"
+      },
+      {
+        "name": "ARTIST PRO",
+        "price": "9,99 € / mes",
+        "description": "Para artistas con actividad recurrente.",
+        "items": ["Mayor capacidad e historial completo", "Automatizaciones y Smart Capture ampliado", "Passport avanzado y media de eventos", "Analytics, exports y personalización"],
+        "cta": "Conocer Artist Pro"
+      },
+      {
+        "name": "AGENCY",
+        "price": "39 € / mes",
+        "description": "Para managers y equipos que coordinan varios artistas.",
+        "items": ["Workspace multiartista", "Equipo, roles y permisos", "Inbox y calendario de roster", "Reporting y plantillas de agencia"],
+        "cta": "Conocer Agency"
+      }
+    ],
+    "founding": "Founding Artist Pro: 7,99 € al mes o 79 € al año para la cohorte inicial."
+  },
   "closing": {
     "title": "Hay mucho trabajo detrás de lo que haces.",
     "accent": "Dale su espacio.",
@@ -175,6 +244,7 @@ const p = computed(() => locale.value === 'es' ? {
   "nav": {
     "system": "How it works",
     "distribution": "Share your profile",
+    "passport": "CUE Passport",
     "identity": "CUE ID",
     "login": "Sign in",
     "signup": "Create account"
@@ -231,8 +301,23 @@ const p = computed(() => locale.value === 'es' ? {
     "next": "Next step",
     "restart": "Back to the proposal"
   },
+  "circuit": {
+    "label": "02 / THE FLOW",
+    "title": "From the first signal to a date that matters.",
+    "body": "Cuebooker keeps the whole process connected. You decide when it moves forward.",
+    "steps": [
+      { "title": "Request", "text": "It arrives through your profile, website, link or QR." },
+      { "title": "Conversation", "text": "Messages and context stay attached to the proposal." },
+      { "title": "Hold", "text": "Reserve the date provisionally without confirming it." },
+      { "title": "Decision", "text": "Review the terms and choose what happens next." },
+      { "title": "Booking", "text": "Confirm when everything fits." },
+      { "title": "Event", "text": "The date moves into your calendar and history." },
+      { "title": "Passport", "text": "The city, venue and your trajectory grow from real activity." }
+    ],
+    "closing": "An opportunity stops being a loose message and becomes part of your trajectory."
+  },
   "share": {
-    "label": "02 / SHARE YOUR PROFILE",
+    "label": "03 / SHARE YOUR PROFILE",
     "title": "Your website, your bio or a sticker in the booth.",
     "body": "Let them find you. And propose a date.",
     "tabs": [
@@ -266,7 +351,7 @@ const p = computed(() => locale.value === 'es' ? {
     "cta": "Create my profile"
   },
   "control": {
-    "label": "03 / YOUR WAY",
+    "label": "04 / YOUR WAY",
     "title": "Your sound has a point of view.\nSo do your decisions.",
     "body": "Some proposals fit you. Others do not. You decide.",
     "support": "Cuebooker helps you keep track of every conversation and its context.",
@@ -318,6 +403,35 @@ const p = computed(() => locale.value === 'es' ? {
       "Professional profiles for agencies and teams"
     ],
     "closing": "You decide what to share. Cuebooker makes sure it can be found."
+  },
+  "pricing": {
+    "label": "07 / PLANS",
+    "title": "Start free. Grow when the work demands it.",
+    "body": "Your first booking, calendar, profile and basic Passport are included in Free.",
+    "plans": [
+      {
+        "name": "FREE",
+        "price": "€0",
+        "description": "Experience the real flow from day one.",
+        "items": ["Basic Booking Core", "Public profile and form", "Basic calendar", "Basic CUE Passport and CUE ID"],
+        "cta": "Create account"
+      },
+      {
+        "name": "ARTIST PRO",
+        "price": "€9.99 / month",
+        "description": "For artists managing recurring activity.",
+        "items": ["Higher capacity and full history", "Automation and extended Smart Capture", "Advanced Passport and event media", "Analytics, exports and customisation"],
+        "cta": "Explore Artist Pro"
+      },
+      {
+        "name": "AGENCY",
+        "price": "€39 / month",
+        "description": "For managers and teams coordinating several artists.",
+        "items": ["Multi-artist workspace", "Team roles and permissions", "Shared inbox and roster calendar", "Reporting and agency templates"],
+        "cta": "Explore Agency"
+      }
+    ],
+    "founding": "Founding Artist Pro: €7.99 per month or €79 per year for the initial cohort."
   },
   "closing": {
     "title": "There is a lot of work behind what you do.",
@@ -501,6 +615,7 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
         <div class="cp-nav-links">
           <a href="#system" @click.prevent="scrollTo('#system')">{{ p.nav.system }}</a>
           <a href="#distribution" @click.prevent="scrollTo('#distribution')">{{ p.nav.distribution }}</a>
+          <a href="#passport" @click.prevent="scrollTo('#passport')">{{ p.nav.passport }}</a>
           <a href="#cue-id" @click.prevent="scrollTo('#cue-id')">{{ p.nav.identity }}</a>
         </div>
         <div class="cp-nav-actions">
@@ -516,6 +631,7 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
         <div class="cp-mobile-nav-links">
           <a href="#system" @click.prevent="scrollTo('#system')">{{ p.nav.system }}</a>
           <a href="#distribution" @click.prevent="scrollTo('#distribution')">{{ p.nav.distribution }}</a>
+          <a href="#passport" @click.prevent="scrollTo('#passport')">{{ p.nav.passport }}</a>
           <a href="#cue-id" @click.prevent="scrollTo('#cue-id')">{{ p.nav.identity }}</a>
         </div>
         <div class="cp-mobile-auth">
@@ -571,6 +687,22 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
       </div></div>
     </section>
 
+
+    <section class="ed-section ed-circuit cp-wrap" aria-labelledby="circuit-title">
+      <div class="ed-circuit-intro">
+        <p class="cp-kicker">{{ p.circuit.label }}</p>
+        <h2 id="circuit-title">{{ p.circuit.title }}</h2>
+        <p class="ed-deck">{{ p.circuit.body }}</p>
+      </div>
+      <ol class="ed-circuit-flow">
+        <li v-for="(step, i) in p.circuit.steps" :key="step.title">
+          <span class="ed-circuit-index">0{{ i + 1 }}</span>
+          <div><strong>{{ step.title }}</strong><p>{{ step.text }}</p></div>
+        </li>
+      </ol>
+      <p class="ed-circuit-closing">{{ p.circuit.closing }}</p>
+    </section>
+
     <section tabindex="-1" id="distribution" class="ed-share ed-section">
       <div class="cp-wrap"><p class="cp-kicker">{{ p.share.label }}</p><h2>{{ p.share.title }}</h2><p class="ed-deck">{{ p.share.body }}</p>
         <div class="ed-carousel" data-slide-group="sharing" @pointerdown="stopSlides('sharing')" @focusin="stopSlides('sharing')">
@@ -599,29 +731,49 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
 
     <section class="ed-section cp-wrap ed-control"><p class="cp-kicker">{{ p.control.label }}</p><h2>{{ p.control.title }}</h2><div class="ed-control-intro"><p class="ed-deck">{{ p.control.body }}</p><p>{{ p.control.support }}</p></div><div class="ed-responsibility"><div><h3>{{ p.control.left }}</h3><p v-for="item in p.control.tasks" :key="item">{{ item }}</p></div><div><h3>{{ p.control.right }}</h3><p v-for="item in p.control.decisions" :key="item">{{ item }}</p></div></div></section>
 
+
+    <section tabindex="-1" id="passport" class="ed-section ed-passport cp-wrap">
+      <div class="ed-passport-copy">
+        <p class="cp-kicker">{{ p.passport.label }}</p>
+        <h2>{{ p.passport.title }}</h2>
+        <p class="ed-deck">{{ p.passport.body }}</p>
+        <div class="ed-passport-features">
+          <article v-for="(feature, i) in p.passport.features" :key="feature.title">
+            <span>0{{ i + 1 }}</span>
+            <div><h3>{{ feature.title }}</h3><p>{{ feature.text }}</p></div>
+          </article>
+        </div>
+        <p class="ed-passport-note">{{ p.passport.note }}</p>
+      </div>
+      <div class="ed-passport-visual" aria-hidden="true">
+        <span class="ed-mono">CUE PASSPORT / ACTIVITY ENGINE</span>
+        <div class="ed-passport-orbit ed-passport-orbit--one" />
+        <div class="ed-passport-orbit ed-passport-orbit--two" />
+        <i class="ed-passport-node ed-passport-node--world">WORLD</i>
+        <i class="ed-passport-node ed-passport-node--city">CITY</i>
+        <i class="ed-passport-node ed-passport-node--venue">VENUE</i>
+        <i class="ed-passport-node ed-passport-node--event">EVENT</i>
+        <strong>{{ p.passport.visual }}</strong>
+      </div>
+    </section>
+
     <section tabindex="-1" id="cue-id" class="ed-section ed-identity cp-wrap"><div><p class="cp-kicker">{{ p.identity.label }}</p><h2>{{ p.identity.title }}</h2><p class="ed-deck">{{ p.identity.body }}</p><p>{{ p.identity.detail }}</p><span class="cp-beta-note">{{ p.identity.beta }}</span></div><div class="ed-identity-poster"><span class="ed-mono">CUE ID / ARTIST PROFILE</span><strong>{{ p.identity.visual }}</strong><span>{{ p.identity.caption }}</span><span class="ed-poster-corner" aria-hidden="true">C /</span></div></section>
 
-    <section class="ed-section ed-roadmap cp-wrap">
-      <div class="ed-roadmap-intro">
-        <p class="cp-kicker">{{ p.roadmap.label }}</p>
-        <h2>{{ p.roadmap.title }}</h2>
-        <p class="ed-deck">{{ p.roadmap.body }}</p>
+    <section id="pricing" class="ed-section ed-pricing cp-wrap" aria-labelledby="pricing-title">
+      <div class="ed-pricing-intro">
+        <p class="cp-kicker">{{ p.pricing.label }}</p>
+        <h2 id="pricing-title">{{ p.pricing.title }}</h2>
+        <p class="ed-deck">{{ p.pricing.body }}</p>
       </div>
-      <div class="ed-roadmap-grid">
-        <article class="ed-roadmap-column ed-roadmap-column--available">
-          <header><span class="ed-roadmap-status" aria-hidden="true" />{{ p.roadmap.available }}</header>
-          <ul><li v-for="item in p.roadmap.availableItems" :key="item">{{ item }}</li></ul>
-        </article>
-        <article class="ed-roadmap-column ed-roadmap-column--evolving">
-          <header><span class="ed-roadmap-status" aria-hidden="true" />{{ p.roadmap.evolving }}</header>
-          <ul><li v-for="item in p.roadmap.evolvingItems" :key="item">{{ item }}</li></ul>
-        </article>
-        <article class="ed-roadmap-column ed-roadmap-column--next">
-          <header><span class="ed-roadmap-status" aria-hidden="true" />{{ p.roadmap.next }}</header>
-          <ul><li v-for="item in p.roadmap.nextItems" :key="item">{{ item }}</li></ul>
+      <div class="ed-pricing-grid">
+        <article v-for="(plan, i) in p.pricing.plans" :key="plan.name" class="ed-price-card" :class="{ 'ed-price-card--featured': i === 1 }">
+          <header><span>{{ plan.name }}</span><strong>{{ plan.price }}</strong></header>
+          <p>{{ plan.description }}</p>
+          <ul><li v-for="item in plan.items" :key="item">{{ item }}</li></ul>
+          <button class="cp-cta" :class="{ 'cp-cta--ghost': i !== 1 }" type="button" @click="auth('signup', 'pricing-' + plan.name.toLowerCase().replace(' ', '-'))">{{ plan.cta }}<span class="cp-arrow" aria-hidden="true" /></button>
         </article>
       </div>
-      <p class="ed-roadmap-closing">{{ p.roadmap.closing }}</p>
+      <p class="ed-pricing-founding">{{ p.pricing.founding }}</p>
     </section>
 
     <section class="ed-closing"><div class="cp-wrap"><p>{{ p.closing.title }}</p><h2>{{ p.closing.accent }}</h2><button class="cp-cta" @click="auth('signup','closing')">{{ p.closing.cta }}<span class="cp-arrow" aria-hidden="true" /></button></div></section>
@@ -1192,6 +1344,388 @@ section:focus { outline:none; }
   .commercial-home .cp-hero-content {
     min-height: auto !important;
     padding-bottom: 24px !important;
+  }
+}
+</style>
+
+
+<style scoped>
+/* Product circuit, Passport and commercial plans. */
+.ed-circuit {
+  border-top: 1px solid var(--cp-line);
+}
+.ed-circuit-intro {
+  max-width: 830px;
+}
+.ed-circuit-flow {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0;
+  margin: 54px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ed-circuit-flow::before {
+  position: absolute;
+  top: 26px;
+  left: 4%;
+  right: 4%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--cp-red), var(--cp-lime));
+  content: '';
+}
+.ed-circuit-flow li {
+  position: relative;
+  min-width: 0;
+  padding: 0 12px;
+}
+.ed-circuit-index {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 22px;
+  border: 1px solid var(--cp-line);
+  border-radius: 50%;
+  background: var(--cp-black);
+  color: var(--cp-muted);
+  font: 11px ui-monospace, monospace;
+}
+.ed-circuit-flow li:first-child .ed-circuit-index {
+  border-color: var(--cp-red);
+}
+.ed-circuit-flow li:last-child .ed-circuit-index {
+  border-color: var(--cp-lime);
+  background: var(--cp-lime);
+  color: var(--cue-accent-ink);
+}
+.ed-circuit-flow strong {
+  display: block;
+  min-height: 44px;
+  color: var(--cp-paper);
+  font-size: 16px;
+  line-height: 1.25;
+}
+.ed-circuit-flow p {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.ed-circuit-closing {
+  max-width: 900px;
+  margin: 48px 0 0;
+  padding: 28px 0 0;
+  border-top: 1px solid var(--cp-line);
+  color: var(--cp-paper) !important;
+  font-size: clamp(21px, 2.2vw, 30px) !important;
+  line-height: 1.35 !important;
+}
+
+.ed-passport {
+  display: grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap: 90px;
+  align-items: center;
+  border-top: 1px solid var(--cp-line);
+}
+.ed-passport-copy {
+  min-width: 0;
+}
+.ed-passport-features {
+  margin-top: 32px;
+  border-top: 1px solid var(--cp-line);
+}
+.ed-passport-features article {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--cp-line);
+}
+.ed-passport-features article > span {
+  padding-top: 4px;
+  color: var(--cp-lime);
+  font: 11px ui-monospace, monospace;
+}
+.ed-passport-features h3 {
+  margin: 0 0 5px;
+  font-size: 18px;
+}
+.ed-passport-features p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.ed-passport-note {
+  margin: 24px 0 0;
+  padding-left: 16px;
+  border-left: 2px solid var(--cp-lime);
+  font-size: 13px !important;
+}
+.ed-passport-visual {
+  position: relative;
+  min-height: 460px;
+  overflow: hidden;
+  border: 1px solid var(--cp-line);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 58% 46%, color-mix(in srgb, var(--cp-lime) 12%, transparent), transparent 33%),
+    linear-gradient(145deg, var(--cp-panel), var(--cp-black));
+  box-shadow: 0 28px 70px var(--cue-shadow);
+}
+.ed-passport-visual > .ed-mono {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+}
+.ed-passport-orbit {
+  position: absolute;
+  top: 50%;
+  left: 54%;
+  border: 1px solid color-mix(in srgb, var(--cp-lime) 28%, transparent);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.ed-passport-orbit--one {
+  width: 210px;
+  height: 210px;
+}
+.ed-passport-orbit--two {
+  width: 340px;
+  height: 340px;
+  border-color: color-mix(in srgb, var(--cp-line) 80%, transparent);
+}
+.ed-passport-node {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  min-width: 52px;
+  min-height: 52px;
+  padding: 8px;
+  border: 1px solid var(--cp-line);
+  border-radius: 50%;
+  background: var(--cp-black);
+  color: var(--cp-muted);
+  font: normal 9px ui-monospace, monospace;
+}
+.ed-passport-node--world {
+  top: 50%;
+  left: 54%;
+  border-color: var(--cp-lime);
+  color: var(--cp-lime);
+  transform: translate(-50%, -50%);
+}
+.ed-passport-node--city {
+  top: 22%;
+  left: 54%;
+}
+.ed-passport-node--venue {
+  top: 52%;
+  right: 8%;
+}
+.ed-passport-node--event {
+  bottom: 12%;
+  left: 18%;
+  border-color: var(--cp-red);
+}
+.ed-passport-visual > strong {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--cp-line);
+  color: var(--cp-paper);
+  font: 700 11px ui-monospace, monospace;
+  letter-spacing: .08em;
+}
+
+.ed-pricing {
+  border-top: 1px solid var(--cp-line);
+}
+.ed-pricing-intro {
+  max-width: 850px;
+}
+.ed-pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 48px;
+}
+.ed-price-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 28px;
+  border: 1px solid var(--cp-line);
+  border-radius: 14px;
+  background: var(--cp-panel);
+}
+.ed-price-card--featured {
+  border-top: 3px solid var(--cp-lime);
+  box-shadow: 0 24px 65px color-mix(in srgb, var(--cp-lime) 8%, transparent);
+}
+.ed-price-card header {
+  display: grid;
+  gap: 14px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--cp-line);
+}
+.ed-price-card header span {
+  color: var(--cp-lime);
+  font: 700 11px ui-monospace, monospace;
+  letter-spacing: .12em;
+}
+.ed-price-card header strong {
+  color: var(--cp-paper);
+  font-size: clamp(25px, 2.3vw, 34px);
+  letter-spacing: -.035em;
+}
+.ed-price-card > p {
+  min-height: 86px;
+  margin: 22px 0 0;
+  font-size: 14px;
+}
+.ed-price-card ul {
+  flex: 1;
+  margin: 0 0 28px;
+  padding: 0;
+  list-style: none;
+}
+.ed-price-card li {
+  position: relative;
+  padding: 12px 0 12px 20px;
+  border-top: 1px solid var(--cp-line);
+  color: var(--cp-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.ed-price-card li::before {
+  position: absolute;
+  top: 18px;
+  left: 1px;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--cp-lime);
+  border-radius: 50%;
+  content: '';
+}
+.ed-price-card .cp-cta {
+  width: 100%;
+}
+.ed-pricing-founding {
+  margin: 28px 0 0;
+  padding: 20px 24px;
+  border-left: 2px solid var(--cp-red);
+  background: color-mix(in srgb, var(--cp-panel) 80%, transparent);
+  font-size: 13px !important;
+}
+
+@media (max-width: 1050px) and (min-width: 851px) {
+  .ed-circuit-flow {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 28px 0;
+  }
+  .ed-circuit-flow::before {
+    display: none;
+  }
+  .ed-passport {
+    gap: 50px;
+  }
+}
+
+@media (max-width: 850px) {
+  .ed-circuit-flow {
+    grid-template-columns: 1fr;
+    margin-top: 34px;
+    padding-left: 18px;
+  }
+  .ed-circuit-flow::before {
+    top: 16px;
+    bottom: 16px;
+    left: 25px;
+    width: 1px;
+    height: auto;
+    background: linear-gradient(180deg, var(--cp-red), var(--cp-lime));
+  }
+  .ed-circuit-flow li {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 18px;
+    padding: 0 0 22px;
+  }
+  .ed-circuit-index {
+    width: 16px;
+    height: 16px;
+    margin: 4px 0 0;
+    border-width: 2px;
+    font-size: 0;
+  }
+  .ed-circuit-flow strong {
+    min-height: 0;
+    font-size: 18px;
+  }
+  .ed-circuit-flow p {
+    margin-top: 5px;
+    font-size: 14px;
+  }
+  .ed-circuit-closing {
+    margin-top: 18px;
+  }
+  .ed-passport {
+    grid-template-columns: 1fr;
+    gap: 34px;
+  }
+  .ed-passport-visual {
+    min-height: 390px;
+  }
+  .ed-pricing-grid {
+    grid-template-columns: 1fr;
+    margin-top: 32px;
+  }
+  .ed-price-card > p {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .ed-circuit-flow {
+    padding-left: 8px;
+  }
+  .ed-circuit-flow::before {
+    left: 15px;
+  }
+  .ed-circuit-flow li {
+    grid-template-columns: 34px 1fr;
+    gap: 12px;
+    padding-bottom: 18px;
+  }
+  .ed-passport-visual {
+    min-height: 340px;
+    border-radius: 14px;
+  }
+  .ed-passport-orbit--one {
+    width: 155px;
+    height: 155px;
+  }
+  .ed-passport-orbit--two {
+    width: 260px;
+    height: 260px;
+  }
+  .ed-passport-node {
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 8px;
+  }
+  .ed-passport-node--venue {
+    right: 5%;
+  }
+  .ed-price-card {
+    padding: 22px;
   }
 }
 </style>
