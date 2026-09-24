@@ -1964,6 +1964,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <BookingCoreHistory
           v-if="bookingCoreWorkspaceId"
           :workspace-id="bookingCoreWorkspaceId"
+          :artist-id="selectedArtistId"
           :bookings="realBookings"
           :locale="preferences.locale.value"
           :refresh-key="bookingCoreOperationsRevision"
