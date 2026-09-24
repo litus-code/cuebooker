@@ -151,9 +151,15 @@ const selectedNodePosition = computed(() => {
     Math.max(tooltipSize.height + 22 + verticalPadding, anchorY)
   )
 
+  const tooltipAnchorX = Math.min(
+    tooltipSize.width - 18,
+    Math.max(18, anchorX - (left - tooltipSize.width / 2))
+  )
+
   return {
     left: `${left}px`,
-    top: `${top}px`
+    top: `${top}px`,
+    '--passport-tooltip-anchor-x': `${tooltipAnchorX}px`
   }
 })
 
@@ -694,7 +700,7 @@ onBeforeUnmount(() => {
 .passport-constellation__tooltip::after {
   content:"";
   position:absolute;
-  left:50%;
+  left:var(--passport-tooltip-anchor-x,50%);
   bottom:-6px;
   width:10px;
   height:10px;
