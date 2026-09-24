@@ -422,13 +422,19 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     })
   }
 
-  async function listWorkspaceActivities(workspaceId: string, bookingIds: string[] = [], limit = 200) {
+  async function listWorkspaceActivities(
+    workspaceId: string,
+    bookingIds: string[] = [],
+    limit = 200,
+    occurredSince?: string
+  ) {
     if (!bookingIds.length) return [] as Activity[]
     return $fetch<Activity[]>(`${baseUrl}/rest/v1/activities`, {
       headers: authHeaders(),
       query: {
         workspace_id: `eq.${workspaceId}`,
         booking_id: `in.(${bookingIds.join(',')})`,
+        ...(occurredSince ? { occurred_at: `gte.${occurredSince}` } : {}),
         select: 'id,workspace_id,booking_id,type,direction,contact_id,actor_user_id,body,metadata,visibility,occurred_at,created_by,created_at',
         order: 'occurred_at.desc',
         limit: String(Math.min(Math.max(limit, 1), 500))
