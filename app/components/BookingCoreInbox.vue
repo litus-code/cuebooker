@@ -351,7 +351,15 @@ async function selectBooking(bookingId: string) {
         <span>{{ copy.eyebrow }}</span>
         <strong>{{ copy.title }}</strong>
       </div>
-      <b>{{ bookings.length }}</b>
+      <div class="core-inbox__heading-meta">
+        <CueCapacityIndicator
+          :used="bookings.filter(item => !item.archived_at).length"
+          limit-key="activeBookings"
+          upgrade-entitlement="booking.unlimited"
+          :label="locale === 'es' ? 'Activos' : 'Active'"
+        />
+        <b>{{ bookings.length }}</b>
+      </div>
     </header>
 
     <div v-if="!bookings.length" class="core-inbox__zero">
@@ -578,6 +586,7 @@ async function selectBooking(bookingId: string) {
 <style scoped>
 .core-inbox { margin:var(--cue-space-3) 0 var(--cue-space-5); border:1px solid var(--cue-border); border-radius:var(--cue-radius-panel); background:var(--cue-surface); overflow:hidden; }
 .core-inbox__heading { display:flex; align-items:center; justify-content:space-between; gap:var(--cue-space-4); padding:var(--cue-space-4); border-bottom:1px solid var(--cue-border); }
+.core-inbox__heading-meta{display:flex;align-items:center;gap:8px}.core-inbox__heading-meta>b{color:var(--cue-accent);font:700 12px monospace}
 .core-inbox__heading span { display:block; color:var(--cue-accent); font:700 9px/1.2 monospace; letter-spacing:.11em; }
 .core-inbox__heading strong { display:block; margin-top:4px; font-size:17px; }
 .core-inbox__heading b { min-width:34px; text-align:center; font:700 12px monospace; color:var(--cue-accent); }
