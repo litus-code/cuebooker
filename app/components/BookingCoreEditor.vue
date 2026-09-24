@@ -10,6 +10,8 @@ const props = defineProps<{
 const emit = defineEmits<{ saved: [booking: CoreBooking] }>()
 const bookingCore = useBookingCore()
 const open = ref(false)
+const triggerButton = ref<HTMLButtonElement | null>(null)
+const editorDialog = ref<HTMLElement | null>(null)
 const saving = ref(false)
 const errorMessage = ref('')
 
@@ -65,15 +67,19 @@ function parseOffer() {
   return Math.round(amount * 100)
 }
 
-function show() {
+async function show() {
   syncForm()
   open.value = true
+  await nextTick()
+  editorDialog.value?.focus({ preventScroll: true })
 }
 
-function close() {
+async function close() {
   if (saving.value) return
   open.value = false
   errorMessage.value = ''
+  await nextTick()
+  triggerButton.value?.focus({ preventScroll: true })
 }
 
 async function save() {
@@ -108,6 +114,8 @@ async function save() {
     })
     open.value = false
     emit('saved', updated)
+    await nextTick()
+    triggerButton.value?.focus({ preventScroll: true })
   } catch (error: any) {
     const code = String(error?.data?.message || error?.data?.error || error?.message || '')
     errorMessage.value = code.includes('booking_time_requires_date')
@@ -131,12 +139,12 @@ async function save() {
 
 <template>
   <div class="booking-editor-entry">
-    <button class="booking-editor-entry__button" type="button" @click="show">
+    <button ref="triggerButton" class="booking-editor-entry__button" type="button" @click="show">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4ZM13.5 6.5l4 4"/></svg>
       <span>{{ copy.edit }}</span>
     </button>
     <div v-if="open" class="booking-editor-backdrop" @click.self="close">
-      <form class="booking-editor" role="dialog" aria-modal="true" @submit.prevent="save">
+      <form ref="editorDialog" class="booking-editor" role="dialog" aria-modal="true" tabindex="-1" @submit.prevent="save">
         <header><div><span>CUE / BOOKING</span><h3>{{ copy.title }}</h3></div><button type="button" aria-label="Close" @click="close">×</button></header>
         <div class="booking-editor__grid">
           <label><span>{{ copy.event }}</span><input v-model="form.eventName"></label>
