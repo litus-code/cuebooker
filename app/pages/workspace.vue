@@ -1917,14 +1917,22 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             :editable="canEditSelectedArtist"
             :saving="publicPublishingSaving"
             :locale="preferences.locale.value"
+            :passport="{
+              confirmedBookings: cuePassport.confirmedBookings,
+              cities: cuePassport.cities,
+              venues: cuePassport.venues,
+              milestones: cuePassportUnlocked.slice(0, 3)
+            }"
             @edit="toggleProfileEditSection($event)"
             @preview="profilePreviewOpen = true"
             @toggle-published="updatePublicProfilePublished($event)"
             @toggle-requests="updatePublicAcceptingRequests($event)"
             @cue-id="changeView('cue-id')"
+            @passport="changeView('cue-id')"
           />
 
-          <form v-if="profileEditSection" id="profile-builder-editor" class="profile-builder-editor" @submit.prevent="saveArtistProfile">
+          <div v-if="profileEditSection" class="profile-editor-backdrop" @click.self="profileEditSection = null">
+            <form id="profile-builder-editor" class="profile-builder-editor profile-builder-editor--panel" role="dialog" aria-modal="true" @submit.prevent="saveArtistProfile">
             <header>
               <div>
                 <p class="eyebrow">
@@ -2075,8 +2083,8 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               <p v-if="profileMessage" :class="{ success: profileMessage === copy.profileSaved }">{{ profileMessage }}</p>
               <button class="primary-button" type="submit" :disabled="profileSaving || !canEditSelectedArtist">{{ profileSaving ? copy.saving : (preferences.locale.value === 'es' ? 'Guardar cambios' : 'Save changes') }}</button>
             </footer>
-          </form>
-
+            </form>
+          </div>
 
         </template>
       </section>
