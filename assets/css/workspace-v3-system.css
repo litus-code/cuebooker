@@ -3525,3 +3525,159 @@
     );
   opacity:.55;
 }
+
+
+/* Passport information architecture */
+.workspace .cue-passport__visual {
+  justify-content:flex-start;
+  gap:14px;
+}
+
+.workspace .cue-passport__tabs {
+  position:relative;
+  z-index:3;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.workspace .cue-passport__tabs button {
+  min-height:34px;
+  padding:0 10px;
+  border:1px solid #333;
+  border-radius:var(--cue-radius-control);
+  background:#0b0b0b;
+  color:#777;
+  cursor:pointer;
+  font:800 8px/1 monospace;
+  letter-spacing:.08em;
+}
+
+.workspace .cue-passport__tabs button.active {
+  border-color:var(--cue-accent);
+  color:var(--cue-accent);
+  background:color-mix(in srgb,var(--cue-accent) 6%,#0b0b0b);
+}
+
+.workspace .cue-passport__stats--external {
+  position:relative;
+  z-index:3;
+  margin-bottom:2px;
+}
+
+.workspace .cue-passport__constellation,
+.workspace .cue-passport__collection,
+.workspace .cue-passport__timeline {
+  position:relative;
+  z-index:2;
+  min-height:250px;
+  flex:1;
+}
+
+.workspace .cue-passport__constellation {
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  overflow:hidden;
+  padding-top:140px;
+}
+
+.workspace .cue-passport__constellation .cue-passport__route {
+  inset:0 2% 24%;
+}
+
+.workspace .cue-passport__cities {
+  position:relative;
+  z-index:3;
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+}
+
+.workspace .cue-passport__cities button {
+  padding:7px 9px;
+  border:1px solid #333;
+  border-radius:var(--cue-radius-control);
+  background:#0b0b0b;
+  color:#cfcfcf;
+  cursor:pointer;
+  font:800 9px/1 monospace;
+  text-transform:uppercase;
+}
+
+.workspace .cue-passport__cities button:hover {
+  border-color:var(--cue-accent);
+  color:var(--cue-accent);
+}
+
+.workspace .cue-passport__collection {
+  display:grid;
+  align-content:start;
+  gap:18px;
+  padding-top:10px;
+}
+
+.workspace .cue-passport__collection .cue-passport__stickers {
+  max-height:260px;
+  overflow:auto;
+  padding:4px 4px 10px;
+}
+
+.workspace .cue-passport__timeline {
+  display:grid;
+  align-content:start;
+  gap:0;
+  overflow:auto;
+  max-height:320px;
+  padding-top:6px;
+}
+
+.workspace .cue-passport__timeline article {
+  display:grid;
+  grid-template-columns:112px minmax(0,1fr);
+  gap:14px;
+  padding:12px 0;
+  border-bottom:1px solid #292929;
+}
+
+.workspace .cue-passport__timeline article > span {
+  color:#686868;
+  font:700 8px/1.3 monospace;
+}
+
+.workspace .cue-passport__timeline article > div {
+  display:grid;
+  gap:4px;
+}
+
+.workspace .cue-passport__timeline strong {
+  font-size:12px;
+}
+
+.workspace .cue-passport__timeline small {
+  color:#777;
+  font-size:9px;
+  line-height:1.4;
+}
+
+@media (max-width:560px) {
+  .workspace .cue-passport__tabs {
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+
+  .workspace .cue-passport__tabs button {
+    width:100%;
+    padding:0 6px;
+    font-size:7px;
+  }
+
+  .workspace .cue-passport__constellation {
+    min-height:280px;
+    padding-top:160px;
+  }
+
+  .workspace .cue-passport__timeline article {
+    grid-template-columns:88px minmax(0,1fr);
+  }
+}
