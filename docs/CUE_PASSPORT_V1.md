@@ -178,3 +178,38 @@ Validation:
 The HTTP response itself was not invoked from this session because its network runtime cannot reach the staging hostname. Do not describe the public endpoint as fully smoke-tested until it is opened from the real PR preview/device.
 
 Production was not touched.
+
+
+## Event Media management V1
+
+The Workspace Passport now includes an Event Media manager.
+
+Current V1 workflow:
+
+```text
+CONFIRMED BOOKING
+→ LINK IMAGE / VIDEO / REEL URL
+→ INTERNAL PASSPORT
+→ OPTIONAL PUBLIC SELECTION
+→ PUBLIC PROFILE
+```
+
+Rules:
+
+- only confirmed, non-archived artist bookings are offered as Event Media targets;
+- Passport uses a dedicated confirmed-booking source instead of the Booking Inbox page;
+- the V1 trajectory query loads up to 500 confirmed bookings;
+- media URLs and thumbnails must use HTTP/HTTPS;
+- manually added media is linked to the booking immediately;
+- linking media does not publish it on the public profile;
+- public Event Media selection remains a separate Artist Pro action in Profile;
+- linked media can be hidden and later linked again;
+- existing media remains visible/readable after entitlement downgrade;
+- Free cannot create or change Event Media status.
+
+V1 accepts external media/permalink URLs, including Instagram links. Binary upload is intentionally separate because the current private `artist-media` bucket only supports image JPG/PNG/WebP up to 8 MB and is used for artist visual media; it should not be silently repurposed as a video/reel pipeline.
+
+Validation:
+
+- Event Media manager build and PR preview passed in GitHub Actions run `36038535320`;
+- direct authenticated create/update smoke remains part of beta QA.
