@@ -1117,6 +1117,14 @@ function openRealBooking(bookingId: string) {
   }
 }
 
+async function openBookingCalendar(date: string) {
+  if (!date) return
+  selectedDate.value = date
+  monthCursor.value = `${date.slice(0, 7)}-01`
+  await changeView('calendar')
+  await selectDay(date)
+}
+
 async function openNotificationBooking(notification: CueNotification) {
   try {
     const booking = await loadExactBookingIntoInbox(notification.workspace_id, notification.booking_id)
@@ -2077,6 +2085,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           @operations-changed="handleBookingCoreOperationsChanged"
           @cue-requested="cueOpen = true"
           @booking-opened="markBookingNotificationsRead"
+          @calendar-requested="openBookingCalendar"
         />
 
       </section>
