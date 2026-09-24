@@ -1911,101 +1911,18 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <p v-if="profileLoading" class="loading-message">{{ copy.loading }}</p>
 
         <template v-else>
-          <section class="profile-presence-status">
-            <div class="profile-presence-status__identity">
-              <span>{{ publicProfilePublished
-                ? (preferences.locale.value === 'es' ? 'PUBLICADO' : 'PUBLISHED')
-                : (preferences.locale.value === 'es' ? 'BORRADOR' : 'DRAFT') }}</span>
-              <strong v-if="selectedArtist">cuebooker.com/{{ selectedArtist.slug }}</strong>
-            </div>
-            <div class="profile-presence-status__actions">
-              <label class="profile-presence-toggle">
-                <input
-                  :checked="publicProfilePublished"
-                  type="checkbox"
-                  :disabled="publicPublishingSaving || !canEditSelectedArtist"
-                  @change="updatePublicProfilePublished(($event.currentTarget as HTMLInputElement).checked)"
-                >
-                <span>{{ publicProfilePublished
-                  ? (preferences.locale.value === 'es' ? 'Perfil visible' : 'Profile visible')
-                  : (preferences.locale.value === 'es' ? 'Publicar perfil' : 'Publish profile') }}</span>
-              </label>
-              <button type="button" @click="profilePreviewOpen = true">
-                {{ preferences.locale.value === 'es' ? 'Abrir perfil' : 'Open profile' }}
-              </button>
-            </div>
-          </section>
-
-          <section class="profile-presence-preview">
-            <div class="profile-presence-preview__head">
-              <div>
-                <span>{{ preferences.locale.value === 'es' ? 'PREVIEW REAL' : 'LIVE PREVIEW' }}</span>
-                <strong>{{ preferences.locale.value === 'es' ? 'Así te ve un promoter.' : 'This is what a promoter sees.' }}</strong>
-              </div>
-              <small>{{ preferences.locale.value === 'es' ? 'El CTA de booking forma parte del mismo perfil.' : 'The booking CTA is part of the same profile.' }}</small>
-            </div>
-            <div class="profile-presence-preview__frame">
-              <PublicArtistProfile
-                :profile="publicProfilePreview"
-                :locale="preferences.locale.value"
-                preview
-              />
-            </div>
-          </section>
-
-          <section class="profile-builder">
-            <div class="profile-builder__head">
-              <div>
-                <span>{{ preferences.locale.value === 'es' ? 'CONSTRUYE TU PERFIL' : 'BUILD YOUR PROFILE' }}</span>
-                <strong>{{ preferences.locale.value === 'es' ? 'Edita por bloques, no rellenando una ficha.' : 'Edit in blocks, not through one long form.' }}</strong>
-              </div>
-              <small>{{ profileCompletion }}%</small>
-            </div>
-
-            <div class="profile-builder__grid">
-              <button type="button" :class="{ active: profileEditSection === 'identity' }" @click="toggleProfileEditSection('identity')">
-                <span>01</span>
-                <strong>{{ preferences.locale.value === 'es' ? 'Identidad' : 'Identity' }}</strong>
-                <p>{{ profileForm.stageName || selectedArtist?.stage_name }} · {{ profileForm.city || (preferences.locale.value === 'es' ? 'ciudad pendiente' : 'city pending') }}</p>
-              </button>
-
-              <button type="button" :class="{ active: profileEditSection === 'image' }" @click="toggleProfileEditSection('image')">
-                <span>02</span>
-                <strong>{{ preferences.locale.value === 'es' ? 'Imagen' : 'Image' }}</strong>
-                <p>{{ profileCoverUrl ? (preferences.locale.value === 'es' ? 'Portada personalizada' : 'Custom cover') : (preferences.locale.value === 'es' ? 'Portada Cuebooker' : 'Cuebooker cover') }}</p>
-              </button>
-
-              <NuxtLink class="profile-builder__cue-id" to="/cue-id?from=workspace&section=identity">
-                <span>03</span>
-                <div class="profile-builder__cue-title"><strong>CUE ID</strong><small>BETA</small></div>
-                <p>{{ preferences.locale.value === 'es' ? 'Construye tu identidad visual 3D.' : 'Build your 3D visual identity.' }}</p>
-              </NuxtLink>
-
-              <button type="button" :class="{ active: profileEditSection === 'sound' }" @click="toggleProfileEditSection('sound')">
-                <span>04</span>
-                <strong>{{ preferences.locale.value === 'es' ? 'Sonido' : 'Sound' }}</strong>
-                <p>{{ splitList(profileForm.primaryGenres, 3).join(' · ') || (preferences.locale.value === 'es' ? 'Géneros y formatos' : 'Genres and formats') }}</p>
-              </button>
-
-              <button type="button" :class="{ active: profileEditSection === 'links' }" @click="toggleProfileEditSection('links')">
-                <span>05</span>
-                <strong>{{ preferences.locale.value === 'es' ? 'Links' : 'Links' }}</strong>
-                <p>Instagram · SoundCloud · Spotify · Web</p>
-              </button>
-
-              <button type="button" :class="{ active: profileEditSection === 'booking' }" @click="toggleProfileEditSection('booking')">
-                <span>06</span>
-                <strong>Booking</strong>
-                <p>{{ preferences.locale.value === 'es' ? 'Condiciones privadas y disponibilidad.' : 'Private terms and availability.' }}</p>
-              </button>
-
-              <button type="button" :class="{ active: profileEditSection === 'distribution' }" @click="toggleProfileEditSection('distribution')">
-                <span>07</span>
-                <strong>{{ preferences.locale.value === 'es' ? 'Distribución' : 'Distribution' }}</strong>
-                <p>{{ preferences.locale.value === 'es' ? 'Link, QR, Instagram, EPK e iframe.' : 'Link, QR, Instagram, EPK and iframe.' }}</p>
-              </button>
-            </div>
-          </section>
+          <WorkspaceArtistProfile
+            :profile="publicProfilePreview"
+            :published="publicProfilePublished"
+            :editable="canEditSelectedArtist"
+            :saving="publicPublishingSaving"
+            :locale="preferences.locale.value"
+            @edit="toggleProfileEditSection($event)"
+            @preview="profilePreviewOpen = true"
+            @toggle-published="updatePublicProfilePublished($event)"
+            @toggle-requests="updatePublicAcceptingRequests($event)"
+            @cue-id="changeView('cue-id')"
+          />
 
           <form v-if="profileEditSection" id="profile-builder-editor" class="profile-builder-editor" @submit.prevent="saveArtistProfile">
             <header>
