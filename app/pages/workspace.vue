@@ -2137,7 +2137,18 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                     </div>
                   </aside>
                 </template>
-                <p v-else class="cue-passport__empty">{{ copy.passportEmpty }}</p>
+                <div v-else class="cue-passport__empty-state">
+                  <p>{{ cuePassport.confirmedBookings
+                    ? (preferences.locale.value === 'es'
+                      ? 'Tienes bookings confirmados, pero todavía falta una ciudad válida para dibujar la trayectoria.'
+                      : 'You have confirmed bookings, but a valid city is still needed to draw the trajectory.')
+                    : copy.passportEmpty }}</p>
+                  <button type="button" @click="changeView('bookings')">
+                    {{ preferences.locale.value === 'es'
+                      ? (cuePassport.confirmedBookings ? 'Completar bookings' : 'Ir a Bookings')
+                      : (cuePassport.confirmedBookings ? 'Complete bookings' : 'Go to Bookings') }}
+                  </button>
+                </div>
               </div>
 
               <div v-else-if="cuePassportTab === 'stickers'" class="cue-passport__collection">
@@ -3099,4 +3110,8 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .skeleton-card { min-height:112px; }
   .skeleton-panel { min-height:220px; }
 }
+
+.cue-passport__empty-state{display:grid;justify-items:start;gap:12px;padding:20px;border:1px dashed var(--cue-border);background:var(--cue-bg)}
+.cue-passport__empty-state p{margin:0;color:var(--cue-muted);font-size:11px;line-height:1.5}
+.cue-passport__empty-state button{min-height:38px;padding:0 12px;border:1px solid var(--cue-accent);border-radius:var(--cue-radius-control);background:transparent;color:var(--cue-accent);cursor:pointer;font:800 8px/1 monospace;text-transform:uppercase}
 </style>
