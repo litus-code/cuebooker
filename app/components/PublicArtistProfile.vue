@@ -88,13 +88,25 @@ function closeBooking() {
   requestOpen.value = false
 }
 
+function handleBookingKeydown(event: KeyboardEvent) {
+  if (event.key !== 'Escape' || !requestOpen.value) return
+  event.stopImmediatePropagation()
+  closeBooking()
+}
+
 watch(requestOpen, open => {
   if (!import.meta.client) return
   document.body.style.overflow = open ? 'hidden' : ''
 }, { immediate: true })
 
+onMounted(() => {
+  if (import.meta.client) window.addEventListener('keydown', handleBookingKeydown)
+})
+
 onBeforeUnmount(() => {
-  if (import.meta.client) document.body.style.overflow = ''
+  if (!import.meta.client) return
+  document.body.style.overflow = ''
+  window.removeEventListener('keydown', handleBookingKeydown)
 })
 </script>
 
