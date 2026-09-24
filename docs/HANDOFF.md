@@ -9973,3 +9973,38 @@ Validation:
 - GitHub Actions run `36012306252`, attempt 2, completed successfully;
 - `Generate preview build` and PR preview deployment succeeded;
 - this workflow does not execute `npm test`, so tests are not claimed as run.
+
+
+## 24 Sep 2026 · Commercial home + Pricing
+
+The V1 commercial home is now aligned with the launch sequence.
+
+Implemented:
+
+- Pricing section with Free, Artist Pro and Agency.
+- Launch prices:
+  - Free: EUR 0;
+  - Artist Pro: EUR 9.99/month or EUR 99/year;
+  - Agency: EUR 39/month or EUR 390/year.
+- Founding Artist is presented as an offer inside the commercial model, not a fourth plan.
+- Paid-plan CTAs preserve plan intent in signup query params.
+- The page states that checkout is not enabled yet.
+- CUE Passport is described as a current product surface instead of a future concept.
+- The large future discovery / marketplace simulation was removed from the V1 home.
+
+Validation:
+
+- current home build passes `Generate preview build` on the PR preview workflow;
+- production remains untouched.
+
+Open legal/commercial blockers before public launch:
+
+- privacy policy;
+- cookie policy;
+- visible analytics consent UI;
+- legal notice / terms as applicable;
+- real billing checkout.
+
+Analytics already defaults to unknown consent and does not load GTM before explicit grant. The missing piece is the user-facing consent interface and legal documentation.
+
+Do not publish personal/legal controller details from memory or ad-hoc notes without an explicit reviewed legal pass.
