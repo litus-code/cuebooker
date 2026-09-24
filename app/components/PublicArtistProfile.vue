@@ -31,6 +31,7 @@ const emit = defineEmits<{
 }>()
 
 const requestOpen = ref(props.bookingFocused)
+const bookingModal = ref<HTMLElement | null>(null)
 
 watch(() => props.bookingFocused, value => {
   if (value) requestOpen.value = true
@@ -94,9 +95,13 @@ function handleBookingKeydown(event: KeyboardEvent) {
   closeBooking()
 }
 
-watch(requestOpen, open => {
+watch(requestOpen, async open => {
   if (!import.meta.client) return
   document.body.style.overflow = open ? 'hidden' : ''
+  if (open) {
+    await nextTick()
+    bookingModal.value?.focus({ preventScroll: true })
+  }
 }, { immediate: true })
 
 onMounted(() => {
@@ -244,8 +249,10 @@ onBeforeUnmount(() => {
       >
         <section
           id="artist-booking-request"
+          ref="bookingModal"
           class="public-artist-profile__booking-modal"
           role="dialog"
+          tabindex="-1"
           aria-modal="true"
           :aria-label="locale === 'es' ? 'Solicitar fecha' : 'Request booking'"
         >
