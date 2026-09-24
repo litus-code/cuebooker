@@ -144,6 +144,20 @@ const selectedDates = computed(() =>
     .slice(0, 4)
 )
 
+function safeMediaUrl(value: string | null | undefined) {
+  if (!value) return null
+  return /^https?:\/\//i.test(value) ? value : null
+}
+
+function mediaPreview(item: { media_type: string; thumbnail_url?: string | null; media_url?: string | null }) {
+  if (safeMediaUrl(item.thumbnail_url)) return item.thumbnail_url
+  return item.media_type === 'image' ? safeMediaUrl(item.media_url) : null
+}
+
+function mediaLink(item: { permalink?: string | null; media_url?: string | null }) {
+  return safeMediaUrl(item.permalink) || safeMediaUrl(item.media_url)
+}
+
 function formatPassportDate(value: string | null) {
   if (!value) return ''
   const date = new Date(`${value}T12:00:00`)
@@ -191,7 +205,7 @@ watch(() => props.countryId, () => resetView())
 
 <template>
   <section class="passport-constellation">
-    <header class="passport-constellation__toolbar">
+    <header v-if="nodes.length" class="passport-constellation__toolbar">
       <div class="passport-constellation__countries" aria-label="Countries">
         <button
           v-for="country in countries"
@@ -295,15 +309,15 @@ watch(() => props.countryId, () => resetView())
           <a
             v-for="item in selectedMedia"
             :key="item.id"
-            :href="item.permalink || undefined"
-            :target="item.permalink ? '_blank' : undefined"
-            :rel="item.permalink ? 'noopener noreferrer' : undefined"
+            :href="mediaLink(item) || undefined"
+            :target="mediaLink(item) ? '_blank' : undefined"
+            :rel="mediaLink(item) ? 'noopener noreferrer' : undefined"
             :aria-label="`${item.source} ${item.media_type}`"
             @click.stop
           >
             <img
-              v-if="item.thumbnail_url || item.media_url"
-              :src="item.thumbnail_url || item.media_url || ''"
+              v-if="mediaPreview(item)"
+              :src="mediaPreview(item) || ''"
               alt=""
               loading="lazy"
             >
@@ -324,7 +338,7 @@ watch(() => props.countryId, () => resetView())
       </div>
     </div>
 
-    <footer class="passport-constellation__hint">
+    <footer v-if="nodes.length" class="passport-constellation__hint">
       <span>{{ locale === 'es' ? 'ARRASTRA PARA EXPLORAR' : 'DRAG TO EXPLORE' }}</span>
       <span>{{ locale === 'es' ? 'SELECCIONA UN NODO PARA ENTRAR' : 'SELECT A NODE TO ENTER' }}</span>
     </footer>
