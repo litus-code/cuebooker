@@ -42,9 +42,18 @@ const emit = defineEmits<{
 const visibleCities = computed(() => props.cities.slice(0, 5))
 const visibleMilestones = computed(() => props.milestones.slice(0, 3))
 const visibleMedia = computed(() => props.media.slice(0, 6))
+function safeMediaUrl(value: string | null) {
+  if (!value) return null
+  return /^https?:\/\//i.test(value) ? value : null
+}
+
 function mediaPreview(item: PassportMedia) {
-  if (item.thumbnailUrl) return item.thumbnailUrl
-  return item.mediaType === 'image' ? item.mediaUrl : null
+  if (safeMediaUrl(item.thumbnailUrl)) return item.thumbnailUrl
+  return item.mediaType === 'image' ? safeMediaUrl(item.mediaUrl) : null
+}
+
+function mediaLink(item: PassportMedia) {
+  return safeMediaUrl(item.permalink) || safeMediaUrl(item.mediaUrl)
 }
 </script>
 
@@ -99,7 +108,7 @@ function mediaPreview(item: PassportMedia) {
         <a
           v-for="item in visibleMedia"
           :key="item.id"
-          :href="item.permalink || item.mediaUrl || undefined"
+          :href="mediaLink(item) || undefined"
           target="_blank"
           rel="noopener noreferrer"
           :aria-label="item.caption || item.mediaType"
