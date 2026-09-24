@@ -163,6 +163,15 @@ const cuePassport = computed(() => deriveCuePassportSnapshot({
   baseCountryCode: profileForm.value.countryCode
 }))
 const cuePassportUnlocked = computed(() => cuePassportUnlockedMilestones(cuePassport.value))
+const cuePassportUnlockedIds = computed(() => new Set(cuePassportUnlocked.value.map(item => item.id)))
+const validPublicPassportMilestoneIds = computed(() =>
+  publicPassportMilestoneIds.value === null
+    ? null
+    : publicPassportMilestoneIds.value.filter(id => cuePassportUnlockedIds.value.has(id)).slice(0, 3)
+)
+const validPassportMilestoneDraftIds = computed(() =>
+  passportMilestoneIdsDraft.value.filter(id => cuePassportUnlockedIds.value.has(id)).slice(0, 3)
+)
 const cuePassportNext = computed(() => cuePassportNextMilestones(cuePassport.value).slice(0, 3))
 const linkedPassportMedia = computed(() => passportMediaItems.value.filter(item => item.status === 'linked'))
 const linkedPassportMediaIds = computed(() => new Set(linkedPassportMedia.value.map(item => item.id)))
@@ -174,7 +183,7 @@ const validPassportMediaDraftIds = computed(() =>
 )
 const publicPassportMilestones = computed(() => {
   const source = cuePassportUnlocked.value
-  const ids = publicPassportMilestoneIds.value
+  const ids = validPublicPassportMilestoneIds.value
   const selected = ids === null ? source.slice(0, 3) : source.filter(item => ids.includes(item.id)).slice(0, 3)
   return selected.map(item => ({ id: item.id, title: item.title, subtitle: item.subtitle }))
 })
@@ -234,6 +243,13 @@ watch(cuePassportCountryId, () => {
 watch(linkedPassportMediaIds, validIds => {
   publicPassportMediaIds.value = publicPassportMediaIds.value.filter(id => validIds.has(id)).slice(0, 6)
   passportMediaIdsDraft.value = passportMediaIdsDraft.value.filter(id => validIds.has(id)).slice(0, 6)
+})
+
+watch(cuePassportUnlockedIds, validIds => {
+  if (publicPassportMilestoneIds.value !== null) {
+    publicPassportMilestoneIds.value = publicPassportMilestoneIds.value.filter(id => validIds.has(id)).slice(0, 3)
+  }
+  passportMilestoneIdsDraft.value = passportMilestoneIdsDraft.value.filter(id => validIds.has(id)).slice(0, 3)
 })
 
 function passportStickerClass(kind: string) {
@@ -1513,7 +1529,7 @@ async function savePublicPassportSettings() {
     const result = await publicPublishing.setPassportPublicSettings(
       selectedArtistId.value,
       passportVisibilityDraft.value,
-      passportMilestoneAutoDraft.value ? null : passportMilestoneIdsDraft.value.slice(0, 3),
+      passportMilestoneAutoDraft.value ? null : validPassportMilestoneDraftIds.value,
       validPassportMediaDraftIds.value
     )
     publicPassportEnabled.value = result.enabled
@@ -2705,7 +2721,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                         v-model="passportMilestoneIdsDraft"
                         type="checkbox"
                         :value="milestone.id"
-                        :disabled="!passportMilestoneIdsDraft.includes(milestone.id) && passportMilestoneIdsDraft.length >= 3"
+                        :disabled="!passportMilestoneIdsDraft.includes(milestone.id) && validPassportMilestoneDraftIds.length >= 3"
                       >
                       <span><strong>{{ milestone.title }}</strong><small>{{ milestone.subtitle }}</small></span>
                     </label>
