@@ -41,7 +41,7 @@ Booking Core is the operational product. Artist Profile is the professional pres
 
 ### 1. Close CUE Passport V1
 
-Status: CODE COMPLETE · BACKEND APPLY + VISUAL VALIDATION PENDING
+Status: CODE COMPLETE · FRONTEND PREVIEW VALIDATED · BACKEND APPLY + DEVICE QA PENDING
 
 Deliver:
 
@@ -76,7 +76,7 @@ Exit criteria:
 
 ### 2. Move Profile Lab into the real Profile
 
-Status: IN PROGRESS · CORE MIGRATION COMPLETE
+Status: CODE COMPLETE · DEVICE QA PENDING
 
 Replace the old admin-style Profile workspace presentation with the approved portfolio/landing direction from `/profile-lab`.
 
