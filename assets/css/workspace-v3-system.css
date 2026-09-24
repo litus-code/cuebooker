@@ -3839,3 +3839,21 @@
 .workspace .cue-passport__city-card {
   margin-top:12px;
 }
+
+
+/* Tighten Passport constellation rhythm after tooltip drilldown. */
+.workspace .cue-passport__constellation {
+  margin-bottom:0 !important;
+}
+
+.workspace .cue-passport__constellation > .passport-constellation {
+  margin-bottom:18px;
+}
+
+.workspace .cue-passport__city-card {
+  display:none !important;
+}
+
+.workspace .cue-passport__visual {
+  gap:12px;
+}
