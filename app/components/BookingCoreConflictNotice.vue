@@ -4,6 +4,8 @@ import type { AvailabilityBlock } from '../composables/useAvailability'
 import { intervalForDate, intervalsOverlap, timeToMinutes } from '../services/timeOverlap'
 import { holdMatchesBookingSchedule } from '../services/bookingHoldAlignment'
 
+const emit = defineEmits<{ stateChanged: [hasIssue: boolean] }>()
+
 const props = defineProps<{
   workspaceId: string
   booking: CoreBooking
@@ -161,6 +163,12 @@ async function load() {
 watch(
   () => [props.booking.id, props.booking.event_date, props.booking.start_time, props.booking.end_time, props.refreshKey],
   load,
+  { immediate: true }
+)
+
+watch(
+  () => Boolean(conflicts.value.length || mismatchedOwnHolds.value.length),
+  value => emit('stateChanged', value),
   { immediate: true }
 )
 </script>
