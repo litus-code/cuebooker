@@ -249,6 +249,30 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     })
   }
 
+  async function listArtistCalendarBookings(
+    workspaceId: string,
+    artistId: string,
+    fromDate: string,
+    toDate: string,
+    limit = 500
+  ) {
+    if (!workspaceId || !artistId || !fromDate || !toDate) return [] as CoreBooking[]
+    return $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/bookings`, {
+      headers: authHeaders(),
+      query: {
+        workspace_id: `eq.${workspaceId}`,
+        artist_id: `eq.${artistId}`,
+        event_date: `gte.${fromDate}`,
+        and: `(event_date.lt.${toDate})`,
+        status: 'eq.confirmed',
+        archived_at: 'is.null',
+        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
+        order: 'event_date.asc,start_time.asc.nullslast,created_at.asc',
+        limit: String(Math.min(Math.max(limit, 1), 500))
+      }
+    })
+  }
+
   async function listArtistBookingsForDate(
     workspaceId: string,
     artistId: string,
@@ -620,6 +644,27 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     })
   }
 
+  async function listArtistCalendarHolds(
+    workspaceId: string,
+    artistId: string,
+    fromDate: string,
+    toDate: string
+  ) {
+    if (!workspaceId || !artistId || !fromDate || !toDate) return [] as Hold[]
+    return $fetch<Hold[]>(`${baseUrl}/rest/v1/holds`, {
+      headers: authHeaders(),
+      query: {
+        workspace_id: `eq.${workspaceId}`,
+        event_date: `gte.${fromDate}`,
+        and: `(event_date.lt.${toDate})`,
+        status: 'eq.active',
+        'bookings.artist_id': `eq.${artistId}`,
+        select: 'id,workspace_id,booking_id,event_date,starts_at,ends_at,event_timezone,expires_at,priority,status,released_at,converted_at,created_by,created_at,updated_at,bookings!inner(id)',
+        order: 'event_date.asc,priority.asc.nullslast,created_at.asc'
+      }
+    })
+  }
+
   async function listArtistHoldsForDate(
     workspaceId: string,
     artistId: string,
@@ -695,6 +740,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     listCounterparties,
     createCounterparty,
     listBookings,
+    listArtistCalendarBookings,
     listArtistBookingsForDate,
     getBooking,
     listArtistPassportBookings,
@@ -714,6 +760,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     setNextMove,
     completeNextMove,
     listHolds,
+    listArtistCalendarHolds,
     listArtistHoldsForDate,
     createHold,
     releaseHold,
