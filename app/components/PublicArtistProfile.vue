@@ -146,6 +146,16 @@ async function openBooking() {
       </dl>
     </section>
 
+    <CuePassportProfileSummary
+      v-if="profile.passport"
+      :bookings="profile.passport.confirmedBookings"
+      :cities="profile.passport.cities"
+      :venues="profile.passport.venues"
+      :milestones="profile.passport.milestones"
+      :locale="locale"
+      :editable="false"
+    />
+
     <section v-if="socialLinks.length" class="public-artist-profile__links">
       <span>{{ copy.links }}</span>
       <nav>
