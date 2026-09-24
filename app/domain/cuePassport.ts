@@ -88,7 +88,8 @@ function uniqueLabels(values: Array<string | null | undefined>) {
 }
 
 function bookingDateValue(booking: CoreBooking) {
-  return booking.event_date || booking.updated_at || booking.created_at
+  const value = booking.event_date || booking.updated_at || booking.created_at
+  return value.slice(0, 10)
 }
 
 function earliestBooking(bookings: CoreBooking[], predicate: (booking: CoreBooking) => boolean) {
@@ -215,10 +216,19 @@ export function buildCuePassportWorld(bookings: CoreBooking[], media: CuePasspor
     .sort((a, b) => bookingDateValue(a).localeCompare(bookingDateValue(b)))
 
   const countries = new Map<string, CuePassportCountryNode>()
+  const linkedMediaByBooking = new Map<string, CuePassportMedia[]>()
+
+  for (const item of media) {
+    if (item.status !== 'linked') continue
+    const items = linkedMediaByBooking.get(item.booking_id) || []
+    items.push(item)
+    linkedMediaByBooking.set(item.booking_id, items)
+  }
 
   for (const booking of confirmed) {
+    const cityName = normalize(booking.city)
+    if (!cityName) continue
     const countryCode = normalize(booking.country_code).toUpperCase() || 'XX'
-    const cityName = normalize(booking.city) || 'Unknown city'
     const cityId = `${countryCode}:${canonical(cityName)}`
     const venueName = normalize(booking.venue_name) || 'Unknown venue'
     const venueId = `${cityId}:${canonical(venueName)}`
@@ -245,7 +255,7 @@ export function buildCuePassportWorld(bookings: CoreBooking[], media: CuePasspor
       id: booking.id,
       eventName: booking.event_name,
       eventDate: booking.event_date,
-      media: media.filter(item => item.booking_id === booking.id && item.status === 'linked')
+      media: linkedMediaByBooking.get(booking.id) || []
     }
     city.bookings.push(bookingNode)
 
