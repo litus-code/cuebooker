@@ -1,5 +1,6 @@
 import {
   CUE_PLANS,
+  cueCapacityState,
   cueMinimumPlan,
   cuePlanBadge,
   cuePlanLimit,
@@ -32,6 +33,10 @@ export function useCueEntitlements() {
 
   function limit<K extends keyof typeof CUE_PLANS.free.limits>(key: K) {
     return cuePlanLimit(currentPlan.value, key)
+  }
+
+  function capacity<K extends keyof typeof CUE_PLANS.free.limits>(key: K, used: number) {
+    return cueCapacityState(currentPlan.value, key, used)
   }
 
   function badge(entitlement: CueEntitlement) {
@@ -84,6 +89,7 @@ export function useCueEntitlements() {
     demoOverrideEnabled,
     can,
     limit,
+    capacity,
     badge,
     minimumPlan,
     setBasePlan,
