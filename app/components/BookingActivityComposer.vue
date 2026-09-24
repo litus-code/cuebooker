@@ -12,6 +12,7 @@ const props = defineProps<{
 const emit = defineEmits<{ created: [] }>()
 const bookingCore = useBookingCore()
 const bookingEmail = useBookingEmail()
+const { can: canEntitlement } = useCueEntitlements()
 const type = ref<ActivityType>('email')
 const direction = ref<ActivityDirection>('outbound')
 const subject = ref('')
@@ -166,10 +167,22 @@ async function submit() {
       <div><strong>{{ copy.prepareRetry }}</strong><small>{{ suggestedRetryEmail.recipientChanged ? copy.retryUpdatedRecipient : copy.retryHint }}</small></div>
       <button type="button" @click="applySuggestedRetry">{{ copy.prepareRetry }}</button>
     </div>
-    <div v-else-if="suggestedFollowUp" class="activity-composer__suggestion">
-      <div><strong>{{ copy.prepareFollowUp }}</strong><small>{{ copy.followUpHint }}</small></div>
+    <div v-else-if="suggestedFollowUp && canEntitlement('automation.advanced')" class="activity-composer__suggestion">
+      <div>
+        <strong>{{ copy.prepareFollowUp }} <CuePlanBadge entitlement="automation.advanced" /></strong>
+        <small>{{ copy.followUpHint }}</small>
+      </div>
       <button type="button" @click="applySuggestedFollowUp">{{ copy.prepareFollowUp }}</button>
     </div>
+    <CueUpgradePrompt
+      v-else-if="suggestedFollowUp"
+      class="activity-composer__follow-up-pro"
+      entitlement="automation.advanced"
+      :title="locale === 'es' ? 'Follow-up preparado por Cuebooker' : 'Follow-up prepared by Cuebooker'"
+      :description="locale === 'es'
+        ? 'Artist Pro prepara el asunto y el mensaje cuando un booking lleva varios días esperando. Tú decides si editarlo y enviarlo.'
+        : 'Artist Pro prepares the subject and message when a booking has been waiting for several days. You decide whether to edit and send it.'"
+    />
     <div class="activity-composer__body" :class="{ 'activity-composer__body--email': sendsRealEmail }">
       <input v-if="sendsRealEmail" v-model="subject" class="activity-composer__subject" :aria-label="copy.subject" :placeholder="copy.subjectPlaceholder" maxlength="300">
       <textarea v-model="body" rows="2" :placeholder="sendsRealEmail ? copy.emailPlaceholder : copy.placeholder" />
@@ -191,6 +204,8 @@ async function submit() {
 .activity-composer__types { display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; }
 .activity-composer__types button { min-height:var(--cue-button-sm); padding:0 12px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-control); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; }
 .activity-composer__types button.active { border-color:var(--cue-accent); color:var(--cue-accent); }
+.activity-composer > :deep(.activity-composer__follow-up-pro){margin:10px;border-radius:var(--cue-radius-control)}
+
 .activity-composer__suggestion { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px; border-bottom:1px solid var(--cue-border); background:color-mix(in srgb,var(--cue-accent) 5%,transparent); }
 .activity-composer__suggestion--warning { background:color-mix(in srgb,#ffb84d 7%,transparent); }
 .activity-composer__suggestion--warning strong { color:#ffb84d; }
