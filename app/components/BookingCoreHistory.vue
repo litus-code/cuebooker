@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { Activity, CoreBooking } from '../domain/bookingCore'
+import type { WorkspaceActivityHistoryRow } from '../services/bookingCoreApi'
 
 const props = defineProps<{
   workspaceId: string
+  artistId: string
   bookings: CoreBooking[]
   locale: 'es' | 'en'
   refreshKey?: number
@@ -11,7 +13,7 @@ const props = defineProps<{
 const emit = defineEmits<{ openBooking: [bookingId: string] }>()
 const bookingCore = useBookingCore()
 const entitlements = useCueEntitlements()
-const activities = ref<Activity[]>([])
+const activities = ref<WorkspaceActivityHistoryRow[]>([])
 const loading = ref(false)
 const loadedOnce = ref(false)
 const search = ref('')
@@ -47,10 +49,14 @@ const copy = computed(() => props.locale === 'es' ? {
 const communicationTypes = new Set(['phone', 'email', 'whatsapp', 'instagram', 'note'])
 const operationTypes = new Set(['status_change', 'hold_created', 'hold_released', 'hold_converted', 'next_move_created', 'next_move_completed'])
 
+function activityBooking(activity: WorkspaceActivityHistoryRow) {
+  return activity.bookings || props.bookings.find(item => item.id === activity.booking_id) || null
+}
+
 const filtered = computed(() => {
   const query = search.value.trim().toLowerCase()
   return activities.value.filter(activity => {
-    const booking = props.bookings.find(item => item.id === activity.booking_id)
+    const booking = activityBooking(activity)
     const groupOk = typeFilter.value === 'all'
       || (typeFilter.value === 'communication' && communicationTypes.has(activity.type))
       || (typeFilter.value === 'operations' && operationTypes.has(activity.type))
@@ -69,8 +75,8 @@ watch([search, typeFilter], () => {
   visibleLimit.value = 10
 })
 
-function bookingLabel(activity: Activity) {
-  const booking = props.bookings.find(item => item.id === activity.booking_id)
+function bookingLabel(activity: WorkspaceActivityHistoryRow) {
+  const booking = activityBooking(activity)
   return booking?.venue_name || booking?.event_name || (props.locale === 'es' ? 'Booking sin nombre' : 'Unnamed booking')
 }
 
@@ -151,7 +157,7 @@ function formatTime(value: string) {
 }
 
 async function load() {
-  if (!props.workspaceId || !props.bookings.length) {
+  if (!props.workspaceId || !props.artistId) {
     activities.value = []
     loadedOnce.value = false
     return
@@ -161,10 +167,10 @@ async function load() {
   if (initialLoad) loading.value = true
 
   try {
-    const nextActivities = await bookingCore.listWorkspaceActivities(
+    const nextActivities = await bookingCore.listArtistWorkspaceActivities(
       props.workspaceId,
-      props.bookings.map(item => item.id),
-      300,
+      props.artistId,
+      500,
       historyCutoff.value || undefined
     )
     activities.value = nextActivities
@@ -175,7 +181,7 @@ async function load() {
 }
 
 watch(
-  () => [props.workspaceId, props.refreshKey, props.bookings.map(item => item.id).join(','), historyCutoff.value],
+  () => [props.workspaceId, props.artistId, props.refreshKey, historyCutoff.value],
   load,
   { immediate: true }
 )
