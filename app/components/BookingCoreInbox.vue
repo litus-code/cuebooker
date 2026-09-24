@@ -523,6 +523,17 @@ async function selectBooking(bookingId: string) {
           <button type="button" @click="scrollToBookingSection('core-inbox-conversation')">{{ locale === 'es' ? 'Conversación' : 'Conversation' }}</button>
           <button v-if="!selectedBooking.archived_at" type="button" @click="scrollToBookingSection('core-inbox-operations')">{{ locale === 'es' ? 'Seguimiento' : 'Follow-up' }}</button>
         </nav>
+
+        <BookingCoreConflictNotice
+          v-if="!selectedBooking.archived_at"
+          class="core-inbox__conflict-predecision"
+          :workspace-id="workspaceId"
+          :booking="selectedBooking"
+          :bookings="bookings"
+          :locale="locale"
+          :refresh-key="activities.length"
+        />
+
         <header>
           <div>
             <span>{{ sourceLabels[selectedBooking.source] || selectedBooking.source }}</span>
@@ -660,16 +671,6 @@ async function selectBooking(bookingId: string) {
 
         <p v-if="selectedBooking.archived_at" class="core-inbox__readonly">{{ copy.archivedReadOnly }}</p>
 
-        <BookingCoreConflictNotice
-          v-if="!selectedBooking.archived_at"
-          :workspace-id="workspaceId"
-          :booking="selectedBooking"
-          :bookings="bookings"
-          :locale="locale"
-          :refresh-key="activities.length"
-        />
-
-
       </article>
     </div>
   </section>
@@ -774,6 +775,7 @@ async function selectBooking(bookingId: string) {
 .core-inbox__list span small { margin-top:4px; color:var(--cue-muted); font-size:11px; }
 .core-inbox__list em { grid-column:2; justify-self:start; margin-top:-2px; font:700 8px monospace; color:var(--row-status,var(--cue-muted)); text-transform:uppercase; font-style:normal; }
 .core-inbox__detail { min-width:0; padding:var(--cue-space-4); background:var(--cue-surface); outline:none; }
+.core-inbox__conflict-predecision { margin-bottom:var(--cue-space-3); }
 .core-inbox__mobile-nav { display:none; }
 .core-inbox__mobile-section-nav { display:none; }
 .core-inbox__detail > header { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:var(--cue-space-4); padding-bottom:var(--cue-space-3); border-bottom:1px solid var(--cue-border); }
