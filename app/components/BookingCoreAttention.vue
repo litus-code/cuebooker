@@ -87,6 +87,7 @@ const items = computed(() => {
 
   for (const move of nextMoves.value) {
     const booking = attentionBookings.value.find(item => item.id === move.booking_id)
+    if (!booking) continue
     const urgency = urgencyFor(move.due_at)
     const dueTime = move.due_at ? new Date(move.due_at).getTime() : null
     if (dueTime && urgency === 'normal' && dueTime > Date.now() + ATTENTION_WINDOW_MS) continue
@@ -107,6 +108,7 @@ const items = computed(() => {
   for (const hold of holds.value) {
     if (!hold.expires_at) continue
     const booking = attentionBookings.value.find(item => item.id === hold.booking_id)
+    if (!booking) continue
     const urgency = urgencyFor(hold.expires_at)
     const expiryTime = new Date(hold.expires_at).getTime()
     if (urgency === 'normal' && expiryTime > Date.now() + ATTENTION_WINDOW_MS) continue
