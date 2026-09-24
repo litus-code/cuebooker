@@ -39,6 +39,8 @@ const copy = computed(() => props.locale === 'es' ? {
   subject: 'Asunto del email',
   subjectPlaceholder: 'Re: booking / fecha / condiciones',
   save: 'Añadir a Activity', sendEmail: 'Enviar email', saving: 'Guardando…', sending: 'Enviando…', required: 'Escribe qué ha pasado.', subjectRequired: 'Añade un asunto para enviar el email.',
+  saved: 'Interacción guardada en Activity.',
+  saveError: 'No se ha podido guardar la interacción.',
   sent: 'Email enviado al proveedor y guardado en Activity. El estado de entrega se actualizará en el hilo.',
   noContactEmail: 'Este booking necesita un contacto con email antes de poder enviar.',
   providerMissing: 'El proveedor de email todavía no está configurado en staging.',
@@ -59,6 +61,8 @@ const copy = computed(() => props.locale === 'es' ? {
   subject: 'Email subject',
   subjectPlaceholder: 'Re: booking / date / terms',
   save: 'Add to Activity', sendEmail: 'Send email', saving: 'Saving…', sending: 'Sending…', required: 'Write what happened.', subjectRequired: 'Add a subject before sending the email.',
+  saved: 'Interaction saved to Activity.',
+  saveError: 'The interaction could not be saved.',
   sent: 'Email sent to the provider and saved to Activity. Delivery status will update in the thread.',
   noContactEmail: 'This booking needs a contact with an email before sending.',
   providerMissing: 'The email provider is not configured in staging yet.',
@@ -169,11 +173,12 @@ async function submit() {
     })
     body.value = ''
     channelDrafts[submittedType as keyof typeof channelDrafts] = ''
+    successMessage.value = copy.value.saved
     emit('created')
   } catch (error: any) {
     errorMessage.value = submittedAsEmail
       ? localEmailError(error?.message || '')
-      : (error?.message || copy.value.required)
+      : copy.value.saveError
   } finally {
     saving.value = false
   }
