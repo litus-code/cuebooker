@@ -111,17 +111,27 @@ function mediaLink(item: PassportMedia) {
       </div>
 
       <div v-if="visibleMedia.length" class="profile-passport__media">
-        <a
-          v-for="item in visibleMedia"
-          :key="item.id"
-          :href="mediaLink(item) || undefined"
-          target="_blank"
-          rel="noopener noreferrer"
-          :aria-label="item.caption || item.mediaType"
-        >
-          <img v-if="mediaPreview(item)" :src="mediaPreview(item) || ''" alt="">
-          <span>{{ item.mediaType.toUpperCase() }}</span>
-        </a>
+        <template v-for="item in visibleMedia" :key="item.id">
+          <a
+            v-if="mediaLink(item)"
+            class="profile-passport__media-card"
+            :href="mediaLink(item) || undefined"
+            target="_blank"
+            rel="noopener noreferrer"
+            :aria-label="item.caption || item.mediaType"
+          >
+            <img v-if="mediaPreview(item)" :src="mediaPreview(item) || ''" alt="">
+            <span>{{ item.mediaType.toUpperCase() }}</span>
+          </a>
+          <div
+            v-else
+            class="profile-passport__media-card"
+            :aria-label="item.caption || item.mediaType"
+          >
+            <img v-if="mediaPreview(item)" :src="mediaPreview(item) || ''" alt="">
+            <span>{{ item.mediaType.toUpperCase() }}</span>
+          </div>
+        </template>
       </div>
 
       <p v-if="!visibleCities.length" class="profile-passport__empty">
@@ -347,7 +357,7 @@ function mediaLink(item: PassportMedia) {
   grid-template-columns:repeat(3,minmax(0,1fr));
   gap:7px;
 }
-.profile-passport__media a{
+.profile-passport__media-card{
   position:relative;
   min-height:84px;
   overflow:hidden;
@@ -357,14 +367,14 @@ function mediaLink(item: PassportMedia) {
   color:#d7d7d7;
   text-decoration:none;
 }
-.profile-passport__media img{
+.profile-passport__media-card img{
   width:100%;
   height:100%;
   min-height:84px;
   object-fit:cover;
   opacity:.8;
 }
-.profile-passport__media span{
+.profile-passport__media-card span{
   position:absolute;
   right:6px;
   bottom:6px;
