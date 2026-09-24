@@ -895,7 +895,7 @@ async function selectBooking(bookingId: string) {
   .core-inbox__mobile-nav button { min-height:40px; padding:0; border:0; background:transparent; color:var(--cue-accent); cursor:pointer; font:800 9px/1 monospace; text-transform:uppercase; }
   .core-inbox__mobile-nav button span { margin-right:6px; font-size:14px; }
   .core-inbox__mobile-nav small { color:var(--cue-muted); font:800 8px/1 monospace; text-transform:uppercase; }
-  .core-inbox__mobile-section-nav { position:sticky; z-index:8; top:0; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin:0 0 14px; padding:8px 0; background:color-mix(in srgb,var(--cue-surface) 94%,transparent); backdrop-filter:blur(8px); }
+  .core-inbox__mobile-section-nav { position:sticky; z-index:8; top:0; display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); gap:6px; margin:0 0 14px; padding:8px 0; background:color-mix(in srgb,var(--cue-surface) 94%,transparent); backdrop-filter:blur(8px); }
   .core-inbox__mobile-section-nav button { min-height:38px; padding:0 6px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-control); background:var(--cue-raised); color:var(--cue-muted); cursor:pointer; font:800 8px/1 monospace; text-transform:uppercase; }
   .core-inbox__mobile-section-nav button:hover,
   .core-inbox__mobile-section-nav button:focus-visible { border-color:var(--cue-accent); color:var(--cue-accent); outline:none; }
