@@ -90,7 +90,7 @@ const links = computed(() => [
   ['MIXCLOUD', safeExternalUrl(props.profile.mixcloudUrl)],
   ['YOUTUBE', safeExternalUrl(props.profile.youtubeUrl)],
   ['WEBSITE', safeExternalUrl(props.profile.websiteUrl)]
-].filter(([, url]): url is string => Boolean(url)) as Array<[string, string]>)
+].filter((item): item is [string, string] => Boolean(item[1])))
 </script>
 
 <template>
