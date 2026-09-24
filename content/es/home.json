@@ -9,7 +9,8 @@
     "roles": "Para quién",
     "tryProduct": "Disponible ahora",
     "login": "Iniciar sesión",
-    "signup": "Crear cuenta"
+    "signup": "Crear cuenta",
+    "pricing": "Precios"
   },
   "hero": {
     "eyebrow": "BOOKINGS REALES. MENOS MEMORIA. MÁS CONTROL.",
@@ -39,7 +40,7 @@
     "statement": "CueBooker convierte lo que ya ocurre en un hilo que no se pierde."
   },
   "search": {
-    "index": "09 / VISIÓN",
+    "index": "10 / VISIÓN",
     "eyebrow": "MÁS ADELANTE · CUANDO EXISTA LA RED",
     "title": "La trayectoria primero. El discovery después.",
     "body": "Con una base real de bookings, relaciones y disponibilidad, CueBooker podrá añadir descubrimiento de artistas sin convertir seguidores o popularidad en una medida de valor. El núcleo seguirá siendo la trayectoria y el trabajo real del artista.",
@@ -219,7 +220,8 @@
       "Próxima acción, holds y calendario conectados",
       "Email saliente y respuestas enlazadas al mismo booking",
       "Perfil público y formulario para recibir nuevas oportunidades",
-      "Historial, archivo/restauración y memoria de relaciones"
+      "Historial, archivo/restauración y memoria de relaciones",
+      "CUE Passport con trayectoria generada desde bookings confirmados"
     ],
     "realTitle": "En construcción",
     "real": [
@@ -311,11 +313,76 @@
         "body": "Tu identidad visual. Ahora o más adelante."
       },
       {
-        "label": "DESPUÉS",
+        "label": "AHORA",
         "name": "CUE Passport",
-        "body": "Trayectoria basada en trabajo real, no followers."
+        "body": "Tu trayectoria se construye con bookings confirmados, ciudades, venues e hitos reales."
       }
     ],
     "cueIdStatus": "CUE ID 3D sigue en laboratorio. CueBooker funciona sin avatar."
+  },
+  "pricing": {
+    "index": "09 / PRECIOS",
+    "eyebrow": "EMPIEZA GRATIS. PAGA CUANDO EL TRABAJO CRECE.",
+    "title": "Un plan para cada nivel de operación.",
+    "body": "Free permite completar el ciclo real de un booking. Artist Pro elimina límites y añade automatización y presentación avanzada. Agency lleva el mismo núcleo a varios artistas y equipos.",
+    "billingNote": "Los precios están definidos para el lanzamiento. El checkout todavía no está habilitado en esta versión; puedes crear tu cuenta Free ahora y conservar tu trabajo cuando actives un plan.",
+    "founding": "FOUNDING ARTIST · 7,99 €/MES O 79 €/AÑO PARA EL COHORTE INICIAL",
+    "monthly": "mes",
+    "annual": "al año",
+    "annualLabel": "Anual",
+    "recommended": "RECOMENDADO",
+    "plans": [
+      {
+        "id": "free",
+        "name": "Free",
+        "price": "0 €",
+        "period": "para siempre",
+        "body": "Para empezar con bookings reales sin tarjeta.",
+        "features": [
+          "1 artista y 1 usuario",
+          "Hasta 5 bookings activos",
+          "Booking Core, holds y calendario",
+          "Perfil y formulario público",
+          "CUE Passport básico",
+          "CUE ID básico",
+          "Smart Capture con cuota mensual"
+        ],
+        "cta": "Crear cuenta Free"
+      },
+      {
+        "id": "artist_pro",
+        "name": "Artist Pro",
+        "price": "9,99 €",
+        "period": "/ mes",
+        "annual": "99 € / año",
+        "body": "Para DJs que ya gestionan actividad de forma continua.",
+        "features": [
+          "Bookings activos sin límite",
+          "Historial operativo completo",
+          "Follow-ups preparados y automatización avanzada",
+          "Más Smart Capture",
+          "CUE Passport avanzado + Event Media",
+          "Analytics, exports y personalización avanzada"
+        ],
+        "cta": "Crear cuenta para Artist Pro"
+      },
+      {
+        "id": "agency",
+        "name": "Agency",
+        "price": "39 €",
+        "period": "/ mes",
+        "annual": "390 € / año",
+        "body": "Para managers y agencias que trabajan con varios artistas.",
+        "features": [
+          "Workspace multiartista",
+          "Equipo, roles y permisos",
+          "Inbox compartido",
+          "Roster calendar",
+          "Reporting de roster",
+          "Templates de agencia y capacidades Pro"
+        ],
+        "cta": "Crear cuenta para Agency"
+      }
+    ]
   }
 }
