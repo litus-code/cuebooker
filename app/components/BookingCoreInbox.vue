@@ -68,12 +68,11 @@ const sourceLabels = computed<Record<string, string>>(() => props.locale === 'es
   booking_form: 'Booking form', phone: 'Phone', whatsapp: 'WhatsApp', email: 'Email', instagram: 'Instagram', in_person: 'In person', manager: 'Manager', manual: 'Manual', other: 'Other'
 })
 
-const visibleBookings = computed(() => {
+const archiveScopedBookings = computed(() => {
   const query = realSearch.value.trim().toLowerCase()
   return props.bookings.filter(booking => {
     if (archiveView.value === 'active' && booking.archived_at) return false
     if (archiveView.value === 'archived' && !booking.archived_at) return false
-    if (realStatusFilter.value !== 'all' && booking.status !== realStatusFilter.value) return false
     if (!query) return true
     const party = booking.counterparty_id ? counterparties.value.find(item => item.id === booking.counterparty_id) : null
     const contact = booking.primary_contact_id ? contacts.value.find(item => item.id === booking.primary_contact_id) : null
@@ -81,6 +80,17 @@ const visibleBookings = computed(() => {
       .filter(Boolean).join(' ').toLowerCase().includes(query)
   })
 })
+const statusCounts = computed<Record<CoreBookingStatus, number>>(() => ({
+  new: archiveScopedBookings.value.filter(item => item.status === 'new').length,
+  in_conversation: archiveScopedBookings.value.filter(item => item.status === 'in_conversation').length,
+  waiting_response: archiveScopedBookings.value.filter(item => item.status === 'waiting_response').length,
+  confirmed: archiveScopedBookings.value.filter(item => item.status === 'confirmed').length,
+  rejected: archiveScopedBookings.value.filter(item => item.status === 'rejected').length,
+  cancelled: archiveScopedBookings.value.filter(item => item.status === 'cancelled').length
+}))
+const visibleBookings = computed(() => realStatusFilter.value === 'all'
+  ? archiveScopedBookings.value
+  : archiveScopedBookings.value.filter(booking => booking.status === realStatusFilter.value))
 const pagedBookings = computed(() => visibleBookings.value.slice(0, visibleLimit.value))
 const hasMoreBookings = computed(() => visibleLimit.value < visibleBookings.value.length)
 const activeBookingCount = computed(() => props.bookings.filter(item => !item.archived_at).length)
@@ -446,8 +456,8 @@ async function selectBooking(bookingId: string) {
         <button type="button" :class="{ active: archiveView === 'archived' }" @click="archiveView = 'archived'">{{ copy.archived }} · {{ bookings.filter(item => !!item.archived_at).length }}</button>
       </div>
       <div class="core-inbox__filters core-inbox__filters--status">
-        <button type="button" :class="['status-filter', 'status-filter--all', { active: realStatusFilter === 'all' }]" @click="realStatusFilter = 'all'">{{ locale === 'es' ? 'Todos' : 'All' }} · {{ visibleBookings.length }}</button>
-        <button v-for="(label, status) in statusLabels" :key="status" type="button" :class="['status-filter', `status-filter--${status}`, { active: realStatusFilter === status }]" @click="realStatusFilter = status">{{ label }} · {{ bookings.filter(item => item.status === status).length }}</button>
+        <button type="button" :class="['status-filter', 'status-filter--all', { active: realStatusFilter === 'all' }]" @click="realStatusFilter = 'all'">{{ locale === 'es' ? 'Todos' : 'All' }} · {{ archiveScopedBookings.length }}</button>
+        <button v-for="(label, status) in statusLabels" :key="status" type="button" :class="['status-filter', `status-filter--${status}`, { active: realStatusFilter === status }]" @click="realStatusFilter = status">{{ label }} · {{ statusCounts[status] }}</button>
       </div>
     </div>
 
