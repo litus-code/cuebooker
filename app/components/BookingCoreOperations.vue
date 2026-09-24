@@ -47,6 +47,7 @@ const copy = computed(() => props.locale === 'es' ? {
   saving: 'Guardando…',
   invalidNext: 'Escribe el siguiente paso.',
   invalidHold: 'El hold necesita una fecha.',
+  duplicateHold: 'Ya existe un hold activo para esta fecha en este booking.',
   error: 'No se ha podido actualizar la operativa.'
 } : {
   eyebrow: 'FOLLOW-UP',
@@ -72,6 +73,7 @@ const copy = computed(() => props.locale === 'es' ? {
   saving: 'Saving…',
   invalidNext: 'Enter a next move.',
   invalidHold: 'A hold needs a date.',
+  duplicateHold: 'An active hold already exists for this date in this booking.',
   error: 'Operations could not be updated.'
 })
 
@@ -191,6 +193,14 @@ async function createHold() {
   const priorityValue = holdPriority.value ? Number(holdPriority.value) : null
   const priority = priorityValue && Number.isInteger(priorityValue) ? priorityValue : null
   if (!eventDate) { errorMessage.value = copy.value.invalidHold; return }
+
+  const duplicateDateOnlyHold = activeHolds.value.some(hold =>
+    hold.event_date === eventDate && !hold.starts_at && !hold.ends_at
+  )
+  if (duplicateDateOnlyHold) {
+    errorMessage.value = copy.value.duplicateHold
+    return
+  }
 
   saving.value = true
   errorMessage.value = ''
