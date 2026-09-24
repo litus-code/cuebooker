@@ -609,13 +609,13 @@ const publicProfilePreview = computed<PublicArtistProfile>(() => {
     youtubeUrl: nullableText(profileForm.value.youtubeUrl),
     spotifyUrl: nullableText(profileForm.value.spotifyUrl),
     coverUrl: profileCoverUrl.value || null,
-    coverPositionY: profileForm.value.coverPositionY,
+    coverPositionY: 50,
     artistImageUrl: profileArtistImageUrl.value || null,
-    artistCutoutUrl: profileArtistCutoutUrl.value || null,
-    artistImageStyle: persisted?.artist_image_style || 'photo',
-    artistImagePositionX: persisted?.artist_image_position_x ?? 50,
-    artistImagePositionY: persisted?.artist_image_position_y ?? 50,
-    artistImageScale: persisted?.artist_image_scale ?? 1,
+    artistCutoutUrl: null,
+    artistImageStyle: 'photo',
+    artistImagePositionX: 50,
+    artistImagePositionY: 50,
+    artistImageScale: 1,
     visualMode: persisted?.visual_mode || 'photo',
     cueId: persisted?.cue_id_config ? toPublicCueIdConfig(persisted.cue_id_config) : null,
     passport: publicPassportEnabled.value ? {
@@ -1348,8 +1348,9 @@ async function selectProfileCover(file: File) {
   profileCoverMessage.value = ''
   try {
     const path = await artistProfiles.uploadCover(selectedArtistId.value, file)
-    await artistProfiles.saveCover(selectedArtistId.value, path, profileForm.value.coverPositionY)
+    await artistProfiles.saveCover(selectedArtistId.value, path, 50)
     profileForm.value.coverImagePath = path
+    profileForm.value.coverPositionY = 50
     profileCoverMessage.value = copy.value.coverSaved
     if (previousPath) await artistProfiles.deleteCover(previousPath).catch(() => undefined)
   } catch {
@@ -1403,9 +1404,9 @@ async function selectProfilePortrait(file: File) {
       artist_image_path: path,
       artist_cutout_path: current.artist_cutout_path,
       artist_image_style: 'photo',
-      artist_image_position_x: current.artist_image_position_x ?? 50,
-      artist_image_position_y: current.artist_image_position_y ?? 50,
-      artist_image_scale: current.artist_image_scale ?? 1
+      artist_image_position_x: 50,
+      artist_image_position_y: 50,
+      artist_image_scale: 1
     })
     replaceProfileArtistImageUrl(await artistProfiles.getArtistImageObjectUrl(path))
     profilePortraitMessage.value = preferences.locale.value === 'es' ? 'Foto actualizada.' : 'Photo updated.'
@@ -2856,10 +2857,13 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       </section>
     </template>
 
-    <div v-if="profilePreviewOpen" class="profile-preview-backdrop" @click.self="profilePreviewOpen = false">
-      <article class="profile-preview" role="dialog" aria-modal="true" aria-labelledby="profile-preview-title">
-        <header>
-          <p id="profile-preview-title">{{ copy.previewPrivate }}</p>
+    <div v-if="profilePreviewOpen" class="profile-preview-backdrop">
+      <article class="profile-preview profile-preview--site" role="dialog" aria-modal="true" aria-labelledby="profile-preview-title">
+        <header class="profile-preview__sitebar">
+          <div>
+            <span>PUBLIC PROFILE PREVIEW</span>
+            <p id="profile-preview-title">{{ copy.previewPrivate }}</p>
+          </div>
           <button type="button" :aria-label="copy.previewClose" @click="profilePreviewOpen = false">×</button>
         </header>
         <PublicArtistProfile
@@ -3226,11 +3230,14 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-savebar > p.success { color: #8ce99a; }
 .profile-savebar .primary-button { min-width: 180px; padding: 0 18px; }
 .public-publishing-message { margin: -12px 0 24px; color: var(--cue-muted); font-size: 12px; }
-.profile-preview-backdrop { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 24px; overflow-y: auto; background: rgba(0,0,0,.82); backdrop-filter: blur(9px); }
-.profile-preview { width: min(1280px, 100%); max-height: calc(100dvh - 48px); overflow-y: auto; border: 1px solid #343434; background: #0b0b0b; color: #f4f2ed; box-shadow: 0 30px 100px #000; }
-.profile-preview > header { position: sticky; z-index: 2; top: 0; display: flex; justify-content: space-between; align-items: center; min-height: 58px; padding: 0 22px; border-bottom: 1px solid #343434; background: rgba(11,11,11,.95); }
-.profile-preview > header p { margin: 0; color: #cfff57; font: 700 10px/1.3 monospace; letter-spacing: .12em; }
-.profile-preview > header button { width: 38px; height: 38px; border: 1px solid #343434; border-radius: var(--cue-radius-control); background: transparent; color: #f4f2ed; cursor: pointer; font-size: 25px; }
+.profile-preview-backdrop { position:fixed; inset:0; z-index:80; overflow:auto; background:#050505; }
+.profile-preview { width:100%; min-height:100dvh; background:#080808; color:#f4f2ed; }
+.profile-preview--site { max-height:none; overflow:visible; border:0; box-shadow:none; }
+.profile-preview__sitebar { position:sticky; z-index:20; top:0; display:flex; justify-content:space-between; align-items:center; min-height:58px; padding:10px 18px; border-bottom:1px solid #2f2f2f; background:rgba(7,7,7,.94); backdrop-filter:blur(14px); }
+.profile-preview__sitebar>div { display:grid; gap:4px; }
+.profile-preview__sitebar span { color:#cfff57; font:800 7px/1 monospace; letter-spacing:.12em; }
+.profile-preview__sitebar p { margin:0; color:#aaa; font:700 9px/1.2 monospace; letter-spacing:.08em; }
+.profile-preview__sitebar button { width:38px; height:38px; border:1px solid #343434; border-radius:8px; background:#0d0d0d; color:#f4f2ed; cursor:pointer; font-size:24px; }
 .profile-preview-hero { position: relative; min-height: 420px; padding: clamp(40px,7vw,84px); overflow: hidden; border-bottom: 1px solid #343434; background: #0b0b0b; isolation: isolate; }
 .profile-preview-hero > img { position: absolute; z-index: -2; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .profile-preview-hero-shade { position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg,rgba(0,0,0,.88),rgba(0,0,0,.44) 64%,rgba(0,0,0,.2)),linear-gradient(0deg,rgba(0,0,0,.75),transparent 55%); }
