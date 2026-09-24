@@ -205,7 +205,7 @@ The existing `workspace_billing` foundation must be reconciled with permanent Fr
 
 ### 7. Commercial analytics
 
-Status: PENDING
+Status: PRODUCT FUNNEL WIRED · PAYMENT EVENTS OUTSIDE THIS SCOPE
 
 Instrument:
 
@@ -225,6 +225,22 @@ signup
 Also record which entitlement or capacity boundary triggered an upgrade interaction.
 
 Do not use raw daily logins as the main retention metric.
+
+Product-side implementation:
+
+- signup / onboarding;
+- public profile view and publication;
+- booking entry distribution;
+- public booking request;
+- manual/CUE capture;
+- outbound booking response;
+- explicit booking decision and confirmation;
+- first Passport-capable confirmed event;
+- upgrade prompt exposure and product action.
+
+"First" milestones are derived downstream from first event occurrence, not from client-side flags.
+
+Checkout and subscription lifecycle events remain outside this product-analytics implementation.
 
 ### 8. External beta
 
