@@ -10044,3 +10044,43 @@ Remaining before calling Passport/Profile launch-ready:
 
 - apply Passport backend changes to the correct non-production Supabase target;
 - real-device desktop/mobile visual QA, especially dense city/venue data and mobile tooltip/media cases.
+
+
+## 24 Sep 2026 · Product analytics V1
+
+The product-side V1 funnel is now instrumented without sending PII or free-text content.
+
+Implemented events:
+
+- `signup_started`;
+- `signup_completed`;
+- `onboarding_completed`;
+- `artist_profile_viewed`;
+- `artist_profile_published`;
+- `booking_entry_shared`;
+- `booking_request_started`;
+- `booking_request_sent`;
+- `booking_capture_created`;
+- `booking_response_sent`;
+- `booking_decision_completed`;
+- `booking_confirmed`;
+- `passport_event_created`;
+- `upgrade_prompt_viewed`;
+- `upgrade_prompt_action`.
+
+Rules:
+
+- success events are emitted only after the product action succeeds;
+- first-use milestones are derived in analytics from first occurrence, not stored as browser flags;
+- event payloads stay categorical and must not contain names, emails, phone numbers, slugs, booking IDs, URLs or message/free-text content;
+- an upgrade prompt is only marked as measured when `analytics.track()` actually accepts it under the current consent state;
+- checkout / Stripe / subscription events are intentionally not part of this implementation.
+
+Contract: `docs/PRODUCT_ANALYTICS_V1.md`.
+
+Validation:
+
+- code HEAD before documentation: `1f51c5976c7053075ae8dcd433522b79a34dd3ce`;
+- GitHub Actions run `36032641715`;
+- `Generate preview build` passed;
+- production was not touched.
