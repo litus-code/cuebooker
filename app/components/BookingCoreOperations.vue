@@ -90,6 +90,16 @@ function dateOnly(value: string) {
   }).format(new Date(`${value}T12:00:00`))
 }
 
+function holdSchedule(hold: Hold) {
+  if (!hold.starts_at || !hold.ends_at) return ''
+  const formatter = new Intl.DateTimeFormat(props.locale === 'es' ? 'es-ES' : 'en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    ...(hold.event_timezone ? { timeZone: hold.event_timezone } : {})
+  })
+  return `${formatter.format(new Date(hold.starts_at))}–${formatter.format(new Date(hold.ends_at))}`
+}
+
 async function load() {
   if (!props.workspaceId || !props.booking.id) return
   loading.value = true
@@ -254,7 +264,11 @@ async function releaseHold(hold: Hold) {
         </header>
         <div v-if="activeHolds.length" class="core-ops__holds">
           <article v-for="hold in activeHolds" :key="hold.id">
-            <div><strong>{{ dateOnly(hold.event_date) }}</strong><small>{{ hold.expires_at ? `${copy.expires}: ${localDateTime(hold.expires_at)}` : '—' }}</small></div>
+            <div>
+              <strong>{{ dateOnly(hold.event_date) }}</strong>
+              <small v-if="holdSchedule(hold)" class="core-ops__hold-schedule">{{ holdSchedule(hold) }}</small>
+              <small>{{ hold.expires_at ? `${copy.expires}: ${localDateTime(hold.expires_at)}` : '—' }}</small>
+            </div>
             <span v-if="hold.priority">P{{ hold.priority }}</span>
             <div class="core-ops__hold-actions"><button type="button" :disabled="saving" @click="releaseHold(hold)">{{ copy.release }}</button></div>
           </article>
@@ -299,6 +313,7 @@ async function releaseHold(hold: Hold) {
 .core-ops__automation { display:inline-block; margin-top:6px; padding:3px 6px; border:1px solid color-mix(in srgb,var(--cue-primary) 55%,var(--cue-border)); border-radius:var(--cue-radius-xs); color:var(--cue-primary); font:800 7px monospace; font-style:normal; text-transform:uppercase; }
 .core-ops__current strong, .core-ops__holds strong { font-size:12px; }
 .core-ops__current small, .core-ops__holds small { margin-top:4px; color:var(--cue-muted); font-size:10px; }
+.core-ops__holds .core-ops__hold-schedule { color:var(--cue-text); font-weight:700; }
 .core-ops button { min-height:var(--cue-button-sm); padding:0 12px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-control); background:transparent; color:var(--cue-text); cursor:pointer; font:700 9px monospace; text-transform:uppercase; }
 .core-ops button:hover { border-color:var(--cue-primary); }
 .core-ops button:disabled { opacity:.45; cursor:wait; }
