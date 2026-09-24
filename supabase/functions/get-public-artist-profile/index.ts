@@ -116,6 +116,17 @@ type PublicPassportMilestone = {
   subtitle: string;
 };
 
+type PublicPassportMedia = {
+  id: string;
+  bookingId: string;
+  mediaType: "image" | "video" | "reel";
+  permalink: string | null;
+  mediaUrl: string | null;
+  thumbnailUrl: string | null;
+  caption: string | null;
+  capturedAt: string | null;
+};
+
 type BookingPassportRow = {
   city: string | null;
   venue_name: string | null;
@@ -137,7 +148,7 @@ function uniqueLabels(values: Array<string | null | undefined>) {
   return [...seen.values()];
 }
 
-function derivePublicPassport(bookings: BookingPassportRow[]) {
+function derivePublicPassport(bookings: BookingPassportRow[], selectedMilestoneIds: string[] | null) {
   const cities = uniqueLabels(bookings.map((booking) => booking.city));
   const venues = uniqueLabels(bookings.map((booking) => booking.venue_name));
   const milestones: PublicPassportMilestone[] = [];
@@ -164,11 +175,15 @@ function derivePublicPassport(bookings: BookingPassportRow[]) {
     });
   }
 
+  const visibleMilestones = selectedMilestoneIds === null
+    ? milestones.slice(0, 3)
+    : milestones.filter((milestone) => selectedMilestoneIds.includes(milestone.id)).slice(0, 3);
+
   return {
     confirmedBookings: bookings.length,
     cities,
     venues,
-    milestones: milestones.slice(0, 3)
+    milestones: visibleMilestones
   };
 }
 
@@ -202,6 +217,8 @@ type ArtistRow = {
   visual_source: 'portrait' | 'cue_id';
   cue_id_config: unknown;
   passport_public_enabled: boolean;
+  passport_public_milestone_ids: string[] | null;
+  passport_public_media_ids: string[];
 };
 
 Deno.serve(async request => {
@@ -246,7 +263,9 @@ Deno.serve(async request => {
       "artist_image_scale",
       "visual_source",
       "cue_id_config",
-      "passport_public_enabled"
+      "passport_public_enabled",
+      "passport_public_milestone_ids",
+      "passport_public_media_ids"
     ].join(",");
 
     const artists = await serviceJson<ArtistRow[]>(
@@ -275,7 +294,8 @@ Deno.serve(async request => {
       confirmedBookings: 0,
       cities: [] as string[],
       venues: [] as string[],
-      milestones: [] as PublicPassportMilestone[]
+      milestones: [] as PublicPassportMilestone[],
+      media: [] as PublicPassportMedia[]
     };
 
     if (artist.passport_public_enabled && workspaceIds.length) {
@@ -285,7 +305,41 @@ Deno.serve(async request => {
         { method: "GET" },
         serviceKey
       );
-      passport = derivePublicPassport(bookings);
+      passport = {
+        ...derivePublicPassport(bookings, artist.passport_public_milestone_ids),
+        media: []
+      };
+
+      const selectedMediaIds = (artist.passport_public_media_ids || []).filter(Boolean);
+      if (selectedMediaIds.length) {
+        const mediaFilter = selectedMediaIds.map((id) => `"${id}"`).join(",");
+        const mediaRows = await serviceJson<Array<{
+          id: string;
+          booking_id: string;
+          media_type: "image" | "video" | "reel";
+          permalink: string | null;
+          media_url: string | null;
+          thumbnail_url: string | null;
+          caption: string | null;
+          captured_at: string | null;
+          status: string;
+        }>>(
+          `${supabaseUrl}/rest/v1/passport_media?id=in.(${encodeURIComponent(mediaFilter)})&status=eq.linked&select=id,booking_id,media_type,permalink,media_url,thumbnail_url,caption,captured_at,status&order=captured_at.desc.nullslast,created_at.desc`,
+          { method: "GET" },
+          serviceKey
+        );
+
+        passport.media = mediaRows.slice(0, 6).map((item) => ({
+          id: item.id,
+          bookingId: item.booking_id,
+          mediaType: item.media_type,
+          permalink: item.permalink,
+          mediaUrl: item.media_url,
+          thumbnailUrl: item.thumbnail_url,
+          caption: item.caption,
+          capturedAt: item.captured_at
+        }));
+      }
     }
 
     const cueId = sanitizeCueIdConfig(artist.cue_id_config);
