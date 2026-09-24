@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import {
+  cueCapacityState,
   cueMinimumPlan,
   cuePlanBadge,
   cuePlanLimit,
@@ -42,6 +43,30 @@ test('Free capacity limits remain separate from capability access', () => {
   assert.equal(cuePlanLimit('free', 'activeBookings'), 5)
   assert.equal(cuePlanLimit('free', 'smartCaptureMonthly'), 10)
   assert.equal(cuePlanLimit('artist_pro', 'activeBookings'), null)
+})
+
+test('Capacity state reports reached limits without mutating entitlement access', () => {
+  assert.deepEqual(cueCapacityState('free', 'activeBookings', 4), {
+    used: 4,
+    limit: 5,
+    remaining: 1,
+    reached: false,
+    exceeded: false
+  })
+  assert.deepEqual(cueCapacityState('free', 'activeBookings', 5), {
+    used: 5,
+    limit: 5,
+    remaining: 0,
+    reached: true,
+    exceeded: false
+  })
+  assert.deepEqual(cueCapacityState('artist_pro', 'activeBookings', 12), {
+    used: 12,
+    limit: null,
+    remaining: null,
+    reached: false,
+    exceeded: false
+  })
 })
 
 test('Entitlement overrides can simulate a feature without changing plan definitions', () => {
