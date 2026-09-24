@@ -2901,8 +2901,10 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .eyebrow { color: var(--cue-accent); }
 .workspace-header nav { display: flex; flex-wrap: nowrap; gap: 3px; min-width: 0; max-width: min(620px, 52vw); box-sizing:border-box; padding: 3px; overflow-x: auto; overscroll-behavior-x:contain; scroll-padding-inline:8px; border: 1px solid var(--cue-border); border-radius: 999px; background: var(--cue-surface); scrollbar-width: none; }
 .workspace-header nav::-webkit-scrollbar { display: none; }
-.workspace-header nav button { flex: 0 0 auto; min-height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--cue-muted); cursor: pointer; font-size: 12px; font-weight: 700; white-space: nowrap; }
-.workspace-header nav button.active { background: var(--cue-toggle); color: #070707; box-shadow: 0 0 18px color-mix(in srgb, var(--cue-toggle) 28%, transparent); }
+.workspace-header nav button { position:relative; flex:0 0 auto; min-height:34px; padding:0 14px; border:0; border-radius:0; background:transparent; color:var(--cue-muted); cursor:pointer; font-size:12px; font-weight:700; white-space:nowrap; transition:color .16s ease; }
+.workspace-header nav button:hover { color:var(--cue-text); }
+.workspace-header nav button.active { background:transparent; color:var(--cue-toggle); box-shadow:none; }
+.workspace-header nav button.active::before { position:absolute; top:7px; bottom:7px; left:0; width:2px; border-radius:999px; background:var(--cue-toggle); content:''; }
 .account-actions { display: flex; justify-content: flex-end; align-items: center; gap: 7px; color: var(--cue-muted); font-size: 12px; }
 .account-actions button, .panel-heading button, .next-panel button, .panel-empty button, .empty-actions button, .empty-actions a { border: 0; background: transparent; color: var(--cue-text); cursor: pointer; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
 .account-actions .header-icon-button { display: grid; place-items: center; width: 36px; height: 36px; padding: 8px; border: 1px solid var(--cue-border); border-radius: 50%; color: var(--cue-muted); text-decoration: none; }
@@ -3236,7 +3238,8 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 @media (max-width: 1040px) {
   .workspace-header { grid-template-columns: 1fr auto; padding-bottom: 8px; }
   .workspace-header nav { grid-column: 1 / -1; grid-row: 2; width: 100%; max-width: none; justify-self: stretch; border-radius: 0; }
-  .workspace-header nav button { padding-inline: 16px; }
+  .workspace-header nav button { padding-inline:16px; }
+  .workspace-header nav button.active::before { top:auto; right:14px; bottom:0; left:14px; width:auto; height:2px; }
   .summary-grid { grid-template-columns: repeat(2, 1fr); }
   .overview-grid, .calendar-layout { grid-template-columns: 1fr; }
   .day-panel { position: static; }
@@ -3252,6 +3255,7 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .workspace-header { min-height: 62px; margin-inline: -14px; padding-inline:14px; }
   .workspace-header nav { width:100%; }
   .workspace-header nav button { min-height:40px; scroll-snap-align:center; }
+  .workspace-header nav button.active::before { right:12px; left:12px; height:2px; }
   .workspace-header nav { scroll-snap-type:x proximity; }
   .account-actions { gap: 8px; }
   .view-heading { display: block; padding: 20px 0 20px; }
