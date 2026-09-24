@@ -165,6 +165,13 @@ const cuePassport = computed(() => deriveCuePassportSnapshot({
 const cuePassportUnlocked = computed(() => cuePassportUnlockedMilestones(cuePassport.value))
 const cuePassportNext = computed(() => cuePassportNextMilestones(cuePassport.value).slice(0, 3))
 const linkedPassportMedia = computed(() => passportMediaItems.value.filter(item => item.status === 'linked'))
+const linkedPassportMediaIds = computed(() => new Set(linkedPassportMedia.value.map(item => item.id)))
+const validPublicPassportMediaIds = computed(() =>
+  publicPassportMediaIds.value.filter(id => linkedPassportMediaIds.value.has(id)).slice(0, 6)
+)
+const validPassportMediaDraftIds = computed(() =>
+  passportMediaIdsDraft.value.filter(id => linkedPassportMediaIds.value.has(id)).slice(0, 6)
+)
 const publicPassportMilestones = computed(() => {
   const source = cuePassportUnlocked.value
   const ids = publicPassportMilestoneIds.value
@@ -172,7 +179,7 @@ const publicPassportMilestones = computed(() => {
   return selected.map(item => ({ id: item.id, title: item.title, subtitle: item.subtitle }))
 })
 const publicPassportMedia = computed(() => linkedPassportMedia.value
-  .filter(item => publicPassportMediaIds.value.includes(item.id))
+  .filter(item => validPublicPassportMediaIds.value.includes(item.id))
   .slice(0, 6)
   .map(item => ({
     id: item.id,
@@ -222,6 +229,11 @@ watch(cuePassportWorld, world => {
 
 watch(cuePassportCountryId, () => {
   cuePassportCityId.value = cuePassportCountry.value?.cities[0]?.id || ''
+})
+
+watch(linkedPassportMediaIds, validIds => {
+  publicPassportMediaIds.value = publicPassportMediaIds.value.filter(id => validIds.has(id)).slice(0, 6)
+  passportMediaIdsDraft.value = passportMediaIdsDraft.value.filter(id => validIds.has(id)).slice(0, 6)
 })
 
 function passportStickerClass(kind: string) {
@@ -1502,7 +1514,7 @@ async function savePublicPassportSettings() {
       selectedArtistId.value,
       passportVisibilityDraft.value,
       passportMilestoneAutoDraft.value ? null : passportMilestoneIdsDraft.value.slice(0, 3),
-      passportMediaIdsDraft.value.slice(0, 6)
+      validPassportMediaDraftIds.value
     )
     publicPassportEnabled.value = result.enabled
     publicPassportMilestoneIds.value = result.milestoneIds
@@ -2708,7 +2720,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                       <span>EVENT MEDIA <CuePlanBadge entitlement="passport.media" /></span>
                       <strong>{{ preferences.locale.value === 'es' ? 'Media pública' : 'Public media' }}</strong>
                     </div>
-                    <em>{{ passportMediaIdsDraft.length }}/6</em>
+                    <em>{{ validPassportMediaDraftIds.length }}/6</em>
                   </div>
                   <div v-if="linkedPassportMedia.length" class="profile-passport-editor__media-grid">
                     <label v-for="item in linkedPassportMedia" :key="item.id">
@@ -2716,7 +2728,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                         v-model="passportMediaIdsDraft"
                         type="checkbox"
                         :value="item.id"
-                        :disabled="!canEntitlement('passport.media') || (!passportMediaIdsDraft.includes(item.id) && passportMediaIdsDraft.length >= 6)"
+                        :disabled="!canEntitlement('passport.media') || (!passportMediaIdsDraft.includes(item.id) && validPassportMediaDraftIds.length >= 6)"
                       >
                       <img
                         v-if="item.thumbnail_url || (item.media_type === 'image' && item.media_url)"
