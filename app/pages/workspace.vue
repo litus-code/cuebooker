@@ -24,8 +24,8 @@ function workspaceViewFromQuery(value: unknown, booking?: unknown): WorkspaceVie
   if (typeof booking === 'string' && booking) return 'bookings'
   return 'overview'
 }
-type ProfileEditSection = 'identity' | 'image' | 'sound' | 'links' | 'booking' | 'distribution' | null
-const PROFILE_EDIT_SECTIONS = ['identity', 'image', 'sound', 'links', 'booking', 'distribution'] as const
+type ProfileEditSection = 'identity' | 'image' | 'portrait' | 'sound' | 'links' | 'booking' | 'distribution' | null
+const PROFILE_EDIT_SECTIONS = ['identity', 'image', 'portrait', 'sound', 'links', 'booking', 'distribution'] as const
 function profileSectionFromQuery(value: unknown): Exclude<ProfileEditSection, null> | null {
   return typeof value === 'string' && PROFILE_EDIT_SECTIONS.includes(value as any) ? value as Exclude<ProfileEditSection, null> : null
 }
@@ -122,6 +122,8 @@ const profileEditSection = ref<ProfileEditSection>(route.query.view === 'profile
 const profileCoverUrl = ref('')
 const profileCoverUploading = ref(false)
 const profileCoverMessage = ref('')
+const profilePortraitUploading = ref(false)
+const profilePortraitMessage = ref('')
 const profileArtistImageUrl = ref('')
 const profileArtistCutoutUrl = ref('')
 const publicProfilePublished = ref(false)
@@ -370,19 +372,6 @@ async function toggleProfileEditSection(section: Exclude<ProfileEditSection, nul
   if (profileEditSection.value) query.section = profileEditSection.value
   else delete query.section
   void router.replace({ query }).catch(() => {})
-
-  if (!profileEditSection.value || !import.meta.client) return
-  await nextTick()
-  await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
-  const editor = document.getElementById('profile-builder-editor')
-  const header = document.getElementById('workspace-header')
-  if (!editor) return
-  const offset = (header?.getBoundingClientRect().height || 0) + 12
-  const top = editor.getBoundingClientRect().top + window.scrollY - offset
-  window.scrollTo({
-    top: Math.max(0, top),
-    behavior: prefersReducedMotion() ? 'auto' : 'smooth'
-  })
 }
 
 async function copyProfileValue(label: string, value: string) {
@@ -507,9 +496,9 @@ watch(activeView, async (view) => {
 })
 watch(rosterArtistName, value => { rosterArtistSlug.value = slugify(value) })
 watch(activeView, view => { if (view !== 'profile') profilePreviewOpen.value = false })
-watch(profilePreviewOpen, (open) => {
+watch([profilePreviewOpen, profileEditSection], ([previewOpen, editSection]) => {
   if (!import.meta.client) return
-  document.body.style.overflow = open ? 'hidden' : ''
+  document.body.style.overflow = previewOpen || Boolean(editSection) ? 'hidden' : ''
 })
 
 onBeforeUnmount(() => {
@@ -985,6 +974,78 @@ async function removeProfileCover() {
   } finally {
     profileCoverUploading.value = false
   }
+}
+
+
+async function selectProfilePortrait(file: File) {
+  if (!selectedArtistId.value || !canEditSelectedArtist.value) return
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 8 * 1024 * 1024) {
+    profilePortraitMessage.value = preferences.locale.value === 'es'
+      ? 'Usa JPG, PNG o WebP de hasta 8 MB.'
+      : 'Use JPG, PNG or WebP up to 8 MB.'
+    return
+  }
+
+  const current = artistProfiles.activeProfile.value?.artist
+  if (!current) return
+
+  const previousPath = current.artist_image_path
+  replaceProfileArtistImageUrl(URL.createObjectURL(file))
+  profilePortraitUploading.value = true
+  profilePortraitMessage.value = ''
+
+  try {
+    const path = await artistProfiles.uploadArtistImage(selectedArtistId.value, file)
+    const saved = await artistProfiles.saveArtistVisual(selectedArtistId.value, {
+      artist_image_path: path,
+      artist_cutout_path: current.artist_cutout_path,
+      artist_image_style: 'photo',
+      artist_image_position_x: current.artist_image_position_x ?? 50,
+      artist_image_position_y: current.artist_image_position_y ?? 50,
+      artist_image_scale: current.artist_image_scale ?? 1
+    })
+    replaceProfileArtistImageUrl(await artistProfiles.getArtistImageObjectUrl(path))
+    profilePortraitMessage.value = preferences.locale.value === 'es' ? 'Foto actualizada.' : 'Photo updated.'
+    if (previousPath && previousPath !== saved.artist_image_path) {
+      await artistProfiles.deleteArtistImage(previousPath).catch(() => undefined)
+    }
+  } catch {
+    profilePortraitMessage.value = preferences.locale.value === 'es'
+      ? 'No se pudo actualizar la foto.'
+      : 'The photo could not be updated.'
+    await loadProfileVisualMedia(current.artist_image_path, current.artist_cutout_path)
+  } finally {
+    profilePortraitUploading.value = false
+  }
+}
+
+async function useProfilePhotoPresentation() {
+  if (!selectedArtistId.value) return
+  const current = artistProfiles.activeProfile.value?.artist
+  if (!current) return
+  await artistProfiles.saveCueIdPresentation(
+    selectedArtistId.value,
+    'portrait',
+    current.cue_id_config,
+    'photo'
+  )
+  profilePortraitMessage.value = preferences.locale.value === 'es'
+    ? 'El perfil mostrará tu foto.'
+    : 'Your profile will show your photo.'
+}
+
+async function useProfileCueIdPresentation() {
+  if (!selectedArtistId.value) return
+  const current = artistProfiles.activeProfile.value?.artist
+  if (!current) return
+  await artistProfiles.saveCueIdPresentation(
+    selectedArtistId.value,
+    'cue_id',
+    current.cue_id_config
+  )
+  profilePortraitMessage.value = preferences.locale.value === 'es'
+    ? 'El perfil mostrará tu CUE ID.'
+    : 'Your profile will show your CUE ID.'
 }
 
 async function loadArtistProfile() {
@@ -1937,7 +1998,8 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               <div>
                 <p class="eyebrow">
                   {{ profileEditSection === 'identity' ? '01 / IDENTITY'
-                    : profileEditSection === 'image' ? '02 / IMAGE'
+                    : profileEditSection === 'image' ? '02 / COVER'
+                    : profileEditSection === 'portrait' ? '03 / PORTRAIT'
                     : profileEditSection === 'sound' ? '04 / SOUND'
                     : profileEditSection === 'links' ? '05 / LINKS'
                     : profileEditSection === 'booking' ? '06 / BOOKING'
@@ -1947,7 +2009,9 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                   {{ profileEditSection === 'identity'
                     ? (preferences.locale.value === 'es' ? 'Identidad del artista' : 'Artist identity')
                     : profileEditSection === 'image'
-                      ? (preferences.locale.value === 'es' ? 'Imagen y portada' : 'Image and cover')
+                      ? (preferences.locale.value === 'es' ? 'Portada del perfil' : 'Profile cover')
+                      : profileEditSection === 'portrait'
+                        ? (preferences.locale.value === 'es' ? 'Foto o CUE ID' : 'Photo or CUE ID')
                       : profileEditSection === 'sound'
                         ? (preferences.locale.value === 'es' ? 'Sonido y formatos' : 'Sound and formats')
                         : profileEditSection === 'links'
@@ -1989,6 +2053,47 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                   @update:position-y="profileForm.coverPositionY = $event"
                 />
                 <p v-if="profileCoverMessage" class="profile-cover-message" :class="{ success: profileCoverMessage === copy.coverSaved || profileCoverMessage === copy.coverRemoved }">{{ profileCoverMessage }}</p>
+              </div>
+
+              <div v-else-if="profileEditSection === 'portrait'" class="profile-portrait-editor">
+                <div class="profile-portrait-editor__choices">
+                  <button
+                    type="button"
+                    :class="{ active: artistProfiles.activeProfile.value?.artist.visual_source !== 'cue_id' }"
+                    @click="useProfilePhotoPresentation"
+                  >
+                    <span>PHOTO</span>
+                    <strong>{{ preferences.locale.value === 'es' ? 'Usar fotografía' : 'Use photography' }}</strong>
+                  </button>
+                  <button
+                    type="button"
+                    :class="{ active: artistProfiles.activeProfile.value?.artist.visual_source === 'cue_id' }"
+                    @click="useProfileCueIdPresentation"
+                  >
+                    <span>CUE ID</span>
+                    <strong>{{ preferences.locale.value === 'es' ? 'Usar identidad digital' : 'Use digital identity' }}</strong>
+                  </button>
+                </div>
+
+                <label class="profile-portrait-editor__upload">
+                  <span>{{ preferences.locale.value === 'es' ? 'FOTO DEL ARTISTA' : 'ARTIST PHOTO' }}</span>
+                  <strong>{{ profilePortraitUploading
+                    ? (preferences.locale.value === 'es' ? 'Subiendo…' : 'Uploading…')
+                    : (preferences.locale.value === 'es' ? 'Cambiar foto' : 'Change photo') }}</strong>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    :disabled="profilePortraitUploading"
+                    @change="($event) => { const file = ($event.currentTarget as HTMLInputElement).files?.[0]; if (file) selectProfilePortrait(file) }"
+                  >
+                </label>
+
+                <p v-if="profilePortraitMessage" class="profile-cover-message success">{{ profilePortraitMessage }}</p>
+
+                <button type="button" class="profile-portrait-editor__cue-link" @click="changeView('cue-id')">
+                  {{ preferences.locale.value === 'es' ? 'Configurar CUE ID' : 'Configure CUE ID' }}
+                  <span class="arrow arrow--ne" aria-hidden="true" />
+                </button>
               </div>
 
               <div v-else-if="profileEditSection === 'sound'" class="profile-fields profile-fields--builder">
