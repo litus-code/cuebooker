@@ -2113,14 +2113,30 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <section id="workspace-day-panel" class="day-panel panel">
             <div class="day-heading"><div><p class="eyebrow">{{ copy.dayHours }}</p><h2>{{ selectedDateLabel }}</h2></div><button class="add-button" type="button" @click="openCreate()">{{ copy.add }}</button></div>
               <div v-if="selectedDayDateOnlyCoreHolds.length || selectedDayDateOnlyConfirmedBookings.length" class="core-calendar-holds">
-                <article v-for="booking in selectedDayDateOnlyConfirmedBookings" :key="`confirmed-${booking.id}`" class="core-calendar-confirmed">
+                <button
+                  v-for="booking in selectedDayDateOnlyConfirmedBookings"
+                  :key="`confirmed-${booking.id}`"
+                  type="button"
+                  class="core-calendar-card core-calendar-confirmed"
+                  :aria-label="`${coreBookingLabel(booking)} · ${preferences.locale.value === 'es' ? 'Abrir booking confirmado' : 'Open confirmed booking'}`"
+                  @click="openRealBooking(booking.id)"
+                >
                   <i class="status-dot status-dot--confirmed" />
                   <div><strong>{{ coreBookingLabel(booking) }}</strong><span>{{ preferences.locale.value === 'es' ? 'Confirmado · horario pendiente' : 'Confirmed · schedule pending' }}</span></div>
-                </article>
-                <article v-for="hold in selectedDayDateOnlyCoreHolds" :key="hold.id">
+                  <span class="core-calendar-card__action" aria-hidden="true">→</span>
+                </button>
+                <button
+                  v-for="hold in selectedDayDateOnlyCoreHolds"
+                  :key="hold.id"
+                  type="button"
+                  class="core-calendar-card core-calendar-hold"
+                  :aria-label="`${coreHoldLabel(hold)} · ${preferences.locale.value === 'es' ? 'Abrir booking en hold' : 'Open booking on hold'}`"
+                  @click="openRealBooking(hold.booking_id)"
+                >
                   <i class="status-dot status-dot--hold" />
                   <div><strong>{{ coreHoldLabel(hold) }}</strong><span>Hold · {{ hold.priority ? `P${hold.priority}` : (preferences.locale.value === 'es' ? 'Sin prioridad' : 'No priority') }}<template v-if="hold.expires_at"> · {{ preferences.locale.value === 'es' ? 'Caduca' : 'Expires' }} {{ coreHoldExpiry(hold) }}</template></span></div>
-                </article>
+                  <span class="core-calendar-card__action" aria-hidden="true">→</span>
+                </button>
               </div>
               <div class="timeline" :aria-label="copy.selectedDaySchedule">
                 <button v-for="hour in hours" :key="hour" class="hour-row" type="button" :aria-label="`${copy.addAt} ${hour}`" @click="openCreate(hour)"><span>{{ hour }}</span></button>
@@ -3255,12 +3271,16 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 }
 
 .core-calendar-holds { display:grid; gap:7px; padding:10px 12px; border-bottom:1px solid var(--cue-border); background:color-mix(in srgb, var(--cue-accent) 4%, var(--cue-surface)); }
-.core-calendar-holds article { display:flex; align-items:flex-start; gap:9px; padding:9px 10px; border:1px solid color-mix(in srgb, var(--cue-accent) 32%, var(--cue-border)); }
-.core-calendar-holds article > i { flex:0 0 auto; margin-top:4px; }
-.core-calendar-holds strong, .core-calendar-holds span { display:block; }
-.core-calendar-holds strong { font-size:11px; }
-.core-calendar-holds span { margin-top:3px; color:var(--cue-muted); font-size:9px; }
+.core-calendar-card { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:start; gap:9px; width:100%; padding:9px 10px; border:1px solid color-mix(in srgb, var(--cue-accent) 32%, var(--cue-border)); background:transparent; color:var(--cue-text); text-align:left; cursor:pointer; }
+.core-calendar-card:hover,
+.core-calendar-card:focus-visible { border-color:var(--cue-accent); background:color-mix(in srgb, var(--cue-accent) 5%, transparent); outline:none; }
+.core-calendar-card > i { flex:0 0 auto; margin-top:4px; }
+.core-calendar-card strong, .core-calendar-card span { display:block; }
+.core-calendar-card strong { font-size:11px; }
+.core-calendar-card span { margin-top:3px; color:var(--cue-muted); font-size:9px; }
+.core-calendar-card__action { align-self:center; margin:0 !important; color:var(--cue-accent) !important; font:900 15px/1 monospace !important; }
 .core-timeline-hold { z-index:3; border-style:dashed !important; }
+.core-calendar-hold { border-style:dashed; }
 .core-calendar-confirmed { border-style:solid !important; }
 .core-timeline-confirmed { z-index:4; }
 
