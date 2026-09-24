@@ -163,6 +163,7 @@ onBeforeUnmount(() => {
       :cities="profile.passport.cities"
       :venues="profile.passport.venues"
       :milestones="profile.passport.milestones"
+      :media="profile.passport.media"
       :locale="locale"
       :editable="false"
     />
