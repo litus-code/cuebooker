@@ -9921,3 +9921,14 @@ Production remains untouched.
 - Public booking form now opens in a centered desktop modal and fullscreen mobile modal. No autoscroll to a long form.
 - CUE Passport constellation tooltip now supports linked-media interaction and mobile internal scrolling.
 - Passport V1 remains validation pending until CI/staging verification is available.
+
+- Public Passport selection is now explicit:
+  - milestones: automatic or up to 3 selected unlocked milestones;
+  - event media: opt-in only, up to 6 linked items;
+  - selected media is revalidated against confirmed artist bookings in the public endpoint.
+- Public Profile now follows the approved content order more closely: Hero → About → Sound → optional public CUE ID → CUE Passport → Links → Booking.
+- New backend changes are committed but NOT applied from this handoff:
+  - `20260924135000_add_public_passport_visibility.sql`;
+  - `20260924161000_add_public_passport_selection.sql`;
+  - updated `get-public-artist-profile` Edge Function.
+- Do not claim Passport public selection is live until the correct non-production Supabase target has those migrations/function deployed.
