@@ -101,6 +101,8 @@ const selectedBooking = computed(() => visibleBookings.value.find(item => item.i
 const selectedContact = computed(() => selectedBooking.value?.primary_contact_id ? contacts.value.find(item => item.id === selectedBooking.value?.primary_contact_id) || null : null)
 const selectedCounterparty = computed(() => selectedBooking.value?.counterparty_id ? counterparties.value.find(item => item.id === selectedBooking.value?.counterparty_id) || null : null)
 const suggestedRetryEmail = computed(() => {
+  const booking = selectedBooking.value
+  if (!booking || booking.archived_at || ['confirmed', 'rejected', 'cancelled'].includes(booking.status)) return null
   if (!selectedContact.value?.email) return null
   return buildFailedEmailRetryDraft(activities.value, emailMessages.value, selectedContact.value.email)
 })
