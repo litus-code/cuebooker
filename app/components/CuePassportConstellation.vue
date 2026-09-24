@@ -113,6 +113,19 @@ const transform = computed(() => `translate(${offsetX.value} ${offsetY.value}) s
 
 const selectedNode = computed(() => nodes.value.find(node => node.city.id === props.cityId) || null)
 
+const selectedMedia = computed(() => {
+  if (!selectedNode.value) return []
+  const seen = new Set<string>()
+  return selectedNode.value.city.bookings
+    .flatMap(booking => booking.media)
+    .filter(item => {
+      if (seen.has(item.id)) return false
+      seen.add(item.id)
+      return true
+    })
+    .slice(0, 4)
+})
+
 function zoomBy(delta: number) {
   zoom.value = Math.min(1.8, Math.max(.7, Number((zoom.value + delta).toFixed(2))))
 }
@@ -240,6 +253,26 @@ watch(() => props.countryId, () => resetView())
           <small v-for="venue in selectedNode.city.venues.slice(0, 5)" :key="venue.id">
             {{ venue.name }} · {{ venue.bookings.length }}
           </small>
+        </div>
+
+        <div v-if="selectedMedia.length" class="passport-constellation__media">
+          <a
+            v-for="item in selectedMedia"
+            :key="item.id"
+            :href="item.permalink || undefined"
+            :target="item.permalink ? '_blank' : undefined"
+            :rel="item.permalink ? 'noopener noreferrer' : undefined"
+            :aria-label="`${item.source} ${item.media_type}`"
+            @click.stop
+          >
+            <img
+              v-if="item.thumbnail_url || item.media_url"
+              :src="item.thumbnail_url || item.media_url || ''"
+              alt=""
+              loading="lazy"
+            >
+            <span v-else>{{ item.media_type.toUpperCase() }}</span>
+          </a>
         </div>
       </aside>
 
@@ -493,5 +526,40 @@ watch(() => props.countryId, () => resetView())
     max-width:190px;
     transform:translate(-50%,calc(-100% - 14px));
   }
+}
+
+
+.passport-constellation__media {
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:5px !important;
+  margin-top:4px;
+  padding-top:7px;
+  border-top:1px solid #292929;
+}
+
+.passport-constellation__media a {
+  position:relative;
+  display:grid;
+  min-width:0;
+  aspect-ratio:1;
+  place-items:center;
+  overflow:hidden;
+  border:1px solid #333;
+  border-radius:5px;
+  background:#111;
+  color:#777;
+  text-decoration:none;
+}
+
+.passport-constellation__media img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.passport-constellation__media span {
+  font:800 6px/1 monospace;
+  letter-spacing:.06em;
 }
 </style>
