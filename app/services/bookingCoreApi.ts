@@ -597,6 +597,25 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     })
   }
 
+  async function listArtistHoldsForDate(
+    workspaceId: string,
+    artistId: string,
+    eventDate: string
+  ) {
+    if (!workspaceId || !artistId || !eventDate) return [] as Hold[]
+    return $fetch<Hold[]>(`${baseUrl}/rest/v1/holds`, {
+      headers: authHeaders(),
+      query: {
+        workspace_id: `eq.${workspaceId}`,
+        event_date: `eq.${eventDate}`,
+        status: 'eq.active',
+        'bookings.artist_id': `eq.${artistId}`,
+        select: 'id,workspace_id,booking_id,event_date,starts_at,ends_at,event_timezone,expires_at,priority,status,released_at,converted_at,created_by,created_at,updated_at,bookings!inner(id)',
+        order: 'priority.asc.nullslast,created_at.asc'
+      }
+    })
+  }
+
   async function createHold(input: CreateHoldInput) {
     if (input.priority != null && (!Number.isInteger(input.priority) || input.priority < 1 || input.priority > 9)) {
       throw new Error('invalid_hold_priority')
@@ -671,6 +690,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     setNextMove,
     completeNextMove,
     listHolds,
+    listArtistHoldsForDate,
     createHold,
     releaseHold,
     convertHold
