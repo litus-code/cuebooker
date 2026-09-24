@@ -180,7 +180,7 @@ function resetView() {
 }
 
 function startDrag(event: PointerEvent) {
-  if ((event.target as Element)?.closest('button')) return
+  if ((event.target as Element)?.closest('button, a, [role="button"]')) return
   dragging.value = true
   dragStart.x = event.clientX
   dragStart.y = event.clientY
@@ -541,6 +541,10 @@ watch(() => props.countryId, () => resetView())
   .passport-constellation svg {
     height:300px;
     min-height:300px;
+  }
+
+  .passport-constellation__viewport {
+    touch-action:pan-y;
   }
 
   .passport-constellation__hint {
