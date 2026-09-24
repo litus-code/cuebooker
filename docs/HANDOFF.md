@@ -10129,3 +10129,23 @@ Limit of this validation:
 - this session could not reach the public staging hostname over HTTP, so the real public JSON response still needs a browser/device smoke;
 - production Supabase was not touched;
 - billing migration was not applied.
+
+
+## 24 Sep 2026 · History commercial boundary
+
+The Workspace Activity history now uses the plan capacity contract.
+
+- Free queries the last 90 days.
+- Artist Pro and Agency query full available history.
+- The filter is sent to the Activity API as `occurred_at >= cutoff`; older rows are not downloaded and hidden in the browser.
+- Individual Booking Activity remains part of normal Booking Core operation and is not blocked.
+- Free receives a visible Artist Pro explanation at the history boundary.
+
+Validation:
+
+- code HEAD `e30d659fb2f893d15fb2bc1b88ee9c634124c8f2`;
+- GitHub Actions run `36036541876`;
+- `Generate preview build` and PR preview deployment succeeded;
+- this workflow does not execute `npm test`, so no test execution is claimed.
+
+Production remains untouched.
