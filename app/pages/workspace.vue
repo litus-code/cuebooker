@@ -1788,42 +1788,15 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               </div>
 
               <div v-if="cuePassportTab === 'constellation'" class="cue-passport__constellation">
-                <div v-if="cuePassportWorld.countries.length" class="cue-passport__world">
-                  <div class="cue-passport__countries">
-                    <button
-                      v-for="country in cuePassportWorld.countries"
-                      :key="country.id"
-                      type="button"
-                      :class="{ active: cuePassportCountry?.id === country.id }"
-                      @click="cuePassportCountryId = country.id"
-                    >
-                      {{ country.code }}
-                    </button>
-                  </div>
-
-                  <div class="cue-passport__route" aria-hidden="true">
-                    <i
-                      v-for="(city, index) in cuePassportVisibleCities.slice(0, 8)"
-                      :key="city.id"
-                      :class="[
-                        'cue-passport__node',
-                        `cue-passport__node--dynamic-${index + 1}`,
-                        { active: cuePassportCity?.id === city.id }
-                      ]"
-                    />
-                  </div>
-
-                  <div class="cue-passport__cities">
-                    <button
-                      v-for="city in cuePassportVisibleCities"
-                      :key="city.id"
-                      type="button"
-                      :class="{ active: cuePassportCity?.id === city.id }"
-                      @click="cuePassportCityId = city.id"
-                    >
-                      {{ city.name }}
-                    </button>
-                  </div>
+                <template v-if="cuePassportWorld.countries.length">
+                  <CuePassportConstellation
+                    :countries="cuePassportWorld.countries"
+                    :country-id="cuePassportCountry?.id || ''"
+                    :city-id="cuePassportCity?.id || ''"
+                    :locale="preferences.locale.value"
+                    @select-country="cuePassportCountryId = $event"
+                    @select-city="cuePassportCityId = $event"
+                  />
 
                   <aside v-if="cuePassportCity" class="cue-passport__city-card">
                     <div>
@@ -1835,12 +1808,12 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                       <div><dt>DATES</dt><dd>{{ cuePassportCity.bookings.length }}</dd></div>
                     </dl>
                     <div class="cue-passport__venue-list">
-                      <span v-for="venue in cuePassportCity.venues.slice(0, 4)" :key="venue.id">
+                      <span v-for="venue in cuePassportCity.venues.slice(0, 6)" :key="venue.id">
                         {{ venue.name }} · {{ venue.bookings.length }}
                       </span>
                     </div>
                   </aside>
-                </div>
+                </template>
                 <p v-else class="cue-passport__empty">{{ copy.passportEmpty }}</p>
               </div>
 
