@@ -10008,3 +10008,39 @@ Open legal/commercial blockers before public launch:
 Analytics already defaults to unknown consent and does not load GTM before explicit grant. The missing piece is the user-facing consent interface and legal documentation.
 
 Do not publish personal/legal controller details from memory or ad-hoc notes without an explicit reviewed legal pass.
+
+
+## 24 Sep 2026 · Passport workspace separation
+
+CUE Passport is now structurally independent from CUE ID inside Workspace.
+
+Implemented:
+
+- added `passport` as a dedicated Workspace view and navigation item;
+- removed the full Passport explorer from the CUE ID hub;
+- dedicated Passport uses the full content width instead of the former two-column preview layout;
+- Profile Passport summary now separates:
+  - `Open Passport` → dedicated workspace explorer;
+  - `Public settings` → publication settings inside Profile;
+- Passport view exposes a direct `Public settings` action back to Profile;
+- empty constellation state explains the real prerequisite and links back to Bookings;
+- zoom / interaction hints are hidden when there are no nodes;
+- Passport media URLs are restricted to http/https and video URLs are not rendered as images;
+- external Artist Profile links are restricted to http/https;
+- changing Workspace module clears hidden Profile editor state;
+- Escape closes Profile/public-booking overlays consistently;
+- public CUE ID remains static-first because PublicArtistProfile passes `interactive=false`.
+
+Validation:
+
+- HEAD before documentation: `1316cbe7ef4d77972365c611e6fcfe3b7ba79a15`;
+- GitHub Actions run `36031829227`;
+- `Generate preview build` passed;
+- PR preview deployment passed;
+- production was not touched;
+- pending Passport Supabase migrations / Edge Function were not applied.
+
+Remaining before calling Passport/Profile launch-ready:
+
+- apply Passport backend changes to the correct non-production Supabase target;
+- real-device desktop/mobile visual QA, especially dense city/venue data and mobile tooltip/media cases.
