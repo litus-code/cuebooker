@@ -42,7 +42,6 @@ const copy = computed(() => props.locale === 'es' ? {
   priority: 'Prioridad',
   createHold: 'Reservar fecha',
   release: 'Liberar fecha',
-  convert: 'Confirmar booking',
   saving: 'Guardando…',
   invalidNext: 'Escribe el siguiente paso.',
   invalidHold: 'El hold necesita una fecha.',
@@ -67,7 +66,6 @@ const copy = computed(() => props.locale === 'es' ? {
   priority: 'Priority',
   createHold: 'Reserve date',
   release: 'Release date',
-  convert: 'Confirm booking',
   saving: 'Saving…',
   invalidNext: 'Enter a next move.',
   invalidHold: 'A hold needs a date.',
@@ -202,18 +200,6 @@ async function releaseHold(hold: Hold) {
   }
 }
 
-async function convertHold(hold: Hold) {
-  saving.value = true
-  try {
-    await bookingCore.convertHold(props.workspaceId, hold.id)
-    await load()
-    emit('changed')
-  } catch (error: any) {
-    errorMessage.value = error?.message || copy.value.error
-  } finally {
-    saving.value = false
-  }
-}
 </script>
 
 <template>
