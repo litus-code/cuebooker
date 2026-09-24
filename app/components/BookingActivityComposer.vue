@@ -127,20 +127,27 @@ function localEmailError(code: string) {
 }
 
 async function submit() {
+  if (saving.value) return
+
+  const submittedType = type.value
+  const submittedDirection: ActivityDirection = submittedType === 'note' ? 'internal' : direction.value
+  const submittedSubject = subject.value.trim()
   const text = body.value.trim()
+  const submittedAsEmail = submittedType === 'email'
+
   if (!text) { errorMessage.value = copy.value.required; return }
-  if (sendsRealEmail.value && !subject.value.trim()) { errorMessage.value = copy.value.subjectRequired; return }
+  if (submittedAsEmail && !submittedSubject) { errorMessage.value = copy.value.subjectRequired; return }
 
   saving.value = true
   errorMessage.value = ''
   successMessage.value = ''
   try {
-    if (sendsRealEmail.value) {
+    if (submittedAsEmail) {
       await bookingEmail.sendBookingEmail({
         workspaceId: props.workspaceId,
         bookingId: props.booking.id,
         contactId: props.booking.primary_contact_id,
-        subject: subject.value,
+        subject: submittedSubject,
         bodyText: text
       })
       subject.value = ''
@@ -155,16 +162,16 @@ async function submit() {
     await bookingCore.createActivity({
       workspaceId: props.workspaceId,
       bookingId: props.booking.id,
-      type: type.value,
-      direction: type.value === 'note' ? 'internal' : direction.value,
+      type: submittedType,
+      direction: submittedDirection,
       contactId: props.booking.primary_contact_id,
       body: text
     })
     body.value = ''
-    channelDrafts[type.value as keyof typeof channelDrafts] = ''
+    channelDrafts[submittedType as keyof typeof channelDrafts] = ''
     emit('created')
   } catch (error: any) {
-    errorMessage.value = sendsRealEmail.value
+    errorMessage.value = submittedAsEmail
       ? localEmailError(error?.message || '')
       : (error?.message || copy.value.required)
   } finally {
@@ -178,19 +185,19 @@ async function submit() {
     <div class="activity-composer__top">
       <div class="activity-composer__intro"><strong>{{ copy.title }}</strong><small>{{ copy.help }}</small></div>
       <div class="activity-composer__types">
-        <button v-for="item in types" :key="item.value" type="button" :class="{ active: type === item.value }" @click="type = item.value">{{ item.label }}</button>
+        <button v-for="item in types" :key="item.value" type="button" :class="{ active: type === item.value }" :disabled="saving" @click="type = item.value">{{ item.label }}</button>
       </div>
     </div>
     <div v-if="suggestedRetryEmail" class="activity-composer__suggestion activity-composer__suggestion--warning">
       <div><strong>{{ copy.prepareRetry }}</strong><small>{{ suggestedRetryEmail.recipientChanged ? copy.retryUpdatedRecipient : copy.retryHint }}</small></div>
-      <button type="button" @click="applySuggestedRetry">{{ copy.prepareRetry }}</button>
+      <button type="button" :disabled="saving" @click="applySuggestedRetry">{{ copy.prepareRetry }}</button>
     </div>
     <div v-else-if="suggestedFollowUp && canEntitlement('automation.advanced')" class="activity-composer__suggestion">
       <div>
         <strong>{{ copy.prepareFollowUp }} <CuePlanBadge entitlement="automation.advanced" /></strong>
         <small>{{ copy.followUpHint }}</small>
       </div>
-      <button type="button" @click="applySuggestedFollowUp">{{ copy.prepareFollowUp }}</button>
+      <button type="button" :disabled="saving" @click="applySuggestedFollowUp">{{ copy.prepareFollowUp }}</button>
     </div>
     <CueUpgradePrompt
       v-else-if="suggestedFollowUp"
@@ -202,9 +209,9 @@ async function submit() {
         : 'Artist Pro prepares the subject and message when a booking has been waiting for several days. You decide whether to edit and send it.'"
     />
     <div class="activity-composer__body" :class="{ 'activity-composer__body--email': sendsRealEmail }">
-      <input v-if="sendsRealEmail" v-model="subject" class="activity-composer__subject" :aria-label="copy.subject" :placeholder="copy.subjectPlaceholder" maxlength="300">
-      <textarea v-model="body" rows="2" :placeholder="sendsRealEmail ? copy.emailPlaceholder : copy.placeholder" />
-      <select v-if="type !== 'note' && type !== 'email'" v-model="direction" aria-label="Direction"><option value="inbound">{{ copy.inbound }}</option><option value="outbound">{{ copy.outbound }}</option></select>
+      <input v-if="sendsRealEmail" v-model="subject" class="activity-composer__subject" :aria-label="copy.subject" :placeholder="copy.subjectPlaceholder" maxlength="300" :disabled="saving">
+      <textarea v-model="body" rows="2" :placeholder="sendsRealEmail ? copy.emailPlaceholder : copy.placeholder" :disabled="saving" />
+      <select v-if="type !== 'note' && type !== 'email'" v-model="direction" :aria-label="locale === 'es' ? 'Dirección' : 'Direction'" :disabled="saving"><option value="inbound">{{ copy.inbound }}</option><option value="outbound">{{ copy.outbound }}</option></select>
       <div v-else-if="type === 'email'" class="activity-composer__email-route">{{ locale === 'es' ? 'Tú → contacto' : 'You → contact' }}</div>
       <button class="activity-composer__save" type="submit" :disabled="saving">{{ saving ? (sendsRealEmail ? copy.sending : copy.saving) : (sendsRealEmail ? copy.sendEmail : copy.save) }}</button>
     </div>
@@ -222,6 +229,10 @@ async function submit() {
 .activity-composer__types { display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; }
 .activity-composer__types button { min-height:var(--cue-button-sm); padding:0 12px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-control); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; }
 .activity-composer__types button.active { border-color:var(--cue-accent); color:var(--cue-accent); }
+.activity-composer button:disabled,
+.activity-composer input:disabled,
+.activity-composer textarea:disabled,
+.activity-composer select:disabled { opacity:.5; cursor:wait; }
 .activity-composer > :deep(.activity-composer__follow-up-pro){margin:10px;border-radius:var(--cue-radius-control)}
 
 .activity-composer__suggestion { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px; border-bottom:1px solid var(--cue-border); background:color-mix(in srgb,var(--cue-accent) 5%,transparent); }
