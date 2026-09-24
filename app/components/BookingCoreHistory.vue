@@ -67,7 +67,15 @@ const filtered = computed(() => {
       || (typeFilter.value === 'system' && activity.type === 'system')
     if (!groupOk) return false
     if (!query) return true
-    const haystack = [activity.type, activity.body, booking?.event_name, booking?.venue_name, booking?.city]
+    const haystack = [
+      activity.type,
+      activity.body,
+      activityLabel(activity),
+      activityDetail(activity),
+      booking?.event_name,
+      booking?.venue_name,
+      booking?.city
+    ]
       .filter(Boolean).join(' ').toLowerCase()
     return haystack.includes(query)
   })
