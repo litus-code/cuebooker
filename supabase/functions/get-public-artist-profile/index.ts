@@ -201,6 +201,7 @@ type ArtistRow = {
   artist_image_scale: number;
   visual_source: 'portrait' | 'cue_id';
   cue_id_config: unknown;
+  passport_public_enabled: boolean;
 };
 
 Deno.serve(async request => {
@@ -244,7 +245,8 @@ Deno.serve(async request => {
       "artist_image_position_y",
       "artist_image_scale",
       "visual_source",
-      "cue_id_config"
+      "cue_id_config",
+      "passport_public_enabled"
     ].join(",");
 
     const artists = await serviceJson<ArtistRow[]>(
@@ -276,7 +278,7 @@ Deno.serve(async request => {
       milestones: [] as PublicPassportMilestone[]
     };
 
-    if (workspaceIds.length) {
+    if (artist.passport_public_enabled && workspaceIds.length) {
       const workspaceFilter = workspaceIds.map((id) => `"${id}"`).join(",");
       const bookings = await serviceJson<BookingPassportRow[]>(
         `${supabaseUrl}/rest/v1/bookings?artist_id=eq.${encodeURIComponent(artist.id)}&workspace_id=in.(${encodeURIComponent(workspaceFilter)})&status=eq.confirmed&archived_at=is.null&select=city,venue_name,event_date&order=event_date.asc.nullslast`,
@@ -329,7 +331,7 @@ Deno.serve(async request => {
         artistImageScale: artist.artist_image_scale,
         visualMode,
         cueId: visualMode === "cue_id" ? cueId : null,
-        passport,
+        passport: artist.passport_public_enabled ? passport : null,
         acceptingRequests: Boolean(routes[0]?.accepting_requests)
       }
     }, 200, { "Cache-Control": "public, max-age=60, s-maxage=300" });
