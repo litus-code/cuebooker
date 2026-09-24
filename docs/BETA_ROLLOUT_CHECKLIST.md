@@ -77,6 +77,10 @@ REQUEST
 - [ ] Exercise an overlapping date and verify the warning does not make the decision for the artist.
 - [ ] Confirm a booking manually.
 - [ ] Verify confirmation appears in Calendar.
+- [x] Calendar confirmed bookings and active holds use artist/month queries independent from Inbox pagination.
+- [x] Manual availability overlap checks use the same monthly Booking Core sources.
+- [x] Overview month KPIs identify the month they represent.
+- [x] Overview upcoming agenda combines manual blocks, active holds and confirmed bookings.
 - [ ] Reject a separate booking manually.
 - [ ] Archive and restore a booking.
 - [ ] Verify archived bookings remain readable but operationally protected.
