@@ -923,7 +923,9 @@ async function handleCueCreated(booking: CoreBooking) {
 async function handleBookingCoreOperationsChanged() {
   bookingCoreOperationsRevision.value += 1
   await loadRealBookings()
+  await loadPassportBookings()
   await loadRealHolds()
+  await loadPassportMedia()
 }
 
 function markBookingNotificationsRead(bookingId: string) {
