@@ -121,9 +121,17 @@ Capacity should be checked separately from feature availability.
 
 ## Staging and demo
 
-Staging should support an entitlement override so the team can inspect all product states without changing the real plan.
+Staging supports a non-production plan override through `useCueEntitlements()`.
 
-The override must not be trusted as billing state in production.
+Supported demo plans:
+
+- `free`;
+- `artist_pro`;
+- `agency`.
+
+The workspace Settings panel exposes the selector outside production. A `?demoPlan=...` query can also set the demo plan and persists it locally for the browser.
+
+Production ignores this override and clears demo entitlement overrides. It is never billing state.
 
 ## Product rule
 
@@ -178,3 +186,14 @@ If a feature has no declared entitlement, default it to Free until a product dec
 - `workspace.agency_templates`
 
 Implementation source of truth: `app/domain/entitlements.ts`.
+
+## UI implementation state
+
+Reusable commercial primitives now exist:
+
+- `useCueEntitlements()` for `can(...)`, limits, minimum plan and non-production overrides;
+- `CuePlanBadge.vue` for PRO / AGENCY presentation;
+- `passport.media` is visible on Free but its selection action requires the entitlement;
+- `capture.smart_extended` is presented as Artist Pro capacity while basic Smart Capture remains available on Free.
+
+Real billing is still intentionally disconnected. The base plan remains Free until `workspace_billing` is reconciled with the freemium model.
