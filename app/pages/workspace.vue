@@ -347,6 +347,13 @@ const monthRange = computed(() => {
   return { from: start.toISOString(), to: end.toISOString() }
 })
 
+function isVisibleActiveHold(hold: Hold) {
+  if (hold.status !== 'active') return false
+  if (!hold.expires_at) return true
+  const expiresAt = Date.parse(hold.expires_at)
+  return !Number.isFinite(expiresAt) || expiresAt > Date.now()
+}
+
 const monthCells = computed(() => {
   const cursor = new Date(`${monthCursor.value}T12:00:00Z`)
   const first = new Date(Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth(), 1, 12))
@@ -363,7 +370,7 @@ const monthCells = computed(() => {
       number: day.getUTCDate(),
       current: day.getUTCMonth() === cursor.getUTCMonth(),
       blocks: blocks.value.filter(block => block.starts_at.slice(0, 10) === date),
-      holds: realHolds.value.filter(hold => hold.status === 'active' && hold.event_date === date),
+      holds: realHolds.value.filter(hold => isVisibleActiveHold(hold) && hold.event_date === date),
       confirmedBookings: calendarBookings.value.filter(booking => booking.event_date === date)
     }
   })
@@ -373,7 +380,7 @@ const dayBlocks = computed(() => blocks.value
   .filter(block => block.starts_at.slice(0, 10) === selectedDate.value)
   .sort((a, b) => a.starts_at.localeCompare(b.starts_at)))
 const selectedDayCoreHolds = computed(() => realHolds.value
-  .filter(hold => hold.status === 'active' && hold.event_date === selectedDate.value)
+  .filter(hold => isVisibleActiveHold(hold) && hold.event_date === selectedDate.value)
   .sort((a, b) => (a.starts_at || a.event_date).localeCompare(b.starts_at || b.event_date)))
 const selectedDayTimedCoreHolds = computed(() => selectedDayCoreHolds.value.filter(hold => hold.starts_at && hold.ends_at))
 const selectedDayDateOnlyCoreHolds = computed(() => selectedDayCoreHolds.value.filter(hold => !hold.starts_at || !hold.ends_at))
@@ -410,7 +417,7 @@ const overviewAgendaItems = computed<OverviewAgendaItem[]>(() => {
   }
 
   for (const hold of realHolds.value) {
-    if (hold.status !== 'active' || hold.event_date < todayDate) continue
+    if (!isVisibleActiveHold(hold) || hold.event_date < todayDate) continue
     const booking = calendarBookings.value.find(item => item.id === hold.booking_id)
       || realBookings.value.find(item => item.id === hold.booking_id)
     items.push({
@@ -447,9 +454,9 @@ const overviewAgendaItems = computed<OverviewAgendaItem[]>(() => {
     .sort((a, b) => a.sortAt.localeCompare(b.sortAt))
     .slice(0, 4)
 })
-const holdCount = computed(() => blocks.value.filter(block => block.status === 'hold').length + realHolds.value.filter(hold => hold.status === 'active').length)
+const holdCount = computed(() => blocks.value.filter(block => block.status === 'hold').length + realHolds.value.filter(isVisibleActiveHold).length)
 const confirmedCount = computed(() => blocks.value.filter(block => block.status === 'confirmed').length + calendarBookings.value.length)
-const occupiedDays = computed(() => new Set([...blocks.value.map(block => block.starts_at.slice(0, 10)), ...realHolds.value.filter(hold => hold.status === 'active').map(hold => hold.event_date), ...calendarBookings.value.filter(booking => booking.event_date).map(booking => booking.event_date as string)]).size)
+const occupiedDays = computed(() => new Set([...blocks.value.map(block => block.starts_at.slice(0, 10)), ...realHolds.value.filter(isVisibleActiveHold).map(hold => hold.event_date), ...calendarBookings.value.filter(booking => booking.event_date).map(booking => booking.event_date as string)]).size)
 const validTimeRange = computed(() => endTime.value > startTime.value)
 const currentTour = computed(() => tourStep.value >= 0 ? tourSteps.value[tourStep.value] : null)
 const hasArtistSelector = computed(() => artists.value.length > 1)
