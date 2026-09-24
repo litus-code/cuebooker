@@ -693,9 +693,9 @@ watch(activeView, async (view) => {
 })
 watch(rosterArtistName, value => { rosterArtistSlug.value = slugify(value) })
 watch(activeView, view => { if (view !== 'profile') profilePreviewOpen.value = false })
-watch([profilePreviewOpen, profileEditSection], ([previewOpen, editSection]) => {
+watch([profilePreviewOpen, profileEditSection, settingsOpen, editorOpen], ([previewOpen, editSection, settingsVisible, calendarEditorVisible]) => {
   if (!import.meta.client) return
-  document.body.style.overflow = previewOpen || Boolean(editSection) ? 'hidden' : ''
+  document.body.style.overflow = previewOpen || Boolean(editSection) || settingsVisible || calendarEditorVisible ? 'hidden' : ''
 })
 
 onBeforeUnmount(() => {
