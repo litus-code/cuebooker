@@ -10149,3 +10149,29 @@ Validation:
 - this workflow does not execute `npm test`, so no test execution is claimed.
 
 Production remains untouched.
+
+
+## 24 Sep 2026 · Password recovery and beta checklist
+
+Account recovery is now implemented as a beta-readiness requirement.
+
+Implemented:
+
+- Access exposes a focused Forgot Password state.
+- Reset requests use Supabase Auth recovery with a same-origin `/reset-password` redirect.
+- Request success copy does not reveal whether an email belongs to an account.
+- `/reset-password` consumes only a recovery session.
+- Normal authenticated sessions cannot call the recovery-only password setter.
+- Password confirmation and minimum length are enforced in the UI.
+- Successful reset signs out the recovery session before normal sign-in.
+
+Validation:
+
+- PR preview run `36037278858` completed successfully.
+- `Generate preview build` and preview deployment passed.
+- Staging redirect allow-list and a real recovery email still need a manual QA smoke.
+- No reset email was sent to a real user from this work session.
+
+Beta gates are now centralized in `docs/BETA_ROLLOUT_CHECKLIST.md`.
+
+Ownership boundary remains unchanged: Work owns legal/RGPD/cookies/Pricing/Stripe/checkout.
