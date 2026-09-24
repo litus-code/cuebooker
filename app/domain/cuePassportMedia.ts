@@ -114,7 +114,6 @@ export function suggestCuePassportMedia(
 ) {
   const confirmed = bookings.filter(booking =>
     booking.status === 'confirmed'
-    && !booking.archived_at
     && Boolean(booking.event_date)
   )
 
