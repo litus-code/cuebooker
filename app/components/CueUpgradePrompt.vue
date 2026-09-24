@@ -20,13 +20,13 @@ const visible = computed(() => props.showWhenAvailable || !entitlements.can(prop
 const targetPlan = computed(() => CUE_PLANS[entitlements.minimumPlan(props.entitlement)].label)
 const trackedVisible = ref(false)
 
-watch(visible, isVisible => {
+watch([visible, analytics.consent], ([isVisible]) => {
   if (!isVisible || trackedVisible.value) return
-  trackedVisible.value = true
-  analytics.track('upgrade_prompt_viewed', {
+  const tracked = analytics.track('upgrade_prompt_viewed', {
     entitlement: props.entitlement,
     target_plan: entitlements.minimumPlan(props.entitlement)
   })
+  if (tracked) trackedVisible.value = true
 }, { immediate: true })
 
 function handleAction() {
