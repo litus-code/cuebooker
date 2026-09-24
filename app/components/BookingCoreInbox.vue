@@ -907,16 +907,18 @@ async function selectBooking(bookingId: string) {
   .core-inbox__filters:not(.core-inbox__filters--archive) { display:flex; overflow-x:auto; padding-bottom:2px; }
   .core-inbox__filters:not(.core-inbox__filters--archive) button { width:auto; min-height:var(--cue-control-standard); white-space:nowrap; }
   .core-inbox__filters--archive { width:max-content; max-width:100%; }
-  .core-inbox__detail > header { display:flex; flex-direction:column; gap:14px; padding-bottom:16px; }
-  .core-inbox__header-actions { display:flex; flex-direction:column; align-items:stretch; gap:12px; width:100%; min-width:0; }
-  .core-inbox__archive { align-self:flex-start; justify-self:auto; min-height:36px; padding-inline:0; }
-  .core-inbox__decision-block { display:flex; flex-direction:column; gap:10px; width:100%; min-width:0; }
-  .core-inbox__status { min-width:0; margin:0; }
+  .core-inbox__detail > header { display:flex; flex-direction:column; gap:12px; padding-bottom:16px; }
+  .core-inbox__header-actions { display:grid; grid-template-columns:1fr; gap:10px; width:100%; min-width:0; }
+  .core-inbox__archive { justify-self:start; min-height:34px; padding-inline:0; }
+  .core-inbox__decision-block { display:grid; grid-template-columns:1fr; gap:10px; width:100%; min-width:0; }
+  .core-inbox__status { min-width:0; margin:0; padding:8px 0 8px 10px; }
+  .core-inbox__decisions { width:100%; }
+  .core-inbox__decisions button { min-height:46px; }
   .core-inbox__contact-fact { padding-inline:0 !important; }
-  .core-inbox__contact-head { display:flex; flex-direction:column; align-items:flex-start; gap:6px; }
-  .core-inbox__contact-head > div { width:100%; min-width:0; }
+  .core-inbox__contact-head { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:10px; }
+  .core-inbox__contact-head > div { min-width:0; }
+  .core-inbox__contact-head :deep(.contact-editor-entry) { align-self:start; justify-self:end; min-height:28px; margin-top:-2px; }
   .core-inbox__contact-fact dd { overflow:visible; text-overflow:clip; white-space:normal; word-break:break-word; }
-  .core-inbox__contact-head :deep(.contact-editor-entry) { min-height:32px; margin-top:2px; }
   .core-inbox__contact-fact small { overflow-wrap:anywhere; }
   .core-inbox__decisions { grid-template-columns:repeat(3,minmax(0,1fr)); min-width:0; }
   .core-inbox__decisions button,
