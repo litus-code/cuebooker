@@ -12,6 +12,7 @@ const props = defineProps<{
 const emit = defineEmits<{ created: [] }>()
 const bookingCore = useBookingCore()
 const bookingEmail = useBookingEmail()
+const analytics = useAnalytics()
 const { can: canEntitlement } = useCueEntitlements()
 const type = ref<ActivityType>('email')
 const direction = ref<ActivityDirection>('outbound')
@@ -131,6 +132,7 @@ async function submit() {
       subject.value = ''
       body.value = ''
       successMessage.value = copy.value.sent
+      analytics.track('booking_response_sent', { channel: 'email' })
       emit('created')
       return
     }
