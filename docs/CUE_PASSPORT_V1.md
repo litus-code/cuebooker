@@ -85,6 +85,20 @@ The matching engine may suggest media using date, city and venue context. A sugg
 
 Automatic Instagram ingestion is deferred. The domain and persistence layer are source-agnostic so Instagram can become one authorized source later.
 
+## Public Profile
+
+The real artist profile includes a summarized editorial Passport surface.
+
+Rules:
+
+- Workspace Passport remains the management/exploration surface.
+- Public Profile shows only the summarized trajectory.
+- The artist can hide or show the Passport summary without deleting Passport history.
+- Public visibility is persisted through `artists.passport_public_enabled`.
+- Hiding Passport does not stop trajectory generation from confirmed activity.
+- CUE ID and CUE Passport remain independent profile modules.
+- Public media and milestone selection can be refined after the base visibility control is stable.
+
 ## Commercial classification
 
 Free:
