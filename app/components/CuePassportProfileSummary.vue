@@ -5,11 +5,22 @@ type PassportMilestone = {
   subtitle: string
 }
 
+type PassportMedia = {
+  id: string
+  mediaType: 'image' | 'video' | 'reel'
+  permalink: string | null
+  mediaUrl: string | null
+  thumbnailUrl: string | null
+  caption: string | null
+  capturedAt: string | null
+}
+
 const props = withDefaults(defineProps<{
   bookings?: number
   cities?: string[]
   venues?: string[]
   milestones?: PassportMilestone[]
+  media?: PassportMedia[]
   locale?: 'es' | 'en'
   editable?: boolean
   publicEnabled?: boolean
@@ -18,6 +29,7 @@ const props = withDefaults(defineProps<{
   cities: () => [],
   venues: () => [],
   milestones: () => [],
+  media: () => [],
   locale: 'es',
   editable: false,
   publicEnabled: true
@@ -29,6 +41,7 @@ const emit = defineEmits<{
 
 const visibleCities = computed(() => props.cities.slice(0, 5))
 const visibleMilestones = computed(() => props.milestones.slice(0, 3))
+const visibleMedia = computed(() => props.media.slice(0, 6))
 </script>
 
 <template>
@@ -76,6 +89,20 @@ const visibleMilestones = computed(() => props.milestones.slice(0, 3))
           <strong>{{ milestone.title }}</strong>
           <small>{{ milestone.subtitle }}</small>
         </article>
+      </div>
+
+      <div v-if="visibleMedia.length" class="profile-passport__media">
+        <a
+          v-for="item in visibleMedia"
+          :key="item.id"
+          :href="item.permalink || item.mediaUrl || undefined"
+          target="_blank"
+          rel="noopener noreferrer"
+          :aria-label="item.caption || item.mediaType"
+        >
+          <img v-if="item.thumbnailUrl || item.mediaUrl" :src="item.thumbnailUrl || item.mediaUrl || ''" alt="">
+          <span>{{ item.mediaType.toUpperCase() }}</span>
+        </a>
       </div>
 
       <p v-if="!visibleCities.length" class="profile-passport__empty">
@@ -283,6 +310,40 @@ const visibleMilestones = computed(() => props.milestones.slice(0, 3))
   font-size:7px;
   line-height:1.3;
 }
+.profile-passport__media{
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+}
+.profile-passport__media a{
+  position:relative;
+  min-height:84px;
+  overflow:hidden;
+  border:1px solid #303030;
+  border-radius:7px;
+  background:#0a0a0a;
+  color:#d7d7d7;
+  text-decoration:none;
+}
+.profile-passport__media img{
+  width:100%;
+  height:100%;
+  min-height:84px;
+  object-fit:cover;
+  opacity:.8;
+}
+.profile-passport__media span{
+  position:absolute;
+  right:6px;
+  bottom:6px;
+  padding:4px 5px;
+  border:1px solid #3a3a3a;
+  border-radius:5px;
+  background:rgba(8,8,8,.84);
+  font:800 6px/1 monospace;
+}
 .profile-passport__empty{
   position:relative;
   z-index:2;
@@ -298,5 +359,6 @@ const visibleMilestones = computed(() => props.milestones.slice(0, 3))
   .profile-passport__copy{padding:24px 18px;border-right:0;border-bottom:1px solid #252525}
   .profile-passport__visual{min-height:280px;padding:18px}
   .profile-passport__milestones{grid-template-columns:1fr}
+  .profile-passport__media{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 </style>
