@@ -130,7 +130,7 @@ Implemented so far:
 
 ### 4. Close Artist Pro automation value
 
-Status: PARTIALLY IMPLEMENTED
+Status: IN PROGRESS · FIRST PAID AUTOMATIONS WIRED
 
 Prioritize the paid capabilities that save operational work:
 
@@ -142,6 +142,14 @@ Prioritize the paid capabilities that save operational work:
 - repeatable automation rules where product behaviour is predictable.
 
 Final booking decisions remain artist-controlled.
+
+Current commercial boundary:
+
+- Free keeps basic attention signals, manual email, manual next actions, holds and delivery-failure recovery.
+- Artist Pro prepares an editable follow-up draft after a booking has been waiting for a reply.
+- Artist Pro can automatically complete a next action when a real inbound reply arrives.
+- Existing automation data remains readable after a downgrade.
+- Automatic booking status derived from real inbound/outbound activity remains Booking Core behaviour and is not paywalled.
 
 ### 5. Commercial site and Pricing
 
