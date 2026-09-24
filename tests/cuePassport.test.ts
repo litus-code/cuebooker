@@ -3,6 +3,7 @@ import test from 'node:test'
 
 import type { CoreBooking } from '../app/domain/bookingCore.ts'
 import {
+  buildCuePassportWorld,
   cuePassportNextMilestones,
   cuePassportUnlockedMilestones,
   deriveCuePassportSnapshot
@@ -95,4 +96,31 @@ test('Passport exposes unlocked stickers and nearest locked milestones', () => {
   assert.equal(next[0]?.id, 'cities-5')
   assert.equal(next[0]?.progressCurrent, 4)
   assert.equal(next[0]?.progressTarget, 5)
+})
+
+
+test('Passport world groups bookings by country, city and venue', () => {
+  const world = buildCuePassportWorld([
+    booking({ id: 'b1', city: 'Barcelona', country_code: 'ES', venue_name: 'Razzmatazz', event_name: 'Night A' }),
+    booking({ id: 'b2', city: 'Barcelona', country_code: 'ES', venue_name: 'Razzmatazz', event_name: 'Night B' }),
+    booking({ id: 'b3', city: 'Berlin', country_code: 'DE', venue_name: 'Tresor', event_name: 'Night C' })
+  ])
+
+  assert.equal(world.bookingCount, 3)
+  assert.equal(world.countries.length, 2)
+
+  const spain = world.countries.find(country => country.code === 'ES')
+  assert.equal(spain?.cities.length, 1)
+  assert.equal(spain?.cities[0]?.venues.length, 1)
+  assert.equal(spain?.cities[0]?.venues[0]?.bookings.length, 2)
+})
+
+test('Passport world keeps unknown location data navigable without inventing geography', () => {
+  const world = buildCuePassportWorld([
+    booking({ id: 'b1', city: null, country_code: null, venue_name: null })
+  ])
+
+  assert.equal(world.countries[0]?.code, 'XX')
+  assert.equal(world.countries[0]?.cities[0]?.name, 'Unknown city')
+  assert.equal(world.countries[0]?.cities[0]?.venues[0]?.name, 'Unknown venue')
 })
