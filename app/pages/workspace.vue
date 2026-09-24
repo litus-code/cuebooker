@@ -13,6 +13,7 @@ const passportMediaApi = usePassportMedia()
 const notifications = useNotifications()
 const artistProfiles = useArtistProfile()
 const publicPublishing = usePublicArtistPublishing()
+const analytics = useAnalytics()
 const workspaceBilling = useWorkspaceBilling()
 const preferences = useCuePreferences()
 const {
@@ -444,9 +445,12 @@ async function toggleProfileEditSection(section: Exclude<ProfileEditSection, nul
   void router.replace({ query }).catch(() => {})
 }
 
-async function copyProfileValue(label: string, value: string) {
+type ProfileShareMethod = 'profile_link' | 'booking_link' | 'instagram_link' | 'embed'
+
+async function copyProfileValue(label: string, value: string, method: ProfileShareMethod) {
   if (!import.meta.client || !value) return
   await navigator.clipboard.writeText(value)
+  analytics.track('booking_entry_shared', { method })
   profileShareMessage.value = preferences.locale.value === 'es' ? `${label} copiado.` : `${label} copied.`
   window.setTimeout(() => {
     profileShareMessage.value = ''
@@ -464,6 +468,7 @@ function downloadProfileQr() {
   anchor.click()
   anchor.remove()
   URL.revokeObjectURL(href)
+  analytics.track('booking_entry_shared', { method: 'qr' })
 }
 
 const publicProfilePreview = computed<PublicArtistProfile>(() => {
@@ -881,6 +886,12 @@ async function refreshBookingCoreFromExternal() {
 async function handleCueCreated(booking: CoreBooking) {
   cueOpen.value = false
   cueMessage.value = cueEntryCopy.value.saved
+  analytics.track('booking_capture_created', {
+    source: booking.source || 'manual',
+    has_date: Boolean(booking.event_date),
+    has_city: Boolean(booking.city),
+    has_venue: Boolean(booking.venue_name)
+  })
   await loadRealBookings()
   await loadRealHolds()
   bookingCoreOperationsRevision.value += 1
@@ -1242,6 +1253,9 @@ async function updatePublicProfilePublished(enabled: boolean) {
     }
     publicProfilePublished.value = await publicPublishing.setPublicProfileEnabled(selectedArtistId.value, enabled)
     if (!publicProfilePublished.value) publicProfileAcceptingRequests.value = false
+    if (enabled && publicProfilePublished.value) {
+      analytics.track('artist_profile_published', { source: 'workspace_profile' })
+    }
     publicPublishingMessage.value = preferences.locale.value === 'es'
       ? (enabled ? 'Perfil público activado.' : 'Perfil público desactivado.')
       : (enabled ? 'Public profile enabled.' : 'Public profile disabled.')
@@ -2457,21 +2471,21 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                   <article>
                     <span>PUBLIC PROFILE</span>
                     <strong>{{ publicProfileUrl || '—' }}</strong>
-                    <button type="button" :disabled="!publicProfileUrl" @click="copyProfileValue('Perfil', publicProfileUrl)">
+                    <button type="button" :disabled="!publicProfileUrl" @click="copyProfileValue('Perfil', publicProfileUrl, 'profile_link')">
                       {{ preferences.locale.value === 'es' ? 'Copiar enlace' : 'Copy link' }}
                     </button>
                   </article>
                   <article>
                     <span>BOOKING LINK</span>
                     <strong>{{ publicBookingUrl || '—' }}</strong>
-                    <button type="button" :disabled="!publicBookingUrl || !publicProfileAcceptingRequests" @click="copyProfileValue('Booking link', publicBookingUrl)">
+                    <button type="button" :disabled="!publicBookingUrl || !publicProfileAcceptingRequests" @click="copyProfileValue('Booking link', publicBookingUrl, 'booking_link')">
                       {{ preferences.locale.value === 'es' ? 'Copiar enlace' : 'Copy link' }}
                     </button>
                   </article>
                   <article>
                     <span>INSTAGRAM / EPK</span>
                     <strong>{{ publicBookingUrl ? `${publicBookingUrl}&src=instagram` : '—' }}</strong>
-                    <button type="button" :disabled="!publicBookingUrl || !publicProfileAcceptingRequests" @click="copyProfileValue('Instagram', `${publicBookingUrl}&src=instagram`)">
+                    <button type="button" :disabled="!publicBookingUrl || !publicProfileAcceptingRequests" @click="copyProfileValue('Instagram', `${publicBookingUrl}&src=instagram`, 'instagram_link')">
                       {{ preferences.locale.value === 'es' ? 'Copiar enlace' : 'Copy link' }}
                     </button>
                   </article>
@@ -2485,7 +2499,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                   <article class="profile-distribution-grid__wide">
                     <span>IFRAME / WEBSITE</span>
                     <code>{{ publicWidgetCode || '—' }}</code>
-                    <button type="button" :disabled="!publicWidgetCode || !publicProfileAcceptingRequests" @click="copyProfileValue('Iframe', publicWidgetCode)">
+                    <button type="button" :disabled="!publicWidgetCode || !publicProfileAcceptingRequests" @click="copyProfileValue('Iframe', publicWidgetCode, 'embed')">
                       {{ preferences.locale.value === 'es' ? 'Copiar iframe' : 'Copy iframe' }}
                     </button>
                   </article>
