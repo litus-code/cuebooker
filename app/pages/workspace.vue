@@ -13,11 +13,13 @@ const passportMediaApi = usePassportMedia()
 const notifications = useNotifications()
 const artistProfiles = useArtistProfile()
 const publicPublishing = usePublicArtistPublishing()
+const workspaceBilling = useWorkspaceBilling()
 const preferences = useCuePreferences()
 const {
   currentPlan,
   demoOverrideEnabled,
   can: canEntitlement,
+  setBasePlan,
   setDemoPlan
 } = useCueEntitlements()
 const route = useRoute()
@@ -539,6 +541,7 @@ watch([selectedArtistId, monthCursor], async () => {
 watch(selectedArtistId, async (artistId) => {
   bookingCoreWorkspaceId.value = ''
   publicProfileWorkspaceId.value = ''
+  setBasePlan('free')
   if (!artistId) return
   await loadArtistProfile()
   await ensureBookingCoreWorkspace()
@@ -778,6 +781,20 @@ async function loadPassportMedia() {
   }
 }
 
+async function syncWorkspaceBillingPlan(workspaceId: string) {
+  if (!workspaceId) {
+    setBasePlan('free')
+    return
+  }
+  try {
+    const state = await workspaceBilling.load(workspaceId)
+    setBasePlan(state.plan)
+  } catch (error: any) {
+    setBasePlan('free')
+    console.warn('[billing] workspace plan unavailable; using free', error?.message || error)
+  }
+}
+
 async function ensureBookingCoreWorkspace() {
   if (!selectedArtistId.value) return
   cueCoreLoading.value = true
@@ -802,6 +819,7 @@ async function ensureBookingCoreWorkspace() {
     }
 
     bookingCoreWorkspaceId.value = resolvedWorkspaceId
+    await syncWorkspaceBillingPlan(resolvedWorkspaceId)
     await loadRealBookings()
     await loadRealHolds()
     await loadPassportMedia()
@@ -809,6 +827,7 @@ async function ensureBookingCoreWorkspace() {
     // Legacy manager/admin accounts may need the owner to bootstrap once.
     // Do not block the existing workspace while that transition is incomplete.
     bookingCoreWorkspaceId.value = ''
+    setBasePlan('free')
     realBookings.value = []
     realHolds.value = []
     console.warn('[booking-core] workspace bootstrap unavailable', error?.message || error)
@@ -883,6 +902,7 @@ async function openNotificationBooking(notification: CueNotification) {
     if (!booking) throw new Error('notification_booking_not_found')
 
     bookingCoreWorkspaceId.value = notification.workspace_id
+    await syncWorkspaceBillingPlan(notification.workspace_id)
     if (selectedArtistId.value !== booking.artist_id) {
       selectedArtistId.value = booking.artist_id
       await nextTick()
