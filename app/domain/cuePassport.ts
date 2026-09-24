@@ -30,6 +30,37 @@ export type CuePassportSnapshot = {
   milestones: CuePassportMilestone[]
 }
 
+export type CuePassportBookingNode = {
+  id: string
+  eventName: string | null
+  eventDate: string | null
+}
+
+export type CuePassportVenueNode = {
+  id: string
+  name: string
+  bookings: CuePassportBookingNode[]
+}
+
+export type CuePassportCityNode = {
+  id: string
+  name: string
+  countryCode: string
+  venues: CuePassportVenueNode[]
+  bookings: CuePassportBookingNode[]
+}
+
+export type CuePassportCountryNode = {
+  id: string
+  code: string
+  cities: CuePassportCityNode[]
+}
+
+export type CuePassportWorld = {
+  countries: CuePassportCountryNode[]
+  bookingCount: number
+}
+
 type PassportInput = {
   bookings: CoreBooking[]
   baseCountryCode?: string | null
@@ -173,4 +204,64 @@ export function cuePassportNextMilestones(snapshot: CuePassportSnapshot) {
       const bRemaining = (b.progressTarget || 0) - (b.progressCurrent || 0)
       return aRemaining - bRemaining
     })
+}
+
+
+export function buildCuePassportWorld(bookings: CoreBooking[]): CuePassportWorld {
+  const confirmed = bookings
+    .filter(booking => booking.status === 'confirmed' && !booking.archived_at)
+    .sort((a, b) => bookingDateValue(a).localeCompare(bookingDateValue(b)))
+
+  const countries = new Map<string, CuePassportCountryNode>()
+
+  for (const booking of confirmed) {
+    const countryCode = normalize(booking.country_code).toUpperCase() || 'XX'
+    const cityName = normalize(booking.city) || 'Unknown city'
+    const cityId = `${countryCode}:${canonical(cityName)}`
+    const venueName = normalize(booking.venue_name) || 'Unknown venue'
+    const venueId = `${cityId}:${canonical(venueName)}`
+
+    let country = countries.get(countryCode)
+    if (!country) {
+      country = { id: countryCode, code: countryCode, cities: [] }
+      countries.set(countryCode, country)
+    }
+
+    let city = country.cities.find(item => item.id === cityId)
+    if (!city) {
+      city = {
+        id: cityId,
+        name: cityName,
+        countryCode,
+        venues: [],
+        bookings: []
+      }
+      country.cities.push(city)
+    }
+
+    const bookingNode: CuePassportBookingNode = {
+      id: booking.id,
+      eventName: booking.event_name,
+      eventDate: booking.event_date
+    }
+    city.bookings.push(bookingNode)
+
+    let venue = city.venues.find(item => item.id === venueId)
+    if (!venue) {
+      venue = { id: venueId, name: venueName, bookings: [] }
+      city.venues.push(venue)
+    }
+    venue.bookings.push(bookingNode)
+  }
+
+  return {
+    countries: [...countries.values()].map(country => ({
+      ...country,
+      cities: country.cities.map(city => ({
+        ...city,
+        venues: [...city.venues].sort((a, b) => a.name.localeCompare(b.name))
+      })).sort((a, b) => a.name.localeCompare(b.name))
+    })).sort((a, b) => a.code.localeCompare(b.code)),
+    bookingCount: confirmed.length
+  }
 }
