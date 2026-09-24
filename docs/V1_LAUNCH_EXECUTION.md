@@ -153,7 +153,7 @@ Current commercial boundary:
 
 ### 5. Commercial site and Pricing
 
-Status: PENDING
+Status: PRODUCT / PRICING COMPLETE · LEGAL + CHECKOUT PENDING
 
 The commercial site should explain the product in this order:
 
@@ -171,6 +171,22 @@ Show:
 - Founding Artist offer where active.
 
 Do not lead with CUE ID or a future marketplace.
+
+Commercial home now:
+
+- leads with the booking problem and Booking Core;
+- includes Artist Profile and CUE Passport as current product surfaces;
+- removes the deferred discovery simulation from the V1 acquisition flow;
+- presents Free, Artist Pro and Agency with launch pricing;
+- presents the Founding Artist price without creating a fourth plan;
+- paid CTAs carry plan intent into signup, but the page explicitly states checkout is not enabled yet.
+
+Launch blockers still open on the commercial site:
+
+- privacy policy;
+- cookie policy / consent UI;
+- terms / legal notice as required;
+- final billing checkout.
 
 ### 6. Billing and entitlements
 
