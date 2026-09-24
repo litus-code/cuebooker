@@ -9932,3 +9932,23 @@ Production remains untouched.
   - `20260924161000_add_public_passport_selection.sql`;
   - updated `get-public-artist-profile` Edge Function.
 - Do not claim Passport public selection is live until the correct non-production Supabase target has those migrations/function deployed.
+
+## 24 Sep 2026 · Commercial presentation foundation
+
+Commercial presentation has started without enabling billing enforcement.
+
+Implemented:
+
+- `useCueEntitlements()` is the UI access layer for entitlements and capacity limits.
+- Base commercial plan is currently `free` until the legacy `workspace_billing` trial model is reconciled.
+- Non-production environments support `free`, `artist_pro` and `agency` demo plan overrides from Settings or `?demoPlan=...`.
+- Production ignores demo plan and entitlement overrides.
+- `CuePlanBadge.vue` is the reusable PRO / AGENCY badge.
+- Passport Event Media stays visible on Free, but changing public media selection requires `passport.media`.
+- Existing selected Passport media is preserved if access is unavailable.
+- Smart Capture remains usable on Free. `capture.smart_extended` is presented as the higher-capacity Artist Pro capability; usage enforcement is pending real counters.
+- Entitlement contract coverage added in `tests/entitlements.test.ts`.
+
+Do not use direct checks such as `plan === 'artist_pro'` in feature UI. Use `can(entitlement)` / plan limits.
+
+Billing is still not connected and production remains untouched.
