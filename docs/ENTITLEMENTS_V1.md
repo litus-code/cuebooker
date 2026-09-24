@@ -218,3 +218,20 @@ Free remains able to:
 - receive automatic operational status transitions from real inbound/outbound activity.
 
 Confirmation, rejection, cancellation and final economic decisions are never automated by this entitlement.
+
+
+## History boundary
+
+`booking.history_full` controls the Workspace Activity history window, not the booking's own operational thread.
+
+Free:
+
+- loads the most recent 90 days of workspace Activity;
+- can still open, reply to and manage existing bookings normally;
+- keeps the complete Booking Core decision loop.
+
+Artist Pro / Agency:
+
+- load the full available workspace Activity history.
+
+The limit is applied at the API query through `occurred_at`, rather than loading older records and hiding them client-side.
