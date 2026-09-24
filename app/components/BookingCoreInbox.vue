@@ -629,6 +629,7 @@ async function selectBooking(bookingId: string) {
           <BookingActivityComposer
             id="core-inbox-activity-composer"
             v-if="!selectedBooking.archived_at"
+            :key="`activity-${selectedBooking.id}`"
             :workspace-id="workspaceId"
             :booking="selectedBooking"
             :locale="locale"
@@ -641,6 +642,7 @@ async function selectBooking(bookingId: string) {
         <BookingCoreOperations
           id="core-inbox-operations"
           v-if="!selectedBooking.archived_at"
+          :key="`operations-${selectedBooking.id}`"
           :workspace-id="workspaceId"
           :booking="selectedBooking"
           :locale="locale"
