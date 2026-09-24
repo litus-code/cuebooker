@@ -1630,6 +1630,11 @@ async function selectDay(date: string) {
   window.scrollTo({ top: Math.max(0, top), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
 }
 
+async function focusCalendarEditor() {
+  await nextTick()
+  document.querySelector<HTMLElement>('.calendar-editor-panel')?.focus({ preventScroll: true })
+}
+
 function openCreate(start = '18:00') {
   const startMinutes = Number(start.slice(0, 2)) * 60 + Number(start.slice(3, 5))
   const endMinutes = Math.min(startMinutes + 120, 23 * 60 + 59)
@@ -1639,6 +1644,7 @@ function openCreate(start = '18:00') {
   blockLabel.value = ''
   editingBlockId.value = null
   editorOpen.value = true
+  void focusCalendarEditor()
 }
 
 function startEdit(block: AvailabilityBlock) {
@@ -1649,6 +1655,7 @@ function startEdit(block: AvailabilityBlock) {
   blockLabel.value = block.label || ''
   editingBlockId.value = block.id
   editorOpen.value = true
+  void focusCalendarEditor()
 }
 
 function closeEditor() {
@@ -2792,7 +2799,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
     </div>
 
     <div v-if="editorOpen" class="editor-backdrop" @click.self="closeEditor">
-      <aside class="editor-panel" role="dialog" aria-modal="true" :aria-labelledby="editingBlockId ? 'editor-title-edit' : 'editor-title-new'">
+      <aside class="editor-panel calendar-editor-panel" role="dialog" aria-modal="true" :aria-labelledby="editingBlockId ? 'editor-title-edit' : 'editor-title-new'" tabindex="-1">
         <div class="editor-heading"><div><p class="eyebrow">{{ editingBlockId ? copy.editSlot : copy.newSlot }}</p><h2 :id="editingBlockId ? 'editor-title-edit' : 'editor-title-new'">{{ selectedDateLabel }}</h2></div><button type="button" :aria-label="copy.close" @click="closeEditor">×</button></div>
         <form @submit.prevent="saveBlock">
           <label><span>{{ copy.privateLabel }}</span><input v-model="blockLabel" maxlength="160" :placeholder="copy.privatePlaceholder"></label>
