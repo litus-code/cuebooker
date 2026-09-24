@@ -30,7 +30,7 @@ const pendingDecision = ref<Extract<CoreBookingStatus, 'confirmed' | 'rejected' 
 const decisionError = ref('')
 const selectedBookingHasConflict = ref(false)
 const archiving = ref(false)
-const archiveView = ref<'active' | 'archived'>('active')
+const archiveView = ref<'active' | 'resolved' | 'archived'>('active')
 const realSearch = ref('')
 const realStatusFilter = ref<'all' | CoreBookingStatus>('all')
 const visibleLimit = ref(10)
@@ -44,7 +44,7 @@ const copy = computed(() => props.locale === 'es' ? {
   confirm: 'Confirmar', reject: 'Rechazar', cancel: 'Cancelar',
   confirmQuestion: '¿Confirmar este booking?', rejectQuestion: '¿Rechazar este booking?', cancelQuestion: '¿Cancelar este booking?',
   noDate: 'Sin fecha', noVenue: 'Sin sala definida', noContact: 'Sin contacto', noOffer: 'Sin oferta',
-  active: 'En curso', archived: 'Archivados', archive: 'Archivar', restore: 'Restaurar', archiveHint: 'En curso es tu trabajo vivo. Archivados conserva bookings fuera de la operativa diaria.', archivedReadOnly: 'Booking archivado. La traza se conserva en modo lectura.'
+  active: 'En curso', resolved: 'Resueltos', archived: 'Archivados', archive: 'Archivar', restore: 'Restaurar', archiveHint: 'En curso contiene negociaciones vivas. Resueltos conserva decisiones tomadas aún no archivadas. Archivados queda fuera de la operativa diaria.', archivedReadOnly: 'Booking archivado. La traza se conserva en modo lectura.'
 } : {
   eyebrow: 'BOOKINGS / REAL',
   title: 'Captured bookings',
@@ -54,7 +54,7 @@ const copy = computed(() => props.locale === 'es' ? {
   confirm: 'Confirm', reject: 'Reject', cancel: 'Cancel',
   confirmQuestion: 'Confirm this booking?', rejectQuestion: 'Reject this booking?', cancelQuestion: 'Cancel this booking?',
   noDate: 'No date', noVenue: 'No venue defined', noContact: 'No contact', noOffer: 'No offer',
-  active: 'In progress', archived: 'Archived', archive: 'Archive', restore: 'Restore', archiveHint: 'In progress is your live work. Archived keeps bookings outside day-to-day operations.', archivedReadOnly: 'Archived booking. Its trace is preserved in read-only mode.'
+  active: 'In progress', resolved: 'Resolved', archived: 'Archived', archive: 'Archive', restore: 'Restore', archiveHint: 'In progress contains live negotiations. Resolved keeps completed decisions that are not archived yet. Archived stays outside day-to-day operations.', archivedReadOnly: 'Archived booking. Its trace is preserved in read-only mode.'
 })
 
 const ACTIVE_BOOKING_PROCESS_STATUSES = new Set<CoreBookingStatus>(['new', 'in_conversation', 'waiting_response'])
@@ -74,7 +74,9 @@ const sourceLabels = computed<Record<string, string>>(() => props.locale === 'es
 const archiveScopedBookings = computed(() => {
   const query = realSearch.value.trim().toLowerCase()
   return props.bookings.filter(booking => {
-    if (archiveView.value === 'active' && booking.archived_at) return false
+    const isResolved = ['confirmed', 'rejected', 'cancelled'].includes(booking.status)
+    if (archiveView.value === 'active' && (booking.archived_at || isResolved)) return false
+    if (archiveView.value === 'resolved' && (booking.archived_at || !isResolved)) return false
     if (archiveView.value === 'archived' && !booking.archived_at) return false
     if (!query) return true
     const party = booking.counterparty_id ? counterparties.value.find(item => item.id === booking.counterparty_id) : null
@@ -141,7 +143,9 @@ watch(
 
     realSearch.value = ''
     realStatusFilter.value = 'all'
-    archiveView.value = booking.archived_at ? 'archived' : 'active'
+    archiveView.value = booking.archived_at
+      ? 'archived'
+      : (['confirmed', 'rejected', 'cancelled'].includes(booking.status) ? 'resolved' : 'active')
     selectedBookingId.value = value
     if (import.meta.client) void scrollToSelectedBooking(true)
   },
@@ -376,7 +380,9 @@ async function toggleArchive() {
     await bookingCore.setBookingArchived(props.workspaceId, selectedBooking.value.id, nextArchived)
     await loadActivity()
     emit('operationsChanged')
-    archiveView.value = nextArchived ? 'archived' : 'active'
+    archiveView.value = nextArchived
+      ? 'archived'
+      : (['confirmed', 'rejected', 'cancelled'].includes(selectedBooking.value.status) ? 'resolved' : 'active')
   } catch (error: any) {
     window.alert(error?.message || 'Booking archive could not be updated.')
   } finally {
@@ -493,7 +499,8 @@ async function selectBooking(bookingId: string) {
         :placeholder="locale === 'es' ? 'Buscar booking, sala, contacto…' : 'Search booking, venue, contact…'"
       >
       <div class="core-inbox__filters core-inbox__filters--archive" :title="copy.archiveHint">
-        <button type="button" :class="{ active: archiveView === 'active' }" @click="archiveView = 'active'">{{ copy.active }} · {{ bookings.filter(item => !item.archived_at).length }}</button>
+        <button type="button" :class="{ active: archiveView === 'active' }" @click="archiveView = 'active'">{{ copy.active }} · {{ activeBookingCount }}</button>
+        <button type="button" :class="{ active: archiveView === 'resolved' }" @click="archiveView = 'resolved'">{{ copy.resolved }} · {{ bookings.filter(item => !item.archived_at && ['confirmed','rejected','cancelled'].includes(item.status)).length }}</button>
         <button type="button" :class="{ active: archiveView === 'archived' }" @click="archiveView = 'archived'">{{ copy.archived }} · {{ bookings.filter(item => !!item.archived_at).length }}</button>
       </div>
       <div class="core-inbox__filters core-inbox__filters--status">
@@ -516,7 +523,7 @@ async function selectBooking(bookingId: string) {
       <button v-if="hasActiveInboxFilters" type="button" @click="clearInboxFilters">
         {{ locale === 'es' ? 'Limpiar filtros' : 'Clear filters' }}
       </button>
-      <button v-else-if="archiveView === 'archived'" type="button" @click="archiveView = 'active'">
+      <button v-else-if="archiveView !== 'active'" type="button" @click="archiveView = 'active'">
         {{ locale === 'es' ? 'Volver a en curso' : 'Back to in progress' }}
       </button>
     </div>
