@@ -2044,8 +2044,20 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             @passport="toggleProfileEditSection('passport')"
           />
 
-          <div v-if="profileEditSection" class="profile-editor-backdrop" @click.self="profileEditSection = null">
-            <form id="profile-builder-editor" class="profile-builder-editor profile-builder-editor--panel" role="dialog" aria-modal="true" @submit.prevent="saveProfileEditor">
+          <div
+            v-if="profileEditSection"
+            class="profile-editor-backdrop"
+            :class="{ 'profile-editor-backdrop--modal': ['image', 'portrait', 'booking'].includes(profileEditSection) }"
+            @click.self="profileEditSection = null"
+          >
+            <form
+              id="profile-builder-editor"
+              class="profile-builder-editor profile-builder-editor--panel"
+              :class="{ 'profile-builder-editor--modal': ['image', 'portrait', 'booking'].includes(profileEditSection) }"
+              role="dialog"
+              aria-modal="true"
+              @submit.prevent="saveProfileEditor"
+            >
             <header>
               <div>
                 <p class="eyebrow">
@@ -2520,7 +2532,9 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-builder__cue-id strong { color:var(--cue-accent); }
 .profile-builder__cue-title{display:flex;align-items:center;gap:8px;margin-top:14px}.profile-builder__cue-title strong{margin-top:0}.profile-builder__cue-title small{padding:4px 6px;border:1px solid color-mix(in srgb,var(--cue-accent) 46%,var(--cue-border));border-radius:var(--cue-radius-sm);color:var(--cue-accent);font:800 8px/1 monospace;letter-spacing:.08em}
 .profile-editor-backdrop{position:fixed;z-index:70;inset:0;display:flex;justify-content:flex-end;background:rgba(0,0,0,.68);backdrop-filter:blur(6px)}
+.profile-editor-backdrop--modal{align-items:center;justify-content:center;padding:24px}
 .profile-builder-editor--panel{display:grid;grid-template-rows:auto minmax(0,1fr) auto;width:min(520px,100%);max-height:100dvh;overflow:hidden;border:0;border-left:1px solid var(--cue-border);box-shadow:-28px 0 80px rgba(0,0,0,.5)}
+.profile-builder-editor--modal{width:min(680px,100%);max-height:calc(100dvh - 48px);border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);box-shadow:0 28px 90px rgba(0,0,0,.58)}
 .profile-builder-editor--panel>.profile-fieldset{overflow-y:auto;overscroll-behavior:contain}
 .profile-builder-editor--panel>footer{position:sticky;bottom:0;background:var(--cue-surface)}
 .profile-builder-editor { border:1px solid var(--cue-toggle); background:var(--cue-surface); }
@@ -2685,8 +2699,8 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 }
 
 @media (max-width: 680px) {
-  .profile-editor-backdrop{display:block;background:var(--cue-surface);backdrop-filter:none}
-  .profile-builder-editor--panel{width:100%;min-height:100dvh;max-height:100dvh;border-left:0}
+  .profile-editor-backdrop,.profile-editor-backdrop--modal{display:block;padding:0;background:var(--cue-surface);backdrop-filter:none}
+  .profile-builder-editor--panel,.profile-builder-editor--modal{width:100%;min-height:100dvh;max-height:100dvh;border:0;border-radius:0;box-shadow:none}
   .profile-builder-editor--panel>header{position:sticky;top:0;z-index:3;background:var(--cue-surface)}
   .profile-builder-editor--panel>footer{z-index:3}
 
