@@ -10175,3 +10175,17 @@ Validation:
 Beta gates are now centralized in `docs/BETA_ROLLOUT_CHECKLIST.md`.
 
 Ownership boundary remains unchanged: Work owns legal/RGPD/cookies/Pricing/Stripe/checkout.
+
+
+## 24 Sep 2026 · History decoupled from Inbox pagination
+
+The Activity view no longer uses the Booking Inbox's loaded booking IDs as its query universe.
+
+- History queries Activity by `workspace_id` and selected `bookings.artist_id` using the PostgREST booking relationship.
+- Booking labels are returned with the Activity relation.
+- Free still applies the 90-day `occurred_at` cutoff server-side.
+- Artist Pro / Agency remove the date cutoff.
+- V1 requests are capped at 500 Activity rows per load; do not describe this as infinite search/retention.
+- Booking Inbox remains capped independently and no longer truncates History.
+
+Validation: HEAD `d700c4ba9fee451aadb998cbeae0a91a5bbacd37`, GitHub Actions run `36037867112`, preview build and deployment succeeded.
