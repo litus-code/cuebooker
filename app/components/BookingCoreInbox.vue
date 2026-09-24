@@ -11,7 +11,7 @@ const props = defineProps<{
   focusBookingId?: string
 }>()
 
-const emit = defineEmits<{ operationsChanged: []; cueRequested: []; bookingOpened: [bookingId: string] }>()
+const emit = defineEmits<{ operationsChanged: []; cueRequested: []; bookingOpened: [bookingId: string]; calendarRequested: [date: string] }>()
 const { capacity: cueCapacity } = useCueEntitlements()
 const bookingCore = useBookingCore()
 const analytics = useAnalytics()
@@ -520,13 +520,23 @@ async function selectBooking(bookingId: string) {
         <section class="core-inbox__details-block">
           <div class="core-inbox__details-heading">
             <strong>{{ copy.details }}</strong>
-            <BookingCoreEditor
-              v-if="!selectedBooking.archived_at"
-              :workspace-id="workspaceId"
-              :booking="selectedBooking"
-              :locale="locale"
-              @saved="handleBookingSaved"
-            />
+            <div class="core-inbox__details-actions">
+              <button
+                v-if="selectedBooking.event_date"
+                class="core-inbox__calendar-link"
+                type="button"
+                @click="emit('calendarRequested', selectedBooking.event_date)"
+              >
+                {{ locale === 'es' ? 'Ver en calendario' : 'View in calendar' }}
+              </button>
+              <BookingCoreEditor
+                v-if="!selectedBooking.archived_at"
+                :workspace-id="workspaceId"
+                :booking="selectedBooking"
+                :locale="locale"
+                @saved="handleBookingSaved"
+              />
+            </div>
           </div>
           <dl id="core-inbox-facts" class="core-inbox__facts" tabindex="-1">
             <div><dt>{{ copy.date }}</dt><dd :class="{ missing: !selectedBooking.event_date }">{{ formatDate(selectedBooking.event_date) }}</dd></div>
@@ -758,6 +768,10 @@ async function selectBooking(bookingId: string) {
 .core-inbox__details-block { margin-top:var(--cue-space-3); padding:0 var(--cue-space-4); border:1px solid var(--cue-border); border-right:0; border-left:0; background:color-mix(in srgb,var(--cue-raised) 26%,transparent); }
 .core-inbox__details-heading { display:flex; align-items:center; justify-content:space-between; gap:var(--cue-space-3); padding:var(--cue-space-3) 0; border-bottom:1px solid color-mix(in srgb,var(--cue-border) 72%,transparent); }
 .core-inbox__details-heading > strong { color:var(--cue-muted); font:800 9px monospace; text-transform:uppercase; letter-spacing:.08em; }
+.core-inbox__details-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+.core-inbox__calendar-link { min-height:var(--cue-button-sm); padding:0 var(--cue-space-3); border:1px solid var(--cue-border); border-radius:var(--cue-radius-control); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; text-transform:uppercase; }
+.core-inbox__calendar-link:hover,
+.core-inbox__calendar-link:focus-visible { border-color:var(--cue-accent); color:var(--cue-accent); outline:none; }
 .core-inbox__facts { display:grid; grid-template-columns:minmax(120px,.8fr) minmax(170px,1fr) minmax(230px,1.3fr) minmax(120px,.7fr); gap:0; margin:0; padding:var(--cue-space-3) 0; border-bottom:0; }
 .core-inbox__facts > div { min-width:0; min-height:74px; padding:var(--cue-space-1) var(--cue-space-4); }
 .core-inbox__facts > div:first-child { padding-left:0; }
@@ -834,6 +848,9 @@ async function selectBooking(bookingId: string) {
   .core-inbox__archive { min-height:44px; }
   .core-inbox__decisions button { min-width:0; padding-inline:4px; }
   .core-inbox__details-heading { align-items:center; }
+  .core-inbox__details-actions { width:100%; justify-content:flex-start; }
+  .core-inbox__details-heading { flex-wrap:wrap; }
+  .core-inbox__calendar-link { min-height:40px; }
   .core-inbox__facts { grid-template-columns:1fr 1fr; }
   .core-inbox__thread { max-height:min(52vh,380px); }
   .thread-item { width:auto; max-width:92%; }
