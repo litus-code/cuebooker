@@ -426,6 +426,16 @@ const publicProfilePreview = computed<PublicArtistProfile>(() => {
     artistImageScale: persisted?.artist_image_scale ?? 1,
     visualMode: persisted?.visual_mode || 'photo',
     cueId: persisted?.cue_id_config ? toPublicCueIdConfig(persisted.cue_id_config) : null,
+    passport: {
+      confirmedBookings: cuePassport.value.confirmedBookings,
+      cities: cuePassport.value.cities,
+      venues: cuePassport.value.venues,
+      milestones: cuePassportUnlocked.value.slice(0, 3).map(item => ({
+        id: item.id,
+        title: item.title,
+        subtitle: item.subtitle
+      }))
+    },
     acceptingRequests: publicProfileAcceptingRequests.value
   }
 })
