@@ -249,6 +249,26 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     })
   }
 
+  async function listArtistAttentionBookings(
+    workspaceId: string,
+    artistId: string,
+    limit = 500
+  ) {
+    if (!workspaceId || !artistId) return [] as CoreBooking[]
+    return $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/bookings`, {
+      headers: authHeaders(),
+      query: {
+        workspace_id: `eq.${workspaceId}`,
+        artist_id: `eq.${artistId}`,
+        archived_at: 'is.null',
+        status: 'not.in.(rejected,cancelled)',
+        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
+        order: 'updated_at.desc',
+        limit: String(Math.min(Math.max(limit, 1), 500))
+      }
+    })
+  }
+
   async function listArtistCalendarBookings(
     workspaceId: string,
     artistId: string,
@@ -524,6 +544,25 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     })
   }
 
+  async function listArtistWorkspaceBookingEmailMessages(
+    workspaceId: string,
+    artistId: string,
+    limit = 500
+  ) {
+    if (!workspaceId || !artistId) return [] as BookingEmailMessage[]
+    return $fetch<BookingEmailMessage[]>(`${baseUrl}/rest/v1/email_messages`, {
+      headers: authHeaders(),
+      query: {
+        workspace_id: `eq.${workspaceId}`,
+        direction: 'eq.outbound',
+        'bookings.artist_id': `eq.${artistId}`,
+        select: 'id,booking_id,to_email,delivery_status,delivered_at,bounced_at,opened_at,last_delivery_event_at,delivery_failure_code,created_at,bookings!inner(id)',
+        order: 'last_delivery_event_at.desc.nullslast,created_at.desc',
+        limit: String(Math.min(Math.max(limit, 1), 500))
+      }
+    })
+  }
+
   async function listWorkspaceActivities(
     workspaceId: string,
     bookingIds: string[] = [],
@@ -601,6 +640,20 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     })
   }
 
+  async function listArtistActiveNextMoves(workspaceId: string, artistId: string) {
+    if (!workspaceId || !artistId) return [] as NextMove[]
+    return $fetch<NextMove[]>(`${baseUrl}/rest/v1/next_moves`, {
+      headers: authHeaders(),
+      query: {
+        workspace_id: `eq.${workspaceId}`,
+        completed_at: 'is.null',
+        'bookings.artist_id': `eq.${artistId}`,
+        select: 'id,workspace_id,booking_id,label,due_at,assignee_user_id,completion_trigger,completed_at,created_by,created_at,updated_at,bookings!inner(id)',
+        order: 'due_at.asc.nullslast,created_at.asc'
+      }
+    })
+  }
+
   async function setNextMove(input: SetNextMoveInput) {
     const rows = await $fetch<NextMove[]>(`${baseUrl}/rest/v1/rpc/set_booking_next_move`, {
       method: 'POST',
@@ -638,6 +691,20 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         ...(bookingId ? { booking_id: `eq.${bookingId}` } : {}),
         ...(activeOnly ? { status: 'eq.active' } : {}),
         select: 'id,workspace_id,booking_id,event_date,starts_at,ends_at,event_timezone,expires_at,priority,status,released_at,converted_at,created_by,created_at,updated_at',
+        order: 'event_date.asc,priority.asc.nullslast,created_at.asc'
+      }
+    })
+  }
+
+  async function listArtistActiveHolds(workspaceId: string, artistId: string) {
+    if (!workspaceId || !artistId) return [] as Hold[]
+    return $fetch<Hold[]>(`${baseUrl}/rest/v1/holds`, {
+      headers: authHeaders(),
+      query: {
+        workspace_id: `eq.${workspaceId}`,
+        status: 'eq.active',
+        'bookings.artist_id': `eq.${artistId}`,
+        select: 'id,workspace_id,booking_id,event_date,starts_at,ends_at,event_timezone,expires_at,priority,status,released_at,converted_at,created_by,created_at,updated_at,bookings!inner(id)',
         order: 'event_date.asc,priority.asc.nullslast,created_at.asc'
       }
     })
@@ -738,6 +805,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     listCounterparties,
     createCounterparty,
     listBookings,
+    listArtistAttentionBookings,
     listArtistCalendarBookings,
     listArtistBookingsForDate,
     getBooking,
@@ -751,13 +819,16 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     listActivities,
     listBookingEmailMessages,
     listWorkspaceBookingEmailMessages,
+    listArtistWorkspaceBookingEmailMessages,
     listWorkspaceActivities,
     listArtistWorkspaceActivities,
     createActivity,
     listNextMoves,
+    listArtistActiveNextMoves,
     setNextMove,
     completeNextMove,
     listHolds,
+    listArtistActiveHolds,
     listArtistCalendarHolds,
     listArtistHoldsForDate,
     createHold,
