@@ -9906,3 +9906,18 @@ scripts/blender/cue-id-v2-runtime-optimize.py
 This optimizer is deliberately conservative: it does not decimate geometry and does not modify the accepted rig or skin weights.
 
 Production remains untouched.
+
+## 24 Sep 2026 · Profile real + Passport public visibility
+
+- CUE Passport workspace remains 2D and independent from CUE ID.
+- Public artist profile includes the summarized Passport surface.
+- Added persisted `artists.passport_public_enabled`, default `true`.
+- Hiding Passport only affects the public profile. It does not delete or stop trajectory generation.
+- `Gestionar Passport` now opens the Profile Passport editor instead of navigating to CUE ID.
+- Profile editing model:
+  - desktop side panel: Identity/About, Sound, Links, Passport, Distribution;
+  - desktop centered modal: Cover, Portrait, Booking settings;
+  - mobile: fullscreen editor for all sections.
+- Public booking form now opens in a centered desktop modal and fullscreen mobile modal. No autoscroll to a long form.
+- CUE Passport constellation tooltip now supports linked-media interaction and mobile internal scrolling.
+- Passport V1 remains validation pending until CI/staging verification is available.
