@@ -162,6 +162,63 @@ export function useCueAuth() {
     }
   }
 
+  async function requestPasswordReset(email: string, redirectTo: string) {
+    if (!configured.value) throw new Error('supabase_not_configured')
+    const normalizedEmail = email.trim()
+    if (!normalizedEmail) throw new Error('email_required')
+
+    await $fetch(`${supabaseUrl.value}/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`, {
+      method: 'POST',
+      headers: baseHeaders(),
+      body: { email: normalizedEmail }
+    })
+  }
+
+  async function consumePasswordRecoveryFromUrl() {
+    if (!import.meta.client || !configured.value) return false
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+    if (hash.get('type') !== 'recovery') return false
+
+    const accessToken = hash.get('access_token') || ''
+    const refreshToken = hash.get('refresh_token') || ''
+    const expiresIn = Number(hash.get('expires_in') || '3600')
+    if (!accessToken || !refreshToken) throw new Error('invalid_recovery_link')
+
+    const user = await $fetch<CueUser>(`${supabaseUrl.value}/auth/v1/user`, {
+      headers: {
+        apikey: publishableKey.value,
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    const next = normalizeSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      expires_in: Number.isFinite(expiresIn) ? expiresIn : 3600,
+      user
+    })
+    if (!next) throw new Error('invalid_recovery_session')
+    saveSession(next)
+    profile.value = null
+
+    const cleanUrl = `${window.location.pathname}${window.location.search}`
+    window.history.replaceState({}, document.title, cleanUrl)
+    return true
+  }
+
+  async function setRecoveredPassword(newPassword: string) {
+    const current = await ensureFreshSession()
+    if (!current) throw new Error('recovery_session_required')
+    if (newPassword.length < 8) throw new Error('password_too_short')
+
+    await $fetch(`${supabaseUrl.value}/auth/v1/user`, {
+      method: 'PUT',
+      headers: baseHeaders(true),
+      body: { password: newPassword }
+    })
+  }
+
   async function signIn(email: string, password: string) {
     if (!configured.value) throw new Error('supabase_not_configured')
     loading.value = true
@@ -360,6 +417,9 @@ export function useCueAuth() {
     signIn,
     signUp,
     signOut,
+    requestPasswordReset,
+    consumePasswordRecoveryFromUrl,
+    setRecoveredPassword,
     updatePassword,
     updateLocalePreference,
     captureReferral,
