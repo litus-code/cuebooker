@@ -78,14 +78,19 @@ const portrait = computed(() => props.profile.artistCutoutUrl || props.profile.a
 const initials = computed(() => props.profile.stageName.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase() || 'DJ')
 const location = computed(() => [props.profile.city, props.profile.countryCode].filter(Boolean).join(' · '))
 const formats = computed(() => props.profile.performanceFormats.slice(0, 4))
+function safeExternalUrl(value: string | null) {
+  if (!value) return null
+  return /^https?:\/\//i.test(value.trim()) ? value.trim() : null
+}
+
 const links = computed(() => [
-  ['INSTAGRAM', props.profile.instagramUrl],
-  ['SOUNDCLOUD', props.profile.soundcloudUrl],
-  ['SPOTIFY', props.profile.spotifyUrl],
-  ['MIXCLOUD', props.profile.mixcloudUrl],
-  ['YOUTUBE', props.profile.youtubeUrl],
-  ['WEBSITE', props.profile.websiteUrl]
-].filter(([, url]) => Boolean(url)) as Array<[string, string]>)
+  ['INSTAGRAM', safeExternalUrl(props.profile.instagramUrl)],
+  ['SOUNDCLOUD', safeExternalUrl(props.profile.soundcloudUrl)],
+  ['SPOTIFY', safeExternalUrl(props.profile.spotifyUrl)],
+  ['MIXCLOUD', safeExternalUrl(props.profile.mixcloudUrl)],
+  ['YOUTUBE', safeExternalUrl(props.profile.youtubeUrl)],
+  ['WEBSITE', safeExternalUrl(props.profile.websiteUrl)]
+].filter(([, url]): url is string => Boolean(url)) as Array<[string, string]>)
 </script>
 
 <template>
