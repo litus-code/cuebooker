@@ -298,3 +298,82 @@
     padding: 24px 22px 32px !important;
   }
 }
+
+
+/* Real profile editor: contextual desktop panel, fullscreen mobile. */
+.profile-editor-backdrop {
+  position:fixed;
+  z-index:120;
+  inset:0;
+  display:flex;
+  justify-content:flex-end;
+  padding:18px;
+  background:rgba(0,0,0,.62);
+  backdrop-filter:blur(8px);
+}
+
+.workspace .profile-builder-editor--panel {
+  display:flex;
+  width:min(560px,calc(100vw - 36px));
+  max-height:calc(100dvh - 36px);
+  flex-direction:column;
+  margin:0;
+  overflow:hidden;
+  border:1px solid #303030;
+  border-radius:12px;
+  background:#0a0a0a;
+  box-shadow:0 24px 80px rgba(0,0,0,.5);
+}
+
+.workspace .profile-builder-editor--panel > header {
+  position:sticky;
+  z-index:4;
+  top:0;
+  flex:none;
+  background:rgba(10,10,10,.97);
+  backdrop-filter:blur(12px);
+}
+
+.workspace .profile-builder-editor--panel > .profile-fieldset {
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
+
+.workspace .profile-builder-editor--panel > footer {
+  position:sticky;
+  z-index:4;
+  bottom:0;
+  flex:none;
+  background:rgba(10,10,10,.97);
+  backdrop-filter:blur(12px);
+}
+
+@media (max-width:760px) {
+  .profile-editor-backdrop {
+    padding:0;
+    background:#090909;
+  }
+
+  .workspace .profile-builder-editor--panel {
+    width:100%;
+    max-width:none;
+    height:100dvh;
+    max-height:100dvh;
+    border:0;
+    border-radius:0;
+    box-shadow:none;
+  }
+
+  .workspace .profile-builder-editor--panel > header {
+    min-height:58px;
+  }
+
+  .workspace .profile-builder-editor--panel > .profile-fieldset {
+    padding-bottom:24px;
+  }
+
+  .workspace .profile-builder-editor--panel > footer {
+    padding-bottom:max(14px,env(safe-area-inset-bottom));
+  }
+}
