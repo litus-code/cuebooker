@@ -59,7 +59,7 @@ const copy = computed(() => props.locale === 'es' ? {
 
 const genres = computed(() => [...props.profile.primaryGenres, ...props.profile.secondaryGenres].filter(Boolean).slice(0, 7))
 const location = computed(() => [props.profile.city, props.profile.countryCode].filter(Boolean).join(' · '))
-const portrait = computed(() => props.profile.artistCutoutUrl || props.profile.artistImageUrl)
+const portrait = computed(() => props.profile.artistImageUrl || props.profile.artistCutoutUrl)
 const visualMode = computed(() => props.profile.visualMode || 'photo')
 const showCueId = computed(() => visualMode.value === 'cue_id' && Boolean(props.profile.cueId))
 function safeExternalUrl(value: string | null) {
@@ -124,7 +124,7 @@ onBeforeUnmount(() => {
 
     <section class="public-artist-profile__hero">
       <div class="public-artist-profile__cover">
-        <img v-if="profile.coverUrl" class="public-artist-profile__cover-image" :src="profile.coverUrl" alt="" :style="{ objectPosition: `50% ${profile.coverPositionY}%` }">
+        <img v-if="profile.coverUrl" class="public-artist-profile__cover-image" :src="profile.coverUrl" alt="">
         <div v-else class="public-artist-profile__cover-default" aria-hidden="true"><i /><i /><i /></div>
         <CueIdStage
           v-if="showCueId && profile.cueId"
@@ -135,35 +135,41 @@ onBeforeUnmount(() => {
           compact
         />
         <div class="public-artist-profile__shade" />
-        <img
-          v-if="portrait && !showCueId"
-          :class="['public-artist-profile__portrait', { 'public-artist-profile__portrait--artwork': visualMode === 'artwork' }]"
+        <div class="public-artist-profile__grid" aria-hidden="true" />
+      </div>
 
-          :src="portrait"
-          :alt="profile.stageName"
-          :style="{
-            left: `${profile.artistImagePositionX}%`,
-            top: `${profile.artistImagePositionY}%`,
-            transform: `translate(-50%, -50%) scale(${profile.artistImageScale || 1})`
-          }"
-        >
+      <div class="public-artist-profile__hero-rail" aria-hidden="true">
+        <span>CUEBOOKER / ARTIST PROFILE</span>
+        <span>LIVE CULTURE · CLUB · UNDERGROUND</span>
       </div>
 
       <div class="public-artist-profile__identity">
-        <p v-if="location">{{ location }}</p>
-        <h1>{{ profile.stageName }}</h1>
-        <div v-if="genres.length" class="public-artist-profile__genres">
-          <span v-for="genre in genres" :key="genre">{{ genre }}</span>
+        <div class="public-artist-profile__identity-top">
+          <div v-if="portrait && !showCueId" class="public-artist-profile__avatar">
+            <img :src="portrait" :alt="profile.stageName">
+          </div>
+          <div class="public-artist-profile__location">
+            <span>ARTIST / PROFILE</span>
+            <p>{{ location || (locale === 'es' ? 'BASE POR DEFINIR' : 'BASE TO BE DEFINED') }}</p>
+          </div>
         </div>
-        <button
-          class="public-artist-profile__booking-cta"
-          type="button"
-          :disabled="!profile.acceptingRequests && !preview"
-          @click="openBooking"
-        >
-          {{ profile.acceptingRequests || preview ? copy.booking : copy.bookingClosed }}
-          <span v-if="profile.acceptingRequests || preview" class="arrow arrow--ne" aria-hidden="true" />
-        </button>
+
+        <h1>{{ profile.stageName }}</h1>
+
+        <div class="public-artist-profile__hero-bottom">
+          <div v-if="genres.length" class="public-artist-profile__genres">
+            <span v-for="genre in genres" :key="genre">{{ genre }}</span>
+          </div>
+          <button
+            class="public-artist-profile__booking-cta"
+            type="button"
+            :disabled="!profile.acceptingRequests && !preview"
+            @click="openBooking"
+          >
+            {{ profile.acceptingRequests || preview ? copy.booking : copy.bookingClosed }}
+            <span v-if="profile.acceptingRequests || preview" class="arrow arrow--ne" aria-hidden="true" />
+          </button>
+        </div>
       </div>
     </section>
 
@@ -293,25 +299,30 @@ onBeforeUnmount(() => {
 .public-artist-profile__topbar { position: relative; z-index: 4; display: flex; justify-content: space-between; align-items: center; min-height: 64px; padding: 0 clamp(18px, 4vw, 48px); border-bottom: 1px solid var(--cue-border, #2c2c2c); }
 .public-artist-profile__topbar a { color: inherit; text-decoration: none; }
 .public-artist-profile__topbar > span { color: var(--cue-muted, #999); font: 700 9px/1.2 monospace; letter-spacing: .1em; text-transform: uppercase; }
-.public-artist-profile__hero { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(360px, .65fr); min-height: min(760px, calc(100vh - 64px)); border-bottom: 1px solid var(--cue-border, #2c2c2c); }
-.public-artist-profile__cover { position: relative; min-height: 600px; overflow: hidden; background: #121212; }
-.public-artist-profile__cover-image { width: 100%; height: 100%; object-fit: cover; }
-.public-artist-profile__cover-image--portrait-fallback { position:absolute; inset:-5%; width:110%; height:110%; filter:blur(26px) saturate(.75) brightness(.52); transform:scale(1.08); }
-.public-artist-profile__cover-fallback-overlay { position:absolute; inset:0; background:radial-gradient(circle at 70% 32%, rgba(206,255,84,.12), transparent 32%), linear-gradient(180deg,rgba(8,8,8,.1),rgba(8,8,8,.72)); }
-.public-artist-profile__cover-default { position: absolute; inset: 0; overflow: hidden; background: radial-gradient(circle at 28% 35%, color-mix(in srgb, var(--cue-accent, #e8ff2f) 28%, transparent), transparent 30%), #111; }
-.public-artist-profile__cover-default i { position: absolute; width: 60vw; height: 60vw; max-width: 760px; max-height: 760px; border: 1px solid color-mix(in srgb, var(--cue-accent, #e8ff2f) 40%, transparent); border-radius: 50%; }
-.public-artist-profile__cover-default i:nth-child(1) { top: -32%; left: -15%; }
-.public-artist-profile__cover-default i:nth-child(2) { right: -25%; bottom: -40%; }
-.public-artist-profile__cover-default i:nth-child(3) { top: 35%; left: 38%; width: 12vw; height: 12vw; background: var(--cue-accent, #e8ff2f); filter: blur(1px); opacity: .8; }
+.public-artist-profile__hero { position:relative; min-height:calc(100svh - 64px); overflow:hidden; border-bottom:1px solid var(--cue-border,#2c2c2c); background:#090909; isolation:isolate; }
+.public-artist-profile__cover { position:absolute; z-index:0; inset:0; overflow:hidden; background:#121212; }
+.public-artist-profile__cover-image { width:100%; height:100%; object-fit:cover; object-position:center; filter:saturate(.72) contrast(1.08) brightness(.82); transform:scale(1.002); }
+.public-artist-profile__cover-default { position:absolute; inset:0; overflow:hidden; background:radial-gradient(circle at 72% 28%,color-mix(in srgb,var(--cue-accent,#e8ff2f) 16%,transparent),transparent 27%),linear-gradient(125deg,#171717,#070707 72%); }
+.public-artist-profile__cover-default i { position:absolute; width:60vw; height:60vw; max-width:760px; max-height:760px; border:1px solid color-mix(in srgb,var(--cue-accent,#e8ff2f) 24%,transparent); border-radius:50%; }
+.public-artist-profile__cover-default i:nth-child(1) { top:-32%; left:-15%; }
+.public-artist-profile__cover-default i:nth-child(2) { right:-25%; bottom:-40%; }
+.public-artist-profile__cover-default i:nth-child(3) { top:35%; left:38%; width:12vw; height:12vw; background:var(--cue-accent,#e8ff2f); opacity:.55; }
 .public-artist-profile__cue-id { position:absolute; inset:0; z-index:1; width:100%; height:100%; min-height:100%; border:0; }
 .public-artist-profile__cue-id :deep(.cue-id-stage__meta) { bottom:28px; }
-.public-artist-profile__shade { position: absolute; z-index:2; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.5)); pointer-events: none; }
-.public-artist-profile__portrait { position: absolute; z-index: 3; width: min(56%, 520px); max-height: 88%; object-fit: contain; transform-origin: center; filter: drop-shadow(0 24px 28px rgba(0,0,0,.5)); }
-.public-artist-profile__portrait--artwork { filter: grayscale(1) contrast(1.75) brightness(1.1) drop-shadow(2px 0 0 rgba(206,255,84,.7)) drop-shadow(-2px 0 0 rgba(206,255,84,.25)) drop-shadow(0 24px 36px rgba(0,0,0,.6)); }
-.public-artist-profile__identity { display: flex; flex-direction: column; justify-content: flex-end; padding: clamp(32px, 5vw, 76px); background: var(--cue-surface, #101010); }
-.public-artist-profile__identity > p { margin: 0 0 14px; color: var(--cue-accent, #e8ff2f); font: 700 10px/1.2 monospace; letter-spacing: .12em; text-transform: uppercase; }
-.public-artist-profile__identity h1 { margin: 0; font-size: clamp(4rem, 9vw, 9.5rem); line-height: .76; letter-spacing: -.07em; text-transform: uppercase; overflow-wrap: anywhere; }
-.public-artist-profile__genres { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 28px; }
+.public-artist-profile__shade { position:absolute; z-index:2; inset:0; background:linear-gradient(90deg,rgba(5,5,5,.88) 0%,rgba(5,5,5,.52) 42%,rgba(5,5,5,.08) 72%),linear-gradient(0deg,rgba(5,5,5,.96) 0%,rgba(5,5,5,.2) 54%,rgba(5,5,5,.18) 100%); pointer-events:none; }
+.public-artist-profile__grid { position:absolute; z-index:2; inset:0; opacity:.22; background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px); background-size:72px 72px; mask-image:linear-gradient(to right,#000,transparent 72%); pointer-events:none; }
+.public-artist-profile__hero-rail { position:absolute; z-index:4; top:22px; right:24px; display:grid; justify-items:end; gap:6px; color:rgba(255,255,255,.55); font:800 7px/1 monospace; letter-spacing:.14em; }
+.public-artist-profile__hero-rail span:first-child { color:var(--cue-accent,#e8ff2f); }
+.public-artist-profile__identity { position:relative; z-index:3; display:flex; flex-direction:column; justify-content:flex-end; min-height:calc(100svh - 64px); box-sizing:border-box; padding:clamp(28px,5vw,72px); }
+.public-artist-profile__identity-top { display:flex; align-items:end; gap:18px; margin-bottom:clamp(18px,3vw,34px); }
+.public-artist-profile__avatar { width:92px; height:112px; flex:0 0 auto; overflow:hidden; border:1px solid rgba(255,255,255,.28); border-radius:4px; background:#111; box-shadow:0 18px 45px rgba(0,0,0,.38); }
+.public-artist-profile__avatar img { width:100%; height:100%; object-fit:cover; object-position:center; filter:saturate(.88) contrast(1.04); }
+.public-artist-profile__location { display:grid; gap:6px; padding-bottom:3px; }
+.public-artist-profile__location span { color:var(--cue-accent,#e8ff2f); font:800 8px/1 monospace; letter-spacing:.12em; }
+.public-artist-profile__location p { margin:0; color:#d6d6d6; font:800 10px/1.2 monospace; letter-spacing:.08em; text-transform:uppercase; }
+.public-artist-profile__identity h1 { max-width:min(1180px,92vw); margin:0; font-size:clamp(4.8rem,13vw,13rem); line-height:.72; letter-spacing:-.075em; text-transform:uppercase; overflow-wrap:anywhere; text-shadow:0 18px 50px rgba(0,0,0,.35); }
+.public-artist-profile__hero-bottom { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-top:clamp(24px,4vw,42px); }
+.public-artist-profile__genres { display:flex; flex-wrap:wrap; gap:7px; margin:0; }
 .public-artist-profile__genres span { padding: 7px 9px; border: 1px solid var(--cue-border, #333); color: var(--cue-muted, #aaa); font: 700 9px/1 monospace; text-transform: uppercase; }
 .public-artist-profile__booking-cta { display: inline-flex; align-items: center; align-self: flex-start; gap: 10px; min-height: 54px; margin-top: 34px; padding: 0 20px; border: 0; background: var(--cue-accent, #e8ff2f); color: #080808; cursor: pointer; font-weight: 900; }
 .public-artist-profile__booking-cta:disabled { border: 1px solid var(--cue-border, #333); background: transparent; color: var(--cue-muted, #777); cursor: default; }
@@ -352,42 +363,22 @@ onBeforeUnmount(() => {
 .public-artist-profile__booking-header button { width:38px; height:38px; padding:0; border:1px solid #343434; border-radius:8px; background:#111; color:#ddd; cursor:pointer; font-size:22px; line-height:1; }
 .public-artist-profile__booking-body { max-height:calc(min(860px,100dvh - 48px) - 65px); overflow:auto; overscroll-behavior:contain; }
 @media (max-width: 900px) {
-  .public-artist-profile__hero {
-    position:relative;
-    display:block;
-    min-height:76svh;
-    overflow:hidden;
-  }
-  .public-artist-profile__cover {
-    position:absolute;
-    inset:0;
-    min-height:0;
-    height:100%;
-  }
-  .public-artist-profile__shade {
-    background:linear-gradient(180deg,rgba(0,0,0,.02) 18%,rgba(0,0,0,.28) 52%,rgba(0,0,0,.92) 92%);
-  }
-  .public-artist-profile__portrait {
-    width:min(70%,520px);
-    max-height:72%;
-  }
+  .public-artist-profile__hero { min-height:78svh; }
   .public-artist-profile__identity {
-    position:relative;
-    z-index:3;
-    min-height:76svh;
-    box-sizing:border-box;
-    justify-content:flex-end;
-    padding:clamp(28px,6vw,48px) clamp(18px,5vw,34px) clamp(30px,7vw,52px);
-    background:linear-gradient(180deg,transparent 44%,rgba(8,8,8,.18) 60%,rgba(8,8,8,.92) 100%);
+    min-height:78svh;
+    padding:24px 18px 30px;
   }
-  .public-artist-profile__identity > p { margin-bottom:8px; }
+  .public-artist-profile__hero-rail { top:16px; right:16px; }
+  .public-artist-profile__hero-rail span:last-child { display:none; }
+  .public-artist-profile__identity-top { margin-bottom:18px; }
+  .public-artist-profile__avatar { width:72px; height:88px; }
   .public-artist-profile__identity h1 {
-    max-width:90%;
-    font-size:clamp(4rem,17vw,7.5rem);
-    line-height:.78;
+    max-width:100%;
+    font-size:clamp(4rem,20vw,8rem);
+    line-height:.74;
   }
-  .public-artist-profile__genres { margin-top:18px; }
-  .public-artist-profile__booking-cta { margin-top:22px; }
+  .public-artist-profile__hero-bottom { align-items:stretch; flex-direction:column; gap:18px; margin-top:22px; }
+  .public-artist-profile__booking-cta { margin-top:0; }
   .public-artist-profile__story { grid-template-columns:1fr; }
   .public-artist-profile__cue { grid-template-columns:1fr; }
   .public-artist-profile__cue>div:first-child { min-height:190px; }
