@@ -1,7 +1,7 @@
 # CUE Passport V1
 
 Updated: 24 September 2026  
-Status: CODE COMPLETE · VALIDATION PENDING
+Status: CODE COMPLETE · BACKEND APPLY + FINAL VISUAL VALIDATION PENDING
 
 ## Product role
 
@@ -97,7 +97,10 @@ Rules:
 - Public visibility is persisted through `artists.passport_public_enabled`.
 - Hiding Passport does not stop trajectory generation from confirmed activity.
 - CUE ID and CUE Passport remain independent profile modules.
-- Public media and milestone selection can be refined after the base visibility control is stable.
+- Public milestone selection supports automatic mode or an explicit selection of up to three unlocked milestones.
+- Public media is opt-in only and supports up to six linked items.
+- Public media IDs are validated against confirmed bookings for the artist before they are returned.
+- Event Media remains classified as Artist Pro presentation; entitlement enforcement is handled in the commercial UI phase.
 
 ## Commercial classification
 
