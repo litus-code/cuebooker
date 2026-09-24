@@ -12,6 +12,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{ operationsChanged: []; cueRequested: []; bookingOpened: [bookingId: string] }>()
+const { capacity: cueCapacity } = useCueEntitlements()
 const bookingCore = useBookingCore()
 const selectedBookingId = ref('')
 const contacts = ref<Contact[]>([])
@@ -79,6 +80,8 @@ const visibleBookings = computed(() => {
 })
 const pagedBookings = computed(() => visibleBookings.value.slice(0, visibleLimit.value))
 const hasMoreBookings = computed(() => visibleLimit.value < visibleBookings.value.length)
+const activeBookingCount = computed(() => props.bookings.filter(item => !item.archived_at).length)
+const activeBookingCapacity = computed(() => cueCapacity('activeBookings', activeBookingCount.value))
 const selectedBooking = computed(() => visibleBookings.value.find(item => item.id === selectedBookingId.value) || visibleBookings.value[0] || null)
 const selectedContact = computed(() => selectedBooking.value?.primary_contact_id ? contacts.value.find(item => item.id === selectedBooking.value?.primary_contact_id) || null : null)
 const selectedCounterparty = computed(() => selectedBooking.value?.counterparty_id ? counterparties.value.find(item => item.id === selectedBooking.value?.counterparty_id) || null : null)
@@ -386,6 +389,15 @@ async function selectBooking(bookingId: string) {
       </div>
     </div>
 
+    <CueUpgradePrompt
+      v-if="activeBookingCapacity.reached"
+      entitlement="booking.unlimited"
+      :title="locale === 'es' ? 'Capacidad Free alcanzada' : 'Free capacity reached'"
+      :description="locale === 'es'
+        ? 'Puedes seguir trabajando tus bookings actuales. Artist Pro elimina el límite de procesos activos.'
+        : 'You can keep working on current bookings. Artist Pro removes the active-booking capacity limit.'"
+    />
+
     <p v-if="bookings.length && !visibleBookings.length" class="core-inbox__empty">{{ locale === 'es' ? 'No hay bookings con estos filtros.' : 'No bookings match these filters.' }}</p>
 
     <div v-else-if="bookings.length" class="core-inbox__layout">
@@ -590,6 +602,8 @@ async function selectBooking(bookingId: string) {
 .core-inbox__heading span { display:block; color:var(--cue-accent); font:700 9px/1.2 monospace; letter-spacing:.11em; }
 .core-inbox__heading strong { display:block; margin-top:4px; font-size:17px; }
 .core-inbox__heading b { min-width:34px; text-align:center; font:700 12px monospace; color:var(--cue-accent); }
+.core-inbox > :deep(.cue-upgrade-prompt){margin:10px var(--cue-space-4) 0}
+
 .core-inbox__zero { display:grid; justify-items:start; gap:8px; padding:24px 18px 28px; }
 .core-inbox__zero > span { color:var(--cue-accent); font:700 9px monospace; text-transform:uppercase; }
 .core-inbox__zero > strong { max-width:560px; font-size:clamp(20px,3vw,30px); line-height:1.05; }
