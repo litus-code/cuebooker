@@ -423,6 +423,11 @@ async function closeProfileEditor() {
   void router.replace({ query }).catch(() => {})
 }
 
+async function openPassportPublicSettings() {
+  await changeView('profile')
+  if (profileEditSection.value !== 'passport') await toggleProfileEditSection('passport')
+}
+
 async function toggleProfileEditSection(section: Exclude<ProfileEditSection, null>) {
   if (profileEditSection.value === section) {
     await closeProfileEditor()
@@ -2006,6 +2011,9 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             <p class="eyebrow">{{ copy.passportEyebrow }}</p>
             <h1>{{ copy.passportTitle }}</h1>
             <p>{{ copy.passportBody }}</p>
+            <button type="button" class="primary-button passport-public-settings-button" @click="openPassportPublicSettings">
+              {{ preferences.locale.value === 'es' ? 'Ajustes públicos' : 'Public settings' }}
+            </button>
           </div>
           <label v-if="hasArtistSelector" class="artist-select">
             <span>{{ copy.artist }}</span>
@@ -2172,7 +2180,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             @toggle-published="updatePublicProfilePublished($event)"
             @toggle-requests="updatePublicAcceptingRequests($event)"
             @cue-id="changeView('cue-id')"
-            @passport="toggleProfileEditSection('passport')"
+            @passport="changeView('passport')"
           />
 
           <div
@@ -2577,6 +2585,7 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .eyebrow { margin: 0; font: 700 10px/1.25 monospace; letter-spacing: .12em; text-transform: uppercase; }
 h1 { max-width: 900px; margin: 10px 0 14px; font-size: clamp(3rem, 7vw, 7.2rem); line-height: .84; letter-spacing: -.065em; text-transform: uppercase; }
 .view-heading > div > p:last-child, .empty-card > p, .next-panel > p, .booking-empty > p { max-width: 680px; margin: 0; color: var(--cue-muted); font-size: 16px; line-height: 1.55; }
+.passport-public-settings-button { width:auto; margin-top:14px; padding-inline:14px; }
 .artist-select, .roster-form label, .editor-panel label { display: grid; gap: 8px; }
 .artist-select span, .roster-form label span, .editor-panel label span { color: #858585; font: 700 10px/1.2 monospace; letter-spacing: .08em; text-transform: uppercase; }
 select, input { min-height: 46px; box-sizing: border-box; padding: 0 13px; border: 1px solid var(--cue-border); border-radius: 0; outline: none; background: var(--cue-surface); color: var(--cue-text); }
