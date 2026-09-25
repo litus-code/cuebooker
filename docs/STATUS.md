@@ -1,6 +1,20 @@
 # Project status
 
-Updated: 14 September 2026
+Updated: 16 September 2026
+
+## Professional artist profile and request navigation on staging
+
+Branch `feature/artist-profile-onboarding` adds an optional professional profile to the authenticated workspace and improves request navigation:
+
+- selecting a request scrolls its detail to the top on mobile and desktop, while respecting reduced-motion preferences;
+- onboarding explains that the professional profile is optional and can be completed later;
+- the workspace profile stores identity, location, genres, formats, event types, media links and private booking conditions;
+- the profile includes a private cover uploader with drag and drop, framing control and a bundled acid and Detroit fallback artwork;
+- exact fees, travel preferences, equipment notes and riders remain private to authorised artist members;
+- agency users can switch between roster artists, while editor memberships remain read-only;
+- the profile data is protected by RLS and the existing owner/manager permission helpers.
+
+Migrations `20260916000127_add_artist_professional_profile.sql` and `20260916071203_add_artist_cover_image.sql` are applied to `cuebooker-staging`. Production has not been changed.
 
 ## On GitHub main
 
@@ -14,7 +28,7 @@ The Supabase schema now includes:
 - seeded referral codes for the initial academy, collective and label outreach
 - last-owner protection for both organisations and artists
 
-The staging Supabase Security Advisor is clean after the latest schema changes.
+The staging Supabase Security Advisor reports no table or RLS issue introduced by the profile schema. Its remaining warning is the project-level leaked-password protection setting.
 
 Repository maintenance now also includes weekly Dependabot checks for npm dependencies and GitHub Actions.
 
@@ -175,3 +189,85 @@ The application uses separate raster assets for each appearance rather than reco
 - the mobile menu keeps account actions in normal document flow and locks background scrolling while open.
 
 Production deployment remains manual and is not part of theme or staging pull requests.
+
+## 2026-09-16 app-shell stabilisation
+
+Block A of `WORK_HANDOFF_2026-09-16.md` has entered staging validation on `feature/app-visual-system`.
+
+The mobile workspace stylesheet now loads server-side, Settings is a normal navigation destination, and the old client DOM patch plugins have been removed. Guided Tour positioning is owned by the Vue page and measures the active target so the card can sit above or below it without hiding the content. The Artist Profile save control stays sticky on compact screens without leaving a large empty region below the form.
+
+Logo inspection confirmed equal source canvases and only minor transparent-bound differences between the final dark and light packages. The application keeps the final package rather than adding another asset variant.
+
+Validation for this pass:
+
+- `npm run generate`: passed;
+- `git diff --check`: passed;
+- production and Supabase production: untouched;
+- `nuxi typecheck`: unavailable because this branch does not install `typescript`/`vue-tsc`; Nuxt client and server compilation passed.
+
+Next gate: deploy the branch to staging and complete the Dark/Light × ES/EN smoke pass at desktop and phone widths. Continue to the humanoid CUE ID only after that gate passes.
+
+
+## 21 September 2026 current branch status
+
+Reference branch: `feature/app-visual-system`  
+Reference PR: #75  
+Production remains intentionally untouched by the current CUE ID / Booking Core validation work.
+
+### Booking Core
+
+The real operational spine is working on staging:
+
+```text
+CUE
+-> Booking
+-> Activity
+-> Next Move / Hold
+-> Calendar
+-> History
+-> Relationship Memory
+```
+
+Outbound/inbound booking email roundtrip has been verified on staging. Public follow-up and embed distribution are implemented. Remaining work is launch hardening and manual smoke, not a replacement booking architecture.
+
+### CUE ID
+
+The new stylized Creator V1 lab is functionally closed for non-3D work.
+
+It now includes:
+
+- shared male/female catalogue with one body edited at a time;
+- skin, hair, face, outfit, footwear and accessory controls;
+- wardrobe layering and compatibility rules;
+- mobile/light/accessibility passes;
+- validated local draft save/reset/dirty behavior;
+- optional onboarding branch for DJs;
+- later re-entry from Artist Profile;
+- strict separation from the current public visual representation;
+- `CUE_ID_CREATOR_3D_LAB_CANDIDATE = null`;
+- `CUE_ID_PRODUCTION_CATALOGUE = []`.
+
+The physical rig and authored GLB validation remain the real gate.
+
+### Commercial site
+
+Home copy is being realigned with actual staging capability:
+
+- remove unproven 30-day trial language;
+- treat email threading as current staging capability;
+- keep discovery explicitly future/conceptual;
+- describe pre-production hardening accurately;
+- position Cuebooker around preserving booking context across fragmented channels.
+
+### Known external/manual gates
+
+- public acknowledgement email provider configuration on staging;
+- duplicate-provider and archived-email smoke cases;
+- desktop/mobile end-to-end smoke;
+- anonymous abuse/rate protection review;
+- embedded-widget external-origin/CSP review;
+- leaked-password protection decision;
+- production migration and rollback review;
+- analytics/observability setup.
+
+Do not infer production readiness from CI/staging success alone.

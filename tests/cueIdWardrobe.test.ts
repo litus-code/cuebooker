@@ -1,0 +1,143 @@
+import assert from 'node:assert/strict'
+import test from 'node:test'
+
+import {
+  CUE_ID_WARDROBE_ASSETS,
+  cueIdHarnessCompatibleWithSelection,
+  cueIdHarnessCompatibleWithTop,
+  cueIdModestyForSelection,
+  cueIdOuterwearCompatibleWithTop,
+  cueIdWardrobeFitForBody,
+  cueIdWardrobeIsSharedAcrossBodies,
+  cueIdWardrobeSupportsBody
+} from '../app/domain/cueIdWardrobe.ts'
+import { CUE_ID_STYLIZED_CREATOR_CATALOGUE } from '../app/domain/cueIdStylizedCreator.ts'
+
+test('wardrobe contract covers every current fitted creator category', () => {
+  const ids = new Set(CUE_ID_WARDROBE_ASSETS.map(asset => asset.id))
+
+  for (const id of CUE_ID_STYLIZED_CREATOR_CATALOGUE.tops) assert.equal(ids.has(id), true, `top:${id}`)
+  for (const id of CUE_ID_STYLIZED_CREATOR_CATALOGUE.bottoms) assert.equal(ids.has(id), true, `bottom:${id}`)
+  for (const id of CUE_ID_STYLIZED_CREATOR_CATALOGUE.onePieces.filter(id => id !== 'none')) {
+    assert.equal(ids.has(id), true, `one-piece:${id}`)
+  }
+  for (const id of CUE_ID_STYLIZED_CREATOR_CATALOGUE.footwear) assert.equal(ids.has(id), true, `footwear:${id}`)
+  for (const id of CUE_ID_STYLIZED_CREATOR_CATALOGUE.headwear.filter(id => id !== 'none')) {
+    assert.equal(ids.has(id), true, `headwear:${id}`)
+  }
+  for (const id of CUE_ID_STYLIZED_CREATOR_CATALOGUE.faceAccessories.filter(id => id !== 'none')) {
+    assert.equal(ids.has(id), true, `face-accessory:${id}`)
+  }
+  for (const id of CUE_ID_STYLIZED_CREATOR_CATALOGUE.torsoAccessories.filter(id => id !== 'none')) {
+    assert.equal(ids.has(id), true, `torso-accessory:${id}`)
+  }
+})
+
+test('every authored wardrobe item is shared across male and female bodies', () => {
+  for (const asset of CUE_ID_WARDROBE_ASSETS) {
+    assert.equal(cueIdWardrobeSupportsBody(asset.id, 'male'), true, asset.id)
+    assert.equal(cueIdWardrobeSupportsBody(asset.id, 'female'), true, asset.id)
+    assert.equal(cueIdWardrobeIsSharedAcrossBodies(asset.id), true, asset.id)
+    assert.ok(cueIdWardrobeFitForBody(asset.id, 'male')?.endsWith('_male_fit'))
+    assert.ok(cueIdWardrobeFitForBody(asset.id, 'female')?.endsWith('_female_fit'))
+  }
+})
+
+test('mesh and festival tops keep the modesty layer', () => {
+  assert.equal(
+    cueIdModestyForSelection({
+      top: 'mesh-top',
+      bottom: 'festival-wrap',
+      onePiece: 'none',
+      torsoAccessory: 'harness'
+    }),
+    'keep-underwear'
+  )
+
+  assert.equal(
+    cueIdModestyForSelection({
+      top: 'festival-top',
+      bottom: 'skirt',
+      onePiece: 'none',
+      torsoAccessory: 'harness'
+    }),
+    'keep-underwear'
+  )
+})
+
+test('covered basics hide the relevant modesty layer', () => {
+  assert.equal(
+    cueIdModestyForSelection({
+      top: 'tee',
+      bottom: 'wide-trouser',
+      onePiece: 'none',
+      torsoAccessory: 'none'
+    }),
+    'hide-all-underwear'
+  )
+
+  assert.equal(
+    cueIdModestyForSelection({
+      top: 'tank',
+      bottom: 'shorts',
+      onePiece: 'none',
+      torsoAccessory: 'none'
+    }),
+    'hide-all-underwear'
+  )
+})
+
+test('one-piece garments own modesty behavior', () => {
+  assert.equal(
+    cueIdModestyForSelection({
+      onePiece: 'jumpsuit'
+    }),
+    'hide-all-underwear'
+  )
+
+  assert.equal(
+    cueIdModestyForSelection({
+      onePiece: 'festival-outfit'
+    }),
+    'keep-underwear'
+  )
+})
+
+test('harness compatibility is explicit per top', () => {
+  assert.equal(cueIdHarnessCompatibleWithTop('mesh-top'), true)
+  assert.equal(cueIdHarnessCompatibleWithTop('festival-top'), true)
+  assert.equal(cueIdHarnessCompatibleWithTop('tee'), true)
+  assert.equal(cueIdHarnessCompatibleWithTop('sweatshirt'), false)
+  assert.equal(cueIdHarnessCompatibleWithTop('hoodie'), false)
+})
+
+test('one-piece compatibility takes precedence over stored top', () => {
+  assert.equal(
+    cueIdHarnessCompatibleWithSelection({
+      top: 'tee',
+      onePiece: 'jumpsuit'
+    }),
+    false
+  )
+  assert.equal(
+    cueIdHarnessCompatibleWithSelection({
+      top: 'hoodie',
+      onePiece: 'bodysuit'
+    }),
+    true
+  )
+  assert.equal(
+    cueIdHarnessCompatibleWithSelection({
+      top: 'mesh-top',
+      onePiece: 'none'
+    }),
+    true
+  )
+})
+
+test('outerwear compatibility is explicit per top', () => {
+  assert.equal(cueIdOuterwearCompatibleWithTop('tee'), true)
+  assert.equal(cueIdOuterwearCompatibleWithTop('mesh-top'), true)
+  assert.equal(cueIdOuterwearCompatibleWithTop('bomber'), false)
+  assert.equal(cueIdOuterwearCompatibleWithTop('hoodie'), false)
+})

@@ -10,11 +10,29 @@
     "dev": "nuxt dev",
     "build": "nuxt build",
     "generate": "nuxt generate",
-    "preview": "nuxt preview"
+    "preview": "nuxt preview",
+    "test": "node --experimental-strip-types --test tests/**/*.test.ts",
+    "cue-id:inspect": "node scripts/inspect-cue-id-v2-glb.mjs",
+    "cue-id:validate-package": "node scripts/validate-cue-id-v2-package.mjs",
+    "cue-id:plan-static": "node --experimental-strip-types scripts/plan-cue-id-static-renders.mjs",
+    "cue-id:finalize-static": "node scripts/finalize-cue-id-static-renders.mjs",
+    "cue-id:assess": "node --experimental-strip-types scripts/assess-cue-id-v2.mjs",
+    "cue-id:propose-promotion": "node --experimental-strip-types scripts/propose-cue-id-promotion.mjs",
+    "cue-id:scaffold-package": "node scripts/scaffold-cue-id-v2-package.mjs",
+    "cue-id:assess-sculpt": "node scripts/assess-cue-id-sculpt-review.mjs",
+    "cue-id:propose-visual-evidence": "node scripts/propose-cue-id-visual-evidence.mjs",
+    "cue-id:assess-mobile": "node scripts/assess-cue-id-mobile-review.mjs",
+    "cue-id:propose-mobile-evidence": "node scripts/propose-cue-id-mobile-evidence.mjs",
+    "cue-id:assess-performance": "node --experimental-strip-types scripts/assess-cue-id-performance-review.mjs",
+    "cue-id:propose-performance-evidence": "node --experimental-strip-types scripts/propose-cue-id-performance-evidence.mjs",
+    "cue-id:propose-evidence": "node --experimental-strip-types scripts/propose-cue-id-combined-evidence.mjs"
   },
   "dependencies": {
     "@nuxtjs/i18n": "^10.1.0",
+    "@tresjs/core": "^5.9.0",
     "nuxt": "^4.1.0",
+    "qrcode-generator": "1.4.4",
+    "three": "^0.186.0",
     "vue": "^3.5.0",
     "vue-router": "^4.5.0"
   }
