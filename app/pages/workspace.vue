@@ -706,7 +706,8 @@ watch(selectedArtistId, async (artistId) => {
   await ensureBookingCoreWorkspace()
 })
 watch(() => [route.query.view, route.query.booking], ([value, booking]) => {
-  const next = workspaceViewFromQuery(value, booking)
+  const next = explicitWorkspaceViewFromQuery(value, booking)
+  if (!next) return
   if (loading.value) loadingView.value = next
   if (next !== activeView.value) activeView.value = next
   if (next === 'profile') profileEditSection.value = profileSectionFromQuery(route.query.section)
@@ -2545,7 +2546,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           />
       </section>
 
-      <section v-else class="view profile-view profile-view--presence">
+      <section v-else-if="activeView === 'profile'" class="view profile-view profile-view--presence">
         <div class="view-heading profile-presence-heading">
           <div>
             <p class="eyebrow">{{ copy.profileEyebrow }}</p>
@@ -3735,6 +3736,17 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   min-height:118px;
   margin:0 0 14px;
 }
+.skeleton-panel--booking-list-block{
+  width:100%;
+  min-height:560px;
+  border:0;
+  border-right:1px solid var(--workspace-line,var(--cue-border));
+}
+.skeleton-panel--booking-detail-block{
+  width:100%;
+  min-height:560px;
+  border:0;
+}
 .skeleton-panel--booking-toolbar{
   width:100%;
   min-height:74px;
@@ -3918,6 +3930,12 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .skeleton-line--history-page-title,
   .skeleton-line--cue-id-title{height:42px}
   .workspace-skeleton__booking-layout{grid-template-columns:1fr;min-height:0}
+  .skeleton-panel--booking-list-block{
+    min-height:260px;
+    border-right:0;
+    border-bottom:1px solid var(--workspace-line,var(--cue-border));
+  }
+  .skeleton-panel--booking-detail-block{min-height:420px}
   .workspace-skeleton__booking-list{
     grid-template-columns:repeat(3,minmax(210px,1fr));
     overflow:hidden;
