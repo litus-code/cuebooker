@@ -138,6 +138,7 @@ const profileSaving = ref(false)
 const profileMessage = ref('')
 const profileWelcome = ref(false)
 const profilePreviewOpen = ref(false)
+const profileRenderError = ref('')
 const profileEditSection = ref<ProfileEditSection>(route.query.view === 'profile' ? profileSectionFromQuery(route.query.section) : null)
 const profileCoverUrl = ref('')
 const profileCoverUploading = ref(false)
@@ -1989,6 +1990,14 @@ async function savePassword() {
     passwordSaving.value = false
   }
 }
+onErrorCaptured((error: unknown, _instance, info) => {
+  if (activeView.value !== 'profile') return
+  const message = error instanceof Error ? error.message : String(error)
+  profileRenderError.value = message || 'profile_render_error'
+  console.error('[workspace] profile render failed', { error, info })
+  return false
+})
+
 useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.locale.value } }))
 </script>
 
@@ -2577,7 +2586,11 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         </aside>
 
         <template>
+          <div v-if="profileRenderError" class="error-message" data-workspace-profile-render-error>
+            {{ preferences.locale.value === 'es' ? 'Error al renderizar Perfil: ' : 'Profile render error: ' }}{{ profileRenderError }}
+          </div>
           <WorkspaceArtistProfile
+            v-else
             data-workspace-profile-content
             :profile="publicProfilePreview"
             :published="publicProfilePublished"
