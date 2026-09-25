@@ -1945,8 +1945,22 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-    <template v-if="loading && loadingView">
-    <section v-if="loadingView === 'bookings'" class="workspace-skeleton workspace-skeleton--bookings" aria-busy="true" aria-live="polite">
+    <template v-if="loading">
+    <section v-if="!loadingView" class="workspace-loading-state" aria-busy="true" aria-live="polite">
+      <div class="workspace-loading-state__mark" aria-hidden="true">
+        <CueBrand variant="icon" decorative />
+        <i />
+        <i />
+        <i />
+      </div>
+      <div class="workspace-loading-state__copy">
+        <span>CUEBOOKER / WORKSPACE</span>
+        <strong>{{ preferences.locale.value === 'es' ? 'Preparando tu sesión…' : 'Preparing your session…' }}</strong>
+      </div>
+      <span class="sr-only">{{ copy.loading }}</span>
+    </section>
+
+    <section v-else-if="loadingView === 'bookings'" class="workspace-skeleton workspace-skeleton--bookings" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
       <div class="workspace-skeleton__heading workspace-skeleton__heading--bookings">
         <i class="skeleton-line skeleton-line--eyebrow" />
@@ -3631,5 +3645,65 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
     color: var(--cue-accent) !important;
     box-shadow: inset 0 -2px 0 var(--cue-accent) !important;
   }
+}
+
+.workspace-loading-state {
+  display:grid;
+  place-items:center;
+  align-content:center;
+  gap:24px;
+  min-height:calc(100dvh - 120px);
+  text-align:center;
+}
+.workspace-loading-state__mark {
+  position:relative;
+  display:grid;
+  place-items:center;
+  width:132px;
+  height:132px;
+}
+.workspace-loading-state__mark :deep(.cue-brand) {
+  position:relative;
+  z-index:2;
+  width:54px;
+  height:54px;
+}
+.workspace-loading-state__mark > i {
+  position:absolute;
+  inset:0;
+  border:1px solid color-mix(in srgb,var(--cue-accent) 24%,transparent);
+  border-radius:50%;
+  animation:workspace-loader-orbit 2.4s linear infinite;
+}
+.workspace-loading-state__mark > i:nth-of-type(2) {
+  inset:14px;
+  border-style:dashed;
+  animation-duration:1.8s;
+  animation-direction:reverse;
+}
+.workspace-loading-state__mark > i:nth-of-type(3) {
+  inset:30px;
+  border-color:color-mix(in srgb,var(--cue-accent) 52%,transparent);
+  animation-duration:1.15s;
+}
+.workspace-loading-state__copy {
+  display:grid;
+  gap:8px;
+}
+.workspace-loading-state__copy span {
+  color:var(--cue-accent);
+  font:800 8px/1 monospace;
+  letter-spacing:.14em;
+}
+.workspace-loading-state__copy strong {
+  color:var(--cue-muted);
+  font-size:13px;
+  font-weight:700;
+}
+@keyframes workspace-loader-orbit {
+  to { transform:rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workspace-loading-state__mark > i { animation:none; }
 }
 </style>
