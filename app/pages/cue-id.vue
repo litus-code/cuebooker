@@ -18,7 +18,7 @@ const exitTarget = computed(() =>
   fromOnboarding.value
     ? '/workspace?view=profile&setup=profile'
     : fromWorkspace.value
-      ? '/workspace?view=profile'
+      ? '/workspace?view=cue-id'
       : '/'
 )
 const cueIdConfig = ref(cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG))
