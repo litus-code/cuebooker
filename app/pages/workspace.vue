@@ -2555,7 +2555,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           />
       </section>
 
-      <section v-else class="view profile-view profile-view--presence">
+      <section v-if="activeView === 'profile'" class="view profile-view profile-view--presence">
         <div class="view-heading profile-presence-heading">
           <div>
             <p class="eyebrow">{{ copy.profileEyebrow }}</p>
