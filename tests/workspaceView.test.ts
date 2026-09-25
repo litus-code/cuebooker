@@ -61,3 +61,24 @@ test('bookings skeleton broad blocks have explicit geometry', async () => {
   assert.match(source, /\.skeleton-panel--booking-list-block\{/)
   assert.match(source, /\.skeleton-panel--booking-detail-block\{/)
 })
+
+test('artist surfaces stop blocking on optional profile hydration', async () => {
+  const source = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
+  assert.match(source, /The base artist record is enough to render Profile, Passport and CUE ID/)
+  assert.match(source, /void Promise\.all\(\[/)
+  assert.match(source, /\['profile', 'passport', 'cue-id'\]\.includes\(activeView\.value\)/)
+})
+
+test('workspace boot uses one bounded deadline instead of additive auth waits', async () => {
+  const source = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
+  assert.match(source, /withWorkspaceTimeout\(\(async \(\) => \{/)
+  assert.match(source, /\}\)\(\), 8000, 'workspace_boot'\)/)
+  assert.doesNotMatch(source, /withWorkspaceTimeout\(auth\.initialize\(\), 8000, 'auth'\)/)
+})
+
+test('neutral loading copy is visually hidden and only used for accessibility', async () => {
+  const source = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
+  assert.match(source, /\.sr-only \{/)
+  assert.match(source, /clip:rect\(0,0,0,0\)/)
+  assert.match(source, /<span class="sr-only">\{\{ copy\.loading \}\}<\/span>/)
+})
