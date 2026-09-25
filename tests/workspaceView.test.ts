@@ -38,11 +38,11 @@ test('workspace navigation selection is driven by aria-current', async () => {
 })
 
 
-test('profile mounts as an independent workspace surface', async () => {
+test('profile remains the known-good final workspace branch', async () => {
   const source = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
-  assert.match(source, /<section v-if="activeView === 'profile'" class="view profile-view profile-view--presence">/)
+  assert.match(source, /<section v-else class="view profile-view profile-view--presence">/)
   assert.doesNotMatch(source, /v-else-if="activeView === 'profile'"/)
-  assert.doesNotMatch(source, /<section v-else class="view profile-view/)
+  assert.doesNotMatch(source, /<section v-if="activeView === 'profile'"/)
 })
 
 test('route synchronization does not force Overview when the URL has no explicit workspace view', async () => {
