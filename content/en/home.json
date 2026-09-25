@@ -9,25 +9,25 @@
     "roles": "For whom",
     "tryProduct": "Available now",
     "login": "Sign in",
-    "signup": "Create account",
-    "pricing": "Pricing"
+    "signup": "Create account"
   },
   "hero": {
-    "eyebrow": "REAL BOOKINGS. LESS MEMORY. MORE CONTROL.",
-    "titleTop": "DON'T LOSE",
-    "titleBottom": "THE BOOKING.",
-    "body": "WhatsApp, call, email or voice. Cuebooker understands what matters, shows it to you and keeps the thread intact until the date is resolved.",
-    "primaryCta": "Create account",
-    "secondaryCta": "See the flow",
-    "networkIdle": "IT HAPPENED · TELL IT",
-    "networkSearching": "UNDERSTANDING CONTEXT",
+    "eyebrow": "FOR DJS MAKING THINGS HAPPEN",
+    "titleTop": "LET THE MUSIC",
+    "titleBottom": "KEEP MOVING.",
+    "body": "Cuebooker captures what happens between a message, a call and a date. You decide. The system keeps the thread, organises the work and helps you close the booking.",
+    "primaryCta": "Create my space",
+    "secondaryCta": "See how it works",
+    "networkIdle": "SOMETHING HAPPENED · TELL IT",
+    "networkSearching": "PUTTING CONTEXT IN ORDER",
     "networkFound": "BOOKING READY TO FOLLOW",
     "proofs": [
       "CAPTURE",
-      "REVIEW",
-      "FOLLOW",
-      "DECIDE"
-    ]
+      "SORT",
+      "PROTECT DATES",
+      "FOLLOW"
+    ],
+    "manifesto": "Your energy belongs on the next set. Cuebooker handles the noise around it."
   },
   "problem": {
     "index": "01 / THE PROBLEM",
@@ -38,6 +38,46 @@
     "quoteTwo": "Still need to confirm schedule",
     "file": "artist_dates_FINAL_v8.xlsx",
     "statement": "CueBooker turns what already happens into one thread that stays intact."
+  },
+  "search": {
+    "index": "10 / VISION",
+    "eyebrow": "LATER · WHEN A REAL NETWORK EXISTS",
+    "title": "Trajectory first. Discovery later.",
+    "body": "Once real bookings, relationships and availability exist, CueBooker can add artist discovery without turning followers or popularity into a measure of value. The core remains the artist's real work and trajectory.",
+    "where": "Where",
+    "when": "When",
+    "sound": "Sound",
+    "budget": "Budget",
+    "button": "Simulate search",
+    "searching": "Finding available DJs",
+    "resultCount": "3 available artists",
+    "resultHint": "Concept view of a future feature. Budget filters matches, but each DJ's fee remains private. Artists and results are fictional.",
+    "visibility": "OPT-IN AVAILABILITY",
+    "available": "Available for requests",
+    "request": "View profile and request date",
+    "why": "Why it fits",
+    "reasons": [
+      "Available on your date",
+      "Sound match",
+      "Within budget"
+    ],
+    "artists": [
+      {
+        "name": "NØRA",
+        "city": "BARCELONA",
+        "sound": "HYPNOTIC · TECHNO"
+      },
+      {
+        "name": "KAIRO",
+        "city": "GIRONA",
+        "sound": "DETROIT · GROOVE"
+      },
+      {
+        "name": "MARA V",
+        "city": "BARCELONA",
+        "sound": "INDUSTRIAL · LIVE"
+      }
+    ]
   },
   "flow": {
     "index": "02 / HOW IT WORKS",
@@ -69,9 +109,9 @@
   },
   "integrations": {
     "index": "03 / WHEREVER IT STARTS",
-    "eyebrow": "DO NOT CHANGE HOW YOU WORK",
-    "title": "The booking can start anywhere. The follow-up ends up in CueBooker.",
-    "body": "Phone, WhatsApp, email, Instagram, an in-person conversation or a public form. CueBooker centralises context without forcing the promoter into another platform.",
+    "eyebrow": "AUTOMATE THE NOISE, KEEP THE CONTROL",
+    "title": "Cuebooker works around your music.",
+    "body": "The system captures information, prepares the next step, updates status and connects calendar, activity and conversation. Decisions that change a date remain yours.",
     "items": [
       {
         "label": "SMART CAPTURE",
@@ -92,7 +132,7 @@
     "note": "CueBooker is not trying to replace WhatsApp, email or phone. Its job is to stop opportunities depending on your memory."
   },
   "roles": {
-    "index": "06 / FOR WHOM",
+    "index": "07 / FOR WHOM",
     "eyebrow": "LOW VOLUME OR HIGH, THE PROBLEM IS THE SAME",
     "title": "Value from the first booking. More depth as the work grows.",
     "items": [
@@ -114,7 +154,7 @@
     ]
   },
   "access": {
-    "index": "07 / ACCESS",
+    "index": "08 / ACCESS",
     "eyebrow": "THE WORKSPACE BELONGS TO THE ARTIST AND THEIR TEAM",
     "title": "Start simple. Structure appears when you need it.",
     "body": "A DJ can work alone inside one workspace. An agency uses the same core across several artists. A promoter does not have to adopt CueBooker for the DJ to keep proper follow-up.",
@@ -167,7 +207,7 @@
     ]
   },
   "demo": {
-    "index": "08 / PRODUCT",
+    "index": "09 / PRODUCT",
     "eyebrow": "THE PRODUCT",
     "title": "The real CueBooker core is already usable.",
     "body": "Capture an opportunity, review what the system understood and follow it in the same workspace until it is resolved.",
@@ -180,8 +220,7 @@
       "Next Move, holds and calendar kept together",
       "Outbound email and replies linked back to the same booking",
       "Public profile and booking form for new opportunities",
-      "History, archive/restore and relationship memory",
-      "CUE Passport trajectory generated from confirmed bookings"
+      "History, archive/restore and relationship memory"
     ],
     "realTitle": "In progress",
     "real": [
@@ -196,8 +235,8 @@
   },
   "entry": {
     "eyebrow": "TRY IT ON A REAL BOOKING",
-    "title": "Next time someone asks about a date, do not leave it in your head.",
-    "body": "Open + CUE, tell CueBooker what happened and review how it turns that conversation into a booking you can follow."
+    "title": "Make sure the next opportunity goes somewhere.",
+    "body": "Create your space, share your profile and let Cuebooker turn every enquiry into a booking you can follow."
   },
   "feedback": {
     "eyebrow": "TESTING AND FEEDBACK",
@@ -234,9 +273,9 @@
   },
   "distribution": {
     "index": "04 / DISTRIBUTION",
-    "eyebrow": "ONE BOOKING, MANY ENTRY POINTS",
-    "title": "One link. Everything returns to CueBooker.",
-    "body": "Share booking however you want. Link, widget or QR: every enquiry ends up in the same place.",
+    "eyebrow": "YOUR BOOKING. WHEREVER IT STARTS.",
+    "title": "One link to enter. One workspace to resolve it.",
+    "body": "A public profile for artists without a website. A link for Instagram, bio, WhatsApp or EPK. An iframe for artists with a website. A QR for flyers, posters and events. Everything ends up in the same booking.",
     "channels": [
       {
         "label": "LINK",
@@ -257,7 +296,7 @@
     "note": "The promoter needs no account. You keep one booking and one history."
   },
   "identity": {
-    "index": "05 / IDENTITY",
+    "index": "06 / IDENTITY",
     "eyebrow": "THE PROFILE IS NOT DECORATION",
     "title": "Your profile. Your work. Your identity.",
     "body": "Photo, artwork and CUE ID can coexist. Visual identity supports your trajectory; it does not replace it.",
@@ -273,76 +312,67 @@
         "body": "Your visual identity. Now or later."
       },
       {
-        "label": "NOW",
+        "label": "LATER",
         "name": "CUE Passport",
-        "body": "Your trajectory is built from confirmed bookings, cities, venues and real milestones."
+        "body": "Trajectory built from real work, not followers."
       }
     ],
     "cueIdStatus": "CUE ID 3D remains in the lab. CueBooker works without an avatar."
   },
-  "pricing": {
-    "index": "09 / PRICING",
-    "eyebrow": "START FREE. PAY WHEN THE WORK GROWS.",
-    "title": "A plan for each level of operation.",
-    "body": "Free lets you complete the real booking loop. Artist Pro removes capacity limits and adds automation and advanced presentation. Agency brings the same core to multiple artists and teams.",
-    "billingNote": "Launch pricing is defined. Checkout is not enabled in this version yet; you can create your Free account now and keep your work when you activate a paid plan.",
-    "founding": "FOUNDING ARTIST · €7.99/MONTH OR €79/YEAR FOR THE INITIAL COHORT",
-    "monthly": "month",
-    "annual": "per year",
-    "annualLabel": "Annual",
-    "recommended": "RECOMMENDED",
-    "plans": [
+  "workspace": {
+    "index": "05 / WORKSPACE",
+    "eyebrow": "THE BOOKING LIVES IN A CLEAR WORKSPACE",
+    "title": "Your week, without the noise.",
+    "body": "Open requests, held dates, confirmations and activity in one place. CueBooker turns the invisible work of closing dates into an operation you can see and follow.",
+    "greeting": "Good afternoon, Litus",
+    "subtitle": "Your week, without the noise.",
+    "newBooking": "New booking",
+    "sidebar": [
+      "Overview",
+      "Bookings 12",
+      "Calendar",
+      "Activity",
+      "Artist profile",
+      "Settings"
+    ],
+    "stats": [
       {
-        "id": "free",
-        "name": "Free",
-        "price": "€0",
-        "period": "forever",
-        "body": "Start with real bookings without a card.",
-        "features": [
-          "1 artist and 1 user",
-          "Up to 5 active bookings",
-          "Booking Core, holds and calendar",
-          "Public profile and booking form",
-          "Basic CUE Passport",
-          "Basic CUE ID",
-          "Monthly Smart Capture allowance"
-        ],
-        "cta": "Create Free account"
+        "label": "Open requests",
+        "value": "08",
+        "accent": false
       },
       {
-        "id": "artist_pro",
-        "name": "Artist Pro",
-        "price": "€9.99",
-        "period": "/ month",
-        "annual": "€99 / year",
-        "body": "For DJs managing ongoing professional activity.",
-        "features": [
-          "Unlimited active bookings",
-          "Full operational history",
-          "Prepared follow-ups and advanced automation",
-          "More Smart Capture",
-          "Advanced CUE Passport + Event Media",
-          "Analytics, exports and advanced customization"
-        ],
-        "cta": "Create account for Artist Pro"
+        "label": "Held dates",
+        "value": "04",
+        "accent": true
       },
       {
-        "id": "agency",
-        "name": "Agency",
-        "price": "€39",
-        "period": "/ month",
-        "annual": "€390 / year",
-        "body": "For managers and agencies working across multiple artists.",
-        "features": [
-          "Multi-artist workspace",
-          "Team, roles and permissions",
-          "Shared inbox",
-          "Roster calendar",
-          "Roster reporting",
-          "Agency templates and Pro capabilities"
-        ],
-        "cta": "Create account for Agency"
+        "label": "Confirmed",
+        "value": "12",
+        "accent": false
       }
-    ]
+    ],
+    "bookings": [
+      {
+        "venue": "Warehouse 23 / Barcelona",
+        "meta": "18 Oct · Techno · €1,200",
+        "status": "New",
+        "tone": "lime"
+      },
+      {
+        "venue": "Club Mondo / Madrid",
+        "meta": "02 Nov · Peak time · €1,800",
+        "status": "Pending",
+        "tone": "red"
+      },
+      {
+        "venue": "Pulse Room / Berlin",
+        "meta": "16 Nov · Closing set · €2,100",
+        "status": "Confirmed",
+        "tone": "blue"
+      }
+    ],
+    "note": "The home explains the entry point. The workspace makes the work visible.",
+    "cta": "Open workspace"
   }
 }

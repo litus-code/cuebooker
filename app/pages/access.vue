@@ -117,6 +117,10 @@ useHead(() => ({ title: copy.value.title, htmlAttrs: { lang: locale.value } }))
         <button v-if="mode === 'signin'" class="access-link" type="button" @click="mode = 'forgot'; message = ''; errorMessage = ''">{{ copy.forgot }}</button>
         <p v-if="errorMessage" class="access-message access-message--error">{{ errorMessage }}</p>
         <p v-if="message" class="access-message">{{ message }}</p>
+        <p v-if="mode === 'signup'" class="access-privacy">
+          {{ locale === 'es' ? 'Usaremos tus datos para crear y gestionar tu cuenta.' : 'We will use your data to create and manage your account.' }}
+          <NuxtLink to="/privacidad">{{ locale === 'es' ? 'Consulta la política de privacidad.' : 'Read the privacy policy.' }}</NuxtLink>
+        </p>
         <button class="access-submit" type="submit" :disabled="auth.loading.value || !auth.configured.value">{{ auth.loading.value ? copy.processing : mode === 'signin' ? copy.signinSubmit : mode === 'signup' ? copy.signupSubmit : copy.resetSubmit }}</button>
         <button v-if="mode === 'forgot'" class="access-link access-link--back" type="button" @click="mode = 'signin'; message = ''; errorMessage = ''">{{ copy.backToSignin }}</button>
       </form>
@@ -145,5 +149,7 @@ input { min-height:48px; padding:0 14px; border:1px solid var(--cue-border); bac
 .access-link--back { justify-self:start; }
 .access-message { margin:0; padding:12px; border:1px solid var(--cue-border); color:var(--cue-text); font-size:.9rem; }
 .access-message--error { border-color:#8b3434; color:#d65757; }
+.access-privacy { margin:0; color:var(--cue-muted); font-size:12px; line-height:1.55; }
+.access-privacy a { color:var(--cue-accent); }
 @media (max-width:620px) { .access-page { padding:12px 18px 18px; } .access-panel { margin-top:8px; padding:22px; } }
 </style>
