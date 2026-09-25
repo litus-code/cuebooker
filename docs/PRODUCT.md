@@ -1,6 +1,6 @@
 # Product definition
 
-Updated: 16 September 2026
+Updated: 24 September 2026
 
 ## Problem
 
@@ -53,6 +53,34 @@ Private details stay inside the workspace. Public discovery can expose an availa
 An artist or agency stores private fees for matching and internal decisions. Public search can filter by budget without showing the exact fee.
 
 The future directory depends on a useful supply of opted-in DJs. It supports date, city, sound and budget. This is a later layer because a directory without enough artists would weaken the product.
+
+### Initial commercial model
+
+Cuebooker launches as freemium rather than as an expiring trial-only product.
+
+The initial plan structure is:
+
+- Free: one artist, one user and enough real booking capacity to experience the complete workflow;
+- Artist Pro: paid operational depth for an active independent artist;
+- Agency: paid multi-artist and team operation.
+
+The target initial prices are documented in `docs/MONETIZATION_STRATEGY.md`.
+
+The Free plan must preserve the product loop:
+
+```text
+REQUEST
+→ CONVERSATION
+→ HOLD
+→ DECISION
+→ BOOKING
+→ EVENT
+→ CUE PASSPORT
+```
+
+Payment should not interrupt confirmation, the first booking, the basic calendar or the creation of a basic Passport. Paid value comes from higher capacity, advanced automation, full history, richer Passport/media presentation, integrations, analytics, exports and multi-artist operation.
+
+The public launch should present Booking Core as the primary product, Artist Profile and CUE PASSPORT as the professional identity/trajectory layer, and CUE ID as optional.
 
 ## Artist Profile
 

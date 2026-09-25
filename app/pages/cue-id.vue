@@ -1,42 +1,200 @@
 <script setup lang="ts">
+import {
+  cloneCueIdStylizedCreatorConfig,
+  cloneValidCueIdStylizedCreatorConfig,
+  cueIdStylizedCreatorConfigsEqual,
+  DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG,
+  parseCueIdStylizedCreatorConfigV1,
+  type CueIdStylizedCreatorConfigV1
+} from '../domain/cueIdStylizedCreator'
+import { CUE_ID_WORKSPACE_SECTIONS, type CueIdWorkspaceSection } from '../domain/cueIdWorkspace'
+
 const preferences = useCuePreferences()
+const route = useRoute()
+const router = useRouter()
+const fromOnboarding = computed(() => route.query.from === 'onboarding')
+const fromWorkspace = computed(() => route.query.from === 'workspace')
+const exitTarget = computed(() =>
+  fromOnboarding.value
+    ? '/workspace?view=profile&setup=profile'
+    : fromWorkspace.value
+      ? '/workspace?view=cue-id'
+      : '/'
+)
+const cueIdConfig = ref(cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG))
+const savedConfig = ref(cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG))
+const saveState = ref<'idle' | 'saved' | 'reset' | 'invalid' | 'storage-error'>('idle')
+const LAB_DRAFT_KEY = 'cuebooker:cue-id:stylized-v1:lab-draft'
+const leaveDialogOpen = ref(false)
+const pendingLeaveTarget = ref('')
+let allowNextRouteLeave = false
+
+function cueSectionFromQuery(value: unknown): CueIdWorkspaceSection {
+  return typeof value === 'string' && CUE_ID_WORKSPACE_SECTIONS.includes(value as CueIdWorkspaceSection)
+    ? value as CueIdWorkspaceSection
+    : 'identity'
+}
+
+const cueSection = computed(() => cueSectionFromQuery(route.query.section))
+
+function handleSectionChange(section: CueIdWorkspaceSection) {
+  void router.replace({ query: { ...route.query, section } }).catch(() => {})
+}
+
+function openLeaveDialog(target = exitTarget.value) {
+  pendingLeaveTarget.value = fromWorkspace.value ? exitTarget.value : target
+  leaveDialogOpen.value = true
+}
+
+async function leaveWithoutSaving() {
+  const target = pendingLeaveTarget.value || exitTarget.value
+  leaveDialogOpen.value = false
+  allowNextRouteLeave = true
+  try {
+    await navigateTo(target)
+  } finally {
+    allowNextRouteLeave = false
+  }
+}
+
+async function saveAndLeave() {
+  saveLabDraft(cueIdConfig.value)
+  if (saveState.value === 'invalid' || saveState.value === 'storage-error') return
+  const target = pendingLeaveTarget.value || exitTarget.value
+  leaveDialogOpen.value = false
+  allowNextRouteLeave = true
+  try {
+    await navigateTo(target)
+  } finally {
+    allowNextRouteLeave = false
+  }
+}
+
+async function requestExit() {
+  if (dirty.value) {
+    openLeaveDialog(exitTarget.value)
+    return
+  }
+  await navigateTo(exitTarget.value)
+}
+
+const dirty = computed(() =>
+  !cueIdStylizedCreatorConfigsEqual(cueIdConfig.value, savedConfig.value)
+)
+
+function handleBeforeUnload(event: BeforeUnloadEvent) {
+  if (!dirty.value) return
+  event.preventDefault()
+  event.returnValue = ''
+}
+
+onMounted(() => {
+  try {
+    const raw = window.localStorage.getItem(LAB_DRAFT_KEY)
+    if (raw) {
+      const restored = parseCueIdStylizedCreatorConfigV1(raw)
+      if (restored) {
+        cueIdConfig.value = restored
+        savedConfig.value = cloneCueIdStylizedCreatorConfig(restored)
+      } else {
+        window.localStorage.removeItem(LAB_DRAFT_KEY)
+      }
+    }
+  } catch {
+    saveState.value = 'storage-error'
+  }
+
+  window.addEventListener('beforeunload', handleBeforeUnload)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload)
+})
+
+function saveLabDraft(value: CueIdStylizedCreatorConfigV1) {
+  const saved = cloneValidCueIdStylizedCreatorConfig(value)
+  if (!saved) {
+    saveState.value = 'invalid'
+    window.setTimeout(() => {
+      saveState.value = 'idle'
+    }, 2200)
+    return
+  }
+
+  try {
+    window.localStorage.setItem(LAB_DRAFT_KEY, JSON.stringify(saved))
+    savedConfig.value = saved
+    saveState.value = 'saved'
+  } catch {
+    saveState.value = 'storage-error'
+  }
+
+  window.setTimeout(() => {
+    saveState.value = 'idle'
+  }, saveState.value === 'storage-error' ? 2600 : 1800)
+}
+
+function resetLabDraft() {
+  if (!window.confirm(copy.value.resetConfirm)) return
+
+  const initial = cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG)
+  cueIdConfig.value = initial
+  savedConfig.value = cloneCueIdStylizedCreatorConfig(initial)
+
+  try {
+    window.localStorage.removeItem(LAB_DRAFT_KEY)
+    saveState.value = 'reset'
+  } catch {
+    saveState.value = 'storage-error'
+  }
+
+  window.setTimeout(() => {
+    saveState.value = 'idle'
+  }, saveState.value === 'storage-error' ? 2600 : 1800)
+}
 
 const copy = computed(() => preferences.locale.value === 'es' ? {
-  eyebrow: 'PROTOTIPO / CUE ID',
-  title: 'IDENTIDAD, TRAYECTORIA Y CULTURA DE CLUB.',
-  body: 'Esta vista sirve para validar la dirección visual antes de introducir 3D real. La identidad será opcional, compartible y conectada con actividad profesional, nunca con followers o rankings.',
-  passport: 'CUE PASSPORT',
-  passportBody: 'La historia profesional se construirá con bookings, ciudades, venues, años y relaciones recurrentes que el artista decida mostrar.',
-  signal: 'CUE SIGNAL',
-  signalBody: 'La progresión representa actividad real dentro de CueBooker. No mide talento, popularidad ni autenticidad.',
-  share: 'SHARE',
-  shareBody: 'La misma identidad podrá salir en formatos para Instagram, LinkedIn y tarjetas de artista con controles de privacidad.',
-  first: 'Primera señal',
-  identified: 'Identidad creada',
-  booking: 'Primer booking',
-  cities: 'Ciudades',
-  venues: 'Venues',
-  returnHome: 'Volver'
+  back: 'Volver',
+  continueWorkspace: 'Continuar al workspace',
+  backProfile: 'Volver',
+  lab: 'LAB / NOINDEX',
+  status: 'CUE ID · CREATOR V1 LAB',
+  saved: 'Draft guardado en este dispositivo',
+  reset: 'CUE ID restablecido al estado inicial',
+  invalid: 'No se ha guardado: la configuración no es válida',
+  storageError: 'No se ha podido acceder al almacenamiento local de este navegador',
+  leave: 'Tienes cambios sin guardar en CUE ID.',
+  leaveBody: 'Puedes guardarlos antes de volver a Perfil o salir sin guardar.',
+  leaveCancel: 'Seguir editando',
+  leaveDiscard: 'Salir sin guardar',
+  leaveSave: 'Guardar y volver',
+  resetConfirm: '¿Restablecer CUE ID? Se eliminará el draft guardado en este dispositivo.'
 } : {
-  eyebrow: 'PROTOTYPE / CUE ID',
-  title: 'IDENTITY, TRAJECTORY AND CLUB CULTURE.',
-  body: 'This view validates the visual direction before real 3D is introduced. Identity will be optional, shareable and connected to professional activity, never followers or rankings.',
-  passport: 'CUE PASSPORT',
-  passportBody: 'Professional history will be built from bookings, cities, venues, years and recurring relationships the artist chooses to show.',
-  signal: 'CUE SIGNAL',
-  signalBody: 'Progress represents real activity inside CueBooker. It does not measure talent, popularity or authenticity.',
-  share: 'SHARE',
-  shareBody: 'The same identity can later export to Instagram, LinkedIn and artist cards with privacy controls.',
-  first: 'First signal',
-  identified: 'Identity created',
-  booking: 'First booking',
-  cities: 'Cities',
-  venues: 'Venues',
-  returnHome: 'Back'
+  back: 'Back',
+  continueWorkspace: 'Continue to workspace',
+  backProfile: 'Back',
+  lab: 'LAB / NOINDEX',
+  status: 'CUE ID · CREATOR V1 LAB',
+  saved: 'Draft saved on this device',
+  reset: 'CUE ID reset to initial state',
+  invalid: 'Not saved: the configuration is invalid',
+  storageError: 'Local browser storage could not be accessed',
+  leave: 'You have unsaved CUE ID changes.',
+  leaveBody: 'Save them before returning to Profile or leave without saving.',
+  leaveCancel: 'Keep editing',
+  leaveDiscard: 'Leave without saving',
+  leaveSave: 'Save and go back',
+  resetConfirm: 'Reset CUE ID? The draft saved on this device will be deleted.'
+})
+
+onBeforeRouteLeave((to) => {
+  if (allowNextRouteLeave || !dirty.value) return true
+  openLeaveDialog(to.fullPath)
+  return false
 })
 
 useHead(() => ({
-  title: 'CUE ID prototype | CueBooker',
+  title: 'CUE ID creator | CueBooker',
   htmlAttrs: { lang: preferences.locale.value },
   meta: [{ name: 'robots', content: 'noindex, nofollow' }]
 }))
@@ -45,107 +203,67 @@ useHead(() => ({
 <template>
   <main class="cue-id-page">
     <header class="cue-id-page__header">
-      <NuxtLink class="brand" to="/" aria-label="CueBooker"><CueBrand /></NuxtLink>
+      <NuxtLink class="brand" to="/" aria-label="CueBooker">
+        <CueBrand />
+      </NuxtLink>
+
+      <div class="cue-id-page__status" aria-label="CUE ID lab status">
+        <span>{{ copy.lab }}</span>
+        <strong>{{ copy.status }}</strong>
+      </div>
+
       <div class="cue-id-page__header-actions">
         <CuePreferencesControl compact />
-        <NuxtLink to="/">{{ copy.returnHome }}</NuxtLink>
+        <button class="cue-id-page__back" type="button" @click="requestExit">VOLVER</button>
       </div>
     </header>
 
-    <section class="cue-id-page__intro">
-      <p>{{ copy.eyebrow }}</p>
-      <h1>{{ copy.title }}</h1>
-      <span>{{ copy.body }}</span>
-    </section>
+    <CueIdStylizedWorkspace
+      v-model="cueIdConfig"
+      :locale="preferences.locale.value"
+      :dirty="dirty"
+      :section="cueSection"
+      @section-change="handleSectionChange"
+      @save="saveLabDraft"
+      @reset="resetLabDraft"
+    />
 
-    <CueIdTeaser artist-name="LITUS" :preview-href="''" />
+    <p
+      v-if="saveState !== 'idle'"
+      class="cue-id-page__saved"
+      role="status"
+      aria-live="polite"
+    >
+      {{ saveState === 'reset' ? copy.reset : saveState === 'invalid' ? copy.invalid : saveState === 'storage-error' ? copy.storageError : copy.saved }}
+    </p>
 
-    <section class="cue-id-system">
-      <article class="cue-id-system__passport">
-        <header><span>01</span><strong>{{ copy.passport }}</strong></header>
-        <p>{{ copy.passportBody }}</p>
-        <div class="passport-card">
-          <div class="passport-card__top">
-            <span>CUEBOOKER / ARTIST</span>
-            <small>PRIVATE PREVIEW</small>
-          </div>
-          <h2>LITUS</h2>
-          <p>TECHNO · HYPNOTIC · ACID</p>
-          <div class="passport-card__grid">
-            <span><small>{{ copy.cities }}</small><strong>02</strong></span>
-            <span><small>{{ copy.venues }}</small><strong>04</strong></span>
-            <span><small>BOOKINGS</small><strong>08</strong></span>
-          </div>
-          <div class="passport-card__stamps">
-            <i>BCN</i><i>BER</i><i>2026</i>
-          </div>
+    <div v-if="leaveDialogOpen" class="cue-id-page__leave-backdrop" @click.self="leaveDialogOpen = false">
+      <section class="cue-id-page__leave-modal" role="dialog" aria-modal="true" aria-labelledby="cue-id-leave-title">
+        <div class="cue-id-page__leave-kicker"><span>CUE ID</span><small>BETA</small></div>
+        <h2 id="cue-id-leave-title">{{ copy.leave }}</h2>
+        <p>{{ copy.leaveBody }}</p>
+        <div class="cue-id-page__leave-actions">
+          <button type="button" class="cue-id-page__leave-cancel" @click="leaveDialogOpen = false">{{ copy.leaveCancel }}</button>
+          <button type="button" class="cue-id-page__leave-discard" @click="leaveWithoutSaving">{{ copy.leaveDiscard }}</button>
+          <button type="button" class="cue-id-page__leave-save" @click="saveAndLeave">{{ copy.leaveSave }}</button>
         </div>
-      </article>
-
-      <article>
-        <header><span>02</span><strong>{{ copy.signal }}</strong></header>
-        <p>{{ copy.signalBody }}</p>
-        <div class="signal-list">
-          <div class="active"><i /> <span><small>SIGNAL 00</small><strong>{{ copy.first }}</strong></span></div>
-          <div><i /> <span><small>SIGNAL 01</small><strong>{{ copy.identified }}</strong></span></div>
-          <div><i /> <span><small>SIGNAL 02</small><strong>{{ copy.booking }}</strong></span></div>
-        </div>
-      </article>
-
-      <article>
-        <header><span>03</span><strong>{{ copy.share }}</strong></header>
-        <p>{{ copy.shareBody }}</p>
-        <div class="share-formats">
-          <span>9:16<small>Instagram Story</small></span>
-          <span>1:1<small>Artist Card</small></span>
-          <span>1.91:1<small>LinkedIn</small></span>
-        </div>
-      </article>
-    </section>
+      </section>
+    </div>
   </main>
 </template>
 
 <style scoped>
-:global(body) { margin: 0; background: var(--cue-bg); }
-.cue-id-page { min-height: 100vh; padding: 0 28px 70px; background: var(--cue-bg); color: var(--cue-text); font-family: Arial, Helvetica, sans-serif; }
-.cue-id-page__header { display: flex; justify-content: space-between; align-items: center; min-height: 68px; border-bottom: 1px solid var(--cue-border); }
-.brand { color: inherit; text-decoration: none; }
-.cue-id-page__header-actions { display: flex; align-items: center; gap: 14px; }
-.cue-id-page__header-actions > a { color: var(--cue-muted); font: 700 11px/1.2 monospace; text-decoration: none; text-transform: uppercase; letter-spacing: .08em; }
-.cue-id-page__intro { padding: clamp(42px, 8vw, 96px) 0 42px; }
-.cue-id-page__intro p { margin: 0 0 17px; color: var(--cue-accent); font: 700 11px/1.2 monospace; letter-spacing: .13em; }
-.cue-id-page__intro h1 { max-width: 1100px; margin: 0; font-size: clamp(3.3rem, 8.5vw, 8.5rem); line-height: .82; letter-spacing: -.06em; text-transform: uppercase; }
-.cue-id-page__intro span { display: block; max-width: 720px; margin-top: 28px; color: var(--cue-muted); font-size: 15px; line-height: 1.65; }
-.cue-id-system { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); margin-top: 24px; border-top: 1px solid var(--cue-border); border-left: 1px solid var(--cue-border); }
-.cue-id-system > article { min-width: 0; padding: 28px; border-right: 1px solid var(--cue-border); border-bottom: 1px solid var(--cue-border); background: var(--cue-surface); }
-.cue-id-system > article > header { display: flex; justify-content: space-between; gap: 20px; padding-bottom: 18px; border-bottom: 1px solid var(--cue-border); }
-.cue-id-system > article > header span { color: var(--cue-accent); font: 700 10px/1.2 monospace; }
-.cue-id-system > article > header strong { font-size: 13px; letter-spacing: .05em; }
-.cue-id-system > article > p { min-height: 88px; color: var(--cue-muted); font-size: 13px; line-height: 1.55; }
-.passport-card { margin-top: 28px; padding: 18px; border: 1px solid #333730; background: #090a09; color: #f4f2ed; transform: rotate(-1.2deg); box-shadow: 0 24px 55px rgba(0,0,0,.28); }
-.passport-card__top { display: flex; justify-content: space-between; gap: 12px; color: #777c73; font: 700 8px/1.2 monospace; letter-spacing: .1em; }
-.passport-card h2 { margin: 34px 0 4px; font-size: 46px; line-height: .82; letter-spacing: -.05em; }
-.passport-card > p { margin: 0; color: #ceff54; font: 700 9px/1.3 monospace; letter-spacing: .08em; }
-.passport-card__grid { display: grid; grid-template-columns: repeat(3,1fr); margin-top: 30px; border-top: 1px solid #2b2e2a; border-left: 1px solid #2b2e2a; }
-.passport-card__grid span { display: grid; gap: 7px; padding: 12px; border-right: 1px solid #2b2e2a; border-bottom: 1px solid #2b2e2a; }
-.passport-card__grid small { color: #6e726a; font: 700 7px/1 monospace; }
-.passport-card__grid strong { font-size: 20px; }
-.passport-card__stamps { display: flex; gap: 9px; margin-top: 22px; }
-.passport-card__stamps i { display: grid; place-items: center; width: 48px; height: 48px; border: 1px solid #ceff54; border-radius: 50%; color: #ceff54; font: 700 9px/1 monospace; font-style: normal; transform: rotate(-9deg); }
-.passport-card__stamps i:nth-child(2) { transform: rotate(7deg); }
-.passport-card__stamps i:nth-child(3) { border-radius: 0; border-color: #7a7e76; color: #7a7e76; transform: rotate(3deg); }
-.signal-list { display: grid; margin-top: 32px; }
-.signal-list > div { display: grid; grid-template-columns: 28px 1fr; align-items: center; gap: 13px; min-height: 68px; border-top: 1px solid var(--cue-border); opacity: .43; }
-.signal-list > div:last-child { border-bottom: 1px solid var(--cue-border); }
-.signal-list > div.active { opacity: 1; }
-.signal-list i { display: block; width: 10px; height: 10px; border: 1px solid var(--cue-muted); border-radius: 50%; }
-.signal-list .active i { border-color: var(--cue-toggle); background: var(--cue-toggle); box-shadow: 0 0 14px color-mix(in srgb,var(--cue-toggle) 50%,transparent); }
-.signal-list span { display: grid; gap: 5px; }
-.signal-list small { color: var(--cue-muted); font: 700 8px/1.2 monospace; letter-spacing: .08em; }
-.signal-list strong { font-size: 13px; }
-.share-formats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 32px; }
-.share-formats > span { display: grid; place-items: center; min-height: 150px; padding: 12px; border: 1px solid var(--cue-border); background: var(--cue-bg); font-size: 22px; font-weight: 800; text-align: center; }
-.share-formats small { color: var(--cue-muted); font: 700 8px/1.3 monospace; letter-spacing: .06em; text-transform: uppercase; }
-@media (max-width: 980px) { .cue-id-system { grid-template-columns: 1fr; } .cue-id-system > article > p { min-height: 0; } }
-@media (max-width: 680px) { .cue-id-page { padding: 0 14px 40px; } .cue-id-page__header { min-height: 62px; } .cue-id-page__intro { padding-top: 46px; } .share-formats { grid-template-columns: 1fr; } .share-formats > span { min-height: 100px; } }
+:global(body){margin:0;background:var(--cue-bg)}
+.cue-id-page{min-height:100vh;padding:0 28px 54px;background:var(--cue-bg);color:var(--cue-text);font-family:Arial,Helvetica,sans-serif}
+.cue-id-page__header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;min-height:68px;border-bottom:1px solid var(--cue-border)}
+.brand{color:inherit;text-decoration:none}
+.cue-id-page__status{display:flex;align-items:center;gap:10px;color:var(--cue-muted);font:700 9px/1.2 monospace;letter-spacing:.08em}.cue-id-page__status span{color:var(--cue-accent)}.cue-id-page__status strong{font:inherit}
+.cue-id-page__header-actions{display:flex;justify-content:flex-end;align-items:center;gap:14px}.cue-id-page__back{padding:0;border:0;background:transparent;color:var(--cue-muted);font:700 11px/1.2 monospace;text-transform:uppercase;letter-spacing:.08em;cursor:pointer}
+.cue-id-page__saved{position:fixed;right:20px;bottom:20px;z-index:10;margin:0;padding:10px 13px;border:1px solid var(--cue-border);border-radius:10px;background:var(--cue-surface);color:var(--cue-text);font:700 11px/1.3 monospace;box-shadow:0 10px 30px rgba(0,0,0,.22)}
+.cue-id-page__leave-backdrop{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.72);backdrop-filter:blur(8px)}
+.cue-id-page__leave-modal{width:min(520px,100%);padding:22px;border:1px solid var(--cue-border);border-radius:18px;background:var(--cue-surface);box-shadow:0 28px 80px rgba(0,0,0,.5)}
+.cue-id-page__leave-kicker{display:flex;align-items:center;gap:8px}.cue-id-page__leave-kicker span{color:var(--cue-accent);font:800 10px/1 monospace;letter-spacing:.16em}.cue-id-page__leave-kicker small{padding:4px 6px;border:1px solid color-mix(in srgb,var(--cue-accent) 45%,var(--cue-border));border-radius:999px;color:var(--cue-accent);font:800 8px/1 monospace}
+.cue-id-page__leave-modal h2{margin:18px 0 8px;font-size:clamp(1.45rem,5vw,2rem);line-height:1.05;text-transform:uppercase}.cue-id-page__leave-modal p{margin:0;color:var(--cue-muted);line-height:1.55}
+.cue-id-page__leave-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:22px}.cue-id-page__leave-actions button{min-height:46px;padding:10px 13px;border:1px solid var(--cue-border);border-radius:10px;background:transparent;color:var(--cue-text);font-weight:900;cursor:pointer}.cue-id-page__leave-cancel{grid-column:1/-1}.cue-id-page__leave-discard{color:var(--cue-muted)!important}.cue-id-page__leave-save{border-color:var(--cue-accent)!important;background:var(--cue-accent)!important;color:#101010!important}
+@media(max-width:760px){.cue-id-page{padding:0 14px 30px}.cue-id-page__header{grid-template-columns:1fr auto;min-height:62px}.cue-id-page__status{display:none}.cue-id-page__header-actions{gap:9px}.cue-id-page__back{font-size:10px;white-space:nowrap}.cue-id-page__saved{right:14px;bottom:14px;left:14px;text-align:center}.cue-id-page__leave-backdrop{align-items:end;padding:12px}.cue-id-page__leave-modal{padding:18px;border-radius:16px}.cue-id-page__leave-actions{grid-template-columns:1fr}.cue-id-page__leave-cancel{grid-column:auto}}
 </style>
