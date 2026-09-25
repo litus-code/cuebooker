@@ -84,8 +84,9 @@ function emptyProfileForm(): ArtistProfileForm {
 }
 
 const persistedWorkspaceView = useCookie<WorkspaceView | null>('cuebooker.workspace.view', { sameSite: 'lax' })
-const loadingView = ref<WorkspaceView | null>(null)
-const activeView = ref<WorkspaceView>(workspaceViewFromQuery(route.query.view, route.query.booking))
+const initialWorkspaceView = workspaceViewFromQuery(route.query.view, route.query.booking)
+const loadingView = ref<WorkspaceView | null>(initialWorkspaceView)
+const activeView = ref<WorkspaceView>(initialWorkspaceView)
 const artists = ref<ManagedArtist[]>([])
 const organizations = ref<ManagedOrganization[]>([])
 const selectedArtistId = ref('')
@@ -672,6 +673,7 @@ watch([selectedArtistId, monthCursor], async () => {
   await Promise.all([loadBlocks(), loadCalendarCore()])
 })
 watch(selectedArtistId, async (artistId) => {
+  if (loading.value) return
   bookingCoreWorkspaceId.value = ''
   publicProfileWorkspaceId.value = ''
   setBasePlan('free')
@@ -1226,8 +1228,11 @@ async function loadWorkspaceIdentity() {
     }
 
     if (selectedArtistId.value) {
-      await Promise.all([loadBlocks(), loadArtistProfile()])
-      await ensureBookingCoreWorkspace()
+      await Promise.all([
+        loadBlocks(),
+        loadArtistProfile(),
+        ensureBookingCoreWorkspace()
+      ])
 
       const requestedBookingId = typeof route.query.booking === 'string' ? route.query.booking : ''
       if (requestedBookingId) {
@@ -1947,16 +1952,8 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <template v-if="loading">
     <section v-if="!loadingView" class="workspace-loading-state" aria-busy="true" aria-live="polite">
-      <div class="workspace-loading-state__mark" aria-hidden="true">
-        <CueBrand variant="icon" decorative />
-        <i />
-        <i />
-        <i />
-      </div>
-      <div class="workspace-loading-state__copy">
-        <span>CUEBOOKER / WORKSPACE</span>
-        <strong>{{ preferences.locale.value === 'es' ? 'Preparando tu sesión…' : 'Preparing your session…' }}</strong>
-      </div>
+      <CueBrand class="workspace-loading-state__logo" decorative />
+      <div class="workspace-loading-state__pulse" aria-hidden="true"><i /><i /><i /></div>
       <span class="sr-only">{{ copy.loading }}</span>
     </section>
 
@@ -3676,62 +3673,36 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   display:grid;
   place-items:center;
   align-content:center;
-  gap:24px;
+  gap:18px;
   min-height:calc(100dvh - 120px);
-  text-align:center;
 }
-.workspace-loading-state__mark {
-  position:relative;
-  display:grid;
-  place-items:center;
-  width:132px;
-  height:132px;
+.workspace-loading-state__logo {
+  width:min(220px,52vw);
+  height:auto;
 }
-.workspace-loading-state__mark :deep(.cue-brand) {
-  position:relative;
-  z-index:2;
-  width:54px;
-  height:54px;
+.workspace-loading-state__pulse {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  height:10px;
 }
-.workspace-loading-state__mark > i {
-  position:absolute;
-  inset:0;
-  border:1px solid color-mix(in srgb,var(--cue-accent) 24%,transparent);
+.workspace-loading-state__pulse i {
+  display:block;
+  width:6px;
+  height:6px;
   border-radius:50%;
-  animation:workspace-loader-orbit 2.4s linear infinite;
+  background:var(--cue-accent);
+  opacity:.28;
+  animation:workspace-loader-pulse .9s ease-in-out infinite alternate;
 }
-.workspace-loading-state__mark > i:nth-of-type(2) {
-  inset:14px;
-  border-style:dashed;
-  animation-duration:1.8s;
-  animation-direction:reverse;
-}
-.workspace-loading-state__mark > i:nth-of-type(3) {
-  inset:30px;
-  border-color:color-mix(in srgb,var(--cue-accent) 52%,transparent);
-  animation-duration:1.15s;
-}
-.workspace-loading-state__copy {
-  display:grid;
-  gap:8px;
-}
-.workspace-loading-state__copy span {
-  color:var(--cue-accent);
-  font:800 8px/1 monospace;
-  letter-spacing:.14em;
-}
-.workspace-loading-state__copy strong {
-  color:var(--cue-muted);
-  font-size:13px;
-  font-weight:700;
-}
-@keyframes workspace-loader-orbit {
-  to { transform:rotate(360deg); }
+.workspace-loading-state__pulse i:nth-child(2){animation-delay:.15s}
+.workspace-loading-state__pulse i:nth-child(3){animation-delay:.3s}
+@keyframes workspace-loader-pulse {
+  to { opacity:1; transform:translateY(-2px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .workspace-loading-state__mark > i { animation:none; }
+  .workspace-loading-state__pulse i { animation:none; opacity:.7; }
 }
-
 
 /* Skeletons mirror the final workspace geometry instead of using generic blocks. */
 .workspace-skeleton {
@@ -3974,5 +3945,25 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .skeleton-panel--calendar-day{min-height:62px}
   .skeleton-panel--profile-hero{min-height:360px}
   .workspace-skeleton__profile-row>.skeleton-panel{min-height:150px}
+}
+
+/* Skeleton geometry contract: placeholder nodes must occupy their intended layout. */
+.workspace-skeleton .skeleton-line,
+.workspace-skeleton .skeleton-card,
+.workspace-skeleton .skeleton-panel {
+  display:block !important;
+  box-sizing:border-box !important;
+  flex:none;
+  min-width:0;
+}
+.workspace-skeleton__stats,
+.workspace-skeleton__body {
+  display:grid !important;
+}
+.workspace-skeleton__stats > .skeleton-card,
+.workspace-skeleton__body > .skeleton-panel,
+.workspace-skeleton__profile-row > .skeleton-panel,
+.workspace-skeleton__cue-id-grid > .skeleton-panel {
+  width:100% !important;
 }
 </style>
