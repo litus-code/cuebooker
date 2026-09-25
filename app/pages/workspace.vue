@@ -85,8 +85,9 @@ function emptyProfileForm(): ArtistProfileForm {
 
 const persistedWorkspaceView = useCookie<WorkspaceView | null>('cuebooker.workspace.view', { sameSite: 'lax' })
 const initialWorkspaceView = workspaceViewFromQuery(route.query.view, route.query.booking)
+const hasExplicitWorkspaceRoute = typeof route.query.view === 'string' || (typeof route.query.booking === 'string' && Boolean(route.query.booking))
 const loadingView = ref<WorkspaceView | null>(initialWorkspaceView)
-const workspaceBootResolved = ref(false)
+const workspaceBootResolved = ref(hasExplicitWorkspaceRoute)
 const activeView = ref<WorkspaceView>(initialWorkspaceView)
 const artists = ref<ManagedArtist[]>([])
 const organizations = ref<ManagedOrganization[]>([])
@@ -1966,6 +1967,17 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       <CueBrand class="workspace-loading-state__logo" decorative />
       <div class="workspace-loading-state__pulse" aria-hidden="true"><i /><i /><i /></div>
       <span class="sr-only">{{ copy.loading }}</span>
+    </section>
+
+    <section v-else-if="settingsOpen" class="workspace-skeleton workspace-skeleton--settings" aria-busy="true" aria-live="polite">
+      <span class="sr-only">{{ copy.loading }}</span>
+      <div class="workspace-skeleton__page-head skeleton-panel" />
+      <div class="workspace-skeleton__settings-shell">
+        <i class="skeleton-panel skeleton-panel--settings-preferences" />
+        <i class="skeleton-panel skeleton-panel--settings-appearance" />
+        <i class="skeleton-panel skeleton-panel--settings-plan" />
+        <i class="skeleton-panel skeleton-panel--settings-password" />
+      </div>
     </section>
 
     <section v-else-if="loadingView === 'bookings'" class="workspace-skeleton workspace-skeleton--bookings" aria-busy="true" aria-live="polite">
@@ -4145,5 +4157,93 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .workspace-skeleton--profile .workspace-skeleton__profile-shell{
     min-height:1020px;
   }
+}
+
+
+/* Canonical loading geometry: every surface occupies the same footprint as its real blocks. */
+.workspace-skeleton{
+  width:min(1440px,100%) !important;
+  max-width:1440px !important;
+  min-height:calc(100dvh - 64px) !important;
+  margin:0 auto !important;
+  padding:24px 0 48px !important;
+  box-sizing:border-box !important;
+}
+.workspace-skeleton__page-head{
+  display:block !important;
+  width:100% !important;
+  min-height:176px !important;
+  margin:0 0 18px !important;
+}
+.workspace-skeleton__calendar-blocks{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(320px,360px) !important;
+  width:100% !important;
+  gap:16px !important;
+}
+.skeleton-panel--calendar-month-block{min-height:650px !important}
+.skeleton-panel--calendar-day-block{min-height:650px !important}
+
+.workspace-skeleton__history-shell,
+.workspace-skeleton__profile-shell,
+.workspace-skeleton__settings-shell{
+  width:100% !important;
+  overflow:hidden !important;
+  border:1px solid var(--workspace-line,var(--cue-border)) !important;
+  background:var(--cue-surface) !important;
+}
+.workspace-skeleton__history-shell>.skeleton-panel,
+.workspace-skeleton__profile-shell>.skeleton-panel,
+.workspace-skeleton__settings-shell>.skeleton-panel{
+  display:block !important;
+  width:100% !important;
+  margin:0 !important;
+  border:0 !important;
+  border-bottom:1px solid var(--workspace-line,var(--cue-border)) !important;
+  border-radius:0 !important;
+}
+.skeleton-panel--history-top{min-height:112px !important}
+.skeleton-panel--history-pro{min-height:64px !important}
+.skeleton-panel--history-tools{min-height:72px !important}
+.skeleton-panel--history-list{min-height:500px !important;border-bottom:0 !important}
+
+.skeleton-panel--profile-publish{min-height:92px !important;margin-bottom:16px !important}
+.skeleton-panel--profile-cover{min-height:470px !important}
+.skeleton-panel--profile-about{min-height:210px !important}
+.skeleton-panel--profile-sound{min-height:150px !important}
+.skeleton-panel--profile-passport{min-height:290px !important}
+.skeleton-panel--profile-links{min-height:180px !important}
+.skeleton-panel--profile-booking{min-height:185px !important;border-bottom:0 !important}
+
+.skeleton-panel--passport-hero{width:100% !important;min-height:350px !important;margin-bottom:16px !important}
+.workspace-skeleton__passport-grid,
+.workspace-skeleton__cue-grid{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  width:100% !important;
+  gap:16px !important;
+}
+.workspace-skeleton__passport-grid>.skeleton-panel,
+.workspace-skeleton__cue-grid>.skeleton-panel{min-height:210px !important}
+.skeleton-panel--passport-world{width:100% !important;min-height:400px !important;margin-top:16px !important}
+.skeleton-panel--cue-stage{width:100% !important;min-height:510px !important;margin-bottom:16px !important}
+
+.skeleton-panel--settings-preferences{min-height:104px !important}
+.skeleton-panel--settings-appearance{min-height:104px !important}
+.skeleton-panel--settings-plan{min-height:124px !important}
+.skeleton-panel--settings-password{min-height:360px !important;border-bottom:0 !important}
+
+@media (max-width:960px){
+  .workspace-skeleton{padding:18px 0 36px !important}
+  .workspace-skeleton__page-head{min-height:142px !important}
+  .workspace-skeleton__calendar-blocks{grid-template-columns:1fr !important}
+  .skeleton-panel--calendar-month-block{min-height:590px !important}
+  .skeleton-panel--calendar-day-block{min-height:260px !important}
+  .workspace-skeleton__passport-grid,
+  .workspace-skeleton__cue-grid{grid-template-columns:1fr !important}
+  .skeleton-panel--profile-cover{min-height:350px !important}
+  .skeleton-panel--passport-hero{min-height:290px !important}
+  .skeleton-panel--passport-world{min-height:330px !important}
+  .skeleton-panel--cue-stage{min-height:400px !important}
 }
 </style>
