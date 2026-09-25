@@ -86,6 +86,7 @@ function emptyProfileForm(): ArtistProfileForm {
 const persistedWorkspaceView = useCookie<WorkspaceView | null>('cuebooker.workspace.view', { sameSite: 'lax' })
 const initialWorkspaceView = workspaceViewFromQuery(route.query.view, route.query.booking)
 const loadingView = ref<WorkspaceView | null>(initialWorkspaceView)
+const workspaceBootResolved = ref(false)
 const activeView = ref<WorkspaceView>(initialWorkspaceView)
 const artists = ref<ManagedArtist[]>([])
 const organizations = ref<ManagedOrganization[]>([])
@@ -648,6 +649,7 @@ onBeforeMount(() => {
 
   loadingView.value = resolvedView
   activeView.value = resolvedView
+  workspaceBootResolved.value = true
 })
 
 onMounted(async () => {
@@ -1941,14 +1943,14 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         </button>
       </div>
       <nav id="workspace-navigation" aria-label="Workspace">
-        <button :title="copy.overview" data-workspace-view="overview" :aria-current="activeView === 'overview' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('overview')">{{ copy.overview }}</button>
-        <button :title="copy.bookings" data-workspace-view="bookings" :aria-current="activeView === 'bookings' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
-        <button :title="copy.calendar" data-workspace-view="calendar" :aria-current="activeView === 'calendar' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
-        <button :title="copy.history" data-workspace-view="history" :aria-current="activeView === 'history' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('history')">{{ copy.history }}</button>
-        <button :title="copy.profile" data-workspace-view="profile" :aria-current="activeView === 'profile' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
-        <button :title="copy.passport" data-workspace-view="passport" :aria-current="activeView === 'passport' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('passport')">{{ copy.passport }}</button>
-        <button :title="copy.cueId" data-workspace-view="cue-id" :aria-current="activeView === 'cue-id' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('cue-id')">{{ copy.cueId }}</button>
-        <button :title="copy.settings" data-workspace-view="settings" :aria-current="settingsOpen ? 'page' : undefined" type="button" @click="openSettings">{{ copy.settings }}</button>
+        <button :title="copy.overview" data-workspace-view="overview" :aria-current="workspaceBootResolved && activeView === 'overview' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('overview')">{{ copy.overview }}</button>
+        <button :title="copy.bookings" data-workspace-view="bookings" :aria-current="workspaceBootResolved && activeView === 'bookings' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
+        <button :title="copy.calendar" data-workspace-view="calendar" :aria-current="workspaceBootResolved && activeView === 'calendar' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
+        <button :title="copy.history" data-workspace-view="history" :aria-current="workspaceBootResolved && activeView === 'history' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('history')">{{ copy.history }}</button>
+        <button :title="copy.profile" data-workspace-view="profile" :aria-current="workspaceBootResolved && activeView === 'profile' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
+        <button :title="copy.passport" data-workspace-view="passport" :aria-current="workspaceBootResolved && activeView === 'passport' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('passport')">{{ copy.passport }}</button>
+        <button :title="copy.cueId" data-workspace-view="cue-id" :aria-current="workspaceBootResolved && activeView === 'cue-id' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('cue-id')">{{ copy.cueId }}</button>
+        <button :title="copy.settings" data-workspace-view="settings" :aria-current="workspaceBootResolved && settingsOpen ? 'page' : undefined" type="button" @click="openSettings">{{ copy.settings }}</button>
       </nav>
       <div class="account-actions">
         <WorkspaceNotifications :locale="preferences.locale.value" @open-booking="openNotificationBooking" />
@@ -1960,7 +1962,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
     <template v-if="loading">
-    <section v-if="!loadingView" class="workspace-loading-state" aria-busy="true" aria-live="polite">
+    <section v-if="!workspaceBootResolved" class="workspace-loading-state" aria-busy="true" aria-live="polite">
       <CueBrand class="workspace-loading-state__logo" decorative />
       <div class="workspace-loading-state__pulse" aria-hidden="true"><i /><i /><i /></div>
       <span class="sr-only">{{ copy.loading }}</span>
@@ -1995,32 +1997,10 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <section v-else-if="loadingView === 'calendar'" class="workspace-skeleton workspace-skeleton--calendar" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
-      <div class="workspace-skeleton__heading workspace-skeleton__heading--calendar">
-        <i class="skeleton-line skeleton-line--eyebrow" />
-        <div class="workspace-skeleton__title-block" aria-hidden="true">
-          <i class="skeleton-line skeleton-line--title skeleton-line--title-primary" />
-          <i class="skeleton-line skeleton-line--body" />
-        </div>
-      </div>
-      <div class="workspace-skeleton__calendar-layout">
-        <div class="workspace-skeleton__calendar-month">
-          <i class="skeleton-panel skeleton-panel--calendar-toolbar" />
-          <div class="workspace-skeleton__calendar-grid">
-            <i v-for="index in 7" :key="`calendar-weekday-${index}`" class="skeleton-panel skeleton-panel--calendar-weekday" />
-            <i v-for="index in 42" :key="`calendar-day-${index}`" class="skeleton-panel skeleton-panel--calendar-day" />
-          </div>
-          <div class="workspace-skeleton__calendar-legend">
-            <i class="skeleton-line" />
-            <i class="skeleton-line" />
-            <i class="skeleton-line" />
-          </div>
-        </div>
-        <div class="workspace-skeleton__calendar-day">
-          <i class="skeleton-panel skeleton-panel--calendar-day-head" />
-          <div class="workspace-skeleton__calendar-timeline">
-            <i v-for="index in 10" :key="`calendar-hour-${index}`" class="skeleton-panel skeleton-panel--calendar-hour" />
-          </div>
-        </div>
+      <div class="workspace-skeleton__page-head skeleton-panel" />
+      <div class="workspace-skeleton__calendar-blocks">
+        <i class="skeleton-panel skeleton-panel--calendar-month-block" />
+        <i class="skeleton-panel skeleton-panel--calendar-day-block" />
       </div>
     </section>
 
@@ -4124,5 +4104,46 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .skeleton-panel--passport-hero{min-height:300px}
   .skeleton-panel--passport-world{min-height:340px}
   .skeleton-panel--cue-stage{min-height:420px}
+}
+
+
+/* Final boot + skeleton contract. */
+.workspace-skeleton__calendar-blocks{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(300px,360px);
+  gap:16px;
+  align-items:stretch;
+}
+.skeleton-panel--calendar-month-block,
+.skeleton-panel--calendar-day-block{
+  width:100%;
+  min-height:660px;
+}
+.workspace-skeleton--history .workspace-skeleton__history-shell{
+  min-height:780px;
+}
+.workspace-skeleton--profile .workspace-skeleton__profile-shell{
+  min-height:1220px;
+}
+.workspace-skeleton--passport,
+.workspace-skeleton--cue-id{
+  min-height:calc(100dvh - 110px);
+}
+@media(max-width:960px){
+  .workspace-skeleton__calendar-blocks{
+    grid-template-columns:1fr;
+  }
+  .skeleton-panel--calendar-month-block{
+    min-height:620px;
+  }
+  .skeleton-panel--calendar-day-block{
+    min-height:260px;
+  }
+  .workspace-skeleton--history .workspace-skeleton__history-shell{
+    min-height:650px;
+  }
+  .workspace-skeleton--profile .workspace-skeleton__profile-shell{
+    min-height:1020px;
+  }
 }
 </style>
