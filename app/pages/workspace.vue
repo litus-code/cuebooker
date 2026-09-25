@@ -3579,4 +3579,57 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
     font-size: 13px !important;
   }
 }
+
+
+/* Canonical mobile workspace navigation.
+   activeView is the only source of selected state; touch/focus/tour never fill a tab. */
+@media (max-width: 960px) {
+  .workspace #workspace-navigation > button,
+  .workspace #workspace-navigation > button:hover,
+  .workspace #workspace-navigation > button:focus,
+  .workspace #workspace-navigation > button:focus-visible,
+  .workspace #workspace-navigation > button:active,
+  .workspace #workspace-navigation > button.tour-focus,
+  .workspace #workspace-navigation > button.active,
+  .workspace #workspace-navigation > button.active:hover,
+  .workspace #workspace-navigation > button.active:focus,
+  .workspace #workspace-navigation > button.active:focus-visible,
+  .workspace #workspace-navigation > button.active:active,
+  .workspace #workspace-navigation > button.active.tour-focus {
+    border-color: transparent !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    outline: 0 !important;
+    transform: none !important;
+    animation: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+
+  .workspace #workspace-navigation > button {
+    color: var(--cue-muted) !important;
+    box-shadow: none !important;
+  }
+
+  .workspace #workspace-navigation > button.active {
+    color: var(--cue-accent) !important;
+    box-shadow: inset 0 -2px 0 var(--cue-accent) !important;
+  }
+
+  .workspace #workspace-navigation > button::before,
+  .workspace #workspace-navigation > button.active::before {
+    display: none !important;
+  }
+
+  .workspace #workspace-navigation > button.tour-focus,
+  .workspace #workspace-navigation > button.active.tour-focus {
+    color: inherit !important;
+    box-shadow: none !important;
+  }
+
+  .workspace #workspace-navigation > button.active.tour-focus {
+    color: var(--cue-accent) !important;
+    box-shadow: inset 0 -2px 0 var(--cue-accent) !important;
+  }
+}
 </style>
