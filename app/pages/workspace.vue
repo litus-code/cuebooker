@@ -2555,7 +2555,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           />
       </section>
 
-      <section v-if="activeView === 'profile'" class="view profile-view profile-view--presence">
+      <section v-if="activeView === 'profile'" class="view profile-view profile-view--presence" data-workspace-surface="profile">
         <div class="view-heading profile-presence-heading">
           <div>
             <p class="eyebrow">{{ copy.profileEyebrow }}</p>
@@ -2578,6 +2578,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
         <template>
           <WorkspaceArtistProfile
+            data-workspace-profile-content
             :profile="publicProfilePreview"
             :published="publicProfilePublished"
             :editable="canEditSelectedArtist"
