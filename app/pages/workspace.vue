@@ -1228,15 +1228,14 @@ async function loadWorkspaceIdentity() {
     }
 
     if (selectedArtistId.value) {
-      await Promise.all([
-        loadBlocks(),
-        loadCalendarCore(),
-        loadArtistProfile(),
-        ensureBookingCoreWorkspace()
-      ])
+      const blocksTask = loadBlocks()
+      const profileTask = loadArtistProfile()
+      const bookingCoreTask = ensureBookingCoreWorkspace()
+      const hydrationTask = Promise.allSettled([blocksTask, profileTask, bookingCoreTask])
 
       const requestedBookingId = typeof route.query.booking === 'string' ? route.query.booking : ''
       if (requestedBookingId) {
+        await bookingCoreTask
         if (realBookings.value.some(item => item.id === requestedBookingId)) {
           openRealBooking(requestedBookingId)
         } else if (bookingCoreWorkspaceId.value) {
@@ -1249,7 +1248,16 @@ async function loadWorkspaceIdentity() {
               : 'This booking does not exist or you no longer have access.'
           }
         }
+      } else {
+        // Do not keep the whole Workspace behind a loader while secondary data hydrates.
+        // The view-level components already have their own loading/empty states.
+        await Promise.race([
+          hydrationTask,
+          new Promise(resolve => window.setTimeout(resolve, 650))
+        ])
       }
+
+      void hydrationTask
     }
   } catch (error: any) {
     errorMessage.value = error?.message || (preferences.locale.value === 'es' ? 'No se pudo cargar el workspace.' : 'The workspace could not be loaded.')
@@ -1933,14 +1941,14 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         </button>
       </div>
       <nav id="workspace-navigation" aria-label="Workspace">
-        <button :title="copy.overview" data-workspace-view="overview" :class="{ active: activeView === 'overview' && !settingsOpen }" type="button" @click="changeView('overview')">{{ copy.overview }}</button>
-        <button :title="copy.bookings" data-workspace-view="bookings" :class="{ active: activeView === 'bookings' && !settingsOpen }" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
-        <button :title="copy.calendar" data-workspace-view="calendar" :class="{ active: activeView === 'calendar' && !settingsOpen }" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
-        <button :title="copy.history" data-workspace-view="history" :class="{ active: activeView === 'history' && !settingsOpen }" type="button" @click="changeView('history')">{{ copy.history }}</button>
-        <button :title="copy.profile" data-workspace-view="profile" :class="{ active: activeView === 'profile' && !settingsOpen }" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
-        <button :title="copy.passport" data-workspace-view="passport" :class="{ active: activeView === 'passport' && !settingsOpen }" type="button" @click="changeView('passport')">{{ copy.passport }}</button>
-        <button :title="copy.cueId" data-workspace-view="cue-id" :class="{ active: activeView === 'cue-id' && !settingsOpen }" type="button" @click="changeView('cue-id')">{{ copy.cueId }}</button>
-        <button :title="copy.settings" data-workspace-view="settings" :class="{ active: settingsOpen }" type="button" @click="openSettings">{{ copy.settings }}</button>
+        <button :title="copy.overview" data-workspace-view="overview" :aria-current="activeView === 'overview' && !settingsOpen ? 'page' : undefined" :class="{ active: activeView === 'overview' && !settingsOpen }" type="button" @click="changeView('overview')">{{ copy.overview }}</button>
+        <button :title="copy.bookings" data-workspace-view="bookings" :aria-current="activeView === 'bookings' && !settingsOpen ? 'page' : undefined" :class="{ active: activeView === 'bookings' && !settingsOpen }" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
+        <button :title="copy.calendar" data-workspace-view="calendar" :aria-current="activeView === 'calendar' && !settingsOpen ? 'page' : undefined" :class="{ active: activeView === 'calendar' && !settingsOpen }" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
+        <button :title="copy.history" data-workspace-view="history" :aria-current="activeView === 'history' && !settingsOpen ? 'page' : undefined" :class="{ active: activeView === 'history' && !settingsOpen }" type="button" @click="changeView('history')">{{ copy.history }}</button>
+        <button :title="copy.profile" data-workspace-view="profile" :aria-current="activeView === 'profile' && !settingsOpen ? 'page' : undefined" :class="{ active: activeView === 'profile' && !settingsOpen }" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
+        <button :title="copy.passport" data-workspace-view="passport" :aria-current="activeView === 'passport' && !settingsOpen ? 'page' : undefined" :class="{ active: activeView === 'passport' && !settingsOpen }" type="button" @click="changeView('passport')">{{ copy.passport }}</button>
+        <button :title="copy.cueId" data-workspace-view="cue-id" :aria-current="activeView === 'cue-id' && !settingsOpen ? 'page' : undefined" :class="{ active: activeView === 'cue-id' && !settingsOpen }" type="button" @click="changeView('cue-id')">{{ copy.cueId }}</button>
+        <button :title="copy.settings" data-workspace-view="settings" :aria-current="settingsOpen ? 'page' : undefined" :class="{ active: settingsOpen }" type="button" @click="openSettings">{{ copy.settings }}</button>
       </nav>
       <div class="account-actions">
         <WorkspaceNotifications :locale="preferences.locale.value" @open-booking="openNotificationBooking" />
@@ -3966,5 +3974,63 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .workspace-skeleton__profile-row > .skeleton-panel,
 .workspace-skeleton__cue-id-grid > .skeleton-panel {
   width:100% !important;
+}
+
+
+/* SINGLE SOURCE OF TRUTH — workspace navigation.
+   aria-current is the only visual selected state. Historical .active/first-item/tour rules are neutralized. */
+#workspace-navigation > button,
+#workspace-navigation > button:hover,
+#workspace-navigation > button:focus,
+#workspace-navigation > button:focus-visible,
+#workspace-navigation > button:active,
+#workspace-navigation > button.active,
+#workspace-navigation > button.tour-focus,
+#workspace-navigation > button.active.tour-focus {
+  border-color: transparent !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  color: var(--cue-muted) !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  transform: none !important;
+  animation: none !important;
+}
+
+#workspace-navigation > button:not([aria-current='page']):hover,
+#workspace-navigation > button:not([aria-current='page']):focus-visible {
+  color: var(--cue-text) !important;
+}
+
+#workspace-navigation > button[aria-current='page'],
+#workspace-navigation > button[aria-current='page']:hover,
+#workspace-navigation > button[aria-current='page']:focus,
+#workspace-navigation > button[aria-current='page']:focus-visible,
+#workspace-navigation > button[aria-current='page']:active,
+#workspace-navigation > button[aria-current='page'].tour-focus {
+  border-color: transparent !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  color: var(--cue-accent) !important;
+  transform: none !important;
+  animation: none !important;
+}
+
+#workspace-navigation > button::before {
+  display: none !important;
+}
+
+@media (min-width: 961px) {
+  #workspace-navigation > button[aria-current='page'] {
+    box-shadow: inset 2px 0 0 var(--cue-accent) !important;
+  }
+}
+
+@media (max-width: 960px) {
+  #workspace-navigation > button[aria-current='page'] {
+    box-shadow: inset 0 -2px 0 var(--cue-accent) !important;
+  }
 }
 </style>
