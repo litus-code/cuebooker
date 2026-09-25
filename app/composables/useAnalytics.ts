@@ -96,6 +96,7 @@ export const useAnalytics = () => {
 
   return {
     consent,
+    initialized,
     preferencesOpen,
     enabled,
     init,
