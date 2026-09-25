@@ -669,7 +669,7 @@ onMounted(async () => {
 })
 
 watch([selectedArtistId, monthCursor], async () => {
-  if (!selectedArtistId.value) return
+  if (loading.value || !selectedArtistId.value) return
   await Promise.all([loadBlocks(), loadCalendarCore()])
 })
 watch(selectedArtistId, async (artistId) => {
@@ -1230,6 +1230,7 @@ async function loadWorkspaceIdentity() {
     if (selectedArtistId.value) {
       await Promise.all([
         loadBlocks(),
+        loadCalendarCore(),
         loadArtistProfile(),
         ensureBookingCoreWorkspace()
       ])
