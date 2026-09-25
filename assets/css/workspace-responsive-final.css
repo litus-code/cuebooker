@@ -1980,3 +1980,53 @@
   }
 }
 
+
+
+/* Final desktop workspace nav contract.
+   Never fill the selected item; activeView is represented by lime text + left rail only. */
+@media (min-width: 961px) {
+  .workspace .workspace-header nav button,
+  .workspace .workspace-header nav button:hover,
+  .workspace .workspace-header nav button:focus,
+  .workspace .workspace-header nav button:focus-visible,
+  .workspace .workspace-header nav button:active,
+  .workspace .workspace-header nav button.active,
+  .workspace .workspace-header nav button.active:hover,
+  .workspace .workspace-header nav button.active:focus,
+  .workspace .workspace-header nav button.active:focus-visible,
+  .workspace .workspace-header nav button.active:active,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button:hover,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button:focus,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button:focus-visible,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button:active,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button.active,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button.active:hover,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button.active:focus,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button.active:focus-visible,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button.active:active {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    transform: none !important;
+  }
+
+  .workspace .workspace-header nav button,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button {
+    border-color: transparent !important;
+    color: var(--cue-muted) !important;
+    box-shadow: none !important;
+  }
+
+  .workspace .workspace-header nav button.active,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button.active {
+    border-color: transparent !important;
+    color: var(--cue-accent) !important;
+    box-shadow: inset 2px 0 0 var(--cue-accent) !important;
+  }
+
+  .workspace .workspace-header nav button::before,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button::before {
+    display: none !important;
+  }
+}
