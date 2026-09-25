@@ -2161,7 +2161,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <article class="summary-card"><span>{{ copy.holdsMonth }} · {{ monthLabel }}</span><strong>{{ holdCount }}</strong><p>{{ copy.holdsBody }}</p></article>
           <article class="summary-card"><span>{{ copy.confirmed }} · {{ monthLabel }}</span><strong>{{ confirmedCount }}</strong><p>{{ copy.confirmedBody }}</p></article>
           <article class="summary-card"><span>{{ copy.occupiedDays }} · {{ monthLabel }}</span><strong>{{ occupiedDays }}</strong><p>{{ copy.occupiedBody }}</p></article>
-          <button class="summary-card summary-card--profile" type="button" @click="activeView = 'profile'"><span>{{ copy.profileCard }}</span><strong>{{ profileCompletion }}%</strong><p>{{ copy.profileCardBody }} →</p></button>
+          <button class="summary-card summary-card--profile" type="button" @click="changeView('profile')"><span>{{ copy.profileCard }}</span><strong>{{ profileCompletion }}%</strong><p>{{ copy.profileCardBody }} →</p></button>
         </div>
 
         <BookingCoreAttention
@@ -2172,7 +2172,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           :locale="preferences.locale.value"
           :refresh-key="bookingCoreOperationsRevision"
           @changed="handleBookingCoreOperationsChanged"
-          @open-bookings="activeView = 'bookings'"
+          @open-bookings="changeView('bookings')"
           @open-booking="openRealBooking"
         />
 
