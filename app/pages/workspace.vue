@@ -372,17 +372,7 @@ const canEditSelectedArtist = computed(() => ['owner', 'manager'].includes(selec
 const profileSurfaceReady = computed(() => Boolean(artistProfiles.activeProfile.value?.artist || profileForm.value.stageName))
 const bookingSurfaceReady = computed(() => Boolean(bookingCoreWorkspaceId.value) || !bookingCoreBootstrapLoading.value)
 
-const workspaceSurfaceLoading = computed(() => {
-  if (loading.value) return true
-  if (activeView.value === 'profile' || activeView.value === 'cue-id') {
-    return profileLoading.value && !profileSurfaceReady.value
-  }
-  if (activeView.value === 'passport') {
-    return (profileLoading.value && !profileSurfaceReady.value)
-      || (!bookingSurfaceReady.value && (bookingCoreBootstrapLoading.value || cueCoreLoading.value))
-  }
-  return false
-})
+const workspaceSurfaceLoading = computed(() => loading.value)
 const tourNamespace = computed(() => auth.session.value?.user.id && selectedArtistId.value ? `workspace-${auth.session.value.user.id}-${selectedArtistId.value}` : undefined)
 const dateLocale = computed(() => preferences.locale.value === 'es' ? 'es-ES' : 'en-GB')
 const monthLabel = computed(() => new Intl.DateTimeFormat(dateLocale.value, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${monthCursor.value}T12:00:00Z`)))
@@ -706,7 +696,7 @@ watch(selectedArtistId, async (artistId) => {
 })
 watch(() => [route.query.view, route.query.booking], ([value, booking]) => {
   const next = workspaceViewFromQuery(value, booking)
-  loadingView.value = next
+  if (loading.value) loadingView.value = next
   if (next !== activeView.value) activeView.value = next
   if (next === 'profile') profileEditSection.value = profileSectionFromQuery(route.query.section)
 })
@@ -829,7 +819,7 @@ async function changeView(view: WorkspaceView) {
   persistedWorkspaceView.value = view
   if (import.meta.client) window.localStorage.setItem('cuebooker.workspace.view', view)
   activeView.value = view
-  loadingView.value = view
+  if (loading.value) loadingView.value = view
 
   const nextQuery: Record<string, any> = { ...route.query, view }
   delete nextQuery.setup
