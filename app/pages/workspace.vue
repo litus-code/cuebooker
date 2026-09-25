@@ -7,7 +7,6 @@ import { toPublicCueIdConfig, type PublicArtistProfile } from '../domain/publicA
 import {
   explicitWorkspaceViewFromQuery,
   normalizeWorkspaceView,
-  workspaceViewFromQuery,
   type WorkspaceView
 } from '../domain/workspaceView'
 import { createBookingQrSvg } from '../services/bookingQr'
