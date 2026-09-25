@@ -10284,3 +10284,23 @@ Validation:
 - `Generate preview build` and PR preview deployment passed;
 - production remains untouched;
 - automated `npm test` is still not executed by this preview workflow.
+
+
+## 25 Sep 2026 · Workspace route-aware loading and consent continuity
+
+Implementation commit: `2f6889b577fca769c8a74ea9bc5a9e719e8e86ff` (`fix: stabilize workspace route loading states`).
+
+- Workspace resolves the initial loading surface from the explicit URL first, then the necessary `cuebooker.workspace.view` cookie, then the legacy local-storage value.
+- A route without resolved state uses the neutral Workspace boot state instead of rendering the Overview skeleton by default.
+- Direct and refreshed routes preserve their own structural skeletons for Overview, Bookings, Calendar, Activity, Profile, Passport and CUE ID. Settings remains represented by its own structural skeleton.
+- Authentication and profile bootstrap calls have an 8-second guard and always release the global loading state, preventing Profile, Passport or CUE ID from remaining indefinitely on `Cargando workspace…`.
+- Workspace navigation has one active-state source. `aria-current="page"` drives Overview, Bookings, Calendar, Activity, Profile, Passport, CUE ID and Settings without reintroducing an `.active` class.
+- Analytics consent is mirrored to the necessary `cuebooker.analytics-consent.v2` cookie for one year and reconciled with the existing local-storage value, keeping the website and Workspace choice consistent.
+- The cookie policy documents both persistence mechanisms in Spanish and English.
+- Added route-resolution and source-contract tests for loading surfaces and navigation state.
+
+Local validation from the isolated `feature/app-visual-system` worktree:
+
+- `npm test`: 305 tests passed.
+- `npm run generate`: completed successfully; 28 routes prerendered.
+- Production was not touched. PR #75 remains the preview and validation surface.
