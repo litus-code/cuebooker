@@ -2826,8 +2826,13 @@
 }
 
 .workspace .cue-id-hub__hero {
+  --cue-text:#f2f0eb;
+  --cue-muted:#aaa9a4;
+  --cue-border:#343434;
+  --workspace-line:#2b2b2b;
   position:relative;
   display:grid;
+  color:var(--cue-text);
   grid-template-columns:minmax(260px,.72fr) minmax(0,1.28fr);
   min-height:360px;
   overflow:hidden;
@@ -3098,12 +3103,17 @@
 
 /* CUE Passport workspace */
 .workspace .cue-passport {
+  --cue-text:#f2f0eb;
+  --cue-muted:#a8a8a3;
+  --cue-border:#343434;
+  --workspace-line:#2b2b2b;
   display:block;
   min-height:0;
   overflow:hidden;
   border:1px solid var(--workspace-line);
   border-radius:var(--cue-radius-panel);
   background:#090909;
+  color:var(--cue-text);
 }
 
 .workspace .cue-passport__copy {
@@ -3850,4 +3860,24 @@
 
 .workspace .cue-passport__visual {
   gap:12px;
+}
+
+
+/* Light-theme surface contrast: dark editorial modules keep their own readable palette. */
+html[data-theme='light'] .workspace .profile-view > .view-heading > div > p:last-child,
+html[data-theme='light'] .workspace .passport-view > .view-heading > div > p:last-child,
+html[data-theme='light'] .workspace .cue-id-view > .view-heading > div > p:last-child,
+html[data-theme='light'] .workspace .history-view > .view-heading > div > p:last-child {
+  color:#4f4f4b !important;
+}
+
+html[data-theme='light'] .workspace .profile-view .artist-identity > span,
+html[data-theme='light'] .workspace .profile-view .artist-identity > small,
+html[data-theme='light'] .workspace .passport-view .artist-identity > span,
+html[data-theme='light'] .workspace .passport-view .artist-identity > small,
+html[data-theme='light'] .workspace .cue-id-view .artist-identity > span,
+html[data-theme='light'] .workspace .cue-id-view .artist-identity > small,
+html[data-theme='light'] .workspace .history-view .artist-identity > span,
+html[data-theme='light'] .workspace .history-view .artist-identity > small {
+  color:#555550 !important;
 }
