@@ -2849,22 +2849,27 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       </section>
     </template>
 
-    <div v-if="profilePreviewOpen" class="profile-preview-backdrop">
-      <article class="profile-preview profile-preview--site" role="dialog" aria-modal="true" aria-labelledby="profile-preview-title">
-        <header class="profile-preview__sitebar">
-          <div>
-            <span>PUBLIC PROFILE PREVIEW</span>
-            <p id="profile-preview-title">{{ copy.previewPrivate }}</p>
+    <Teleport to="body">
+      <div v-if="profilePreviewOpen" class="profile-preview-backdrop">
+        <article class="profile-preview profile-preview--site" role="dialog" aria-modal="true" aria-labelledby="profile-preview-title">
+          <div class="profile-preview__floatingbar">
+            <div>
+              <span id="profile-preview-title">{{ preferences.locale.value === 'es' ? 'VISTA PÚBLICA' : 'PUBLIC VIEW' }}</span>
+              <small>{{ preferences.locale.value === 'es' ? 'Así verá tu perfil un promoter.' : 'This is how a promoter sees your profile.' }}</small>
+            </div>
+            <button type="button" @click="profilePreviewOpen = false">
+              <span class="arrow arrow--sw" aria-hidden="true" />
+              {{ preferences.locale.value === 'es' ? 'Volver a edición' : 'Back to edit' }}
+            </button>
           </div>
-          <button type="button" :aria-label="copy.previewClose" @click="profilePreviewOpen = false">×</button>
-        </header>
-        <PublicArtistProfile
-          :profile="publicProfilePreview"
-          :locale="preferences.locale.value"
-          preview
-        />
-      </article>
-    </div>
+          <PublicArtistProfile
+            :profile="publicProfilePreview"
+            :locale="preferences.locale.value"
+            preview
+          />
+        </article>
+      </div>
+    </Teleport>
 
     <div v-if="settingsOpen" class="editor-backdrop" @click.self="closeSettings">
       <aside class="editor-panel settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title" tabindex="-1">
@@ -3225,11 +3230,11 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-preview-backdrop { position:fixed; inset:0; z-index:80; overflow:auto; background:#050505; }
 .profile-preview { width:100%; min-height:100dvh; background:#080808; color:#f4f2ed; }
 .profile-preview--site { max-height:none; overflow:visible; border:0; box-shadow:none; }
-.profile-preview__sitebar { position:sticky; z-index:20; top:0; display:flex; justify-content:space-between; align-items:center; min-height:58px; padding:10px 18px; border-bottom:1px solid #2f2f2f; background:rgba(7,7,7,.94); backdrop-filter:blur(14px); }
-.profile-preview__sitebar>div { display:grid; gap:4px; }
-.profile-preview__sitebar span { color:#cfff57; font:800 7px/1 monospace; letter-spacing:.12em; }
-.profile-preview__sitebar p { margin:0; color:#aaa; font:700 9px/1.2 monospace; letter-spacing:.08em; }
-.profile-preview__sitebar button { width:38px; height:38px; border:1px solid #343434; border-radius:8px; background:#0d0d0d; color:#f4f2ed; cursor:pointer; font-size:24px; }
+.profile-preview__floatingbar { position:fixed; z-index:40; top:max(14px,env(safe-area-inset-top)); right:max(14px,env(safe-area-inset-right)); display:flex; align-items:center; gap:14px; padding:9px 10px 9px 12px; border:1px solid rgba(255,255,255,.18); border-radius:12px; background:rgba(8,8,8,.82); box-shadow:0 14px 50px rgba(0,0,0,.42); backdrop-filter:blur(16px); }
+.profile-preview__floatingbar>div { display:grid; gap:3px; }
+.profile-preview__floatingbar>div>span { color:#cfff57; font:800 7px/1 monospace; letter-spacing:.12em; }
+.profile-preview__floatingbar>div>small { color:#aaa; font:700 8px/1.2 monospace; }
+.profile-preview__floatingbar>button { display:flex; align-items:center; gap:8px; min-height:38px; padding:0 12px; border:1px solid #3a3a3a; border-radius:8px; background:#111; color:#f4f2ed; cursor:pointer; font:800 9px/1 monospace; }
 .profile-preview-hero { position: relative; min-height: 420px; padding: clamp(40px,7vw,84px); overflow: hidden; border-bottom: 1px solid #343434; background: #0b0b0b; isolation: isolate; }
 .profile-preview-hero > img { position: absolute; z-index: -2; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .profile-preview-hero-shade { position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg,rgba(0,0,0,.88),rgba(0,0,0,.44) 64%,rgba(0,0,0,.2)),linear-gradient(0deg,rgba(0,0,0,.75),transparent 55%); }
@@ -3360,9 +3365,12 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .profile-savebar { bottom: 0; grid-template-columns: 1fr auto; gap: 10px; margin-inline: -1px; }
   .profile-savebar > p { grid-column: 1 / -1; grid-row: 2; }
   .profile-savebar .primary-button { min-width: 0; }
-  .profile-preview-backdrop { align-items: stretch; padding: 0; }
-  .profile-preview { width: 100%; max-height: 100dvh; border: 0; }
-  .profile-preview-hero { min-height: 280px; padding: 42px 22px; }
+  .profile-preview-backdrop { align-items:stretch; padding:0; }
+  .profile-preview { width:100%; max-height:none; border:0; }
+  .profile-preview__floatingbar { top:auto; right:12px; bottom:max(12px,env(safe-area-inset-bottom)); left:12px; justify-content:space-between; }
+  .profile-preview__floatingbar>div>small { display:none; }
+  .profile-preview__floatingbar>button { min-height:42px; }
+  .profile-preview-hero { min-height:280px; padding:42px 22px; }
   .profile-preview-hero h2 { font-size: clamp(3.6rem,19vw,6rem); }
   .profile-preview-body { grid-template-columns: 1fr; gap: 34px; padding: 30px 22px 46px; }
 }
