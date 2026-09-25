@@ -376,7 +376,10 @@ watch(
   display:grid;
   grid-template-columns:auto minmax(180px,.45fr) minmax(0,1fr);
   align-items:center;
+  align-content:center;
   gap:var(--cue-space-4);
+  min-height:0;
+  height:auto;
   margin:0;
   padding:12px var(--cue-space-5);
   border:0;
@@ -761,6 +764,32 @@ watch(
 }
 
 @media (max-width:760px) {
+  .core-history > :deep(.core-history__history-limit){
+    grid-template-columns:auto minmax(0,1fr);
+    align-items:center;
+    min-height:0;
+    height:auto;
+    gap:8px 12px;
+    padding:12px 14px;
+  }
+
+  .core-history > :deep(.core-history__history-limit > div){
+    min-width:0;
+  }
+
+  .core-history > :deep(.core-history__history-limit > strong){
+    min-width:0;
+    font-size:11px;
+    line-height:1.25;
+  }
+
+  .core-history > :deep(.core-history__history-limit > p){
+    grid-column:1 / -1;
+    margin:0;
+    font-size:10px;
+    line-height:1.4;
+  }
+
   .core-history__heading {
     padding:var(--cue-space-4);
   }
