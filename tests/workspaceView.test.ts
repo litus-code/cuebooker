@@ -115,3 +115,12 @@ test('workspace desktop navigation has one aria-current css contract', async () 
   assert.equal((source.match(/Workspace navigation: aria-current is the only selected-state contract/g) || []).length, 1)
   assert.doesNotMatch(source, /Final workspace nav contract|Canonical mobile workspace navigation|button\.active\.tour-focus/)
 })
+
+
+test('profile runtime failures are surfaced instead of leaving a blank view', async () => {
+  const source = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
+  assert.match(source, /data-workspace-surface="profile"/)
+  assert.match(source, /data-workspace-profile-content/)
+  assert.match(source, /data-workspace-profile-render-error/)
+  assert.match(source, /onErrorCaptured/)
+})
