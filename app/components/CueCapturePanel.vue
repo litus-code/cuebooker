@@ -53,6 +53,7 @@ const nextMoveDueAt = ref('')
 const interpretationMessage = ref('')
 const smartResult = ref<SmartCaptureResult | null>(null)
 const moreOpen = ref(false)
+const capturePanel = ref<HTMLElement | null>(null)
 
 const text = computed(() => props.locale === 'es' ? {
   eyebrow: 'CUE / NUEVA OPORTUNIDAD',
@@ -160,6 +161,8 @@ async function loadOptions() {
 
 watch(() => props.open, async value => {
   if (!value) return
+  await nextTick()
+  capturePanel.value?.scrollTo({ top: 0, behavior: 'auto' })
   reset()
   analytics.track('cue_open', {
     workspace_id: props.workspaceId,
@@ -419,7 +422,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 <template>
   <Teleport to="body">
     <div v-if="open" class="cue-capture-backdrop" @click.self="close">
-      <aside class="cue-capture" role="dialog" aria-modal="true" :aria-labelledby="'cue-capture-title'">
+      <aside ref="capturePanel" class="cue-capture" role="dialog" aria-modal="true" :aria-labelledby="'cue-capture-title'">
         <header class="cue-capture__header">
           <div>
             <p>{{ text.eyebrow }}</p>
@@ -538,7 +541,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 </template>
 
 <style scoped>
-.cue-capture-backdrop { position: fixed; z-index: 90; inset: 0; display: flex; justify-content: flex-end; background: rgba(0,0,0,.68); backdrop-filter: blur(6px); }
+:global(.cue-capture-backdrop) { position: fixed !important; z-index: 10000 !important; inset: 0 !important; width: 100vw !important; height: 100dvh !important; display: flex !important; justify-content: flex-end !important; margin: 0 !important; padding: 0 !important; background: rgba(0,0,0,.72) !important; backdrop-filter: blur(6px); }
 .cue-capture { --capture-accent:var(--cue-accent,#ceff54); width: min(560px, 100%); height: 100dvh; overflow-y: auto; box-sizing: border-box; border-left: 1px solid var(--cue-border,#303030); background: var(--cue-surface,#0d0d0d); color: var(--cue-text,#f4f3ef); box-shadow: -30px 0 80px rgba(0,0,0,.45); }
 .cue-capture__header { display: flex; justify-content: space-between; gap: 20px; padding: 26px 26px 22px; border-bottom: 1px solid #292929; }
 .cue-capture__header p, .cue-capture legend, .cue-capture label > span { margin: 0; color: #a6a6a6; font: 700 9px/1.25 monospace; letter-spacing: .12em; text-transform: uppercase; }
@@ -606,8 +609,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 .cue-capture__actions .cue-capture__save { border-color:color-mix(in srgb,var(--capture-accent) 72%,#3a3a3a); background:color-mix(in srgb,var(--capture-accent) 86%,#d8ddd0); color:#0b0b0b; }
 .cue-capture__actions button:disabled { opacity: .55; cursor: wait; }
 @media (max-width: 640px) {
-  .cue-capture-backdrop { align-items: flex-end; }
-  .cue-capture { height: 100dvh; max-height: 100dvh; border-top: 1px solid #333; border-left: 0; }
+  :global(.cue-capture-backdrop) { inset:0 !important; align-items:stretch !important; justify-content:stretch !important; }
+  .cue-capture { position:fixed; z-index:10001; inset:0; width:100vw; height:100dvh; max-height:100dvh; margin:0; border:0; border-radius:0; box-shadow:none; }
   .cue-capture__header { position: sticky; top: 0; z-index: 4; padding: max(18px, env(safe-area-inset-top)) 16px 15px; background: color-mix(in srgb,var(--cue-surface,#0d0d0d) 97%,transparent); backdrop-filter: blur(12px); }
   .cue-capture__header h2 { font-size: 2.35rem; }
   .cue-capture__form { padding: 0 16px 20px; }
