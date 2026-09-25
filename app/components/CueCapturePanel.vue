@@ -538,15 +538,18 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 </template>
 
 <style scoped>
-.cue-capture-backdrop { position: fixed; z-index: 90; inset: 0; display: flex; justify-content: flex-end; background: rgba(0,0,0,.72); backdrop-filter: blur(4px); }
-.cue-capture { --capture-accent:var(--cue-accent,#ceff54); width: min(560px, 100%); height: 100dvh; overflow-y: auto; box-sizing: border-box; border-left: 1px solid #303030; background: #0d0d0d; color: #f4f3ef; box-shadow: -30px 0 90px rgba(0,0,0,.5); }
+.cue-capture-backdrop { position: fixed; z-index: 90; inset: 0; display: flex; justify-content: flex-end; background: rgba(0,0,0,.68); backdrop-filter: blur(6px); }
+.cue-capture { --capture-accent:var(--cue-accent,#ceff54); width: min(560px, 100%); height: 100dvh; overflow-y: auto; box-sizing: border-box; border-left: 1px solid var(--cue-border,#303030); background: var(--cue-surface,#0d0d0d); color: var(--cue-text,#f4f3ef); box-shadow: -30px 0 80px rgba(0,0,0,.45); }
 .cue-capture__header { display: flex; justify-content: space-between; gap: 20px; padding: 26px 26px 22px; border-bottom: 1px solid #292929; }
 .cue-capture__header p, .cue-capture legend, .cue-capture label > span { margin: 0; color: #a6a6a6; font: 700 9px/1.25 monospace; letter-spacing: .12em; text-transform: uppercase; }
 .cue-capture__header p { color:color-mix(in srgb,var(--capture-accent) 82%,#a5a79d); }
 .cue-capture__header h2 { margin: 9px 0 8px; font-size: clamp(2rem,5vw,3.6rem); line-height: .88; letter-spacing: -.045em; }
 .cue-capture__header span { display: block; max-width: 420px; color: #999; font-size: 13px; line-height: 1.45; }
-.cue-capture__header > button { width: 38px; height: 38px; flex: 0 0 auto; border: 1px solid #333; background: transparent; color: #fff; cursor: pointer; }
-.cue-capture__header svg { width: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+.cue-capture__header > button { display:grid; place-items:center; width:44px; height:44px; flex:0 0 44px; padding:0; border:1px solid var(--cue-border,#3a3a3a); border-radius:50%; background:var(--cue-raised,#141414); color:var(--cue-text,#fff); cursor:pointer; transition:border-color .16s ease,background .16s ease,transform .16s ease; }
+.cue-capture__header > button:hover { border-color:color-mix(in srgb,var(--capture-accent) 45%,var(--cue-border,#3a3a3a)); }
+.cue-capture__header > button:active { transform:scale(.96); }
+.cue-capture__header > button:focus-visible { outline:2px solid color-mix(in srgb,var(--capture-accent) 78%,#d9ddd0); outline-offset:2px; }
+.cue-capture__header svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.7; }
 .cue-capture__form { display: grid; gap: 0; padding: 0 26px 28px; }
 .cue-capture__channel { display: flex; flex-wrap: wrap; gap: 7px; margin: 0; padding: 22px 0; border: 0; border-bottom: 1px solid #292929; }
 .cue-capture__channel legend { width: 100%; margin-bottom: 8px; }
@@ -605,7 +608,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 @media (max-width: 640px) {
   .cue-capture-backdrop { align-items: flex-end; }
   .cue-capture { height: 100dvh; max-height: 100dvh; border-top: 1px solid #333; border-left: 0; }
-  .cue-capture__header { position: sticky; top: 0; z-index: 4; padding: max(18px, env(safe-area-inset-top)) 16px 15px; background: rgba(13,13,13,.98); backdrop-filter: blur(10px); }
+  .cue-capture__header { position: sticky; top: 0; z-index: 4; padding: max(18px, env(safe-area-inset-top)) 16px 15px; background: color-mix(in srgb,var(--cue-surface,#0d0d0d) 97%,transparent); backdrop-filter: blur(12px); }
   .cue-capture__header h2 { font-size: 2.35rem; }
   .cue-capture__form { padding: 0 16px 20px; }
   .cue-capture__channel { padding: 16px 0; gap: 5px; }
