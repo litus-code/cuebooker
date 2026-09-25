@@ -373,7 +373,27 @@ watch(
 }
 
 .core-history > :deep(.core-history__history-limit){
-  margin:var(--cue-space-3);
+  display:grid;
+  grid-template-columns:auto minmax(180px,.45fr) minmax(0,1fr);
+  align-items:center;
+  gap:var(--cue-space-4);
+  margin:0;
+  padding:12px var(--cue-space-5);
+  border:0;
+  border-bottom:1px solid var(--workspace-line, var(--cue-border));
+  border-radius:0;
+  background:color-mix(in srgb,var(--cue-accent) 3%,var(--cue-surface));
+}
+.core-history > :deep(.core-history__history-limit > div){
+  min-width:120px;
+}
+.core-history > :deep(.core-history__history-limit > strong){
+  font-size:11px;
+  line-height:1.25;
+}
+.core-history > :deep(.core-history__history-limit > p){
+  font-size:10px;
+  line-height:1.4;
 }
 .core-history__heading {
   display:flex;
