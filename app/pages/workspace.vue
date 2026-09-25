@@ -1941,14 +1941,14 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         </button>
       </div>
       <nav id="workspace-navigation" aria-label="Workspace">
-        <button :title="copy.overview" data-workspace-view="overview" :aria-current="activeView === 'overview' && !settingsOpen ? 'page' : undefined" :class="{ active: activeView === 'overview' && !settingsOpen }" type="button" @click="changeView('overview')">{{ copy.overview }}</button>
-        <button :title="copy.bookings" data-workspace-view="bookings" :aria-current="activeView === 'bookings' && !settingsOpen ? 'page' : undefined" :class="{ active: activeView === 'bookings' && !settingsOpen }" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
-        <button :title="copy.calendar" data-workspace-view="calendar" :aria-current="activeView === 'calendar' && !settingsOpen ? 'page' : undefined" :class="{ active: activeView === 'calendar' && !settingsOpen }" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
-        <button :title="copy.history" data-workspace-view="history" :aria-current="activeView === 'history' && !settingsOpen ? 'page' : undefined" :class="{ active: activeView === 'history' && !settingsOpen }" type="button" @click="changeView('history')">{{ copy.history }}</button>
-        <button :title="copy.profile" data-workspace-view="profile" :aria-current="activeView === 'profile' && !settingsOpen ? 'page' : undefined" :class="{ active: activeView === 'profile' && !settingsOpen }" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
-        <button :title="copy.passport" data-workspace-view="passport" :aria-current="activeView === 'passport' && !settingsOpen ? 'page' : undefined" :class="{ active: activeView === 'passport' && !settingsOpen }" type="button" @click="changeView('passport')">{{ copy.passport }}</button>
-        <button :title="copy.cueId" data-workspace-view="cue-id" :aria-current="activeView === 'cue-id' && !settingsOpen ? 'page' : undefined" :class="{ active: activeView === 'cue-id' && !settingsOpen }" type="button" @click="changeView('cue-id')">{{ copy.cueId }}</button>
-        <button :title="copy.settings" data-workspace-view="settings" :aria-current="settingsOpen ? 'page' : undefined" :class="{ active: settingsOpen }" type="button" @click="openSettings">{{ copy.settings }}</button>
+        <button :title="copy.overview" data-workspace-view="overview" :aria-current="activeView === 'overview' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('overview')">{{ copy.overview }}</button>
+        <button :title="copy.bookings" data-workspace-view="bookings" :aria-current="activeView === 'bookings' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
+        <button :title="copy.calendar" data-workspace-view="calendar" :aria-current="activeView === 'calendar' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
+        <button :title="copy.history" data-workspace-view="history" :aria-current="activeView === 'history' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('history')">{{ copy.history }}</button>
+        <button :title="copy.profile" data-workspace-view="profile" :aria-current="activeView === 'profile' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
+        <button :title="copy.passport" data-workspace-view="passport" :aria-current="activeView === 'passport' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('passport')">{{ copy.passport }}</button>
+        <button :title="copy.cueId" data-workspace-view="cue-id" :aria-current="activeView === 'cue-id' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('cue-id')">{{ copy.cueId }}</button>
+        <button :title="copy.settings" data-workspace-view="settings" :aria-current="settingsOpen ? 'page' : undefined" type="button" @click="openSettings">{{ copy.settings }}</button>
       </nav>
       <div class="account-actions">
         <WorkspaceNotifications :locale="preferences.locale.value" @open-booking="openNotificationBooking" />
@@ -2026,75 +2026,49 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <section v-else-if="loadingView === 'history'" class="workspace-skeleton workspace-skeleton--history" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
-
-      <div class="workspace-skeleton__history-page">
-        <i class="skeleton-line skeleton-line--eyebrow" />
-        <i class="skeleton-line skeleton-line--history-page-title" />
-        <i class="skeleton-line skeleton-line--history-page-body" />
-      </div>
-
-      <div class="workspace-skeleton__history-module">
-        <i class="skeleton-panel skeleton-panel--history-heading-block" />
-
-        <div class="workspace-skeleton__history-tools-block">
-          <i class="skeleton-panel skeleton-panel--history-search-block" />
-          <i class="skeleton-panel skeleton-panel--history-filters-block" />
-        </div>
-
-        <div class="workspace-skeleton__history-timeline-block">
-          <i v-for="index in 6" :key="`history-row-${index}`" class="skeleton-panel skeleton-panel--history-row-block" />
-        </div>
+      <div class="workspace-skeleton__page-head skeleton-panel" />
+      <div class="workspace-skeleton__history-shell">
+        <i class="skeleton-panel skeleton-panel--history-top" />
+        <i class="skeleton-panel skeleton-panel--history-pro" />
+        <i class="skeleton-panel skeleton-panel--history-tools" />
+        <i class="skeleton-panel skeleton-panel--history-list" />
       </div>
     </section>
 
     <section v-else-if="loadingView === 'profile'" class="workspace-skeleton workspace-skeleton--profile" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
-      <div class="workspace-skeleton__heading">
-        <i class="skeleton-line skeleton-line--eyebrow" />
-        <div class="workspace-skeleton__title-block" aria-hidden="true">
-          <i class="skeleton-line skeleton-line--title skeleton-line--title-primary" />
-          <i class="skeleton-line skeleton-line--title skeleton-line--title-secondary" />
-        </div>
-        <i class="skeleton-line skeleton-line--body" />
-      </div>
-      <div class="workspace-skeleton__profile-status">
-        <i class="skeleton-line" />
-        <i class="skeleton-panel" />
-      </div>
-      <div class="workspace-skeleton__profile-portfolio">
-        <i class="skeleton-panel skeleton-panel--profile-hero" />
-        <div class="workspace-skeleton__profile-row">
-          <i class="skeleton-panel" />
-          <i class="skeleton-panel" />
-        </div>
+      <div class="workspace-skeleton__page-head skeleton-panel" />
+      <i class="skeleton-panel skeleton-panel--profile-publish" />
+      <div class="workspace-skeleton__profile-shell">
+        <i class="skeleton-panel skeleton-panel--profile-cover" />
+        <i class="skeleton-panel skeleton-panel--profile-about" />
+        <i class="skeleton-panel skeleton-panel--profile-sound" />
         <i class="skeleton-panel skeleton-panel--profile-passport" />
+        <i class="skeleton-panel skeleton-panel--profile-links" />
         <i class="skeleton-panel skeleton-panel--profile-booking" />
       </div>
     </section>
 
-    <section v-else-if="loadingView === 'passport'" class="workspace-skeleton workspace-skeleton--cue-id" aria-busy="true" aria-live="polite">
+    <section v-else-if="loadingView === 'passport'" class="workspace-skeleton workspace-skeleton--passport" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
-      <div class="workspace-skeleton__cue-id-heading">
-        <i class="skeleton-line skeleton-line--eyebrow" />
-        <i class="skeleton-line skeleton-line--cue-id-title" />
-        <i class="skeleton-line skeleton-line--cue-id-body" />
+      <div class="workspace-skeleton__page-head skeleton-panel" />
+      <i class="skeleton-panel skeleton-panel--passport-hero" />
+      <div class="workspace-skeleton__passport-grid">
+        <i class="skeleton-panel" />
+        <i class="skeleton-panel" />
+        <i class="skeleton-panel" />
       </div>
-      <i class="skeleton-panel skeleton-panel--cue-id-hero" />
-      <div class="workspace-skeleton__cue-id-grid">
-        <i v-for="index in 3" :key="`passport-card-${index}`" class="skeleton-panel skeleton-panel--cue-id-card" />
-      </div>
+      <i class="skeleton-panel skeleton-panel--passport-world" />
     </section>
 
     <section v-else-if="loadingView === 'cue-id'" class="workspace-skeleton workspace-skeleton--cue-id" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
-      <div class="workspace-skeleton__cue-id-heading">
-        <i class="skeleton-line skeleton-line--eyebrow" />
-        <i class="skeleton-line skeleton-line--cue-id-title" />
-        <i class="skeleton-line skeleton-line--cue-id-body" />
-      </div>
-      <i class="skeleton-panel skeleton-panel--cue-id-hero" />
-      <div class="workspace-skeleton__cue-id-grid">
-        <i v-for="index in 3" :key="`cue-id-card-${index}`" class="skeleton-panel skeleton-panel--cue-id-card" />
+      <div class="workspace-skeleton__page-head skeleton-panel" />
+      <i class="skeleton-panel skeleton-panel--cue-stage" />
+      <div class="workspace-skeleton__cue-grid">
+        <i class="skeleton-panel" />
+        <i class="skeleton-panel" />
+        <i class="skeleton-panel" />
       </div>
     </section>
 
@@ -4032,5 +4006,123 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   #workspace-navigation > button[aria-current='page'] {
     box-shadow: inset 0 -2px 0 var(--cue-accent) !important;
   }
+}
+
+
+/* Final workspace nav contract: aria-current is the sole selected-state source. */
+@media (min-width:961px){
+  .workspace #workspace-navigation>button,
+  .workspace #workspace-navigation>button:hover,
+  .workspace #workspace-navigation>button:focus,
+  .workspace #workspace-navigation>button:focus-visible,
+  .workspace #workspace-navigation>button:active,
+  .workspace.workspace--sidebar-collapsed #workspace-navigation>button,
+  .workspace.workspace--sidebar-collapsed #workspace-navigation>button:hover,
+  .workspace.workspace--sidebar-collapsed #workspace-navigation>button:focus,
+  .workspace.workspace--sidebar-collapsed #workspace-navigation>button:focus-visible,
+  .workspace.workspace--sidebar-collapsed #workspace-navigation>button:active{
+    border-color:transparent!important;
+    background:transparent!important;
+    background-color:transparent!important;
+    background-image:none!important;
+    color:var(--cue-muted)!important;
+    box-shadow:none!important;
+    transform:none!important;
+  }
+  .workspace #workspace-navigation>button[aria-current='page'],
+  .workspace #workspace-navigation>button[aria-current='page']:hover,
+  .workspace #workspace-navigation>button[aria-current='page']:focus,
+  .workspace #workspace-navigation>button[aria-current='page']:focus-visible,
+  .workspace #workspace-navigation>button[aria-current='page']:active,
+  .workspace.workspace--sidebar-collapsed #workspace-navigation>button[aria-current='page'],
+  .workspace.workspace--sidebar-collapsed #workspace-navigation>button[aria-current='page']:hover,
+  .workspace.workspace--sidebar-collapsed #workspace-navigation>button[aria-current='page']:focus,
+  .workspace.workspace--sidebar-collapsed #workspace-navigation>button[aria-current='page']:focus-visible,
+  .workspace.workspace--sidebar-collapsed #workspace-navigation>button[aria-current='page']:active{
+    color:var(--cue-accent)!important;
+    box-shadow:inset 2px 0 0 var(--cue-accent)!important;
+  }
+  .workspace #workspace-navigation>button::before,
+  .workspace.workspace--sidebar-collapsed #workspace-navigation>button::before{display:none!important}
+}
+@media (max-width:960px){
+  .workspace #workspace-navigation>button,
+  .workspace #workspace-navigation>button:hover,
+  .workspace #workspace-navigation>button:focus,
+  .workspace #workspace-navigation>button:focus-visible,
+  .workspace #workspace-navigation>button:active{
+    border-color:transparent!important;
+    background:transparent!important;
+    background-color:transparent!important;
+    background-image:none!important;
+    color:var(--cue-muted)!important;
+    box-shadow:none!important;
+    transform:none!important;
+  }
+  .workspace #workspace-navigation>button[aria-current='page'],
+  .workspace #workspace-navigation>button[aria-current='page']:hover,
+  .workspace #workspace-navigation>button[aria-current='page']:focus,
+  .workspace #workspace-navigation>button[aria-current='page']:focus-visible,
+  .workspace #workspace-navigation>button[aria-current='page']:active{
+    color:var(--cue-accent)!important;
+    box-shadow:inset 0 -2px 0 var(--cue-accent)!important;
+  }
+}
+
+/* Broad skeletons mirror the real page blocks, not their inner text. */
+.workspace-skeleton__page-head{
+  width:100%;
+  min-height:180px;
+  margin-bottom:18px;
+}
+.workspace-skeleton__history-shell,
+.workspace-skeleton__profile-shell{
+  overflow:hidden;
+  border:1px solid var(--workspace-line,var(--cue-border));
+  background:var(--cue-surface);
+}
+.workspace-skeleton__history-shell>.skeleton-panel,
+.workspace-skeleton__profile-shell>.skeleton-panel{
+  width:100%;
+  margin:0;
+  border:0;
+  border-bottom:1px solid var(--workspace-line,var(--cue-border));
+  border-radius:0;
+}
+.skeleton-panel--history-top{min-height:120px}
+.skeleton-panel--history-pro{min-height:64px}
+.skeleton-panel--history-tools{min-height:76px}
+.skeleton-panel--history-list{min-height:520px;border-bottom:0!important}
+
+.skeleton-panel--profile-publish{width:100%;min-height:92px;margin-bottom:16px}
+.skeleton-panel--profile-cover{min-height:480px}
+.skeleton-panel--profile-about{min-height:220px}
+.skeleton-panel--profile-sound{min-height:150px}
+.skeleton-panel--profile-passport{min-height:300px}
+.skeleton-panel--profile-links{min-height:180px}
+.skeleton-panel--profile-booking{min-height:190px;border-bottom:0!important}
+
+.skeleton-panel--passport-hero{width:100%;min-height:360px;margin-bottom:16px}
+.workspace-skeleton__passport-grid,
+.workspace-skeleton__cue-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px;
+}
+.workspace-skeleton__passport-grid>.skeleton-panel{min-height:220px}
+.skeleton-panel--passport-world{width:100%;min-height:420px;margin-top:16px}
+
+.skeleton-panel--cue-stage{width:100%;min-height:520px;margin-bottom:16px}
+.workspace-skeleton__cue-grid>.skeleton-panel{min-height:220px}
+
+@media(max-width:960px){
+  .workspace-skeleton__page-head{min-height:150px}
+  .workspace-skeleton__passport-grid,
+  .workspace-skeleton__cue-grid{grid-template-columns:1fr}
+  .skeleton-panel--profile-cover{min-height:360px}
+  .skeleton-panel--history-list{min-height:420px}
+  .skeleton-panel--passport-hero{min-height:300px}
+  .skeleton-panel--passport-world{min-height:340px}
+  .skeleton-panel--cue-stage{min-height:420px}
 }
 </style>
