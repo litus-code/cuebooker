@@ -371,7 +371,12 @@ const canEditSelectedArtist = computed(() => ['owner', 'manager'].includes(selec
 const profileSurfaceReady = computed(() => Boolean(artistProfiles.activeProfile.value?.artist || profileForm.value.stageName))
 const bookingSurfaceReady = computed(() => Boolean(bookingCoreWorkspaceId.value) || !bookingCoreBootstrapLoading.value)
 
-const workspaceSurfaceLoading = computed(() => loading.value)
+const workspaceSurfaceLoading = computed(() => {
+  if (loading.value) return true
+  return ['profile', 'passport', 'cue-id'].includes(activeView.value)
+    && profileLoading.value
+    && !profileSurfaceReady.value
+})
 type WorkspaceNavigationView = WorkspaceView | 'settings'
 const activeNavigationView = computed<WorkspaceNavigationView | null>(() => {
   if (!workspaceBootResolved.value) return null
@@ -662,11 +667,13 @@ onBeforeMount(() => {
 onMounted(async () => {
   if (import.meta.client) sidebarCollapsed.value = localStorage.getItem('cuebooker.sidebar.collapsed') === 'true'
   try {
-    await withWorkspaceTimeout(auth.initialize(), 8000, 'auth')
-    if (!auth.signedIn.value) return await navigateTo('/access')
-    if (!auth.profile.value) await withWorkspaceTimeout(auth.fetchProfile(), 8000, 'profile')
-    if (!auth.profile.value?.onboarding_completed) return await navigateTo('/onboarding')
-    await loadWorkspaceIdentity()
+    await withWorkspaceTimeout((async () => {
+      await auth.initialize()
+      if (!auth.signedIn.value) return await navigateTo('/access')
+      if (!auth.profile.value) await auth.fetchProfile()
+      if (!auth.profile.value?.onboarding_completed) return await navigateTo('/onboarding')
+      await loadWorkspaceIdentity()
+    })(), 8000, 'workspace_boot')
   } catch (error: any) {
     errorMessage.value = error?.message?.includes('_timeout')
       ? (preferences.locale.value === 'es'
@@ -1558,11 +1565,13 @@ async function loadArtistProfile() {
       technicalRiderUrl: booking?.technical_rider_url || '',
       hospitalityRiderUrl: booking?.hospitality_rider_url || ''
     }
-    await Promise.all([
+    // The base artist record is enough to render Profile, Passport and CUE ID.
+    // Visual media and publishing state hydrate afterwards and must not block the surface.
+    void Promise.all([
       loadProfileCover(profileForm.value.coverImagePath),
       loadProfileVisualMedia(record.artist.artist_image_path, record.artist.artist_cutout_path),
       loadPublicPublishingState()
-    ])
+    ]).catch(error => console.warn('[workspace] optional profile hydration failed', error?.message || error))
   } catch (error: any) {
     errorMessage.value = error?.data?.message || error?.message || copy.value.profileSaveError
   } finally {
@@ -2966,6 +2975,17 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 <style scoped>
 :global(body) { margin: 0; background: var(--cue-bg); }
 button, select, input, textarea { font: inherit; }
+.sr-only {
+  position:absolute !important;
+  width:1px !important;
+  height:1px !important;
+  padding:0 !important;
+  margin:-1px !important;
+  overflow:hidden !important;
+  clip:rect(0,0,0,0) !important;
+  white-space:nowrap !important;
+  border:0 !important;
+}
 button, a, select { -webkit-tap-highlight-color: transparent; }
 .workspace { min-height: 100vh; padding: 0 28px 64px; background: var(--cue-bg); color: var(--cue-text); font-family: Arial, Helvetica, sans-serif; }
 .workspace-header { position: sticky; z-index: 20; top: 0; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 64px; margin-inline: -28px; padding-inline: 28px; border-bottom: 1px solid var(--cue-border); background: color-mix(in srgb, var(--cue-bg) 94%, transparent); backdrop-filter: blur(12px); }
@@ -4132,25 +4152,25 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .skeleton-panel--history-list{min-height:520px;border-bottom:0!important}
 
 .skeleton-panel--profile-publish{width:100%;min-height:92px;margin-bottom:16px}
-.skeleton-panel--profile-cover{min-height:480px}
-.skeleton-panel--profile-about{min-height:220px}
-.skeleton-panel--profile-sound{min-height:150px}
-.skeleton-panel--profile-passport{min-height:300px}
-.skeleton-panel--profile-links{min-height:180px}
-.skeleton-panel--profile-booking{min-height:190px;border-bottom:0!important}
+.skeleton-panel--profile-cover{min-height:360px}
+.skeleton-panel--profile-about{min-height:150px}
+.skeleton-panel--profile-sound{min-height:110px}
+.skeleton-panel--profile-passport{min-height:140px}
+.skeleton-panel--profile-links{min-height:120px}
+.skeleton-panel--profile-booking{min-height:120px;border-bottom:0!important}
 
-.skeleton-panel--passport-hero{width:100%;min-height:360px;margin-bottom:16px}
+.skeleton-panel--passport-hero{width:100%;min-height:260px;margin-bottom:16px}
 .workspace-skeleton__passport-grid,
 .workspace-skeleton__cue-grid{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
   gap:16px;
 }
-.workspace-skeleton__passport-grid>.skeleton-panel{min-height:220px}
-.skeleton-panel--passport-world{width:100%;min-height:420px;margin-top:16px}
+.workspace-skeleton__passport-grid>.skeleton-panel{min-height:150px}
+.skeleton-panel--passport-world{width:100%;min-height:260px;margin-top:16px}
 
-.skeleton-panel--cue-stage{width:100%;min-height:520px;margin-bottom:16px}
-.workspace-skeleton__cue-grid>.skeleton-panel{min-height:220px}
+.skeleton-panel--cue-stage{width:100%;min-height:320px;margin-bottom:16px}
+.workspace-skeleton__cue-grid>.skeleton-panel{min-height:150px}
 
 @media(max-width:960px){
   .workspace-skeleton__page-head{min-height:150px}
@@ -4180,11 +4200,11 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   min-height:780px;
 }
 .workspace-skeleton--profile .workspace-skeleton__profile-shell{
-  min-height:1220px;
+  min-height:620px;
 }
 .workspace-skeleton--passport,
 .workspace-skeleton--cue-id{
-  min-height:calc(100dvh - 110px);
+  min-height:0;
 }
 @media(max-width:960px){
   .workspace-skeleton__calendar-blocks{
@@ -4200,7 +4220,7 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
     min-height:650px;
   }
   .workspace-skeleton--profile .workspace-skeleton__profile-shell{
-    min-height:1020px;
+    min-height:520px;
   }
 }
 
