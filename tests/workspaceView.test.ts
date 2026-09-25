@@ -93,3 +93,19 @@ test('neutral boot loader does not depend on the CueBrand component', async () =
   assert.match(loader, /workspace-loading-state__mark/)
   assert.doesNotMatch(loader, /<CueBrand/)
 })
+
+
+test('workspace route is the canonical desktop navigation state', async () => {
+  const source = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
+  assert.match(source, /const activeView = computed<WorkspaceView>/)
+  assert.match(source, /explicitWorkspaceViewFromQuery\(route\.query\.view, route\.query\.booking\)/)
+  assert.doesNotMatch(source, /activeView\.value\s*=\s*['"]/)
+  assert.doesNotMatch(source, /@click="activeView\s*=/)
+  assert.doesNotMatch(source, /@open-bookings="activeView\s*=/)
+})
+
+test('workspace desktop navigation has one aria-current css contract', async () => {
+  const source = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
+  assert.equal((source.match(/Workspace navigation: aria-current is the only selected-state contract/g) || []).length, 1)
+  assert.doesNotMatch(source, /Final workspace nav contract|Canonical mobile workspace navigation|button\.active\.tour-focus/)
+})
