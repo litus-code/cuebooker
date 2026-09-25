@@ -369,10 +369,18 @@ const manageableAgency = computed(() => organizations.value.find(item => item.ty
 const ownerAgency = computed(() => organizations.value.find(item => item.type === 'agency' && item.role === 'owner'))
 const selectedArtist = computed(() => artists.value.find(item => item.id === selectedArtistId.value))
 const canEditSelectedArtist = computed(() => ['owner', 'manager'].includes(selectedArtist.value?.role || ''))
+const profileSurfaceReady = computed(() => Boolean(artistProfiles.activeProfile.value?.artist || profileForm.value.stageName))
+const bookingSurfaceReady = computed(() => Boolean(bookingCoreWorkspaceId.value) || !bookingCoreBootstrapLoading.value)
+
 const workspaceSurfaceLoading = computed(() => {
   if (loading.value) return true
-  if (activeView.value === 'profile' || activeView.value === 'cue-id') return profileLoading.value
-  if (activeView.value === 'passport') return profileLoading.value || bookingCoreBootstrapLoading.value || cueCoreLoading.value
+  if (activeView.value === 'profile' || activeView.value === 'cue-id') {
+    return profileLoading.value && !profileSurfaceReady.value
+  }
+  if (activeView.value === 'passport') {
+    return (profileLoading.value && !profileSurfaceReady.value)
+      || (!bookingSurfaceReady.value && (bookingCoreBootstrapLoading.value || cueCoreLoading.value))
+  }
   return false
 })
 const tourNamespace = computed(() => auth.session.value?.user.id && selectedArtistId.value ? `workspace-${auth.session.value.user.id}-${selectedArtistId.value}` : undefined)
@@ -2004,13 +2012,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
     <template v-if="workspaceSurfaceLoading">
-    <section v-if="!workspaceBootResolved" class="workspace-loading-state" aria-busy="true" aria-live="polite">
-      <CueBrand class="workspace-loading-state__logo" decorative />
-      <div class="workspace-loading-state__pulse" aria-hidden="true"><i /><i /><i /></div>
-      <span class="sr-only">{{ copy.loading }}</span>
-    </section>
-
-    <section v-else-if="settingsOpen" class="workspace-skeleton workspace-skeleton--settings" aria-busy="true" aria-live="polite">
+    <section v-if="settingsOpen" class="workspace-skeleton workspace-skeleton--settings" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
       <div class="workspace-skeleton__page-head skeleton-panel" />
       <div class="workspace-skeleton__settings-shell">
@@ -2023,27 +2025,13 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <section v-else-if="loadingView === 'bookings'" class="workspace-skeleton workspace-skeleton--bookings" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
-      <div class="workspace-skeleton__heading workspace-skeleton__heading--bookings">
-        <i class="skeleton-line skeleton-line--eyebrow" />
-        <div class="workspace-skeleton__title-block" aria-hidden="true">
-          <i class="skeleton-line skeleton-line--title skeleton-line--title-primary" />
-          <i class="skeleton-line skeleton-line--title skeleton-line--title-secondary" />
-        </div>
-        <i class="skeleton-line skeleton-line--body" />
-      </div>
+      <i class="skeleton-panel workspace-skeleton__page-head" />
       <i class="skeleton-panel skeleton-panel--booking-cue" />
       <div class="workspace-skeleton__booking-shell">
         <i class="skeleton-panel skeleton-panel--booking-toolbar" />
         <div class="workspace-skeleton__booking-layout">
-          <div class="workspace-skeleton__booking-list">
-            <i v-for="index in 5" :key="`booking-row-${index}`" class="skeleton-panel skeleton-panel--booking-row" />
-          </div>
-          <div class="workspace-skeleton__booking-detail">
-            <i class="skeleton-panel skeleton-panel--booking-head" />
-            <i class="skeleton-panel skeleton-panel--booking-facts" />
-            <i class="skeleton-panel skeleton-panel--booking-conversation" />
-            <i class="skeleton-panel skeleton-panel--booking-followup" />
-          </div>
+          <i class="skeleton-panel skeleton-panel--booking-list-block" />
+          <i class="skeleton-panel skeleton-panel--booking-detail-block" />
         </div>
       </div>
     </section>
@@ -2105,24 +2093,23 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       </div>
     </section>
 
-    <section v-else-if="loadingView === 'overview'" class="workspace-skeleton" aria-busy="true" aria-live="polite">
+    <section v-else-if="loadingView === 'overview'" class="workspace-skeleton workspace-skeleton--overview" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
-      <div class="workspace-skeleton__heading">
-        <i class="skeleton-line skeleton-line--eyebrow" />
-        <div class="workspace-skeleton__title-block" aria-hidden="true">
-          <i class="skeleton-line skeleton-line--title skeleton-line--title-primary" />
-          <i class="skeleton-line skeleton-line--title skeleton-line--title-secondary" />
-        </div>
-        <i class="skeleton-line skeleton-line--body" />
+      <i class="skeleton-panel workspace-skeleton__page-head" />
+      <div class="workspace-skeleton__overview-stats">
+        <i v-for="index in 5" :key="`overview-stat-${index}`" class="skeleton-panel" />
       </div>
-      <div class="workspace-skeleton__stats">
-        <i v-for="index in 5" :key="`stat-${index}`" class="skeleton-card" />
+      <i class="skeleton-panel skeleton-panel--overview-attention" />
+      <div class="workspace-skeleton__overview-bottom">
+        <i class="skeleton-panel skeleton-panel--overview-agenda" />
+        <i class="skeleton-panel skeleton-panel--overview-cue" />
       </div>
-      <i class="skeleton-panel skeleton-panel--attention" />
-      <div class="workspace-skeleton__body">
-        <i class="skeleton-panel skeleton-panel--agenda" />
-        <i class="skeleton-panel skeleton-panel--cue" />
-      </div>
+    </section>
+
+    <section v-else class="workspace-loading-state" aria-busy="true" aria-live="polite">
+      <CueBrand class="workspace-loading-state__logo" decorative />
+      <div class="workspace-loading-state__pulse" aria-hidden="true"><i /><i /><i /></div>
+      <span class="sr-only">{{ copy.loading }}</span>
     </section>
     </template>
 
@@ -4284,5 +4271,155 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .skeleton-panel--passport-hero{min-height:290px !important}
   .skeleton-panel--passport-world{min-height:330px !important}
   .skeleton-panel--cue-stage{min-height:400px !important}
+}
+
+
+/* Skeleton V3: structural blocks only, matching the final workspace footprint. */
+.workspace > .workspace-skeleton {
+  justify-self:stretch !important;
+  align-self:start !important;
+  width:100% !important;
+  max-width:none !important;
+  min-width:0 !important;
+  min-height:calc(100dvh - 48px) !important;
+  margin:0 !important;
+  padding:24px 0 48px !important;
+  box-sizing:border-box !important;
+}
+
+.workspace > .workspace-skeleton .skeleton-panel {
+  box-sizing:border-box !important;
+  width:100% !important;
+  max-width:none !important;
+}
+
+.workspace-skeleton__page-head {
+  display:block !important;
+  min-height:184px !important;
+  margin:0 0 18px !important;
+}
+
+/* Overview mirrors: heading / 5 KPIs / attention / agenda + CUE. */
+.workspace-skeleton__overview-stats {
+  display:grid !important;
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  width:100% !important;
+  gap:0 !important;
+  margin:0 0 16px !important;
+}
+.workspace-skeleton__overview-stats > .skeleton-panel {
+  min-height:148px !important;
+  border-radius:0 !important;
+}
+.workspace-skeleton__overview-stats > .skeleton-panel + .skeleton-panel {
+  border-left:0 !important;
+}
+.skeleton-panel--overview-attention {
+  min-height:168px !important;
+  margin-bottom:16px !important;
+}
+.workspace-skeleton__overview-bottom {
+  display:grid !important;
+  grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr) !important;
+  gap:16px !important;
+  width:100% !important;
+}
+.skeleton-panel--overview-agenda,
+.skeleton-panel--overview-cue {
+  min-height:330px !important;
+}
+
+/* Bookings mirrors: heading / CUE / toolbar / list + detail. */
+.skeleton-panel--booking-cue {
+  min-height:132px !important;
+  margin-bottom:16px !important;
+}
+.workspace-skeleton__booking-shell {
+  width:100% !important;
+}
+.skeleton-panel--booking-toolbar {
+  min-height:76px !important;
+}
+.workspace-skeleton__booking-layout {
+  display:grid !important;
+  grid-template-columns:minmax(320px,.72fr) minmax(0,1.45fr) !important;
+  min-height:600px !important;
+  width:100% !important;
+}
+.skeleton-panel--booking-list-block,
+.skeleton-panel--booking-detail-block {
+  min-height:600px !important;
+  margin:0 !important;
+  border-radius:0 !important;
+}
+.skeleton-panel--booking-detail-block {
+  border-left:0 !important;
+}
+
+/* Calendar mirrors its actual month + selected-day two-column layout. */
+.workspace-skeleton__calendar-blocks {
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(320px,360px) !important;
+  gap:16px !important;
+  width:100% !important;
+}
+.skeleton-panel--calendar-month-block,
+.skeleton-panel--calendar-day-block {
+  min-height:650px !important;
+}
+
+/* Activity is one full-width operational module below its heading. */
+.workspace-skeleton__history-shell {
+  width:100% !important;
+  min-height:760px !important;
+}
+
+/* Profile follows the actual portfolio sections, full content width. */
+.workspace-skeleton__profile-shell,
+.workspace-skeleton__settings-shell {
+  width:100% !important;
+}
+.skeleton-panel--profile-publish { min-height:92px !important; margin-bottom:16px !important; }
+.skeleton-panel--profile-cover { min-height:470px !important; }
+.skeleton-panel--profile-about { min-height:210px !important; }
+.skeleton-panel--profile-sound { min-height:150px !important; }
+.skeleton-panel--profile-passport { min-height:290px !important; }
+.skeleton-panel--profile-links { min-height:180px !important; }
+.skeleton-panel--profile-booking { min-height:185px !important; }
+
+/* Passport and CUE ID use their actual large feature blocks instead of a loader. */
+.skeleton-panel--passport-hero { min-height:350px !important; margin-bottom:16px !important; }
+.workspace-skeleton__passport-grid,
+.workspace-skeleton__cue-grid {
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:16px !important;
+  width:100% !important;
+}
+.workspace-skeleton__passport-grid > .skeleton-panel,
+.workspace-skeleton__cue-grid > .skeleton-panel { min-height:210px !important; }
+.skeleton-panel--passport-world { min-height:400px !important; margin-top:16px !important; }
+.skeleton-panel--cue-stage { min-height:510px !important; margin-bottom:16px !important; }
+
+@media (max-width:960px) {
+  .workspace > .workspace-skeleton { padding:18px 0 36px !important; }
+  .workspace-skeleton__page-head { min-height:142px !important; }
+  .workspace-skeleton__overview-stats { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+  .workspace-skeleton__overview-stats > .skeleton-panel:last-child { grid-column:1 / -1 !important; }
+  .workspace-skeleton__overview-bottom,
+  .workspace-skeleton__booking-layout,
+  .workspace-skeleton__calendar-blocks,
+  .workspace-skeleton__passport-grid,
+  .workspace-skeleton__cue-grid { grid-template-columns:1fr !important; }
+  .skeleton-panel--overview-agenda,
+  .skeleton-panel--overview-cue { min-height:250px !important; }
+  .skeleton-panel--booking-list-block { min-height:320px !important; }
+  .skeleton-panel--booking-detail-block { min-height:460px !important; border-left:1px solid var(--workspace-line,var(--cue-border)) !important; }
+  .skeleton-panel--calendar-month-block { min-height:590px !important; }
+  .skeleton-panel--calendar-day-block { min-height:260px !important; }
+  .skeleton-panel--profile-cover { min-height:350px !important; }
+  .skeleton-panel--passport-hero { min-height:290px !important; }
+  .skeleton-panel--passport-world { min-height:330px !important; }
+  .skeleton-panel--cue-stage { min-height:400px !important; }
 }
 </style>
