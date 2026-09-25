@@ -87,11 +87,7 @@ const persistedInitialWorkspaceView = normalizeWorkspaceView(persistedWorkspaceV
 const initialWorkspaceView = explicitInitialWorkspaceView || persistedInitialWorkspaceView || 'overview'
 const loadingView = ref<WorkspaceView | null>(initialWorkspaceView)
 const workspaceBootResolved = ref(Boolean(initialWorkspaceView))
-const activeView = computed<WorkspaceView>(() =>
-  explicitWorkspaceViewFromQuery(route.query.view, route.query.booking)
-    || normalizeWorkspaceView(persistedWorkspaceView.value)
-    || 'overview'
-)
+const activeView = ref<WorkspaceView>(initialWorkspaceView)
 const artists = ref<ManagedArtist[]>([])
 const organizations = ref<ManagedOrganization[]>([])
 const selectedArtistId = ref('')
@@ -657,6 +653,7 @@ onBeforeMount(() => {
 
   persistedWorkspaceView.value = resolvedView
   loadingView.value = resolvedView
+  activeView.value = resolvedView
   workspaceBootResolved.value = true
 
   if (!explicitView) {
@@ -715,6 +712,7 @@ watch(() => [route.query.view, route.query.booking], ([value, booking]) => {
   if (!next) return
   persistedWorkspaceView.value = next
   if (loading.value) loadingView.value = next
+  if (next !== activeView.value) activeView.value = next
   if (next === 'profile') profileEditSection.value = profileSectionFromQuery(route.query.section)
 })
 
@@ -831,6 +829,7 @@ async function changeView(view: WorkspaceView) {
   settingsOpen.value = false
   if (view !== 'profile') profileEditSection.value = null
   persistedWorkspaceView.value = view
+  activeView.value = view
   if (loading.value) loadingView.value = view
 
   const nextQuery: Record<string, any> = { ...route.query, view }
