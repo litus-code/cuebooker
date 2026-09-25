@@ -2550,6 +2550,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             @passport="changeView('passport')"
           />
 
+          <Teleport to="body">
           <div
             v-if="profileEditSection"
             class="profile-editor-backdrop"
@@ -2583,7 +2584,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                     : profileEditSection === 'image'
                       ? (preferences.locale.value === 'es' ? 'Portada del perfil' : 'Profile cover')
                       : profileEditSection === 'portrait'
-                        ? (preferences.locale.value === 'es' ? 'Foto o CUE ID' : 'Photo or CUE ID')
+                        ? (preferences.locale.value === 'es' ? 'Foto del artista' : 'Artist photo')
                       : profileEditSection === 'sound'
                         ? (preferences.locale.value === 'es' ? 'Sonido y formatos' : 'Sound and formats')
                         : profileEditSection === 'links'
@@ -2629,31 +2630,26 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                 <p v-if="profileCoverMessage" class="profile-cover-message" :class="{ success: profileCoverMessage === copy.coverSaved || profileCoverMessage === copy.coverRemoved }">{{ profileCoverMessage }}</p>
               </div>
 
-              <div v-else-if="profileEditSection === 'portrait'" class="profile-portrait-editor">
-                <div class="profile-portrait-editor__choices">
-                  <button
-                    type="button"
-                    :class="{ active: artistProfiles.activeProfile.value?.artist.visual_source !== 'cue_id' }"
-                    @click="useProfilePhotoPresentation"
-                  >
-                    <span>PHOTO</span>
-                    <strong>{{ preferences.locale.value === 'es' ? 'Usar fotografía' : 'Use photography' }}</strong>
-                  </button>
-                  <button
-                    type="button"
-                    :class="{ active: artistProfiles.activeProfile.value?.artist.visual_source === 'cue_id' }"
-                    @click="useProfileCueIdPresentation"
-                  >
-                    <span>CUE ID</span>
-                    <strong>{{ preferences.locale.value === 'es' ? 'Usar identidad digital' : 'Use digital identity' }}</strong>
-                  </button>
+              <div v-else-if="profileEditSection === 'portrait'" class="profile-portrait-editor profile-portrait-editor--simple">
+                <div class="profile-portrait-editor__preview">
+                  <img v-if="profileArtistImageUrl" :src="profileArtistImageUrl" :alt="profileForm.stageName">
+                  <span v-else>{{ (profileForm.stageName || selectedArtist?.stage_name || 'DJ').slice(0, 2).toUpperCase() }}</span>
+                </div>
+
+                <div class="profile-portrait-editor__copy">
+                  <span>{{ preferences.locale.value === 'es' ? 'FOTO DEL ARTISTA' : 'ARTIST PHOTO' }}</span>
+                  <strong>{{ preferences.locale.value === 'es' ? 'Tu imagen de perfil' : 'Your profile image' }}</strong>
+                  <p>{{ preferences.locale.value === 'es'
+                    ? 'Esta foto aparece como retrato pequeño en tu portfolio. No necesitas moverla ni escalarla.'
+                    : 'This photo appears as the small portrait on your portfolio. No positioning or scaling is needed.' }}</p>
                 </div>
 
                 <label class="profile-portrait-editor__upload">
-                  <span>{{ preferences.locale.value === 'es' ? 'FOTO DEL ARTISTA' : 'ARTIST PHOTO' }}</span>
                   <strong>{{ profilePortraitUploading
                     ? (preferences.locale.value === 'es' ? 'Subiendo…' : 'Uploading…')
-                    : (preferences.locale.value === 'es' ? 'Cambiar foto' : 'Change photo') }}</strong>
+                    : (profileArtistImageUrl
+                      ? (preferences.locale.value === 'es' ? 'Cambiar foto' : 'Change photo')
+                      : (preferences.locale.value === 'es' ? 'Añadir foto' : 'Add photo')) }}</strong>
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
@@ -2663,11 +2659,6 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                 </label>
 
                 <p v-if="profilePortraitMessage" class="profile-cover-message success">{{ profilePortraitMessage }}</p>
-
-                <button type="button" class="profile-portrait-editor__cue-link" @click="changeView('cue-id')">
-                  {{ preferences.locale.value === 'es' ? 'Configurar CUE ID' : 'Configure CUE ID' }}
-                  <span class="arrow arrow--ne" aria-hidden="true" />
-                </button>
               </div>
 
               <div v-else-if="profileEditSection === 'sound'" class="profile-fields profile-fields--builder">
@@ -2846,12 +2837,13 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               </div>
             </fieldset>
 
-            <footer v-if="profileEditSection !== 'distribution'">
+            <footer v-if="profileEditSection && !['distribution', 'image', 'portrait'].includes(profileEditSection)">
               <p v-if="profileMessage" :class="{ success: profileMessage === copy.profileSaved }">{{ profileMessage }}</p>
               <button class="primary-button" type="submit" :disabled="profileSaving || !canEditSelectedArtist">{{ profileSaving ? copy.saving : (preferences.locale.value === 'es' ? 'Guardar cambios' : 'Save changes') }}</button>
             </footer>
             </form>
           </div>
+          </Teleport>
 
         </template>
       </section>
@@ -3424,4 +3416,167 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .cue-passport__empty-state{display:grid;justify-items:start;gap:12px;padding:20px;border:1px dashed var(--cue-border);background:var(--cue-bg)}
 .cue-passport__empty-state p{margin:0;color:var(--cue-muted);font-size:11px;line-height:1.5}
 .cue-passport__empty-state button{min-height:38px;padding:0 12px;border:1px solid var(--cue-accent);border-radius:var(--cue-radius-control);background:transparent;color:var(--cue-accent);cursor:pointer;font:800 8px/1 monospace;text-transform:uppercase}
+
+/* Final mobile profile/navigation contract. Keep this last: older workspace layers must not override it. */
+@media (max-width: 960px) {
+  .workspace-header nav button.active {
+    border-color: transparent !important;
+    background: transparent !important;
+    color: var(--cue-accent) !important;
+    box-shadow: inset 0 -2px 0 var(--cue-accent) !important;
+  }
+  .workspace-header nav button.active:hover,
+  .workspace-header nav button.active:focus-visible {
+    background: transparent !important;
+    color: var(--cue-accent) !important;
+    box-shadow: inset 0 -2px 0 var(--cue-accent) !important;
+    transform: none !important;
+  }
+  .workspace-header nav button.active::before {
+    display: none !important;
+  }
+}
+
+@media (max-width: 680px) {
+  :global(.profile-editor-backdrop),
+  :global(.profile-editor-backdrop--modal) {
+    position: fixed !important;
+    z-index: 120 !important;
+    inset: 0 !important;
+    display: block !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: #090909 !important;
+    backdrop-filter: none !important;
+  }
+
+  :global(.profile-builder-editor--panel),
+  :global(.profile-builder-editor--modal) {
+    display: grid !important;
+    grid-template-rows: auto minmax(0, 1fr) auto !important;
+    width: 100% !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  :global(.profile-builder-editor > header) {
+    position: relative !important;
+    z-index: 5 !important;
+    align-items: center !important;
+    min-height: 64px !important;
+    padding: max(12px, env(safe-area-inset-top)) 14px 12px !important;
+    border-bottom: 1px solid var(--cue-border) !important;
+    background: #0b0b0b !important;
+  }
+
+  :global(.profile-builder-editor > header h2) {
+    margin-top: 3px !important;
+    font-size: 1.25rem !important;
+  }
+
+  :global(.profile-builder-editor > header > button) {
+    display: grid !important;
+    place-items: center !important;
+    flex: 0 0 44px !important;
+    width: 44px !important;
+    height: 44px !important;
+    border: 1px solid #3a3a3a !important;
+    border-radius: 50% !important;
+    background: #141414 !important;
+    color: #fff !important;
+    font-size: 26px !important;
+  }
+
+  :global(.profile-builder-editor > .profile-fieldset) {
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+  }
+
+  :global(.profile-builder-image) {
+    padding: 14px !important;
+  }
+
+  :global(.profile-portrait-editor--simple) {
+    display: grid !important;
+    grid-template-columns: 92px minmax(0, 1fr) !important;
+    gap: 16px !important;
+    align-items: center !important;
+    padding: 20px 16px !important;
+  }
+
+  :global(.profile-portrait-editor__preview) {
+    display: grid !important;
+    place-items: center !important;
+    width: 92px !important;
+    height: 112px !important;
+    overflow: hidden !important;
+    border: 1px solid var(--cue-border) !important;
+    border-radius: 8px !important;
+    background: #111 !important;
+  }
+
+  :global(.profile-portrait-editor__preview img) {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+
+  :global(.profile-portrait-editor__preview span) {
+    color: var(--cue-accent) !important;
+    font: 900 24px/1 monospace !important;
+  }
+
+  :global(.profile-portrait-editor__copy) {
+    display: grid !important;
+    gap: 6px !important;
+    min-width: 0 !important;
+  }
+
+  :global(.profile-portrait-editor__copy > span) {
+    color: var(--cue-accent) !important;
+    font: 800 8px/1 monospace !important;
+    letter-spacing: .1em !important;
+  }
+
+  :global(.profile-portrait-editor__copy > strong) {
+    font-size: 17px !important;
+  }
+
+  :global(.profile-portrait-editor__copy > p) {
+    margin: 0 !important;
+    color: var(--cue-muted) !important;
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+  }
+
+  :global(.profile-portrait-editor__upload) {
+    grid-column: 1 / -1 !important;
+    display: grid !important;
+    place-items: center !important;
+    min-height: 48px !important;
+    margin: 4px 0 0 !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: var(--cue-accent) !important;
+    color: #090909 !important;
+    cursor: pointer !important;
+  }
+
+  :global(.profile-portrait-editor__upload > span) {
+    display: none !important;
+  }
+
+  :global(.profile-portrait-editor__upload > strong) {
+    color: #090909 !important;
+    font-size: 13px !important;
+  }
+}
 </style>
