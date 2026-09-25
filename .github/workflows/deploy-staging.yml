@@ -30,7 +30,7 @@ concurrency:
 jobs:
   deploy:
     name: Deploy to staging.cuebooker.com
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' || (github.event_name == 'push' && github.ref_name == 'feature/app-visual-system') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment:
