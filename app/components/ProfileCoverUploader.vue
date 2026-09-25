@@ -63,9 +63,11 @@ function onDrop(event: DragEvent) {
       <input ref="input" type="file" accept="image/jpeg,image/png,image/webp" tabindex="-1" @change="onInput">
 
       <div class="cover-uploader__intro">
-        <span>HEADER / PHOTO</span>
-        <h3>{{ title }}</h3>
-        <p>{{ hint }}</p>
+        <div>
+          <span>HEADER / PHOTO</span>
+          <strong>{{ imageUrl ? (changeLabel || title) : (chooseLabel || title) }}</strong>
+          <small>{{ hint }}</small>
+        </div>
         <div class="cover-uploader__actions">
           <button type="button" :disabled="disabled || uploading" @click="openPicker">
             {{ uploading ? uploadingLabel : (imageUrl ? changeLabel : chooseLabel) }}
@@ -125,33 +127,35 @@ function onDrop(event: DragEvent) {
   pointer-events:none;
 }
 .cover-uploader__intro {
-  display:grid;
-  align-content:end;
-  justify-items:start;
-  box-sizing:border-box;
-  min-height:inherit;
-  width:min(620px,72%);
-  padding:clamp(22px,4vw,46px);
+  position:absolute;
+  right:0;
+  bottom:0;
+  left:0;
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:18px;
+  padding:16px;
+  background:linear-gradient(180deg,transparent,rgba(0,0,0,.86));
 }
-.cover-uploader__intro>span {
+.cover-uploader__intro>div:first-child {
+  display:grid;
+  gap:5px;
+  min-width:0;
+}
+.cover-uploader__intro span {
   color:var(--cue-accent);
   font:800 8px/1 monospace;
   letter-spacing:.12em;
 }
-.cover-uploader__intro h3 {
-  max-width:560px;
-  margin:12px 0 8px;
-  font-size:clamp(2rem,4vw,4.2rem);
-  line-height:.9;
-  letter-spacing:-.05em;
-  text-transform:uppercase;
+.cover-uploader__intro strong {
+  font-size:16px;
 }
-.cover-uploader__intro p {
-  max-width:520px;
-  margin:0 0 20px;
+.cover-uploader__intro small {
+  max-width:440px;
   color:#b1b1b1;
-  font-size:12px;
-  line-height:1.5;
+  font-size:10px;
+  line-height:1.35;
 }
 .cover-uploader__actions {
   display:flex;
@@ -187,13 +191,15 @@ function onDrop(event: DragEvent) {
 }
 
 @media (max-width:720px) {
-  .cover-uploader__stage { min-height:250px; }
+  .cover-uploader__stage { min-height:220px; }
   .cover-uploader__intro {
-    width:86%;
-    padding:20px 18px;
+    align-items:stretch;
+    flex-direction:column;
+    gap:10px;
+    padding:12px;
   }
-  .cover-uploader__intro h3 { font-size:clamp(1.8rem,10vw,3rem); }
+  .cover-uploader__intro small { display:none; }
   .cover-uploader__actions { width:100%; }
-  .cover-uploader__actions button { flex:1; }
+  .cover-uploader__actions button { flex:1; min-height:44px; }
 }
 </style>
