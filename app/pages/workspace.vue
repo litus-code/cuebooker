@@ -371,12 +371,7 @@ const canEditSelectedArtist = computed(() => ['owner', 'manager'].includes(selec
 const profileSurfaceReady = computed(() => Boolean(artistProfiles.activeProfile.value?.artist || profileForm.value.stageName))
 const bookingSurfaceReady = computed(() => Boolean(bookingCoreWorkspaceId.value) || !bookingCoreBootstrapLoading.value)
 
-const workspaceSurfaceLoading = computed(() => {
-  if (loading.value) return true
-  return ['profile', 'passport', 'cue-id'].includes(activeView.value)
-    && profileLoading.value
-    && !profileSurfaceReady.value
-})
+const workspaceSurfaceLoading = computed(() => loading.value)
 type WorkspaceNavigationView = WorkspaceView | 'settings'
 const activeNavigationView = computed<WorkspaceNavigationView | null>(() => {
   if (!workspaceBootResolved.value) return null
@@ -1532,7 +1527,11 @@ async function loadArtistProfile() {
   profileLoading.value = true
   profileMessage.value = ''
   try {
-    const record = await artistProfiles.getProfile(selectedArtistId.value)
+    const record = await withWorkspaceTimeout(
+      artistProfiles.getProfile(selectedArtistId.value),
+      4000,
+      'artist_profile'
+    )
     const booking = record.booking
     profileForm.value = {
       stageName: record.artist.stage_name,
@@ -1573,7 +1572,11 @@ async function loadArtistProfile() {
       loadPublicPublishingState()
     ]).catch(error => console.warn('[workspace] optional profile hydration failed', error?.message || error))
   } catch (error: any) {
-    errorMessage.value = error?.data?.message || error?.message || copy.value.profileSaveError
+    console.warn('[workspace] artist profile unavailable', error?.message || error)
+    // Keep the workspace usable with the managed artist identity we already have.
+    if (!profileForm.value.stageName) {
+      profileForm.value.stageName = selectedArtist.value?.stage_name || ''
+    }
   } finally {
     profileLoading.value = false
   }
@@ -2118,7 +2121,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
     </section>
 
     <section v-else class="workspace-loading-state" aria-busy="true" aria-live="polite">
-      <CueBrand class="workspace-loading-state__logo" decorative />
+      <div class="workspace-loading-state__mark" aria-hidden="true">CUEBOOKER</div>
       <div class="workspace-loading-state__pulse" aria-hidden="true"><i /><i /><i /></div>
       <span class="sr-only">{{ copy.loading }}</span>
     </section>
@@ -3699,9 +3702,10 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   gap:18px;
   min-height:calc(100dvh - 120px);
 }
-.workspace-loading-state__logo {
-  width:min(220px,52vw);
-  height:auto;
+.workspace-loading-state__mark {
+  color:var(--cue-text);
+  font:900 clamp(22px,3vw,34px)/1 Arial,Helvetica,sans-serif;
+  letter-spacing:.12em;
 }
 .workspace-loading-state__pulse {
   display:flex;
