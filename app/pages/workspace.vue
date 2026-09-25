@@ -86,6 +86,11 @@ function emptyProfileForm(): ArtistProfileForm {
 const persistedWorkspaceView = useCookie<WorkspaceView | null>('cuebooker.workspace.view', { sameSite: 'lax' })
 const loadingView = ref<WorkspaceView | null>(null)
 const activeView = ref<WorkspaceView>(workspaceViewFromQuery(route.query.view, route.query.booking))
+const navActiveView = ref<WorkspaceView | null>(
+  typeof route.query.view === 'string' && WORKSPACE_VIEWS.includes(route.query.view as WorkspaceView)
+    ? route.query.view as WorkspaceView
+    : (typeof route.query.booking === 'string' && route.query.booking ? 'bookings' : null)
+)
 const artists = ref<ManagedArtist[]>([])
 const organizations = ref<ManagedOrganization[]>([])
 const selectedArtistId = ref('')
@@ -682,6 +687,9 @@ watch(selectedArtistId, async (artistId) => {
 watch(() => [route.query.view, route.query.booking], ([value, booking]) => {
   const next = workspaceViewFromQuery(value, booking)
   if (next !== activeView.value) activeView.value = next
+  navActiveView.value = typeof value === 'string' && WORKSPACE_VIEWS.includes(value as WorkspaceView)
+    ? value as WorkspaceView
+    : (typeof booking === 'string' && booking ? 'bookings' : null)
   if (next === 'profile') profileEditSection.value = profileSectionFromQuery(route.query.section)
 })
 
@@ -742,9 +750,9 @@ watch(activeView, async (view) => {
 })
 watch(rosterArtistName, value => { rosterArtistSlug.value = slugify(value) })
 watch(activeView, view => { if (view !== 'profile') profilePreviewOpen.value = false })
-watch([profilePreviewOpen, profileEditSection, settingsOpen, editorOpen], ([previewOpen, editSection, settingsVisible, calendarEditorVisible]) => {
+watch([profilePreviewOpen, profileEditSection, settingsOpen, editorOpen, cueOpen], ([previewOpen, editSection, settingsVisible, calendarEditorVisible, cueVisible]) => {
   if (!import.meta.client) return
-  document.body.style.overflow = previewOpen || Boolean(editSection) || settingsVisible || calendarEditorVisible ? 'hidden' : ''
+  document.body.style.overflow = previewOpen || Boolean(editSection) || settingsVisible || calendarEditorVisible || cueVisible ? 'hidden' : ''
 })
 
 onBeforeUnmount(() => {
@@ -803,6 +811,7 @@ async function changeView(view: WorkspaceView) {
   persistedWorkspaceView.value = view
   if (import.meta.client) window.localStorage.setItem('cuebooker.workspace.view', view)
   activeView.value = view
+  navActiveView.value = view
 
   const nextQuery: Record<string, any> = { ...route.query, view }
   delete nextQuery.setup
@@ -1927,13 +1936,13 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         </button>
       </div>
       <nav id="workspace-navigation" aria-label="Workspace">
-        <button :title="copy.overview" data-workspace-view="overview" :class="{ active: activeView === 'overview' && !settingsOpen }" type="button" @click="changeView('overview')">{{ copy.overview }}</button>
-        <button :title="copy.bookings" data-workspace-view="bookings" :class="{ active: activeView === 'bookings' && !settingsOpen }" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
-        <button :title="copy.calendar" data-workspace-view="calendar" :class="{ active: activeView === 'calendar' && !settingsOpen }" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
-        <button :title="copy.history" data-workspace-view="history" :class="{ active: activeView === 'history' && !settingsOpen }" type="button" @click="changeView('history')">{{ copy.history }}</button>
-        <button :title="copy.profile" data-workspace-view="profile" :class="{ active: activeView === 'profile' && !settingsOpen }" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
-        <button :title="copy.passport" data-workspace-view="passport" :class="{ active: activeView === 'passport' && !settingsOpen }" type="button" @click="changeView('passport')">{{ copy.passport }}</button>
-        <button :title="copy.cueId" data-workspace-view="cue-id" :class="{ active: activeView === 'cue-id' && !settingsOpen }" type="button" @click="changeView('cue-id')">{{ copy.cueId }}</button>
+        <button :title="copy.overview" data-workspace-view="overview" :class="{ active: navActiveView === 'overview' && !settingsOpen }" type="button" @click="changeView('overview')">{{ copy.overview }}</button>
+        <button :title="copy.bookings" data-workspace-view="bookings" :class="{ active: navActiveView === 'bookings' && !settingsOpen }" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
+        <button :title="copy.calendar" data-workspace-view="calendar" :class="{ active: navActiveView === 'calendar' && !settingsOpen }" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
+        <button :title="copy.history" data-workspace-view="history" :class="{ active: navActiveView === 'history' && !settingsOpen }" type="button" @click="changeView('history')">{{ copy.history }}</button>
+        <button :title="copy.profile" data-workspace-view="profile" :class="{ active: navActiveView === 'profile' && !settingsOpen }" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
+        <button :title="copy.passport" data-workspace-view="passport" :class="{ active: navActiveView === 'passport' && !settingsOpen }" type="button" @click="changeView('passport')">{{ copy.passport }}</button>
+        <button :title="copy.cueId" data-workspace-view="cue-id" :class="{ active: navActiveView === 'cue-id' && !settingsOpen }" type="button" @click="changeView('cue-id')">{{ copy.cueId }}</button>
         <button :title="copy.settings" data-workspace-view="settings" :class="{ active: settingsOpen }" type="button" @click="openSettings">{{ copy.settings }}</button>
       </nav>
       <div class="account-actions">
