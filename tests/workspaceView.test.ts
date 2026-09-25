@@ -38,9 +38,10 @@ test('workspace navigation selection is driven by aria-current', async () => {
 })
 
 
-test('profile is an explicit workspace surface instead of a fallback branch', async () => {
+test('profile mounts as an independent workspace surface', async () => {
   const source = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
-  assert.match(source, /v-else-if="activeView === 'profile'"/)
+  assert.match(source, /<section v-if="activeView === 'profile'" class="view profile-view profile-view--presence">/)
+  assert.doesNotMatch(source, /v-else-if="activeView === 'profile'"/)
   assert.doesNotMatch(source, /<section v-else class="view profile-view/)
 })
 
