@@ -4,6 +4,12 @@ import type { CoreBooking, Hold } from '../domain/bookingCore'
 import { buildCuePassportWorld, cuePassportNextMilestones, cuePassportUnlockedMilestones, deriveCuePassportSnapshot } from '../domain/cuePassport'
 import type { CueNotification } from '../domain/notification'
 import { toPublicCueIdConfig, type PublicArtistProfile } from '../domain/publicArtistProfile'
+import {
+  explicitWorkspaceViewFromQuery,
+  normalizeWorkspaceView,
+  workspaceViewFromQuery,
+  type WorkspaceView
+} from '../domain/workspaceView'
 import { createBookingQrSvg } from '../services/bookingQr'
 
 const auth = useCueAuth()
@@ -28,13 +34,6 @@ const {
 const route = useRoute()
 const router = useRouter()
 
-type WorkspaceView = 'overview' | 'bookings' | 'calendar' | 'history' | 'profile' | 'passport' | 'cue-id'
-const WORKSPACE_VIEWS: WorkspaceView[] = ['overview', 'bookings', 'calendar', 'history', 'profile', 'passport', 'cue-id']
-function workspaceViewFromQuery(value: unknown, booking?: unknown): WorkspaceView {
-  if (typeof value === 'string' && WORKSPACE_VIEWS.includes(value as WorkspaceView)) return value as WorkspaceView
-  if (typeof booking === 'string' && booking) return 'bookings'
-  return 'overview'
-}
 type ProfileEditSection = 'identity' | 'image' | 'portrait' | 'sound' | 'links' | 'booking' | 'passport' | 'distribution' | null
 const PROFILE_EDIT_SECTIONS = ['identity', 'image', 'portrait', 'sound', 'links', 'booking', 'passport', 'distribution'] as const
 function profileSectionFromQuery(value: unknown): Exclude<ProfileEditSection, null> | null {
@@ -84,11 +83,12 @@ function emptyProfileForm(): ArtistProfileForm {
 }
 
 const persistedWorkspaceView = useCookie<WorkspaceView | null>('cuebooker.workspace.view', { sameSite: 'lax' })
-const initialWorkspaceView = workspaceViewFromQuery(route.query.view, route.query.booking)
-const hasExplicitWorkspaceRoute = typeof route.query.view === 'string' || (typeof route.query.booking === 'string' && Boolean(route.query.booking))
+const explicitInitialWorkspaceView = explicitWorkspaceViewFromQuery(route.query.view, route.query.booking)
+const persistedInitialWorkspaceView = normalizeWorkspaceView(persistedWorkspaceView.value)
+const initialWorkspaceView = explicitInitialWorkspaceView || persistedInitialWorkspaceView
 const loadingView = ref<WorkspaceView | null>(initialWorkspaceView)
-const workspaceBootResolved = ref(hasExplicitWorkspaceRoute)
-const activeView = ref<WorkspaceView>(initialWorkspaceView)
+const workspaceBootResolved = ref(Boolean(initialWorkspaceView))
+const activeView = ref<WorkspaceView>(initialWorkspaceView || 'overview')
 const artists = ref<ManagedArtist[]>([])
 const organizations = ref<ManagedOrganization[]>([])
 const selectedArtistId = ref('')
@@ -373,6 +373,12 @@ const profileSurfaceReady = computed(() => Boolean(artistProfiles.activeProfile.
 const bookingSurfaceReady = computed(() => Boolean(bookingCoreWorkspaceId.value) || !bookingCoreBootstrapLoading.value)
 
 const workspaceSurfaceLoading = computed(() => loading.value)
+type WorkspaceNavigationView = WorkspaceView | 'settings'
+const activeNavigationView = computed<WorkspaceNavigationView | null>(() => {
+  if (!workspaceBootResolved.value) return null
+  return settingsOpen.value ? 'settings' : activeView.value
+})
+const isWorkspaceNavigationCurrent = (view: WorkspaceNavigationView) => activeNavigationView.value === view
 const tourNamespace = computed(() => auth.session.value?.user.id && selectedArtistId.value ? `workspace-${auth.session.value.user.id}-${selectedArtistId.value}` : undefined)
 const dateLocale = computed(() => preferences.locale.value === 'es' ? 'es-ES' : 'en-GB')
 const monthLabel = computed(() => new Intl.DateTimeFormat(dateLocale.value, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${monthCursor.value}T12:00:00Z`)))
@@ -641,35 +647,40 @@ const hours = Array.from({ length: 24 }, (_, index) => `${String(index).padStart
 onBeforeMount(() => {
   if (!import.meta.client) return
   const params = new URLSearchParams(window.location.search)
-  const explicitView = params.get('view')
-  const explicitBooking = params.get('booking')
-  const storedView = window.localStorage.getItem('cuebooker.workspace.view')
+  const explicitView = explicitWorkspaceViewFromQuery(params.get('view'), params.get('booking'))
+  const cookieView = normalizeWorkspaceView(persistedWorkspaceView.value)
+  const legacyStoredView = normalizeWorkspaceView(window.localStorage.getItem('cuebooker.workspace.view'))
+  const resolvedView = explicitView || cookieView || legacyStoredView || 'overview'
 
-  const resolvedView = explicitView || explicitBooking
-    ? workspaceViewFromQuery(explicitView, explicitBooking)
-    : (storedView && WORKSPACE_VIEWS.includes(storedView as WorkspaceView)
-      ? storedView as WorkspaceView
-      : (persistedWorkspaceView.value && WORKSPACE_VIEWS.includes(persistedWorkspaceView.value)
-        ? persistedWorkspaceView.value
-        : 'overview'))
+  if (!cookieView && legacyStoredView) persistedWorkspaceView.value = legacyStoredView
 
   loadingView.value = resolvedView
   activeView.value = resolvedView
+  persistedWorkspaceView.value = resolvedView
   workspaceBootResolved.value = true
 })
 
 onMounted(async () => {
   if (import.meta.client) sidebarCollapsed.value = localStorage.getItem('cuebooker.sidebar.collapsed') === 'true'
-  await auth.initialize()
-  if (!auth.signedIn.value) return navigateTo('/access')
-  if (!auth.profile.value) await auth.fetchProfile()
-  if (!auth.profile.value?.onboarding_completed) return navigateTo('/onboarding')
   try {
+    await withWorkspaceTimeout(auth.initialize(), 8000, 'auth')
+    if (!auth.signedIn.value) return await navigateTo('/access')
+    if (!auth.profile.value) await withWorkspaceTimeout(auth.fetchProfile(), 8000, 'profile')
+    if (!auth.profile.value?.onboarding_completed) return await navigateTo('/onboarding')
     await loadWorkspaceIdentity()
+  } catch (error: any) {
+    errorMessage.value = error?.message?.includes('_timeout')
+      ? (preferences.locale.value === 'es'
+        ? 'La sesión está tardando demasiado. Recarga para volver a intentarlo.'
+        : 'Your session is taking too long to load. Reload to try again.')
+      : error?.message || (preferences.locale.value === 'es'
+        ? 'No se pudo iniciar el workspace.'
+        : 'The workspace could not start.')
   } finally {
     // Never leave the whole Workspace trapped behind the initial loader.
     loading.value = false
   }
+  if (!auth.signedIn.value || !auth.profile.value?.onboarding_completed) return
   bookingCoreSyncTimer = window.setInterval(() => { void refreshBookingCoreFromExternal() }, 30_000)
   window.addEventListener('focus', refreshBookingCoreFromExternal)
   document.addEventListener('visibilitychange', refreshBookingCoreFromExternal)
@@ -749,7 +760,6 @@ watch(() => route.query.section, value => {
 })
 watch(activeView, async (view) => {
   persistedWorkspaceView.value = view
-  if (import.meta.client) window.localStorage.setItem('cuebooker.workspace.view', view)
   await nextTick()
   const nav = document.getElementById('workspace-navigation')
   const tab = nav?.querySelector<HTMLElement>(`[data-workspace-view="${view}"]`)
@@ -817,7 +827,6 @@ async function changeView(view: WorkspaceView) {
   settingsOpen.value = false
   if (view !== 'profile') profileEditSection.value = null
   persistedWorkspaceView.value = view
-  if (import.meta.client) window.localStorage.setItem('cuebooker.workspace.view', view)
   activeView.value = view
   if (loading.value) loadingView.value = view
 
@@ -1230,10 +1239,13 @@ async function openNotificationBooking(notification: CueNotification) {
 }
 
 function withWorkspaceTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) => window.setTimeout(() => reject(new Error(`${label}_timeout`)), timeoutMs))
-  ])
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const timeout = new Promise<T>((_, reject) => {
+    timer = globalThis.setTimeout(() => reject(new Error(`${label}_timeout`)), timeoutMs)
+  })
+  return Promise.race([promise, timeout]).finally(() => {
+    if (timer) globalThis.clearTimeout(timer)
+  })
 }
 
 async function loadWorkspaceIdentity() {
@@ -1983,14 +1995,14 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         </button>
       </div>
       <nav id="workspace-navigation" aria-label="Workspace">
-        <button :title="copy.overview" data-workspace-view="overview" :aria-current="workspaceBootResolved && activeView === 'overview' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('overview')">{{ copy.overview }}</button>
-        <button :title="copy.bookings" data-workspace-view="bookings" :aria-current="workspaceBootResolved && activeView === 'bookings' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
-        <button :title="copy.calendar" data-workspace-view="calendar" :aria-current="workspaceBootResolved && activeView === 'calendar' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
-        <button :title="copy.history" data-workspace-view="history" :aria-current="workspaceBootResolved && activeView === 'history' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('history')">{{ copy.history }}</button>
-        <button :title="copy.profile" data-workspace-view="profile" :aria-current="workspaceBootResolved && activeView === 'profile' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
-        <button :title="copy.passport" data-workspace-view="passport" :aria-current="workspaceBootResolved && activeView === 'passport' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('passport')">{{ copy.passport }}</button>
-        <button :title="copy.cueId" data-workspace-view="cue-id" :aria-current="workspaceBootResolved && activeView === 'cue-id' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('cue-id')">{{ copy.cueId }}</button>
-        <button :title="copy.settings" data-workspace-view="settings" :aria-current="workspaceBootResolved && settingsOpen ? 'page' : undefined" type="button" @click="openSettings">{{ copy.settings }}</button>
+        <button :title="copy.overview" data-workspace-view="overview" :aria-current="isWorkspaceNavigationCurrent('overview') ? 'page' : undefined" type="button" @click="changeView('overview')">{{ copy.overview }}</button>
+        <button :title="copy.bookings" data-workspace-view="bookings" :aria-current="isWorkspaceNavigationCurrent('bookings') ? 'page' : undefined" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
+        <button :title="copy.calendar" data-workspace-view="calendar" :aria-current="isWorkspaceNavigationCurrent('calendar') ? 'page' : undefined" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
+        <button :title="copy.history" data-workspace-view="history" :aria-current="isWorkspaceNavigationCurrent('history') ? 'page' : undefined" type="button" @click="changeView('history')">{{ copy.history }}</button>
+        <button :title="copy.profile" data-workspace-view="profile" :aria-current="isWorkspaceNavigationCurrent('profile') ? 'page' : undefined" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
+        <button :title="copy.passport" data-workspace-view="passport" :aria-current="isWorkspaceNavigationCurrent('passport') ? 'page' : undefined" type="button" @click="changeView('passport')">{{ copy.passport }}</button>
+        <button :title="copy.cueId" data-workspace-view="cue-id" :aria-current="isWorkspaceNavigationCurrent('cue-id') ? 'page' : undefined" type="button" @click="changeView('cue-id')">{{ copy.cueId }}</button>
+        <button :title="copy.settings" data-workspace-view="settings" :aria-current="isWorkspaceNavigationCurrent('settings') ? 'page' : undefined" type="button" @click="openSettings">{{ copy.settings }}</button>
       </nav>
       <div class="account-actions">
         <WorkspaceNotifications :locale="preferences.locale.value" @open-booking="openNotificationBooking" />
