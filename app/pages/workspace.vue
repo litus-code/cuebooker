@@ -84,10 +84,14 @@ function emptyProfileForm(): ArtistProfileForm {
 const persistedWorkspaceView = useCookie<WorkspaceView | null>('cuebooker.workspace.view', { sameSite: 'lax' })
 const explicitInitialWorkspaceView = explicitWorkspaceViewFromQuery(route.query.view, route.query.booking)
 const persistedInitialWorkspaceView = normalizeWorkspaceView(persistedWorkspaceView.value)
-const initialWorkspaceView = explicitInitialWorkspaceView || persistedInitialWorkspaceView
+const initialWorkspaceView = explicitInitialWorkspaceView || persistedInitialWorkspaceView || 'overview'
 const loadingView = ref<WorkspaceView | null>(initialWorkspaceView)
 const workspaceBootResolved = ref(Boolean(initialWorkspaceView))
-const activeView = ref<WorkspaceView>(initialWorkspaceView || 'overview')
+const activeView = computed<WorkspaceView>(() =>
+  explicitWorkspaceViewFromQuery(route.query.view, route.query.booking)
+    || normalizeWorkspaceView(persistedWorkspaceView.value)
+    || 'overview'
+)
 const artists = ref<ManagedArtist[]>([])
 const organizations = ref<ManagedOrganization[]>([])
 const selectedArtistId = ref('')
@@ -651,12 +655,13 @@ onBeforeMount(() => {
   const legacyStoredView = normalizeWorkspaceView(window.localStorage.getItem('cuebooker.workspace.view'))
   const resolvedView = explicitView || cookieView || legacyStoredView || 'overview'
 
-  if (!cookieView && legacyStoredView) persistedWorkspaceView.value = legacyStoredView
-
-  loadingView.value = resolvedView
-  activeView.value = resolvedView
   persistedWorkspaceView.value = resolvedView
+  loadingView.value = resolvedView
   workspaceBootResolved.value = true
+
+  if (!explicitView) {
+    void router.replace({ query: { ...route.query, view: resolvedView } }).catch(() => {})
+  }
 })
 
 onMounted(async () => {
@@ -687,7 +692,6 @@ onMounted(async () => {
   document.addEventListener('visibilitychange', refreshBookingCoreFromExternal)
   window.addEventListener('keydown', handleWorkspaceKeydown)
   if (route.query.setup === 'profile' || route.query.view === 'profile') {
-    activeView.value = 'profile'
     loadingView.value = 'profile'
     profileWelcome.value = route.query.setup === 'profile'
   }
@@ -709,8 +713,8 @@ watch(selectedArtistId, async (artistId) => {
 watch(() => [route.query.view, route.query.booking], ([value, booking]) => {
   const next = explicitWorkspaceViewFromQuery(value, booking)
   if (!next) return
+  persistedWorkspaceView.value = next
   if (loading.value) loadingView.value = next
-  if (next !== activeView.value) activeView.value = next
   if (next === 'profile') profileEditSection.value = profileSectionFromQuery(route.query.section)
 })
 
@@ -738,7 +742,6 @@ watch(
     const existing = realBookings.value.find(item => item.id === bookingId)
     if (existing) {
       realBookingFocusId.value = bookingId
-      activeView.value = 'bookings'
       markBookingNotificationsRead(bookingId)
       return
     }
@@ -747,7 +750,6 @@ watch(
       const booking = await loadExactBookingIntoInbox(workspaceId, bookingId)
       if (sequence !== routeBookingSyncSequence) return
       realBookingFocusId.value = booking.id
-      activeView.value = 'bookings'
       markBookingNotificationsRead(booking.id)
     } catch {
       if (sequence !== routeBookingSyncSequence) return
@@ -792,7 +794,7 @@ watch(tourStep, async (step) => {
   const item = tourSteps.value[step]
   if (!item) return
   settingsOpen.value = false
-  activeView.value = item.view
+  await changeView(item.view)
   await nextTick()
   scheduleTourPosition()
 })
@@ -829,7 +831,6 @@ async function changeView(view: WorkspaceView) {
   settingsOpen.value = false
   if (view !== 'profile') profileEditSection.value = null
   persistedWorkspaceView.value = view
-  activeView.value = view
   if (loading.value) loadingView.value = view
 
   const nextQuery: Record<string, any> = { ...route.query, view }
@@ -1203,7 +1204,6 @@ async function loadExactBookingIntoInbox(workspaceId: string, bookingId: string)
 
 function openRealBooking(bookingId: string) {
   realBookingFocusId.value = bookingId
-  activeView.value = 'bookings'
   markBookingNotificationsRead(bookingId)
 
   if (route.query.booking !== bookingId) {
@@ -1734,8 +1734,7 @@ async function saveProfileEditor() {
 
 async function dismissProfileWelcome() {
   profileWelcome.value = false
-  activeView.value = 'overview'
-  await router.replace({ query: { ...route.query, setup: undefined } })
+  await changeView('overview')
 }
 
 async function addFirstRosterArtist() {
@@ -3643,58 +3642,6 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 }
 
 
-/* Canonical mobile workspace navigation.
-   activeView is the only source of selected state; touch/focus/tour never fill a tab. */
-@media (max-width: 960px) {
-  .workspace #workspace-navigation > button,
-  .workspace #workspace-navigation > button:hover,
-  .workspace #workspace-navigation > button:focus,
-  .workspace #workspace-navigation > button:focus-visible,
-  .workspace #workspace-navigation > button:active,
-  .workspace #workspace-navigation > button.tour-focus,
-  .workspace #workspace-navigation > button.active,
-  .workspace #workspace-navigation > button.active:hover,
-  .workspace #workspace-navigation > button.active:focus,
-  .workspace #workspace-navigation > button.active:focus-visible,
-  .workspace #workspace-navigation > button.active:active,
-  .workspace #workspace-navigation > button.active.tour-focus {
-    border-color: transparent !important;
-    background: transparent !important;
-    background-color: transparent !important;
-    background-image: none !important;
-    outline: 0 !important;
-    transform: none !important;
-    animation: none !important;
-    -webkit-tap-highlight-color: transparent !important;
-  }
-
-  .workspace #workspace-navigation > button {
-    color: var(--cue-muted) !important;
-    box-shadow: none !important;
-  }
-
-  .workspace #workspace-navigation > button.active {
-    color: var(--cue-accent) !important;
-    box-shadow: inset 0 -2px 0 var(--cue-accent) !important;
-  }
-
-  .workspace #workspace-navigation > button::before,
-  .workspace #workspace-navigation > button.active::before {
-    display: none !important;
-  }
-
-  .workspace #workspace-navigation > button.tour-focus,
-  .workspace #workspace-navigation > button.active.tour-focus {
-    color: inherit !important;
-    box-shadow: none !important;
-  }
-
-  .workspace #workspace-navigation > button.active.tour-focus {
-    color: var(--cue-accent) !important;
-    box-shadow: inset 0 -2px 0 var(--cue-accent) !important;
-  }
-}
-
 .workspace-loading-state {
   display:grid;
   place-items:center;
@@ -4012,121 +3959,35 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 }
 
 
-/* SINGLE SOURCE OF TRUTH — workspace navigation.
-   aria-current is the only visual selected state. Historical .active/first-item/tour rules are neutralized. */
-#workspace-navigation > button,
+/* Workspace navigation: aria-current is the only selected-state contract. */
+#workspace-navigation > button {
+  border-color:transparent !important;
+  background:transparent !important;
+  background-image:none !important;
+  color:var(--cue-muted) !important;
+  box-shadow:none !important;
+  outline:0 !important;
+  transform:none !important;
+}
 #workspace-navigation > button:hover,
-#workspace-navigation > button:focus,
-#workspace-navigation > button:focus-visible,
-#workspace-navigation > button:active,
-#workspace-navigation > button.active,
-#workspace-navigation > button.tour-focus,
-#workspace-navigation > button.active.tour-focus {
-  border-color: transparent !important;
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
-  color: var(--cue-muted) !important;
-  box-shadow: none !important;
-  outline: 0 !important;
-  transform: none !important;
-  animation: none !important;
+#workspace-navigation > button:focus-visible {
+  color:var(--cue-text) !important;
 }
-
-#workspace-navigation > button:not([aria-current='page']):hover,
-#workspace-navigation > button:not([aria-current='page']):focus-visible {
-  color: var(--cue-text) !important;
-}
-
 #workspace-navigation > button[aria-current='page'],
 #workspace-navigation > button[aria-current='page']:hover,
-#workspace-navigation > button[aria-current='page']:focus,
 #workspace-navigation > button[aria-current='page']:focus-visible,
-#workspace-navigation > button[aria-current='page']:active,
-#workspace-navigation > button[aria-current='page'].tour-focus {
-  border-color: transparent !important;
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
-  color: var(--cue-accent) !important;
-  transform: none !important;
-  animation: none !important;
+#workspace-navigation > button[aria-current='page']:active {
+  color:var(--cue-accent) !important;
 }
-
-#workspace-navigation > button::before {
-  display: none !important;
-}
-
-@media (min-width: 961px) {
+#workspace-navigation > button::before { display:none !important; }
+@media (min-width:961px) {
   #workspace-navigation > button[aria-current='page'] {
-    box-shadow: inset 2px 0 0 var(--cue-accent) !important;
+    box-shadow:inset 2px 0 0 var(--cue-accent) !important;
   }
 }
-
-@media (max-width: 960px) {
+@media (max-width:960px) {
   #workspace-navigation > button[aria-current='page'] {
-    box-shadow: inset 0 -2px 0 var(--cue-accent) !important;
-  }
-}
-
-
-/* Final workspace nav contract: aria-current is the sole selected-state source. */
-@media (min-width:961px){
-  .workspace #workspace-navigation>button,
-  .workspace #workspace-navigation>button:hover,
-  .workspace #workspace-navigation>button:focus,
-  .workspace #workspace-navigation>button:focus-visible,
-  .workspace #workspace-navigation>button:active,
-  .workspace.workspace--sidebar-collapsed #workspace-navigation>button,
-  .workspace.workspace--sidebar-collapsed #workspace-navigation>button:hover,
-  .workspace.workspace--sidebar-collapsed #workspace-navigation>button:focus,
-  .workspace.workspace--sidebar-collapsed #workspace-navigation>button:focus-visible,
-  .workspace.workspace--sidebar-collapsed #workspace-navigation>button:active{
-    border-color:transparent!important;
-    background:transparent!important;
-    background-color:transparent!important;
-    background-image:none!important;
-    color:var(--cue-muted)!important;
-    box-shadow:none!important;
-    transform:none!important;
-  }
-  .workspace #workspace-navigation>button[aria-current='page'],
-  .workspace #workspace-navigation>button[aria-current='page']:hover,
-  .workspace #workspace-navigation>button[aria-current='page']:focus,
-  .workspace #workspace-navigation>button[aria-current='page']:focus-visible,
-  .workspace #workspace-navigation>button[aria-current='page']:active,
-  .workspace.workspace--sidebar-collapsed #workspace-navigation>button[aria-current='page'],
-  .workspace.workspace--sidebar-collapsed #workspace-navigation>button[aria-current='page']:hover,
-  .workspace.workspace--sidebar-collapsed #workspace-navigation>button[aria-current='page']:focus,
-  .workspace.workspace--sidebar-collapsed #workspace-navigation>button[aria-current='page']:focus-visible,
-  .workspace.workspace--sidebar-collapsed #workspace-navigation>button[aria-current='page']:active{
-    color:var(--cue-accent)!important;
-    box-shadow:inset 2px 0 0 var(--cue-accent)!important;
-  }
-  .workspace #workspace-navigation>button::before,
-  .workspace.workspace--sidebar-collapsed #workspace-navigation>button::before{display:none!important}
-}
-@media (max-width:960px){
-  .workspace #workspace-navigation>button,
-  .workspace #workspace-navigation>button:hover,
-  .workspace #workspace-navigation>button:focus,
-  .workspace #workspace-navigation>button:focus-visible,
-  .workspace #workspace-navigation>button:active{
-    border-color:transparent!important;
-    background:transparent!important;
-    background-color:transparent!important;
-    background-image:none!important;
-    color:var(--cue-muted)!important;
-    box-shadow:none!important;
-    transform:none!important;
-  }
-  .workspace #workspace-navigation>button[aria-current='page'],
-  .workspace #workspace-navigation>button[aria-current='page']:hover,
-  .workspace #workspace-navigation>button[aria-current='page']:focus,
-  .workspace #workspace-navigation>button[aria-current='page']:focus-visible,
-  .workspace #workspace-navigation>button[aria-current='page']:active{
-    color:var(--cue-accent)!important;
-    box-shadow:inset 0 -2px 0 var(--cue-accent)!important;
+    box-shadow:inset 0 -2px 0 var(--cue-accent) !important;
   }
 }
 
