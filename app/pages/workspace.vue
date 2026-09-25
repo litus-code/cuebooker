@@ -118,6 +118,7 @@ const realHolds = ref<Hold[]>([])
 const passportMediaItems = ref<import('../domain/cuePassportMedia').CuePassportMedia[]>([])
 const cueOpen = ref(false)
 const cueCoreLoading = ref(false)
+const bookingCoreBootstrapLoading = ref(false)
 const cueMessage = ref('')
 const cueCapacityBlocked = ref(false)
 const bookingCoreOperationsRevision = ref(0)
@@ -368,6 +369,12 @@ const manageableAgency = computed(() => organizations.value.find(item => item.ty
 const ownerAgency = computed(() => organizations.value.find(item => item.type === 'agency' && item.role === 'owner'))
 const selectedArtist = computed(() => artists.value.find(item => item.id === selectedArtistId.value))
 const canEditSelectedArtist = computed(() => ['owner', 'manager'].includes(selectedArtist.value?.role || ''))
+const workspaceSurfaceLoading = computed(() => {
+  if (loading.value) return true
+  if (activeView.value === 'profile' || activeView.value === 'cue-id') return profileLoading.value
+  if (activeView.value === 'passport') return profileLoading.value || bookingCoreBootstrapLoading.value || cueCoreLoading.value
+  return false
+})
 const tourNamespace = computed(() => auth.session.value?.user.id && selectedArtistId.value ? `workspace-${auth.session.value.user.id}-${selectedArtistId.value}` : undefined)
 const dateLocale = computed(() => preferences.locale.value === 'es' ? 'es-ES' : 'en-GB')
 const monthLabel = computed(() => new Intl.DateTimeFormat(dateLocale.value, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${monthCursor.value}T12:00:00Z`)))
@@ -659,16 +666,21 @@ onMounted(async () => {
   if (!auth.signedIn.value) return navigateTo('/access')
   if (!auth.profile.value) await auth.fetchProfile()
   if (!auth.profile.value?.onboarding_completed) return navigateTo('/onboarding')
-  await loadWorkspaceIdentity()
+  try {
+    await loadWorkspaceIdentity()
+  } finally {
+    // Never leave the whole Workspace trapped behind the initial loader.
+    loading.value = false
+  }
   bookingCoreSyncTimer = window.setInterval(() => { void refreshBookingCoreFromExternal() }, 30_000)
   window.addEventListener('focus', refreshBookingCoreFromExternal)
   document.addEventListener('visibilitychange', refreshBookingCoreFromExternal)
   window.addEventListener('keydown', handleWorkspaceKeydown)
   if (route.query.setup === 'profile' || route.query.view === 'profile') {
     activeView.value = 'profile'
+    loadingView.value = 'profile'
     profileWelcome.value = route.query.setup === 'profile'
   }
-  loading.value = false
 })
 
 watch([selectedArtistId, monthCursor], async () => {
@@ -686,6 +698,7 @@ watch(selectedArtistId, async (artistId) => {
 })
 watch(() => [route.query.view, route.query.booking], ([value, booking]) => {
   const next = workspaceViewFromQuery(value, booking)
+  loadingView.value = next
   if (next !== activeView.value) activeView.value = next
   if (next === 'profile') profileEditSection.value = profileSectionFromQuery(route.query.section)
 })
@@ -808,6 +821,7 @@ async function changeView(view: WorkspaceView) {
   persistedWorkspaceView.value = view
   if (import.meta.client) window.localStorage.setItem('cuebooker.workspace.view', view)
   activeView.value = view
+  loadingView.value = view
 
   const nextQuery: Record<string, any> = { ...route.query, view }
   delete nextQuery.setup
@@ -1217,11 +1231,19 @@ async function openNotificationBooking(notification: CueNotification) {
   }
 }
 
+function withWorkspaceTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => window.setTimeout(() => reject(new Error(`${label}_timeout`)), timeoutMs))
+  ])
+}
+
 async function loadWorkspaceIdentity() {
   try {
-    const [artistRows, organizationRows] = await Promise.all([availability.listArtists(), availability.listOrganizations()])
+    // Artist identity is the only hard dependency for releasing the Workspace shell.
+    // Organizations and product modules hydrate independently afterwards.
+    const artistRows = await withWorkspaceTimeout(availability.listArtists(), 6000, 'artists')
     artists.value = artistRows
-    organizations.value = organizationRows
 
     const requestedArtistId = typeof route.query.artist === 'string' ? route.query.artist : ''
     if (requestedArtistId && artists.value.some(item => item.id === requestedArtistId)) {
@@ -1230,40 +1252,59 @@ async function loadWorkspaceIdentity() {
       selectedArtistId.value = artists.value[0]?.id || ''
     }
 
-    if (selectedArtistId.value) {
-      const blocksTask = loadBlocks()
-      const profileTask = loadArtistProfile()
-      const bookingCoreTask = ensureBookingCoreWorkspace()
-      const hydrationTask = Promise.allSettled([blocksTask, profileTask, bookingCoreTask])
+    if (!selectedArtistId.value) {
+      // Organizations are only needed to decide whether the empty state can create a roster artist.
+      void availability.listOrganizations()
+        .then(rows => { organizations.value = rows })
+        .catch(error => console.warn('[workspace] organizations unavailable', error?.message || error))
+      return
+    }
 
-      const requestedBookingId = typeof route.query.booking === 'string' ? route.query.booking : ''
-      if (requestedBookingId) {
-        await bookingCoreTask
+    // Profile and calendar availability can load immediately.
+    void loadBlocks()
+    void loadArtistProfile()
+
+    // Booking Core depends on organization ownership, but must never hold the whole Workspace hostage.
+    bookingCoreBootstrapLoading.value = true
+    void availability.listOrganizations()
+      .then(rows => { organizations.value = rows })
+      .catch(error => {
+        organizations.value = []
+        console.warn('[workspace] organizations unavailable', error?.message || error)
+      })
+      .then(() => ensureBookingCoreWorkspace())
+      .catch(error => console.warn('[workspace] booking core bootstrap failed', error?.message || error))
+      .finally(() => { bookingCoreBootstrapLoading.value = false })
+
+    const requestedBookingId = typeof route.query.booking === 'string' ? route.query.booking : ''
+    if (requestedBookingId) {
+      // Deep links resolve when Booking Core becomes available, without blocking the rest of the shell.
+      void (async () => {
+        const deadline = Date.now() + 8000
+        while (!bookingCoreWorkspaceId.value && bookingCoreBootstrapLoading.value && Date.now() < deadline) {
+          await new Promise(resolve => window.setTimeout(resolve, 100))
+        }
+        if (!bookingCoreWorkspaceId.value) return
         if (realBookings.value.some(item => item.id === requestedBookingId)) {
           openRealBooking(requestedBookingId)
-        } else if (bookingCoreWorkspaceId.value) {
-          try {
-            const booking = await loadExactBookingIntoInbox(bookingCoreWorkspaceId.value, requestedBookingId)
-            openRealBooking(booking.id)
-          } catch {
-            errorMessage.value = preferences.locale.value === 'es'
-              ? 'Este booking no existe o ya no tienes acceso.'
-              : 'This booking does not exist or you no longer have access.'
-          }
+          return
         }
-      } else {
-        // Do not keep the whole Workspace behind a loader while secondary data hydrates.
-        // The view-level components already have their own loading/empty states.
-        await Promise.race([
-          hydrationTask,
-          new Promise(resolve => window.setTimeout(resolve, 650))
-        ])
-      }
-
-      void hydrationTask
+        try {
+          const booking = await loadExactBookingIntoInbox(bookingCoreWorkspaceId.value, requestedBookingId)
+          openRealBooking(booking.id)
+        } catch {
+          errorMessage.value = preferences.locale.value === 'es'
+            ? 'Este booking no existe o ya no tienes acceso.'
+            : 'This booking does not exist or you no longer have access.'
+        }
+      })()
     }
   } catch (error: any) {
-    errorMessage.value = error?.message || (preferences.locale.value === 'es' ? 'No se pudo cargar el workspace.' : 'The workspace could not be loaded.')
+    errorMessage.value = error?.message?.includes('_timeout')
+      ? (preferences.locale.value === 'es'
+        ? 'La carga inicial está tardando demasiado. Recarga para volver a intentarlo.'
+        : 'Initial loading is taking too long. Reload to try again.')
+      : error?.message || (preferences.locale.value === 'es' ? 'No se pudo cargar el workspace.' : 'The workspace could not be loaded.')
   }
 }
 
@@ -1962,7 +2003,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-    <template v-if="loading">
+    <template v-if="workspaceSurfaceLoading">
     <section v-if="!workspaceBootResolved" class="workspace-loading-state" aria-busy="true" aria-live="polite">
       <CueBrand class="workspace-loading-state__logo" decorative />
       <div class="workspace-loading-state__pulse" aria-hidden="true"><i /><i /><i /></div>
@@ -2536,9 +2577,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <button type="button" @click="dismissProfileWelcome">{{ copy.later }}</button>
         </aside>
 
-        <p v-if="profileLoading" class="loading-message">{{ copy.loading }}</p>
-
-        <template v-else>
+        <template>
           <WorkspaceArtistProfile
             :profile="publicProfilePreview"
             :published="publicProfilePublished"
