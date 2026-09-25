@@ -36,3 +36,28 @@ test('workspace navigation selection is driven by aria-current', async () => {
   assert.match(navigation, /isWorkspaceNavigationCurrent/)
   assert.doesNotMatch(navigation, /class=.{0,40}active|:class=.{0,80}active/)
 })
+
+
+test('profile is an explicit workspace surface instead of a fallback branch', async () => {
+  const source = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
+  assert.match(source, /v-else-if="activeView === 'profile'"/)
+  assert.doesNotMatch(source, /<section v-else class="view profile-view/)
+})
+
+test('route synchronization does not force Overview when the URL has no explicit workspace view', async () => {
+  const source = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
+  const routeWatchStart = source.indexOf("watch(() => [route.query.view, route.query.booking]")
+  const routeWatchEnd = source.indexOf("watch(() => route.query.artist", routeWatchStart)
+  const routeWatch = source.slice(routeWatchStart, routeWatchEnd)
+  assert.match(routeWatch, /explicitWorkspaceViewFromQuery/)
+  assert.match(routeWatch, /if \(!next\) return/)
+  assert.doesNotMatch(routeWatch, /workspaceViewFromQuery\(value, booking\)/)
+})
+
+test('bookings skeleton broad blocks have explicit geometry', async () => {
+  const source = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
+  assert.match(source, /skeleton-panel--booking-list-block/)
+  assert.match(source, /skeleton-panel--booking-detail-block/)
+  assert.match(source, /\.skeleton-panel--booking-list-block\{/)
+  assert.match(source, /\.skeleton-panel--booking-detail-block\{/)
+})
