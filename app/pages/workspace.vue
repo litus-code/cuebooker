@@ -2041,6 +2041,31 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       </div>
     </section>
 
+    <section v-else-if="loadingView === 'profile'" class="workspace-skeleton workspace-skeleton--profile" aria-busy="true" aria-live="polite">
+      <span class="sr-only">{{ copy.loading }}</span>
+      <div class="workspace-skeleton__heading">
+        <i class="skeleton-line skeleton-line--eyebrow" />
+        <div class="workspace-skeleton__title-block" aria-hidden="true">
+          <i class="skeleton-line skeleton-line--title skeleton-line--title-primary" />
+          <i class="skeleton-line skeleton-line--title skeleton-line--title-secondary" />
+        </div>
+        <i class="skeleton-line skeleton-line--body" />
+      </div>
+      <div class="workspace-skeleton__profile-status">
+        <i class="skeleton-line" />
+        <i class="skeleton-panel" />
+      </div>
+      <div class="workspace-skeleton__profile-portfolio">
+        <i class="skeleton-panel skeleton-panel--profile-hero" />
+        <div class="workspace-skeleton__profile-row">
+          <i class="skeleton-panel" />
+          <i class="skeleton-panel" />
+        </div>
+        <i class="skeleton-panel skeleton-panel--profile-passport" />
+        <i class="skeleton-panel skeleton-panel--profile-booking" />
+      </div>
+    </section>
+
     <section v-else-if="loadingView === 'passport'" class="workspace-skeleton workspace-skeleton--cue-id" aria-busy="true" aria-live="polite">
       <span class="sr-only">{{ copy.loading }}</span>
       <div class="workspace-skeleton__cue-id-heading">
@@ -3705,5 +3730,249 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 }
 @media (prefers-reduced-motion: reduce) {
   .workspace-loading-state__mark > i { animation:none; }
+}
+
+
+/* Skeletons mirror the final workspace geometry instead of using generic blocks. */
+.workspace-skeleton {
+  box-sizing:border-box;
+  width:min(1440px,100%);
+  margin:0 auto;
+  padding:24px 0 40px;
+}
+.workspace-skeleton__heading {
+  display:grid;
+  gap:10px;
+  max-width:900px;
+  margin:0 0 24px;
+}
+.workspace-skeleton__heading .skeleton-line--title-primary{width:min(780px,88%);height:64px}
+.workspace-skeleton__heading .skeleton-line--title-secondary{width:min(520px,64%);height:64px}
+.workspace-skeleton__heading .skeleton-line--body{width:min(680px,76%);height:18px}
+
+/* Bookings = cue strip + toolbar + list/detail split. */
+.workspace-skeleton__booking-shell{
+  overflow:hidden;
+  border:1px solid var(--workspace-line,var(--cue-border));
+  background:var(--cue-surface);
+}
+.skeleton-panel--booking-cue{
+  width:100%;
+  min-height:118px;
+  margin:0 0 14px;
+}
+.skeleton-panel--booking-toolbar{
+  width:100%;
+  min-height:74px;
+  border:0;
+  border-bottom:1px solid var(--workspace-line,var(--cue-border));
+}
+.workspace-skeleton__booking-layout{
+  display:grid;
+  grid-template-columns:minmax(300px,.78fr) minmax(0,1.45fr);
+  min-height:560px;
+}
+.workspace-skeleton__booking-list{
+  display:grid;
+  align-content:start;
+  border-right:1px solid var(--workspace-line,var(--cue-border));
+}
+.skeleton-panel--booking-row{
+  min-height:86px;
+  border:0;
+  border-bottom:1px solid var(--workspace-line,var(--cue-border));
+}
+.workspace-skeleton__booking-detail{
+  display:grid;
+  align-content:start;
+  gap:14px;
+  padding:18px;
+}
+.skeleton-panel--booking-head{min-height:92px}
+.skeleton-panel--booking-facts{min-height:118px}
+.skeleton-panel--booking-conversation{min-height:220px}
+.skeleton-panel--booking-followup{min-height:104px}
+
+/* Calendar = month grid + selected-day rail. */
+.workspace-skeleton__calendar-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(280px,360px);
+  gap:16px;
+  align-items:start;
+}
+.workspace-skeleton__calendar-month,
+.workspace-skeleton__calendar-day{
+  border:1px solid var(--workspace-line,var(--cue-border));
+  background:var(--cue-surface);
+}
+.skeleton-panel--calendar-toolbar{
+  min-height:64px;
+  border:0;
+  border-bottom:1px solid var(--workspace-line,var(--cue-border));
+}
+.workspace-skeleton__calendar-grid{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+}
+.skeleton-panel--calendar-weekday{
+  min-height:34px;
+  border:0;
+  border-right:1px solid var(--workspace-line,var(--cue-border));
+  border-bottom:1px solid var(--workspace-line,var(--cue-border));
+}
+.skeleton-panel--calendar-day{
+  min-height:88px;
+  border:0;
+  border-right:1px solid var(--workspace-line,var(--cue-border));
+  border-bottom:1px solid var(--workspace-line,var(--cue-border));
+}
+.workspace-skeleton__calendar-legend{
+  display:flex;
+  gap:12px;
+  padding:14px;
+}
+.workspace-skeleton__calendar-legend .skeleton-line{width:92px;height:10px}
+.skeleton-panel--calendar-day-head{
+  min-height:92px;
+  border:0;
+  border-bottom:1px solid var(--workspace-line,var(--cue-border));
+}
+.workspace-skeleton__calendar-timeline{
+  display:grid;
+}
+.skeleton-panel--calendar-hour{
+  min-height:48px;
+  border:0;
+  border-bottom:1px solid var(--workspace-line,var(--cue-border));
+}
+
+/* Activity = page heading + integrated Pro strip/tools + timeline. */
+.workspace-skeleton__history-page{
+  display:grid;
+  gap:10px;
+  max-width:900px;
+  margin-bottom:24px;
+}
+.skeleton-line--history-page-title{width:min(700px,80%);height:64px}
+.skeleton-line--history-page-body{width:min(640px,74%);height:18px}
+.workspace-skeleton__history-module{
+  overflow:hidden;
+  border:1px solid var(--workspace-line,var(--cue-border));
+  background:var(--cue-surface);
+}
+.skeleton-panel--history-heading-block{
+  min-height:108px;
+  border:0;
+  border-bottom:1px solid var(--workspace-line,var(--cue-border));
+}
+.workspace-skeleton__history-tools-block{
+  display:grid;
+  grid-template-columns:minmax(260px,1fr) auto;
+  gap:12px;
+  padding:12px;
+  border-bottom:1px solid var(--workspace-line,var(--cue-border));
+}
+.skeleton-panel--history-search-block{min-height:44px}
+.skeleton-panel--history-filters-block{width:360px;min-height:44px}
+.workspace-skeleton__history-timeline-block{display:grid}
+.skeleton-panel--history-row-block{
+  min-height:88px;
+  border:0;
+  border-bottom:1px solid var(--workspace-line,var(--cue-border));
+}
+
+/* Profile = publishing/status strip + editable portfolio. */
+.workspace-skeleton__profile-status{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(260px,420px);
+  gap:14px;
+  margin-bottom:16px;
+}
+.workspace-skeleton__profile-status>.skeleton-line{
+  align-self:center;
+  width:min(260px,70%);
+  height:24px;
+}
+.workspace-skeleton__profile-status>.skeleton-panel{min-height:58px}
+.workspace-skeleton__profile-portfolio{
+  overflow:hidden;
+  border:1px solid var(--workspace-line,var(--cue-border));
+  background:var(--cue-surface);
+}
+.skeleton-panel--profile-hero{min-height:480px;border:0;border-bottom:1px solid var(--workspace-line,var(--cue-border))}
+.workspace-skeleton__profile-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+}
+.workspace-skeleton__profile-row>.skeleton-panel{
+  min-height:180px;
+  border:0;
+  border-right:1px solid var(--workspace-line,var(--cue-border));
+  border-bottom:1px solid var(--workspace-line,var(--cue-border));
+}
+.skeleton-panel--profile-passport{min-height:240px;border:0;border-bottom:1px solid var(--workspace-line,var(--cue-border))}
+.skeleton-panel--profile-booking{min-height:150px;border:0}
+
+/* Passport / CUE ID keep the same page rhythm. */
+.workspace-skeleton__cue-id-heading{
+  display:grid;
+  gap:10px;
+  max-width:900px;
+  margin-bottom:24px;
+}
+.skeleton-line--cue-id-title{width:min(720px,82%);height:64px}
+.skeleton-line--cue-id-body{width:min(620px,72%);height:18px}
+.skeleton-panel--cue-id-hero{min-height:320px;margin-bottom:14px}
+.workspace-skeleton__cue-id-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+}
+.skeleton-panel--cue-id-card{min-height:180px}
+
+/* Overview */
+.workspace-skeleton__stats{grid-template-columns:repeat(5,minmax(0,1fr))}
+.skeleton-card{min-height:132px}
+.skeleton-panel--attention{min-height:170px;margin-top:16px}
+.workspace-skeleton__body{grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);gap:16px;margin-top:16px}
+.skeleton-panel--agenda,.skeleton-panel--cue{min-height:280px}
+
+@media (max-width:960px){
+  .workspace-skeleton{padding:20px 0 32px}
+  .workspace-skeleton__heading .skeleton-line--title-primary,
+  .workspace-skeleton__heading .skeleton-line--title-secondary,
+  .skeleton-line--history-page-title,
+  .skeleton-line--cue-id-title{height:42px}
+  .workspace-skeleton__booking-layout{grid-template-columns:1fr;min-height:0}
+  .workspace-skeleton__booking-list{
+    grid-template-columns:repeat(3,minmax(210px,1fr));
+    overflow:hidden;
+    border-right:0;
+    border-bottom:1px solid var(--workspace-line,var(--cue-border));
+  }
+  .skeleton-panel--booking-row{min-height:96px;border-right:1px solid var(--workspace-line,var(--cue-border))}
+  .workspace-skeleton__calendar-layout{grid-template-columns:1fr}
+  .workspace-skeleton__calendar-day{display:none}
+  .workspace-skeleton__history-tools-block{grid-template-columns:1fr}
+  .skeleton-panel--history-filters-block{width:100%}
+  .workspace-skeleton__profile-status{grid-template-columns:1fr}
+  .skeleton-panel--profile-hero{min-height:420px}
+  .workspace-skeleton__profile-row{grid-template-columns:1fr}
+  .workspace-skeleton__cue-id-grid{grid-template-columns:1fr}
+  .workspace-skeleton__stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .workspace-skeleton__stats .skeleton-card:last-child{grid-column:1/-1}
+  .workspace-skeleton__body{grid-template-columns:1fr}
+}
+@media (max-width:680px){
+  .workspace-skeleton__heading{margin-bottom:18px}
+  .workspace-skeleton__heading .skeleton-line--title-primary{width:92%}
+  .workspace-skeleton__heading .skeleton-line--title-secondary{width:68%}
+  .skeleton-panel--booking-cue{min-height:132px}
+  .workspace-skeleton__booking-list{grid-template-columns:repeat(3,240px)}
+  .workspace-skeleton__booking-detail{padding:14px}
+  .workspace-skeleton__calendar-grid{grid-template-columns:repeat(7,minmax(0,1fr))}
+  .skeleton-panel--calendar-day{min-height:62px}
+  .skeleton-panel--profile-hero{min-height:360px}
+  .workspace-skeleton__profile-row>.skeleton-panel{min-height:150px}
 }
 </style>
