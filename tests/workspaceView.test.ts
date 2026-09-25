@@ -96,11 +96,16 @@ test('neutral boot loader does not depend on the CueBrand component', async () =
 })
 
 
-test('workspace route is the canonical desktop navigation state', async () => {
+test('workspace view state follows explicit routes without falling back to Overview', async () => {
   const source = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
-  assert.match(source, /const activeView = computed<WorkspaceView>/)
+  assert.match(source, /const activeView = ref<WorkspaceView>\(initialWorkspaceView\)/)
   assert.match(source, /explicitWorkspaceViewFromQuery\(route\.query\.view, route\.query\.booking\)/)
-  assert.doesNotMatch(source, /activeView\.value\s*=\s*['"]/)
+  const routeWatchStart = source.indexOf("watch(() => [route.query.view, route.query.booking]")
+  const routeWatchEnd = source.indexOf("watch(() => route.query.artist", routeWatchStart)
+  const routeWatch = source.slice(routeWatchStart, routeWatchEnd)
+  assert.match(routeWatch, /if \(!next\) return/)
+  assert.match(routeWatch, /activeView\.value = next/)
+  assert.doesNotMatch(routeWatch, /workspaceViewFromQuery\(value, booking\)/)
   assert.doesNotMatch(source, /@click="activeView\s*=/)
   assert.doesNotMatch(source, /@open-bookings="activeView\s*=/)
 })
