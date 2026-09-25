@@ -604,8 +604,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 .cue-capture__actions button:disabled { opacity: .55; cursor: wait; }
 @media (max-width: 640px) {
   .cue-capture-backdrop { align-items: flex-end; }
-  .cue-capture { height: min(88dvh, 760px); border-top: 1px solid #333; border-left: 0; }
-  .cue-capture__header { padding: 18px 16px 15px; }
+  .cue-capture { height: 100dvh; max-height: 100dvh; border-top: 1px solid #333; border-left: 0; }
+  .cue-capture__header { position: sticky; top: 0; z-index: 4; padding: max(18px, env(safe-area-inset-top)) 16px 15px; background: rgba(13,13,13,.98); backdrop-filter: blur(10px); }
   .cue-capture__header h2 { font-size: 2.35rem; }
   .cue-capture__form { padding: 0 16px 20px; }
   .cue-capture__channel { padding: 16px 0; gap: 5px; }
@@ -614,7 +614,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   .cue-capture__interpret button,
   .cue-capture__preview-actions button { min-height:44px; }
   .cue-capture__section { padding: 15px 0; }
-  .cue-capture { height:100dvh; }
   .cue-capture__tell { padding:16px 0; }
   .cue-capture__smart-actions { display:grid; grid-template-columns:1fr; }
   .cue-capture__interpret { margin-top:0; }
