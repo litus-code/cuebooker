@@ -13,6 +13,45 @@
   --cue-violet: #8e7dff;
   --cue-orange: #efa45e;
   --cue-shadow: rgba(0, 0, 0, .45);
+
+
+  /* Restored shared design-system tokens used across app surfaces. */
+  --cue-primary: #d8f56b;
+  --cue-primary-ink: #11120d;
+  --cue-secondary: #8e7dff;
+  --cue-brand-red: #f25f6b;
+  --cue-warm: #efa45e;
+  --cue-status-new: #ceff54;
+  --cue-status-conversation: #73b7ff;
+  --cue-status-waiting: #ffbf5f;
+  --cue-status-confirmed: #55d98d;
+  --cue-status-rejected: #ff6f7d;
+  --cue-status-cancelled: #8e8e8e;
+  --cue-radius-xs: 4px;
+  --cue-radius-sm: 6px;
+  --cue-radius-md: 8px;
+  --cue-radius-lg: 10px;
+  --cue-radius-xl: 12px;
+  --cue-radius-round: 999px;
+  --cue-space-1: 4px;
+  --cue-space-2: 8px;
+  --cue-space-3: 12px;
+  --cue-space-4: 16px;
+  --cue-space-5: 20px;
+  --cue-space-6: 24px;
+  --cue-space-8: 32px;
+  --cue-space-10: 40px;
+  --cue-space-12: 48px;
+  --cue-control-compact: 30px;
+  --cue-control-standard: 38px;
+  --cue-control-primary: 40px;
+  --cue-control-mobile: 42px;
+  --cue-button-sm: 36px;
+  --cue-button-md: 44px;
+  --cue-button-lg: 52px;
+  --cue-input-md: 44px;
+  --cue-radius-control: 8px;
+  --cue-radius-panel: 12px;
 }
 
 :root[data-theme='light'] {
@@ -28,6 +67,14 @@
   --cue-violet: #6f47ff;
   --cue-orange: #b85d1f;
   --cue-shadow: rgba(31, 30, 27, .16);
+
+
+  /* Restored shared design-system tokens used across app surfaces. */
+  --cue-primary: #6f47ff;
+  --cue-primary-ink: #fff;
+  --cue-secondary: #5d3ed1;
+  --cue-brand-red: #d94d5a;
+  --cue-warm: #b85d1f;
 }
 
 * { box-sizing: border-box; }
