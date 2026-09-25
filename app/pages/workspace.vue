@@ -2554,7 +2554,9 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <button type="button" @click="dismissProfileWelcome">{{ copy.later }}</button>
         </aside>
 
-        <template>
+        <p v-if="profileLoading" class="loading-message">{{ copy.loading }}</p>
+
+        <template v-else>
           <WorkspaceArtistProfile
             :profile="publicProfilePreview"
             :published="publicProfilePublished"
