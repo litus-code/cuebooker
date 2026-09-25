@@ -2030,3 +2030,87 @@
     display: none !important;
   }
 }
+
+
+/* Definitive desktop sidebar contract.
+   This intentionally overrides every historical collapsed/hover variant above. */
+@media (min-width: 961px) {
+  /* Expanded sidebar: labels are always visible. */
+  .workspace:not(.workspace--sidebar-collapsed) .workspace-header nav button {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 42px !important;
+    padding: 0 12px 0 36px !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    color: var(--cue-muted) !important;
+    font-size: 10px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    text-indent: 0 !important;
+    white-space: nowrap !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .workspace:not(.workspace--sidebar-collapsed) .workspace-header nav button:hover,
+  .workspace:not(.workspace--sidebar-collapsed) .workspace-header nav button:focus,
+  .workspace:not(.workspace--sidebar-collapsed) .workspace-header nav button:focus-visible,
+  .workspace:not(.workspace--sidebar-collapsed) .workspace-header nav button:active {
+    background: transparent !important;
+    background-color: transparent !important;
+    color: var(--cue-text) !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .workspace:not(.workspace--sidebar-collapsed) .workspace-header nav button.active,
+  .workspace:not(.workspace--sidebar-collapsed) .workspace-header nav button.active:hover,
+  .workspace:not(.workspace--sidebar-collapsed) .workspace-header nav button.active:focus,
+  .workspace:not(.workspace--sidebar-collapsed) .workspace-header nav button.active:focus-visible,
+  .workspace:not(.workspace--sidebar-collapsed) .workspace-header nav button.active:active {
+    border: 0 !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    color: var(--cue-accent) !important;
+    box-shadow: inset 2px 0 0 var(--cue-accent) !important;
+  }
+
+  /* Collapsed sidebar: icons only, but never a filled lime tile. */
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button:hover,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button:focus,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button:focus-visible,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button:active,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button.active,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button.active:hover,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button.active:focus,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button.active:focus-visible,
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button.active:active {
+    border: 0 !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button {
+    color: var(--cue-muted) !important;
+  }
+
+  .workspace.workspace--sidebar-collapsed .workspace-header nav button.active {
+    color: var(--cue-accent) !important;
+    box-shadow: inset 2px 0 0 var(--cue-accent) !important;
+  }
+
+  /* No pseudo-element may reintroduce the old selected tile. */
+  .workspace .workspace-header nav button::before {
+    display: none !important;
+  }
+}
