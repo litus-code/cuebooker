@@ -62,11 +62,12 @@ test('bookings skeleton broad blocks have explicit geometry', async () => {
   assert.match(source, /\.skeleton-panel--booking-detail-block\{/)
 })
 
-test('artist surfaces stop blocking on optional profile hydration', async () => {
+test('artist surfaces never remain behind profile hydration after workspace boot', async () => {
   const source = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
-  assert.match(source, /The base artist record is enough to render Profile, Passport and CUE ID/)
-  assert.match(source, /void Promise\.all\(\[/)
-  assert.match(source, /\['profile', 'passport', 'cue-id'\]\.includes\(activeView\.value\)/)
+  assert.match(source, /const workspaceSurfaceLoading = computed\(\(\) => loading\.value\)/)
+  assert.match(source, /artistProfiles\.getProfile\(selectedArtistId\.value\)/)
+  assert.match(source, /4000,\s*'artist_profile'/)
+  assert.match(source, /Keep the workspace usable with the managed artist identity we already have/)
 })
 
 test('workspace boot uses one bounded deadline instead of additive auth waits', async () => {
@@ -81,4 +82,14 @@ test('neutral loading copy is visually hidden and only used for accessibility', 
   assert.match(source, /\.sr-only \{/)
   assert.match(source, /clip:rect\(0,0,0,0\)/)
   assert.match(source, /<span class="sr-only">\{\{ copy\.loading \}\}<\/span>/)
+})
+
+
+test('neutral boot loader does not depend on the CueBrand component', async () => {
+  const source = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
+  const loaderStart = source.indexOf('<section v-else class="workspace-loading-state"')
+  const loaderEnd = source.indexOf('</section>', loaderStart)
+  const loader = source.slice(loaderStart, loaderEnd)
+  assert.match(loader, /workspace-loading-state__mark/)
+  assert.doesNotMatch(loader, /<CueBrand/)
 })
