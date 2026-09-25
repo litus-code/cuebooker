@@ -56,3 +56,15 @@ test('workspace keeps structural loading surfaces for primary modules', async ()
     assert.match(source, new RegExp(`workspace-skeleton--${surface}`))
   }
 })
+
+
+test('profile waits for its own hydration before mounting the profile tree', async () => {
+  const source = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
+  const start = source.indexOf('class="view profile-view profile-view--presence"')
+  const end = source.indexOf('</section>', start)
+  const profile = source.slice(start, end + 10)
+
+  assert.match(profile, /<p v-if="profileLoading" class="loading-message">\{\{ copy\.loading \}\}<\/p>/)
+  assert.match(profile, /<template v-else>/)
+  assert.match(profile, /<WorkspaceArtistProfile/)
+})
