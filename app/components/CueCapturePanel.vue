@@ -276,6 +276,12 @@ function applySmartResult() {
 }
 
 function discardSmartResult() {
+  if (smartResult.value) {
+    analytics.track('smart_capture_discard', {
+      missing_fields: smartResult.value.missingFields.length,
+      warnings: smartResult.value.warnings.length
+    })
+  }
   smartResult.value = null
 }
 
