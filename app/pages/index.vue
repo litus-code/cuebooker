@@ -2189,7 +2189,7 @@ section:focus { outline:none; }
 
 
 <style scoped>
-/* Preview-only mobile hero v2: clear split composition. Kept last to win the legacy mobile cascade. */
+/* Preview-only mobile hero v3: tighter mobile composition. Kept last to win the legacy cascade. */
 @media (max-width: 520px) {
   .commercial-home .cp-hero {
     position: relative;
@@ -2204,11 +2204,11 @@ section:focus { outline:none; }
     display: block !important;
     inset: 0 0 auto 0 !important;
     width: 100%;
-    height: 43svh;
-    min-height: 330px;
-    max-height: 430px;
+    height: 41svh;
+    min-height: 315px;
+    max-height: 405px;
     background-image: var(--hero-image) !important;
-    background-position: 72% 36% !important;
+    background-position: 72% 34% !important;
     background-size: cover !important;
     background-repeat: no-repeat !important;
     opacity: .92 !important;
@@ -2220,9 +2220,9 @@ section:focus { outline:none; }
     background:
       linear-gradient(180deg,
         color-mix(in srgb, var(--cp-black) 8%, transparent) 0%,
-        color-mix(in srgb, var(--cp-black) 16%, transparent) 25%,
-        color-mix(in srgb, var(--cp-black) 64%, transparent) 40%,
-        var(--cp-black) 49%,
+        color-mix(in srgb, var(--cp-black) 18%, transparent) 24%,
+        color-mix(in srgb, var(--cp-black) 60%, transparent) 39%,
+        var(--cp-black) 47%,
         var(--cp-black) 100%) !important;
   }
 
@@ -2231,19 +2231,19 @@ section:focus { outline:none; }
     z-index: 2;
     display: block !important;
     min-height: 0 !important;
-    padding: calc(min(43svh, 430px) - 8px) 0 32px !important;
+    padding: calc(min(41svh, 405px) - 42px) 0 28px !important;
   }
 
   .commercial-home .cp-hero .cp-eyebrow {
-    margin: 0 0 14px;
+    margin: 0 0 12px;
     font-size: 10px;
     letter-spacing: .16em;
   }
 
   .commercial-home .cp-hero h1 {
     max-width: 350px;
-    margin: 0 0 16px !important;
-    font-size: clamp(45px, 12.4vw, 58px) !important;
+    margin: 0 0 14px !important;
+    font-size: clamp(44px, 12vw, 56px) !important;
     line-height: .94 !important;
     letter-spacing: -.055em;
   }
@@ -2251,31 +2251,45 @@ section:focus { outline:none; }
   .commercial-home .cp-hero-lead {
     max-width: 345px;
     margin: 0 !important;
-    font-size: 16px !important;
-    line-height: 1.5 !important;
+    font-size: 15.5px !important;
+    line-height: 1.46 !important;
   }
 
   .commercial-home .cp-hero-actions {
     display: grid !important;
-    grid-template-columns: 1fr !important;
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr) !important;
     gap: 10px !important;
     width: 100% !important;
-    margin-top: 22px !important;
+    margin-top: 20px !important;
   }
 
   .commercial-home .cp-hero-actions .cp-cta {
     width: 100% !important;
-    min-height: 54px !important;
-    font-size: 12px !important;
+    min-width: 0 !important;
+    min-height: 49px !important;
+    padding-inline: 12px !important;
+    font-size: 10.5px !important;
+    letter-spacing: .045em;
+    white-space: nowrap;
   }
 
   .commercial-home .cp-hero-actions .cp-cta--ghost {
-    min-height: 48px !important;
-    background: transparent !important;
+    min-height: 49px !important;
+    border-color: color-mix(in srgb, var(--cp-paper) 26%, transparent) !important;
+    background: color-mix(in srgb, var(--cp-black) 50%, transparent) !important;
   }
 
   .commercial-home .cp-hero-note {
     display: none !important;
+  }
+}
+
+@media (max-width: 365px) {
+  .commercial-home .cp-hero-actions {
+    grid-template-columns: 1fr !important;
+  }
+  .commercial-home .cp-hero-actions .cp-cta {
+    font-size: 11px !important;
   }
 }
 </style>
