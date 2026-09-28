@@ -39,8 +39,8 @@ const p = computed(() => locale.value === 'es' ? {
   "problem": {
     "label": "EL PROBLEMA",
     "title": "Un booking no debería vivir en cinco sitios distintos.",
-    "body": "Una propuesta puede empezar en Instagram, seguir por WhatsApp, acabar en email y depender de que recuerdes mirar el calendario. Ahí se pierde contexto, seguimiento y oportunidades.",
-    "before": ["Instagram", "WhatsApp", "Email", "Calendario", "Notas"],
+    "body": "Una propuesta puede empezar en Instagram, WhatsApp, email o una llamada y acabar dependiendo de que recuerdes mirar el calendario o una nota. Ahí se pierde contexto, seguimiento y oportunidades.",
+    "before": ["Instagram", "WhatsApp", "Email", "Llamada", "Calendario", "Notas"],
     "after": "Cuebooker",
     "solution": "Cada solicitud entra con su contexto, conversación, fecha y estado. Tú sigues tomando las decisiones; Cuebooker mantiene el proceso ordenado."
   },
@@ -269,8 +269,8 @@ const p = computed(() => locale.value === 'es' ? {
   "problem": {
     "label": "THE PROBLEM",
     "title": "A booking should not live in five different places.",
-    "body": "A proposal can start on Instagram, continue on WhatsApp, end up in email and still depend on you remembering to check the calendar. That is where context, follow-up and opportunities get lost.",
-    "before": ["Instagram", "WhatsApp", "Email", "Calendar", "Notes"],
+    "body": "A proposal can start on Instagram, WhatsApp, email or a phone call and still depend on you remembering to check a calendar or note. That is where context, follow-up and opportunities get lost.",
+    "before": ["Instagram", "WhatsApp", "Email", "Phone call", "Calendar", "Notes"],
     "after": "Cuebooker",
     "solution": "Every request keeps its context, conversation, date and status together. You still make the decisions; Cuebooker keeps the process organised."
   },
