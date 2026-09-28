@@ -23,8 +23,8 @@ const copy = computed(() => locale.value === 'es'
       cueIdNow: 'Crear mi CUE ID ahora',
       cueIdNowBody: 'Ir al Creator después de crear tu workspace.',
       cueIdLater: 'Hacerlo más tarde',
-      cueIdLaterBody: 'Entrar al workspace y crear tu CUE ID cuando quieras.',
-      profileNote: 'Después podrás completar tu ficha profesional. CUE ID también seguirá disponible desde tu workspace.',
+      cueIdLaterBody: 'Entrar al calendario y crear tu CUE ID cuando quieras.',
+      profileNote: 'Después podrás completar tu ficha profesional. Al terminar entrarás directamente a Calendario para empezar a trabajar.',
       planIntent: 'Plan seleccionado', planPending: 'La activación de pago se realizará después de crear el workspace.',
       saving: 'Guardando…', submit: 'Crear workspace', genericError: 'No se pudo completar la configuración.',
       pageTitle: 'Configura tu cuenta | Cuebooker'
@@ -40,8 +40,8 @@ const copy = computed(() => locale.value === 'es'
       cueIdNow: 'Create my CUE ID now',
       cueIdNowBody: 'Open the Creator after your workspace is created.',
       cueIdLater: 'Do it later',
-      cueIdLaterBody: 'Enter the workspace and create your CUE ID whenever you want.',
-      profileNote: 'Afterwards you can complete your professional profile. CUE ID will also remain available from your workspace.',
+      cueIdLaterBody: 'Open Calendar and create your CUE ID whenever you want.',
+      profileNote: 'Afterwards you can complete your professional profile. When setup is complete, you will land directly in Calendar.',
       planIntent: 'Selected plan', planPending: 'Paid activation will happen after the workspace is created.',
       saving: 'Saving…', submit: 'Create workspace', genericError: 'Setup could not be completed.',
       pageTitle: 'Set up your account | Cuebooker'
@@ -93,7 +93,7 @@ async function submit() {
       await navigateTo('/cue-id?from=onboarding')
       return
     }
-    await navigateTo('/workspace?setup=profile')
+    await navigateTo('/workspace?view=calendar&from=onboarding')
   } catch (error: any) {
     errorMessage.value = error?.data?.message || error?.message || copy.value.genericError
   } finally {
