@@ -1209,17 +1209,65 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
   .cp-hero-accent { max-width: 55%; }
 }
 @media (max-width: 850px) {
-  .commercial-home .cp-hero { min-height: auto; }
-  .commercial-home .cp-hero::before { background-image: none; }
-  .commercial-home .cp-hero-content { padding: 110px 0 48px; }
+  .commercial-home .cp-hero {
+    min-height: min(880px, 100svh);
+    align-items: stretch;
+    overflow: hidden;
+  }
+  .commercial-home .cp-hero::before {
+    background: var(--hero-image) 72% 32% / cover no-repeat;
+    opacity: .72;
+  }
+  .commercial-home .cp-hero-overlay {
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--cp-black) 18%, transparent) 0%, color-mix(in srgb, var(--cp-black) 44%, transparent) 32%, color-mix(in srgb, var(--cp-black) 88%, transparent) 62%, var(--cp-black) 100%),
+      linear-gradient(90deg, color-mix(in srgb, var(--cp-black) 62%, transparent) 0%, color-mix(in srgb, var(--cp-black) 12%, transparent) 72%);
+  }
+  .commercial-home .cp-hero-content {
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    min-height:min(880px, 100svh);
+    box-sizing:border-box;
+    padding:150px 0 44px;
+  }
   .commercial-home .cp-hero h1 { max-width: 650px; font-size: clamp(48px, 9vw, 72px); }
   .cp-mobile-menu--portal { min-height: 0; }
 }
 @media (max-width: 520px) {
-  .commercial-home .cp-hero-content { padding: 96px 0 38px; }
-  .commercial-home .cp-hero h1 { font-size: clamp(43px, 11.7vw, 60px); margin: 22px 0 18px; }
+  .commercial-home .cp-hero { min-height: max(690px, 92svh); }
+  .commercial-home .cp-hero::before { background-position: 70% 22%; opacity:.78; }
+  .commercial-home .cp-hero-content {
+    min-height:max(690px, 92svh);
+    padding:160px 0 30px;
+  }
+  .commercial-home .cp-hero h1 {
+    max-width: 355px;
+    margin: 18px 0 16px;
+    font-size: clamp(44px, 12.2vw, 56px);
+    line-height:.98;
+  }
+  .commercial-home .cp-hero .cp-eyebrow { font-size:10px; letter-spacing:.16em; }
   .cp-hero-accent { font-size: 25px; max-width: 320px; }
-  .commercial-home .cp-hero-lead { font-size: 16px; }
+  .commercial-home .cp-hero-lead {
+    max-width:350px;
+    margin-bottom:0;
+    font-size:16px;
+    line-height:1.48;
+  }
+  .commercial-home .cp-hero-actions {
+    display:grid;
+    grid-template-columns:1fr;
+    gap:10px;
+    width:100%;
+    margin-top:22px;
+  }
+  .commercial-home .cp-hero-actions .cp-cta {
+    width:100%;
+    min-height:54px;
+  }
+  .commercial-home .cp-hero-actions .cp-cta--ghost { min-height:48px; }
+  .commercial-home .cp-hero-note { display:none; }
   .commercial-home .cp-hero-note { font-size: 12px; }
   .commercial-home .cp-booking-proof .cp-hero-flow { grid-template-columns: 1fr; gap: 18px; }
   .commercial-home .cp-booking-proof .cp-hero-signals { grid-template-columns: repeat(3, 1fr); }
