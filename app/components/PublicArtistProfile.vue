@@ -375,10 +375,10 @@ onBeforeUnmount(() => {
 .public-artist-profile__cue>div:last-child { display:grid; align-content:center; gap:10px; padding:32px; }
 .public-artist-profile__cue h2 { max-width:520px; margin:0; font-size:clamp(28px,4vw,48px); line-height:.95; }
 .public-artist-profile__cue p { max-width:620px; margin:0; color:var(--cue-muted,#888); font-size:12px; line-height:1.55; }
-.public-artist-profile__passport { display:grid; grid-template-columns:auto minmax(0,1fr); gap:28px; padding:44px clamp(18px,6vw,90px) 0; border-bottom:1px solid var(--cue-border,#2c2c2c); background:#0a0a0a; }
-.public-artist-profile__passport-head { display:flex; justify-content:space-between; gap:20px; align-items:end; margin-bottom:22px; }
+.public-artist-profile__passport { display:grid; grid-template-columns:auto minmax(0,1fr); gap:28px; min-width:0; padding:44px clamp(18px,6vw,90px) 0; border-bottom:1px solid var(--cue-border,#2c2c2c); background:#0a0a0a; }
+.public-artist-profile__passport-head { display:flex; justify-content:space-between; gap:20px; align-items:end; min-width:0; margin-bottom:22px; }
 .public-artist-profile__passport-head p { max-width:420px; margin:0; color:var(--cue-muted,#888); font:700 10px/1.4 monospace; text-align:right; }
-.public-artist-profile__passport :deep(.cue-passport-profile-summary) { grid-column:2; margin:0 -1px -1px 0; border-radius:0; border-color:var(--cue-border,#2c2c2c); background:#090909; }
+.public-artist-profile__passport :deep(.profile-passport) { grid-column:1 / -1; min-width:0; width:100%; box-sizing:border-box; margin:0 0 -1px; border-color:var(--cue-border,#2c2c2c); background:#090909; }
 .public-artist-profile__links { display:grid; grid-template-columns:auto minmax(0,1fr); gap:28px; padding:44px clamp(18px,6vw,90px) 56px; border-bottom:1px solid var(--cue-border,#2c2c2c); }
 .public-artist-profile__links>span { align-self:start; color:var(--cue-accent,#e8ff2f); }
 .public-artist-profile__links nav { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0; border-top:1px solid var(--cue-border,#333); }
@@ -410,7 +410,7 @@ onBeforeUnmount(() => {
   .public-artist-profile__passport { grid-template-columns:auto 1fr; gap:18px; }
   .public-artist-profile__passport-head { grid-column:2; align-items:start; flex-direction:column; }
   .public-artist-profile__passport-head p { text-align:left; }
-  .public-artist-profile__passport :deep(.cue-passport-profile-summary) { grid-column:1 / -1; }
+  .public-artist-profile__passport :deep(.profile-passport) { grid-column:1 / -1; }
   .public-artist-profile__links { grid-template-columns:auto 1fr; gap:18px; }
   .public-artist-profile__links nav { grid-column:1 / -1; }
   .public-artist-profile__booking-band { grid-template-columns:auto 1fr; align-items:start; gap:18px; }
@@ -460,6 +460,9 @@ onBeforeUnmount(() => {
   .public-artist-profile__genres span { padding:6px 8px; font-size:8px; }
   .public-artist-profile__booking-cta { min-height:50px; margin-top:18px; }
   .public-artist-profile__story { padding:30px 18px 40px; gap:26px; }
+  .public-artist-profile__passport { grid-template-columns:minmax(0,1fr); gap:16px; padding:34px 18px 0; }
+  .public-artist-profile__passport .public-artist-profile__section-index { grid-column:1; }
+  .public-artist-profile__passport-head { grid-column:1; margin-bottom:8px; }
   .public-artist-profile__story p { font-size:clamp(1.15rem,5.5vw,1.6rem); line-height:1.24; }
   .public-artist-profile__links { padding:28px 18px 36px; }
   .public-artist-profile__sound { grid-template-columns:1fr; gap:14px; padding:28px 18px; }

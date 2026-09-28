@@ -147,6 +147,9 @@ function mediaLink(item: PassportMedia) {
 .profile-passport{
   display:grid;
   grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
+  min-width:0;
+  width:100%;
+  box-sizing:border-box;
   min-height:330px;
   border-top:1px solid #252525;
   background:#090909;
@@ -154,6 +157,7 @@ function mediaLink(item: PassportMedia) {
 .profile-passport__copy{
   display:flex;
   flex-direction:column;
+  min-width:0;
   justify-content:center;
   padding:32px;
   border-right:1px solid #252525;
@@ -243,6 +247,8 @@ function mediaLink(item: PassportMedia) {
   position:relative;
   display:flex;
   flex-direction:column;
+  min-width:0;
+  box-sizing:border-box;
   justify-content:flex-end;
   gap:12px;
   min-height:330px;

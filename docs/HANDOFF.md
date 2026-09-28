@@ -14,6 +14,7 @@ Read this immediately after `AGENTS.md`. This document records current implement
 - Validation: `npm run build` and `git diff --check` locally. PR preview visual check at desktop and around 390 px is still pending.
 - No schema, migrations or Edge Functions. Production untouched. Next: inspect PR #75 visually with a real profile and confirm navigation, mobile crop and booking preview behavior. A blob URL used by an unsaved image lasts only for the current browser document, so reloading the preview may require returning to the editor.
 - Follow-up: the preview landing now includes the actual `PublicBookingForm` below the booking band. All fields, including expanded optional event details, are visible but disabled; submission stays blocked. Its "Ver formulario" buttons scroll to that section. The real public booking form continues to open as before.
+- Follow-up layout fix: the public Passport section had a stale `.cue-passport-profile-summary` selector while the component root is `.profile-passport`. The summary now spans its grid and nested tracks can shrink; mobile stacks the heading and summary to prevent horizontal overflow. `npm run build` passed locally. Visual PR preview check remains pending.
 
 ## 1. Product truth
 
