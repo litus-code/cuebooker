@@ -100,7 +100,7 @@ export const CUE_PLANS: Record<CuePlan, CuePlanDefinition> = {
       activeBookings: 5,
       monthlyCaptures: 10,
       historyDays: 90,
-      smartCaptureMonthly: null,
+      smartCaptureMonthly: 10,
       passportMediaItems: 10,
       artists: 1,
       teamMembers: 1
