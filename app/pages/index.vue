@@ -38,11 +38,12 @@ const p = computed(() => locale.value === 'es' ? {
   },
   "problem": {
     "label": "EL PROBLEMA",
-    "title": "Un booking no debería vivir en cinco sitios distintos.",
+    "title": "Tu booking no debería estar repartido por todas partes.",
     "body": "Una propuesta puede empezar en Instagram, WhatsApp, email o una llamada y acabar dependiendo de que recuerdes mirar el calendario o una nota. Ahí se pierde contexto, seguimiento y oportunidades.",
     "before": ["Instagram", "WhatsApp", "Email", "Llamada", "Calendario", "Notas"],
-    "after": "Cuebooker",
-    "solution": "Cada solicitud entra con su contexto, conversación, fecha y estado. Tú sigues tomando las decisiones; Cuebooker mantiene el proceso ordenado."
+    "after": "Un solo flujo de booking",
+    "productMeta": ["Solicitud", "Conversación", "Fecha", "Estado"],
+    "solution": "Cada solicitud mantiene su contexto, conversación, fecha y estado en un solo lugar. Tú sigues tomando las decisiones; Cuebooker mantiene el proceso ordenado."
   },
   "work": {
     "label": "01 / DETRÁS DEL SET",
@@ -268,11 +269,12 @@ const p = computed(() => locale.value === 'es' ? {
   },
   "problem": {
     "label": "THE PROBLEM",
-    "title": "A booking should not live in five different places.",
+    "title": "Your bookings should not be scattered everywhere.",
     "body": "A proposal can start on Instagram, WhatsApp, email or a phone call and still depend on you remembering to check a calendar or note. That is where context, follow-up and opportunities get lost.",
     "before": ["Instagram", "WhatsApp", "Email", "Phone call", "Calendar", "Notes"],
-    "after": "Cuebooker",
-    "solution": "Every request keeps its context, conversation, date and status together. You still make the decisions; Cuebooker keeps the process organised."
+    "after": "One booking workflow",
+    "productMeta": ["Request", "Conversation", "Date", "Status"],
+    "solution": "Every request keeps its context, conversation, date and status in one place. You still make the decisions; Cuebooker keeps the process organised."
   },
   "work": {
     "label": "01 / BEHIND THE SET",
@@ -701,17 +703,24 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
         <h2 id="problem-title">{{ p.problem.title }}</h2>
         <p>{{ p.problem.body }}</p>
       </div>
-      <div class="cp-problem-flow" aria-label="Booking fragmented across channels becomes one workflow in Cuebooker">
+      <div class="cp-problem-flow" :aria-label="locale === 'es' ? 'Canales dispersos que convergen en un único flujo de booking en Cuebooker' : 'Scattered channels converging into one booking workflow in Cuebooker'">
         <div class="cp-problem-fragmented">
           <span v-for="channel in p.problem.before" :key="channel">{{ channel }}</span>
         </div>
-        <span class="cp-problem-arrow" aria-hidden="true">→</span>
+        <div class="cp-problem-connector" aria-hidden="true"><i /><span>→</span></div>
         <div class="cp-problem-product">
+          <span class="cp-problem-product__eyebrow">{{ locale === 'es' ? 'TODO CONVERGE AQUÍ' : 'EVERYTHING CONVERGES HERE' }}</span>
           <CueBrand />
           <strong>{{ p.problem.after }}</strong>
+          <div class="cp-problem-product__meta">
+            <span v-for="item in p.problem.productMeta" :key="item">{{ item }}</span>
+          </div>
         </div>
       </div>
-      <p class="cp-problem-solution">{{ p.problem.solution }}</p>
+      <div class="cp-problem-solution">
+        <span>{{ locale === 'es' ? 'LA DIFERENCIA' : 'THE DIFFERENCE' }}</span>
+        <p>{{ p.problem.solution }}</p>
+      </div>
     </section>
 
 
@@ -917,104 +926,209 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
 /* Problem / solution compression: explain Cuebooker before the long-form product story. */
 .cp-problem {
   display:grid;
-  grid-template-columns:minmax(0,.9fr) minmax(420px,1.1fr);
-  gap:clamp(36px,6vw,88px);
+  grid-template-columns:minmax(0,.82fr) minmax(520px,1.18fr);
+  gap:clamp(44px,5.5vw,92px);
   align-items:center;
-  padding-top:clamp(48px,6vw,84px);
-  padding-bottom:clamp(48px,6vw,84px);
+  padding-top:clamp(56px,6vw,92px);
+  padding-bottom:clamp(54px,6vw,88px);
   border-bottom:1px solid var(--cp-line);
 }
+.cp-problem-copy {
+  align-self:start;
+  padding-top:8px;
+}
 .cp-problem-copy h2 {
-  max-width:760px;
-  margin:14px 0 18px;
-  font-size:clamp(2.5rem,5vw,5.8rem);
-  line-height:.91;
-  letter-spacing:-.055em;
+  max-width:660px;
+  margin:16px 0 24px;
+  font-size:clamp(2.8rem,4.45vw,5.35rem);
+  line-height:.94;
+  letter-spacing:-.052em;
+  text-wrap:balance;
 }
 .cp-problem-copy > p:last-child {
-  max-width:680px;
+  max-width:600px;
   margin:0;
-  color:var(--cp-muted);
-  font-size:clamp(1rem,1.4vw,1.18rem);
-  line-height:1.6;
+  color:color-mix(in srgb,var(--cp-paper) 70%,var(--cp-muted));
+  font-size:clamp(1rem,1.28vw,1.14rem);
+  line-height:1.68;
 }
 .cp-problem-flow {
   display:grid;
-  grid-template-columns:minmax(0,1fr) auto minmax(160px,.7fr);
-  gap:18px;
-  align-items:center;
+  grid-template-columns:minmax(300px,1fr) 72px minmax(230px,.72fr);
+  gap:14px;
+  align-items:stretch;
 }
 .cp-problem-fragmented {
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:8px;
+  grid-auto-rows:70px;
+  gap:10px;
 }
 .cp-problem-fragmented span {
   display:grid;
   place-items:center;
-  min-height:58px;
+  min-width:0;
   padding:10px 12px;
-  border:1px solid var(--cp-line);
-  border-radius:10px;
-  background:var(--cp-panel);
-  color:var(--cp-muted);
+  border:1px solid color-mix(in srgb,var(--cp-line) 88%,transparent);
+  border-radius:11px;
+  background:
+    linear-gradient(180deg,color-mix(in srgb,var(--cp-panel) 94%,white 1%),var(--cp-panel));
+  color:color-mix(in srgb,var(--cp-paper) 58%,var(--cp-muted));
   font:700 10px/1 ui-monospace,monospace;
-  letter-spacing:.08em;
+  letter-spacing:.09em;
   text-transform:uppercase;
 }
-.cp-problem-fragmented span:last-child {
-  grid-column:1 / -1;
+.cp-problem-connector {
+  position:relative;
+  display:grid;
+  place-items:center;
+  min-width:0;
 }
-.cp-problem-arrow {
+.cp-problem-connector i {
+  position:absolute;
+  left:4px;
+  right:4px;
+  top:50%;
+  height:1px;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--cp-line) 68%,transparent),var(--cp-lime));
+}
+.cp-problem-connector span {
+  position:relative;
+  display:grid;
+  place-items:center;
+  width:36px;
+  height:36px;
+  border:1px solid color-mix(in srgb,var(--cp-lime) 46%,var(--cp-line));
+  border-radius:50%;
+  background:var(--cp-black);
   color:var(--cp-lime);
-  font-size:28px;
+  font-size:21px;
+  line-height:1;
 }
 .cp-problem-product {
   display:grid;
-  justify-items:center;
-  gap:14px;
-  min-height:190px;
-  place-content:center;
-  padding:22px;
-  border:1px solid color-mix(in srgb,var(--cp-lime) 42%,var(--cp-line));
-  border-radius:14px;
-  background:color-mix(in srgb,var(--cp-lime) 5%,var(--cp-panel));
-  box-shadow:0 20px 60px color-mix(in srgb,var(--cp-lime) 7%,transparent);
+  justify-items:start;
+  align-content:center;
+  gap:16px;
+  min-height:230px;
+  padding:24px;
+  border:1px solid color-mix(in srgb,var(--cp-lime) 48%,var(--cp-line));
+  border-radius:16px;
+  background:
+    radial-gradient(circle at 68% 22%,color-mix(in srgb,var(--cp-lime) 10%,transparent),transparent 44%),
+    color-mix(in srgb,var(--cp-lime) 4%,var(--cp-panel));
+  box-shadow:0 22px 70px color-mix(in srgb,var(--cp-lime) 7%,transparent);
+}
+.cp-problem-product__eyebrow {
+  color:var(--cp-lime);
+  font:700 8px/1 ui-monospace,monospace;
+  letter-spacing:.14em;
 }
 .cp-problem-product :deep(svg) {
-  width:min(145px,100%);
+  width:min(180px,100%);
   height:auto;
 }
-.cp-problem-product strong {
+.cp-problem-product > strong {
   color:var(--cp-paper);
-  font:800 11px/1 ui-monospace,monospace;
-  letter-spacing:.14em;
+  font-size:clamp(1.05rem,1.45vw,1.35rem);
+  line-height:1.15;
+  letter-spacing:-.02em;
+}
+.cp-problem-product__meta {
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  padding-top:2px;
+}
+.cp-problem-product__meta span {
+  padding:6px 7px;
+  border:1px solid color-mix(in srgb,var(--cp-line) 90%,transparent);
+  border-radius:6px;
+  color:var(--cp-muted);
+  font:700 7px/1 ui-monospace,monospace;
+  letter-spacing:.07em;
   text-transform:uppercase;
 }
 .cp-problem-solution {
   grid-column:1 / -1;
-  max-width:980px;
-  margin:0;
-  padding:18px 0 0;
+  display:grid;
+  grid-template-columns:130px minmax(0,900px);
+  gap:24px;
+  align-items:start;
+  margin-top:2px;
+  padding:22px 0 0;
   border-top:1px solid var(--cp-line);
+}
+.cp-problem-solution > span {
+  padding-top:4px;
+  color:var(--cp-lime);
+  font:700 8px/1 ui-monospace,monospace;
+  letter-spacing:.13em;
+}
+.cp-problem-solution p {
+  margin:0;
   color:var(--cp-paper);
-  font-size:clamp(1rem,1.4vw,1.15rem);
+  font-size:clamp(1rem,1.32vw,1.18rem);
   line-height:1.55;
+}
+@media(max-width:1100px) {
+  .cp-problem {
+    grid-template-columns:minmax(0,.8fr) minmax(470px,1.2fr);
+    gap:38px;
+  }
+  .cp-problem-flow {
+    grid-template-columns:minmax(260px,1fr) 52px minmax(210px,.72fr);
+  }
 }
 @media(max-width:900px) {
   .cp-problem {
     grid-template-columns:1fr;
-    gap:30px;
+    gap:34px;
+  }
+  .cp-problem-copy h2 {
+    max-width:720px;
   }
   .cp-problem-flow {
     grid-template-columns:1fr;
+    gap:14px;
   }
-  .cp-problem-arrow {
+  .cp-problem-connector {
+    min-height:54px;
+  }
+  .cp-problem-connector i {
+    top:4px;
+    bottom:4px;
+    left:50%;
+    right:auto;
+    width:1px;
+    height:auto;
+    background:linear-gradient(180deg,color-mix(in srgb,var(--cp-line) 68%,transparent),var(--cp-lime));
+  }
+  .cp-problem-connector span {
     transform:rotate(90deg);
-    justify-self:center;
   }
   .cp-problem-product {
-    min-height:140px;
+    min-height:180px;
+  }
+  .cp-problem-solution {
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+}
+@media(max-width:520px) {
+  .cp-problem {
+    padding-top:48px;
+    padding-bottom:48px;
+  }
+  .cp-problem-copy h2 {
+    font-size:clamp(2.55rem,12vw,3.8rem);
+  }
+  .cp-problem-fragmented {
+    grid-auto-rows:58px;
+    gap:8px;
+  }
+  .cp-problem-product {
+    padding:20px;
   }
 }
 
