@@ -32,6 +32,47 @@ async function rest<T>(url: string, token: string, anonKey: string): Promise<T> 
   return (text ? JSON.parse(text) : null) as T;
 }
 
+async function rpc<T>(
+  supabaseUrl: string,
+  token: string,
+  anonKey: string,
+  name: string,
+  body: Record<string, unknown>
+): Promise<T> {
+  const response = await fetch(`${supabaseUrl}/rest/v1/rpc/${name}`, {
+    method: "POST",
+    headers: {
+      apikey: anonKey,
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
+  const text = await response.text();
+  if (!response.ok) throw new Error(`supabase_rpc_${response.status}`);
+  return (text ? JSON.parse(text) : null) as T;
+}
+
+type SmartCaptureQuota = {
+  allowed: boolean;
+  used: number;
+  limit: number;
+  remaining: number;
+  reset_at: string;
+};
+
+async function reserveSmartCaptureUse(accessToken: string) {
+  const supabaseUrl = requiredEnv("SUPABASE_URL");
+  const anonKey = requiredEnv("SUPABASE_ANON_KEY");
+  return rpc<SmartCaptureQuota>(
+    supabaseUrl,
+    accessToken,
+    anonKey,
+    "reserve_smart_capture_monthly_use",
+    { monthly_limit: 10 }
+  );
+}
+
 const confidenceSchema = {
   type: "string",
   enum: ["high", "medium", "low", "unknown"]
@@ -375,6 +416,14 @@ Deno.serve(async (request) => {
       const auth = await authorize(accessToken, workspaceId, artistId);
       if (!auth.ok) return json({ error: auth.error }, auth.status);
 
+      const quota = await reserveSmartCaptureUse(accessToken);
+      if (!quota.allowed) {
+        return json({
+          error: "smart_capture_monthly_limit_reached",
+          quota
+        }, 429);
+      }
+
       const apiKey = Deno.env.get("OPENAI_API_KEY")?.trim();
       if (!apiKey) return json({ error: "smart_capture_provider_not_configured" }, 503);
       transcript = await transcribeAudio(apiKey, audio, locale);
@@ -399,6 +448,14 @@ Deno.serve(async (request) => {
 
     const auth = await authorize(accessToken, workspaceId, artistId);
     if (!auth.ok) return json({ error: auth.error }, auth.status);
+
+    const quota = await reserveSmartCaptureUse(accessToken);
+    if (!quota.allowed) {
+      return json({
+        error: "smart_capture_monthly_limit_reached",
+        quota
+      }, 429);
+    }
 
     const apiKey = Deno.env.get("OPENAI_API_KEY")?.trim();
     if (!apiKey) return json({ error: "smart_capture_provider_not_configured" }, 503);
