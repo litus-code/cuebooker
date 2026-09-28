@@ -6,6 +6,14 @@ Status: ACTIVE BATON PASS
 
 Read this immediately after `AGENTS.md`. This document records current implementation truth, not aspirations. Always query live branch HEAD before modifying code.
 
+## Update 28 September 2026: public profile preview
+
+- Branch: `feature/app-visual-system`; starting HEAD `d1f114216183a39919fd473299a4dbea5e3a5533` (PR #75).
+- The Workspace "Ver como público" action opens `/profile-preview` as a full page in a new tab, leaving the editor state intact. It passes a session-only snapshot of the current editor state, including unsaved fields. The preview and `/<artist-slug>` still render the same `PublicArtistProfile` component.
+- The public profile hero received stronger club/industrial art direction. It uses the artist's real cover, portrait, genres and biography; it does not fabricate achievements.
+- Validation: `npm run build` and `git diff --check` locally. PR preview visual check at desktop and around 390 px is still pending.
+- No schema, migrations or Edge Functions. Production untouched. Next: inspect PR #75 visually with a real profile and confirm navigation, mobile crop and booking preview behavior. A blob URL used by an unsaved image lasts only for the current browser document, so reloading the preview may require returning to the editor.
+
 ## 1. Product truth
 
 Cuebooker manages booking demand that an artist, manager or agency already receives. It does not promise to find gigs.

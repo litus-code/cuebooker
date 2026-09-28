@@ -138,7 +138,7 @@ const profileLoading = ref(false)
 const profileSaving = ref(false)
 const profileMessage = ref('')
 const profileWelcome = ref(false)
-const profilePreviewOpen = ref(false)
+const profilePreviewSnapshot = useState<PublicArtistProfile | null>('cuebooker-profile-preview', () => null)
 const profileEditSection = ref<ProfileEditSection>(route.query.view === 'profile' ? profileSectionFromQuery(route.query.section) : null)
 const profileCoverUrl = ref('')
 const profileCoverUploading = ref(false)
@@ -636,6 +636,18 @@ const publicProfilePreview = computed<PublicArtistProfile>(() => {
     acceptingRequests: publicProfileAcceptingRequests.value
   }
 })
+async function openProfilePreview() {
+  profilePreviewSnapshot.value = JSON.parse(JSON.stringify(publicProfilePreview.value)) as PublicArtistProfile
+  if (import.meta.client) {
+    window.sessionStorage.setItem('cuebooker.profile.preview', JSON.stringify(profilePreviewSnapshot.value))
+    const previewTab = window.open(`${useRuntimeConfig().app.baseURL}profile-preview`, '_blank')
+    if (previewTab) {
+      previewTab.focus()
+      return
+    }
+  }
+  await router.push('/profile-preview')
+}
 const hours = Array.from({ length: 24 }, (_, index) => `${String(index).padStart(2, '0')}:00`)
 
 onBeforeMount(() => {
@@ -757,17 +769,18 @@ watch(activeView, async (view) => {
   nav.scrollTo({ left: tab.offsetLeft - (nav.clientWidth - tab.clientWidth) / 2, behavior: 'smooth' })
 })
 watch(rosterArtistName, value => { rosterArtistSlug.value = slugify(value) })
-watch(activeView, view => { if (view !== 'profile') profilePreviewOpen.value = false })
-watch([profilePreviewOpen, profileEditSection, settingsOpen, editorOpen], ([previewOpen, editSection, settingsVisible, calendarEditorVisible]) => {
+watch([profileEditSection, settingsOpen, editorOpen], ([editSection, settingsVisible, calendarEditorVisible]) => {
   if (!import.meta.client) return
-  document.body.style.overflow = previewOpen || Boolean(editSection) || settingsVisible || calendarEditorVisible ? 'hidden' : ''
+  document.body.style.overflow = Boolean(editSection) || settingsVisible || calendarEditorVisible ? 'hidden' : ''
 })
 
 onBeforeUnmount(() => {
   if (import.meta.client) document.body.style.overflow = ''
-  if (profileCoverUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileCoverUrl.value)
-  if (profileArtistImageUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileArtistImageUrl.value)
-  if (profileArtistCutoutUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileArtistCutoutUrl.value)
+  if (router.currentRoute.value.path !== '/profile-preview') {
+    if (profileCoverUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileCoverUrl.value)
+    if (profileArtistImageUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileArtistImageUrl.value)
+    if (profileArtistCutoutUrl.value.startsWith('blob:')) URL.revokeObjectURL(profileArtistCutoutUrl.value)
+  }
   if (import.meta.client) window.removeEventListener('resize', handleViewportChange)
   if (bookingCoreSyncTimer) window.clearInterval(bookingCoreSyncTimer)
   if (import.meta.client) window.removeEventListener('focus', refreshBookingCoreFromExternal)
@@ -800,10 +813,6 @@ function handleWorkspaceKeydown(event: KeyboardEvent) {
   if (profileEditSection.value) {
     event.stopPropagation()
     void closeProfileEditor()
-    return
-  }
-  if (profilePreviewOpen.value) {
-    profilePreviewOpen.value = false
     return
   }
   if (settingsOpen.value) {
@@ -2476,7 +2485,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             }"
             :passport-public-enabled="publicPassportEnabled"
             @edit="toggleProfileEditSection($event)"
-            @preview="profilePreviewOpen = true"
+            @preview="openProfilePreview"
             @toggle-published="updatePublicProfilePublished($event)"
             @toggle-requests="updatePublicAcceptingRequests($event)"
             @cue-id="changeView('cue-id')"
@@ -2781,23 +2790,6 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         </template>
       </section>
     </template>
-
-    <div v-if="profilePreviewOpen" class="profile-preview-backdrop">
-      <article class="profile-preview profile-preview--site" role="dialog" aria-modal="true" aria-labelledby="profile-preview-title">
-        <header class="profile-preview__sitebar">
-          <div>
-            <span>PUBLIC PROFILE PREVIEW</span>
-            <p id="profile-preview-title">{{ copy.previewPrivate }}</p>
-          </div>
-          <button type="button" :aria-label="copy.previewClose" @click="profilePreviewOpen = false">×</button>
-        </header>
-        <PublicArtistProfile
-          :profile="publicProfilePreview"
-          :locale="preferences.locale.value"
-          preview
-        />
-      </article>
-    </div>
 
     <div v-if="settingsOpen" class="editor-backdrop" @click.self="closeSettings">
       <aside class="editor-panel settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title" tabindex="-1">

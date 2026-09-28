@@ -114,6 +114,7 @@ export const RESERVED_ARTIST_SLUGS = new Set([
   'cue-id',
   'login',
   'onboarding',
+  'profile-preview',
   'request',
   'settings',
   'signup',

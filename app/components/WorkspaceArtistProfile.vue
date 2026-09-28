@@ -101,7 +101,7 @@ const links = computed(() => [
         <strong :class="{ published }">{{ published ? (locale === 'es' ? 'PUBLICADO' : 'PUBLISHED') : (locale === 'es' ? 'BORRADOR' : 'DRAFT') }}</strong>
       </div>
       <div class="artist-workspace-profile__bar-actions">
-        <button type="button" class="secondary" @click="emit('preview')">{{ locale === 'es' ? 'Ver como público' : 'Public view' }}</button>
+        <button type="button" class="secondary" :aria-label="locale === 'es' ? 'Ver como público en una pestaña nueva' : 'Open public view in a new tab'" @click="emit('preview')">{{ locale === 'es' ? 'Ver como público' : 'Public view' }} <span aria-hidden="true">↗</span></button>
         <button
           v-if="editable"
           type="button"
