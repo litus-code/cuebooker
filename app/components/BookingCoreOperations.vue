@@ -11,6 +11,7 @@ const props = defineProps<{
 const emit = defineEmits<{ changed: [] }>()
 const bookingCore = useBookingCore()
 const analytics = useAnalytics()
+const productTelemetry = useProductTelemetry()
 const { can: canEntitlement } = useCueEntitlements()
 const nextMoves = ref<NextMove[]>([])
 const holds = ref<Hold[]>([])
@@ -175,6 +176,10 @@ async function setNextMove() {
         automation_type: 'complete_next_move_on_inbound_activity',
         has_due_at: Boolean(dueAt)
       })
+      void productTelemetry.record('automation_created', {
+        automation_type: 'complete_next_move_on_inbound_activity',
+        has_due_at: Boolean(dueAt)
+      }, props.workspaceId)
     }
     nextLabel.value = ''
     nextDue.value = ''
@@ -199,6 +204,10 @@ async function completeNextMove() {
         automation_type: 'complete_next_move_on_inbound_activity',
         completion_source: 'manual'
       })
+      void productTelemetry.record('automation_completed', {
+        automation_type: 'complete_next_move_on_inbound_activity',
+        completion_source: 'manual'
+      }, props.workspaceId)
     }
     await load()
     emit('changed')
