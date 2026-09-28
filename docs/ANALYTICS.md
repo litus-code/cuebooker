@@ -16,9 +16,10 @@ CueBooker currently uses a basic consent model:
 
 - analytics is disabled when `NUXT_PUBLIC_GTM_ID` is empty
 - Google Tag Manager is not loaded before the visitor explicitly accepts analytics
-- consent is stored locally as `cuebooker:analytics-consent`
+- consent is stored locally as `cuebooker:analytics-consent:v2`
 - rejecting analytics keeps GTM unloaded
 - accepting analytics loads GTM lazily and enables application events
+- the footer keeps a permanent control for reopening and changing the choice
 
 This deliberately avoids sending analytics data before consent.
 

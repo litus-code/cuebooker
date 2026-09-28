@@ -1,0 +1,167 @@
+:root {
+  --workspace-rail: 188px;
+  --workspace-content: 1480px;
+  --workspace-gutter: 18px;
+}
+
+@media (min-width: 961px) {
+  .workspace {
+    padding: 0 20px 64px calc(var(--workspace-rail) + var(--workspace-gutter)) !important;
+  }
+
+  .workspace-header {
+    width: var(--workspace-rail) !important;
+    padding: 20px 12px 14px !important;
+    gap: 18px !important;
+  }
+
+  .workspace-header .brand {
+    min-height: 40px !important;
+    padding: 0 4px !important;
+  }
+
+  .workspace-header nav {
+    gap: 2px !important;
+  }
+
+  .workspace-header nav button {
+    min-height: 40px !important;
+    padding: 0 10px 0 14px !important;
+    font-size: 11px !important;
+  }
+
+  html .workspace .workspace-header nav button.active {
+    border-color: transparent !important;
+    background: color-mix(in srgb, var(--workspace-panel-soft) 88%, transparent) !important;
+    color: var(--cue-text) !important;
+    box-shadow: none !important;
+  }
+
+  html .workspace .workspace-header nav button.active::before {
+    top: 8px !important;
+    bottom: 8px !important;
+    width: 2px !important;
+    background: var(--cue-accent) !important;
+  }
+
+  .workspace-header .account-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 5px !important;
+    width: 100%;
+    padding-top: 12px !important;
+  }
+
+  .workspace-header .account-actions .locale-control {
+    flex: 0 0 auto;
+    padding: 2px !important;
+  }
+
+  .workspace-header .account-actions .locale-control button {
+    min-width: 25px !important;
+    min-height: 25px !important;
+    padding: 0 5px !important;
+    font-size: 8px !important;
+  }
+
+  .workspace-header .account-actions .appearance-toggle,
+  .workspace-header .account-actions .header-icon-button {
+    flex: 0 0 29px !important;
+    width: 29px !important;
+    height: 29px !important;
+    min-width: 29px !important;
+    min-height: 29px !important;
+    padding: 6px !important;
+  }
+
+  .workspace-header .account-actions .appearance-toggle {
+    padding: 7px !important;
+  }
+
+  .workspace .view {
+    width: min(var(--workspace-content), 100%) !important;
+    margin-left: 0 !important;
+    margin-right: auto !important;
+  }
+
+  .workspace .view-heading {
+    padding-top: 24px !important;
+  }
+
+  .workspace .overview-view .view-heading h1 {
+    max-width: 650px !important;
+    font-size: clamp(2.4rem, 3.7vw, 3.8rem) !important;
+  }
+
+  .workspace .overview-view .view-heading > div > p:last-child {
+    max-width: 610px !important;
+  }
+}
+
+.workspace .next-panel {
+  border: 1px solid color-mix(in srgb, var(--cue-accent) 26%, var(--workspace-line)) !important;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--cue-accent) 5%, var(--workspace-panel)), var(--workspace-panel)) !important;
+  color: var(--cue-text) !important;
+}
+
+.workspace .next-panel .eyebrow {
+  color: var(--cue-accent) !important;
+}
+
+.workspace .next-panel h2 {
+  max-width: 310px !important;
+  margin: 14px 0 12px !important;
+  color: var(--cue-text) !important;
+  font-size: clamp(1.7rem, 2.4vw, 2.5rem) !important;
+  line-height: .94 !important;
+}
+
+.workspace .next-panel > p {
+  color: var(--cue-muted) !important;
+  font-size: 12px !important;
+  line-height: 1.55 !important;
+}
+
+.workspace .next-panel button {
+  margin-top: 20px !important;
+  color: var(--cue-accent) !important;
+}
+
+.workspace .summary-card {
+  min-height: 126px !important;
+  padding: 16px !important;
+}
+
+.workspace .summary-card strong {
+  margin: 10px 0 5px !important;
+  font-size: clamp(2rem, 3.3vw, 3.15rem) !important;
+}
+
+.workspace .overview-grid {
+  gap: 14px !important;
+  margin-top: 14px !important;
+}
+
+:root[data-theme='light'] .workspace .next-panel {
+  background: linear-gradient(145deg, color-mix(in srgb, var(--cue-accent) 7%, var(--workspace-panel)), var(--workspace-panel)) !important;
+}
+
+@media (max-width: 960px) {
+  :root {
+    --workspace-gutter: 14px;
+  }
+
+  .workspace-header .account-actions .appearance-toggle,
+  .workspace-header .account-actions .header-icon-button {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    padding: 7px !important;
+  }
+
+  .workspace .overview-view .view-heading h1 {
+    font-size: clamp(2rem, 10vw, 3.2rem) !important;
+  }
+}

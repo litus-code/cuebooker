@@ -6,12 +6,24 @@ type AnalyticsWindow = Window & {
 }
 
 const CONSENT_STORAGE_KEY = 'cuebooker:analytics-consent:v2'
+const CONSENT_COOKIE_KEY = 'cuebooker.analytics-consent.v2'
 const GTM_SCRIPT_ID = 'cuebooker-gtm'
+
+function normalizedConsent(value: unknown): AnalyticsConsent | null {
+  return value === 'granted' || value === 'denied' ? value : null
+}
 
 export const useAnalytics = () => {
   const config = useRuntimeConfig()
-  const consent = useState<AnalyticsConsent>('analytics-consent', () => 'unknown')
+  const consentCookie = useCookie<AnalyticsConsent | null>(CONSENT_COOKIE_KEY, {
+    default: () => null,
+    maxAge: 60 * 60 * 24 * 365,
+    path: '/',
+    sameSite: 'lax'
+  })
+  const consent = useState<AnalyticsConsent>('analytics-consent', () => normalizedConsent(consentCookie.value) || 'unknown')
   const initialized = useState<boolean>('analytics-initialized', () => false)
+  const preferencesOpen = useState<boolean>('analytics-preferences-open', () => false)
 
   const gtmId = computed(() => String(config.public.gtmId || '').trim())
   const enabled = computed(() => Boolean(gtmId.value))
@@ -43,9 +55,13 @@ export const useAnalytics = () => {
     if (!import.meta.client || initialized.value) return
     initialized.value = true
 
-    const storedConsent = localStorage.getItem(CONSENT_STORAGE_KEY)
-    if (storedConsent === 'granted' || storedConsent === 'denied') {
-      consent.value = storedConsent
+    const storedConsent = normalizedConsent(localStorage.getItem(CONSENT_STORAGE_KEY))
+    const cookieConsent = normalizedConsent(consentCookie.value)
+    const resolvedConsent = storedConsent || cookieConsent
+    if (resolvedConsent) {
+      consent.value = resolvedConsent
+      localStorage.setItem(CONSENT_STORAGE_KEY, resolvedConsent)
+      consentCookie.value = resolvedConsent
     }
 
     if (consent.value === 'granted') loadGtm()
@@ -54,31 +70,58 @@ export const useAnalytics = () => {
   const accept = () => {
     if (!import.meta.client) return
     consent.value = 'granted'
+    preferencesOpen.value = false
     localStorage.setItem(CONSENT_STORAGE_KEY, 'granted')
+    consentCookie.value = 'granted'
     loadGtm()
   }
 
   const deny = () => {
     if (!import.meta.client) return
     consent.value = 'denied'
+    preferencesOpen.value = false
     localStorage.setItem(CONSENT_STORAGE_KEY, 'denied')
+    consentCookie.value = 'denied'
+  }
+
+  const openPreferences = () => {
+    preferencesOpen.value = true
+  }
+
+  const closePreferences = () => {
+    preferencesOpen.value = false
   }
 
   const track = (event: string, payload: AnalyticsPayload = {}) => {
-    if (!import.meta.client || consent.value !== 'granted' || !enabled.value) return
+    if (!import.meta.client || consent.value !== 'granted' || !enabled.value) return false
 
     getDataLayer().push({
       event,
       ...payload
     })
+    return true
+  }
+
+  const trackPageView = (path = window.location.pathname + window.location.search) => {
+    if (!import.meta.client) return false
+    return track('page_view', {
+      page_path: path,
+      page_title: document.title,
+      page_referrer: document.referrer || null
+    })
   }
 
   return {
     consent,
+    initialized,
+    preferencesOpen,
     enabled,
     init,
     accept,
     deny,
-    track
+    openPreferences,
+    closePreferences,
+    track,
+    trackPageView
   }
 }

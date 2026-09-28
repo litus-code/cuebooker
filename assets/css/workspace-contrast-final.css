@@ -1,0 +1,58 @@
+/* Final contrast layer for intentionally dark Workspace modules.
+   Keep this file last in Nuxt's global CSS order. */
+
+html[data-theme='light'] .workspace .artist-workspace-profile,
+html[data-theme='light'] .workspace .cue-passport,
+html[data-theme='light'] .workspace .cue-id-hub__hero {
+  --cue-text:#f2f0eb;
+  --cue-muted:#aaa9a4;
+  --cue-dim:#777771;
+  --cue-border:#343434;
+  --workspace-line:#2b2b2b;
+  color:#f2f0eb !important;
+}
+
+html[data-theme='light'] .workspace .artist-workspace-profile h1,
+html[data-theme='light'] .workspace .artist-workspace-profile h2,
+html[data-theme='light'] .workspace .artist-workspace-profile strong,
+html[data-theme='light'] .workspace .artist-workspace-profile a,
+html[data-theme='light'] .workspace .cue-passport h2,
+html[data-theme='light'] .workspace .cue-passport strong,
+html[data-theme='light'] .workspace .cue-passport a,
+html[data-theme='light'] .workspace .cue-passport button,
+html[data-theme='light'] .workspace .cue-id-hub__hero h2,
+html[data-theme='light'] .workspace .cue-id-hub__hero strong,
+html[data-theme='light'] .workspace .cue-id-hub__hero a {
+  color:#f2f0eb !important;
+}
+
+html[data-theme='light'] .workspace .artist-workspace-profile p,
+html[data-theme='light'] .workspace .artist-workspace-profile small,
+html[data-theme='light'] .workspace .artist-workspace-profile__meta,
+html[data-theme='light'] .workspace .cue-passport p,
+html[data-theme='light'] .workspace .cue-passport small,
+html[data-theme='light'] .workspace .cue-passport__stats span,
+html[data-theme='light'] .workspace .cue-id-hub__hero p,
+html[data-theme='light'] .workspace .cue-id-hub__signal span {
+  color:#aaa9a4 !important;
+}
+
+html[data-theme='light'] .workspace .artist-workspace-profile__genres,
+html[data-theme='light'] .workspace .artist-workspace-profile__hero-rail span:last-child,
+html[data-theme='light'] .workspace .artist-workspace-profile__section-label span,
+html[data-theme='light'] .workspace .artist-workspace-profile__cue-strip span,
+html[data-theme='light'] .workspace .cue-passport__stats strong,
+html[data-theme='light'] .workspace .cue-passport__copy > span,
+html[data-theme='light'] .workspace .cue-id-hub__signal strong,
+html[data-theme='light'] .workspace .cue-id-hub__hero-copy > span {
+  color:var(--cue-accent) !important;
+}
+
+html[data-theme='light'] .workspace .cue-id-hub__primary {
+  color:#080808 !important;
+}
+
+html[data-theme='light'] .workspace .artist-workspace-profile button.primary,
+html[data-theme='light'] .workspace .artist-workspace-profile__booking {
+  color:#050505 !important;
+}
