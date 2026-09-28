@@ -1,10 +1,11 @@
-export type WorkspaceView = 'overview' | 'bookings' | 'calendar' | 'history' | 'profile' | 'passport' | 'cue-id'
+export type WorkspaceView = 'overview' | 'bookings' | 'calendar' | 'history' | 'roster' | 'profile' | 'passport' | 'cue-id'
 
 export const WORKSPACE_VIEWS: readonly WorkspaceView[] = [
   'overview',
   'bookings',
   'calendar',
   'history',
+  'roster',
   'profile',
   'passport',
   'cue-id'

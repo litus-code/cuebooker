@@ -3,6 +3,15 @@ Total output lines: 10325
 
 # Cuebooker living handoff
 
+## 28 September 2026: Agency multi-artist beta PR preview
+
+- Branch: `feature/agency-multi-artist-beta`, based on `main` commit `c2996a77e411cdd1d0f6ec97089accd605edf03a`. Exact implementation HEAD and PR preview are recorded in the PR once pushed. No merge or production deployment.
+- Product: Agency onboarding now enters global Overview. Agency has a persistent global/artist selector, reversible active roster, global Overview, artist-filterable Bookings and Activity, multi-select roster Calendar, and booking-to-artist navigation. Individual Profile/Passport/CUE ID require a selected artist. DJ onboarding and individual Booking Core remain in place.
+- Architecture: operational roster remains `workspace_artists`; `organization_artists` stays an identity bridge. See `docs/AGENCY_MULTI_ARTIST_BETA.md`. Migrations `20260928202754_agency_roster_beta.sql` and `20260928204843_agency_roster_access.sql` were applied to `cuebooker-staging` only. They add non-destructive retirement, atomic RPC roster attachment, and agency access to profile/calendar/media for authorized workspace roles. Production was not touched.
+- Validated locally at the branch worktree: `npm ci`, `npm test` (317 passing), `npm run generate` (32 routes), and `git diff --check`. Staging schema/advisor inspection and negative authorization queries with a nonmember UUID passed. Preview authenticated desktop/mobile smoke still needs a test Agency account; static generation is not proof of that flow.
+- Known limits: global Overview requests an exact active-booking count but attention previews use the first 100 rows; Calendar/Activity/holds have 500-row windows. Team invite UI and per-artist manager assignment are not built; existing workspace roles are used. Repo-wide `vue-tsc` already reports unrelated baseline errors and has no configured `typecheck` script. Do not call these beta windows exact lifetime reporting.
+- Next: verify Agency A/B end-to-end with a staging test account in the PR preview at desktop and ~390 px, repair any findings, then request review. Do not promote migrations or code to production as part of preview validation.
+
 Updated: 19 September 2026  
 Branch: `feature/app-visual-system`  
 Status: ACTIVE BATON PASS

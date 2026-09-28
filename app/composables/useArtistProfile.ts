@@ -128,7 +128,8 @@ export function useArtistProfile() {
     ])
 
     if (!artists[0]) throw new Error('artist_not_found_or_forbidden')
-    return syncActiveProfile({ artist: artists[0], booking: bookingProfiles[0] || null })
+    const record = { artist: artists[0], booking: bookingProfiles[0] || null }
+    return !activeArtistId.value || activeArtistId.value === artistId ? syncActiveProfile(record) : record
   }
 
   async function saveProfile(artistId: string, input: ArtistProfileInput): Promise<ArtistProfileRecord> {

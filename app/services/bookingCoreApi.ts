@@ -43,6 +43,7 @@ export type WorkspaceArtist = {
   artist_id: string
   created_by: string
   created_at: string
+  roster_active?: boolean
 }
 
 export type WorkspaceActivityHistoryRow = Activity & {
@@ -149,10 +150,27 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
       headers: authHeaders(),
       query: {
         workspace_id: `eq.${workspaceId}`,
-        select: 'workspace_id,artist_id,created_by,created_at',
+        select: 'workspace_id,artist_id,created_by,created_at,roster_active',
         order: 'created_at.asc'
       }
     })
+  }
+
+  async function attachWorkspaceArtist(workspaceId: string, artistId: string) {
+    await $fetch(`${baseUrl}/rest/v1/workspace_artists`, {
+      method: 'POST', headers: authHeaders('resolution=ignore-duplicates,return=minimal'),
+      body: { workspace_id: workspaceId, artist_id: artistId, created_by: currentUserId() }
+    })
+  }
+
+  async function setRosterActive(workspaceId: string, artistId: string, active: boolean) {
+    const rows = await $fetch<WorkspaceArtist[]>(`${baseUrl}/rest/v1/workspace_artists`, {
+      method: 'PATCH', headers: authHeaders('return=representation'),
+      query: { workspace_id: `eq.${workspaceId}`, artist_id: `eq.${artistId}`, select: 'workspace_id,artist_id,created_by,created_at,roster_active' },
+      body: { roster_active: active }
+    })
+    if (!rows.length) throw new Error('roster_artist_not_found_or_forbidden')
+    return rows[0]
   }
 
   async function listContacts(workspaceId: string) {
@@ -245,6 +263,52 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
         order: 'updated_at.desc',
         limit: String(Math.min(Math.max(limit, 1), 100))
+      }
+    })
+  }
+
+  async function listRosterBookings(workspaceId: string, offset = 0, limit = 100, artistId?: string) {
+    return $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/bookings`, {
+      headers: authHeaders(),
+      query: {
+        workspace_id: `eq.${workspaceId}`,
+        ...(artistId ? { artist_id: `eq.${artistId}` } : {}),
+        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
+        order: 'updated_at.desc,id.desc', offset: String(offset), limit: String(Math.min(limit, 100))
+      }
+    })
+  }
+
+  async function countRosterActiveBookings(workspaceId: string, artistIds: string[]) {
+    if (!artistIds.length) return 0
+    const response = await $fetch.raw<Array<{ id: string }>>(`${baseUrl}/rest/v1/bookings`, {
+      headers: authHeaders('count=exact'), query: {
+        workspace_id: `eq.${workspaceId}`, artist_id: `in.(${artistIds.join(',')})`,
+        archived_at: 'is.null', status: 'in.(new,in_conversation,waiting_response)',
+        select: 'id', limit: '1'
+      }
+    })
+    const total = response.headers.get('content-range')?.split('/').pop()
+    return total && /^\d+$/.test(total) ? Number(total) : null
+  }
+
+  async function listRosterCalendarBookings(workspaceId: string, fromDate: string, toDate: string) {
+    return $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/bookings`, {
+      headers: authHeaders(), query: {
+        workspace_id: `eq.${workspaceId}`, status: 'eq.confirmed', archived_at: 'is.null',
+        and: `(event_date.gte.${fromDate},event_date.lt.${toDate})`,
+        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
+        order: 'event_date.asc', limit: '500'
+      }
+    })
+  }
+
+  async function listRosterActivities(workspaceId: string) {
+    return $fetch<WorkspaceActivityHistoryRow[]>(`${baseUrl}/rest/v1/activities`, {
+      headers: authHeaders(), query: {
+        workspace_id: `eq.${workspaceId}`,
+        select: 'id,workspace_id,booking_id,type,direction,contact_id,actor_user_id,body,metadata,visibility,occurred_at,created_by,created_at,bookings!inner(id,artist_id,event_name,venue_name,city)',
+        order: 'occurred_at.desc', limit: '500'
       }
     })
   }
@@ -695,6 +759,16 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     })
   }
 
+  async function listRosterHolds(workspaceId: string) {
+    return $fetch<Array<Hold & { bookings: { artist_id: string } }>>(`${baseUrl}/rest/v1/holds`, {
+      headers: authHeaders(), query: {
+        workspace_id: `eq.${workspaceId}`, status: 'eq.active',
+        select: 'id,workspace_id,booking_id,event_date,starts_at,ends_at,event_timezone,expires_at,priority,status,released_at,converted_at,created_by,created_at,updated_at,bookings!inner(artist_id)',
+        order: 'event_date.asc', limit: '500'
+      }
+    })
+  }
+
   async function listArtistActiveHolds(workspaceId: string, artistId: string) {
     if (!workspaceId || !artistId) return [] as Hold[]
     return $fetch<Hold[]>(`${baseUrl}/rest/v1/holds`, {
@@ -798,12 +872,18 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     listWorkspaceMemberships,
     listWorkspaces,
     listWorkspaceArtists,
+    attachWorkspaceArtist,
+    setRosterActive,
     listContacts,
     createContact,
     updateContact,
     listCounterparties,
     createCounterparty,
     listBookings,
+    listRosterBookings,
+    countRosterActiveBookings,
+    listRosterCalendarBookings,
+    listRosterActivities,
     listArtistAttentionBookings,
     listArtistCalendarBookings,
     listArtistBookingsForDate,
@@ -827,6 +907,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     setNextMove,
     completeNextMove,
     listHolds,
+    listRosterHolds,
     listArtistActiveHolds,
     listArtistCalendarHolds,
     listArtistHoldsForDate,
