@@ -9,6 +9,8 @@ const completed = ref(false)
 const password = ref('')
 const confirmPassword = ref('')
 const errorMessage = ref('')
+const passwordVisible = ref(false)
+const confirmPasswordVisible = ref(false)
 
 const copy = computed(() => locale.value === 'es' ? {
   kicker: 'CUENTA / RECUPERACIÓN',
@@ -16,6 +18,8 @@ const copy = computed(() => locale.value === 'es' ? {
   body: 'Este enlace solo sirve para recuperar tu cuenta. Cuando guardes la nueva contraseña, volverás a iniciar sesión normalmente.',
   password: 'Nueva contraseña',
   confirm: 'Repite la contraseña',
+  showPassword: 'Mostrar contraseña',
+  hidePassword: 'Ocultar contraseña',
   save: 'Guardar nueva contraseña',
   saving: 'Guardando…',
   mismatch: 'Las contraseñas no coinciden.',
@@ -32,6 +36,8 @@ const copy = computed(() => locale.value === 'es' ? {
   body: 'This link is only for account recovery. After saving the new password, sign in normally again.',
   password: 'New password',
   confirm: 'Repeat password',
+  showPassword: 'Show password',
+  hidePassword: 'Hide password',
   save: 'Save new password',
   saving: 'Saving…',
   mismatch: 'The passwords do not match.',
@@ -105,11 +111,23 @@ useHead(() => ({ title: copy.value.titleMeta, htmlAttrs: { lang: locale.value } 
       <form v-else-if="ready" class="reset-form" @submit.prevent="submit">
         <label>
           <span>{{ copy.password }}</span>
-          <input v-model="password" type="password" autocomplete="new-password" minlength="8" required>
+          <div class="reset-password">
+            <input v-model="password" :type="passwordVisible ? 'text' : 'password'" autocomplete="new-password" minlength="8" required>
+            <button type="button" :aria-label="passwordVisible ? copy.hidePassword : copy.showPassword" :title="passwordVisible ? copy.hidePassword : copy.showPassword" @click="passwordVisible = !passwordVisible">
+              <svg v-if="!passwordVisible" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></svg>
+              <svg v-else viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18M10.6 6.2A9.6 9.6 0 0 1 12 6c6 0 9.5 6 9.5 6a16.6 16.6 0 0 1-2.7 3.3M6.2 6.2C3.8 7.8 2.5 12 2.5 12s3.5 6 9.5 6c1.2 0 2.3-.2 3.3-.6M9.9 9.9A3 3 0 0 0 14.1 14.1"/></svg>
+            </button>
+          </div>
         </label>
         <label>
           <span>{{ copy.confirm }}</span>
-          <input v-model="confirmPassword" type="password" autocomplete="new-password" minlength="8" required>
+          <div class="reset-password">
+            <input v-model="confirmPassword" :type="confirmPasswordVisible ? 'text' : 'password'" autocomplete="new-password" minlength="8" required>
+            <button type="button" :aria-label="confirmPasswordVisible ? copy.hidePassword : copy.showPassword" :title="confirmPasswordVisible ? copy.hidePassword : copy.showPassword" @click="confirmPasswordVisible = !confirmPasswordVisible">
+              <svg v-if="!confirmPasswordVisible" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></svg>
+              <svg v-else viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18M10.6 6.2A9.6 9.6 0 0 1 12 6c6 0 9.5 6 9.5 6a16.6 16.6 0 0 1-2.7 3.3M6.2 6.2C3.8 7.8 2.5 12 2.5 12s3.5 6 9.5 6c1.2 0 2.3-.2 3.3-.6M9.9 9.9A3 3 0 0 0 14.1 14.1"/></svg>
+            </button>
+          </div>
         </label>
         <p v-if="errorMessage" class="reset-message">{{ errorMessage }}</p>
         <button type="submit" :disabled="saving">
@@ -177,6 +195,7 @@ input{
   color:var(--cue-text);
   font:inherit;
 }
+.reset-password{position:relative;display:grid}.reset-password input{width:100%;box-sizing:border-box;padding-right:48px}.reset-password>button{position:absolute;top:50%;right:8px;display:grid;place-items:center;width:36px;height:36px;padding:0;border:0;background:transparent;color:var(--cue-muted);cursor:pointer;transform:translateY(-50%)}.reset-password>button:hover,.reset-password>button:focus-visible{color:var(--cue-accent)}.reset-password svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .reset-form>button{
   min-height:50px;
   border:0;
