@@ -183,7 +183,7 @@ onBeforeUnmount(() => {
     <section class="public-artist-profile__story">
       <div class="public-artist-profile__section-index" aria-hidden="true">01</div>
       <div class="public-artist-profile__story-copy">
-        <span>{{ copy.about }}</span>
+        <h2>{{ copy.about }}</h2>
         <p>{{ profile.bio || (locale === 'es' ? 'Una identidad que sigue tomando forma.' : 'An identity still taking shape.') }}</p>
       </div>
       <dl>
@@ -196,7 +196,7 @@ onBeforeUnmount(() => {
     <section class="public-artist-profile__sound">
       <div class="public-artist-profile__section-index" aria-hidden="true">02</div>
       <div class="public-artist-profile__sound-head">
-        <span>SOUND / PERFORMANCE</span>
+        <h2>SOUND / PERFORMANCE</h2>
         <p>{{ locale === 'es' ? 'La identidad detrás del set.' : 'The identity behind the set.' }}</p>
       </div>
       <div class="public-artist-profile__sound-list">
@@ -223,7 +223,7 @@ onBeforeUnmount(() => {
     <section v-if="profile.passport" class="public-artist-profile__passport">
       <div class="public-artist-profile__section-index" aria-hidden="true">03</div>
       <div class="public-artist-profile__passport-head">
-        <span>CUE PASSPORT / LIVE HISTORY</span>
+        <h2>CUE PASSPORT / LIVE HISTORY</h2>
         <p>{{ locale === 'es' ? 'Trayectoria construida a partir de fechas confirmadas.' : 'Trajectory built from confirmed dates.' }}</p>
       </div>
       <CuePassportProfileSummary
@@ -239,7 +239,7 @@ onBeforeUnmount(() => {
 
     <section v-if="socialLinks.length" class="public-artist-profile__links">
       <div class="public-artist-profile__section-index" aria-hidden="true">04</div>
-      <div class="public-artist-profile__links-head"><span>{{ copy.links }}</span><p>{{ locale === 'es' ? 'El sonido sigue aquí.' : 'The sound continues here.' }}</p></div>
+      <div class="public-artist-profile__links-head"><h2>{{ copy.links }}</h2><p>{{ locale === 'es' ? 'El sonido sigue aquí.' : 'The sound continues here.' }}</p></div>
       <nav>
         <a v-for="(link, index) in socialLinks" :key="link[0]" :href="link[1]" target="_blank" rel="noopener noreferrer">
           <small>0{{ index + 1 }}</small><strong>{{ link[0] }}</strong>
@@ -509,7 +509,8 @@ onBeforeUnmount(() => {
 .public-artist-profile__story { position:relative; grid-template-columns:minmax(60px,.14fr) minmax(0,1.36fr) minmax(220px,.5fr); gap:clamp(24px,4vw,86px); padding:clamp(95px,11vw,190px) clamp(24px,5vw,88px); background:radial-gradient(circle at 8% 85%,rgba(184,31,27,.10),transparent 26%),#0c0c0c; }
 .public-artist-profile__section-index { color:rgba(255,255,255,.14); font-size:clamp(3rem,5vw,6rem); }
 .public-artist-profile__story-copy { min-width:0; }
-.public-artist-profile__story-copy>span { font:800 11px/1 monospace; letter-spacing:.18em; text-transform:uppercase; }
+.public-artist-profile__story-copy>h2 { margin:0; color:var(--cue-accent,#e8ff2f); font:800 11px/1 monospace; letter-spacing:.18em; text-transform:uppercase; }
+.public-artist-profile__story-copy>h2::before,.public-artist-profile__sound-head h2::before { content:"●"; margin-right:10px; color:#ee3731; font-size:8px; vertical-align:2px; }
 .public-artist-profile__story p { max-width:980px; margin:clamp(24px,4vw,58px) 0 0; font-size:clamp(2rem,4.3vw,5.25rem); line-height:1.06; letter-spacing:-.055em; text-wrap:pretty; }
 .public-artist-profile__story dl { border-top:2px solid var(--cue-accent,#e8ff2f); }
 .public-artist-profile__story dl div { padding:22px 0; }
@@ -518,7 +519,7 @@ onBeforeUnmount(() => {
 .public-artist-profile__sound { position:relative; grid-template-columns:minmax(60px,.14fr) minmax(160px,.38fr) minmax(0,1.48fr); gap:clamp(24px,4vw,86px); align-items:start; padding:clamp(80px,10vw,160px) clamp(24px,5vw,88px); background:linear-gradient(125deg,#101010,#050505 65%); overflow:hidden; }
 .public-artist-profile__sound::before { content:"SOUND"; position:absolute; bottom:-.25em; left:-.06em; color:rgba(255,255,255,.025); font:900 clamp(150px,28vw,480px)/1 Arial,sans-serif; letter-spacing:-.1em; pointer-events:none; }
 .public-artist-profile__sound-head { grid-column:2; display:grid; align-content:start; gap:28px; min-width:0; }
-.public-artist-profile__sound-head span { color:var(--cue-accent,#e8ff2f); font:800 11px/1.3 monospace; letter-spacing:.12em; }
+.public-artist-profile__sound-head h2 { margin:0; color:var(--cue-accent,#e8ff2f); font:800 11px/1.3 monospace; letter-spacing:.12em; }
 .public-artist-profile__sound .public-artist-profile__sound-head p { grid-column:auto; max-width:210px; margin:0; color:#a7a7a3; font-size:clamp(16px,1.6vw,22px); line-height:1.25; font-weight:500; text-transform:none; }
 .public-artist-profile__sound-list { grid-column:3; display:grid; gap:0; min-width:0; }
 .public-artist-profile__sound-list>div { display:grid; grid-template-columns:54px minmax(0,1fr); align-items:baseline; gap:12px; padding:12px 0 17px; border-bottom:1px solid rgba(255,255,255,.24); }
@@ -535,7 +536,7 @@ onBeforeUnmount(() => {
 
 .public-artist-profile__passport { grid-template-columns:minmax(60px,.14fr) minmax(0,1.86fr); gap:clamp(24px,4vw,86px); padding:clamp(80px,9vw,140px) clamp(24px,5vw,88px) 0; background:#111; }
 .public-artist-profile__passport-head { align-items:start; margin:0 0 28px; }
-.public-artist-profile__passport-head>span { max-width:320px; font:800 clamp(1.4rem,2.5vw,2.8rem)/1 monospace; letter-spacing:-.05em; }
+.public-artist-profile__passport-head>h2 { max-width:320px; margin:0; color:var(--cue-accent,#e8ff2f); font:800 clamp(1.4rem,2.5vw,2.8rem)/1 monospace; letter-spacing:-.05em; }
 .public-artist-profile__passport-head p { max-width:300px; color:#aaa; font-size:12px; }
 .public-artist-profile__passport :deep(.profile-passport) { border-top:1px solid rgba(255,255,255,.25); background:#111; }
 .public-artist-profile__passport :deep(.profile-passport__copy) { padding:clamp(28px,4vw,65px); background:#111; }
@@ -544,7 +545,7 @@ onBeforeUnmount(() => {
 
 .public-artist-profile__links { grid-template-columns:minmax(60px,.14fr) minmax(160px,.38fr) minmax(0,1.48fr); gap:clamp(24px,4vw,86px); align-items:start; padding:clamp(90px,11vw,170px) clamp(24px,5vw,88px); background:#0a0a0a; }
 .public-artist-profile__links-head { grid-column:2; display:grid; gap:28px; }
-.public-artist-profile__links-head>span { color:var(--cue-accent,#e8ff2f); font:800 11px/1.3 monospace; text-transform:uppercase; letter-spacing:.12em; }
+.public-artist-profile__links-head>h2 { margin:0; color:var(--cue-accent,#e8ff2f); font:800 11px/1.3 monospace; text-transform:uppercase; letter-spacing:.12em; }
 .public-artist-profile__links-head p { margin:0; font-size:clamp(1.7rem,2.4vw,3rem); line-height:1.05; letter-spacing:-.05em; }
 .public-artist-profile__links nav { grid-column:3; grid-template-columns:1fr; }
 .public-artist-profile__links a { min-height:78px; gap:18px; padding:8px 0; border-right:0 !important; transition:padding .2s,color .2s; }
