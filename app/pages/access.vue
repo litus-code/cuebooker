@@ -25,7 +25,7 @@ const copy = computed(() => locale.value === 'es'
       signinTab: 'Entrar', signupTab: 'Crear cuenta', name: 'Nombre', email: 'Email', password: 'Contraseña',
       forgot: '¿Has olvidado la contraseña?', showPassword: 'Mostrar contraseña', hidePassword: 'Ocultar contraseña', backToSignin: 'Volver a entrar', resetSubmit: 'Enviar enlace',
       processing: 'Procesando…', signinSubmit: 'Entrar al workspace', signupSubmit: 'Crear cuenta',
-      confirmation: 'Cuenta creada. Revisa tu correo para confirmar el acceso antes de continuar.',
+      confirmation: 'Revisa tu correo para continuar. Si ya habías iniciado un registro con este email, confirmaremos esa cuenta existente. Si no recuerdas la contraseña, puedes restablecerla.',
       resetConfirmation: 'Si existe una cuenta con ese email, recibirás un enlace para cambiar la contraseña.',
       configError: 'Este entorno todavía no tiene configurada la conexión pública con Supabase.',
       genericError: 'No se pudo completar el acceso.', title: 'Acceso | Cuebooker'
@@ -40,7 +40,7 @@ const copy = computed(() => locale.value === 'es'
       signinTab: 'Sign in', signupTab: 'Create account', name: 'Name', email: 'Email', password: 'Password',
       forgot: 'Forgot your password?', showPassword: 'Show password', hidePassword: 'Hide password', backToSignin: 'Back to sign in', resetSubmit: 'Send reset link',
       processing: 'Processing…', signinSubmit: 'Open workspace', signupSubmit: 'Create account',
-      confirmation: 'Account created. Check your email to confirm access before continuing.',
+      confirmation: 'Check your email to continue. If you had already started registration with this email, we will confirm that existing account. If you do not remember the password, you can reset it.',
       resetConfirmation: 'If an account exists for that email, you will receive a link to change the password.',
       configError: 'This environment does not have the public Supabase connection configured yet.',
       genericError: 'Access could not be completed.', title: 'Access | Cuebooker'
