@@ -29,9 +29,9 @@ const p = computed(() => locale.value === 'es' ? {
   },
   "hero": {
     "eyebrow": "PARA QUIEN MUEVE LA NOCHE",
-    "title": "Todo tu booking de DJ, en un solo sitio.",
+    "title": "Todo tu booking, bajo control.",
     "accent": "Que la música siga avanzando. El booking ya está ocurriendo.",
-    "body": "Reúne solicitudes, conversaciones, disponibilidad y seguimiento sin perder fechas entre Instagram, WhatsApp, email, calendario y notas.",
+    "body": "Reúne propuestas, conversaciones y fechas en un solo lugar. Aunque el contacto empiece por Instagram, WhatsApp, email o una llamada.",
     "primary": "Crear mi espacio",
     "secondary": "Ver cómo funciona",
     "note": "Hecho para DJs, managers y quienes hacen posible cada noche."
@@ -260,9 +260,9 @@ const p = computed(() => locale.value === 'es' ? {
   },
   "hero": {
     "eyebrow": "FOR THE PEOPLE WHO MOVE THE NIGHT",
-    "title": "Your DJ bookings, all in one place.",
+    "title": "Your bookings, under control.",
     "accent": "Let the music keep moving. Booking is already happening.",
-    "body": "Keep requests, conversations, availability and follow-up together instead of losing dates across Instagram, WhatsApp, email, calendars and notes.",
+    "body": "Bring enquiries, conversations and dates together in one place. Even when the first contact comes through Instagram, WhatsApp, email or a phone call.",
     "primary": "Create my workspace",
     "secondary": "See how it works",
     "note": "Made for DJs, managers and the people who make every night happen."
@@ -687,13 +687,11 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
       <div class="cp-wrap cp-hero-content">
         <p class="cp-eyebrow">{{ p.hero.eyebrow }}</p>
         <h1>{{ p.hero.title }}</h1>
-        <p class="cp-hero-accent">{{ p.hero.accent }}</p>
         <p class="cp-hero-lead">{{ p.hero.body }}</p>
         <div class="cp-hero-actions">
           <button class="cp-cta" type="button" @click="auth('signup', 'hero')">{{ p.hero.primary }} <span class="cp-arrow" aria-hidden="true" /></button>
           <button class="cp-cta cp-cta--ghost" type="button" @click="scrollTo('#system')">{{ p.hero.secondary }}</button>
         </div>
-        <p class="cp-hero-note"><span class="cp-live-dot" />{{ p.hero.note }}</p>
       </div>
     </section>
 
@@ -1161,12 +1159,12 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
   inset: 0;
   background: linear-gradient(90deg, var(--cp-black) 0%, color-mix(in srgb, var(--cp-black) 90%, transparent) 26%, color-mix(in srgb, var(--cp-black) 45%, transparent) 48%, transparent 72%), linear-gradient(0deg, var(--cp-black), transparent 28%);
 }
-.commercial-home .cp-hero-content { padding: 132px 0 58px; }
+.commercial-home .cp-hero-content { padding: 110px 0 54px; }
 .commercial-home .cp-hero h1 {
-  max-width: 650px;
-  margin: 26px 0 22px;
-  font-size: clamp(62px, 6.8vw, 98px);
-  line-height: .98;
+  max-width: 710px;
+  margin: 22px 0 25px;
+  font-size: clamp(58px, 6vw, 86px);
+  line-height: 1.02;
   letter-spacing: -.055em;
   text-wrap: balance;
 }
@@ -1179,8 +1177,8 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
   line-height: 1.2;
   letter-spacing: -.025em;
 }
-.commercial-home .cp-hero-lead { max-width: 455px; font-size: 18px; line-height: 1.5; }
-.commercial-home .cp-hero-actions { margin-top: 26px; }
+.commercial-home .cp-hero-lead { max-width: 590px; font-size: 19px; line-height: 1.55; }
+.commercial-home .cp-hero-actions { margin-top: 29px; }
 .commercial-home .cp-hero-note { max-width: 430px; margin-top: 25px; line-height: 1.5; }
 .commercial-home .cp-cta { min-height: 48px; box-shadow: 0 4px 0 color-mix(in srgb, var(--cp-lime) 45%, black), 0 14px 30px color-mix(in srgb, var(--cp-lime) 12%, transparent); }
 .commercial-home .cp-cta--ghost { background: color-mix(in srgb, var(--cp-black) 78%, transparent); box-shadow: none; }
@@ -1207,7 +1205,7 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
 :global(html.mobile-menu-open), :global(html.mobile-menu-open body) { overflow: hidden; }
 :global(html[data-theme='light'] .commercial-home .cp-hero::before) { opacity: .34; }
 @media (max-width: 1100px) and (min-width: 851px) {
-  .commercial-home .cp-hero h1 { max-width: 55%; font-size: 64px; }
+  .commercial-home .cp-hero h1 { max-width: 60%; font-size: 64px; }
   .cp-hero-accent { max-width: 55%; }
 }
 @media (max-width: 850px) {
