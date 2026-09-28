@@ -50,11 +50,12 @@ test('direct route synchronization can select Profile', async () => {
   assert.match(routeWatch, /activeView\.value = next/)
 })
 
-test('workspace keeps structural loading surfaces for primary modules', async () => {
+test('workspace uses one branded loading state instead of per-view skeletons', async () => {
   const source = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
-  for (const surface of ['overview', 'bookings', 'calendar', 'history', 'profile', 'passport', 'cue-id']) {
-    assert.match(source, new RegExp(`workspace-skeleton--${surface}`))
-  }
+  assert.match(source, /v-if="workspaceSurfaceLoading" class="workspace-loading-state"/)
+  assert.match(source, /<CueBrand class="workspace-loading-state__logo" decorative \/>/)
+  assert.match(source, /workspace-loading-state__pulse/)
+  assert.doesNotMatch(source, /workspace-skeleton--(?:overview|bookings|calendar|history|profile|passport|cue-id|settings)/)
 })
 
 
