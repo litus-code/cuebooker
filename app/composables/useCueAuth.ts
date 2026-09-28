@@ -251,7 +251,14 @@ export function useCueAuth() {
     loading.value = true
 
     try {
-      const payload = await $fetch<AuthResponse>(`${supabaseUrl.value}/auth/v1/signup`, {
+      const redirectTo = import.meta.client
+        ? new URL('/access?mode=signin&confirmed=1', window.location.origin).toString()
+        : undefined
+      const endpoint = redirectTo
+        ? `${supabaseUrl.value}/auth/v1/signup?redirect_to=${encodeURIComponent(redirectTo)}`
+        : `${supabaseUrl.value}/auth/v1/signup`
+
+      const payload = await $fetch<AuthResponse>(endpoint, {
         method: 'POST',
         headers: baseHeaders(),
         body: {
