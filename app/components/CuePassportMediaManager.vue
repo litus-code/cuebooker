@@ -14,6 +14,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{ changed: [] }>()
 const mediaApi = usePassportMedia()
+const analytics = useAnalytics()
 
 const adding = ref(false)
 const saving = ref(false)
@@ -135,6 +136,10 @@ function openAdd() {
   resetForm()
   bookingId.value = sortedBookings.value[0]?.id || ''
   adding.value = true
+  analytics.track('passport_media_add_started', {
+    surface: 'passport',
+    existing_media_count: props.media.length
+  })
 }
 
 function closeAdd() {
@@ -168,11 +173,21 @@ async function createMedia() {
       caption: caption.value.trim() || null,
       capturedAt: capturedAt.value ? new Date(capturedAt.value).toISOString() : null
     })
+    analytics.track('passport_media_linked', {
+      media_type: mediaType.value,
+      source,
+      has_permalink: Boolean(permalink.value.trim()),
+      has_thumbnail: Boolean(thumbnailUrl.value.trim())
+    })
     adding.value = false
     resetForm()
     message.value = copy.value.saved
     emit('changed')
   } catch (error: any) {
+    analytics.track('passport_media_link_failed', {
+      media_type: mediaType.value,
+      reason: error?.message === 'invalid_media_url' ? 'invalid_media_url' : 'unknown'
+    })
     message.value = error?.message === 'invalid_media_url' ? copy.value.invalid : copy.value.error
   } finally {
     saving.value = false
@@ -184,14 +199,24 @@ async function toggleStatus(item: CuePassportMedia) {
   saving.value = true
   message.value = ''
   try {
+    const nextStatus = item.status === 'linked' ? 'hidden' : 'linked'
     await mediaApi.updateStatus(
       props.workspaceId,
       item.id,
-      item.status === 'linked' ? 'hidden' : 'linked'
+      nextStatus
     )
+    analytics.track('passport_media_status_changed', {
+      media_type: item.media_type,
+      from_status: item.status,
+      to_status: nextStatus
+    })
     message.value = copy.value.updated
     emit('changed')
   } catch {
+    analytics.track('passport_media_status_change_failed', {
+      media_type: item.media_type,
+      from_status: item.status
+    })
     message.value = copy.value.error
   } finally {
     saving.value = false
