@@ -1,0 +1,196 @@
+.profile-preview-backdrop {
+  align-items: center !important;
+  justify-items: center !important;
+  padding: 24px !important;
+}
+
+.profile-preview-backdrop > .profile-preview {
+  display: block !important;
+  width: min(1240px, calc(100vw - 48px)) !important;
+  max-width: none !important;
+  max-height: calc(100dvh - 48px) !important;
+  overflow-y: auto !important;
+}
+
+.profile-preview > header {
+  min-height: 64px !important;
+}
+
+.profile-preview > .profile-preview-hero {
+  position: relative !important;
+  display: block !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  aspect-ratio: 16 / 9 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  border-bottom: 1px solid #343434 !important;
+  background: #080808 !important;
+  isolation: isolate !important;
+}
+
+.profile-preview > .profile-preview-hero > img {
+  position: absolute !important;
+  z-index: -3 !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: 100% !important;
+  max-height: none !important;
+  margin: 0 !important;
+  object-fit: cover !important;
+}
+
+.profile-preview > .profile-preview-hero > .profile-preview-hero-shade {
+  position: absolute !important;
+  z-index: -2 !important;
+  inset: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.78) 0%, rgba(0,0,0,.48) 38%, rgba(0,0,0,.12) 72%, rgba(0,0,0,.2) 100%),
+    linear-gradient(0deg, rgba(0,0,0,.82) 0%, rgba(0,0,0,.08) 58%, rgba(0,0,0,.12) 100%) !important;
+}
+
+.profile-preview > .profile-preview-hero::after {
+  content: '' !important;
+  position: absolute !important;
+  z-index: 0 !important;
+  left: var(--cue-profile-artist-x, 50%) !important;
+  top: var(--cue-profile-artist-y, 50%) !important;
+  width: clamp(260px, 34%, 460px) !important;
+  height: 94% !important;
+  background-image: var(--cue-profile-artist-image, none) !important;
+  background-repeat: no-repeat !important;
+  background-position: center bottom !important;
+  background-size: contain !important;
+  opacity: var(--cue-profile-artist-opacity, 0) !important;
+  filter: var(--cue-profile-artist-filter, none) !important;
+  transform: translate(-50%, -50%) scale(var(--cue-profile-artist-scale, 1)) !important;
+  transform-origin: center !important;
+  pointer-events: none !important;
+}
+
+.profile-preview > .profile-preview-hero > p:not(.profile-preview-empty) {
+  position: absolute !important;
+  z-index: 3 !important;
+  top: 38px !important;
+  left: clamp(28px, 5vw, 64px) !important;
+  max-width: 42% !important;
+  margin: 0 !important;
+  color: rgba(244,242,237,.72) !important;
+  font: 700 11px/1.35 monospace !important;
+  letter-spacing: .11em !important;
+  text-transform: uppercase !important;
+}
+
+.profile-preview > .profile-preview-hero > h2 {
+  position: absolute !important;
+  z-index: 3 !important;
+  left: clamp(28px, 5vw, 64px) !important;
+  bottom: 86px !important;
+  width: auto !important;
+  max-width: 52% !important;
+  margin: 0 !important;
+  font-size: clamp(3.4rem, 7.2vw, 7.2rem) !important;
+  line-height: .82 !important;
+  letter-spacing: -.07em !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  text-wrap: balance !important;
+}
+
+.profile-preview > .profile-preview-hero > .profile-preview-chips,
+.profile-preview > .profile-preview-hero > .profile-preview-empty {
+  position: absolute !important;
+  z-index: 3 !important;
+  left: clamp(28px, 5vw, 64px) !important;
+  bottom: 36px !important;
+  max-width: 52% !important;
+  margin: 0 !important;
+}
+
+.profile-preview > .profile-preview-hero > .profile-preview-empty {
+  color: rgba(244,242,237,.56) !important;
+  font-size: 13px !important;
+}
+
+.profile-preview > .profile-preview-body {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, .65fr) !important;
+  align-items: start !important;
+  align-content: start !important;
+  min-height: 0 !important;
+  height: auto !important;
+  gap: clamp(32px, 5vw, 64px) !important;
+  padding: clamp(34px, 5vw, 64px) !important;
+  margin: 0 !important;
+}
+
+.profile-preview > .profile-preview-body > * {
+  align-self: start !important;
+}
+
+.profile-preview .profile-preview-bio {
+  max-width: 720px !important;
+  margin: 0 !important;
+  font-size: clamp(1.15rem, 2vw, 1.7rem) !important;
+  line-height: 1.5 !important;
+}
+
+@media (max-width: 760px) {
+  .profile-preview-backdrop {
+    align-items: stretch !important;
+    padding: 0 !important;
+  }
+
+  .profile-preview-backdrop > .profile-preview {
+    width: 100% !important;
+    max-height: 100dvh !important;
+    border: 0 !important;
+  }
+
+  .profile-preview > .profile-preview-hero {
+    aspect-ratio: auto !important;
+    min-height: 430px !important;
+  }
+
+  .profile-preview > .profile-preview-hero::after {
+    width: min(64vw, 300px) !important;
+    height: 82% !important;
+  }
+
+  .profile-preview > .profile-preview-hero > p:not(.profile-preview-empty) {
+    top: 24px !important;
+    left: 22px !important;
+    max-width: calc(100% - 44px) !important;
+  }
+
+  .profile-preview > .profile-preview-hero > h2 {
+    left: 22px !important;
+    right: 22px !important;
+    bottom: 82px !important;
+    max-width: none !important;
+    font-size: clamp(3rem, 16vw, 5.2rem) !important;
+  }
+
+  .profile-preview > .profile-preview-hero > .profile-preview-chips,
+  .profile-preview > .profile-preview-hero > .profile-preview-empty {
+    left: 22px !important;
+    right: 22px !important;
+    bottom: 28px !important;
+    max-width: none !important;
+  }
+
+  .profile-preview > .profile-preview-body {
+    grid-template-columns: 1fr !important;
+    gap: 28px !important;
+    padding: 28px 22px 42px !important;
+  }
+}

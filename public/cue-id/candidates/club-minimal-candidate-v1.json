@@ -1,0 +1,16 @@
+{
+  "id": "club-minimal-candidate-light-v1",
+  "purpose": "candidate",
+  "quality": "light",
+  "generator": "Cuebooker procedural Club Minimal generator",
+  "bytes": 83540,
+  "triangles": 5804,
+  "vertices": 3004,
+  "materials": 4,
+  "embeddedMaterials": 4,
+  "runtimeMaterials": 4,
+  "materialStrategy": "embedded_shared_pbr_mutated_runtime",
+  "textures": 0,
+  "artDirection": "club_minimal_v1",
+  "status": "candidate_not_production"
+}

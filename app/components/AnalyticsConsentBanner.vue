@@ -4,7 +4,7 @@ const { locale } = useCuePreferences()
 
 onMounted(() => analytics.init())
 
-const visible = computed(() => analytics.consent.value === 'unknown' || analytics.preferencesOpen.value)
+const visible = computed(() => analytics.initialized.value && (analytics.consent.value === 'unknown' || analytics.preferencesOpen.value))
 const canClose = computed(() => analytics.consent.value !== 'unknown' && analytics.preferencesOpen.value)
 const copy = computed(() => locale.value === 'es'
   ? {

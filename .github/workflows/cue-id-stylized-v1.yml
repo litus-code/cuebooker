@@ -1,0 +1,54 @@
+name: CUE ID stylized avatar prototype
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - scripts/blender/cue-id-stylized-v1-source.py
+      - .github/workflows/cue-id-stylized-v1.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build-stylized-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      BLENDER_ARCHIVE: blender-5.2.2-linux-x64.tar.xz
+      BLENDER_DIR: blender-5.2.2-linux-x64
+
+    steps:
+      - name: Install headless render dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1 libglx-mesa0 libglu1-mesa xvfb
+
+      - uses: actions/checkout@v4
+
+      - name: Install Blender
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 "https://download.blender.org/release/Blender5.2/$BLENDER_ARCHIVE" -o "/tmp/$BLENDER_ARCHIVE"
+          tar -xf "/tmp/$BLENDER_ARCHIVE" -C "$RUNNER_TEMP"
+
+      - name: Build stylized avatar
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/stylized
+          BLENDER="$RUNNER_TEMP/$BLENDER_DIR/blender"
+          xvfb-run -a "$BLENDER" --background \
+            --python scripts/blender/cue-id-stylized-v1-source.py \
+            -- \
+            --output "$GITHUB_WORKSPACE/artifacts/stylized/source-stylized.blend"
+          python -m json.tool artifacts/stylized/source-stylized.stylized-report.json
+
+      - name: Upload stylized evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: cue-id-stylized-v1-prototype
+          path: artifacts/stylized/
+          if-no-files-found: error
+          retention-days: 14

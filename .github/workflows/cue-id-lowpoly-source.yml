@@ -1,0 +1,79 @@
+name: CUE ID lowpoly canonical source
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - scripts/blender/cue-id-creator-v1-lowpoly-source.py
+      - .github/workflows/cue-id-lowpoly-source.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build-lowpoly-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      BLENDER_ARCHIVE: blender-5.2.2-linux-x64.tar.xz
+      BLENDER_DIR: blender-5.2.2-linux-x64
+      SYSTEM_ASSETS_URL: https://files2.makehumancommunity.org/asset_packs/makehuman_system_assets/makehuman_system_assets_cc0.zip
+      SYSTEM_ASSETS_ZIP: /tmp/makehuman_system_assets_cc0.zip
+
+    steps:
+      - name: Install headless render dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1 libglx-mesa0 libglu1-mesa xvfb
+
+      - uses: actions/checkout@v4
+
+      - name: Cache MakeHuman system assets
+        id: system-assets-cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/makehuman_system_assets_cc0.zip
+          key: makehuman-system-assets-cc0-v1
+
+      - name: Download official CC0 system assets
+        if: steps.system-assets-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 "$SYSTEM_ASSETS_URL" -o "$SYSTEM_ASSETS_ZIP"
+          test -s "$SYSTEM_ASSETS_ZIP"
+
+      - name: Install Blender
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 "https://download.blender.org/release/Blender5.2/$BLENDER_ARCHIVE" -o "/tmp/$BLENDER_ARCHIVE"
+          tar -xf "/tmp/$BLENDER_ARCHIVE" -C "$RUNNER_TEMP"
+
+      - name: Install MPFB
+        shell: bash
+        run: |
+          set -euo pipefail
+          BLENDER="$RUNNER_TEMP/$BLENDER_DIR/blender"
+          "$BLENDER" --online-mode --command extension install -s -e mpfb
+          "$BLENDER" --command extension list | grep -i mpfb
+
+      - name: Build low-poly dressed source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/canonical
+          BLENDER="$RUNNER_TEMP/$BLENDER_DIR/blender"
+          xvfb-run -a "$BLENDER" --background             --python scripts/blender/cue-id-creator-v1-lowpoly-source.py             --             --asset-pack "$SYSTEM_ASSETS_ZIP"             --output "$GITHUB_WORKSPACE/artifacts/canonical/source-lowpoly.blend"
+          python -m json.tool artifacts/canonical/source-lowpoly.lowpoly-report.json
+
+      - name: Upload low-poly authoring source
+        uses: actions/upload-artifact@v4
+        with:
+          name: cue-id-creator-v1-lowpoly-canonical
+          path: artifacts/canonical/
+          if-no-files-found: error
+          retention-days: 14

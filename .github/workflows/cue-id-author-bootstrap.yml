@@ -1,0 +1,73 @@
+name: CUE ID Creator authoring bootstrap
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/app-visual-system
+    paths:
+      - scripts/blender/cue-id-creator-v1-bootstrap.py
+      - .github/workflows/cue-id-author-bootstrap.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      BLENDER_VERSION: "5.2.2"
+      BLENDER_ARCHIVE: "blender-5.2.2-linux-x64.tar.xz"
+      BLENDER_DIR: "blender-5.2.2-linux-x64"
+
+    steps:
+      - name: Install headless render dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1 libglx-mesa0 libglu1-mesa xvfb
+
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Download Blender
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 \
+            "https://download.blender.org/release/Blender5.2/${BLENDER_ARCHIVE}" \
+            -o "/tmp/${BLENDER_ARCHIVE}"
+          tar -xf "/tmp/${BLENDER_ARCHIVE}" -C "${RUNNER_TEMP}"
+
+      - name: Install and enable MPFB
+        shell: bash
+        run: |
+          set -euo pipefail
+          BLENDER="${RUNNER_TEMP}/${BLENDER_DIR}/blender"
+          "${BLENDER}" --online-mode --command extension install -s -e mpfb
+          "${BLENDER}" --command extension list | grep -i "mpfb"
+
+      - name: Build editable CUE ID human source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          BLENDER="${RUNNER_TEMP}/${BLENDER_DIR}/blender"
+          xvfb-run -a "${BLENDER}" --background \
+            --python scripts/blender/cue-id-creator-v1-bootstrap.py \
+            -- \
+            --output "${GITHUB_WORKSPACE}/artifacts/source.blend"
+          python -m json.tool artifacts/source.bootstrap-report.json
+
+      - name: Upload authoring artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cue-id-creator-v1-authoring-bootstrap
+          path: |
+            artifacts/source.blend
+            artifacts/source.bootstrap-report.json
+            artifacts/source-preview-full.png
+            artifacts/source-preview-portrait.png
+          if-no-files-found: error
+          retention-days: 14

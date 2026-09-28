@@ -1,6 +1,6 @@
 # Technical architecture
 
-Updated: 14 September 2026
+Updated: 16 September 2026
 
 ## Application
 
@@ -33,6 +33,16 @@ The existing Supabase foundation contains:
 Database triggers create the profile after Auth signup and add the creator as owner after artist or organisation creation.
 
 Security helper functions live in the private schema. Public tables use RLS. Anonymous users have no access to identity tables.
+
+## Artist professional profile
+
+Public-ready artist attributes live on `artists`: biography, base city and country, time zone, languages, genres, performance formats, event types, years active, media links and an optional cover image path with its crop position.
+
+Artist covers use the private `artist-media` Storage bucket. Object paths begin with the artist ID. Storage RLS lets artist members read the image and limits uploads, replacements and deletion to owners or managers. The UI uses the bundled CueBooker acid and Detroit artwork when no custom cover exists.
+
+Private commercial attributes live in the one-to-one `artist_booking_profiles` table: fee basis and range, currency, set duration, travel preferences, equipment notes and rider links. RLS permits artist members to read the private row and restricts inserts and updates to owner or manager memberships. Editor memberships render the profile in read-only mode.
+
+The profile is optional. Onboarding only creates the workspace and communicates that the profile can be completed later from the authenticated panel.
 
 ## Onboarding
 

@@ -1,6 +1,8 @@
 type CueUser = {
   id: string
   email?: string
+  user_metadata?: Record<string, unknown>
+  app_metadata?: Record<string, unknown>
 }
 
 type CueProfile = {
@@ -14,6 +16,7 @@ type CueSession = {
   refresh_token: string
   expires_at: number
   started_at: number
+  recovery?: boolean
   user: CueUser
 }
 
@@ -93,13 +96,14 @@ export function useCueAuth() {
 
     try {
       const startedAt = session.value.started_at
+      const recovery = session.value.recovery === true
       const payload = await $fetch<AuthResponse>(`${supabaseUrl.value}/auth/v1/token?grant_type=refresh_token`, {
         method: 'POST',
         headers: baseHeaders(),
         body: { refresh_token: session.value.refresh_token }
       })
       const next = normalizeSession(payload, startedAt)
-      saveSession(next)
+      saveSession(next ? { ...next, recovery } : null)
       return next
     } catch {
       saveSession(null)
@@ -158,6 +162,67 @@ export function useCueAuth() {
       saveSession(null)
       profile.value = null
     }
+  }
+
+  async function requestPasswordReset(email: string, redirectTo: string) {
+    if (!configured.value) throw new Error('supabase_not_configured')
+    const normalizedEmail = email.trim()
+    if (!normalizedEmail) throw new Error('email_required')
+    loading.value = true
+    try {
+      await $fetch(`${supabaseUrl.value}/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`, {
+        method: 'POST',
+        headers: baseHeaders(),
+        body: { email: normalizedEmail }
+      })
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function consumePasswordRecoveryFromUrl() {
+    if (!import.meta.client || !configured.value) return false
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+    if (hash.get('type') !== 'recovery') return false
+
+    const accessToken = hash.get('access_token') || ''
+    const refreshToken = hash.get('refresh_token') || ''
+    const expiresIn = Number(hash.get('expires_in') || '3600')
+    if (!accessToken || !refreshToken) throw new Error('invalid_recovery_link')
+
+    const user = await $fetch<CueUser>(`${supabaseUrl.value}/auth/v1/user`, {
+      headers: {
+        apikey: publishableKey.value,
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    const next = normalizeSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      expires_in: Number.isFinite(expiresIn) ? expiresIn : 3600,
+      user
+    })
+    if (!next) throw new Error('invalid_recovery_session')
+    saveSession({ ...next, recovery: true })
+    profile.value = null
+
+    const cleanUrl = `${window.location.pathname}${window.location.search}`
+    window.history.replaceState({}, document.title, cleanUrl)
+    return true
+  }
+
+  async function setRecoveredPassword(newPassword: string) {
+    const current = await ensureFreshSession()
+    if (!current?.recovery) throw new Error('recovery_session_required')
+    if (newPassword.length < 8) throw new Error('password_too_short')
+
+    await $fetch(`${supabaseUrl.value}/auth/v1/user`, {
+      method: 'PUT',
+      headers: baseHeaders(true),
+      body: { password: newPassword }
+    })
   }
 
   async function signIn(email: string, password: string) {
@@ -233,6 +298,38 @@ export function useCueAuth() {
         password: newPassword
       }
     })
+  }
+
+  async function updateLocalePreference(locale: 'es' | 'en') {
+    const current = await ensureFreshSession()
+    if (!current) return false
+
+    const payload = await $fetch<{ user?: CueUser } | CueUser>(`${supabaseUrl.value}/auth/v1/user`, {
+      method: 'PUT',
+      headers: baseHeaders(true),
+      body: {
+        data: {
+          ...(current.user.user_metadata || {}),
+          cuebooker_locale: locale
+        }
+      }
+    })
+
+    const updatedUser = 'user' in payload && payload.user ? payload.user : payload as CueUser
+    saveSession({
+      ...current,
+      user: {
+        ...current.user,
+        ...updatedUser,
+        user_metadata: {
+          ...(current.user.user_metadata || {}),
+          ...(updatedUser.user_metadata || {}),
+          cuebooker_locale: locale
+        }
+      }
+    })
+
+    return true
   }
 
   function captureReferral(code: string | null | undefined, landingPath: string) {
@@ -326,7 +423,11 @@ export function useCueAuth() {
     signIn,
     signUp,
     signOut,
+    requestPasswordReset,
+    consumePasswordRecoveryFromUrl,
+    setRecoveredPassword,
     updatePassword,
+    updateLocalePreference,
     captureReferral,
     persistReferralAttribution,
     completeOnboarding,
