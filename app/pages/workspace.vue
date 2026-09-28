@@ -872,15 +872,36 @@ function scheduleTourPosition(delay = 280) {
   tourPositionTimer = window.setTimeout(() => void positionTour(), delay)
 }
 
-async function positionTour() {
+async function positionTour(attempt = 0) {
   const item = tourSteps.value[tourStep.value]
   if (!item) return
   await nextTick()
 
   document.querySelectorAll<HTMLElement>('.tour-focus').forEach(element => element.classList.remove('tour-focus'))
-  const target = document.getElementById(item.target)
   const card = document.querySelector<HTMLElement>('.workspace .tour-card')
-  if (!target || !card) return
+  let target = document.getElementById(item.target)
+
+  if (!card) return
+
+  if (!target && attempt < 10) {
+    tourPositionTimer = window.setTimeout(() => void positionTour(attempt + 1), 120)
+    return
+  }
+
+  if (!target && item.view === 'bookings') {
+    target = document.getElementById('core-inbox-detail')
+      || document.getElementById('core-inbox-list')
+      || document.getElementById('core-inbox-tools')
+  }
+
+  if (!target) {
+    tourCardStyle.value = {
+      '--tour-top': 'auto',
+      '--tour-left': 'auto'
+    }
+    return
+  }
+
   target.classList.add('tour-focus')
 
   const edge = 12
@@ -946,7 +967,9 @@ async function positionTour() {
 
   tourCardStyle.value = {
     '--tour-top': `${resolvedTop}px`,
-    '--tour-left': `${left}px`
+    '--tour-left': `${left}px`,
+    '--tour-right': 'auto',
+    '--tour-bottom': 'auto'
   }
 }
 
@@ -3188,7 +3211,7 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 :global(:root[data-theme='light']) .tour-card { border-color: var(--cue-accent); box-shadow: 0 0 32px color-mix(in srgb, var(--cue-accent) 22%, transparent), 0 24px 80px var(--cue-shadow); }
 :global(:root[data-theme='light']) .tour-card > span { color: var(--cue-accent); }
 :global(.tour-focus) { position: relative; z-index: 32; outline: 2px solid var(--cue-accent); outline-offset: 5px; box-shadow: 0 0 18px color-mix(in srgb, var(--cue-accent) 70%, transparent), 0 0 55px color-mix(in srgb, var(--cue-accent) 28%, transparent); animation: tour-pulse 1.5s ease-in-out infinite alternate; }
-.tour-card { position: fixed; right: 24px; bottom: 24px; z-index: 60; width: min(390px, calc(100vw - 32px)); box-sizing: border-box; padding: 24px; border: 1px solid var(--cue-accent); background: var(--cue-surface); color: var(--cue-text); box-shadow: 0 0 32px color-mix(in srgb, var(--cue-accent) 25%, transparent), 0 24px 80px var(--cue-shadow); }
+.tour-card { position: fixed; top: var(--tour-top, auto); left: var(--tour-left, auto); right: var(--tour-right, 24px); bottom: var(--tour-bottom, 24px); z-index: 60; width: min(390px, calc(100vw - 32px)); box-sizing: border-box; padding: 24px; border: 1px solid var(--cue-accent); background: var(--cue-surface); color: var(--cue-text); box-shadow: 0 0 32px color-mix(in srgb, var(--cue-accent) 25%, transparent), 0 24px 80px var(--cue-shadow); }
 .tour-card > span { color: var(--cue-accent); font: 700 10px monospace; letter-spacing: .12em; }
 .tour-card > strong { display: block; margin: 17px 0 9px; font-size: 24px; text-transform: uppercase; }
 .tour-card > p { margin: 0 0 20px; color: #aaa; font-size: 14px; line-height: 1.55; }
