@@ -55,7 +55,10 @@ const FREE_ENTITLEMENTS: CueEntitlement[] = [
   'calendar.basic',
   'notifications.basic',
   'capture.manual',
+  'capture.smart_extended',
+  'automation.advanced',
   'passport.basic',
+  'passport.media',
   'cue_id.basic',
   'distribution.basic'
 ]
@@ -97,8 +100,8 @@ export const CUE_PLANS: Record<CuePlan, CuePlanDefinition> = {
       activeBookings: 5,
       monthlyCaptures: 10,
       historyDays: 90,
-      smartCaptureMonthly: 10,
-      passportMediaItems: 0,
+      smartCaptureMonthly: null,
+      passportMediaItems: 10,
       artists: 1,
       teamMembers: 1
     }
@@ -112,7 +115,7 @@ export const CUE_PLANS: Record<CuePlan, CuePlanDefinition> = {
       monthlyCaptures: null,
       historyDays: null,
       smartCaptureMonthly: null,
-      passportMediaItems: 250,
+      passportMediaItems: 100,
       artists: 1,
       teamMembers: 1
     }
