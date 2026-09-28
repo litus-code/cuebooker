@@ -11,7 +11,7 @@ for (const asset of Object.values(cueIdModularAssets)) {
   const glb = resolve('public', asset.src.slice(1))
   if (existsSync(glb)) {
     const data = readFileSync(glb)
-    if (data.length < 12 || data.toString('ascii', 0, 4) !== 'glTF'
+    if (data.length < 20 || data.toString('ascii', 0, 4) !== 'glTF'
       || data.readUInt32LE(4) !== 2 || data.readUInt32LE(8) !== data.length) {
       errors.push(`${asset.id}: invalid GLB header or length`)
     } else {

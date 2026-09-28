@@ -56,7 +56,7 @@ export function validateCueIdModularRegistry(registry: Record<string, CueIdModul
       errors.push(`${key}: supportedTiers must list full and/or reduced`)
     }
     if (asset.mount?.kind === 'skinned') {
-      if (asset.mount.rig !== 'cue_rig' || asset.mount.hideBodyRegions.some(value => !regions.has(value))) {
+      if (asset.mount.rig !== 'cue_rig' || !Array.isArray(asset.mount.hideBodyRegions) || asset.mount.hideBodyRegions.some(value => !regions.has(value))) {
         errors.push(`${key}: invalid shared rig or body region`)
       }
     } else if (asset.mount?.kind === 'rigid') {
