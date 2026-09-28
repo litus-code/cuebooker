@@ -65,7 +65,7 @@ const copy = computed(() => props.locale === 'es' ? {
   sentWithEmail: 'Todo listo. Te hemos enviado un email con un enlace seguro para consultar el estado y continuar la conversación. También puedes responder directamente a ese email.',
   sentWithoutEmail: 'La solicitud está guardada y ya puede verla el equipo del artista. No hemos podido entregar el email de confirmación, pero no necesitas volver a enviarla.',
   reference: 'Referencia',
-  preview: 'El formulario real aparecerá aquí cuando publiques el perfil.',
+  preview: 'Vista previa del formulario que verá quien solicite una fecha. Los campos y el envío están desactivados aquí.',
   errors: {
     name: 'Escribe tu nombre.',
     email: 'Introduce un email válido para poder responderte.',
@@ -96,7 +96,7 @@ const copy = computed(() => props.locale === 'es' ? {
   sentWithEmail: 'All set. We sent you an email with a secure link to check the status and continue the conversation. You can also reply directly to that email.',
   sentWithoutEmail: 'Your enquiry is safely recorded and the artist team can already see it. We could not deliver the confirmation email, but you do not need to send the enquiry again.',
   reference: 'Reference',
-  preview: 'The live form will appear here when the profile is published.',
+  preview: 'Preview of the form visitors will see when requesting a date. Fields and submission are disabled here.',
   errors: {
     name: 'Enter your name.',
     email: 'Enter a valid email so the artist team can reply.',
@@ -244,11 +244,9 @@ function submit() {
       <span v-if="reference" class="public-booking-form__reference">{{ copy.reference }} · {{ reference }}</span>
     </div>
 
-    <div v-else-if="preview" class="public-booking-form__preview">
-      <p>{{ copy.preview }}</p>
-    </div>
-
     <form v-else ref="formRoot" class="public-booking-form__form" novalidate @submit.prevent="submit">
+      <p v-if="preview" class="public-booking-form__preview" role="status">{{ copy.preview }}</p>
+      <fieldset class="public-booking-form__fields" :disabled="preview">
       <label>
         <span>{{ copy.name }}</span>
         <input
@@ -298,7 +296,7 @@ function submit() {
         <small v-if="fieldErrors.initialMessage" id="booking-message-error" class="public-booking-form__field-error">{{ fieldErrors.initialMessage }}</small>
       </label>
 
-      <details ref="detailsRoot" class="public-booking-form__details">
+      <details ref="detailsRoot" class="public-booking-form__details" :open="preview ? true : undefined">
         <summary>{{ copy.details }}</summary>
         <div class="public-booking-form__details-grid">
           <label><span>{{ copy.organization }}</span><input v-model="form.organizationName" maxlength="180"></label>
@@ -377,10 +375,11 @@ function submit() {
       </label>
 
       <p v-if="serverErrorMessage" class="public-booking-form__error" role="alert">{{ serverErrorMessage }}</p>
-      <button class="public-booking-form__submit" type="submit" :disabled="submitting">
+      <button class="public-booking-form__submit" type="submit" :disabled="preview || submitting">
         {{ submitting ? copy.sending : copy.send }}
         <span class="arrow arrow--ne" aria-hidden="true" />
       </button>
+      </fieldset>
     </form>
   </section>
 </template>
@@ -396,7 +395,8 @@ function submit() {
 .public-booking-form__heading > p { margin: 0 0 12px; color: var(--cue-accent, #e8ff2f); font: 700 10px/1.2 monospace; letter-spacing: .12em; }
 .public-booking-form__heading h2 { max-width: 760px; margin: 0; font-size: clamp(2.3rem, 6vw, 5.8rem); line-height: .9; letter-spacing: -.04em; text-transform: uppercase; }
 .public-booking-form__heading > span { display: block; max-width: 620px; margin-top: 18px; color: var(--cue-muted, #999); font-size: 15px; line-height: 1.55; }
-.public-booking-form__form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; max-width: 920px; }
+.public-booking-form__form { max-width: 920px; }
+.public-booking-form__fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; min-width:0; margin:0; padding:0; border:0; }
 .public-booking-form label { display: grid; align-content: start; gap: 8px; }
 .public-booking-form label > span, .public-booking-form__details summary { color: var(--cue-muted, #999); font: 700 10px/1.2 monospace; letter-spacing: .09em; text-transform: uppercase; }
 .public-booking-form input, .public-booking-form textarea { box-sizing: border-box; width: 100%; min-height: 48px; padding: 12px 13px; border: 1px solid var(--cue-border, #353535); border-radius: 0; outline: none; background: var(--cue-bg, #090909); color: var(--cue-text, #f2f0eb); font: inherit; }
@@ -412,24 +412,27 @@ function submit() {
 .public-booking-form__field-error { color: #ff9d9d; }
 .public-booking-form__field-help { color: var(--cue-muted, #777); }
 .public-booking-form__submit { display: inline-flex; justify-self: start; align-items: center; gap: 10px; min-height: 52px; padding: 0 20px; border: 0; background: var(--cue-accent, #e8ff2f); color: #090909; cursor: pointer; font-weight: 900; }
-.public-booking-form__submit:disabled { cursor: wait; opacity: .6; }
+.public-booking-form__submit:disabled { cursor: not-allowed; opacity: .6; }
+.public-booking-form__fields:disabled input,.public-booking-form__fields:disabled textarea { opacity:.7; cursor:not-allowed; }
 .public-booking-form__error { margin: 0; padding: 13px 14px; border-left: 2px solid #ff9d9d; background: color-mix(in srgb, #ff9d9d 8%, transparent); color: #ffc2c2; font-size: 13px; line-height: 1.45; }
-.public-booking-form__success, .public-booking-form__preview { max-width: 720px; padding: 26px; border: 1px solid var(--cue-border, #353535); background: var(--cue-bg, #090909); }
+.public-booking-form__success { max-width: 720px; padding: 26px; border: 1px solid var(--cue-border, #353535); background: var(--cue-bg, #090909); }
+.public-booking-form__preview { margin:0 0 24px; padding:13px 16px; border-left:2px solid var(--cue-accent,#e8ff2f); background:color-mix(in srgb,var(--cue-accent,#e8ff2f) 7%,var(--cue-bg,#090909)); color:var(--cue-text,#f2f0eb); font-size:13px; line-height:1.5; }
 .public-booking-form__success { border-left: 3px solid var(--cue-accent, #e8ff2f); }
 .public-booking-form__success strong { color: var(--cue-accent, #e8ff2f); font-size: 20px; }
-.public-booking-form__success p, .public-booking-form__preview p { margin: 8px 0 0; color: var(--cue-muted, #aaa); line-height: 1.55; }
+.public-booking-form__success p { margin: 8px 0 0; color: var(--cue-muted, #aaa); line-height: 1.55; }
 .public-booking-form__reference { display: inline-block; margin-top: 18px; color: var(--cue-text, #f2f0eb); font: 700 10px/1.2 monospace; letter-spacing: .08em; text-transform: uppercase; }
 .public-booking-form__honeypot { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
 .public-booking-form--compact { min-height: 100%; box-sizing: border-box; padding: 24px; border-top: 0; }
 .public-booking-form--compact .public-booking-form__heading { margin-bottom: 24px; }
 .public-booking-form--compact .public-booking-form__heading h2 { max-width: 620px; font-size: clamp(2rem, 7vw, 4rem); }
 .public-booking-form--compact .public-booking-form__heading > span { max-width: 560px; margin-top: 12px; font-size: 13px; }
-.public-booking-form--compact .public-booking-form__form { gap: 13px; max-width: none; }
+.public-booking-form--compact .public-booking-form__form { max-width: none; }
+.public-booking-form--compact .public-booking-form__fields { gap:13px; }
 .public-booking-form--compact input { min-height: 44px; }
 .public-booking-form--compact textarea { min-height: 110px; }
 @media (max-width: 700px) {
   .public-booking-form { padding: 28px 18px 42px; }
-  .public-booking-form__form, .public-booking-form__details-grid { grid-template-columns: 1fr; }
+  .public-booking-form__fields, .public-booking-form__details-grid { grid-template-columns: 1fr; }
   .public-booking-form__message, .public-booking-form__details, .public-booking-form__submit, .public-booking-form__error { grid-column: 1; }
   .public-booking-form__offer { grid-template-columns: minmax(0, 1fr) 96px; }
   .public-booking-form__heading h2 { font-size: clamp(2.2rem, 13vw, 4.2rem); }
