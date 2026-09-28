@@ -17,6 +17,7 @@ const emit = defineEmits<{
 const bookingCore = useBookingCore()
 const captureEngine = useCaptureEngine()
 const analytics = useAnalytics()
+const productTelemetry = useProductTelemetry()
 const { can: canEntitlement } = useCueEntitlements()
 const voiceInput = ref<{ setProcessing: (value: boolean) => void } | null>(null)
 const submitting = ref(false)
@@ -188,6 +189,10 @@ async function interpretNote() {
     mode: 'text',
     text_length: raw.length
   })
+  void productTelemetry.record('smart_capture_start', {
+    mode: 'text',
+    text_length: raw.length
+  }, props.workspaceId)
   analyzing.value = true
   interpretationMessage.value = ''
   smartResult.value = null
@@ -207,6 +212,13 @@ async function interpretNote() {
       missing_fields: analysis.result.missingFields.length,
       warnings: analysis.result.warnings.length
     })
+    void productTelemetry.record('smart_capture_result', {
+      mode: 'text',
+      success: analysis.method !== 'local_parser',
+      fallback: analysis.method === 'local_parser' ? analysis.method : null,
+      missing_fields: analysis.result.missingFields.length,
+      warnings: analysis.result.warnings.length
+    }, props.workspaceId)
   } finally {
     analyzing.value = false
   }
@@ -247,6 +259,11 @@ function applySmartResult() {
     missing_fields: parsed.missingFields.length,
     warnings: parsed.warnings.length
   })
+  void productTelemetry.record('smart_capture_apply', {
+    source: parsed.source.value || null,
+    missing_fields: parsed.missingFields.length,
+    warnings: parsed.warnings.length
+  }, props.workspaceId)
 
   if (parsed.source.value) source.value = parsed.source.value
   applyEntityMatches(parsed.contact.name.value, parsed.counterparty.name.value)
@@ -281,6 +298,10 @@ function discardSmartResult() {
       missing_fields: smartResult.value.missingFields.length,
       warnings: smartResult.value.warnings.length
     })
+    void productTelemetry.record('smart_capture_discard', {
+      missing_fields: smartResult.value.missingFields.length,
+      warnings: smartResult.value.warnings.length
+    }, props.workspaceId)
   }
   smartResult.value = null
 }
@@ -298,6 +319,11 @@ async function onAudioCaptured(audio: Blob, filename: string, fallbackTranscript
     audio_bytes: audio.size,
     audio_type: audio.type || null
   })
+  void productTelemetry.record('smart_capture_start', {
+    mode: 'audio',
+    audio_bytes: audio.size,
+    audio_type: audio.type || null
+  }, props.workspaceId)
   analyzing.value = true
   interpretationMessage.value = ''
   smartResult.value = null
@@ -328,6 +354,14 @@ async function onAudioCaptured(audio: Blob, filename: string, fallbackTranscript
       missing_fields: analysis.result.missingFields.length,
       warnings: analysis.result.warnings.length
     })
+    void productTelemetry.record('smart_capture_result', {
+      mode: analysis.method === 'browser_transcript' ? 'audio_browser_fallback' : 'audio',
+      success: analysis.method !== 'local_parser',
+      fallback: analysis.method === 'local_parser' ? analysis.method : null,
+      transcript_length: analysis.result.transcript.length,
+      missing_fields: analysis.result.missingFields.length,
+      warnings: analysis.result.warnings.length
+    }, props.workspaceId)
   } catch {
     interpretationMessage.value = props.locale === 'es'
       ? 'No he podido transcribir este audio. Inténtalo de nuevo o escríbelo.'
@@ -337,6 +371,11 @@ async function onAudioCaptured(audio: Blob, filename: string, fallbackTranscript
       success: false,
       browser_fallback_available: Boolean(fallbackTranscript.trim())
     })
+    void productTelemetry.record('smart_capture_result', {
+      mode: 'audio',
+      success: false,
+      browser_fallback_available: Boolean(fallbackTranscript.trim())
+    }, props.workspaceId)
   } finally {
     analyzing.value = false
     voiceInput.value?.setProcessing(false)
