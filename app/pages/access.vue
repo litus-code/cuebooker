@@ -11,6 +11,7 @@ const password = ref('')
 const displayName = ref('')
 const message = ref('')
 const errorMessage = ref('')
+const passwordVisible = ref(false)
 
 const copy = computed(() => locale.value === 'es'
   ? {
@@ -22,7 +23,7 @@ const copy = computed(() => locale.value === 'es'
       signupBody: 'Elige después si gestionas tu propio proyecto como DJ o trabajas como agencia.',
       forgotBody: 'Introduce tu email y te enviaremos un enlace para definir una nueva contraseña.',
       signinTab: 'Entrar', signupTab: 'Crear cuenta', name: 'Nombre', email: 'Email', password: 'Contraseña',
-      forgot: '¿Has olvidado la contraseña?', backToSignin: 'Volver a entrar', resetSubmit: 'Enviar enlace',
+      forgot: '¿Has olvidado la contraseña?', showPassword: 'Mostrar contraseña', hidePassword: 'Ocultar contraseña', backToSignin: 'Volver a entrar', resetSubmit: 'Enviar enlace',
       processing: 'Procesando…', signinSubmit: 'Entrar al workspace', signupSubmit: 'Crear cuenta',
       confirmation: 'Cuenta creada. Revisa tu correo para confirmar el acceso antes de continuar.',
       resetConfirmation: 'Si existe una cuenta con ese email, recibirás un enlace para cambiar la contraseña.',
@@ -37,7 +38,7 @@ const copy = computed(() => locale.value === 'es'
       signupBody: 'Next, choose whether you manage your own DJ project or work as an agency.',
       forgotBody: 'Enter your email and we will send a link to set a new password.',
       signinTab: 'Sign in', signupTab: 'Create account', name: 'Name', email: 'Email', password: 'Password',
-      forgot: 'Forgot your password?', backToSignin: 'Back to sign in', resetSubmit: 'Send reset link',
+      forgot: 'Forgot your password?', showPassword: 'Show password', hidePassword: 'Hide password', backToSignin: 'Back to sign in', resetSubmit: 'Send reset link',
       processing: 'Processing…', signinSubmit: 'Open workspace', signupSubmit: 'Create account',
       confirmation: 'Account created. Check your email to confirm access before continuing.',
       resetConfirmation: 'If an account exists for that email, you will receive a link to change the password.',
@@ -113,8 +114,39 @@ useHead(() => ({ title: copy.value.title, htmlAttrs: { lang: locale.value } }))
       <form class="access-form" @submit.prevent="submit">
         <label v-if="mode === 'signup'"><span>{{ copy.name }}</span><input v-model="displayName" autocomplete="name" minlength="2" required /></label>
         <label><span>{{ copy.email }}</span><input v-model="email" type="email" autocomplete="email" required /></label>
-        <label v-if="mode !== 'forgot'"><span>{{ copy.password }}</span><input v-model="password" type="password" :autocomplete="mode === 'signin' ? 'current-password' : 'new-password'" minlength="8" required /></label>
-        <button v-if="mode === 'signin'" class="access-link" type="button" @click="mode = 'forgot'; message = ''; errorMessage = ''">{{ copy.forgot }}</button>
+        <label v-if="mode !== 'forgot'">
+          <span>{{ copy.password }}</span>
+          <div class="access-password">
+            <input
+              v-model="password"
+              :type="passwordVisible ? 'text' : 'password'"
+              :autocomplete="mode === 'signin' ? 'current-password' : 'new-password'"
+              minlength="8"
+              required
+            />
+            <button
+              class="access-password__toggle"
+              type="button"
+              :aria-label="passwordVisible ? copy.hidePassword : copy.showPassword"
+              :title="passwordVisible ? copy.hidePassword : copy.showPassword"
+              @click="passwordVisible = !passwordVisible"
+            >
+              <svg v-if="!passwordVisible" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/>
+                <circle cx="12" cy="12" r="2.7"/>
+              </svg>
+              <svg v-else viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m3 3 18 18M10.6 6.2A9.6 9.6 0 0 1 12 6c6 0 9.5 6 9.5 6a16.6 16.6 0 0 1-2.7 3.3M6.2 6.2C3.8 7.8 2.5 12 2.5 12s3.5 6 9.5 6c1.2 0 2.3-.2 3.3-.6M9.9 9.9A3 3 0 0 0 14.1 14.1"/>
+              </svg>
+            </button>
+          </div>
+        </label>
+        <NuxtLink
+          v-if="mode === 'signin'"
+          class="access-link"
+          to="/access?mode=forgot"
+          @click="message = ''; errorMessage = ''"
+        >{{ copy.forgot }}</NuxtLink>
         <p v-if="errorMessage" class="access-message access-message--error">{{ errorMessage }}</p>
         <p v-if="message" class="access-message">{{ message }}</p>
         <p v-if="mode === 'signup'" class="access-privacy">
@@ -142,6 +174,7 @@ h1 { margin:0; font-size:clamp(2.3rem,7vw,4.8rem); line-height:.92; text-transfo
 label { display:grid; gap:7px; }
 label span { color:var(--cue-muted); font:700 11px/1.2 monospace; text-transform:uppercase; letter-spacing:.1em; }
 input { min-height:48px; padding:0 14px; border:1px solid var(--cue-border); background:var(--cue-bg); color:var(--cue-text); font:inherit; }
+.access-password{position:relative;display:grid}.access-password input{width:100%;box-sizing:border-box;padding-right:48px}.access-password__toggle{position:absolute;top:50%;right:8px;display:grid;place-items:center;width:36px;height:36px;padding:0;border:0;background:transparent;color:var(--cue-muted);cursor:pointer;transform:translateY(-50%)}.access-password__toggle:hover,.access-password__toggle:focus-visible{color:var(--cue-accent)}.access-password__toggle svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .access-submit { min-height:50px; border:0; background:var(--cue-toggle); color:var(--cue-toggle-ink); font:800 14px/1 sans-serif; cursor:pointer; }
 .access-submit:disabled { opacity:.45; cursor:not-allowed; }
 .access-link { justify-self:end; padding:0; border:0; background:transparent; color:var(--cue-muted); cursor:pointer; font:700 11px/1.2 monospace; text-decoration:underline; text-underline-offset:3px; }
