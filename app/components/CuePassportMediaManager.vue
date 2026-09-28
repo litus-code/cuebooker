@@ -15,6 +15,7 @@ const props = defineProps<{
 const emit = defineEmits<{ changed: [] }>()
 const mediaApi = usePassportMedia()
 const analytics = useAnalytics()
+const productTelemetry = useProductTelemetry()
 
 const adding = ref(false)
 const saving = ref(false)
@@ -140,6 +141,10 @@ function openAdd() {
     surface: 'passport',
     existing_media_count: props.media.length
   })
+  void productTelemetry.record('passport_media_add_started', {
+    surface: 'passport',
+    existing_media_count: props.media.length
+  }, props.workspaceId)
 }
 
 function closeAdd() {
@@ -179,6 +184,12 @@ async function createMedia() {
       has_permalink: Boolean(permalink.value.trim()),
       has_thumbnail: Boolean(thumbnailUrl.value.trim())
     })
+    void productTelemetry.record('passport_media_linked', {
+      media_type: mediaType.value,
+      source,
+      has_permalink: Boolean(permalink.value.trim()),
+      has_thumbnail: Boolean(thumbnailUrl.value.trim())
+    }, props.workspaceId)
     adding.value = false
     resetForm()
     message.value = copy.value.saved
@@ -188,6 +199,10 @@ async function createMedia() {
       media_type: mediaType.value,
       reason: error?.message === 'invalid_media_url' ? 'invalid_media_url' : 'unknown'
     })
+    void productTelemetry.record('passport_media_link_failed', {
+      media_type: mediaType.value,
+      reason: error?.message === 'invalid_media_url' ? 'invalid_media_url' : 'unknown'
+    }, props.workspaceId)
     message.value = error?.message === 'invalid_media_url' ? copy.value.invalid : copy.value.error
   } finally {
     saving.value = false
@@ -210,6 +225,11 @@ async function toggleStatus(item: CuePassportMedia) {
       from_status: item.status,
       to_status: nextStatus
     })
+    void productTelemetry.record('passport_media_status_changed', {
+      media_type: item.media_type,
+      from_status: item.status,
+      to_status: nextStatus
+    }, props.workspaceId)
     message.value = copy.value.updated
     emit('changed')
   } catch {
@@ -217,6 +237,10 @@ async function toggleStatus(item: CuePassportMedia) {
       media_type: item.media_type,
       from_status: item.status
     })
+    void productTelemetry.record('passport_media_status_change_failed', {
+      media_type: item.media_type,
+      from_status: item.status
+    }, props.workspaceId)
     message.value = copy.value.error
   } finally {
     saving.value = false
