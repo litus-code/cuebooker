@@ -29,12 +29,20 @@ const p = computed(() => locale.value === 'es' ? {
   },
   "hero": {
     "eyebrow": "PARA QUIEN MUEVE LA NOCHE",
-    "title": "Que la música siga avanzando.",
-    "accent": "El booking ya está ocurriendo.",
-    "body": "Tu próxima fecha merece toda tu atención. Reúne solicitudes, conversaciones y calendario en un mismo espacio.",
+    "title": "Todo tu booking de DJ, en un solo sitio.",
+    "accent": "Que la música siga avanzando. El booking ya está ocurriendo.",
+    "body": "Reúne solicitudes, conversaciones, disponibilidad y seguimiento sin perder fechas entre Instagram, WhatsApp, email, calendario y notas.",
     "primary": "Crear mi espacio",
     "secondary": "Ver cómo funciona",
     "note": "Hecho para DJs, managers y quienes hacen posible cada noche."
+  },
+  "problem": {
+    "label": "EL PROBLEMA",
+    "title": "Un booking no debería vivir en cinco sitios distintos.",
+    "body": "Una propuesta puede empezar en Instagram, seguir por WhatsApp, acabar en email y depender de que recuerdes mirar el calendario. Ahí se pierde contexto, seguimiento y oportunidades.",
+    "before": ["Instagram", "WhatsApp", "Email", "Calendario", "Notas"],
+    "after": "Cuebooker",
+    "solution": "Cada solicitud entra con su contexto, conversación, fecha y estado. Tú sigues tomando las decisiones; Cuebooker mantiene el proceso ordenado."
   },
   "work": {
     "label": "01 / DETRÁS DEL SET",
@@ -251,12 +259,20 @@ const p = computed(() => locale.value === 'es' ? {
   },
   "hero": {
     "eyebrow": "FOR THE PEOPLE WHO MOVE THE NIGHT",
-    "title": "Let the music keep moving.",
-    "accent": "Booking is already happening.",
-    "body": "Your next date deserves your attention. Keep requests, conversations and your calendar in one workspace.",
+    "title": "Your DJ bookings, all in one place.",
+    "accent": "Let the music keep moving. Booking is already happening.",
+    "body": "Keep requests, conversations, availability and follow-up together instead of losing dates across Instagram, WhatsApp, email, calendars and notes.",
     "primary": "Create my workspace",
     "secondary": "See how it works",
     "note": "Made for DJs, managers and the people who make every night happen."
+  },
+  "problem": {
+    "label": "THE PROBLEM",
+    "title": "A booking should not live in five different places.",
+    "body": "A proposal can start on Instagram, continue on WhatsApp, end up in email and still depend on you remembering to check the calendar. That is where context, follow-up and opportunities get lost.",
+    "before": ["Instagram", "WhatsApp", "Email", "Calendar", "Notes"],
+    "after": "Cuebooker",
+    "solution": "Every request keeps its context, conversation, date and status together. You still make the decisions; Cuebooker keeps the process organised."
   },
   "work": {
     "label": "01 / BEHIND THE SET",
@@ -679,6 +695,25 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
       </div>
     </section>
 
+    <section class="cp-problem cp-wrap" aria-labelledby="problem-title">
+      <div class="cp-problem-copy">
+        <p class="cp-kicker">{{ p.problem.label }}</p>
+        <h2 id="problem-title">{{ p.problem.title }}</h2>
+        <p>{{ p.problem.body }}</p>
+      </div>
+      <div class="cp-problem-flow" aria-label="Booking fragmented across channels becomes one workflow in Cuebooker">
+        <div class="cp-problem-fragmented">
+          <span v-for="channel in p.problem.before" :key="channel">{{ channel }}</span>
+        </div>
+        <span class="cp-problem-arrow" aria-hidden="true">→</span>
+        <div class="cp-problem-product">
+          <CueBrand />
+          <strong>{{ p.problem.after }}</strong>
+        </div>
+      </div>
+      <p class="cp-problem-solution">{{ p.problem.solution }}</p>
+    </section>
+
 
     <section tabindex="-1" id="system" class="ed-section cp-wrap">
       <div class="ed-intro"><p class="cp-kicker">{{ p.work.label }}</p><h2>{{ p.work.title }}</h2><p class="ed-deck">{{ p.work.intro }}</p><p>{{ p.work.body }}</p></div>
@@ -876,6 +911,110 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
   }
   .cp-footer-links {
     justify-content:flex-start;
+  }
+}
+
+/* Problem / solution compression: explain Cuebooker before the long-form product story. */
+.cp-problem {
+  display:grid;
+  grid-template-columns:minmax(0,.9fr) minmax(420px,1.1fr);
+  gap:clamp(36px,6vw,88px);
+  align-items:center;
+  padding-top:clamp(48px,6vw,84px);
+  padding-bottom:clamp(48px,6vw,84px);
+  border-bottom:1px solid var(--cp-line);
+}
+.cp-problem-copy h2 {
+  max-width:760px;
+  margin:14px 0 18px;
+  font-size:clamp(2.5rem,5vw,5.8rem);
+  line-height:.91;
+  letter-spacing:-.055em;
+}
+.cp-problem-copy > p:last-child {
+  max-width:680px;
+  margin:0;
+  color:var(--cp-muted);
+  font-size:clamp(1rem,1.4vw,1.18rem);
+  line-height:1.6;
+}
+.cp-problem-flow {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(160px,.7fr);
+  gap:18px;
+  align-items:center;
+}
+.cp-problem-fragmented {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+.cp-problem-fragmented span {
+  display:grid;
+  place-items:center;
+  min-height:58px;
+  padding:10px 12px;
+  border:1px solid var(--cp-line);
+  border-radius:10px;
+  background:var(--cp-panel);
+  color:var(--cp-muted);
+  font:700 10px/1 ui-monospace,monospace;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.cp-problem-fragmented span:last-child {
+  grid-column:1 / -1;
+}
+.cp-problem-arrow {
+  color:var(--cp-lime);
+  font-size:28px;
+}
+.cp-problem-product {
+  display:grid;
+  justify-items:center;
+  gap:14px;
+  min-height:190px;
+  place-content:center;
+  padding:22px;
+  border:1px solid color-mix(in srgb,var(--cp-lime) 42%,var(--cp-line));
+  border-radius:14px;
+  background:color-mix(in srgb,var(--cp-lime) 5%,var(--cp-panel));
+  box-shadow:0 20px 60px color-mix(in srgb,var(--cp-lime) 7%,transparent);
+}
+.cp-problem-product :deep(svg) {
+  width:min(145px,100%);
+  height:auto;
+}
+.cp-problem-product strong {
+  color:var(--cp-paper);
+  font:800 11px/1 ui-monospace,monospace;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+}
+.cp-problem-solution {
+  grid-column:1 / -1;
+  max-width:980px;
+  margin:0;
+  padding:18px 0 0;
+  border-top:1px solid var(--cp-line);
+  color:var(--cp-paper);
+  font-size:clamp(1rem,1.4vw,1.15rem);
+  line-height:1.55;
+}
+@media(max-width:900px) {
+  .cp-problem {
+    grid-template-columns:1fr;
+    gap:30px;
+  }
+  .cp-problem-flow {
+    grid-template-columns:1fr;
+  }
+  .cp-problem-arrow {
+    transform:rotate(90deg);
+    justify-self:center;
+  }
+  .cp-problem-product {
+    min-height:140px;
   }
 }
 
