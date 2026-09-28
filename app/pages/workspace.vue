@@ -2001,107 +2001,11 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-    <template v-if="workspaceSurfaceLoading">
-    <section v-if="settingsOpen" class="workspace-skeleton workspace-skeleton--settings" aria-busy="true" aria-live="polite">
-      <span class="sr-only">{{ copy.loading }}</span>
-      <div class="workspace-skeleton__page-head skeleton-panel" />
-      <div class="workspace-skeleton__settings-shell">
-        <i class="skeleton-panel skeleton-panel--settings-preferences" />
-        <i class="skeleton-panel skeleton-panel--settings-appearance" />
-        <i class="skeleton-panel skeleton-panel--settings-plan" />
-        <i class="skeleton-panel skeleton-panel--settings-password" />
-      </div>
-    </section>
-
-    <section v-else-if="loadingView === 'bookings'" class="workspace-skeleton workspace-skeleton--bookings" aria-busy="true" aria-live="polite">
-      <span class="sr-only">{{ copy.loading }}</span>
-      <i class="skeleton-panel workspace-skeleton__page-head" />
-      <i class="skeleton-panel skeleton-panel--booking-cue" />
-      <div class="workspace-skeleton__booking-shell">
-        <i class="skeleton-panel skeleton-panel--booking-toolbar" />
-        <div class="workspace-skeleton__booking-layout">
-          <i class="skeleton-panel skeleton-panel--booking-list-block" />
-          <i class="skeleton-panel skeleton-panel--booking-detail-block" />
-        </div>
-      </div>
-    </section>
-
-    <section v-else-if="loadingView === 'calendar'" class="workspace-skeleton workspace-skeleton--calendar" aria-busy="true" aria-live="polite">
-      <span class="sr-only">{{ copy.loading }}</span>
-      <div class="workspace-skeleton__page-head skeleton-panel" />
-      <div class="workspace-skeleton__calendar-blocks">
-        <i class="skeleton-panel skeleton-panel--calendar-month-block" />
-        <i class="skeleton-panel skeleton-panel--calendar-day-block" />
-      </div>
-    </section>
-
-    <section v-else-if="loadingView === 'history'" class="workspace-skeleton workspace-skeleton--history" aria-busy="true" aria-live="polite">
-      <span class="sr-only">{{ copy.loading }}</span>
-      <div class="workspace-skeleton__page-head skeleton-panel" />
-      <div class="workspace-skeleton__history-shell">
-        <i class="skeleton-panel skeleton-panel--history-top" />
-        <i class="skeleton-panel skeleton-panel--history-pro" />
-        <i class="skeleton-panel skeleton-panel--history-tools" />
-        <i class="skeleton-panel skeleton-panel--history-list" />
-      </div>
-    </section>
-
-    <section v-else-if="loadingView === 'profile'" class="workspace-skeleton workspace-skeleton--profile" aria-busy="true" aria-live="polite">
-      <span class="sr-only">{{ copy.loading }}</span>
-      <div class="workspace-skeleton__page-head skeleton-panel" />
-      <i class="skeleton-panel skeleton-panel--profile-publish" />
-      <div class="workspace-skeleton__profile-shell">
-        <i class="skeleton-panel skeleton-panel--profile-cover" />
-        <i class="skeleton-panel skeleton-panel--profile-about" />
-        <i class="skeleton-panel skeleton-panel--profile-sound" />
-        <i class="skeleton-panel skeleton-panel--profile-passport" />
-        <i class="skeleton-panel skeleton-panel--profile-links" />
-        <i class="skeleton-panel skeleton-panel--profile-booking" />
-      </div>
-    </section>
-
-    <section v-else-if="loadingView === 'passport'" class="workspace-skeleton workspace-skeleton--passport" aria-busy="true" aria-live="polite">
-      <span class="sr-only">{{ copy.loading }}</span>
-      <div class="workspace-skeleton__page-head skeleton-panel" />
-      <i class="skeleton-panel skeleton-panel--passport-hero" />
-      <div class="workspace-skeleton__passport-grid">
-        <i class="skeleton-panel" />
-        <i class="skeleton-panel" />
-        <i class="skeleton-panel" />
-      </div>
-      <i class="skeleton-panel skeleton-panel--passport-world" />
-    </section>
-
-    <section v-else-if="loadingView === 'cue-id'" class="workspace-skeleton workspace-skeleton--cue-id" aria-busy="true" aria-live="polite">
-      <span class="sr-only">{{ copy.loading }}</span>
-      <div class="workspace-skeleton__page-head skeleton-panel" />
-      <i class="skeleton-panel skeleton-panel--cue-stage" />
-      <div class="workspace-skeleton__cue-grid">
-        <i class="skeleton-panel" />
-        <i class="skeleton-panel" />
-        <i class="skeleton-panel" />
-      </div>
-    </section>
-
-    <section v-else-if="loadingView === 'overview'" class="workspace-skeleton workspace-skeleton--overview" aria-busy="true" aria-live="polite">
-      <span class="sr-only">{{ copy.loading }}</span>
-      <i class="skeleton-panel workspace-skeleton__page-head" />
-      <div class="workspace-skeleton__overview-stats">
-        <i v-for="index in 5" :key="`overview-stat-${index}`" class="skeleton-panel" />
-      </div>
-      <i class="skeleton-panel skeleton-panel--overview-attention" />
-      <div class="workspace-skeleton__overview-bottom">
-        <i class="skeleton-panel skeleton-panel--overview-agenda" />
-        <i class="skeleton-panel skeleton-panel--overview-cue" />
-      </div>
-    </section>
-
-    <section v-else class="workspace-loading-state" aria-busy="true" aria-live="polite">
+    <section v-if="workspaceSurfaceLoading" class="workspace-loading-state" aria-busy="true" aria-live="polite">
       <CueBrand class="workspace-loading-state__logo" decorative />
       <div class="workspace-loading-state__pulse" aria-hidden="true"><i /><i /><i /></div>
       <span class="sr-only">{{ copy.loading }}</span>
     </section>
-    </template>
 
     <section v-else-if="!artists.length" class="empty-card">
       <p class="eyebrow">{{ copy.rosterEyebrow }}</p>
