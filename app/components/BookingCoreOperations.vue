@@ -10,6 +10,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{ changed: [] }>()
 const bookingCore = useBookingCore()
+const analytics = useAnalytics()
 const { can: canEntitlement } = useCueEntitlements()
 const nextMoves = ref<NextMove[]>([])
 const holds = ref<Hold[]>([])
@@ -169,6 +170,12 @@ async function setNextMove() {
       dueAt,
       completionTrigger
     })
+    if (completionTrigger === 'inbound_activity') {
+      analytics.track('automation_created', {
+        automation_type: 'complete_next_move_on_inbound_activity',
+        has_due_at: Boolean(dueAt)
+      })
+    }
     nextLabel.value = ''
     nextDue.value = ''
     autoCompleteOnReply.value = false
@@ -185,7 +192,14 @@ async function completeNextMove() {
   if (!activeNextMove.value) return
   saving.value = true
   try {
+    const completionTrigger = activeNextMove.value.completion_trigger
     await bookingCore.completeNextMove(props.workspaceId, activeNextMove.value.id)
+    if (completionTrigger === 'inbound_activity') {
+      analytics.track('automation_completed', {
+        automation_type: 'complete_next_move_on_inbound_activity',
+        completion_source: 'manual'
+      })
+    }
     await load()
     emit('changed')
   } catch (error: any) {
