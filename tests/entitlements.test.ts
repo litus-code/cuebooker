@@ -26,11 +26,12 @@ test('Free keeps the complete basic Cuebooker loop available', () => {
   }
 })
 
-test('Artist Pro owns advanced artist capabilities without agency workspace rights', () => {
-  assert.equal(hasCueEntitlement('artist_pro', 'passport.media'), true)
-  assert.equal(hasCueEntitlement('artist_pro', 'automation.advanced'), true)
+test('Beta opens media, Smart Capture and automation without agency workspace rights', () => {
+  assert.equal(hasCueEntitlement('free', 'passport.media'), true)
+  assert.equal(hasCueEntitlement('free', 'capture.smart_extended'), true)
+  assert.equal(hasCueEntitlement('free', 'automation.advanced'), true)
   assert.equal(hasCueEntitlement('artist_pro', 'workspace.multi_artist'), false)
-  assert.equal(cuePlanBadge('passport.media'), 'PRO')
+  assert.equal(cuePlanBadge('passport.media'), null)
 })
 
 test('Agency capabilities are labelled independently from Artist Pro', () => {
@@ -39,9 +40,11 @@ test('Agency capabilities are labelled independently from Artist Pro', () => {
   assert.equal(hasCueEntitlement('agency', 'workspace.multi_artist'), true)
 })
 
-test('Free capacity limits remain separate from capability access', () => {
+test('Beta capacity limits remain separate from capability access', () => {
   assert.equal(cuePlanLimit('free', 'activeBookings'), 5)
   assert.equal(cuePlanLimit('free', 'smartCaptureMonthly'), 10)
+  assert.equal(cuePlanLimit('free', 'passportMediaItems'), 10)
+  assert.equal(cuePlanLimit('artist_pro', 'passportMediaItems'), 100)
   assert.equal(cuePlanLimit('artist_pro', 'activeBookings'), null)
 })
 
@@ -69,8 +72,8 @@ test('Capacity state reports reached limits without mutating entitlement access'
   })
 })
 
-test('Entitlement overrides can simulate a feature without changing plan definitions', () => {
-  assert.equal(resolveCueEntitlement('free', 'passport.media'), false)
-  assert.equal(resolveCueEntitlement('free', 'passport.media', { 'passport.media': true }), true)
+test('Entitlement overrides can still disable or simulate a feature without changing plan definitions', () => {
+  assert.equal(resolveCueEntitlement('free', 'passport.media'), true)
+  assert.equal(resolveCueEntitlement('free', 'passport.media', { 'passport.media': false }), false)
   assert.equal(resolveCueEntitlement('artist_pro', 'passport.media', { 'passport.media': false }), false)
 })
