@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CoreBooking, Hold } from '../domain/bookingCore'
+import type { Contact, CoreBooking, Hold } from '../domain/bookingCore'
 import type { WorkspaceActivityHistoryRow } from '../services/bookingCoreApi'
 
 type DemoView = 'overview' | 'bookings' | 'calendar' | 'history' | 'roster' | 'profile' | 'passport' | 'cue-id' | 'settings'
@@ -40,7 +40,8 @@ const demoBookings = ref<CoreBooking[]>([
 ])
 const demoActivities: WorkspaceActivityHistoryRow[] = [
   { id: 'demo-activity-a', workspace_id: 'preview-agency', booking_id: 'demo-booking-a', type: 'email', direction: 'inbound', contact_id: 'demo-contact-a', actor_user_id: null, body: 'Nueva propuesta para Mara Velt.', metadata: {}, visibility: 'workspace', occurred_at: now, created_by: 'preview', created_at: now, bookings: { id: 'demo-booking-a', artist_id: 'demo-mara', event_name: 'Nave Industrial', venue_name: 'Sala 04', city: 'Barcelona' } },
-  { id: 'demo-activity-b', workspace_id: 'preview-agency', booking_id: 'demo-booking-b', type: 'status_change', direction: 'internal', contact_id: null, actor_user_id: null, body: 'Booking confirmado para Nox Arda.', metadata: {}, visibility: 'workspace', occurred_at: now, created_by: 'preview', created_at: now, bookings: { id: 'demo-booking-b', artist_id: 'demo-nox', event_name: 'Subsuelo', venue_name: 'Club Norte', city: 'Madrid' } }
+  { id: 'demo-activity-b', workspace_id: 'preview-agency', booking_id: 'demo-booking-b', type: 'status_change', direction: 'internal', contact_id: null, actor_user_id: null, body: 'Booking confirmado para Nox Arda.', metadata: {}, visibility: 'workspace', occurred_at: now, created_by: 'preview', created_at: now, bookings: { id: 'demo-booking-b', artist_id: 'demo-nox', event_name: 'Subsuelo', venue_name: 'Club Norte', city: 'Madrid' } },
+  { id: 'demo-activity-c', workspace_id: 'preview-agency', booking_id: 'demo-booking-d', type: 'whatsapp', direction: 'inbound', contact_id: 'demo-contact-d', actor_user_id: null, body: 'Nos interesa Nox para el día 18. ¿Podéis reservar la fecha mientras cerramos condiciones?', metadata: {}, visibility: 'workspace', occurred_at: now, created_by: 'preview', created_at: now, bookings: { id: 'demo-booking-d', artist_id: 'demo-nox', event_name: 'Sesión de madrugada', venue_name: 'La Nave', city: 'Madrid' } }
 ]
 const demoHolds: Array<Hold & { bookings: { artist_id: string } }> = [
   { id: 'demo-hold', workspace_id: 'preview-agency', booking_id: 'demo-booking-d', event_date: day(18), starts_at: null, ends_at: null, event_timezone: 'Europe/Madrid', expires_at: null, priority: null, status: 'active', released_at: null, converted_at: null, created_by: 'preview', created_at: now, updated_at: now, bookings: { artist_id: 'demo-nox' } }
@@ -49,6 +50,9 @@ const demoData = { bookings: demoBookings.value, activities: demoActivities, hol
   { id: 'demo-contact-a', name: 'Promoter / Sala 04' }, { id: 'demo-contact-b', name: 'Programación / Club Norte' },
   { id: 'demo-contact-c', name: 'Producción / Warehouse 17' }, { id: 'demo-contact-d', name: 'Promoter / La Nave' }
 ], counterparties: [] }
+const demoContacts: Contact[] = demoData.contacts.map(item => ({ id: item.id, workspace_id: 'preview-agency', name: item.name,
+  email: null, phone: null, role_label: null, notes: null, created_by: 'preview', created_at: now, updated_at: now }))
+const demoInboxData = { contacts: demoContacts, counterparties: [], activities: demoActivities, holds: demoHolds }
 const focusedBooking = computed(() => demoBookings.value.find(item => item.id === focusBookingId.value))
 const nav = computed<Array<{ id: DemoView; label: string }>>(() => [
   { id: 'overview', label: 'Overview' }, { id: 'bookings', label: 'Bookings' }, { id: 'calendar', label: 'Calendar' },
@@ -114,7 +118,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
     <div class="agency-preview__notice"><strong>PREVIEW AGENCIA / DATOS FICTICIOS</strong><span>{{ locale === 'es' ? 'Puedes recorrer el workspace sin iniciar sesión. Los cambios se pierden al recargar.' : 'Explore the workspace without signing in. Changes reset on reload.' }}</span></div>
 
     <AgencyWorkspace
-      v-if="['overview', 'bookings', 'calendar', 'history', 'roster'].includes(view)"
+      v-if="!focusedBooking && ['overview', 'bookings', 'calendar', 'history', 'roster'].includes(view)"
       :key="selectedArtistId || 'all'" :workspace-id="'preview-agency'" agency-name="CUE Test Agency"
       :artists="view === 'roster' || !selectedArtist ? artists : [selectedArtist]"
       :view="view as 'overview' | 'bookings' | 'calendar' | 'history' | 'roster'"
@@ -124,6 +128,11 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
       @navigate="changeView" @select-artist="(id, target) => { chooseArtist(id); changeView(target) }"
       @open-booking="openBooking" @retire-artist="setRosterActive($event, false)" @restore-artist="setRosterActive($event, true)"
     />
+
+    <section v-else-if="focusedBooking && view === 'bookings'" class="agency-preview__inbox">
+      <div class="agency-preview__inbox-heading"><div><span>AGENCIA / {{ selectedArtist?.stage_name }}</span><h1>{{ locale === 'es' ? 'Seguimiento del booking.' : 'Booking follow-up.' }}</h1><p>{{ locale === 'es' ? 'La gestión individual conserva el mismo panel de Bookings que usa un DJ.' : 'Individual work uses the same Bookings panel as a DJ.' }}</p></div><button type="button" @click="chooseArtist('')">← {{ locale === 'es' ? 'Todos los artistas' : 'All artists' }}</button></div>
+      <BookingCoreInbox workspace-id="preview-agency" :bookings="demoBookings.filter(item => item.artist_id === selectedArtistId)" :locale="locale" :focus-booking-id="focusBookingId" :demo-data="demoInboxData" @booking-opened="focusBookingId = $event" @calendar-requested="changeView('calendar')" />
+    </section>
 
     <section v-else class="agency-preview__detail">
       <span>{{ selectedArtist ? `AGENCIA / ${selectedArtist.stage_name}` : 'AGENCIA / CUE TEST AGENCY' }}</span>
@@ -135,14 +144,6 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
       <div class="agency-preview__read-only"><span>PREVIEW / {{ locale === 'es' ? 'SIN EDICIÓN REAL' : 'NO LIVE EDITING' }}</span><p>{{ locale === 'es' ? 'Esta sección muestra el contexto y la navegación. Su editor real requiere una cuenta Agency.' : 'This section shows context and navigation. The live editor requires an Agency account.' }}</p></div>
     </section>
 
-    <aside v-if="focusedBooking && view === 'bookings'" class="agency-preview__booking" aria-label="Booking seleccionado">
-      <button type="button" @click="focusBookingId = ''">← {{ locale === 'es' ? 'Volver a bookings' : 'Back to bookings' }}</button>
-      <span>BOOKING / {{ selectedArtist?.stage_name }}</span><h2>{{ focusedBooking.event_name }}</h2>
-      <p>{{ focusedBooking.venue_name }} · {{ focusedBooking.city }} · {{ focusedBooking.event_date }}</p>
-      <p>{{ locale === 'es' ? 'Estado' : 'Status' }}: {{ focusedBooking.status.replaceAll('_', ' ') }}</p>
-      <small>{{ locale === 'es' ? 'Detalle ilustrativo, sin contacto real ni acciones de envío.' : 'Illustrative detail, without real contacts or sending actions.' }}</small>
-      <button type="button" @click="chooseArtist('')">{{ locale === 'es' ? 'Volver a todos los artistas' : 'Back to all artists' }}</button>
-    </aside>
   </main>
 </template>
 
@@ -151,10 +152,11 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 .agency-preview__header{position:sticky;top:0;z-index:25;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:18px;margin-inline:calc(-1 * clamp(16px,3vw,32px));padding:9px clamp(16px,3vw,32px);border-bottom:1px solid var(--cue-border);background:var(--cue-bg)}
 .agency-preview__brand{display:block;width:130px;height:42px}.agency-preview__header nav{display:flex;gap:3px;overflow:auto;min-width:0;padding:3px;border:1px solid var(--cue-border);border-radius:30px;background:var(--cue-surface);scrollbar-width:none}
 .agency-preview__header nav button{flex:none;position:relative;padding:10px 12px;border:0;background:transparent;color:var(--cue-muted);font-size:12px;font-weight:700;cursor:pointer}.agency-preview__header nav button[aria-current=page]{color:var(--cue-accent)}.agency-preview__header nav button[aria-current=page]:before{position:absolute;left:2px;top:8px;bottom:8px;width:2px;background:var(--cue-accent);content:''}
-.agency-preview__selector{display:grid;gap:4px;min-width:190px}.agency-preview__selector span,.agency-preview__notice strong,.agency-preview__detail>span,.agency-preview__booking>span,.agency-preview__read-only span{font:800 10px/1.4 monospace;letter-spacing:.12em;color:var(--cue-accent)}.agency-preview__selector select{min-width:0;padding:8px;border:1px solid var(--cue-border);background:var(--cue-surface);color:var(--cue-text)}
+.agency-preview__selector{display:grid;gap:4px;min-width:190px}.agency-preview__selector span,.agency-preview__notice strong,.agency-preview__detail>span,.agency-preview__inbox-heading span,.agency-preview__read-only span{font:800 10px/1.4 monospace;letter-spacing:.12em;color:var(--cue-accent)}.agency-preview__selector select{min-width:0;padding:8px;border:1px solid var(--cue-border);background:var(--cue-surface);color:var(--cue-text)}
 .agency-preview__notice{display:flex;gap:18px;align-items:center;margin-top:20px;padding:12px 16px;border-left:3px solid var(--cue-accent);background:color-mix(in srgb,var(--cue-accent) 7%,var(--cue-bg));font-size:12px}.agency-preview__notice span{color:var(--cue-muted)}
 .agency-preview__detail{max-width:1440px;margin:40px auto;padding:clamp(24px,5vw,60px);border:1px solid var(--cue-border);background:var(--cue-surface)}.agency-preview__detail h1{margin:12px 0;font-size:clamp(2.7rem,7vw,6rem);letter-spacing:-.06em;text-transform:uppercase}.agency-preview__detail>p{max-width:650px;color:var(--cue-muted);line-height:1.6}.agency-preview__read-only{margin-top:50px;padding:24px;border-top:1px solid var(--cue-border)}.agency-preview__read-only p{color:var(--cue-muted)}
-.agency-preview__booking{position:fixed;inset:auto 20px 20px auto;z-index:35;width:min(400px,calc(100vw - 40px));padding:25px;border:1px solid var(--cue-accent);background:var(--cue-surface);box-shadow:0 20px 70px #0009}.agency-preview__booking h2{font-size:2rem}.agency-preview__booking p,.agency-preview__booking small{color:var(--cue-muted)}.agency-preview__booking button{display:block;margin:15px 0 0;padding:10px;border:1px solid var(--cue-border);background:transparent;color:var(--cue-text);cursor:pointer}
+.agency-preview__inbox{max-width:1440px;margin:32px auto}.agency-preview__inbox-heading{display:flex;justify-content:space-between;align-items:end;gap:20px}.agency-preview__inbox-heading h1{margin:8px 0;font-size:clamp(2.3rem,5vw,5rem);line-height:1;text-transform:uppercase;letter-spacing:-.05em}.agency-preview__inbox-heading p{margin:0;color:var(--cue-muted);font-size:12px}.agency-preview__inbox-heading button{flex:none;min-height:40px;padding:8px 14px;border:1px solid var(--cue-border);background:var(--cue-surface);color:var(--cue-accent);cursor:pointer}
 @media(max-width:850px){.agency-preview__header{grid-template-columns:1fr auto}.agency-preview__header nav{grid-column:1/-1;grid-row:2}.agency-preview__selector{min-width:150px}.agency-preview__notice{align-items:start;flex-direction:column;gap:5px}}
+@media(max-width:760px){.agency-preview__inbox-heading{align-items:start;flex-direction:column}.agency-preview__inbox-heading h1{font-size:2.3rem}}
 @media(max-width:390px){.agency-preview__brand{width:100px}.agency-preview__selector{min-width:130px}.agency-preview__header{gap:6px}}
 </style>

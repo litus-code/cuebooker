@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { Activity, Contact, CoreBooking, Counterparty, CoreBookingStatus } from '../domain/bookingCore'
-import type { BookingEmailMessage } from '../services/bookingCoreApi'
+import type { Activity, Contact, CoreBooking, Counterparty, CoreBookingStatus, Hold } from '../domain/bookingCore'
+import type { BookingEmailMessage, WorkspaceActivityHistoryRow } from '../services/bookingCoreApi'
 import { buildFollowUpDraft, shouldSuggestFollowUp } from '../services/followUpDraft'
 import { buildFailedEmailRetryDraft } from '../services/emailRetryDraft'
 
@@ -9,6 +9,7 @@ const props = defineProps<{
   bookings: CoreBooking[]
   locale: 'es' | 'en'
   focusBookingId?: string
+  demoData?: { contacts: Contact[]; counterparties: Counterparty[]; activities: WorkspaceActivityHistoryRow[]; holds: Array<Hold & { bookings: { artist_id: string } }> }
 }>()
 
 const emit = defineEmits<{ operationsChanged: []; cueRequested: []; bookingOpened: [bookingId: string]; calendarRequested: [date: string] }>()
@@ -34,9 +35,63 @@ const archiveView = ref<'inbox' | 'archived'>('inbox')
 const realSearch = ref('')
 const realStatusFilter = ref<'all' | CoreBookingStatus>('all')
 const visibleLimit = ref(10)
+const demoRevision = ref(0)
+const demoText = ref('')
+const demoChannel = ref<'note' | 'phone' | 'whatsapp' | 'instagram'>('note')
+const demoMoves = ref<Record<string, string>>({})
+const demoMoveText = ref('')
+const demoHolds = ref<Record<string, boolean>>(Object.fromEntries((props.demoData?.holds || []).filter(item => item.status === 'active').map(item => [item.booking_id, true])))
+const demoActivities = computed(() => { void demoRevision.value; return props.demoData?.activities || [] })
+const activeDemoMove = computed(() => selectedBooking.value ? demoMoves.value[selectedBooking.value.id] : '')
+const activeDemoHold = computed(() => selectedBooking.value ? Boolean(demoHolds.value[selectedBooking.value.id]) : false)
+
+function addDemoActivity(type: Activity['type'], body: string, direction: Activity['direction'] = 'internal') {
+  const booking = selectedBooking.value
+  if (!props.demoData || !booking || !body.trim()) return
+  const now = new Date().toISOString()
+  props.demoData.activities.push({ id: `preview-${props.demoData.activities.length + 1}`, workspace_id: props.workspaceId, booking_id: booking.id,
+    type, direction, contact_id: booking.primary_contact_id, actor_user_id: null, body: body.trim(), metadata: {},
+    visibility: 'workspace', occurred_at: now, created_by: 'preview', created_at: now,
+    bookings: { id: booking.id, artist_id: booking.artist_id, event_name: booking.event_name, venue_name: booking.venue_name, city: booking.city } })
+  demoRevision.value++
+  activities.value = demoActivities.value.filter(item => item.booking_id === booking.id)
+}
+function saveDemoNote() {
+  if (!demoText.value.trim()) return
+  addDemoActivity(demoChannel.value, demoText.value)
+  if (selectedBooking.value?.status === 'new') selectedBooking.value.status = 'in_conversation'
+  demoText.value = ''
+}
+function saveDemoMove() {
+  if (!selectedBooking.value || !demoMoveText.value.trim()) return
+  demoMoves.value[selectedBooking.value.id] = demoMoveText.value.trim()
+  addDemoActivity('next_move_created', `Próxima acción: ${demoMoveText.value.trim()}`)
+  demoMoveText.value = ''
+}
+function completeDemoMove() {
+  if (!selectedBooking.value || !activeDemoMove.value) return
+  addDemoActivity('next_move_completed', `Completada: ${activeDemoMove.value}`)
+  delete demoMoves.value[selectedBooking.value.id]
+}
+function toggleDemoHold() {
+  const booking = selectedBooking.value
+  if (!booking?.event_date) return
+  const next = !activeDemoHold.value
+  demoHolds.value[booking.id] = next
+  const existing = props.demoData?.holds.find(item => item.booking_id === booking.id && item.status === 'active')
+  if (existing && !next) existing.status = 'released'
+  else if (next && props.demoData) {
+    const now = new Date().toISOString()
+    props.demoData.holds.push({ id: `preview-hold-${booking.id}-${now}`, workspace_id: props.workspaceId, booking_id: booking.id,
+      event_date: booking.event_date, starts_at: null, ends_at: null, event_timezone: booking.event_timezone,
+      expires_at: null, priority: null, status: 'active', released_at: null, converted_at: null,
+      created_by: 'preview', created_at: now, updated_at: now, bookings: { artist_id: booking.artist_id } })
+  }
+  addDemoActivity(next ? 'hold_created' : 'hold_released', next ? 'Fecha reservada provisionalmente.' : 'Fecha liberada.')
+}
 
 const copy = computed(() => props.locale === 'es' ? {
-  eyebrow: 'BOOKINGS / REALES',
+  eyebrow: props.demoData ? 'BOOKINGS / ARTISTA · PREVIEW' : 'BOOKINGS / REALES',
   title: 'Bookings capturados',
   empty: 'Todavía no hay bookings reales.', emptyTitle: 'Tu primer booking empieza con un CUE.', emptyBody: 'Si te llaman, te escriben o aparece una oportunidad, guárdala en segundos. No necesitas tener todos los datos.', emptyAction: '+ CUE',
   date: 'Fecha', venue: 'Sala / entidad', contact: 'Contacto', offer: 'Oferta', source: 'Origen', status: 'Estado', activity: 'Conversación', details: 'Datos del booking',
@@ -46,7 +101,7 @@ const copy = computed(() => props.locale === 'es' ? {
   noDate: 'Sin fecha', noVenue: 'Sin sala definida', noContact: 'Sin contacto', noOffer: 'Sin oferta',
   inbox: 'Inbox', archived: 'Archivados', archive: 'Archivar', restore: 'Restaurar', archiveHint: 'Inbox reúne todo lo que todavía quieres tener a mano, esté en curso o ya tenga una decisión. Archivar lo saca de la operativa diaria sin borrar su historial.', archivedReadOnly: 'Booking archivado. La traza se conserva en modo lectura.'
 } : {
-  eyebrow: 'BOOKINGS / REAL',
+  eyebrow: props.demoData ? 'BOOKINGS / ARTIST · PREVIEW' : 'BOOKINGS / REAL',
   title: 'Captured bookings',
   empty: 'No real bookings yet.', emptyTitle: 'Your first booking starts with a CUE.', emptyBody: 'If someone calls, messages you or an opportunity appears, save it in seconds. You do not need every detail yet.', emptyAction: '+ CUE',
   date: 'Date', venue: 'Venue / entity', contact: 'Contact', offer: 'Offer', source: 'Source', status: 'Status', activity: 'Conversation', details: 'Booking details',
@@ -158,6 +213,11 @@ watch(visibleBookings, value => {
 
 watch(() => props.workspaceId, async value => {
   if (!value) return
+  if (props.demoData) {
+    contacts.value = props.demoData.contacts
+    counterparties.value = props.demoData.counterparties
+    return
+  }
   loadingMeta.value = true
   try {
     const [contactRows, counterpartyRows] = await Promise.all([
@@ -193,6 +253,11 @@ async function scrollThreadToLatest() {
 
 async function loadActivity(options: { silent?: boolean } = {}) {
   const bookingId = selectedBooking.value?.id
+  if (props.demoData) {
+    activities.value = demoActivities.value.filter(item => item.booking_id === bookingId)
+    emailMessages.value = []
+    return
+  }
   const keepPinnedToLatest = !options.silent || threadIsNearBottom()
   const previousActivitySignature = options.silent ? activitySyncSignature(activities.value) : ''
   const previousEmailSignature = options.silent ? emailSyncSignature(emailMessages.value) : ''
@@ -268,7 +333,7 @@ watch(() => selectedBooking.value?.id, () => loadActivity(), { immediate: true }
 let activityPollTimer: ReturnType<typeof setInterval> | null = null
 
 function refreshExternalActivity() {
-  if (!import.meta.client || document.visibilityState !== 'visible') return
+  if (props.demoData || !import.meta.client || document.visibilityState !== 'visible') return
   void loadActivity({ silent: true })
 }
 
@@ -335,6 +400,17 @@ async function confirmDecision() {
     return
   }
 
+  if (props.demoData) {
+    booking.status = status
+    if (status === 'confirmed') {
+      demoHolds.value[booking.id] = false
+      for (const hold of props.demoData.holds.filter(item => item.booking_id === booking.id && item.status === 'active')) hold.status = 'converted'
+    }
+    addDemoActivity('status_change', `Estado: ${status.replaceAll('_', ' ')}`)
+    pendingDecision.value = null
+    return
+  }
+
   updatingStatus.value = true
   decisionError.value = ''
   try {
@@ -368,6 +444,11 @@ async function confirmDecision() {
 async function toggleArchive() {
   if (!selectedBooking.value) return
   const nextArchived = !selectedBooking.value.archived_at
+  if (props.demoData) {
+    selectedBooking.value.archived_at = nextArchived ? new Date().toISOString() : null
+    archiveView.value = nextArchived ? 'archived' : 'inbox'
+    return
+  }
   if (nextArchived && !window.confirm(props.locale === 'es'
     ? 'Se archivará el booking y se cerrarán su Next Move y Holds activos. La Activity se conserva.'
     : 'This booking will be archived and its active Next Move and Holds will be closed. Activity is preserved.')) return
@@ -468,7 +549,8 @@ async function selectBooking(bookingId: string) {
         <strong>{{ copy.title }}</strong>
       </div>
       <div class="core-inbox__heading-meta">
-        <CueCapacityIndicator
+        <span v-if="demoData" class="core-inbox__demo-count">{{ locale === 'es' ? 'Procesos activos' : 'Active processes' }} · {{ activeBookingCount }}</span>
+        <CueCapacityIndicator v-else
           :used="activeBookingCount"
           limit-key="activeBookings"
           upgrade-entitlement="booking.unlimited"
@@ -503,7 +585,7 @@ async function selectBooking(bookingId: string) {
     </div>
 
     <CueUpgradePrompt
-      v-if="activeBookingCapacity.reached"
+      v-if="!demoData && activeBookingCapacity.reached"
       entitlement="booking.unlimited"
       :title="locale === 'es' ? 'Capacidad Free alcanzada' : 'Free capacity reached'"
       :description="locale === 'es'
@@ -556,7 +638,7 @@ async function selectBooking(bookingId: string) {
         </nav>
 
         <BookingCoreConflictNotice
-          v-if="!selectedBooking.archived_at && !['confirmed','rejected','cancelled'].includes(selectedBooking.status)"
+          v-if="!demoData && !selectedBooking.archived_at && !['confirmed','rejected','cancelled'].includes(selectedBooking.status)"
           class="core-inbox__conflict-predecision"
           :workspace-id="workspaceId"
           :booking="selectedBooking"
@@ -600,7 +682,7 @@ async function selectBooking(bookingId: string) {
                 {{ locale === 'es' ? 'Ver en calendario' : 'View in calendar' }}
               </button>
               <BookingCoreEditor
-                v-if="!selectedBooking.archived_at"
+                v-if="!demoData && !selectedBooking.archived_at"
                 :workspace-id="workspaceId"
                 :booking="selectedBooking"
                 :locale="locale"
@@ -615,7 +697,7 @@ async function selectBooking(bookingId: string) {
               <div class="core-inbox__contact-head">
                 <dt>{{ copy.contact }}</dt>
                 <BookingContactEditor
-                  v-if="selectedContact && !selectedBooking.archived_at"
+                  v-if="!demoData && selectedContact && !selectedBooking.archived_at"
                   :workspace-id="workspaceId"
                   :contact="selectedContact"
                   :locale="locale"
@@ -666,9 +748,16 @@ async function selectBooking(bookingId: string) {
             </article>
           </div>
 
+          <form v-if="demoData && !selectedBooking.archived_at" class="core-inbox__demo-composer" @submit.prevent="saveDemoNote">
+            <label>{{ locale === 'es' ? 'Registrar interacción' : 'Log an interaction' }}
+              <select v-model="demoChannel"><option value="note">Nota</option><option value="phone">Llamada</option><option value="whatsapp">WhatsApp</option><option value="instagram">Instagram</option></select>
+            </label>
+            <textarea v-model="demoText" :placeholder="locale === 'es' ? 'Qué ha pasado con este booking…' : 'What happened with this booking…'" rows="2" />
+            <button type="submit" :disabled="!demoText.trim()">{{ locale === 'es' ? 'Guardar en la conversación' : 'Save in conversation' }}</button>
+          </form>
           <BookingActivityComposer
             id="core-inbox-activity-composer"
-            v-if="!selectedBooking.archived_at"
+            v-if="!demoData && !selectedBooking.archived_at"
             :key="`activity-${selectedBooking.id}`"
             :workspace-id="workspaceId"
             :booking="selectedBooking"
@@ -679,9 +768,18 @@ async function selectBooking(bookingId: string) {
           />
         </section>
 
+        <section v-if="demoData && !selectedBooking.archived_at && !['confirmed','rejected','cancelled'].includes(selectedBooking.status)" id="core-inbox-operations" class="core-inbox__demo-operations">
+          <h4>{{ locale === 'es' ? 'SEGUIMIENTO' : 'FOLLOW-UP' }}</h4>
+          <div><strong>{{ locale === 'es' ? 'Próxima acción' : 'Next action' }}</strong>
+            <p v-if="activeDemoMove">{{ activeDemoMove }} <button type="button" @click="completeDemoMove">{{ locale === 'es' ? 'Hecho' : 'Done' }}</button></p>
+            <form v-else @submit.prevent="saveDemoMove"><input v-model="demoMoveText" :placeholder="locale === 'es' ? 'Ej. Confirmar horario con la sala' : 'E.g. Confirm schedule with venue'"><button type="submit" :disabled="!demoMoveText.trim()">{{ locale === 'es' ? 'Guardar próxima acción' : 'Save next action' }}</button></form>
+          </div>
+          <div><strong>{{ locale === 'es' ? 'Reservar fecha (hold)' : 'Reserve date (hold)' }}</strong><p>{{ selectedBooking.event_date ? formatDate(selectedBooking.event_date) : copy.noDate }} · {{ activeDemoHold ? 'Hold activo' : (locale === 'es' ? 'Sin hold' : 'No hold') }}</p><button type="button" :disabled="!selectedBooking.event_date" @click="toggleDemoHold">{{ activeDemoHold ? (locale === 'es' ? 'Liberar fecha' : 'Release date') : (locale === 'es' ? 'Reservar fecha' : 'Reserve date') }}</button></div>
+          <small>{{ locale === 'es' ? 'Simulación local. No envía mensajes ni modifica bookings reales.' : 'Local simulation. No messages are sent or real bookings changed.' }}</small>
+        </section>
         <BookingCoreOperations
           id="core-inbox-operations"
-          v-if="!selectedBooking.archived_at && !['confirmed','rejected','cancelled'].includes(selectedBooking.status)"
+          v-if="!demoData && !selectedBooking.archived_at && !['confirmed','rejected','cancelled'].includes(selectedBooking.status)"
           :key="`operations-${selectedBooking.id}`"
           :workspace-id="workspaceId"
           :booking="selectedBooking"
@@ -690,7 +788,7 @@ async function selectBooking(bookingId: string) {
           @changed="handleOperationsChanged"
         />
 
-        <BookingRelationshipMemory
+        <BookingRelationshipMemory v-if="!demoData"
           :workspace-id="workspaceId"
           :booking="selectedBooking"
           :bookings="bookings"
@@ -762,6 +860,21 @@ async function selectBooking(bookingId: string) {
 .core-inbox__heading span { display:block; color:var(--cue-accent); font:700 9px/1.2 monospace; letter-spacing:.11em; }
 .core-inbox__heading strong { display:block; margin-top:4px; font-size:17px; }
 .core-inbox__heading b { min-width:34px; text-align:center; font:700 12px monospace; color:var(--cue-accent); }
+.core-inbox__demo-count{color:var(--cue-muted);font:700 9px monospace;text-transform:uppercase}
+.core-inbox__demo-composer{display:grid;gap:10px;padding:14px 0;border-top:1px solid var(--cue-border)}
+.core-inbox__demo-composer label{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--cue-muted);font:800 9px monospace;text-transform:uppercase}
+.core-inbox__demo-composer select,.core-inbox__demo-composer textarea,.core-inbox__demo-operations input{min-width:0;padding:10px;border:1px solid var(--cue-border);background:var(--cue-raised);color:var(--cue-text);font:inherit}
+.core-inbox__demo-composer textarea{width:100%;resize:vertical;font-size:12px}
+.core-inbox__demo-composer button,.core-inbox__demo-operations button{min-height:36px;padding:7px 12px;border:1px solid var(--cue-accent);background:transparent;color:var(--cue-accent);cursor:pointer;font:800 9px monospace;text-transform:uppercase}
+.core-inbox__demo-composer button:disabled,.core-inbox__demo-operations button:disabled{opacity:.4;cursor:default}
+.core-inbox__demo-composer>button{justify-self:start}
+.core-inbox__demo-operations{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin-top:18px;padding:18px;border:1px solid var(--cue-border);background:var(--cue-raised)}
+.core-inbox__demo-operations h4,.core-inbox__demo-operations>small{grid-column:1/-1;margin:0}
+.core-inbox__demo-operations h4{color:var(--cue-accent);font:800 10px monospace;letter-spacing:.1em}
+.core-inbox__demo-operations>div{min-width:0;padding-top:12px;border-top:1px solid var(--cue-border)}
+.core-inbox__demo-operations strong{font-size:12px}.core-inbox__demo-operations p,.core-inbox__demo-operations>small{color:var(--cue-muted);font-size:11px}
+.core-inbox__demo-operations form{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.core-inbox__demo-operations input{flex:1 1 190px}
+@media(max-width:760px){.core-inbox__demo-operations{grid-template-columns:1fr}}
 .core-inbox > :deep(.cue-upgrade-prompt){margin:10px var(--cue-space-4) 0}
 
 .core-inbox__zero { display:grid; justify-items:start; gap:8px; padding:24px 18px 28px; }

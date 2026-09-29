@@ -6,9 +6,9 @@ Total output lines: 10325
 ## 29 September 2026: Agency visual review without login
 
 - Branch: `feature/agency-multi-artist-beta`, PR #96, based on the latest `main` through merge commit `633d37994ed22e23ad997958fb5f61d6a203be52`. The PR head after this preview update is recorded on GitHub. No production deployment.
-- `/preview-agency` is a public visual demo on the PR preview hostname only. It reuses `AgencyWorkspace` with in-memory fixtures for two fictional artists. Global Overview, Roster, Bookings, Calendar and Activity can be inspected without an account. Context switching and demo roster mutations stay in browser memory. Booking details are illustrative. Artist Profile, Passport and CUE ID show context and an explicit read-only notice; their real editors still require Agency authentication.
+- `/preview-agency` is a public visual demo on the PR preview hostname only. It reuses `AgencyWorkspace` with in-memory fixtures for two fictional artists. Global Overview, Roster, Bookings, Calendar and Activity can be inspected without an account. Opening a booking enters the actual `BookingCoreInbox` layout in artist context. Its conversation log, next action, hold and decision actions use local fixture data and reset on reload; real email sending and database writes remain disabled. Artist Profile, Passport and CUE ID show context and an explicit read-only notice; their real editors still require Agency authentication.
 - The preview branch builds with `NUXT_PUBLIC_APP_ENV=staging`. The route also checks the `pr-*.cuebooker-staging.pages.dev` hostname in the browser, uses `noindex,nofollow` and never makes Supabase calls. `/workspace` authentication and RLS remain unchanged. No migration or Edge Function changes in this block.
-- Validated locally: 320 tests, staging-mode static generation (36 routes) and diff checks. Visual desktop/mobile review on the deployed URL remains the next step. Authenticated Agency A/B end-to-end smoke is still separate and pending.
+- Validated locally: 321 tests, staging-mode static generation (36 routes) and diff checks. Desktop preview navigation was reviewed before the booking-detail addition. The new detail and mobile view need a fresh PR preview check. Authenticated Agency A/B end-to-end smoke is still separate and pending.
 
 ## 28 September 2026: Agency multi-artist beta PR preview
 
