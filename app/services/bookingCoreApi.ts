@@ -79,6 +79,15 @@ function currency(value: string | null | undefined) {
 export function createBookingCoreApi(options: BookingCoreApiOptions) {
   const baseUrl = options.baseUrl.replace(/\/$/, '')
 
+  async function collectRosterPages<T>(fetchPage: (offset: number, limit: number) => Promise<T[]>, pageSize = 500) {
+    const all: T[] = []
+    for (;;) {
+      const rows = await fetchPage(all.length, pageSize)
+      all.push(...rows)
+      if (rows.length < pageSize) return all
+    }
+  }
+
   function authHeaders(prefer?: string) {
     const token = options.accessToken()
     if (!token) throw new Error('authentication_required')
@@ -267,12 +276,14 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     })
   }
 
-  async function listRosterBookings(workspaceId: string, offset = 0, limit = 100, artistId?: string) {
+  async function listRosterBookings(workspaceId: string, offset = 0, limit = 100, artistId?: string, artistIds?: string[]) {
+    if (artistIds && !artistIds.length) return [] as CoreBooking[]
     return $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/bookings`, {
       headers: authHeaders(),
       query: {
         workspace_id: `eq.${workspaceId}`,
         ...(artistId ? { artist_id: `eq.${artistId}` } : {}),
+        ...(!artistId && artistIds ? { artist_id: `in.(${artistIds.join(',')})` } : {}),
         select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
         order: 'updated_at.desc,id.desc', offset: String(offset), limit: String(Math.min(limit, 100))
       }
@@ -293,22 +304,24 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
   }
 
   async function listRosterCalendarBookings(workspaceId: string, fromDate: string, toDate: string) {
-    return $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/bookings`, {
+    return collectRosterPages((offset, limit) => $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/bookings`, {
       headers: authHeaders(), query: {
         workspace_id: `eq.${workspaceId}`, status: 'eq.confirmed', archived_at: 'is.null',
         and: `(event_date.gte.${fromDate},event_date.lt.${toDate})`,
         select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
-        order: 'event_date.asc', limit: '500'
+        order: 'event_date.asc,id.asc', offset: String(offset), limit: String(limit)
       }
-    })
+    }))
   }
 
-  async function listRosterActivities(workspaceId: string) {
+  async function listRosterActivities(workspaceId: string, offset = 0, limit = 100, artistIds?: string[]) {
+    if (artistIds && !artistIds.length) return [] as WorkspaceActivityHistoryRow[]
     return $fetch<WorkspaceActivityHistoryRow[]>(`${baseUrl}/rest/v1/activities`, {
       headers: authHeaders(), query: {
         workspace_id: `eq.${workspaceId}`,
+        ...(artistIds ? { 'bookings.artist_id': `in.(${artistIds.join(',')})` } : {}),
         select: 'id,workspace_id,booking_id,type,direction,contact_id,actor_user_id,body,metadata,visibility,occurred_at,created_by,created_at,bookings!inner(id,artist_id,event_name,venue_name,city)',
-        order: 'occurred_at.desc', limit: '500'
+        order: 'occurred_at.desc,id.desc', offset: String(offset), limit: String(Math.min(limit, 100))
       }
     })
   }
@@ -759,14 +772,15 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     })
   }
 
-  async function listRosterHolds(workspaceId: string) {
-    return $fetch<Array<Hold & { bookings: { artist_id: string } }>>(`${baseUrl}/rest/v1/holds`, {
+  async function listRosterHolds(workspaceId: string, fromDate: string, toDate: string) {
+    return collectRosterPages((offset, limit) => $fetch<Array<Hold & { bookings: { artist_id: string } }>>(`${baseUrl}/rest/v1/holds`, {
       headers: authHeaders(), query: {
         workspace_id: `eq.${workspaceId}`, status: 'eq.active',
+        and: `(event_date.gte.${fromDate},event_date.lt.${toDate})`,
         select: 'id,workspace_id,booking_id,event_date,starts_at,ends_at,event_timezone,expires_at,priority,status,released_at,converted_at,created_by,created_at,updated_at,bookings!inner(artist_id)',
-        order: 'event_date.asc', limit: '500'
+        order: 'event_date.asc,id.asc', offset: String(offset), limit: String(limit)
       }
-    })
+    }))
   }
 
   async function listArtistActiveHolds(workspaceId: string, artistId: string) {

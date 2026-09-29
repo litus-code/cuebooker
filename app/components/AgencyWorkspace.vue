@@ -50,6 +50,7 @@ const addError = ref('')
 const showRetired = ref(false)
 const page = ref(0)
 const pageSize = 100
+const activityPage = ref(0)
 const activeArtists = computed(() => props.artists.filter(artist => artist.roster_active !== false))
 const activeIds = computed(() => new Set(activeArtists.value.map(artist => artist.id)))
 const visibleBookings = computed(() => filterRosterBookings(bookings.value, activeArtists.value, filterArtist.value === 'all' ? undefined : [filterArtist.value]))
@@ -82,6 +83,11 @@ function contact(booking: CoreBooking) {
     || counterparties.value.find(item => item.id === booking.counterparty_id)?.name || '—'
 }
 function eventName(booking: CoreBooking) { return booking.event_name || booking.venue_name || (isEs.value ? 'Booking sin nombre' : 'Unnamed booking') }
+function upcomingSnapshotLabel(artistId: string) {
+  if (summaryBookings.value.length === 100) return isEs.value ? 'Ver próximas fechas' : 'View upcoming dates'
+  const count = summaryBookings.value.filter(item => item.artist_id === artistId && item.event_date && item.event_date >= new Date().toISOString().slice(0, 10)).length
+  return `${count} ${isEs.value ? 'próximos bookings' : 'upcoming bookings'}`
+}
 function shortDate(value: string | null) {
   return value ? new Intl.DateTimeFormat(isEs.value ? 'es-ES' : 'en-GB', { day: '2-digit', month: 'short', timeZone: 'UTC' }).format(new Date(`${value}T12:00:00Z`)) : '—'
 }
@@ -126,12 +132,12 @@ async function load() {
   error.value = ''
   try {
     const [rows, summaryRows, count, monthRows, activityRows, holdRows, contactRows, partyRows] = await Promise.all([
-      api.listRosterBookings(props.workspaceId, page.value * pageSize, pageSize, filterArtist.value === 'all' ? undefined : filterArtist.value),
-      api.listRosterBookings(props.workspaceId, 0, 100),
+      api.listRosterBookings(props.workspaceId, page.value * pageSize, pageSize, filterArtist.value === 'all' ? undefined : filterArtist.value, activeArtists.value.map(item => item.id)),
+      api.listRosterBookings(props.workspaceId, 0, 100, undefined, activeArtists.value.map(item => item.id)),
       api.countRosterActiveBookings(props.workspaceId, activeArtists.value.map(item => item.id)).catch(() => null),
       api.listRosterCalendarBookings(props.workspaceId, month.value, monthEnd.value),
-      api.listRosterActivities(props.workspaceId),
-      api.listRosterHolds(props.workspaceId),
+      api.listRosterActivities(props.workspaceId, (props.view === 'history' ? activityPage.value : 0) * pageSize, pageSize, filterArtist.value === 'all' || props.view !== 'history' ? activeArtists.value.map(item => item.id) : [filterArtist.value]),
+      api.listRosterHolds(props.workspaceId, month.value, monthEnd.value),
       api.listContacts(props.workspaceId), api.listCounterparties(props.workspaceId)
     ])
     if (current !== request) return
@@ -149,8 +155,8 @@ async function load() {
     if (current === request) loading.value = false
   }
 }
-watch(filterArtist, () => { page.value = 0 })
-watch(() => [props.workspaceId, props.revision, month.value, page.value, filterArtist.value], load, { immediate: true })
+watch(filterArtist, () => { page.value = 0; activityPage.value = 0 })
+watch(() => [props.workspaceId, props.revision, month.value, page.value, activityPage.value, filterArtist.value, props.view], load, { immediate: true })
 async function submitArtist() {
   if (!props.canManageRoster || !artistName.value.trim() || !artistSlug.value.trim()) return
   submittingArtist.value = true
@@ -181,13 +187,13 @@ function confirmRetire(artist: RosterArtist) {
       </template>
       <template v-else-if="view === 'roster'">
         <div class="agency-actions"><span>{{ activeArtists.length }} {{ isEs ? 'artistas activos' : 'active artists' }}</span><button v-if="canManageRoster" type="button" @click="showAdd = true">+ {{ isEs ? 'Añadir artista' : 'Add artist' }}</button></div>
-        <div class="agency-roster"><article v-for="artist in activeArtists" :key="artist.id"><div class="agency-avatar" aria-hidden="true"><img v-if="portraitUrls[artist.id]" :src="portraitUrls[artist.id]" alt="">{{ portraitUrls[artist.id] ? '' : artist.stage_name.slice(0, 2).toUpperCase() }}</div><div><span>ARTIST / {{ artist.slug }}</span><h2>{{ artist.stage_name }}</h2><p>{{ artist.city || (isEs ? 'Ciudad sin definir' : 'City not set') }} · {{ summaryBookings.filter(item => item.artist_id === artist.id && item.event_date && item.event_date >= new Date().toISOString().slice(0, 10)).length }} {{ isEs ? 'próximos bookings' : 'upcoming bookings' }}</p><small>{{ isEs ? 'Activo' : 'Active' }}</small></div><div class="agency-roster-actions"><button type="button" @click="emit('selectArtist', artist.id, 'overview')">{{ isEs ? 'Entrar' : 'Open' }}</button><button v-if="canManageRoster" type="button" @click="emit('selectArtist', artist.id, 'profile')">{{ isEs ? 'Editar' : 'Edit' }}</button><button v-if="canManageRoster" type="button" @click="confirmRetire(artist)">{{ isEs ? 'Retirar del roster' : 'Remove from roster' }}</button></div></article></div>
+        <div class="agency-roster"><article v-for="artist in activeArtists" :key="artist.id"><div class="agency-avatar" aria-hidden="true"><img v-if="portraitUrls[artist.id]" :src="portraitUrls[artist.id]" alt="">{{ portraitUrls[artist.id] ? '' : artist.stage_name.slice(0, 2).toUpperCase() }}</div><div><span>ARTIST / {{ artist.slug }}</span><h2>{{ artist.stage_name }}</h2><p>{{ artist.city || (isEs ? 'Ciudad sin definir' : 'City not set') }} · {{ upcomingSnapshotLabel(artist.id) }}</p><small>{{ isEs ? 'Activo' : 'Active' }}</small></div><div class="agency-roster-actions"><button type="button" @click="emit('selectArtist', artist.id, 'overview')">{{ isEs ? 'Entrar' : 'Open' }}</button><button v-if="canManageRoster" type="button" @click="emit('selectArtist', artist.id, 'profile')">{{ isEs ? 'Editar' : 'Edit' }}</button><button v-if="canManageRoster" type="button" @click="confirmRetire(artist)">{{ isEs ? 'Retirar del roster' : 'Remove from roster' }}</button></div></article></div>
         <div v-if="artists.some(item => item.roster_active === false)" class="agency-retired"><button type="button" @click="showRetired = !showRetired">{{ showRetired ? '−' : '+' }} {{ isEs ? 'Artistas retirados' : 'Removed artists' }}</button><div v-if="showRetired" class="agency-roster"><article v-for="artist in artists.filter(item => item.roster_active === false)" :key="artist.id"><div><h2>{{ artist.stage_name }}</h2><p>{{ isEs ? 'Historial conservado' : 'History retained' }}</p></div><button v-if="canManageRoster" type="button" @click="emit('restoreArtist', artist.id)">{{ isEs ? 'Reincorporar' : 'Restore' }}</button></article></div></div>
       </template>
       <template v-else-if="view === 'bookings' || view === 'history'">
         <label class="agency-filter">{{ isEs ? 'Filtrar por artista' : 'Filter by artist' }}<select v-model="filterArtist"><option value="all">{{ isEs ? 'Todos los artistas' : 'All artists' }}</option><option v-for="artist in activeArtists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
         <template v-if="view === 'bookings'"><p v-if="!visibleBookings.length" class="agency-muted">{{ isEs ? 'Aún no hay bookings para este filtro.' : 'No bookings for this filter yet.' }}</p><div class="agency-list"><button v-for="booking in visibleBookings" :key="booking.id" class="agency-row" type="button" @click="emit('openBooking', booking.id)"><span><b>{{ label(booking.artist_id) }}</b><strong>{{ eventName(booking) }}</strong><small>{{ contact(booking) }}</small></span><time>{{ shortDate(booking.event_date) }}</time><em>{{ booking.status.replaceAll('_', ' ') }}</em></button></div><div class="agency-pages"><button :disabled="page === 0" type="button" @click="page--">←</button><span>{{ page + 1 }}</span><button :disabled="bookings.length < pageSize" type="button" @click="page++">→</button></div></template>
-        <template v-else><p v-if="!visibleActivities.length" class="agency-muted">{{ isEs ? 'Aún no hay actividad real para este filtro.' : 'No activity for this filter yet.' }}</p><div class="agency-list"><button v-for="item in visibleActivities" :key="item.id" class="agency-row" type="button" @click="emit('openBooking', item.booking_id)"><span><b>{{ label(item.bookings.artist_id) }} / {{ item.type.replaceAll('_', ' ') }}</b><strong>{{ item.body || item.bookings.event_name || item.bookings.venue_name || 'Booking' }}</strong></span><time>{{ shortDate(item.occurred_at.slice(0, 10)) }}</time></button></div></template>
+        <template v-else><p v-if="!visibleActivities.length" class="agency-muted">{{ isEs ? 'Aún no hay actividad real para este filtro.' : 'No activity for this filter yet.' }}</p><div class="agency-list"><button v-for="item in visibleActivities" :key="item.id" class="agency-row" type="button" @click="emit('openBooking', item.booking_id)"><span><b>{{ label(item.bookings.artist_id) }} / {{ item.type.replaceAll('_', ' ') }}</b><strong>{{ item.body || item.bookings.event_name || item.bookings.venue_name || 'Booking' }}</strong></span><time>{{ shortDate(item.occurred_at.slice(0, 10)) }}</time></button></div><div class="agency-pages"><button :disabled="activityPage === 0" type="button" @click="activityPage--">←</button><span>{{ activityPage + 1 }}</span><button :disabled="activities.length < pageSize" type="button" @click="activityPage++">→</button></div></template>
       </template>
       <template v-else-if="view === 'calendar'"><div class="agency-month"><button type="button" :aria-label="isEs ? 'Mes anterior' : 'Previous month'" @click="moveMonth(-1)">←</button><h2>{{ monthLabel }}</h2><button type="button" :aria-label="isEs ? 'Mes siguiente' : 'Next month'" @click="moveMonth(1)">→</button></div><fieldset class="agency-calendar-filters"><legend>{{ isEs ? 'Artistas visibles' : 'Visible artists' }}</legend><label v-for="artist in activeArtists" :key="artist.id"><input type="checkbox" :checked="calendarArtists.includes(artist.id)" @change="toggleCalendarArtist(artist.id)">{{ artist.stage_name }}</label></fieldset><div class="agency-calendar"><span v-for="(day, index) in (isEs ? ['L','M','X','J','V','S','D'] : ['M','T','W','T','F','S','S'])" :key="index" class="agency-weekday">{{ day }}</span><div v-for="(day, index) in calendarDays" :key="`${day}-${index}`" class="agency-day" :class="{ 'agency-day--empty': !day }"><button v-if="day" class="agency-day-date" type="button" :aria-pressed="selectedDay === day" @click="selectedDay = day">{{ Number(day.slice(-2)) }}</button><button v-for="booking in visibleMonthBookings.filter(item => item.event_date === day)" :key="booking.id" type="button" @click="emit('openBooking', booking.id)"><b>{{ label(booking.artist_id) }}</b><small>{{ eventName(booking) }}</small></button><button v-for="hold in visibleHolds.filter(item => item.event_date === day)" :key="hold.id" class="agency-hold" type="button" @click="emit('openBooking', hold.booking_id)"><b>{{ label(hold.bookings.artist_id) }}</b><small>Hold</small></button></div></div><div class="agency-day-agenda"><h3>{{ shortDate(selectedDay) }} / {{ isEs ? 'Agenda' : 'Schedule' }}</h3><button v-for="booking in visibleMonthBookings.filter(item => item.event_date === selectedDay)" :key="booking.id" type="button" @click="emit('openBooking', booking.id)"><b>{{ label(booking.artist_id) }}</b><span>{{ eventName(booking) }}</span></button><button v-for="hold in visibleHolds.filter(item => item.event_date === selectedDay)" :key="hold.id" type="button" @click="emit('openBooking', hold.booking_id)"><b>{{ label(hold.bookings.artist_id) }}</b><span>Hold</span></button><p v-if="!visibleMonthBookings.some(item => item.event_date === selectedDay) && !visibleHolds.some(item => item.event_date === selectedDay)" class="agency-muted">{{ isEs ? 'Sin fechas ni holds.' : 'No dates or holds.' }}</p></div></template>
     </template>

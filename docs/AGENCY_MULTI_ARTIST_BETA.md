@@ -14,6 +14,8 @@ An artist has one public profile and one `artist_booking_routes` destination. An
 
 Existing independent artists are **not** silently transferred by adding a roster relation. If a route points to another workspace, the agency UI refuses to change its public booking settings. A future explicit transfer must establish consent, permissions, handling of open enquiries and continuity of history. Retiring an artist closes their agency enquiry route but retains bookings and the route; restoring them does not reopen enquiries automatically. Agency owner/admin control roster retirement; managers can edit active artist profiles and operate bookings at workspace scope. Per-artist manager assignments and notifications to the represented DJ are not yet implemented or promised in beta.
 
+Global Bookings and Activity paginate on the server after artist filtering; a page does not silently empty out because retired artists occupy its first results. Calendar and active holds load every page in the displayed month, so the previous 500-row cap no longer hides dates. The Overview and roster cards deliberately show a recent snapshot; their per-artist upcoming count is not an all-time total.
+
 ## Experience contract
 
 - Agency onboarding goes to `/workspace?view=overview&scope=all`; DJ onboarding keeps its existing Calendar/CUE ID destination.
