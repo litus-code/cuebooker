@@ -10,6 +10,7 @@ const email = ref('')
 const password = ref('')
 const displayName = ref('')
 const message = ref('')
+const messageTone = ref<'info' | 'warning'>('info')
 const errorMessage = ref('')
 const passwordVisible = ref(false)
 
@@ -71,6 +72,7 @@ onMounted(async () => {
 async function submit() {
   errorMessage.value = ''
   message.value = ''
+  messageTone.value = 'info'
   try {
     if (mode.value === 'signin') {
       await auth.signIn(email.value, password.value)
@@ -81,6 +83,7 @@ async function submit() {
       if (!import.meta.client) return
       const redirectTo = new URL('/reset-password', window.location.origin).toString()
       await auth.requestPasswordReset(email.value, redirectTo)
+      messageTone.value = 'info'
       message.value = copy.value.resetConfirmation
       return
     }
@@ -91,6 +94,7 @@ async function submit() {
       email_confirmation_required: result.emailConfirmationRequired
     })
     if (result.emailConfirmationRequired) {
+      messageTone.value = 'info'
       message.value = copy.value.confirmation
       return
     }
@@ -103,6 +107,7 @@ async function submit() {
       mode.value === 'signup'
       && (status === 504 || raw.includes('504') || raw.includes('request_timeout') || raw.includes('context deadline exceeded'))
     ) {
+      messageTone.value = 'warning'
       message.value = copy.value.signupTimeout
       return
     }
@@ -161,7 +166,7 @@ useHead(() => ({ title: copy.value.title, htmlAttrs: { lang: locale.value } }))
           @click="message = ''; errorMessage = ''"
         >{{ copy.forgot }}</NuxtLink>
         <p v-if="errorMessage" class="access-message access-message--error">{{ errorMessage }}</p>
-        <p v-if="message" class="access-message">{{ message }}</p>
+        <p v-if="message" class="access-message" :class="`access-message--${messageTone}`">{{ message }}</p>
         <p v-if="mode === 'signup'" class="access-privacy">
           {{ locale === 'es' ? 'Usaremos tus datos para crear y gestionar tu cuenta.' : 'We will use your data to create and manage your account.' }}
           <NuxtLink to="/privacidad">{{ locale === 'es' ? 'Consulta la política de privacidad.' : 'Read the privacy policy.' }}</NuxtLink>
@@ -193,8 +198,33 @@ input { min-height:48px; padding:0 14px; border:1px solid var(--cue-border); bac
 .access-link { justify-self:end; padding:0; border:0; background:transparent; color:var(--cue-muted); cursor:pointer; font:700 11px/1.2 monospace; text-decoration:underline; text-underline-offset:3px; }
 .access-link:hover,.access-link:focus-visible { color:var(--cue-accent); }
 .access-link--back { justify-self:start; }
-.access-message { margin:0; padding:12px; border:1px solid var(--cue-border); color:var(--cue-text); font-size:.9rem; }
-.access-message--error { border-color:#8b3434; color:#d65757; }
+.access-message {
+  margin:0;
+  padding:13px 14px 13px 16px;
+  border:1px solid var(--cue-border);
+  border-left-width:3px;
+  color:var(--cue-text);
+  font-size:.9rem;
+  line-height:1.45;
+}
+.access-message--info {
+  border-color:rgba(70,144,255,.34);
+  border-left-color:#4690ff;
+  background:rgba(70,144,255,.09);
+  color:#b9d5ff;
+}
+.access-message--warning {
+  border-color:rgba(218,164,63,.38);
+  border-left-color:#daa43f;
+  background:rgba(218,164,63,.10);
+  color:#f0cf8b;
+}
+.access-message--error {
+  border-color:rgba(214,87,87,.36);
+  border-left-color:#d65757;
+  background:rgba(214,87,87,.10);
+  color:#efa5a5;
+}
 .access-privacy { margin:0; color:var(--cue-muted); font-size:12px; line-height:1.55; }
 .access-privacy a { color:var(--cue-accent); }
 @media (max-width:620px) { .access-page { padding:12px 18px 18px; } .access-panel { margin-top:8px; padding:22px; } }
