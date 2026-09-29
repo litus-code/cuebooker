@@ -23,8 +23,8 @@ const copy = computed(() => locale.value === 'es'
       cueIdNow: 'Crear mi CUE ID ahora',
       cueIdNowBody: 'Ir al Creator después de crear tu workspace.',
       cueIdLater: 'Hacerlo más tarde',
-      cueIdLaterBody: 'Entrar a Bookings y crear tu CUE ID cuando quieras.',
-      profileNote: 'Después podrás completar tu ficha profesional. Al terminar entrarás directamente a Bookings para empezar a gestionar solicitudes.',
+      cueIdLaterBody: 'Entrar a tu workspace y crear tu CUE ID cuando quieras.',
+      profileNote: 'Después podrás completar tu ficha profesional. Al terminar entrarás en tu Overview con los siguientes pasos claros para activar Cuebooker.',
       planIntent: 'Plan seleccionado', planPending: 'La activación de pago se realizará después de crear el workspace.',
       saving: 'Guardando…', submit: 'Crear workspace', genericError: 'No se pudo completar la configuración.',
       slugTaken: 'Ese identificador ya está en uso. Prueba con otro diferente.',
@@ -43,8 +43,8 @@ const copy = computed(() => locale.value === 'es'
       cueIdNow: 'Create my CUE ID now',
       cueIdNowBody: 'Open the Creator after your workspace is created.',
       cueIdLater: 'Do it later',
-      cueIdLaterBody: 'Open Bookings and create your CUE ID whenever you want.',
-      profileNote: 'Afterwards you can complete your professional profile. When setup is complete, you will land directly in Bookings to start managing requests.',
+      cueIdLaterBody: 'Open your workspace and create your CUE ID whenever you want.',
+      profileNote: 'Afterwards you can complete your professional profile. When setup is complete, Overview will show the next steps to activate Cuebooker.',
       planIntent: 'Selected plan', planPending: 'Paid activation will happen after the workspace is created.',
       saving: 'Saving…', submit: 'Create workspace', genericError: 'Setup could not be completed.',
       slugTaken: 'That identifier is already in use. Try a different one.',
@@ -125,7 +125,7 @@ async function submit() {
       await navigateTo('/cue-id?from=onboarding')
       return
     }
-    await navigateTo('/workspace?view=bookings&from=onboarding')
+    await navigateTo('/workspace?view=overview&from=onboarding')
   } catch (error: any) {
     errorMessage.value = friendlyOnboardingError(error)
   } finally {
