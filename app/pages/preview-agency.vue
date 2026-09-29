@@ -52,7 +52,7 @@ const demoData = { bookings: demoBookings.value, activities: demoActivities, hol
 ], counterparties: [] }
 const demoContacts: Contact[] = demoData.contacts.map(item => ({ id: item.id, workspace_id: 'preview-agency', name: item.name,
   email: null, phone: null, role_label: null, notes: null, created_by: 'preview', created_at: now, updated_at: now }))
-const demoInboxData = { contacts: demoContacts, counterparties: [], activities: demoActivities, holds: demoHolds }
+const demoInboxData = { contacts: demoContacts, counterparties: [], activities: demoActivities, holds: demoHolds, nextMoves: {} as Record<string, string> }
 const focusedBooking = computed(() => demoBookings.value.find(item => item.id === focusBookingId.value))
 const nav = computed<Array<{ id: DemoView; label: string }>>(() => [
   { id: 'overview', label: 'Overview' }, { id: 'bookings', label: 'Bookings' }, { id: 'calendar', label: 'Calendar' },

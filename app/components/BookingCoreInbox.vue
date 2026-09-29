@@ -9,7 +9,7 @@ const props = defineProps<{
   bookings: CoreBooking[]
   locale: 'es' | 'en'
   focusBookingId?: string
-  demoData?: { contacts: Contact[]; counterparties: Counterparty[]; activities: WorkspaceActivityHistoryRow[]; holds: Array<Hold & { bookings: { artist_id: string } }> }
+  demoData?: { contacts: Contact[]; counterparties: Counterparty[]; activities: WorkspaceActivityHistoryRow[]; holds: Array<Hold & { bookings: { artist_id: string } }>; nextMoves: Record<string, string> }
 }>()
 
 const emit = defineEmits<{ operationsChanged: []; cueRequested: []; bookingOpened: [bookingId: string]; calendarRequested: [date: string] }>()
@@ -38,7 +38,7 @@ const visibleLimit = ref(10)
 const demoRevision = ref(0)
 const demoText = ref('')
 const demoChannel = ref<'note' | 'phone' | 'whatsapp' | 'instagram'>('note')
-const demoMoves = ref<Record<string, string>>({})
+const demoMoves = ref<Record<string, string>>(props.demoData?.nextMoves || {})
 const demoMoveText = ref('')
 const demoHolds = ref<Record<string, boolean>>(Object.fromEntries((props.demoData?.holds || []).filter(item => item.status === 'active').map(item => [item.booking_id, true])))
 const demoActivities = computed(() => { void demoRevision.value; return props.demoData?.activities || [] })
@@ -175,7 +175,7 @@ const suggestedFollowUp = computed(() => {
 
 const conversationActivities = computed(() => activities.value.filter(activity =>
   Boolean(activity.body?.trim())
-  && !['status_change', 'system', 'hold_converted', 'hold_released'].includes(activity.type)
+  && !['status_change', 'system', 'hold_created', 'hold_converted', 'hold_released', 'next_move_created', 'next_move_completed'].includes(activity.type)
 ))
 
 watch(() => props.bookings, value => {
