@@ -41,3 +41,26 @@ test('agency list pages filter active roster before pagination', async () => {
     ;(globalThis as any).$fetch = original
   }
 })
+
+test('agency hold total counts the active roster across all months', async () => {
+  const original = (globalThis as any).$fetch
+  const requests: Array<Record<string, string>> = []
+  try {
+    const fetch = (() => { throw new Error('unexpected_fetch') }) as any
+    fetch.raw = async (_url: string, options: { query: Record<string, string> }) => {
+      requests.push(options.query)
+      return { headers: new Headers({ 'content-range': '0-0/14' }) }
+    }
+    ;(globalThis as any).$fetch = fetch
+    const api = createBookingCoreApi({ baseUrl: 'https://example.invalid', publishableKey: 'test', accessToken: () => 'test', userId: () => 'test' })
+    assert.equal(await api.countRosterActiveHolds('agency', ['artist-a', 'artist-b']), 14)
+    assert.equal(await api.countRosterActiveHolds('agency', []), 0)
+    assert.equal(requests.length, 1)
+    assert.equal(requests[0]?.status, 'eq.active')
+    assert.equal(requests[0]?.['bookings.artist_id'], 'in.(artist-a,artist-b)')
+    assert.equal(requests[0]?.select, 'id,bookings!inner(artist_id)')
+    assert.equal(requests[0]?.and, undefined)
+  } finally {
+    ;(globalThis as any).$fetch = original
+  }
+})

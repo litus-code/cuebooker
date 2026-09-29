@@ -314,6 +314,19 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     }))
   }
 
+  async function countRosterActiveHolds(workspaceId: string, artistIds: string[]) {
+    if (!artistIds.length) return 0
+    const response = await $fetch.raw<Array<{ id: string }>>(`${baseUrl}/rest/v1/holds`, {
+      headers: authHeaders('count=exact'), query: {
+        workspace_id: `eq.${workspaceId}`, status: 'eq.active',
+        'bookings.artist_id': `in.(${artistIds.join(',')})`,
+        select: 'id,bookings!inner(artist_id)', limit: '1'
+      }
+    })
+    const total = response.headers.get('content-range')?.split('/').pop()
+    return total && /^\d+$/.test(total) ? Number(total) : null
+  }
+
   async function listRosterActivities(workspaceId: string, offset = 0, limit = 100, artistIds?: string[]) {
     if (artistIds && !artistIds.length) return [] as WorkspaceActivityHistoryRow[]
     return $fetch<WorkspaceActivityHistoryRow[]>(`${baseUrl}/rest/v1/activities`, {
@@ -896,6 +909,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     listBookings,
     listRosterBookings,
     countRosterActiveBookings,
+    countRosterActiveHolds,
     listRosterCalendarBookings,
     listRosterActivities,
     listArtistAttentionBookings,
