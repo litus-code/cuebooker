@@ -1,4 +1,11 @@
 <script setup lang="ts">
+import { DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG } from '../domain/cueIdStylizedCreator'
+
+const previewAvatarConfig = {
+  ...DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG,
+  piercings: [...DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG.piercings]
+}
+
 const props = withDefaults(defineProps<{
   artistName?: string
   compact?: boolean
@@ -44,12 +51,16 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
     <div class="cue-id-teaser__visual" aria-hidden="true">
       <div class="cue-id-teaser__halo cue-id-teaser__halo--one" />
       <div class="cue-id-teaser__halo cue-id-teaser__halo--two" />
-      <div class="cue-id-teaser__figure">
-        <i class="cue-id-teaser__head" />
-        <i class="cue-id-teaser__torso" />
-        <i class="cue-id-teaser__arm cue-id-teaser__arm--left" />
-        <i class="cue-id-teaser__arm cue-id-teaser__arm--right" />
-      </div>
+      <ClientOnly>
+        <CueIdRiggedBodyLabScene
+          class="cue-id-teaser__avatar"
+          :config="previewAvatarConfig"
+          view-mode="body"
+        />
+        <template #fallback>
+          <div class="cue-id-teaser__avatar-loading">CUE ID</div>
+        </template>
+      </ClientOnly>
       <div class="cue-id-teaser__scan" />
       <div class="cue-id-teaser__meta">
         <span>{{ copy.status }}</span>
@@ -138,65 +149,21 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
 }
 .cue-id-teaser__halo--one { width: 340px; height: 340px; }
 .cue-id-teaser__halo--two { width: 470px; height: 470px; opacity: .45; }
-.cue-id-teaser__figure {
-  position: absolute;
-  left: 50%;
-  top: 48%;
-  width: 170px;
-  height: 295px;
-  transform: translate(-50%, -50%) rotateY(-13deg) rotateX(2deg);
-  transform-style: preserve-3d;
-  filter: drop-shadow(0 34px 42px rgba(0,0,0,.75));
+.cue-id-teaser__avatar {
+  position:absolute;
+  inset:12px 12px 58px;
+  z-index:2;
 }
-.cue-id-teaser__figure i { position: absolute; display: block; }
-.cue-id-teaser__head {
-  left: 51px;
-  top: 0;
-  width: 68px;
-  height: 78px;
-  border-radius: 44% 44% 40% 40%;
-  background: linear-gradient(115deg, #40443e 0%, #121412 46%, #9aa091 49%, #22251f 56%, #080908 100%);
-  box-shadow: inset -8px 0 16px rgba(206,255,84,.12), 8px 0 0 rgba(220,45,40,.7);
+.cue-id-teaser__avatar-loading {
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  color:#777b74;
+  font:800 11px/1 monospace;
+  letter-spacing:.18em;
 }
-.cue-id-teaser__head::after {
-  content: '';
-  position: absolute;
-  left: 8px;
-  right: 8px;
-  top: 32px;
-  height: 7px;
-  background: #ceff54;
-  box-shadow: 0 0 19px rgba(206,255,84,.55);
-}
-.cue-id-teaser__torso {
-  left: 24px;
-  top: 66px;
-  width: 122px;
-  height: 182px;
-  clip-path: polygon(19% 0, 81% 0, 100% 26%, 82% 100%, 18% 100%, 0 26%);
-  background: linear-gradient(118deg, #5d6259 0%, #131513 34%, #050605 65%, #272b26 100%);
-  border: 1px solid rgba(255,255,255,.16);
-  box-shadow: inset 14px 0 24px rgba(206,255,84,.06);
-}
-.cue-id-teaser__torso::after {
-  content: 'CUE';
-  position: absolute;
-  left: 50%;
-  top: 54%;
-  transform: translate(-50%, -50%) rotate(-90deg);
-  color: rgba(244,242,237,.45);
-  font: 800 13px/1 monospace;
-  letter-spacing: .32em;
-}
-.cue-id-teaser__arm {
-  top: 84px;
-  width: 31px;
-  height: 157px;
-  background: linear-gradient(#252824, #080908);
-  border: 1px solid rgba(255,255,255,.1);
-}
-.cue-id-teaser__arm--left { left: 4px; transform: rotate(9deg); }
-.cue-id-teaser__arm--right { right: 4px; transform: rotate(-9deg); }
+
 .cue-id-teaser__scan {
   position: absolute;
   left: 12%;
@@ -235,15 +202,10 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
 .cue-id-teaser--compact .cue-id-teaser__copy { padding: 24px; }
 .cue-id-teaser--compact .cue-id-teaser__copy h2 { font-size: clamp(1.8rem, 4vw, 3rem); }
 .cue-id-teaser--compact .cue-id-teaser__visual { min-height: 300px; }
-.cue-id-teaser--compact .cue-id-teaser__figure { transform: translate(-50%, -53%) scale(.72) rotateY(-13deg); }
+.cue-id-teaser--compact .cue-id-teaser__avatar { inset:8px 8px 52px; }
 
 @media (prefers-reduced-motion: no-preference) {
-  .cue-id-teaser__figure { animation: cue-id-float 5.5s ease-in-out infinite; }
   .cue-id-teaser__scan { animation: cue-id-scan 4.2s ease-in-out infinite; }
-}
-@keyframes cue-id-float {
-  0%, 100% { transform: translate(-50%, -50%) rotateY(-13deg) translateY(0); }
-  50% { transform: translate(-50%, -50%) rotateY(-7deg) translateY(-8px); }
 }
 @keyframes cue-id-scan {
   0%, 100% { transform: translateY(-75px); opacity: .22; }
@@ -254,6 +216,6 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   .cue-id-teaser, .cue-id-teaser--compact { grid-template-columns: 1fr; }
   .cue-id-teaser__copy { border-right: 0; border-bottom: 1px solid #292b28; }
   .cue-id-teaser__visual, .cue-id-teaser--compact .cue-id-teaser__visual { min-height: 340px; }
-  .cue-id-teaser--compact .cue-id-teaser__figure { transform: translate(-50%, -50%) scale(.82) rotateY(-13deg); }
+  .cue-id-teaser--compact .cue-id-teaser__avatar { inset:6px 6px 52px; }
 }
 </style>
