@@ -119,11 +119,11 @@ watch(activeArtists, rows => {
   if (filterArtist.value !== 'all' && !existing.has(filterArtist.value)) filterArtist.value = 'all'
 }, { immediate: true })
 watch(filterArtist, value => {
-  void router.replace({ query: { ...route.query, rosterArtist: value === 'all' ? undefined : value } })
+  void router.replace({ query: { ...route.query, view: props.view, rosterArtist: value === 'all' ? undefined : value } })
 })
 watch(calendarArtists, ids => {
   if (props.view !== 'calendar') return
-  void router.replace({ query: { ...route.query, rosterCalendar: ids.join(',') } })
+  void router.replace({ query: { ...route.query, view: props.view, rosterCalendar: ids.join(',') } })
 })
 watch(() => props.artists.map(item => `${item.id}:${item.artist_image_path || item.cover_image_path || ''}`).join(','), async () => {
   for (const url of Object.values(portraitUrls.value)) URL.revokeObjectURL(url)
