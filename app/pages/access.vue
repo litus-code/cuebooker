@@ -28,6 +28,7 @@ const copy = computed(() => locale.value === 'es'
       confirmation: 'Revisa tu correo para continuar. Si ya habías iniciado un registro con este email, confirmaremos esa cuenta existente. Si no recuerdas la contraseña, puedes restablecerla.',
       resetConfirmation: 'Si existe una cuenta con ese email, recibirás un enlace para cambiar la contraseña.',
       configError: 'Este entorno todavía no tiene configurada la conexión pública con Supabase.',
+      signupTimeout: 'El envío del correo está tardando más de lo esperado. Revisa tu bandeja de entrada y spam; si no llega en unos minutos, vuelve a intentarlo.',
       genericError: 'No se pudo completar el acceso.', title: 'Acceso | Cuebooker'
     }
   : {
@@ -43,6 +44,7 @@ const copy = computed(() => locale.value === 'es'
       confirmation: 'Check your email to continue. If you had already started registration with this email, we will confirm that existing account. If you do not remember the password, you can reset it.',
       resetConfirmation: 'If an account exists for that email, you will receive a link to change the password.',
       configError: 'This environment does not have the public Supabase connection configured yet.',
+      signupTimeout: 'The confirmation email is taking longer than expected. Check your inbox and spam; if it does not arrive within a few minutes, try again.',
       genericError: 'Access could not be completed.', title: 'Access | Cuebooker'
     })
 
@@ -94,7 +96,18 @@ async function submit() {
     }
     await navigateTo('/onboarding')
   } catch (error: any) {
-    errorMessage.value = error?.data?.msg || error?.data?.message || error?.message || copy.value.genericError
+    const raw = String(error?.data?.msg || error?.data?.message || error?.message || '').toLowerCase()
+    const status = Number(error?.statusCode || error?.status || error?.response?.status || 0)
+
+    if (
+      mode.value === 'signup'
+      && (status === 504 || raw.includes('504') || raw.includes('request_timeout') || raw.includes('context deadline exceeded'))
+    ) {
+      message.value = copy.value.signupTimeout
+      return
+    }
+
+    errorMessage.value = copy.value.genericError
   }
 }
 
