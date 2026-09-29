@@ -515,6 +515,65 @@ const profileCompletion = computed(() => {
   ]
   return Math.round(fields.filter(value => String(value || '').trim()).length / fields.length * 100)
 })
+const firstRunActivation = computed(() =>
+  bookingSurfaceReady.value
+  && realBookings.value.length === 0
+)
+
+const activationSteps = computed(() => {
+  const es = preferences.locale.value === 'es'
+  return [
+    {
+      id: 'profile',
+      index: '01',
+      title: es ? 'Completa tu perfil público' : 'Complete your public profile',
+      body: es ? 'Añade la información esencial que verá un promoter cuando llegue a tu enlace.' : 'Add the essential information a promoter will see when they open your link.',
+      done: profileCompletion.value >= 70,
+      action: es ? 'Completar perfil' : 'Complete profile'
+    },
+    {
+      id: 'share',
+      index: '02',
+      title: es ? 'Publica y comparte tu booking' : 'Publish and share your booking',
+      body: es ? 'Activa tu perfil público y comparte el enlace para empezar a recibir solicitudes.' : 'Publish your profile and share the link to start receiving enquiries.',
+      done: publicProfilePublished.value,
+      action: publicProfilePublished.value
+        ? (es ? 'Copiar enlace' : 'Copy link')
+        : (es ? 'Configurar publicación' : 'Set up publishing')
+    },
+    {
+      id: 'booking',
+      index: '03',
+      title: es ? 'Registra tu primera solicitud' : 'Capture your first enquiry',
+      body: es ? '¿Ya tienes una conversación por WhatsApp, email o Instagram? Conviértela en booking.' : 'Already have a WhatsApp, email or Instagram conversation? Turn it into a booking.',
+      done: realBookings.value.length > 0,
+      action: es ? 'Crear primer booking' : 'Create first booking'
+    }
+  ]
+})
+
+async function runActivationStep(id: string) {
+  if (id === 'profile') {
+    await changeView('profile')
+    return
+  }
+  if (id === 'share') {
+    if (publicProfilePublished.value && publicBookingUrl.value) {
+      await copyProfileValue(preferences.locale.value === 'es' ? 'Enlace de booking' : 'Booking link', publicBookingUrl.value, 'booking_link')
+      return
+    }
+    await changeView('profile')
+    await nextTick()
+    await toggleProfileEditSection('distribution')
+    return
+  }
+  if (id === 'booking') {
+    await changeView('bookings')
+    await nextTick()
+    openCueCapture()
+  }
+}
+
 const publicProfileUrl = computed(() => {
   const slug = selectedArtist.value?.slug || artistProfiles.activeProfile.value?.artist?.slug || ''
   if (!slug) return ''
@@ -2068,46 +2127,72 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
 
-        <div class="summary-grid">
-          <article class="summary-card summary-card--pending"><span>{{ copy.realBookings }}</span><strong>{{ cueCoreLoading ? '…' : realBookings.filter(item => !item.archived_at).length }}</strong><p>{{ bookingCoreWorkspaceId ? (preferences.locale.value === 'es' ? 'Bookings guardados en tu workspace.' : 'Bookings saved in your workspace.') : copy.realBookingsBody }}</p></article>
-          <article class="summary-card"><span>{{ copy.holdsMonth }} · {{ monthLabel }}</span><strong>{{ holdCount }}</strong><p>{{ copy.holdsBody }}</p></article>
-          <article class="summary-card"><span>{{ copy.confirmed }} · {{ monthLabel }}</span><strong>{{ confirmedCount }}</strong><p>{{ copy.confirmedBody }}</p></article>
-          <article class="summary-card"><span>{{ copy.occupiedDays }} · {{ monthLabel }}</span><strong>{{ occupiedDays }}</strong><p>{{ copy.occupiedBody }}</p></article>
-          <button class="summary-card summary-card--profile" type="button" @click="activeView = 'profile'"><span>{{ copy.profileCard }}</span><strong>{{ profileCompletion }}%</strong><p>{{ copy.profileCardBody }} →</p></button>
-        </div>
+        <section v-if="firstRunActivation" class="activation-panel">
+          <div class="activation-panel__intro">
+            <p class="eyebrow">{{ preferences.locale.value === 'es' ? 'PRIMEROS PASOS / ACTIVACIÓN' : 'FIRST STEPS / ACTIVATION' }}</p>
+            <h2>{{ preferences.locale.value === 'es' ? 'TU WORKSPACE ESTÁ LISTO.' : 'YOUR WORKSPACE IS READY.' }}</h2>
+            <p>{{ preferences.locale.value === 'es'
+              ? 'Todavía no hay solicitudes que mostrar. Activa estas tres piezas y Cuebooker empezará a trabajar contigo.'
+              : 'There are no enquiries to show yet. Activate these three pieces and Cuebooker will start working with you.' }}</p>
+          </div>
+          <div class="activation-panel__steps">
+            <article v-for="step in activationSteps" :key="step.id" class="activation-step" :class="{ 'activation-step--done': step.done }">
+              <span class="activation-step__index">{{ step.done ? '✓' : step.index }}</span>
+              <div>
+                <h3>{{ step.title }}</h3>
+                <p>{{ step.body }}</p>
+              </div>
+              <button type="button" @click="runActivationStep(step.id)">{{ step.done && step.id !== 'share' ? (preferences.locale.value === 'es' ? 'Revisar' : 'Review') : step.action }}</button>
+            </article>
+          </div>
+          <div class="activation-panel__footer">
+            <span>{{ preferences.locale.value === 'es' ? 'Tu enlace de booking' : 'Your booking link' }}</span>
+            <code>{{ publicBookingUrl || 'cuebooker.com/tu-artista?booking=1' }}</code>
+          </div>
+        </section>
 
-        <BookingCoreAttention
-          v-if="bookingCoreWorkspaceId"
-          :workspace-id="bookingCoreWorkspaceId"
-          :artist-id="selectedArtistId"
-          :bookings="realBookings.filter(item => !item.archived_at)"
-          :locale="preferences.locale.value"
-          :refresh-key="bookingCoreOperationsRevision"
-          @changed="handleBookingCoreOperationsChanged"
-          @open-bookings="activeView = 'bookings'"
-          @open-booking="openRealBooking"
-        />
+        <template v-else>
+          <div class="summary-grid">
+            <article class="summary-card summary-card--pending"><span>{{ copy.realBookings }}</span><strong>{{ cueCoreLoading ? '…' : realBookings.filter(item => !item.archived_at).length }}</strong><p>{{ bookingCoreWorkspaceId ? (preferences.locale.value === 'es' ? 'Bookings guardados en tu workspace.' : 'Bookings saved in your workspace.') : copy.realBookingsBody }}</p></article>
+            <article class="summary-card"><span>{{ copy.holdsMonth }} · {{ monthLabel }}</span><strong>{{ holdCount }}</strong><p>{{ copy.holdsBody }}</p></article>
+            <article class="summary-card"><span>{{ copy.confirmed }} · {{ monthLabel }}</span><strong>{{ confirmedCount }}</strong><p>{{ copy.confirmedBody }}</p></article>
+            <article class="summary-card"><span>{{ copy.occupiedDays }} · {{ monthLabel }}</span><strong>{{ occupiedDays }}</strong><p>{{ copy.occupiedBody }}</p></article>
+            <button class="summary-card summary-card--profile" type="button" @click="activeView = 'profile'"><span>{{ copy.profileCard }}</span><strong>{{ profileCompletion }}%</strong><p>{{ copy.profileCardBody }} →</p></button>
+          </div>
 
-        <div class="overview-grid">
-          <section class="panel agenda-panel">
-            <div class="panel-heading"><div><p class="eyebrow">{{ copy.agendaEyebrow }} · {{ monthLabel }}</p><h2>{{ copy.upcoming }}</h2></div><button type="button" @click="changeView('calendar')">{{ copy.viewCalendar }}</button></div>
-            <div v-if="overviewAgendaItems.length" class="agenda-list">
-              <button v-for="item in overviewAgendaItems" :key="item.id" type="button" @click="openOverviewAgenda(item)">
-                <time>{{ shortDate(item.date) }}</time>
-                <span><strong>{{ item.label }}</strong><small>{{ item.detail }}</small></span>
-                <i :class="`status-dot status-dot--${item.status}`" />
-              </button>
-            </div>
-            <div v-else class="panel-empty"><p>{{ copy.noUpcoming }}</p><button type="button" @click="openCalendarCreate()">{{ copy.addSlot }}</button></div>
-          </section>
+          <BookingCoreAttention
+            v-if="bookingCoreWorkspaceId"
+            :workspace-id="bookingCoreWorkspaceId"
+            :artist-id="selectedArtistId"
+            :bookings="realBookings.filter(item => !item.archived_at)"
+            :locale="preferences.locale.value"
+            :refresh-key="bookingCoreOperationsRevision"
+            @changed="handleBookingCoreOperationsChanged"
+            @open-bookings="activeView = 'bookings'"
+            @open-booking="openRealBooking"
+          />
 
-          <aside class="panel next-panel">
-            <p class="eyebrow">{{ cueEntryCopy.eyebrow }}</p>
-            <h2>{{ preferences.locale.value === 'es' ? '¿HA PASADO ALGO?' : 'DID SOMETHING HAPPEN?' }}</h2>
-            <p>{{ preferences.locale.value === 'es' ? 'Captura algo en segundos y continúa desde el booking.' : 'Capture it in seconds and continue from the booking.' }}</p>
-            <button type="button" :disabled="!bookingCoreWorkspaceId" @click="openCueCapture">+ CUE</button>
-          </aside>
-        </div>
+          <div class="overview-grid">
+            <section class="panel agenda-panel">
+              <div class="panel-heading"><div><p class="eyebrow">{{ copy.agendaEyebrow }} · {{ monthLabel }}</p><h2>{{ copy.upcoming }}</h2></div><button type="button" @click="changeView('calendar')">{{ copy.viewCalendar }}</button></div>
+              <div v-if="overviewAgendaItems.length" class="agenda-list">
+                <button v-for="item in overviewAgendaItems" :key="item.id" type="button" @click="openOverviewAgenda(item)">
+                  <time>{{ shortDate(item.date) }}</time>
+                  <span><strong>{{ item.label }}</strong><small>{{ item.detail }}</small></span>
+                  <i :class="`status-dot status-dot--${item.status}`" />
+                </button>
+              </div>
+              <div v-else class="panel-empty"><p>{{ copy.noUpcoming }}</p><button type="button" @click="openCalendarCreate()">{{ copy.addSlot }}</button></div>
+            </section>
+
+            <aside class="panel next-panel">
+              <p class="eyebrow">{{ cueEntryCopy.eyebrow }}</p>
+              <h2>{{ preferences.locale.value === 'es' ? '¿HA PASADO ALGO?' : 'DID SOMETHING HAPPEN?' }}</h2>
+              <p>{{ preferences.locale.value === 'es' ? 'Captura algo en segundos y continúa desde el booking.' : 'Capture it in seconds and continue from the booking.' }}</p>
+              <button type="button" :disabled="!bookingCoreWorkspaceId" @click="openCueCapture">+ CUE</button>
+            </aside>
+          </div>
+        </template>
         <CueUpgradePrompt
           v-if="cueCapacityBlocked"
           entitlement="booking.unlimited"
@@ -3996,6 +4081,114 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
     color:var(--cue-accent)!important;
     box-shadow:inset 0 -2px 0 var(--cue-accent)!important;
   }
+}
+
+.activation-panel{
+  overflow:hidden;
+  margin-top:24px;
+  border:1px solid var(--workspace-line,var(--cue-border));
+  background:
+    radial-gradient(circle at 82% 0%,color-mix(in srgb,var(--cue-accent) 12%,transparent),transparent 34%),
+    var(--cue-surface);
+  box-shadow:0 28px 90px var(--cue-shadow);
+}
+.activation-panel__intro{
+  max-width:820px;
+  padding:clamp(28px,5vw,58px);
+}
+.activation-panel__intro h2{
+  max-width:760px;
+  margin:8px 0 16px;
+  font-size:clamp(2.6rem,6vw,5.5rem);
+  line-height:.88;
+  letter-spacing:-.055em;
+}
+.activation-panel__intro>p:last-child{
+  max-width:640px;
+  margin:0;
+  color:var(--cue-muted);
+  font-size:15px;
+  line-height:1.6;
+}
+.activation-panel__steps{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  border-top:1px solid var(--workspace-line,var(--cue-border));
+}
+.activation-step{
+  min-width:0;
+  padding:26px;
+  border-right:1px solid var(--workspace-line,var(--cue-border));
+}
+.activation-step:last-child{border-right:0}
+.activation-step__index{
+  display:grid;
+  width:34px;
+  height:34px;
+  margin-bottom:28px;
+  place-items:center;
+  border:1px solid var(--cue-border);
+  color:var(--cue-accent);
+  font:800 11px/1 monospace;
+}
+.activation-step h3{
+  margin:0 0 9px;
+  font-size:1.05rem;
+}
+.activation-step p{
+  min-height:66px;
+  margin:0 0 22px;
+  color:var(--cue-muted);
+  font-size:12px;
+  line-height:1.55;
+}
+.activation-step button{
+  min-height:42px;
+  padding:0 15px;
+  border:1px solid var(--cue-border);
+  background:transparent;
+  color:var(--cue-text);
+  font:800 10px/1 monospace;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  cursor:pointer;
+}
+.activation-step button:hover,
+.activation-step button:focus-visible{
+  border-color:var(--cue-accent);
+  color:var(--cue-accent);
+}
+.activation-step--done .activation-step__index{
+  border-color:color-mix(in srgb,var(--cue-accent) 58%,var(--cue-border));
+  background:color-mix(in srgb,var(--cue-accent) 10%,transparent);
+}
+.activation-panel__footer{
+  display:flex;
+  align-items:center;
+  gap:18px;
+  padding:18px 26px;
+  border-top:1px solid var(--workspace-line,var(--cue-border));
+  background:color-mix(in srgb,var(--cue-bg) 70%,transparent);
+}
+.activation-panel__footer span{
+  color:var(--cue-muted);
+  font:800 9px/1 monospace;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.activation-panel__footer code{
+  overflow:hidden;
+  color:var(--cue-text);
+  font-size:11px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+@media(max-width:900px){
+  .activation-panel__steps{grid-template-columns:1fr}
+  .activation-step{border-right:0;border-bottom:1px solid var(--workspace-line,var(--cue-border))}
+  .activation-step:last-child{border-bottom:0}
+  .activation-step p{min-height:0}
+  .activation-panel__footer{align-items:flex-start;flex-direction:column;gap:7px}
 }
 
 /* Broad skeletons mirror the real page blocks, not their inner text. */
