@@ -65,7 +65,17 @@ onMounted(async () => {
   if (!(hostname.startsWith('pr-') && hostname.endsWith('.cuebooker-staging.pages.dev')) && hostname !== 'localhost' && hostname !== '127.0.0.1') {
     allowed.value = false
     await navigateTo('/')
+    return
   }
+  // The static preview is prerendered without query parameters. Restore a direct
+  // link after hydration, when the browser's actual query is available.
+  const query = new URLSearchParams(window.location.search)
+  const artistId = query.get('artist') || ''
+  selectedArtistId.value = artists.value.some(item => item.id === artistId && item.roster_active) ? artistId : ''
+  const requestedView = views.includes(query.get('view') as DemoView) ? query.get('view') as DemoView : 'overview'
+  view.value = !selectedArtistId.value && ['profile', 'passport', 'cue-id'].includes(requestedView) ? 'overview' : requestedView
+  const bookingId = query.get('booking') || ''
+  focusBookingId.value = demoBookings.value.some(item => item.id === bookingId && item.artist_id === selectedArtistId.value) ? bookingId : ''
 })
 watch(selectedArtist, artist => {
   if (!artist && ['profile', 'passport', 'cue-id'].includes(view.value)) view.value = 'overview'
