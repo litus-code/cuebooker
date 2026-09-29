@@ -517,11 +517,7 @@ const profileCompletion = computed(() => {
 })
 const firstRunActivation = computed(() =>
   bookingSurfaceReady.value
-  && (
-    profileCompletion.value < 70
-    || !publicProfilePublished.value
-    || realBookings.value.length === 0
-  )
+  && realBookings.value.length === 0
 )
 
 const activationSteps = computed(() => {
