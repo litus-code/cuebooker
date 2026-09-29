@@ -45,6 +45,7 @@ const copy = computed(() => props.locale === 'es' ? {
   links: 'Escuchar / seguir',
   based: 'Base',
   years: 'Años en activo',
+  eventTypes: 'Tipos de evento',
   preview: 'Vista previa del perfil público'
 } : {
   booking: 'Request booking',
@@ -54,6 +55,7 @@ const copy = computed(() => props.locale === 'es' ? {
   links: 'Listen / follow',
   based: 'Based in',
   years: 'Years active',
+  eventTypes: 'Event types',
   preview: 'Public profile preview'
 })
 
@@ -190,6 +192,7 @@ onBeforeUnmount(() => {
         <div v-if="location"><dt>{{ copy.based }}</dt><dd>{{ location }}</dd></div>
         <div v-if="profile.yearsActive !== null"><dt>{{ copy.years }}</dt><dd>{{ profile.yearsActive }}</dd></div>
         <div v-if="profile.performanceFormats.length"><dt>{{ copy.formats }}</dt><dd>{{ profile.performanceFormats.join(' · ') }}</dd></div>
+        <div v-if="profile.eventTypes.length"><dt>{{ copy.eventTypes }}</dt><dd>{{ profile.eventTypes.join(' · ') }}</dd></div>
       </dl>
     </section>
 
