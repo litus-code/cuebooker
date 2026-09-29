@@ -160,6 +160,8 @@ const publicProfileWorkspaceId = ref('')
 const publicPublishingSaving = ref(false)
 const publicPublishingMessage = ref('')
 const profileShareMessage = ref('')
+const profileGuideActive = ref(false)
+const profileDistributionVisited = ref(false)
 const tourCardStyle = ref<Record<string, string>>({})
 let tourPositionTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -520,6 +522,46 @@ const firstRunActivation = computed(() =>
   && realBookings.value.length === 0
 )
 
+const profileGuideSteps = computed(() => {
+  const es = preferences.locale.value === 'es'
+  return [
+    {
+      id: 'complete',
+      index: '01',
+      title: es ? 'Completa tu perfil' : 'Complete your profile',
+      body: es ? 'Añade la información mínima para que tu perfil público tenga sentido.' : 'Add the minimum information your public profile needs.',
+      done: profileCompletion.value >= 70,
+      action: es ? 'Completar ahora' : 'Complete now'
+    },
+    {
+      id: 'publish',
+      index: '02',
+      title: es ? 'Publica tu perfil' : 'Publish your profile',
+      body: es ? 'Haz visible tu perfil cuando esté suficientemente completo.' : 'Make your profile public once it is sufficiently complete.',
+      done: publicProfilePublished.value,
+      action: es ? 'Publicar perfil' : 'Publish profile'
+    },
+    {
+      id: 'booking',
+      index: '03',
+      title: es ? 'Activa tu booking' : 'Enable booking requests',
+      body: es ? 'Abre la recepción de solicitudes desde tu perfil público.' : 'Open booking enquiries from your public profile.',
+      done: publicProfileAcceptingRequests.value,
+      action: es ? 'Activar booking' : 'Enable booking'
+    },
+    {
+      id: 'distribution',
+      index: '04',
+      title: es ? 'Comparte tu perfil' : 'Share your profile',
+      body: es ? 'Revisa el enlace, el QR y el iframe que puedes usar fuera de Cuebooker.' : 'Review the link, QR and iframe you can use outside Cuebooker.',
+      done: profileDistributionVisited.value,
+      action: es ? 'Ver distribución' : 'View distribution'
+    }
+  ]
+})
+
+const profileGuideComplete = computed(() => profileGuideSteps.value.every(step => step.done))
+
 const activationSteps = computed(() => {
   const es = preferences.locale.value === 'es'
   return [
@@ -552,9 +594,53 @@ const activationSteps = computed(() => {
   ]
 })
 
+
+async function runProfileGuideStep(id: string) {
+  profileGuideActive.value = true
+
+  if (id === 'complete') {
+    if (profileEditSection.value !== 'identity') await toggleProfileEditSection('identity')
+    return
+  }
+
+  if (id === 'publish') {
+    if (profileCompletion.value < 70) {
+      publicPublishingMessage.value = preferences.locale.value === 'es'
+        ? 'Completa al menos el 70% del perfil antes de publicarlo.'
+        : 'Complete at least 70% of the profile before publishing it.'
+      if (profileEditSection.value !== 'identity') await toggleProfileEditSection('identity')
+      return
+    }
+    await updatePublicProfilePublished(true)
+    return
+  }
+
+  if (id === 'booking') {
+    if (!publicProfilePublished.value) {
+      publicPublishingMessage.value = preferences.locale.value === 'es'
+        ? 'Publica primero tu perfil para poder abrir solicitudes de booking.'
+        : 'Publish your profile before opening booking enquiries.'
+      return
+    }
+    await updatePublicAcceptingRequests(true)
+    return
+  }
+
+  if (id === 'distribution') {
+    if (profileEditSection.value !== 'distribution') await toggleProfileEditSection('distribution')
+    profileDistributionVisited.value = true
+    if (import.meta.client && selectedArtistId.value) {
+      localStorage.setItem(`cuebooker.profile.distribution.seen.${selectedArtistId.value}`, 'true')
+    }
+  }
+}
+
 async function runActivationStep(id: string) {
   if (id === 'profile') {
+    profileGuideActive.value = true
     await changeView('profile')
+    await nextTick()
+    await runProfileGuideStep('complete')
     return
   }
   if (id === 'share') {
@@ -562,9 +648,10 @@ async function runActivationStep(id: string) {
       await copyProfileValue(preferences.locale.value === 'es' ? 'Enlace de booking' : 'Booking link', publicBookingUrl.value, 'booking_link')
       return
     }
+    profileGuideActive.value = true
     await changeView('profile')
     await nextTick()
-    await toggleProfileEditSection('distribution')
+    await runProfileGuideStep(publicProfilePublished.value ? 'booking' : 'publish')
     return
   }
   if (id === 'booking') {
@@ -848,6 +935,14 @@ onBeforeUnmount(() => {
   if (tourPositionTimer) window.clearTimeout(tourPositionTimer)
   document.querySelectorAll<HTMLElement>('.tour-focus').forEach(element => element.classList.remove('tour-focus'))
 })
+watch(selectedArtistId, artistId => {
+  if (!import.meta.client || !artistId) {
+    profileDistributionVisited.value = false
+    return
+  }
+  profileDistributionVisited.value = localStorage.getItem(`cuebooker.profile.distribution.seen.${artistId}`) === 'true'
+})
+
 watch(tourStep, async (step) => {
   const item = tourSteps.value[step]
   if (!item) return
@@ -1651,6 +1746,16 @@ async function loadArtistProfile() {
 
 async function updatePublicProfilePublished(enabled: boolean) {
   if (!selectedArtistId.value || !canEditSelectedArtist.value) return
+  if (enabled && profileCompletion.value < 70) {
+    profileGuideActive.value = true
+    publicPublishingMessage.value = preferences.locale.value === 'es'
+      ? 'Completa al menos el 70% del perfil antes de publicarlo.'
+      : 'Complete at least 70% of the profile before publishing it.'
+    if (activeView.value === 'profile' && profileEditSection.value !== 'identity') {
+      await toggleProfileEditSection('identity')
+    }
+    return
+  }
   publicPublishingSaving.value = true
   publicPublishingMessage.value = ''
   try {
@@ -2578,6 +2683,29 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <p v-if="profileLoading" class="loading-message">{{ copy.loading }}</p>
 
         <template v-else>
+          <aside v-if="profileGuideActive && !profileGuideComplete" class="profile-activation-guide">
+            <div class="profile-activation-guide__intro">
+              <p class="eyebrow">{{ preferences.locale.value === 'es' ? 'ACTIVACIÓN / PERFIL' : 'ACTIVATION / PROFILE' }}</p>
+              <h2>{{ preferences.locale.value === 'es' ? 'DEJA TU PERFIL LISTO PARA RECIBIR BOOKINGS.' : 'GET YOUR PROFILE READY FOR BOOKINGS.' }}</h2>
+              <p>{{ preferences.locale.value === 'es'
+                ? 'Completa estos pasos en orden. Cuebooker te llevará a cada punto.'
+                : 'Complete these steps in order. Cuebooker will take you to each point.' }}</p>
+            </div>
+            <div class="profile-activation-guide__steps">
+              <button
+                v-for="step in profileGuideSteps"
+                :key="step.id"
+                type="button"
+                :class="{ done: step.done }"
+                @click="runProfileGuideStep(step.id)"
+              >
+                <span>{{ step.done ? '✓' : step.index }}</span>
+                <div><strong>{{ step.title }}</strong><small>{{ step.body }}</small></div>
+                <b>{{ step.done ? (preferences.locale.value === 'es' ? 'Hecho' : 'Done') : step.action }}</b>
+              </button>
+            </div>
+          </aside>
+
           <WorkspaceArtistProfile
             :profile="publicProfilePreview"
             :published="publicProfilePublished"
@@ -2592,6 +2720,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               media: publicPassportMedia
             }"
             :passport-public-enabled="publicPassportEnabled"
+            :publish-ready="profileCompletion >= 70"
             @edit="toggleProfileEditSection($event)"
             @preview="openProfilePreview"
             @toggle-published="updatePublicProfilePublished($event)"
@@ -2924,19 +3053,21 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       </aside>
     </div>
 
-    <div v-if="editorOpen" class="editor-backdrop" @click.self="closeEditor">
-      <aside class="editor-panel calendar-editor-panel" role="dialog" aria-modal="true" :aria-labelledby="editingBlockId ? 'editor-title-edit' : 'editor-title-new'" tabindex="-1">
-        <div class="editor-heading"><div><p class="eyebrow">{{ editingBlockId ? copy.editSlot : copy.newSlot }}</p><h2 :id="editingBlockId ? 'editor-title-edit' : 'editor-title-new'">{{ selectedDateLabel }}</h2></div><button type="button" :aria-label="copy.close" @click="closeEditor">×</button></div>
-        <form @submit.prevent="saveBlock">
-          <label><span>{{ copy.privateLabel }}</span><input v-model="blockLabel" maxlength="160" :placeholder="copy.privatePlaceholder"></label>
-          <div class="time-fields"><label><span>{{ copy.start }}</span><input v-model="startTime" type="time" required></label><label><span>{{ copy.end }}</span><input v-model="endTime" type="time" required></label></div>
-          <p v-if="!validTimeRange" class="form-hint form-hint--error">{{ copy.invalidTime }}</p>
-          <label><span>{{ copy.status }}</span><select v-model="blockStatus"><option value="unavailable">{{ copy.unavailable }}</option><option value="hold">Hold</option><option value="confirmed">{{ copy.confirmedStatus }}</option></select></label>
-          <button class="primary-button" type="submit" :disabled="saving || !validTimeRange">{{ saving ? copy.saving : editingBlockId ? copy.saveChanges : copy.createSlot }}</button>
-          <button v-if="editingBlockId" class="delete-button" type="button" :disabled="saving" @click="removeBlock">{{ copy.deleteSlot }}</button>
-        </form>
-      </aside>
-    </div>
+    <Teleport to="body">
+      <div v-if="editorOpen" class="editor-backdrop calendar-editor-backdrop" @click.self="closeEditor">
+        <aside class="editor-panel calendar-editor-panel" role="dialog" aria-modal="true" :aria-labelledby="editingBlockId ? 'editor-title-edit' : 'editor-title-new'" tabindex="-1">
+          <div class="editor-heading calendar-editor-heading"><div><p class="eyebrow">{{ editingBlockId ? copy.editSlot : copy.newSlot }}</p><h2 :id="editingBlockId ? 'editor-title-edit' : 'editor-title-new'">{{ selectedDateLabel }}</h2></div><button type="button" :aria-label="copy.close" @click="closeEditor">×</button></div>
+          <form @submit.prevent="saveBlock">
+            <label><span>{{ copy.privateLabel }}</span><input v-model="blockLabel" maxlength="160" :placeholder="copy.privatePlaceholder"></label>
+            <div class="time-fields"><label><span>{{ copy.start }}</span><input v-model="startTime" type="time" required></label><label><span>{{ copy.end }}</span><input v-model="endTime" type="time" required></label></div>
+            <p v-if="!validTimeRange" class="form-hint form-hint--error">{{ copy.invalidTime }}</p>
+            <label><span>{{ copy.status }}</span><select v-model="blockStatus"><option value="unavailable">{{ copy.unavailable }}</option><option value="hold">Hold</option><option value="confirmed">{{ copy.confirmedStatus }}</option></select></label>
+            <button class="primary-button" type="submit" :disabled="saving || !validTimeRange">{{ saving ? copy.saving : editingBlockId ? copy.saveChanges : copy.createSlot }}</button>
+            <button v-if="editingBlockId" class="delete-button" type="button" :disabled="saving" @click="removeBlock">{{ copy.deleteSlot }}</button>
+          </form>
+        </aside>
+      </div>
+    </Teleport>
 
     <aside v-if="currentTour" class="tour-card" role="dialog" aria-live="polite" aria-labelledby="tour-card-title" :style="tourCardStyle">
       <button class="tour-card__close" type="button" :aria-label="copy.closeTour" @click="closeTour">×</button>
@@ -3180,6 +3311,21 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-distribution-grid__wide { grid-column:1 / -1; }
 .profile-distribution-editor > small { color:var(--cue-toggle); font-weight:800; }
 
+.profile-activation-guide { display:grid; gap:16px; margin-bottom:18px; padding:20px; border:1px solid color-mix(in srgb,var(--cue-accent) 46%,var(--cue-border)); background:color-mix(in srgb,var(--cue-accent) 5%,var(--cue-surface)); }
+.profile-activation-guide__intro h2 { max-width:780px; margin:8px 0 10px; font-size:clamp(1.7rem,4vw,3rem); line-height:.95; text-transform:uppercase; }
+.profile-activation-guide__intro > p:last-child { max-width:700px; margin:0; color:var(--cue-muted); font-size:12px; line-height:1.5; }
+.profile-activation-guide__steps { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); border-top:1px solid var(--cue-border); border-left:1px solid var(--cue-border); }
+.profile-activation-guide__steps > button { display:grid; align-content:start; gap:14px; min-height:180px; padding:16px; border:0; border-right:1px solid var(--cue-border); border-bottom:1px solid var(--cue-border); background:var(--cue-surface); color:var(--cue-text); text-align:left; cursor:pointer; }
+.profile-activation-guide__steps > button > span { display:grid; width:30px; height:30px; place-items:center; border:1px solid var(--cue-border); color:var(--cue-accent); font:800 9px/1 monospace; }
+.profile-activation-guide__steps > button div { display:grid; gap:6px; }
+.profile-activation-guide__steps > button strong { font-size:13px; }
+.profile-activation-guide__steps > button small { color:var(--cue-muted); font-size:10px; line-height:1.45; }
+.profile-activation-guide__steps > button b { margin-top:auto; color:var(--cue-accent); font:800 8px/1.2 monospace; text-transform:uppercase; }
+.profile-activation-guide__steps > button.done { opacity:.62; }
+.profile-activation-guide__steps > button.done b { color:var(--cue-muted); }
+@media(max-width:900px){.profile-activation-guide__steps{grid-template-columns:1fr 1fr}}
+@media(max-width:680px){.profile-activation-guide{padding:14px}.profile-activation-guide__steps{grid-template-columns:1fr}.profile-activation-guide__steps>button{min-height:0}}
+
 .profile-view--hub { display:grid; gap:18px; }
 .profile-hub-heading { margin-bottom:4px; }
 .profile-hub-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
@@ -3352,6 +3498,30 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .day-heading h2 { max-width: 210px; font-size: 17px; }
   .timeline { height: 520px; }
   .editor-panel { border-left: 0; }
+  .calendar-editor-backdrop { display:block; background:var(--cue-surface); }
+  .calendar-editor-panel {
+    width:100%;
+    min-height:100dvh;
+    max-height:100dvh;
+    padding:0 20px max(24px, env(safe-area-inset-bottom));
+    border:0;
+    box-shadow:none;
+    overscroll-behavior:contain;
+  }
+  .calendar-editor-heading {
+    position:sticky;
+    z-index:2;
+    top:0;
+    margin:0 -20px 20px;
+    padding:max(18px, env(safe-area-inset-top)) 20px 18px;
+    border-bottom:1px solid var(--cue-border);
+    background:var(--cue-surface);
+  }
+  .calendar-editor-heading > button {
+    flex:0 0 44px;
+    width:44px;
+    height:44px;
+  }
   .time-fields { grid-template-columns: 1fr; }
   .tour-card { right: 16px; bottom: 86px; }
   .history-list > button { grid-template-columns: 1fr; gap: 7px; padding: 16px 0; border-bottom: 1px solid var(--cue-border); }
