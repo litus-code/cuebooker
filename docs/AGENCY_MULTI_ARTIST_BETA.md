@@ -2,6 +2,10 @@
 
 Status: PR preview implementation, 28 September 2026. Production untouched.
 
+## Anonymous visual review
+
+PR #96 exposes `/preview-agency` on its Cloudflare preview branch. It uses the real `AgencyWorkspace` global component with an in-memory demo roster, bookings, holds, contacts and activity; no Supabase reads or writes run from this route. The same page lets reviewers switch global/artist context, navigate the roster, filter bookings and calendar, open an illustrative booking, and simulate adding or retiring an artist. The individual Profile, Passport and CUE ID tabs show navigation context with a visible read-only notice; they do not pretend to be the live editor. The page is gated to the staging build and the PR preview hostname, and has `noindex,nofollow`. Authenticated `/workspace`, RLS and production are unchanged.
+
 ## Architecture decision
 
 `workspaces` is the Booking Core tenant, and `workspace_artists` is the operational roster. `organizations` and `organization_artists` remain the legacy identity/onboarding bridge. The agency organization maps to one workspace through `workspace_legacy_organizations`; no third Agency–Artist join is introduced. A new artist is created by `add_agency_artist` and linked atomically to both relations. The workspace link carries `roster_active`: retiring an artist hides them from current agency operations without deleting the artist or the historical Booking foreign keys. An owner may restore them.

@@ -4,6 +4,13 @@ import type { WorkspaceActivityHistoryRow } from '../services/bookingCoreApi'
 import { agencyActiveBookingCount, filterRosterBookings } from '../domain/agencyRoster'
 
 type RosterArtist = { id: string; stage_name: string; slug: string; city?: string | null; artist_image_path?: string | null; cover_image_path?: string | null; roster_active?: boolean }
+type AgencyDemoData = {
+  bookings: CoreBooking[]
+  activities: WorkspaceActivityHistoryRow[]
+  holds: Array<Hold & { bookings: { artist_id: string } }>
+  contacts: Array<{ id: string; name: string }>
+  counterparties: Array<{ id: string; name: string }>
+}
 const props = defineProps<{
   workspaceId: string
   agencyName: string
@@ -13,6 +20,9 @@ const props = defineProps<{
   canManageRoster: boolean
   createArtist: (name: string, slug: string, city: string) => Promise<boolean>
   revision?: number
+  demoData?: AgencyDemoData
+  initialMonth?: string
+  contextArtistName?: string
 }>()
 const emit = defineEmits<{
   selectArtist: [artistId: string, view: 'overview' | 'profile']
@@ -39,8 +49,8 @@ const counterparties = ref<Array<{ id: string; name: string }>>([])
 const filterArtist = ref(typeof route.query.rosterArtist === 'string' ? route.query.rosterArtist : 'all')
 const calendarArtists = ref<string[]>(typeof route.query.rosterCalendar === 'string' ? route.query.rosterCalendar.split(',').filter(Boolean) : [])
 const calendarFilterInitialized = ref(typeof route.query.rosterCalendar === 'string')
-const month = ref(new Date().toISOString().slice(0, 7) + '-01')
-const selectedDay = ref(new Date().toISOString().slice(0, 10))
+const month = ref(props.initialMonth || new Date().toISOString().slice(0, 7) + '-01')
+const selectedDay = ref(props.initialMonth || new Date().toISOString().slice(0, 10))
 const artistName = ref('')
 const artistSlug = ref('')
 const artistCity = ref('')
@@ -74,7 +84,9 @@ const activeCount = computed(() => exactActiveCount.value ?? `≥${agencyActiveB
 const pendingHolds = computed(() => holds.value.filter(item => item.status === 'active' && activeIds.value.has(item.bookings.artist_id)).length)
 const needsAttention = computed(() => summaryBookings.value.filter(item => activeIds.value.has(item.artist_id) && !item.archived_at && ['new', 'waiting_response'].includes(item.status)).slice(0, 5))
 const isEs = computed(() => props.locale === 'es')
-const title = computed(() => ({ overview: isEs.value ? 'PULSO DEL ROSTER.' : 'THE ROSTER PULSE.', bookings: 'BOOKINGS / ROSTER', calendar: isEs.value ? 'CALENDARIO DEL ROSTER.' : 'ROSTER CALENDAR.', history: 'ACTIVITY / ROSTER', roster: 'EL ROSTER.' })[props.view])
+const title = computed(() => props.contextArtistName && props.view !== 'roster'
+  ? ({ overview: props.contextArtistName.toUpperCase(), bookings: `BOOKINGS / ${props.contextArtistName}`, calendar: `${isEs.value ? 'CALENDARIO' : 'CALENDAR'} / ${props.contextArtistName}`, history: `ACTIVITY / ${props.contextArtistName}` })[props.view]
+  : ({ overview: isEs.value ? 'PULSO DEL ROSTER.' : 'THE ROSTER PULSE.', bookings: 'BOOKINGS / ROSTER', calendar: isEs.value ? 'CALENDARIO DEL ROSTER.' : 'ROSTER CALENDAR.', history: 'ACTIVITY / ROSTER', roster: 'EL ROSTER.' })[props.view])
 const monthLabel = computed(() => new Intl.DateTimeFormat(isEs.value ? 'es-ES' : 'en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(currentMonth.value))
 
 function label(id: string) { return props.artists.find(item => item.id === id)?.stage_name || (isEs.value ? 'Artista' : 'Artist') }
@@ -116,6 +128,7 @@ watch(calendarArtists, ids => {
 watch(() => props.artists.map(item => `${item.id}:${item.artist_image_path || item.cover_image_path || ''}`).join(','), async () => {
   for (const url of Object.values(portraitUrls.value)) URL.revokeObjectURL(url)
   portraitUrls.value = {}
+  if (props.demoData) return
   for (const artist of props.artists) {
     const path = artist.artist_image_path || artist.cover_image_path
     if (!path) continue
@@ -130,6 +143,22 @@ async function load() {
   const current = ++request
   loading.value = true
   error.value = ''
+  if (props.demoData) {
+    const ids = activeIds.value
+    const rows = props.demoData.bookings.filter(item => ids.has(item.artist_id))
+    const filtered = filterArtist.value === 'all' ? rows : rows.filter(item => item.artist_id === filterArtist.value)
+    bookings.value = filtered.slice(page.value * pageSize, (page.value + 1) * pageSize)
+    summaryBookings.value = rows.slice(0, 100)
+    exactActiveCount.value = agencyActiveBookingCount(rows)
+    monthBookings.value = rows.filter(item => item.status === 'confirmed' && !item.archived_at && item.event_date && item.event_date >= month.value && item.event_date < monthEnd.value)
+    const activityRows = props.demoData.activities.filter(item => ids.has(item.bookings.artist_id) && (props.view !== 'history' || filterArtist.value === 'all' || item.bookings.artist_id === filterArtist.value))
+    activities.value = activityRows.slice((props.view === 'history' ? activityPage.value : 0) * pageSize, ((props.view === 'history' ? activityPage.value : 0) + 1) * pageSize)
+    holds.value = props.demoData.holds.filter(item => ids.has(item.bookings.artist_id) && item.event_date >= month.value && item.event_date < monthEnd.value)
+    contacts.value = props.demoData.contacts
+    counterparties.value = props.demoData.counterparties
+    loading.value = false
+    return
+  }
   try {
     const [rows, summaryRows, count, monthRows, activityRows, holdRows, contactRows, partyRows] = await Promise.all([
       api.listRosterBookings(props.workspaceId, page.value * pageSize, pageSize, filterArtist.value === 'all' ? undefined : filterArtist.value, activeArtists.value.map(item => item.id)),
@@ -156,7 +185,7 @@ async function load() {
   }
 }
 watch(filterArtist, () => { page.value = 0; activityPage.value = 0 })
-watch(() => [props.workspaceId, props.revision, month.value, page.value, activityPage.value, filterArtist.value, props.view], load, { immediate: true })
+watch(() => [props.workspaceId, props.revision, month.value, page.value, activityPage.value, filterArtist.value, props.view, props.artists.map(item => `${item.id}:${item.roster_active}`).join(',')], load, { immediate: true })
 async function submitArtist() {
   if (!props.canManageRoster || !artistName.value.trim() || !artistSlug.value.trim()) return
   submittingArtist.value = true
@@ -176,7 +205,7 @@ function confirmRetire(artist: RosterArtist) {
 
 <template>
   <section class="agency" :aria-busy="loading">
-    <div class="agency-heading"><div><p>AGENCY / {{ agencyName }}</p><h1>{{ title }}</h1><span>{{ isEs ? 'Todos los artistas · Operación global' : 'All artists · Global operations' }}</span></div><button v-if="view !== 'roster'" type="button" @click="emit('navigate', 'roster')">{{ isEs ? 'Ver roster' : 'View roster' }} ↗</button></div>
+    <div class="agency-heading"><div><p>AGENCY / {{ agencyName }}</p><h1>{{ title }}</h1><span>{{ contextArtistName ? (isEs ? `Artista seleccionado · ${contextArtistName}` : `Selected artist · ${contextArtistName}`) : (isEs ? 'Todos los artistas · Operación global' : 'All artists · Global operations') }}</span></div><button v-if="view !== 'roster'" type="button" @click="emit('navigate', 'roster')">{{ isEs ? 'Ver roster' : 'View roster' }} ↗</button></div>
     <p v-if="error" role="alert" class="agency-error">{{ error }} <button type="button" @click="load">{{ isEs ? 'Reintentar' : 'Retry' }}</button></p>
     <div v-if="!activeArtists.length" class="agency-empty"><span>00 / ROSTER</span><h2>{{ isEs ? 'Tu roster todavía está vacío.' : 'Your roster is still empty.' }}</h2><p>{{ isEs ? 'Añade tu primer artista para empezar a gestionar fechas y bookings.' : 'Add your first artist to manage dates and bookings.' }}</p><button v-if="canManageRoster" type="button" @click="showAdd = true">{{ isEs ? 'Añadir primer artista' : 'Add first artist' }}</button></div>
     <template v-else>
@@ -191,7 +220,7 @@ function confirmRetire(artist: RosterArtist) {
         <div v-if="artists.some(item => item.roster_active === false)" class="agency-retired"><button type="button" @click="showRetired = !showRetired">{{ showRetired ? '−' : '+' }} {{ isEs ? 'Artistas retirados' : 'Removed artists' }}</button><div v-if="showRetired" class="agency-roster"><article v-for="artist in artists.filter(item => item.roster_active === false)" :key="artist.id"><div><h2>{{ artist.stage_name }}</h2><p>{{ isEs ? 'Historial conservado' : 'History retained' }}</p></div><button v-if="canManageRoster" type="button" @click="emit('restoreArtist', artist.id)">{{ isEs ? 'Reincorporar' : 'Restore' }}</button></article></div></div>
       </template>
       <template v-else-if="view === 'bookings' || view === 'history'">
-        <label class="agency-filter">{{ isEs ? 'Filtrar por artista' : 'Filter by artist' }}<select v-model="filterArtist"><option value="all">{{ isEs ? 'Todos los artistas' : 'All artists' }}</option><option v-for="artist in activeArtists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
+        <label v-if="!contextArtistName" class="agency-filter">{{ isEs ? 'Filtrar por artista' : 'Filter by artist' }}<select v-model="filterArtist"><option value="all">{{ isEs ? 'Todos los artistas' : 'All artists' }}</option><option v-for="artist in activeArtists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
         <template v-if="view === 'bookings'"><p v-if="!visibleBookings.length" class="agency-muted">{{ isEs ? 'Aún no hay bookings para este filtro.' : 'No bookings for this filter yet.' }}</p><div class="agency-list"><button v-for="booking in visibleBookings" :key="booking.id" class="agency-row" type="button" @click="emit('openBooking', booking.id)"><span><b>{{ label(booking.artist_id) }}</b><strong>{{ eventName(booking) }}</strong><small>{{ contact(booking) }}</small></span><time>{{ shortDate(booking.event_date) }}</time><em>{{ booking.status.replaceAll('_', ' ') }}</em></button></div><div class="agency-pages"><button :disabled="page === 0" type="button" @click="page--">←</button><span>{{ page + 1 }}</span><button :disabled="bookings.length < pageSize" type="button" @click="page++">→</button></div></template>
         <template v-else><p v-if="!visibleActivities.length" class="agency-muted">{{ isEs ? 'Aún no hay actividad real para este filtro.' : 'No activity for this filter yet.' }}</p><div class="agency-list"><button v-for="item in visibleActivities" :key="item.id" class="agency-row" type="button" @click="emit('openBooking', item.booking_id)"><span><b>{{ label(item.bookings.artist_id) }} / {{ item.type.replaceAll('_', ' ') }}</b><strong>{{ item.body || item.bookings.event_name || item.bookings.venue_name || 'Booking' }}</strong></span><time>{{ shortDate(item.occurred_at.slice(0, 10)) }}</time></button></div><div class="agency-pages"><button :disabled="activityPage === 0" type="button" @click="activityPage--">←</button><span>{{ activityPage + 1 }}</span><button :disabled="activities.length < pageSize" type="button" @click="activityPage++">→</button></div></template>
       </template>
