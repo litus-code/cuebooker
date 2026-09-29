@@ -55,6 +55,7 @@ test('new agency artist has one closed agency booking route, retirement closes i
   assert.match(migration, /before update of roster_active on public\.workspace_artists/)
   assert.match(migration, /and not exists \(select 1 from public\.artist_booking_routes r/)
   assert.match(workspace, /publicProfileWorkspaceId\.value !== agencyWorkspaceId\.value/)
+  assert.match(workspace, /isAgency\.value && !publicProfileWorkspaceId\.value/)
   assert.match(publishing, /booking_route_other_workspace/)
   assert.match(publicProfile, /bookingManagedBy/)
 })
