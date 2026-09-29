@@ -1409,9 +1409,13 @@ function nullableText(value: string) {
   return value.trim() || null
 }
 
-function nullableNumber(value: string) {
+function nullableNumber(value: string | number | null | undefined) {
+  if (value === null || value === undefined || value === '') return null
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null
   const trimmed = value.trim()
-  return trimmed ? Number(trimmed) : null
+  if (!trimmed) return null
+  const parsed = Number(trimmed)
+  return Number.isFinite(parsed) ? parsed : null
 }
 
 function replaceProfileArtistImageUrl(nextUrl: string) {
