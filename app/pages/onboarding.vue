@@ -23,10 +23,13 @@ const copy = computed(() => locale.value === 'es'
       cueIdNow: 'Crear mi CUE ID ahora',
       cueIdNowBody: 'Ir al Creator después de crear tu workspace.',
       cueIdLater: 'Hacerlo más tarde',
-      cueIdLaterBody: 'Entrar al calendario y crear tu CUE ID cuando quieras.',
-      profileNote: 'Después podrás completar tu ficha profesional. Al terminar entrarás directamente a Calendario para empezar a trabajar.',
+      cueIdLaterBody: 'Entrar a Bookings y crear tu CUE ID cuando quieras.',
+      profileNote: 'Después podrás completar tu ficha profesional. Al terminar entrarás directamente a Bookings para empezar a gestionar solicitudes.',
       planIntent: 'Plan seleccionado', planPending: 'La activación de pago se realizará después de crear el workspace.',
       saving: 'Guardando…', submit: 'Crear workspace', genericError: 'No se pudo completar la configuración.',
+      slugTaken: 'Ese identificador ya está en uso. Prueba con otro diferente.',
+      slugInvalid: 'El identificador solo puede usar letras minúsculas, números y guiones.',
+      authRequired: 'Tu sesión ha caducado. Vuelve a iniciar sesión para continuar.',
       pageTitle: 'Configura tu cuenta | Cuebooker'
     }
   : {
@@ -40,10 +43,13 @@ const copy = computed(() => locale.value === 'es'
       cueIdNow: 'Create my CUE ID now',
       cueIdNowBody: 'Open the Creator after your workspace is created.',
       cueIdLater: 'Do it later',
-      cueIdLaterBody: 'Open Calendar and create your CUE ID whenever you want.',
-      profileNote: 'Afterwards you can complete your professional profile. When setup is complete, you will land directly in Calendar.',
+      cueIdLaterBody: 'Open Bookings and create your CUE ID whenever you want.',
+      profileNote: 'Afterwards you can complete your professional profile. When setup is complete, you will land directly in Bookings to start managing requests.',
       planIntent: 'Selected plan', planPending: 'Paid activation will happen after the workspace is created.',
       saving: 'Saving…', submit: 'Create workspace', genericError: 'Setup could not be completed.',
+      slugTaken: 'That identifier is already in use. Try a different one.',
+      slugInvalid: 'The identifier can only use lowercase letters, numbers and hyphens.',
+      authRequired: 'Your session has expired. Sign in again to continue.',
       pageTitle: 'Set up your account | Cuebooker'
     })
 
@@ -75,6 +81,32 @@ onMounted(async () => {
   displayName.value = auth.profile.value?.display_name || ''
 })
 
+function friendlyOnboardingError(error: any) {
+  const raw = String(
+    error?.data?.message
+    || error?.data?.msg
+    || error?.message
+    || ''
+  ).toLowerCase()
+
+  if (
+    raw.includes('artists_slug_key')
+    || raw.includes('organizations_slug_key')
+    || raw.includes('duplicate key')
+    || raw.includes('23505')
+  ) return copy.value.slugTaken
+
+  if (raw.includes('invalid_artist_slug') || raw.includes('invalid_organization_slug')) {
+    return copy.value.slugInvalid
+  }
+
+  if (raw.includes('authentication_required') || raw.includes('jwt') || raw.includes('session')) {
+    return copy.value.authRequired
+  }
+
+  return copy.value.genericError
+}
+
 async function submit() {
   errorMessage.value = ''
   submitting.value = true
@@ -93,9 +125,9 @@ async function submit() {
       await navigateTo('/cue-id?from=onboarding')
       return
     }
-    await navigateTo('/workspace?view=calendar&from=onboarding')
+    await navigateTo('/workspace?view=bookings&from=onboarding')
   } catch (error: any) {
-    errorMessage.value = error?.data?.message || error?.message || copy.value.genericError
+    errorMessage.value = friendlyOnboardingError(error)
   } finally {
     submitting.value = false
   }
