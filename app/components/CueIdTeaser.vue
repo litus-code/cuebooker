@@ -198,11 +198,35 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   text-transform: uppercase;
 }
 .cue-id-teaser__meta small { grid-column: 2; grid-row: 1 / 3; color: #ceff54; text-align: right; }
-.cue-id-teaser--compact { grid-template-columns: 1fr 280px; }
-.cue-id-teaser--compact .cue-id-teaser__copy { padding: 24px; }
-.cue-id-teaser--compact .cue-id-teaser__copy h2 { font-size: clamp(1.8rem, 4vw, 3rem); }
-.cue-id-teaser--compact .cue-id-teaser__visual { min-height: 300px; }
-.cue-id-teaser--compact .cue-id-teaser__avatar { inset:8px 8px 52px; }
+.cue-id-teaser--compact {
+  grid-template-columns: minmax(0, 1.35fr) minmax(220px, .65fr);
+  width:min(760px,100%);
+  margin-inline:auto;
+}
+.cue-id-teaser--compact .cue-id-teaser__copy {
+  gap:10px;
+  padding:22px 24px;
+}
+.cue-id-teaser--compact .cue-id-teaser__copy h2 {
+  max-width:430px;
+  font-size:clamp(1.55rem,3vw,2.25rem);
+  line-height:.94;
+}
+.cue-id-teaser--compact .cue-id-teaser__copy span {
+  max-width:470px;
+  font-size:12px;
+  line-height:1.5;
+}
+.cue-id-teaser--compact .cue-id-teaser__copy a {
+  margin-top:2px;
+  font-size:10px;
+}
+.cue-id-teaser--compact .cue-id-teaser__visual { min-height:240px; }
+.cue-id-teaser--compact .cue-id-teaser__avatar { inset:6px 6px 42px; }
+.cue-id-teaser--compact .cue-id-teaser__meta { left:14px; right:14px; bottom:12px; padding-top:10px; }
+.cue-id-teaser--compact .cue-id-teaser__meta strong { font-size:1.15rem; }
+.cue-id-teaser--compact .cue-id-teaser__meta span,
+.cue-id-teaser--compact .cue-id-teaser__meta small { font-size:8px; }
 
 @media (prefers-reduced-motion: no-preference) {
   .cue-id-teaser__scan { animation: cue-id-scan 4.2s ease-in-out infinite; }
@@ -215,7 +239,10 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
 @media (max-width: 760px) {
   .cue-id-teaser, .cue-id-teaser--compact { grid-template-columns: 1fr; }
   .cue-id-teaser__copy { border-right: 0; border-bottom: 1px solid #292b28; }
-  .cue-id-teaser__visual, .cue-id-teaser--compact .cue-id-teaser__visual { min-height: 340px; }
-  .cue-id-teaser--compact .cue-id-teaser__avatar { inset:6px 6px 52px; }
+  .cue-id-teaser__visual { min-height:340px; }
+  .cue-id-teaser--compact .cue-id-teaser__copy { padding:20px; }
+  .cue-id-teaser--compact .cue-id-teaser__copy h2 { font-size:1.8rem; }
+  .cue-id-teaser--compact .cue-id-teaser__visual { min-height:280px; }
+  .cue-id-teaser--compact .cue-id-teaser__avatar { inset:4px 4px 44px; }
 }
 </style>
