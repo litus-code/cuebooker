@@ -24,9 +24,9 @@ test('global bookings and calendar filter across active roster without cross-art
   assert.equal(agencyActiveBookingCount(filterRosterBookings(rows, artists)), 1)
 })
 
-test('agency onboarding lands in global overview; DJ route still lands in individual calendar', async () => {
+test('agency onboarding lands in global overview; DJ retains the newer individual overview', async () => {
   const source = await readFile(new URL('../app/pages/onboarding.vue', import.meta.url), 'utf8')
-  assert.match(source, /accountType\.value === 'agency' \? '\/workspace\?view=overview&scope=all&from=onboarding' : '\/workspace\?view=calendar&from=onboarding'/)
+  assert.match(source, /accountType\.value === 'agency' \? '\/workspace\?view=overview&scope=all&from=onboarding' : '\/workspace\?view=overview&from=onboarding'/)
 })
 
 test('roster creation is bridged atomically to Booking Core and retirement retains history', async () => {

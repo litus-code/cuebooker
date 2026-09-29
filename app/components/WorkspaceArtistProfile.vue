@@ -49,12 +49,14 @@ const props = withDefaults(defineProps<{
   locale?: 'es' | 'en'
   passport?: ProfilePassport
   passportPublicEnabled?: boolean
+  publishReady?: boolean
 }>(), {
   published: false,
   editable: true,
   saving: false,
   locale: 'es',
   passportPublicEnabled: true,
+  publishReady: true,
   passport: () => ({
     confirmedBookings: 0,
     cities: [],
@@ -109,7 +111,11 @@ const links = computed(() => [
           :disabled="saving"
           @click="emit('togglePublished', !published)"
         >
-          {{ published ? (locale === 'es' ? 'Despublicar' : 'Unpublish') : (locale === 'es' ? 'Publicar perfil' : 'Publish profile') }}
+          {{ published
+            ? (locale === 'es' ? 'Despublicar' : 'Unpublish')
+            : !publishReady
+              ? (locale === 'es' ? 'Completa el perfil' : 'Complete profile')
+              : (locale === 'es' ? 'Publicar perfil' : 'Publish profile') }}
         </button>
       </div>
     </header>
