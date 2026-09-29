@@ -71,6 +71,7 @@ export type PublicArtistProfile = {
   cueId?: PublicCueIdConfig | null
   passport?: PublicPassportSummary | null
   acceptingRequests: boolean
+  bookingManagedBy?: string | null
 }
 
 export type PublicBookingRequestInput = {

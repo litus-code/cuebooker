@@ -45,3 +45,16 @@ test('individual Profile, Passport and CUE ID require artist context; navigation
   assert.match(source, /data-workspace-view="roster" :aria-current=/)
   assert.match(source, /const isAgencyGlobal = computed/)
 })
+
+test('new agency artist has one closed agency booking route, retirement closes it, existing routes are not transferred', async () => {
+  const migration = await readFile(new URL('../supabase/migrations/20260929103000_agency_booking_route_contract.sql', import.meta.url), 'utf8')
+  const workspace = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
+  const publishing = await readFile(new URL('../app/composables/usePublicArtistPublishing.ts', import.meta.url), 'utf8')
+  const publicProfile = await readFile(new URL('../supabase/functions/get-public-artist-profile/index.ts', import.meta.url), 'utf8')
+  assert.match(migration, /insert into public\.artist_booking_routes \(artist_id, workspace_id, created_by\)/)
+  assert.match(migration, /before update of roster_active on public\.workspace_artists/)
+  assert.match(migration, /and not exists \(select 1 from public\.artist_booking_routes r/)
+  assert.match(workspace, /publicProfileWorkspaceId\.value !== agencyWorkspaceId\.value/)
+  assert.match(publishing, /booking_route_other_workspace/)
+  assert.match(publicProfile, /bookingManagedBy/)
+})

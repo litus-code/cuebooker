@@ -111,16 +111,21 @@ export function usePublicArtistPublishing() {
     if (!userId) throw new Error('authentication_required')
     if (!workspaceId) throw new Error('booking_workspace_required')
 
-    const rows = await $fetch<ArtistBookingRouteRow[]>(`${supabaseUrl.value}/rest/v1/artist_booking_routes`, {
+    const existing = await $fetch<ArtistBookingRouteRow[]>(`${supabaseUrl.value}/rest/v1/artist_booking_routes`, {
+      headers: headers(),
+      query: { artist_id: `eq.${artistId}`, select: 'artist_id,workspace_id,accepting_requests', limit: '1' }
+    })
+    if (existing[0] && existing[0].workspace_id !== workspaceId) throw new Error('booking_route_other_workspace')
+    const rows = await $fetch<ArtistBookingRouteRow[]>(`${supabaseUrl.value}/rest/v1/artist_booking_routes`, existing[0] ? {
+      method: 'PATCH',
+      headers: { ...headers(), Prefer: 'return=representation' },
+      query: { artist_id: `eq.${artistId}`, workspace_id: `eq.${workspaceId}`, select: 'artist_id,workspace_id,accepting_requests' },
+      body: { accepting_requests: enabled }
+    } : {
       method: 'POST',
-      headers: { ...headers(), Prefer: 'resolution=merge-duplicates,return=representation' },
-      query: { on_conflict: 'artist_id', select: 'artist_id,workspace_id,accepting_requests' },
-      body: {
-        artist_id: artistId,
-        workspace_id: workspaceId,
-        accepting_requests: enabled,
-        created_by: userId
-      }
+      headers: { ...headers(), Prefer: 'return=representation' },
+      query: { select: 'artist_id,workspace_id,accepting_requests' },
+      body: { artist_id: artistId, workspace_id: workspaceId, accepting_requests: enabled, created_by: userId }
     })
 
     if (!rows[0]) throw new Error('booking_route_not_updated')

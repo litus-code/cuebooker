@@ -8,6 +8,12 @@ Status: PR preview implementation, 28 September 2026. Production untouched.
 
 This avoids the pre-existing failure in which an agency workspace was bootstrapped with the first roster snapshot, but later artists were never attached to Booking Core. The migration also lets workspace members read roster artist identity and lets owner/admin/manager members edit an active roster artist's profile fields; team management and scoped assignments are not expanded into a new UI in this beta block.
 
+## Representation and public enquiries
+
+An artist has one public profile and one `artist_booking_routes` destination. An agency's active roster artist created through `add_agency_artist` gets a closed route to the agency workspace in the same transaction. Publishing the profile and opening enquiries are separate actions. A public request carries the artist ID into a booking owned by that workspace, so agency staff operate it from the global inbox and artist-filtered views. The public profile identifies the managing agency when its route points to an agency workspace. The artist does not automatically receive a duplicate booking or an automatic workspace membership.
+
+Existing independent artists are **not** silently transferred by adding a roster relation. If a route points to another workspace, the agency UI refuses to change its public booking settings. A future explicit transfer must establish consent, permissions, handling of open enquiries and continuity of history. Retiring an artist closes their agency enquiry route but retains bookings and the route; restoring them does not reopen enquiries automatically. Agency owner/admin control roster retirement; managers can edit active artist profiles and operate bookings at workspace scope. Per-artist manager assignments and notifications to the represented DJ are not yet implemented or promised in beta.
+
 ## Experience contract
 
 - Agency onboarding goes to `/workspace?view=overview&scope=all`; DJ onboarding keeps its existing Calendar/CUE ID destination.

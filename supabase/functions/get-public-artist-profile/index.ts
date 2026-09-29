@@ -339,11 +339,20 @@ Deno.serve(async request => {
     const artist = artists[0];
     if (!artist) return json({ error: "artist_not_found" }, 404, { "Cache-Control": "no-store" });
 
-    const routes = await serviceJson<Array<{ accepting_requests: boolean }>>(
-      `${supabaseUrl}/rest/v1/artist_booking_routes?artist_id=eq.${encodeURIComponent(artist.id)}&select=accepting_requests&limit=1`,
+    const routes = await serviceJson<Array<{ accepting_requests: boolean; workspace_id: string }>>(
+      `${supabaseUrl}/rest/v1/artist_booking_routes?artist_id=eq.${encodeURIComponent(artist.id)}&select=accepting_requests,workspace_id&limit=1`,
       { method: "GET" },
       serviceKey
     );
+
+    const bookingWorkspace = routes[0]?.workspace_id
+      ? await serviceJson<Array<{ name: string; kind: string }>>(
+        `${supabaseUrl}/rest/v1/workspaces?id=eq.${encodeURIComponent(routes[0].workspace_id)}&select=name,kind&limit=1`,
+        { method: "GET" },
+        serviceKey
+      )
+      : [];
+    const bookingManagedBy = bookingWorkspace[0]?.kind === "agency" ? bookingWorkspace[0].name : null;
 
     const workspaceArtists = await serviceJson<Array<{ workspace_id: string }>>(
       `${supabaseUrl}/rest/v1/workspace_artists?artist_id=eq.${encodeURIComponent(artist.id)}&select=workspace_id`,
@@ -450,7 +459,8 @@ Deno.serve(async request => {
         visualMode,
         cueId: visualMode === "cue_id" ? cueId : null,
         passport: artist.passport_public_enabled ? passport : null,
-        acceptingRequests: Boolean(routes[0]?.accepting_requests)
+        acceptingRequests: Boolean(routes[0]?.accepting_requests),
+        bookingManagedBy
       }
     }, 200, { "Cache-Control": "private, no-cache, max-age=0, must-revalidate" });
   } catch (error) {
