@@ -31,6 +31,8 @@ Global Bookings and Activity paginate on the server after artist filtering; a pa
 
 ## Limits and follow-up
 
+- Overview counts now use the complete current-month calendar result for upcoming dates and an exact active-Hold count across all months. Its visible upcoming list remains capped at eight rows. If an exact Hold count is unavailable, the card shows a `≥` lower bound based on the displayed month. Validated with 322 tests and a static generation on the Agency branch; authenticated staging smoke is still open because staging currently has no agency organization or roster.
+
 - The active-booking KPI requests an exact server count; if the count is unavailable it explicitly displays a lower bound. Attention and roster previews use the first 100 most recently updated bookings. Calendar/Activity/holds query up to 500 records each. These are beta windows, not lifetime totals; cursor pagination and complete aggregate projections are follow-up scale work.
 - Workspace `manager` currently has workspace-wide Booking Core operations. Per-artist team assignment is not represented in the existing schema; do not claim assigned-only isolation until a dedicated authorization model and RLS test suite exist.
 - Organization membership reconciliation currently occurs at workspace bootstrap. A standalone team-invitation UI and later membership synchronization require a separate, reviewed permission block.

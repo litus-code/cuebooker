@@ -3,6 +3,14 @@ Total output lines: 10325
 
 # Cuebooker living handoff
 
+## 29 September 2026: Agency overview count correction
+
+- PR #96, `feature/agency-multi-artist-beta`; remote implementation commit `fbe33279d87b0ac9f7d1175ec2060ab4e9b3cdd3` based on `9ad63db20d3ed328ea1fe828483a7da0e84cb726`.
+- The global Overview now counts all upcoming confirmed dates in the displayed month rather than the eight preview rows. The pending-Holds card requests an exact active count for the active roster across all dates; its fallback is visibly a lower bound.
+- Local isolated worktree: `npm test` 322/322; `npm run generate` 36 routes; `git diff --check` clean. Anonymous PR preview navigation, artist filter, calendar filter and Booking Core detail were inspected on the previous deployment. The new remote preview still requires CI/deployment verification.
+- The three Agency migrations are present in Supabase staging. Read-only staging inspection found zero agency organizations and zero agency workspaces, so an authenticated Agency A/B end-to-end smoke has **not** been performed. No production change. Keep PR draft until this gate is tested with a staging account.
+- Next: verify the updated PR preview, then run Agency signup, two roster artists, public booking attribution, global filters/calendar, artist Profile and return to global on desktop and mobile. Check existing DJ flow and roles. Team invitations, per-artist Manager assignments and artist transfer remain separate follow-up work.
+
 ## 29 September 2026: Agency visual review without login
 
 - Branch: `feature/agency-multi-artist-beta`, PR #96, based on the latest `main` through merge commit `633d37994ed22e23ad997958fb5f61d6a203be52`. The PR head after this preview update is recorded on GitHub. No production deployment.
