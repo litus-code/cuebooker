@@ -46,9 +46,9 @@ const activities = ref<WorkspaceActivityHistoryRow[]>([])
 const holds = ref<Array<Hold & { bookings: { artist_id: string } }>>([])
 const contacts = ref<Array<{ id: string; name: string }>>([])
 const counterparties = ref<Array<{ id: string; name: string }>>([])
-const filterArtist = ref(typeof route.query.rosterArtist === 'string' ? route.query.rosterArtist : 'all')
-const calendarArtists = ref<string[]>(typeof route.query.rosterCalendar === 'string' ? route.query.rosterCalendar.split(',').filter(Boolean) : [])
-const calendarFilterInitialized = ref(typeof route.query.rosterCalendar === 'string')
+const filterArtist = ref(!props.demoData && typeof route.query.rosterArtist === 'string' ? route.query.rosterArtist : 'all')
+const calendarArtists = ref<string[]>(!props.demoData && typeof route.query.rosterCalendar === 'string' ? route.query.rosterCalendar.split(',').filter(Boolean) : [])
+const calendarFilterInitialized = ref(!props.demoData && typeof route.query.rosterCalendar === 'string')
 const month = ref(props.initialMonth || new Date().toISOString().slice(0, 7) + '-01')
 const selectedDay = ref(props.initialMonth || new Date().toISOString().slice(0, 10))
 const artistName = ref('')
@@ -119,10 +119,11 @@ watch(activeArtists, rows => {
   if (filterArtist.value !== 'all' && !existing.has(filterArtist.value)) filterArtist.value = 'all'
 }, { immediate: true })
 watch(filterArtist, value => {
+  if (props.demoData) return
   void router.replace({ query: { ...route.query, view: props.view, rosterArtist: value === 'all' ? undefined : value } })
 })
 watch(calendarArtists, ids => {
-  if (props.view !== 'calendar') return
+  if (props.demoData || props.view !== 'calendar') return
   void router.replace({ query: { ...route.query, view: props.view, rosterCalendar: ids.join(',') } })
 })
 watch(() => props.artists.map(item => `${item.id}:${item.artist_image_path || item.cover_image_path || ''}`).join(','), async () => {

@@ -6,17 +6,14 @@ type DemoView = 'overview' | 'bookings' | 'calendar' | 'history' | 'roster' | 'p
 type DemoArtist = { id: string; stage_name: string; slug: string; city: string; roster_active: boolean }
 
 const config = useRuntimeConfig()
-const route = useRoute()
-const router = useRouter()
 const { locale } = useCuePreferences()
 const allowed = ref(config.public.appEnv === 'staging')
-const views: DemoView[] = ['overview', 'bookings', 'calendar', 'history', 'roster', 'profile', 'passport', 'cue-id', 'settings']
-const view = ref<DemoView>(typeof route.query.view === 'string' && views.includes(route.query.view as DemoView) ? route.query.view as DemoView : 'overview')
+const view = ref<DemoView>('overview')
 const artists = ref<DemoArtist[]>([
   { id: 'demo-mara', stage_name: 'Mara Velt', slug: 'mara-velt', city: 'Barcelona', roster_active: true },
   { id: 'demo-nox', stage_name: 'Nox Arda', slug: 'nox-arda', city: 'Madrid', roster_active: true }
 ])
-const selectedArtistId = ref(typeof route.query.artist === 'string' && artists.value.some(item => item.id === route.query.artist) ? route.query.artist : '')
+const selectedArtistId = ref('')
 const selectedArtist = computed(() => artists.value.find(item => item.id === selectedArtistId.value && item.roster_active))
 const rosterRevision = ref(0)
 const focusBookingId = ref('')
@@ -67,15 +64,6 @@ onMounted(async () => {
     await navigateTo('/')
     return
   }
-  // The static preview is prerendered without query parameters. Restore a direct
-  // link after hydration, when the browser's actual query is available.
-  const query = new URLSearchParams(window.location.search)
-  const artistId = query.get('artist') || ''
-  selectedArtistId.value = artists.value.some(item => item.id === artistId && item.roster_active) ? artistId : ''
-  const requestedView = views.includes(query.get('view') as DemoView) ? query.get('view') as DemoView : 'overview'
-  view.value = !selectedArtistId.value && ['profile', 'passport', 'cue-id'].includes(requestedView) ? 'overview' : requestedView
-  const bookingId = query.get('booking') || ''
-  focusBookingId.value = demoBookings.value.some(item => item.id === bookingId && item.artist_id === selectedArtistId.value) ? bookingId : ''
 })
 watch(selectedArtist, artist => {
   if (!artist && ['profile', 'passport', 'cue-id'].includes(view.value)) view.value = 'overview'
@@ -84,13 +72,11 @@ function changeView(next: DemoView) {
   if (next === 'roster') selectedArtistId.value = ''
   view.value = next
   focusBookingId.value = ''
-  void router.replace({ query: { ...route.query, view: next, artist: selectedArtistId.value || undefined, booking: undefined } })
 }
 function chooseArtist(id: string) {
   selectedArtistId.value = artists.value.some(item => item.id === id && item.roster_active) ? id : ''
   focusBookingId.value = ''
   if (!selectedArtistId.value && ['profile', 'passport', 'cue-id'].includes(view.value)) view.value = 'overview'
-  void router.replace({ query: { ...route.query, view: view.value, artist: selectedArtistId.value || undefined, booking: undefined } })
 }
 function openBooking(id: string) {
   const item = demoBookings.value.find(row => row.id === id)
@@ -98,7 +84,6 @@ function openBooking(id: string) {
   selectedArtistId.value = item.artist_id
   view.value = 'bookings'
   focusBookingId.value = id
-  void router.replace({ query: { ...route.query, view: 'bookings', artist: item.artist_id, booking: id } })
 }
 async function createArtist(name: string, slug: string, city: string) {
   if (artists.value.some(item => item.slug === slug)) return false
