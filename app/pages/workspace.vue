@@ -517,7 +517,11 @@ const profileCompletion = computed(() => {
 })
 const firstRunActivation = computed(() =>
   bookingSurfaceReady.value
-  && realBookings.value.length === 0
+  && (
+    profileCompletion.value < 70
+    || !publicProfilePublished.value
+    || realBookings.value.length === 0
+  )
 )
 
 const activationSteps = computed(() => {
@@ -2924,19 +2928,21 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       </aside>
     </div>
 
-    <div v-if="editorOpen" class="editor-backdrop" @click.self="closeEditor">
-      <aside class="editor-panel calendar-editor-panel" role="dialog" aria-modal="true" :aria-labelledby="editingBlockId ? 'editor-title-edit' : 'editor-title-new'" tabindex="-1">
-        <div class="editor-heading"><div><p class="eyebrow">{{ editingBlockId ? copy.editSlot : copy.newSlot }}</p><h2 :id="editingBlockId ? 'editor-title-edit' : 'editor-title-new'">{{ selectedDateLabel }}</h2></div><button type="button" :aria-label="copy.close" @click="closeEditor">×</button></div>
-        <form @submit.prevent="saveBlock">
-          <label><span>{{ copy.privateLabel }}</span><input v-model="blockLabel" maxlength="160" :placeholder="copy.privatePlaceholder"></label>
-          <div class="time-fields"><label><span>{{ copy.start }}</span><input v-model="startTime" type="time" required></label><label><span>{{ copy.end }}</span><input v-model="endTime" type="time" required></label></div>
-          <p v-if="!validTimeRange" class="form-hint form-hint--error">{{ copy.invalidTime }}</p>
-          <label><span>{{ copy.status }}</span><select v-model="blockStatus"><option value="unavailable">{{ copy.unavailable }}</option><option value="hold">Hold</option><option value="confirmed">{{ copy.confirmedStatus }}</option></select></label>
-          <button class="primary-button" type="submit" :disabled="saving || !validTimeRange">{{ saving ? copy.saving : editingBlockId ? copy.saveChanges : copy.createSlot }}</button>
-          <button v-if="editingBlockId" class="delete-button" type="button" :disabled="saving" @click="removeBlock">{{ copy.deleteSlot }}</button>
-        </form>
-      </aside>
-    </div>
+    <Teleport to="body">
+      <div v-if="editorOpen" class="editor-backdrop calendar-editor-backdrop" @click.self="closeEditor">
+        <aside class="editor-panel calendar-editor-panel" role="dialog" aria-modal="true" :aria-labelledby="editingBlockId ? 'editor-title-edit' : 'editor-title-new'" tabindex="-1">
+          <div class="editor-heading calendar-editor-heading"><div><p class="eyebrow">{{ editingBlockId ? copy.editSlot : copy.newSlot }}</p><h2 :id="editingBlockId ? 'editor-title-edit' : 'editor-title-new'">{{ selectedDateLabel }}</h2></div><button type="button" :aria-label="copy.close" @click="closeEditor">×</button></div>
+          <form @submit.prevent="saveBlock">
+            <label><span>{{ copy.privateLabel }}</span><input v-model="blockLabel" maxlength="160" :placeholder="copy.privatePlaceholder"></label>
+            <div class="time-fields"><label><span>{{ copy.start }}</span><input v-model="startTime" type="time" required></label><label><span>{{ copy.end }}</span><input v-model="endTime" type="time" required></label></div>
+            <p v-if="!validTimeRange" class="form-hint form-hint--error">{{ copy.invalidTime }}</p>
+            <label><span>{{ copy.status }}</span><select v-model="blockStatus"><option value="unavailable">{{ copy.unavailable }}</option><option value="hold">Hold</option><option value="confirmed">{{ copy.confirmedStatus }}</option></select></label>
+            <button class="primary-button" type="submit" :disabled="saving || !validTimeRange">{{ saving ? copy.saving : editingBlockId ? copy.saveChanges : copy.createSlot }}</button>
+            <button v-if="editingBlockId" class="delete-button" type="button" :disabled="saving" @click="removeBlock">{{ copy.deleteSlot }}</button>
+          </form>
+        </aside>
+      </div>
+    </Teleport>
 
     <aside v-if="currentTour" class="tour-card" role="dialog" aria-live="polite" aria-labelledby="tour-card-title" :style="tourCardStyle">
       <button class="tour-card__close" type="button" :aria-label="copy.closeTour" @click="closeTour">×</button>
@@ -3352,6 +3358,30 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .day-heading h2 { max-width: 210px; font-size: 17px; }
   .timeline { height: 520px; }
   .editor-panel { border-left: 0; }
+  .calendar-editor-backdrop { display:block; background:var(--cue-surface); }
+  .calendar-editor-panel {
+    width:100%;
+    min-height:100dvh;
+    max-height:100dvh;
+    padding:0 20px max(24px, env(safe-area-inset-bottom));
+    border:0;
+    box-shadow:none;
+    overscroll-behavior:contain;
+  }
+  .calendar-editor-heading {
+    position:sticky;
+    z-index:2;
+    top:0;
+    margin:0 -20px 20px;
+    padding:max(18px, env(safe-area-inset-top)) 20px 18px;
+    border-bottom:1px solid var(--cue-border);
+    background:var(--cue-surface);
+  }
+  .calendar-editor-heading > button {
+    flex:0 0 44px;
+    width:44px;
+    height:44px;
+  }
   .time-fields { grid-template-columns: 1fr; }
   .tour-card { right: 16px; bottom: 86px; }
   .history-list > button { grid-template-columns: 1fr; gap: 7px; padding: 16px 0; border-bottom: 1px solid var(--cue-border); }
