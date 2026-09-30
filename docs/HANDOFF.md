@@ -1,3 +1,11 @@
+## 2026-09-30 / Agency settings and roster consistency
+
+Branch `feature/agency-multi-artist-beta`, base HEAD `8e82e624c146995ba43931f4826b60b0ecb555ab`, PR #96 preview only.
+
+Catalog editor displays account email in a separate suggestion card; explicit Use this email copies it into the public contact field, still requiring save/publication. Demo uses an explicitly fictional account email. Team members and invitation form use panel/control radii, role badges and selected-role descriptions; feedback follows existing state styling. Roster removes duplicate open/edit actions pointing to the same record and uses one permission-aware entry action with an on-roster indicator.
+
+Static staging generation and diff check pass; visual checks after preview publication. No permission, API, schema or production changes. Authenticated media save/reload/public and 390 px viewport checks remain pending.
+
 ## 2026-09-30 / Agency booking rows and visible calendar names
 
 Branch `feature/agency-multi-artist-beta`, base HEAD `8b0840fcfd6f5ccadff14eb904ca62b6032b7c9f`, PR #96 preview only.

@@ -261,7 +261,7 @@ function confirmRetire(artist: RosterArtist) {
       </template>
       <template v-else-if="view === 'roster'">
         <div class="agency-actions"><span>{{ activeArtists.length }} {{ isEs ? 'artistas activos' : 'active artists' }}</span><button v-if="canManageRoster" type="button" @click="showAdd = true">+ {{ isEs ? 'Añadir artista' : 'Add artist' }}</button></div>
-        <div class="agency-roster"><article v-for="artist in activeArtists" :key="artist.id"><div class="agency-avatar" aria-hidden="true"><img v-if="portraitUrls[artist.id]" :src="portraitUrls[artist.id]" alt="">{{ portraitUrls[artist.id] ? '' : artist.stage_name.slice(0, 2).toUpperCase() }}</div><div><span>ARTIST / {{ artist.slug }}</span><h2>{{ artist.stage_name }}</h2><p>{{ artist.city || (isEs ? 'Ciudad sin definir' : 'City not set') }} · {{ upcomingSnapshotLabel(artist.id) }}</p><small>{{ isEs ? 'Activo' : 'Active' }}</small></div><div class="agency-roster-actions"><button type="button" @click="emit('selectArtist', artist.id, 'profile')">{{ isEs ? 'Abrir ficha' : 'Open record' }}</button><button v-if="canManageRoster" type="button" @click="emit('selectArtist', artist.id, 'profile')">{{ isEs ? 'Editar' : 'Edit' }}</button><button v-if="canManageRoster" type="button" @click="confirmRetire(artist)">{{ isEs ? 'Retirar del roster' : 'Remove from roster' }}</button></div></article></div>
+        <div class="agency-roster"><article v-for="artist in activeArtists" :key="artist.id"><div class="agency-avatar" aria-hidden="true"><img v-if="portraitUrls[artist.id]" :src="portraitUrls[artist.id]" alt="">{{ portraitUrls[artist.id] ? '' : artist.stage_name.slice(0, 2).toUpperCase() }}</div><div><span>ARTIST / {{ artist.slug }}</span><h2>{{ artist.stage_name }}</h2><p>{{ artist.city || (isEs ? 'Ciudad sin definir' : 'City not set') }} · {{ upcomingSnapshotLabel(artist.id) }}</p><small class="agency-artist-active">{{ isEs ? 'En el roster' : 'On the roster' }}</small></div><div class="agency-roster-actions"><button type="button" @click="emit('selectArtist', artist.id, 'profile')">{{ canManageRoster ? (isEs ? 'Editar ficha' : 'Edit record') : (isEs ? 'Ver ficha' : 'View record') }}</button><button v-if="canManageRoster" type="button" @click="confirmRetire(artist)">{{ isEs ? 'Retirar del roster' : 'Remove from roster' }}</button></div></article></div>
 
       </template>
       <template v-else-if="view === 'bookings' || view === 'history'">
@@ -385,4 +385,10 @@ function confirmRetire(artist: RosterArtist) {
 .agency-day-names>.is-confirmed{color:var(--cue-text)}
 .agency-day-names>.is-hold{color:var(--cue-accent)}
 @media(max-width:560px){.agency-calendar-cell{min-height:84px;padding:6px 4px 20px}.agency-day-names>span{font-size:9px}.agency-day-statuses{left:5px;bottom:6px}.agency-calendar-cell small{top:6px;right:4px}}
+</style>
+
+<style scoped>
+.agency-roster .agency-artist-active{display:inline-flex;align-items:center;gap:6px;margin-top:8px;color:var(--cue-muted);font-size:11px}
+.agency-artist-active::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--cue-status-confirmed)}
+.agency-roster-actions button:last-child:not(:first-child){color:var(--cue-muted)}
 </style>
