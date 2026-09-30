@@ -5,6 +5,7 @@ import { buildFollowUpDraft, shouldSuggestFollowUp } from '../services/followUpD
 import { buildFailedEmailRetryDraft } from '../services/emailRetryDraft'
 
 const props = withDefaults(defineProps<{
+  mailboxArtists?: Array<{id:string;stage_name:string}>
   workspaceId: string
   bookings: CoreBooking[]
   locale: 'es' | 'en'
@@ -16,6 +17,8 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{ operationsChanged: []; cueRequested: []; bookingOpened: [bookingId: string]; calendarRequested: [date: string] }>()
 const { capacity: cueCapacity } = useCueEntitlements()
 const bookingCore = useBookingCore()
+const mailboxApi = useConnectedMailbox()
+const mailboxSyncNotice=ref('')
 const analytics = useAnalytics()
 const selectedBookingId = ref('')
 const contacts = ref<Contact[]>([])
@@ -270,6 +273,14 @@ async function loadActivity(options: { silent?: boolean } = {}) {
   if (!bookingId || !props.workspaceId) return
   if (!options.silent) loadingActivity.value = true
   try {
+    // Only the connection owner can synchronize a personal mailbox. Existing
+    // shared Booking history remains readable to other authorized members.
+    const status=await mailboxApi.status(props.workspaceId,bookingId).catch(()=>null)
+    mailboxSyncNotice.value=''
+    for(const id of status?.linkedConnectionIds||[]){
+     try {const result=await mailboxApi.sync(props.workspaceId,id,bookingId);if(result.partial)mailboxSyncNotice.value=props.locale==='es'?'Este hilo es largo; se muestran hasta 100 mensajes.':'This is a long thread; up to 100 messages are displayed.'}
+     catch{mailboxSyncNotice.value=props.locale==='es'?'No se pudo actualizar el correo. El historial guardado sigue disponible.':'Email could not be refreshed. Saved history remains available.'}
+    }
     const [activityRows, emailRows] = await Promise.all([
       bookingCore.listActivities(props.workspaceId, bookingId),
       bookingCore.listBookingEmailMessages(props.workspaceId, bookingId)
@@ -546,6 +557,7 @@ async function selectBooking(bookingId: string) {
 
 <template>
   <section class="core-inbox">
+    <MailboxRequestsPanel v-if="!demoData && canOperate && mailboxArtists?.length" :workspace-id="workspaceId" :locale="locale" :artists="mailboxArtists" @created="(id) => { emit('operationsChanged'); emit('bookingOpened',id) }" />
     <header class="core-inbox__heading">
       <div>
         <span>{{ copy.eyebrow }}</span>
@@ -724,6 +736,7 @@ async function selectBooking(bookingId: string) {
             </div>
           </div>
 
+<p v-if="mailboxSyncNotice" role="status">{{ mailboxSyncNotice }}</p>
           <div ref="conversationThread" class="core-inbox__thread">
             <p v-if="loadingActivity" class="core-inbox__empty">…</p>
             <p v-else-if="!conversationActivities.length" class="core-inbox__empty">{{ copy.noActivity }}</p>
@@ -760,6 +773,7 @@ async function selectBooking(bookingId: string) {
             <button type="submit" :disabled="!demoText.trim()">{{ locale === 'es' ? 'Guardar en la conversación' : 'Save in conversation' }}</button>
           </form>
           <BookingActivityComposer
+            :initial-subject="emailMessages[0]?.subject"
             id="core-inbox-activity-composer"
             v-if="canOperate && !demoData && !selectedBooking.archived_at"
             :key="`activity-${selectedBooking.id}`"

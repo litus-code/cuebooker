@@ -4,13 +4,13 @@ Date: 2026-09-30. Branch: feature/agency-multi-artist-beta. Preview/staging only
 
 ## Current truth
 
-Public contact email is metadata. The existing Brevo send/reply integration supports Booking conversations, but does not connect an existing mailbox or ingest new requests from it. No mailbox is connected. Staging migration `20260930151101_connected_mailbox_auth.sql` and `connected-mailbox` v1 are deployed. The connection lifecycle is implemented; message review/import/reply is a subsequent block, not implemented here.
+Public contact email is metadata. The existing Brevo send/reply integration supports Booking conversations, but does not connect an existing mailbox or ingest new requests from it. A pilot Google mailbox is connected and verified after reload. Staging migration `20260930151101_connected_mailbox_auth.sql` and `connected-mailbox` v1 are deployed. The connection lifecycle is implemented; Message review/import/own-mailbox reply and bounded thread sync are implemented in the subsequent block described in HANDOFF; real roundtrip validation remains pending.
 
 The user offered three privately owned accounts covering custom-domain IMAP, Google and Microsoft. Do not persist these real addresses in demo fixtures, tests or public repository documentation. Ownership permission covers a pilot; consent to a new mailbox data processor remains a separate decision.
 
 ## Proposed integration
 
-Use Nylas Hosted Authentication as a single provider adapter for Google, Microsoft and supported IMAP servers. The user approved Nylas for this pilot on 2026-09-30. The service is not activated. Its current sandbox advertises five connected accounts, sufficient for three pilot accounts; production terms/pricing require a separate decision. References:
+Use Nylas Hosted Authentication as a single provider adapter for Google, Microsoft and supported IMAP servers. The user approved Nylas for this pilot on 2026-09-30. The staging service is activated. Its current sandbox advertises five connected accounts, sufficient for three pilot accounts; production terms/pricing require a separate decision. References:
 
 - https://www.nylas.com/pricing/
 - https://developer.nylas.com/docs/v3/auth/hosted-oauth-apikey/
@@ -53,7 +53,7 @@ No test mail has been sent. Real email sending requires an explicit pilot action
 
 ## Next step
 
-Nylas pilot processor approval was obtained. The dashboard currently requires account registration or sign-in. The Nylas dashboard is signed in; its free sandbox application has Google, Microsoft and IMAP enabled. The observed application is in the US region. Its Client ID is `317c4281-1ef0-47ca-85c3-16e9bc243932`. A Cuebooker callback is prepared but not saved, and the server credential is not configured. Complete those settings, then validate the implemented connection lifecycle with real accounts before adding message review/import/reply. Do not label the pilot ready until real provider tests pass.
+Nylas pilot processor approval was obtained. The dashboard currently requires account registration or sign-in. The Nylas dashboard is signed in; its free sandbox application has Google, Microsoft and IMAP enabled. The observed application is in the US region. Its Client ID is `317c4281-1ef0-47ca-85c3-16e9bc243932`. The Cuebooker callback is saved and visibly verified. The full read/write sandbox credential `Cuebooker staging pilot` is created and expires 14 October 2026, but is not stored in Supabase. Automatic browser review forbids agent extraction of its secret via Playwright; user must copy it directly into the server secrets form. Supabase sign-in awaits Google identity verification. Complete those settings, then validate the implemented connection lifecycle with real accounts before adding message review/import/reply. Do not label the pilot ready until real provider tests pass.
 
 ## Staging activation settings
 

@@ -1,0 +1,31 @@
+<script setup lang="ts">
+import type { ConnectedMailbox, MailboxMessage } from '../services/connectedMailboxApi'
+const props=defineProps<{workspaceId:string;locale:'es'|'en';artists:Array<{id:string;stage_name:string}>}>()
+const emit=defineEmits<{created:[bookingId:string]}>()
+const api=useConnectedMailbox(),es=computed(()=>props.locale==='es')
+const connections=ref<ConnectedMailbox[]>([]),connectionId=ref(''),artistId=ref(''),messages=ref<MailboxMessage[]>([]),selected=ref<MailboxMessage|null>(null),loading=ref(false),busy=ref(false),error=ref(''),hasMore=ref(false)
+let generation=0
+async function load(){const turn=++generation;loading.value=true;error.value='';messages.value=[];selected.value=null
+ try {const status=await api.status(props.workspaceId);if(turn!==generation)return;connections.value=status.connections.filter(c=>c.status==='connected');connectionId.value=connections.value.some(c=>c.id===connectionId.value)?connectionId.value:connections.value[0]?.id||'';if(connectionId.value){const result=await api.recent(props.workspaceId,connectionId.value);if(turn===generation){messages.value=result.messages;hasMore.value=result.hasMore}}}
+ catch{if(turn===generation)error.value=es.value?'No se pudieron cargar los correos. Inténtalo de nuevo.':'Emails could not be loaded. Try again.'}
+ finally{if(turn===generation)loading.value=false}}
+async function importMessage(){if(!selected.value||!artistId.value||busy.value)return;busy.value=true;error.value='';try{const result=await api.importMessage(props.workspaceId,connectionId.value,selected.value.id,artistId.value);emit('created',result.bookingId);await load()}catch{error.value=es.value?'No se pudo incorporar el correo. Comprueba el artista e inténtalo de nuevo.':'Could not attach this email. Check the artist and retry.'}finally{busy.value=false}}
+watch(()=>props.workspaceId,load,{immediate:true})
+watch(()=>props.artists,artists=>{artistId.value=artists.length===1?artists[0]!.id:''},{immediate:true})
+onBeforeUnmount(()=>generation++)
+</script>
+<template>
+<section v-if="connections.length || error" class="mailbox-requests" aria-labelledby="mailbox-requests-title">
+ <header><div><h2 id="mailbox-requests-title">{{es?'Correo conectado':'Connected email'}}</h2><p>{{es?'Solo tú ves estos correos. Al crear una solicitud, su conversación se comparte con tu workspace.':'Only you can see these emails. Creating a request shares its conversation with your workspace.'}}</p></div><button type="button" :disabled="loading||busy" @click="load">{{es?'Actualizar':'Refresh'}}</button></header>
+ <label v-if="connections.length>1">{{es?'Buzón':'Mailbox'}}<select v-model="connectionId" :disabled="busy" @change="load"><option v-for="c in connections" :key="c.id" :value="c.id">{{c.email}}</option></select></label>
+ <p class="mailbox-requests__hint">{{es?'Prueba de correo: últimos 20 mensajes de los últimos 7 días. La detección automática todavía no está activa.':'Email pilot: latest 20 messages from the last 7 days. Automatic detection is not active yet.'}}</p>
+ <p v-if="loading" role="status">{{es?'Cargando correos…':'Loading emails…'}}</p>
+ <div v-else class="mailbox-requests__layout"><div class="mailbox-requests__list"><button v-for="message in messages" :key="message.id" type="button" :aria-pressed="selected?.id===message.id" @click="selected=message"><span>{{message.senderName}}</span><strong>{{message.subject}}</strong><small>{{new Date(message.date).toLocaleDateString(locale)}}</small></button><p v-if="!messages.length">{{es?'No hay correos recientes para revisar.':'No recent emails to review.'}}</p></div>
+ <article v-if="selected"><h3>{{selected.subject}}</h3><p>{{selected.from}}</p><p class="mailbox-requests__body">{{selected.body}}</p><label>{{es?'Artista':'Artist'}}<select v-model="artistId" :disabled="busy"><option value="">{{es?'Selecciona un artista':'Select an artist'}}</option><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{artist.stage_name}}</option></select></label><button class="mailbox-requests__create" type="button" :disabled="busy||!artistId" @click="importMessage">{{busy?(es?'Creando…':'Creating…'):(es?'Crear solicitud y continuar el hilo':'Create request and continue thread')}}</button></article></div>
+ <p v-if="hasMore" class="mailbox-requests__hint">{{es?'Hay más correos en tu buzón; esta prueba muestra una selección reciente.':'More emails exist in your mailbox; this pilot displays a recent selection.'}}</p>
+ <p v-if="error" class="mailbox-requests__error" role="alert">{{error}}</p>
+</section>
+</template>
+<style scoped>
+.mailbox-requests{padding:20px;margin:0 0 24px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:var(--cue-surface)}header{display:flex;align-items:start;justify-content:space-between;gap:16px}h2{font-size:17px;margin:0 0 8px}h3{font-size:15px;overflow-wrap:anywhere}p{font-size:12px;line-height:1.5;color:var(--cue-muted)}button,select{min-height:44px;padding:8px 12px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control);background:var(--cue-raised);color:var(--cue-text);font-size:12px;cursor:pointer}button:disabled{opacity:.5;cursor:default}button:focus-visible,select:focus-visible{outline:2px solid var(--cue-accent);outline-offset:3px}.mailbox-requests__layout{display:grid;grid-template-columns:minmax(200px,1fr) minmax(0,1.5fr);gap:20px}.mailbox-requests__list{display:grid;align-content:start;gap:6px;max-height:430px;overflow:auto}.mailbox-requests__list button{display:grid;gap:5px;text-align:left;overflow-wrap:anywhere}.mailbox-requests__list button[aria-pressed=true]{border-color:var(--cue-accent)}small,span{font-size:11px;color:var(--cue-muted)}article{min-width:0}.mailbox-requests__body{white-space:pre-wrap;overflow-wrap:anywhere;max-height:320px;overflow:auto;color:var(--cue-text)}label{display:grid;gap:6px;font-size:12px}.mailbox-requests__create{margin-top:14px;background:var(--cue-accent);color:#080808}.mailbox-requests__error{border-left:3px solid #e65e6a;padding:12px;background:color-mix(in srgb,#e65e6a 8%,transparent)}.mailbox-requests__hint{font-size:11px}@media(max-width:680px){.mailbox-requests{padding:14px}.mailbox-requests__layout{grid-template-columns:1fr}header{flex-wrap:wrap}.mailbox-requests__list{max-height:240px}}
+</style>

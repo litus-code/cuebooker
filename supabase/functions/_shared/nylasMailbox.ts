@@ -41,6 +41,26 @@ export function createNylasMailbox(config: NylasConfig, request: typeof fetch = 
    if (!data || !['google','microsoft','imap'].includes(data.provider)) throw new Error('invalid_provider_response');
    return {email:normalizeMailboxEmail(data.email),provider:data.provider as MailboxProvider,status:data.blocked?'invalid':String(data.grant_status || '')};
   },
+  async messages(id: string, threadId?: string, pageToken?: string) {
+   const query=new URLSearchParams({limit:'20'});
+   if(threadId)query.set('thread_id',threadId);
+   else query.set('received_after',String(Math.floor(Date.now()/1000)-7*86400));
+   if(pageToken)query.set('page_token',pageToken);
+   const result=await call(`/v3/grants/${encodeURIComponent(id)}/messages?${query}`);
+   if(!Array.isArray(result?.data))throw new Error('invalid_provider_response');
+   return {messages:result.data,nextCursor:typeof result.next_cursor==='string'?result.next_cursor:null};
+  },
+  async message(id:string,messageId:string) {
+   const result=await call(`/v3/grants/${encodeURIComponent(id)}/messages/${encodeURIComponent(messageId)}`);
+   if(!result?.data?.id||!result.data.thread_id)throw new Error('invalid_provider_response');
+   return result.data;
+  },
+  async send(id:string,input:{to:string;subject:string;bodyText:string;replyToMessageId?:string}) {
+   const body=input.bodyText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+   const result=await call(`/v3/grants/${encodeURIComponent(id)}/messages/send`,{method:'POST',body:JSON.stringify({to:[{email:normalizeMailboxEmail(input.to)}],subject:input.subject,body,...(input.replyToMessageId?{reply_to_message_id:input.replyToMessageId}:{})})});
+   if(!result?.data?.id||!result.data.thread_id)throw new Error('invalid_provider_response');
+   return result.data;
+  },
   async disconnect(id: string) { await call(`/v3/grants/${encodeURIComponent(id)}`,{method:'DELETE'}); }
  };
 }

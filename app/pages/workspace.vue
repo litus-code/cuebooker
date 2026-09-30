@@ -2388,7 +2388,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <section v-else-if="isAgency && activeView === 'bookings' && route.query.booking" class="view agency-booking-detail">
       <button type="button" class="secondary-button" @click="closeAgencyBooking">← {{ preferences.locale.value === 'es' ? 'Volver a la lista de bookings' : 'Back to booking list' }}</button>
-      <BookingCoreInbox :workspace-id="agencyWorkspaceId" :bookings="realBookings" :locale="preferences.locale.value" :focus-booking-id="realBookingFocusId" :can-operate="canOperateAgency" @booking-opened="openRealBooking" @operations-changed="handleBookingCoreOperationsChanged" @cue-requested="openCueCapture" @calendar-requested="openBookingCalendar" />
+      <BookingCoreInbox :mailbox-artists="artists" :workspace-id="agencyWorkspaceId" :bookings="realBookings" :locale="preferences.locale.value" :focus-booking-id="realBookingFocusId" :can-operate="canOperateAgency" @booking-opened="openRealBooking" @operations-changed="handleBookingCoreOperationsChanged" @cue-requested="openCueCapture" @calendar-requested="openBookingCalendar" />
     </section>
     <section v-else-if="isAgencyGlobal" class="empty-card"><h1>{{ preferences.locale.value === 'es' ? 'Selecciona un artista para gestionar su perfil.' : 'Select an artist to manage their profile.' }}</h1><button class="primary-button" type="button" @click="changeView('roster')">{{ preferences.locale.value === 'es' ? 'Ir al roster' : 'Go to roster' }}</button></section>
 
@@ -2516,6 +2516,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <p v-if="cueMessage" class="cue-entry-message">{{ cueMessage }}</p>
 
         <BookingCoreInbox
+          :mailbox-artists="artists"
           v-if="bookingCoreWorkspaceId"
           :workspace-id="bookingCoreWorkspaceId"
           :bookings="realBookings"
