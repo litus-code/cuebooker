@@ -16,7 +16,7 @@ export async function classifyBookingMail(messages:Array<{id:string;subject:stri
   input:JSON.stringify(messages.slice(0,20).map(m=>({id:m.id,subject:m.subject,body:m.body.slice(0,2500)}))),
   text:{format:{type:'json_schema',name:'booking_mail_classification',strict:true,schema:{type:'object',additionalProperties:false,required:['messages'],properties:{messages:{type:'array',items:{type:'object',additionalProperties:false,required:['id','kind','reason'],properties:{id:{type:'string'},kind:{type:'string',enum:['booking','review','other']},reason:{type:'string'}}}}}}}}
  })});
- if(!response.ok)throw new Error('mailbox_ai_unavailable');
+ if(!response.ok){console.warn('mailbox_classifier_http_status',response.status);throw new Error('mailbox_ai_unavailable');}
  const result=await response.json();
  const text=(result.output||[]).flatMap((o:any)=>o.content||[]).filter((c:any)=>c.type==='output_text').map((c:any)=>c.text).join('');
  try{return validateMailClassifications(JSON.parse(text),messages.slice(0,20).map(m=>m.id));}catch{throw new Error('invalid_classification');}

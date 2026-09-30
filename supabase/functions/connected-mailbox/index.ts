@@ -195,6 +195,7 @@ Deno.serve(async(request:Request)=>{
  }catch(error){
   const name=(error as Error).message;
   const allowed=['workspace_access_denied','invalid_email','invalid_provider','invalid_provider_configuration','invalid_callback','invalid_return_url','mailbox_reconnect_required','mailbox_not_found','mailbox_provider_unavailable','mailbox_not_configured','invalid_oauth_state','account_mismatch','connection_not_found','invalid_message','artist_required','archived_booking_read_only','mailbox_analysis_consent_required','mailbox_ai_not_configured','mailbox_ai_unavailable','invalid_classification','mailbox_analysis_rate_limit'];
+  console.warn('connected_mailbox_error',allowed.includes(name)?name:'mailbox_operation_failed',(error as Error).name==='TimeoutError'?'timeout':'request_failed');
   return json({error:allowed.includes(name)?name:'mailbox_operation_failed'},name==='workspace_access_denied'?403:400);
  }
 });
