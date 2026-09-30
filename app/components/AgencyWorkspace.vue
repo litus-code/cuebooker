@@ -27,12 +27,14 @@ const props = withDefaults(defineProps<{
   demoData?: AgencyDemoData
   initialMonth?: string
   contextArtistName?: string
+  contextState?: { filterArtist: string; calendarArtists: string[]; month: string; selectedDay: string }
 }>(), { canCapture: true })
 const emit = defineEmits<{
   selectArtist: [artistId: string, view: 'overview' | 'profile']
   openBooking: [bookingId: string]
   retireArtist: [artistId: string]
   restoreArtist: [artistId: string]
+  contextChanged: [state: { filterArtist: string; calendarArtists: string[]; month: string; selectedDay: string }]
   capture: []
   navigate: [view: 'roster' | 'bookings' | 'calendar']
 }>()
@@ -52,12 +54,12 @@ const activities = ref<WorkspaceActivityHistoryRow[]>([])
 const holds = ref<Array<Hold & { bookings: { artist_id: string } }>>([])
 const contacts = ref<Array<{ id: string; name: string }>>([])
 const counterparties = ref<Array<{ id: string; name: string }>>([])
-const filterArtist = ref(!props.demoData && typeof route.query.rosterArtist === 'string' ? route.query.rosterArtist : 'all')
-const calendarArtists = ref<string[]>(!props.demoData && typeof route.query.rosterCalendar === 'string' ? route.query.rosterCalendar.split(',').filter(Boolean) : [])
-const calendarFilterInitialized = ref(!props.demoData && typeof route.query.rosterCalendar === 'string')
-const month = ref(props.initialMonth || (!props.demoData && typeof route.query.rosterMonth === 'string' && /^\d{4}-\d{2}-01$/.test(route.query.rosterMonth) ? route.query.rosterMonth : '') || new Date().toISOString().slice(0, 7) + '-01')
+const filterArtist = ref(props.contextState?.filterArtist || (!props.demoData && typeof route.query.rosterArtist === 'string' ? route.query.rosterArtist : 'all'))
+const calendarArtists = ref<string[]>(props.contextState?.calendarArtists.slice() || (!props.demoData && typeof route.query.rosterCalendar === 'string' ? route.query.rosterCalendar.split(',').filter(Boolean) : []))
+const calendarFilterInitialized = ref(Boolean(props.contextState) || !props.demoData && typeof route.query.rosterCalendar === 'string')
+const month = ref(props.contextState?.month || props.initialMonth || (!props.demoData && typeof route.query.rosterMonth === 'string' && /^\d{4}-\d{2}-01$/.test(route.query.rosterMonth) ? route.query.rosterMonth : '') || new Date().toISOString().slice(0, 7) + '-01')
 const today = new Date().toISOString().slice(0, 10)
-const selectedDay = ref(!props.demoData && typeof route.query.rosterDay === 'string' ? route.query.rosterDay : month.value.slice(0, 7) === today.slice(0, 7) ? today : '')
+const selectedDay = ref(props.contextState?.selectedDay ?? (!props.demoData && typeof route.query.rosterDay === 'string' ? route.query.rosterDay : month.value.slice(0, 7) === today.slice(0, 7) ? today : ''))
 const attentionRevision = ref(0)
 const artistName = ref('')
 const artistSlug = ref('')
@@ -71,6 +73,7 @@ const showRetired = ref(false)
 const page = ref(0)
 const pageSize = 100
 const activityPage = ref(0)
+watch([filterArtist, calendarArtists, month, selectedDay], () => emit('contextChanged', { filterArtist: filterArtist.value, calendarArtists: [...calendarArtists.value], month: month.value, selectedDay: selectedDay.value }), { immediate: true })
 const activeArtists = computed(() => props.artists.filter(artist => artist.roster_active !== false))
 const activeIds = computed(() => new Set(activeArtists.value.map(artist => artist.id)))
 const visibleBookings = computed(() => filterRosterBookings(bookings.value, activeArtists.value, filterArtist.value === 'all' ? undefined : [filterArtist.value]))

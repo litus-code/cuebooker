@@ -19,6 +19,7 @@ const rosterRevision = ref(0)
 const focusBookingId = ref('')
 const cueOpen = ref(false)
 const returnView = ref<DemoView>('overview')
+const globalContext = ref<{ filterArtist: string; calendarArtists: string[]; month: string; selectedDay: string }>()
 const nextMonth = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() + 1, 1))
 const demoMonth = nextMonth.toISOString().slice(0, 10)
 const day = (number: number) => `${demoMonth.slice(0, 7)}-${String(number).padStart(2, '0')}`
@@ -81,6 +82,8 @@ function changeView(next: DemoView) {
   focusBookingId.value = ''
 }
 function chooseArtist(id: string) {
+  if (!selectedArtistId.value && id) returnView.value = view.value
+  if (id && view.value === 'roster') view.value = 'overview'
   selectedArtistId.value = artists.value.some(item => item.id === id && item.roster_active) ? id : ''
   focusBookingId.value = ''
   if (!selectedArtistId.value && ['profile', 'passport', 'cue-id'].includes(view.value)) view.value = 'overview'
@@ -141,12 +144,13 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
       :locale="locale" :can-manage-roster="true" :create-artist="createArtist"
       :demo-data="demoData" :initial-month="demoMonth" :revision="rosterRevision"
       :context-artist-name="view !== 'roster' ? selectedArtist?.stage_name : undefined"
+      :context-state="!selectedArtist ? globalContext : undefined" @context-changed="state => { if (!selectedArtist) globalContext = state }"
       @capture="cueOpen = true" @navigate="changeView" @select-artist="(id, target) => { chooseArtist(id); changeView(target) }"
       @open-booking="openBooking" @retire-artist="setRosterActive($event, false)" @restore-artist="setRosterActive($event, true)"
     />
 
     <section v-else-if="focusedBooking && view === 'bookings'" class="agency-preview__inbox">
-      <div class="agency-preview__inbox-heading"><div><span>AGENCIA / {{ selectedArtist?.stage_name }}</span><h1>{{ locale === 'es' ? 'Seguimiento del booking.' : 'Booking follow-up.' }}</h1><p>{{ locale === 'es' ? 'La gestión individual conserva el mismo panel de Bookings que usa un DJ.' : 'Individual work uses the same Bookings panel as a DJ.' }}</p></div><button type="button" @click="chooseArtist('')">← {{ locale === 'es' ? 'Todos los artistas' : 'All artists' }}</button></div>
+      <div class="agency-preview__inbox-heading"><div><span>AGENCIA / {{ selectedArtist?.stage_name }}</span><h1>{{ locale === 'es' ? 'Seguimiento del booking.' : 'Booking follow-up.' }}</h1><p>{{ locale === 'es' ? 'La gestión individual conserva el mismo panel de Bookings que usa un DJ.' : 'Individual work uses the same Bookings panel as a DJ.' }}</p></div><button type="button" @click="returnToAgency">← {{ locale === 'es' ? 'Todos los artistas' : 'All artists' }}</button></div>
       <BookingCoreInbox workspace-id="preview-agency" :bookings="demoBookings.filter(item => item.artist_id === selectedArtistId)" :locale="locale" :focus-booking-id="focusBookingId" :demo-data="demoInboxData" @booking-opened="focusBookingId = $event" @calendar-requested="changeView('calendar')" />
     </section>
 
