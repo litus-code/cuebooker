@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Contact, CoreBooking, Hold } from '../domain/bookingCore'
+import type { Contact, CoreBooking, Hold, NextMove, CreateManualBookingInput } from '../domain/bookingCore'
 import type { WorkspaceActivityHistoryRow } from '../services/bookingCoreApi'
 
 type DemoView = 'overview' | 'bookings' | 'calendar' | 'history' | 'roster' | 'profile' | 'passport' | 'cue-id' | 'settings'
@@ -17,6 +17,8 @@ const selectedArtistId = ref('')
 const selectedArtist = computed(() => artists.value.find(item => item.id === selectedArtistId.value && item.roster_active))
 const rosterRevision = ref(0)
 const focusBookingId = ref('')
+const cueOpen = ref(false)
+const returnView = ref<DemoView>('overview')
 const nextMonth = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() + 1, 1))
 const demoMonth = nextMonth.toISOString().slice(0, 10)
 const day = (number: number) => `${demoMonth.slice(0, 7)}-${String(number).padStart(2, '0')}`
@@ -46,7 +48,8 @@ const demoActivities: WorkspaceActivityHistoryRow[] = [
 const demoHolds: Array<Hold & { bookings: { artist_id: string } }> = [
   { id: 'demo-hold', workspace_id: 'preview-agency', booking_id: 'demo-booking-d', event_date: day(18), starts_at: null, ends_at: null, event_timezone: 'Europe/Madrid', expires_at: null, priority: null, status: 'active', released_at: null, converted_at: null, created_by: 'preview', created_at: now, updated_at: now, bookings: { artist_id: 'demo-nox' } }
 ]
-const demoData = { bookings: demoBookings.value, activities: demoActivities, holds: demoHolds, contacts: [
+const demoNextMoves = ref<NextMove[]>([])
+const demoData = { bookings: demoBookings.value, activities: demoActivities, holds: demoHolds, nextMoves: demoNextMoves.value, contacts: [
   { id: 'demo-contact-a', name: 'Promoter / Sala 04' }, { id: 'demo-contact-b', name: 'Programación / Club Norte' },
   { id: 'demo-contact-c', name: 'Producción / Warehouse 17' }, { id: 'demo-contact-d', name: 'Promoter / La Nave' }
 ], counterparties: [] }
@@ -85,6 +88,7 @@ function chooseArtist(id: string) {
 function openBooking(id: string) {
   const item = demoBookings.value.find(row => row.id === id)
   if (!item) return
+  if (!selectedArtistId.value) returnView.value = view.value
   selectedArtistId.value = item.artist_id
   view.value = 'bookings'
   focusBookingId.value = id
@@ -95,6 +99,17 @@ async function createArtist(name: string, slug: string, city: string) {
   rosterRevision.value++
   return true
 }
+async function createDemoCue(input: CreateManualBookingInput) {
+  const item = booking(`demo-cue-${Date.now()}`, input.artistId, input.eventName || input.initialNote || 'CUE', input.venueName || '', input.eventDate || '', 'new', '')
+  item.event_date = input.eventDate || null
+  item.source = input.source; item.origin_channel = input.source; item.capture_method = 'manual'
+  item.city = input.city || null
+  demoBookings.value.unshift(item)
+  if (input.nextMoveLabel) demoNextMoves.value.push({ id: `demo-next-${Date.now()}`, workspace_id: 'preview-agency', booking_id: item.id, label: input.nextMoveLabel, due_at: input.nextMoveDueAt || null, completed_at: null, assignee_user_id: null, completion_trigger: 'manual', created_by: 'preview', created_at: now, updated_at: now })
+  rosterRevision.value++
+  return item
+}
+function returnToAgency() { selectedArtistId.value = ''; focusBookingId.value = ''; view.value = returnView.value }
 function setRosterActive(id: string, active: boolean) {
   const artist = artists.value.find(item => item.id === id)
   if (!artist) return
@@ -117,6 +132,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
     </header>
     <div class="agency-preview__notice"><strong>PREVIEW AGENCIA / DATOS FICTICIOS</strong><span>{{ locale === 'es' ? 'Puedes recorrer el workspace sin iniciar sesión. Los cambios se pierden al recargar.' : 'Explore the workspace without signing in. Changes reset on reload.' }}</span></div>
 
+    <div v-if="selectedArtist" class="agency-preview__context"><span>CUE Test Agency / <strong>{{ selectedArtist.stage_name }}</strong></span><button type="button" @click="returnToAgency">{{ locale === 'es' ? 'Volver a Agencia' : 'Back to Agency' }}</button></div>
     <AgencyWorkspace
       v-if="!focusedBooking && ['overview', 'bookings', 'calendar', 'history', 'roster'].includes(view)"
       :key="selectedArtistId || 'all'" :workspace-id="'preview-agency'" agency-name="CUE Test Agency"
@@ -125,7 +141,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
       :locale="locale" :can-manage-roster="true" :create-artist="createArtist"
       :demo-data="demoData" :initial-month="demoMonth" :revision="rosterRevision"
       :context-artist-name="view !== 'roster' ? selectedArtist?.stage_name : undefined"
-      @navigate="changeView" @select-artist="(id, target) => { chooseArtist(id); changeView(target) }"
+      @capture="cueOpen = true" @navigate="changeView" @select-artist="(id, target) => { chooseArtist(id); changeView(target) }"
       @open-booking="openBooking" @retire-artist="setRosterActive($event, false)" @restore-artist="setRosterActive($event, true)"
     />
 
@@ -144,6 +160,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
       <div class="agency-preview__read-only"><span>PREVIEW / {{ locale === 'es' ? 'SIN EDICIÓN REAL' : 'NO LIVE EDITING' }}</span><p>{{ locale === 'es' ? 'Esta sección muestra el contexto y la navegación. Su editor real requiere una cuenta Agency.' : 'This section shows context and navigation. The live editor requires an Agency account.' }}</p></div>
     </section>
 
+    <CueCapturePanel :open="cueOpen" workspace-id="preview-agency" :artist-id="selectedArtistId" :artists="artists.filter(item => item.roster_active)" :locale="locale" :demo-create="createDemoCue" @close="cueOpen = false" @created="item => { cueOpen = false; openBooking(item.id) }" />
   </main>
 </template>
 
@@ -159,4 +176,8 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 @media(max-width:850px){.agency-preview__header{grid-template-columns:1fr auto}.agency-preview__header nav{grid-column:1/-1;grid-row:2}.agency-preview__selector{min-width:150px}.agency-preview__notice{align-items:start;flex-direction:column;gap:5px}}
 @media(max-width:760px){.agency-preview__inbox-heading{align-items:start;flex-direction:column}.agency-preview__inbox-heading h1{font-size:2.3rem}}
 @media(max-width:390px){.agency-preview__brand{width:100px}.agency-preview__selector{min-width:130px}.agency-preview__header{gap:6px}}
+</style>
+
+<style scoped>
+.agency-preview__context{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin-top:20px;padding:12px;border-left:3px solid var(--cue-accent);background:var(--cue-surface);font-size:12px}.agency-preview__context button{background:transparent;color:var(--cue-accent);border:1px solid var(--cue-border);padding:8px}
 </style>

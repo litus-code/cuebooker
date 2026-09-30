@@ -1,3 +1,15 @@
+# Cuebooker living handoff
+
+## 30 September 2026: Agency global capture, follow-up and context
+
+- Branch `feature/agency-multi-artist-beta`, PR #96. Base HEAD `5e815b0e13a956aa6ea98d3cf4b114b94b863b05`; resulting revision will be recorded on the PR. Production untouched.
+- Implemented global + CUE with explicit active-artist selection; capture uses the existing Booking Core RPC. Agency beta no longer applies the individual five-process capture gate. Existing roles and plans remain intact.
+- Global follow-up now reuses DJ attention rules across the active roster and labels each artist. Scope changes discard stale results; errors are visible and retryable. Agency return navigation preserves operational view, filters, calendar month/day; artist context remains visible.
+- Overview roster shortcuts, add actions, accessible roster modal and capture focus handling. Last retired artist remains restorable. All-artists calendar picks up added artists; explicit filters remain explicit.
+- Local 325 assertions (direct test-file execution), 36 generated routes and clean diff checks. Staging owner-role transactional smoke created a temporary second artist, bookings for A/B, an overdue Next Move and booking route; rollback confirmed zero leftover rows. Foreign principal sees zero roster/bookings. This is backend validation, not browser-authenticated E2E.
+- Staging contains SALA PRUEBAS with one active artist. User reports login works in their local browser. Agent browser has no shared authenticated session. Next: verify CI/preview for the pushed revision; test global capture, attention, navigation and last-artist restore visually, then authenticated Agency A/B flow at desktop/mobile before removing draft or merging.
+- No schema or Edge Function changes. Team invitations, per-artist Manager assignment and artist-transfer consent remain explicitly deferred. Anonymous individual Overview is still a simplified demo; live identity editors require authentication. Attention retains existing per-artist 500-row beta windows.
+
 Warning: truncated output (original token count: 80606)
 Total output lines: 10325
 

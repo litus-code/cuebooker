@@ -5,6 +5,7 @@ import { buildCuePassportWorld, cuePassportNextMilestones, cuePassportUnlockedMi
 import type { CueNotification } from '../domain/notification'
 import { toPublicCueIdConfig, type PublicArtistProfile } from '../domain/publicArtistProfile'
 import { createBookingQrSvg } from '../services/bookingQr'
+import { agencyGlobalQuery, agencyViewForArtist, canOperateAgency as hasAgencyOperationAccess } from '../domain/agencyContext'
 import { resolveAgencyArtist } from '../domain/agencyRoster'
 
 const auth = useCueAuth()
@@ -95,6 +96,16 @@ const artists = ref<ManagedArtist[]>([])
 const organizations = ref<ManagedOrganization[]>([])
 const selectedArtistId = ref('')
 const agencyWorkspaceId = ref('')
+const agencyWorkspaceRole = ref('viewer')
+const agencyReturnQuery = ref<Record<string, any> | null>(null)
+const canOperateAgency = computed(() => hasAgencyOperationAccess(agencyWorkspaceRole.value))
+function rememberAgencyContext() { if (isAgencyGlobal.value) agencyReturnQuery.value = agencyGlobalQuery(route.query, activeView.value) }
+async function returnToAgency() {
+  const query = agencyReturnQuery.value || agencyGlobalQuery(route.query, 'overview')
+  selectedArtistId.value = ''
+  await router.replace({ query })
+  await changeView(workspaceViewFromQuery(query.view))
+}
 const rosterRevision = ref(0)
 const blocks = ref<AvailabilityBlock[]>([])
 const monthCursor = ref(new Date().toISOString().slice(0, 7) + '-01')
@@ -886,14 +897,17 @@ watch(() => route.query.artist, artistValue => {
   selectedArtistId.value = artistId
 })
 
-async function chooseArtist(artistId: string, view: WorkspaceView = 'overview') {
+async function chooseArtist(artistId: string, view?: WorkspaceView) {
+  rememberAgencyContext()
+  const targetView = view || agencyViewForArtist(activeView.value, Boolean(artistId))
   if (artistId && !artists.value.some(item => item.id === artistId && item.roster_active !== false)) return
   selectedArtistId.value = artistId
-  await router.replace({ query: { ...route.query, artist: artistId || undefined, scope: artistId ? undefined : 'all', booking: undefined, view } })
-  await changeView(view)
+  await router.replace({ query: { ...route.query, artist: artistId || undefined, scope: artistId ? undefined : 'all', booking: undefined, view: targetView } })
+  await changeView(targetView)
 }
 
 async function openAgencyBooking(bookingId: string) {
+  rememberAgencyContext()
   if (!agencyWorkspaceId.value) return
   try {
     const booking = await loadExactBookingIntoInbox(agencyWorkspaceId.value, bookingId)
@@ -1345,8 +1359,9 @@ const liveBookingProcessCount = computed(() => realBookings.value.filter(booking
 const liveBookingCapacity = computed(() => cueCapacity('activeBookings', liveBookingProcessCount.value))
 
 function openCueCapture() {
-  if (!bookingCoreWorkspaceId.value) return
-  if (liveBookingCapacity.value.reached) {
+  if (!bookingCoreWorkspaceId.value || (isAgency.value && !canOperateAgency.value)) return
+  rememberAgencyContext()
+  if (!isAgency.value && liveBookingCapacity.value.reached) {
     cueCapacityBlocked.value = true
     return
   }
@@ -1357,6 +1372,7 @@ function openCueCapture() {
 async function handleCueCreated(booking: CoreBooking) {
   cueOpen.value = false
   cueCapacityBlocked.value = false
+  if (isAgency.value && selectedArtistId.value !== booking.artist_id) await chooseArtist(booking.artist_id, 'bookings')
   cueMessage.value = cueEntryCopy.value.saved
   analytics.track('booking_capture_created', {
     source: booking.source || 'manual',
@@ -1489,6 +1505,7 @@ async function loadWorkspaceIdentity() {
           bookingCore.listWorkspaceArtists(workspaceId), bookingCore.listWorkspaces()
         ])
         const workspaceRole = workspaces.find(item => item.id === workspaceId)?.role || 'viewer'
+        agencyWorkspaceRole.value = workspaceRole
         const roster = await availability.listRosterArtists(links.map(item => item.artist_id))
         artists.value = roster.map(artist => ({
           ...artist,
@@ -2318,6 +2335,8 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
+    <div v-if="isAgency && !isAgencyGlobal && !workspaceSurfaceLoading" class="agency-artist-context"><span>{{ agency?.name }} / <strong>{{ selectedArtist?.stage_name }}</strong></span><button type="button" @click="returnToAgency">{{ preferences.locale.value === 'es' ? 'Volver a Agencia' : 'Back to Agency' }}</button></div>
+
     <section v-if="workspaceSurfaceLoading" class="workspace-loading-state" aria-busy="true" aria-live="polite">
       <CueBrand class="workspace-loading-state__logo" decorative />
       <div class="workspace-loading-state__pulse" aria-hidden="true"><i /><i /><i /></div>
@@ -2329,7 +2348,8 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       class="view" :workspace-id="agencyWorkspaceId" :agency-name="agency?.name || ''"
       :artists="artists" :view="activeView as 'overview' | 'bookings' | 'calendar' | 'history' | 'roster'"
       :locale="preferences.locale.value" :can-manage-roster="Boolean(manageableAgency)" :revision="rosterRevision"
-      :create-artist="addRosterArtist"
+      :create-artist="addRosterArtist" :can-capture="canOperateAgency"
+      @capture="openCueCapture"
       @select-artist="(id, view) => chooseArtist(id, view)" @open-booking="openAgencyBooking"
       @retire-artist="id => setArtistRosterActive(id, false)"
       @restore-artist="id => setArtistRosterActive(id, true)" @navigate="changeView"
@@ -3203,6 +3223,8 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       :open="cueOpen"
       :workspace-id="bookingCoreWorkspaceId"
       :artist-id="selectedArtistId"
+      :artists="isAgency ? artists.filter(item => item.roster_active !== false) : undefined"
+      :beta-agency="isAgency"
       :locale="preferences.locale.value"
       @close="cueOpen = false"
       @created="handleCueCreated"
@@ -4566,4 +4588,8 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .skeleton-panel--passport-world{min-height:340px}
   .skeleton-panel--cue-stage{min-height:420px}
 }
+</style>
+
+<style scoped>
+.agency-artist-context{display:flex;justify-content:space-between;align-items:center;gap:12px;max-width:1440px;margin:18px auto 0;padding:12px 16px;border-left:3px solid var(--cue-accent);background:var(--cue-surface);font-size:12px}.agency-artist-context strong{color:var(--cue-accent)}.agency-artist-context button{background:transparent;color:var(--cue-text);border:1px solid var(--cue-border);padding:10px;cursor:pointer}@media(max-width:600px){.agency-artist-context{align-items:start;flex-direction:column}}
 </style>

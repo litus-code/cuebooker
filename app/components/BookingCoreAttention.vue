@@ -5,7 +5,10 @@ import { deriveBookingAttentionSignals, deriveEmailDeliveryAttentionSignals, typ
 
 const props = defineProps<{
   workspaceId: string
-  artistId: string
+  canOperate?: boolean
+  artistId?: string
+  artists?: Array<{ id: string; stage_name: string }>
+  demoData?: { bookings: CoreBooking[]; activities: Activity[]; holds: Hold[]; nextMoves?: NextMove[] }
   bookings: CoreBooking[]
   locale: 'es' | 'en'
   refreshKey?: number
@@ -22,6 +25,12 @@ const notificationItems = ref<CueNotification[]>([])
 const emailMessages = ref<import('../services/bookingCoreApi').BookingEmailMessage[]>([])
 const loading = ref(false)
 const workingId = ref('')
+const loadError = ref('')
+let loadSequence = 0
+function artistLabel(bookingId: string) {
+  const artistId = attentionBookings.value.find(item => item.id === bookingId)?.artist_id
+  return props.artists?.find(item => item.id === artistId)?.stage_name || ''
+}
 const ATTENTION_WINDOW_MS = 48 * 60 * 60 * 1000
 
 const copy = computed(() => props.locale === 'es' ? {
@@ -239,52 +248,73 @@ function formatDateOnly(value: string) {
 }
 
 async function load(options: { silent?: boolean } = {}) {
-  if (!props.workspaceId || !props.artistId) {
-    attentionBookings.value = []
-    nextMoves.value = []
-    holds.value = []
-    activities.value = []
-    emailMessages.value = []
-    notificationItems.value = []
+  const sequence = ++loadSequence
+  const ids = props.artists ? props.artists.map(item => item.id) : props.artistId ? [props.artistId] : []
+  loadError.value = ''
+  if (!props.workspaceId || !ids.length) {
+    attentionBookings.value = []; nextMoves.value = []; holds.value = []
+    activities.value = []; emailMessages.value = []; notificationItems.value = []
+    loading.value = false
     return
   }
   if (!options.silent) loading.value = true
   try {
-    const [bookingRows, moves, holdRows, activityRows, notifications, deliveryRows] = await Promise.all([
-      bookingCore.listArtistAttentionBookings(props.workspaceId, props.artistId, 500),
-      bookingCore.listArtistActiveNextMoves(props.workspaceId, props.artistId),
-      bookingCore.listArtistActiveHolds(props.workspaceId, props.artistId),
-      bookingCore.listArtistWorkspaceActivities(props.workspaceId, props.artistId, 500),
-      notificationApi.listWorkspaceUnread(props.workspaceId, 500),
-      bookingCore.listArtistWorkspaceBookingEmailMessages(props.workspaceId, props.artistId, 500)
+    if (props.demoData) {
+      const rows = props.demoData.bookings.filter(item => ids.includes(item.artist_id) && !item.archived_at)
+      const bookingIds = new Set(rows.map(item => item.id))
+      attentionBookings.value = rows
+      nextMoves.value = (props.demoData.nextMoves || []).filter(item => bookingIds.has(item.booking_id) && !item.completed_at)
+      holds.value = props.demoData.holds.filter(item => bookingIds.has(item.booking_id) && item.status === 'active')
+      activities.value = props.demoData.activities.filter(item => bookingIds.has(item.booking_id))
+      notificationItems.value = []; emailMessages.value = []
+      return
+    }
+    const [results, notifications] = await Promise.all([
+      Promise.all(ids.map(async id => {
+        const [bookings, moves, holds, activities, deliveries] = await Promise.all([
+          bookingCore.listArtistAttentionBookings(props.workspaceId, id, 500),
+          bookingCore.listArtistActiveNextMoves(props.workspaceId, id),
+          bookingCore.listArtistActiveHolds(props.workspaceId, id),
+          bookingCore.listArtistWorkspaceActivities(props.workspaceId, id, 500),
+          bookingCore.listArtistWorkspaceBookingEmailMessages(props.workspaceId, id, 500)
+        ])
+        return { bookings, moves, holds, activities, deliveries }
+      })),
+      notificationApi.listWorkspaceUnread(props.workspaceId, 500)
     ])
-    const bookingIds = new Set(bookingRows.map(item => item.id))
-    attentionBookings.value = bookingRows
-    nextMoves.value = moves
-    holds.value = holdRows
-    activities.value = activityRows
-    emailMessages.value = deliveryRows
-    notificationItems.value = notifications.filter(item =>
-      item.workspace_id === props.workspaceId
-      && bookingIds.has(item.booking_id)
-      && !item.read_at
-    )
+    if (sequence !== loadSequence) return
+    const rows = results.flatMap(item => item.bookings)
+    const bookingIds = new Set(rows.map(item => item.id))
+    attentionBookings.value = rows
+    nextMoves.value = results.flatMap(item => item.moves)
+    holds.value = results.flatMap(item => item.holds)
+    activities.value = results.flatMap(item => item.activities)
+    emailMessages.value = results.flatMap(item => item.deliveries)
+    notificationItems.value = notifications.filter(item => item.workspace_id === props.workspaceId && bookingIds.has(item.booking_id) && !item.read_at)
+  } catch {
+    if (sequence === loadSequence) loadError.value = props.locale === 'es' ? 'No se pudo cargar el seguimiento. Reintenta para ver tus pendientes.' : 'Could not load follow-up. Retry to see pending work.'
   } finally {
-    if (!options.silent) loading.value = false
+    if (sequence === loadSequence) loading.value = false
   }
 }
 
-watch(() => [props.workspaceId, props.artistId], () => load(), { immediate: true })
+watch(() => [props.workspaceId, props.artistId, props.artists?.map(item => item.id).join(',')], () => load(), { immediate: true })
 watch(() => props.refreshKey, () => load({ silent: true }))
 
 async function resolve(item: (typeof items.value)[number]) {
+  if (props.canOperate === false) return
   workingId.value = item.id
   try {
-    if (item.kind === 'next') await bookingCore.completeNextMove(props.workspaceId, item.id)
+    if (props.demoData) {
+      if (item.kind === 'next') { const move = props.demoData.nextMoves?.find(row => row.id === item.id); if (move) move.completed_at = new Date().toISOString() }
+      if (item.kind === 'hold') { const hold = props.demoData.holds.find(row => row.id === item.id); if (hold) hold.status = 'released' }
+    } else if (item.kind === 'next') await bookingCore.completeNextMove(props.workspaceId, item.id)
     else if (item.kind === 'hold') await bookingCore.releaseHold(props.workspaceId, item.id)
     else return
     await load()
     emit('changed')
+  } catch {
+    loadError.value = props.locale === 'es' ? 'No se pudo guardar la acción. Reintenta.' : 'Could not save the action. Retry.'
   } finally {
     workingId.value = ''
   }
@@ -297,16 +327,18 @@ async function resolve(item: (typeof items.value)[number]) {
       <div><p>{{ copy.eyebrow }}</p><h2>{{ copy.title }}</h2></div>
       <strong>{{ items.length }}</strong>
     </div>
-    <div v-if="loading" class="attention-panel__empty">…</div>
+    <div v-if="loadError" role="alert" class="attention-panel__empty">{{ loadError }} <button type="button" @click="load()">{{ locale === 'es' ? 'Reintentar' : 'Retry' }}</button></div>
+    <div v-else-if="loading" class="attention-panel__empty">…</div>
     <div v-else-if="items.length" class="attention-panel__list">
       <article v-for="item in items" :key="`${item.kind}-${item.id}`" :class="{ 'attention-panel__item--overdue': item.urgency === 'overdue' }">
         <span :class="['attention-panel__type', `attention-panel__type--${item.kind}`]">{{ kindLabel(item.kind) }}</span>
         <button class="attention-panel__context" type="button" :aria-label="`${copy.open}: ${item.title}`" @click="emit('openBooking', item.bookingId)">
+          <b v-if="artists?.length" class="attention-panel__artist">{{ artistLabel(item.bookingId) }}</b>
           <strong>{{ item.title }}</strong>
           <small>{{ item.meta }}</small>
           <em v-if="urgencyLabel(item)" :class="`attention-panel__urgency attention-panel__urgency--${item.urgency}`">{{ urgencyLabel(item) }}</em>
         </button>
-        <button v-if="item.actionLabel" class="attention-panel__resolve" type="button" :disabled="workingId === item.id" @click="resolve(item)">{{ item.actionLabel }}</button>
+        <button v-if="item.actionLabel && canOperate !== false" class="attention-panel__resolve" type="button" :disabled="workingId === item.id" @click="resolve(item)">{{ item.actionLabel }}</button>
         <button v-else class="attention-panel__resolve" type="button" @click="emit('openBooking', item.bookingId)">{{ copy.openAction }}</button>
       </article>
     </div>
@@ -349,4 +381,8 @@ async function resolve(item: (typeof items.value)[number]) {
   .attention-panel__resolve { grid-column:2; justify-self:start; }
   .attention-panel__heading h2 { font-size:16px; }
 }
+</style>
+
+<style scoped>
+.attention-panel__artist{display:block;color:var(--cue-accent);font:700 10px/1.3 monospace;margin-bottom:5px;text-transform:uppercase}
 </style>
