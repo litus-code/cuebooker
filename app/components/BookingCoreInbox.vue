@@ -4,13 +4,14 @@ import type { BookingEmailMessage, WorkspaceActivityHistoryRow } from '../servic
 import { buildFollowUpDraft, shouldSuggestFollowUp } from '../services/followUpDraft'
 import { buildFailedEmailRetryDraft } from '../services/emailRetryDraft'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   workspaceId: string
   bookings: CoreBooking[]
   locale: 'es' | 'en'
+  canOperate?: boolean
   focusBookingId?: string
   demoData?: { contacts: Contact[]; counterparties: Counterparty[]; activities: WorkspaceActivityHistoryRow[]; holds: Array<Hold & { bookings: { artist_id: string } }>; nextMoves: Record<string, string> }
-}>()
+}>(), { canOperate: true })
 
 const emit = defineEmits<{ operationsChanged: []; cueRequested: []; bookingOpened: [bookingId: string]; calendarRequested: [date: string] }>()
 const { capacity: cueCapacity } = useCueEntitlements()
@@ -370,6 +371,7 @@ async function handleActivityCreated() {
 }
 
 async function decideStatus(status: Extract<CoreBookingStatus, 'confirmed' | 'rejected' | 'cancelled'>) {
+  if (!props.canOperate) return
   if (!selectedBooking.value || selectedBooking.value.status === status) return
   decisionTrigger.value = import.meta.client && document.activeElement instanceof HTMLElement ? document.activeElement : null
   decisionError.value = ''
@@ -442,6 +444,7 @@ async function confirmDecision() {
 }
 
 async function toggleArchive() {
+  if (!props.canOperate) return
   if (!selectedBooking.value) return
   const nextArchived = !selectedBooking.value.archived_at
   if (props.demoData) {
@@ -564,7 +567,7 @@ async function selectBooking(bookingId: string) {
       <span>{{ copy.empty }}</span>
       <strong>{{ copy.emptyTitle }}</strong>
       <p>{{ copy.emptyBody }}</p>
-      <button type="button" @click="emit('cueRequested')">{{ copy.emptyAction }}</button>
+      <button type="button" v-if="canOperate" @click="emit('cueRequested')">{{ copy.emptyAction }}</button>
     </div>
 
     <div v-if="bookings.length" id="core-inbox-tools" class="core-inbox__tools">
@@ -654,7 +657,7 @@ async function selectBooking(bookingId: string) {
             <h3>{{ bookingTitle(selectedBooking) }}</h3>
             <p>{{ selectedBooking.event_name || selectedBooking.city || '—' }}</p>
           </div>
-          <button class="core-inbox__archive" type="button" :disabled="archiving" @click="toggleArchive">{{ selectedBooking.archived_at ? copy.restore : copy.archive }}</button>
+          <button v-if="canOperate" class="core-inbox__archive" type="button" :disabled="archiving" @click="toggleArchive">{{ selectedBooking.archived_at ? copy.restore : copy.archive }}</button>
         </header>
 
         <section v-if="!selectedBooking.archived_at" class="core-inbox__decision-strip">
@@ -662,13 +665,14 @@ async function selectBooking(bookingId: string) {
             <span>{{ copy.status }}</span>
             <strong>{{ statusLabels[selectedBooking.status] }}</strong>
           </div>
-          <div v-if="!['confirmed','rejected','cancelled'].includes(selectedBooking.status)" class="core-inbox__decisions">
+          <div v-if="canOperate && !['confirmed','rejected','cancelled'].includes(selectedBooking.status)" class="core-inbox__decisions">
             <button type="button" class="decision-confirm" :disabled="updatingStatus" @click="decideStatus('confirmed')">{{ copy.confirm }}</button>
             <button type="button" class="decision-reject" :disabled="updatingStatus" @click="decideStatus('rejected')">{{ copy.reject }}</button>
             <button type="button" class="decision-cancel" :disabled="updatingStatus" @click="decideStatus('cancelled')">{{ copy.cancel }}</button>
           </div>
         </section>
 
+        <p v-if="!canOperate" role="status">{{ locale === 'es' ? 'Acceso de consulta. Tu rol permite ver este booking y su seguimiento.' : 'Read-only access. Your role can view this booking and its follow-up.' }}</p>
         <section class="core-inbox__details-block">
           <div class="core-inbox__details-heading">
             <strong>{{ copy.details }}</strong>
@@ -682,7 +686,7 @@ async function selectBooking(bookingId: string) {
                 {{ locale === 'es' ? 'Ver en calendario' : 'View in calendar' }}
               </button>
               <BookingCoreEditor
-                v-if="!demoData && !selectedBooking.archived_at"
+                v-if="canOperate && !demoData && !selectedBooking.archived_at"
                 :workspace-id="workspaceId"
                 :booking="selectedBooking"
                 :locale="locale"
@@ -748,7 +752,7 @@ async function selectBooking(bookingId: string) {
             </article>
           </div>
 
-          <form v-if="demoData && !selectedBooking.archived_at" class="core-inbox__demo-composer" @submit.prevent="saveDemoNote">
+          <form v-if="canOperate && demoData && !selectedBooking.archived_at" class="core-inbox__demo-composer" @submit.prevent="saveDemoNote">
             <label>{{ locale === 'es' ? 'Registrar interacción' : 'Log an interaction' }}
               <select v-model="demoChannel"><option value="note">Nota</option><option value="phone">Llamada</option><option value="whatsapp">WhatsApp</option><option value="instagram">Instagram</option></select>
             </label>
@@ -757,7 +761,7 @@ async function selectBooking(bookingId: string) {
           </form>
           <BookingActivityComposer
             id="core-inbox-activity-composer"
-            v-if="!demoData && !selectedBooking.archived_at"
+            v-if="canOperate && !demoData && !selectedBooking.archived_at"
             :key="`activity-${selectedBooking.id}`"
             :workspace-id="workspaceId"
             :booking="selectedBooking"
@@ -768,7 +772,7 @@ async function selectBooking(bookingId: string) {
           />
         </section>
 
-        <section v-if="demoData && !selectedBooking.archived_at && !['confirmed','rejected','cancelled'].includes(selectedBooking.status)" id="core-inbox-operations" class="core-inbox__demo-operations">
+        <section v-if="canOperate && demoData && !selectedBooking.archived_at && !['confirmed','rejected','cancelled'].includes(selectedBooking.status)" id="core-inbox-operations" class="core-inbox__demo-operations">
           <h4>{{ locale === 'es' ? 'SEGUIMIENTO' : 'FOLLOW-UP' }}</h4>
           <div><strong>{{ locale === 'es' ? 'Próxima acción' : 'Next action' }}</strong>
             <p v-if="activeDemoMove">{{ activeDemoMove }} <button type="button" @click="completeDemoMove">{{ locale === 'es' ? 'Hecho' : 'Done' }}</button></p>
@@ -785,6 +789,7 @@ async function selectBooking(bookingId: string) {
           :booking="selectedBooking"
           :locale="locale"
           :refresh-key="activities.length"
+          :can-operate="canOperate"
           @changed="handleOperationsChanged"
         />
 

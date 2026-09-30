@@ -17,11 +17,11 @@ async function compiledProps(file: string) {
   return Function(`return (${script.content.slice(props.start, props.end)})`)()
 }
 
-for (const [file, flag] of [['AgencyWorkspace.vue', 'canCapture'], ['BookingCoreAttention.vue', 'canOperate']]) {
+for (const [file, flag] of [['AgencyWorkspace.vue', 'canCapture'], ['BookingCoreAttention.vue', 'canOperate'], ['BookingCoreInbox.vue', 'canOperate'], ['BookingCoreOperations.vue', 'canOperate']]) {
   test(`${file}: omitted operation flag stays enabled; explicit viewer permission stays disabled`, async () => {
     const props = await compiledProps(file)
     const component = { props, inheritAttrs: false, render(this: any) { return h('span', String(this[flag])) } }
-    const required = { workspaceId: 'test', agencyName: 'Test', artists: [], bookings: [], view: 'overview', locale: 'es', canManageRoster: false, createArtist: async () => false }
+    const required = { workspaceId: 'test', agencyName: 'Test', artists: [], bookings: [], view: 'overview', locale: 'es', canManageRoster: false, booking: {id:'test'}, createArtist: async () => false }
     assert.equal(await renderToString(createSSRApp(component, required)), '<span>true</span>')
     assert.equal(await renderToString(createSSRApp(component, { ...required, [flag]: false })), '<span>false</span>')
   })

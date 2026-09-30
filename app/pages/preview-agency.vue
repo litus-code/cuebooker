@@ -161,7 +161,8 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
       <p v-else-if="view === 'passport'">{{ locale === 'es' ? 'El recorrido pertenece a este artista y se alimenta de sus bookings confirmados.' : 'This artist journey grows from confirmed bookings.' }}</p>
       <p v-else-if="view === 'cue-id'">{{ locale === 'es' ? 'La identidad visual pertenece al artista seleccionado.' : 'The visual identity belongs to the selected artist.' }}</p>
       <p v-else>{{ locale === 'es' ? 'Configuración del workspace de Agencia.' : 'Agency workspace settings.' }}</p>
-      <div class="agency-preview__read-only"><span>PREVIEW / {{ locale === 'es' ? 'SIN EDICIÓN REAL' : 'NO LIVE EDITING' }}</span><p>{{ locale === 'es' ? 'Esta sección muestra el contexto y la navegación. Su editor real requiere una cuenta Agency.' : 'This section shows context and navigation. The live editor requires an Agency account.' }}</p></div>
+      <AgencyTeamPanel v-if="view === 'settings'" workspace-id="preview-agency" role="owner" user-id="demo-owner" :locale="locale" :demo="true" />
+      <div v-else class="agency-preview__read-only"><span>PREVIEW / {{ locale === 'es' ? 'SIN EDICIÓN REAL' : 'NO LIVE EDITING' }}</span><p>{{ locale === 'es' ? 'Esta sección muestra el contexto y la navegación. Su editor real requiere una cuenta Agency.' : 'This section shows context and navigation. The live editor requires an Agency account.' }}</p></div>
     </section>
 
     <CueCapturePanel :open="cueOpen" workspace-id="preview-agency" :artist-id="selectedArtistId" :artists="artists.filter(item => item.roster_active)" :locale="locale" :demo-create="createDemoCue" @close="cueOpen = false" @created="item => { cueOpen = false; openBooking(item.id) }" />

@@ -1489,6 +1489,13 @@ async function loadWorkspaceIdentity() {
         return [] as ManagedOrganization[]
       })
     ]), 6000, 'identity')
+    // Invitation routes select the exact joined workspace identity, even when
+    // this account already belongs to another agency. Membership remains RLS-bound.
+    if (typeof route.query.agency === 'string') {
+      const links = await bookingCore.listAgencyWorkspaceIdentities()
+      const requested = links.find(item => item.workspace_id === route.query.agency)
+      if (requested) organizationRows.sort((a,b) => Number(b.id === requested.organization_id) - Number(a.id === requested.organization_id))
+    }
     organizations.value = organizationRows
 
     if (agency.value) {
@@ -2100,6 +2107,7 @@ async function focusCalendarEditor() {
 }
 
 function openCreate(start = '18:00') {
+  if (isAgency.value && !canEditSelectedArtist.value) return
   calendarEditorTrigger.value = import.meta.client && document.activeElement instanceof HTMLElement ? document.activeElement : null
   const startMinutes = Number(start.slice(0, 2)) * 60 + Number(start.slice(3, 5))
   const endMinutes = Math.min(startMinutes + 120, 23 * 60 + 59)
@@ -2113,6 +2121,7 @@ function openCreate(start = '18:00') {
 }
 
 function startEdit(block: AvailabilityBlock) {
+  if (isAgency.value && !canEditSelectedArtist.value) return
   calendarEditorTrigger.value = import.meta.client && document.activeElement instanceof HTMLElement ? document.activeElement : null
   selectedDate.value = block.starts_at.slice(0, 10)
   startTime.value = block.starts_at.slice(11, 16)
@@ -2415,6 +2424,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             :bookings="realBookings.filter(item => !item.archived_at)"
             :locale="preferences.locale.value"
             :refresh-key="bookingCoreOperationsRevision"
+            :can-operate="!isAgency || canOperateAgency"
             @changed="handleBookingCoreOperationsChanged"
             @open-bookings="activeView = 'bookings'"
             @open-booking="openRealBooking"
@@ -2485,6 +2495,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           :bookings="realBookings"
           :locale="preferences.locale.value"
           :focus-booking-id="realBookingFocusId"
+          :can-operate="!isAgency || canOperateAgency"
           @operations-changed="handleBookingCoreOperationsChanged"
           @cue-requested="openCueCapture"
           @booking-opened="markBookingNotificationsRead"
@@ -2523,7 +2534,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           </section>
 
           <section id="workspace-day-panel" class="day-panel panel">
-            <div class="day-heading"><div><p class="eyebrow">{{ copy.dayHours }}</p><h2>{{ selectedDateLabel }}</h2></div><button class="add-button" type="button" @click="openCreate()">{{ copy.add }}</button></div>
+            <div class="day-heading"><div><p class="eyebrow">{{ copy.dayHours }}</p><h2>{{ selectedDateLabel }}</h2></div><button v-if="!isAgency || canEditSelectedArtist" class="add-button" type="button" @click="openCreate()">{{ copy.add }}</button></div>
               <div v-if="selectedDayDateOnlyCoreHolds.length || selectedDayDateOnlyConfirmedBookings.length" class="core-calendar-holds">
                 <button
                   v-for="booking in selectedDayDateOnlyConfirmedBookings"
@@ -2579,6 +2590,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           :bookings="realBookings"
           :locale="preferences.locale.value"
           :refresh-key="bookingCoreOperationsRevision"
+            :can-operate="!isAgency || canOperateAgency"
           @open-booking="openRealBooking"
         />
       </section>
@@ -3174,6 +3186,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
     <div v-if="settingsOpen" class="editor-backdrop" @click.self="closeSettings">
       <aside class="editor-panel settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title" tabindex="-1">
         <div class="editor-heading"><div><p class="eyebrow">{{ copy.accountPrivate }}</p><h2 id="settings-title">{{ copy.settingsTitle }}</h2></div><button type="button" :aria-label="copy.close" @click="closeSettings">×</button></div>
+        <AgencyTeamPanel v-if="isAgency && agencyWorkspaceId" :workspace-id="agencyWorkspaceId" :role="agencyWorkspaceRole" :user-id="auth.session.value?.user.id || ''" :locale="preferences.locale.value" />
         <section class="settings-group"><span>{{ copy.language }}</span><div class="settings-options"><button :class="{ active: preferences.locale.value === 'es' }" type="button" @click="preferences.setLocale('es')">ES</button><button :class="{ active: preferences.locale.value === 'en' }" type="button" @click="preferences.setLocale('en')">EN</button></div></section>
         <section class="settings-group"><span>{{ copy.appearance }}</span><div class="settings-options"><button :class="{ active: preferences.theme.value === 'dark' }" type="button" @click="preferences.setTheme('dark')">{{ copy.dark }}</button><button :class="{ active: preferences.theme.value === 'light' }" type="button" @click="preferences.setTheme('light')">{{ copy.light }}</button></div></section>
         <section v-if="demoOverrideEnabled" class="settings-group settings-group--demo">

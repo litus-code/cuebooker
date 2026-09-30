@@ -122,6 +122,10 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     })
   }
 
+  async function listAgencyWorkspaceIdentities() {
+    return $fetch<Array<{workspace_id:string;organization_id:string}>>(`${baseUrl}/rest/v1/workspace_legacy_organizations`,{headers:authHeaders(),query:{select:'workspace_id,organization_id'}})
+  }
+
   async function listWorkspaceMemberships() {
     const userId = currentUserId()
     return $fetch<WorkspaceMembership[]>(`${baseUrl}/rest/v1/workspace_members`, {
@@ -896,6 +900,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
 
   return {
     ensureBookingWorkspace,
+    listAgencyWorkspaceIdentities,
     listWorkspaceMemberships,
     listWorkspaces,
     listWorkspaceArtists,

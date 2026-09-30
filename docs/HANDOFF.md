@@ -1,5 +1,18 @@
 # Cuebooker living handoff
 
+## 30 September 2026: Agency team beta closure
+
+Branch `feature/agency-multi-artist-beta`, PR #96, starting HEAD `96d5da3f892c2ca0ac138b0cbca7de12dd9330d2`. Final commit/CI/preview are recorded in PR. Production untouched.
+
+Implemented team management in Agency Settings: member list, explicit whole-roster roles, verified-email invitation links (7-day expiry, hash-only persistence, explicit acceptance), revocation, role changes and access removal. Owner/self are protected; only Owner assigns/manages Admin. Admin manages Manager/Editor/Viewer. Invite acceptance writes existing workspace_members and organization_members identity bridge atomically, completes joining onboarding, and selects the joined agency on navigation. Public API wrappers are invoker functions calling private narrowly authorized commands. No automated invitation email or assigned-only Manager isolation is claimed.
+
+Viewer UI is now read-only in Booking Core detail/Attention/operations, and Agency calendar writes follow profile permission; omitted permission props preserve DJ behavior. Anonymous preview Settings simulates team changes with explicit notices and no live grants. New `agency-invite` system route is reserved from artist slugs.
+
+Staging-only migrations: `20260930094140_agency_team_beta.sql` and `20260930094451_agency_team_invitation_index.sql`, versions matched to staging history. Backend rollback smoke covers matching/mismatched recipient, accept/retry, Manager creating a booking/updating roster profile, Viewer rejecting booking creation, demotion/removal and revoked/consumed token rejection; new-user bootstrapping to agency is also checked. Zero leftover test users or invitations. Anon cannot call invite creation; authenticated users cannot SELECT token_hash; RLS enabled. Advisors show no new security warning; missing invitation-creator FK index fixed. Existing analytics/private-table/Auth password warnings remain unrelated baseline, see PR for remediation URLs.
+
+Local: 332 assertions pass, 38-route staging generation and diff checks. New preview team visual smoke, authenticated invitation acceptance plus full Agency A/B desktop/mobile and existing DJ smoke remain required before removing draft or promoting production. Team invites are manually shared links, access is workspace-wide; per-artist isolation and existing-artist transfer remain later reviewed blocks.
+
+
 ## 30 September 2026: Agency preview desktop navigation parity
 
 PR #96, based on `971facf2b1ee867f55e9c09dcc693eba5bb5d17b`. Anonymous Agency preview now reuses the real DJ Workspace desktop rail classes and navigation icons, with Agency name/artist selector above destinations. Desktop breakpoint remains 961px; smaller screens retain compact horizontal navigation. Active state uses aria-current. No authenticated shell, backend, schema or production change. Build and deployed visual validation recorded in PR.
