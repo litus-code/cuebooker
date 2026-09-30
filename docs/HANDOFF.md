@@ -1,5 +1,10 @@
 # Cuebooker living handoff
 
+## 30 September 2026: Agency preview desktop navigation parity
+
+PR #96, based on `971facf2b1ee867f55e9c09dcc693eba5bb5d17b`. Anonymous Agency preview now reuses the real DJ Workspace desktop rail classes and navigation icons, with Agency name/artist selector above destinations. Desktop breakpoint remains 961px; smaller screens retain compact horizontal navigation. Active state uses aria-current. No authenticated shell, backend, schema or production change. Build and deployed visual validation recorded in PR.
+
+
 ## 30 September 2026: Agency global capture, follow-up and context
 
 - Branch `feature/agency-multi-artist-beta`, PR #96. Base HEAD `5e815b0e13a956aa6ea98d3cf4b114b94b863b05`; resulting revision will be recorded on the PR. Production untouched.

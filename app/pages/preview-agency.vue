@@ -125,11 +125,11 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 </script>
 
 <template>
-  <main v-if="allowed" class="agency-preview">
-    <header class="agency-preview__header">
-      <NuxtLink to="/" aria-label="Cuebooker"><CueBrand class="agency-preview__brand" /></NuxtLink>
+  <main v-if="allowed" class="agency-preview workspace">
+    <header class="agency-preview__header workspace-header">
+      <NuxtLink class="brand" to="/" aria-label="Cuebooker"><CueBrand class="agency-preview__brand" /></NuxtLink>
       <nav aria-label="Workspace Agency">
-        <button v-for="item in nav" :key="item.id" type="button" :aria-current="view === item.id ? 'page' : undefined" @click="changeView(item.id)">{{ item.label }}</button>
+        <button v-for="item in nav" :key="item.id" :data-workspace-view="item.id" type="button" :aria-current="view === item.id ? 'page' : undefined" @click="changeView(item.id)">{{ item.label }}</button>
       </nav>
       <label class="agency-preview__selector"><span>AGENCIA / CUE TEST AGENCY</span><select :value="selectedArtistId" :aria-label="locale === 'es' ? 'Contexto de artista' : 'Artist context'" @change="chooseArtist(($event.target as HTMLSelectElement).value)"><option value="">{{ locale === 'es' ? 'Todos los artistas' : 'All artists' }}</option><option v-for="artist in artists.filter(item => item.roster_active)" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
     </header>
@@ -177,9 +177,28 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 .agency-preview__notice{display:flex;gap:18px;align-items:center;margin-top:20px;padding:12px 16px;border-left:3px solid var(--cue-accent);background:color-mix(in srgb,var(--cue-accent) 7%,var(--cue-bg));font-size:12px}.agency-preview__notice span{color:var(--cue-muted)}
 .agency-preview__detail{max-width:1440px;margin:40px auto;padding:clamp(24px,5vw,60px);border:1px solid var(--cue-border);background:var(--cue-surface)}.agency-preview__detail h1{margin:12px 0;font-size:clamp(2.7rem,7vw,6rem);letter-spacing:-.06em;text-transform:uppercase}.agency-preview__detail>p{max-width:650px;color:var(--cue-muted);line-height:1.6}.agency-preview__read-only{margin-top:50px;padding:24px;border-top:1px solid var(--cue-border)}.agency-preview__read-only p{color:var(--cue-muted)}
 .agency-preview__inbox{max-width:1440px;margin:32px auto}.agency-preview__inbox-heading{display:flex;justify-content:space-between;align-items:end;gap:20px}.agency-preview__inbox-heading h1{margin:8px 0;font-size:clamp(2.3rem,5vw,5rem);line-height:1;text-transform:uppercase;letter-spacing:-.05em}.agency-preview__inbox-heading p{margin:0;color:var(--cue-muted);font-size:12px}.agency-preview__inbox-heading button{flex:none;min-height:40px;padding:8px 14px;border:1px solid var(--cue-border);background:var(--cue-surface);color:var(--cue-accent);cursor:pointer}
-@media(max-width:850px){.agency-preview__header{grid-template-columns:1fr auto}.agency-preview__header nav{grid-column:1/-1;grid-row:2}.agency-preview__selector{min-width:150px}.agency-preview__notice{align-items:start;flex-direction:column;gap:5px}}
+@media(max-width:960px){.agency-preview__header{grid-template-columns:1fr auto}.agency-preview__header nav{grid-column:1/-1;grid-row:2}.agency-preview__selector{min-width:150px}.agency-preview__notice{align-items:start;flex-direction:column;gap:5px}}
 @media(max-width:760px){.agency-preview__inbox-heading{align-items:start;flex-direction:column}.agency-preview__inbox-heading h1{font-size:2.3rem}}
 @media(max-width:390px){.agency-preview__brand{width:100px}.agency-preview__selector{min-width:130px}.agency-preview__header{gap:6px}}
+
+/* Reuse the DJ desktop rail and its icons. The preview has no separate app shell. */
+@media(min-width:961px){
+  .agency-preview__header{box-sizing:border-box;height:100dvh;overflow-y:auto!important}
+  .agency-preview__header nav{flex:none;order:2}
+  .agency-preview__header nav button{text-align:left;color:var(--cue-muted)}
+  .agency-preview__header nav button[aria-current=page]{color:var(--cue-accent);background:transparent!important;border-left:2px solid var(--cue-accent)!important}
+  .agency-preview__header nav button[aria-current=page]:before{display:none}
+  .agency-preview__selector{order:1;min-width:0;width:100%;gap:8px}
+  .agency-preview__selector span{overflow-wrap:anywhere}
+  .agency-preview__selector select{width:100%;min-height:40px}
+}
+@media(max-width:960px){
+  .agency-preview__header{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:'brand context' 'nav nav'!important;margin-inline:calc(-1 * clamp(16px,3vw,32px));padding:9px clamp(16px,3vw,32px)!important}
+  .agency-preview__header>.brand{grid-area:brand;width:auto!important}
+  .agency-preview__header nav{grid-area:nav;display:flex!important;overflow-x:auto!important;width:100%;box-sizing:border-box}
+  .agency-preview__selector{grid-area:context;min-width:0;width:170px}
+  .agency-preview__header nav button[aria-current=page]:before{top:auto;bottom:0;left:12px;right:12px;width:auto;height:2px}
+}
 </style>
 
 <style scoped>
