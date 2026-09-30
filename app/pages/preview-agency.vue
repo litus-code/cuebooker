@@ -58,10 +58,12 @@ const demoContacts: Contact[] = demoData.contacts.map(item => ({ id: item.id, wo
   email: null, phone: null, role_label: null, notes: null, created_by: 'preview', created_at: now, updated_at: now }))
 const demoInboxData = { contacts: demoContacts, counterparties: [], activities: demoActivities, holds: demoHolds, nextMoves: {} as Record<string, string> }
 const focusedBooking = computed(() => demoBookings.value.find(item => item.id === focusBookingId.value))
+const bookingArtist = computed(() => artists.value.find(item => item.id === focusedBooking.value?.artist_id))
+function closeBooking() { focusBookingId.value = ''; view.value = returnView.value }
 const nav = computed<Array<{ id: DemoView; label: string }>>(() => [
   { id: 'overview', label: 'Overview' }, { id: 'bookings', label: 'Bookings' }, { id: 'calendar', label: 'Calendar' },
-  { id: 'history', label: 'Activity' }, { id: 'roster', label: 'Roster' },
-  ...(selectedArtist.value ? [{ id: 'profile' as const, label: 'Profile' }, { id: 'passport' as const, label: 'Passport' }, { id: 'cue-id' as const, label: 'CUE ID' }] : []),
+  { id: 'history', label: 'Activity' }, { id: 'roster', label: locale.value === 'es' ? 'Artistas' : 'Artists' },
+
   { id: 'settings', label: 'Settings' }
 ])
 
@@ -77,13 +79,11 @@ watch(selectedArtist, artist => {
   if (!artist && ['profile', 'passport', 'cue-id'].includes(view.value)) view.value = 'overview'
 })
 function changeView(next: DemoView) {
-  if (next === 'roster') selectedArtistId.value = ''
   view.value = next
   focusBookingId.value = ''
 }
 function chooseArtist(id: string) {
   if (!selectedArtistId.value && id) returnView.value = view.value
-  if (id && view.value === 'roster') view.value = 'overview'
   selectedArtistId.value = artists.value.some(item => item.id === id && item.roster_active) ? id : ''
   focusBookingId.value = ''
   if (!selectedArtistId.value && ['profile', 'passport', 'cue-id'].includes(view.value)) view.value = 'overview'
@@ -91,8 +91,7 @@ function chooseArtist(id: string) {
 function openBooking(id: string) {
   const item = demoBookings.value.find(row => row.id === id)
   if (!item) return
-  if (!selectedArtistId.value) returnView.value = view.value
-  selectedArtistId.value = item.artist_id
+  returnView.value = view.value
   view.value = 'bookings'
   focusBookingId.value = id
 }
@@ -129,29 +128,30 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
     <header class="agency-preview__header workspace-header">
       <NuxtLink class="brand" to="/" aria-label="Cuebooker"><CueBrand class="agency-preview__brand" /></NuxtLink>
       <nav aria-label="Workspace Agency">
-        <button v-for="item in nav" :key="item.id" :data-workspace-view="item.id" type="button" :aria-current="view === item.id ? 'page' : undefined" @click="changeView(item.id)">{{ item.label }}</button>
+        <button v-for="item in nav" :key="item.id" :data-workspace-view="item.id" type="button" :aria-current="(view === item.id || item.id === 'roster' && ['profile','passport','cue-id'].includes(view)) ? 'page' : undefined" @click="changeView(item.id)">{{ item.label }}</button>
       </nav>
       <label class="agency-preview__selector"><span>AGENCIA / CUE TEST AGENCY</span><select :value="selectedArtistId" :aria-label="locale === 'es' ? 'Contexto de artista' : 'Artist context'" @change="chooseArtist(($event.target as HTMLSelectElement).value)"><option value="">{{ locale === 'es' ? 'Todos los artistas' : 'All artists' }}</option><option v-for="artist in artists.filter(item => item.roster_active)" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
     </header>
     <div class="agency-preview__notice"><strong>PREVIEW AGENCIA / DATOS FICTICIOS</strong><span>{{ locale === 'es' ? 'Puedes recorrer el workspace sin iniciar sesión. Los cambios se pierden al recargar.' : 'Explore the workspace without signing in. Changes reset on reload.' }}</span></div>
 
-    <div v-if="selectedArtist" class="agency-preview__context"><span>CUE Test Agency / <strong>{{ selectedArtist.stage_name }}</strong></span><button type="button" @click="returnToAgency">{{ locale === 'es' ? 'Volver a Agencia' : 'Back to Agency' }}</button></div>
+    <div v-if="selectedArtist" class="agency-preview__context"><span>CUE Test Agency / <strong>{{ selectedArtist.stage_name }}</strong></span><button type="button" @click="returnToAgency">{{ locale === 'es' ? 'Quitar filtro de artista' : 'Clear artist filter' }}</button></div>
+    <nav v-if="selectedArtist && ['profile','passport','cue-id'].includes(view)" class="agency-preview__record-tabs" aria-label="Ficha del artista"><button type="button" @click="changeView('roster')">← {{ locale === 'es' ? 'Artistas' : 'Artists' }}</button><button v-for="tab in (['profile','passport','cue-id'] as const)" :key="tab" type="button" :aria-current="view===tab?'page':undefined" @click="changeView(tab)">{{ tab==='profile'?(locale==='es'?'Ficha y perfil público':'Record & public profile'):tab==='passport'?(locale==='es'?'Trayectoria':'Career'):'CUE ID' }}</button></nav>
     <AgencyWorkspace
       v-if="!focusedBooking && ['overview', 'bookings', 'calendar', 'history', 'roster'].includes(view)"
-      :key="selectedArtistId || 'all'" :workspace-id="'preview-agency'" agency-name="CUE Test Agency"
-      :artists="view === 'roster' || !selectedArtist ? artists : [selectedArtist]"
+      :selected-artist-id="selectedArtistId" :workspace-id="'preview-agency'" agency-name="CUE Test Agency"
+      :artists="artists"
       :view="view as 'overview' | 'bookings' | 'calendar' | 'history' | 'roster'"
       :locale="locale" :can-manage-roster="true" :create-artist="createArtist"
       :demo-data="demoData" :initial-month="demoMonth" :revision="rosterRevision"
       :context-artist-name="view !== 'roster' ? selectedArtist?.stage_name : undefined"
       :context-state="!selectedArtist ? globalContext : undefined" @context-changed="state => { if (!selectedArtist) globalContext = state }"
-      @capture="cueOpen = true" @navigate="changeView" @select-artist="(id, target) => { chooseArtist(id); changeView(target) }"
+      @capture="cueOpen = true" @filter-artist="chooseArtist($event)" @navigate="changeView" @select-artist="(id, target) => { chooseArtist(id); changeView(target) }"
       @open-booking="openBooking" @retire-artist="setRosterActive($event, false)" @restore-artist="setRosterActive($event, true)"
     />
 
     <section v-else-if="focusedBooking && view === 'bookings'" class="agency-preview__inbox">
-      <div class="agency-preview__inbox-heading"><div><span>AGENCIA / {{ selectedArtist?.stage_name }}</span><h1>{{ locale === 'es' ? 'Seguimiento del booking.' : 'Booking follow-up.' }}</h1><p>{{ locale === 'es' ? 'La gestión individual conserva el mismo panel de Bookings que usa un DJ.' : 'Individual work uses the same Bookings panel as a DJ.' }}</p></div><button type="button" @click="returnToAgency">← {{ locale === 'es' ? 'Todos los artistas' : 'All artists' }}</button></div>
-      <BookingCoreInbox workspace-id="preview-agency" :bookings="demoBookings.filter(item => item.artist_id === selectedArtistId)" :locale="locale" :focus-booking-id="focusBookingId" :demo-data="demoInboxData" @booking-opened="focusBookingId = $event" @calendar-requested="changeView('calendar')" />
+      <div class="agency-preview__inbox-heading"><div><span>AGENCIA / {{ bookingArtist?.stage_name }}</span><h1>{{ locale === 'es' ? 'Seguimiento del booking.' : 'Booking follow-up.' }}</h1><p>{{ locale === 'es' ? 'Estás gestionando este booking desde tu agencia.' : 'You are managing this booking within your agency.' }}</p></div><button type="button" @click="closeBooking">← {{ locale === 'es' ? 'Volver a Agencia' : 'Back to Agency' }}</button></div>
+      <BookingCoreInbox workspace-id="preview-agency" :bookings="demoBookings.filter(item => item.artist_id === focusedBooking?.artist_id)" :locale="locale" :focus-booking-id="focusBookingId" :demo-data="demoInboxData" @booking-opened="focusBookingId = $event" @calendar-requested="changeView('calendar')" />
     </section>
 
     <section v-else class="agency-preview__detail">
@@ -161,6 +161,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
       <p v-else-if="view === 'passport'">{{ locale === 'es' ? 'El recorrido pertenece a este artista y se alimenta de sus bookings confirmados.' : 'This artist journey grows from confirmed bookings.' }}</p>
       <p v-else-if="view === 'cue-id'">{{ locale === 'es' ? 'La identidad visual pertenece al artista seleccionado.' : 'The visual identity belongs to the selected artist.' }}</p>
       <p v-else>{{ locale === 'es' ? 'Configuración del workspace de Agencia.' : 'Agency workspace settings.' }}</p>
+      <AgencyCatalogEditor v-if="view === 'settings'" workspace-id="preview-agency" role="owner" :locale="locale" demo @edit-artist="id => { chooseArtist(id); changeView('profile') }" />
       <AgencyTeamPanel v-if="view === 'settings'" workspace-id="preview-agency" role="owner" user-id="demo-owner" :locale="locale" :demo="true" />
       <div v-else class="agency-preview__read-only"><span>PREVIEW / {{ locale === 'es' ? 'SIN EDICIÓN REAL' : 'NO LIVE EDITING' }}</span><p>{{ locale === 'es' ? 'Esta sección muestra el contexto y la navegación. Su editor real requiere una cuenta Agency.' : 'This section shows context and navigation. The live editor requires an Agency account.' }}</p></div>
     </section>
@@ -205,3 +206,5 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 <style scoped>
 .agency-preview__context{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin-top:20px;padding:12px;border-left:3px solid var(--cue-accent);background:var(--cue-surface);font-size:12px}.agency-preview__context button{background:transparent;color:var(--cue-accent);border:1px solid var(--cue-border);padding:8px}
 </style>
+
+<style scoped>.agency-preview__record-tabs{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.agency-preview__record-tabs button{background:var(--cue-surface);color:var(--cue-text);padding:10px;border:1px solid var(--cue-border)}.agency-preview__record-tabs button[aria-current=page]{color:var(--cue-accent);border-bottom:2px solid var(--cue-accent)}</style>

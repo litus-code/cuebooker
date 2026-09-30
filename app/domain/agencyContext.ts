@@ -1,7 +1,7 @@
 import type { WorkspaceView } from './workspaceView'
 
 export function agencyViewForArtist(current: WorkspaceView, hasArtist: boolean): WorkspaceView {
-  if (current === 'roster') return 'overview'
+  if (current === 'roster') return 'roster'
   if (!hasArtist && ['profile', 'passport', 'cue-id'].includes(current)) return 'overview'
   return current
 }

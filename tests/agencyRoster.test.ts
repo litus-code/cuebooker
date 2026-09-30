@@ -41,7 +41,7 @@ test('individual Profile, Passport and CUE ID require artist context; navigation
   const source = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
   assert.match(source, /v-else-if="isAgencyGlobal" class="empty-card"/)
   assert.match(source, /Selecciona un artista para gestionar su perfil/)
-  assert.match(source, /v-if="!isAgencyGlobal" :title="copy\.profile"/)
+  assert.match(source, /v-if="!isAgency" :title="copy\.profile"/)
   assert.match(source, /data-workspace-view="roster" :aria-current=/)
   assert.match(source, /const isAgencyGlobal = computed/)
 })

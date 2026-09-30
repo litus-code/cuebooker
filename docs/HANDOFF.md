@@ -1,5 +1,18 @@
 # Cuebooker living handoff
 
+## 30 September 2026: unified Agency workspace and public agency landing
+
+Branch `feature/agency-multi-artist-beta`, PR #96, starting HEAD `b38ef3dbb3aaa8014070f7127e75a547c9c04ed8`. Local implementation commit `4b256f6`, based on remote `b38ef3dbb3aaa8014070f7127e75a547c9c04ed8`. User confirmed continuing publication after automatic review blocked initial push. Final remote revision and deployment status must be checked on PR #96. Production untouched.
+
+Selecting a DJ now filters the same Agency operational component. No individual DJ dashboard or onboarding appears for Agency. Main nav remains Overview/Bookings/Calendar/Activity/Artists/Settings; artist identity destinations live in nested record tabs. Agency identification stays visible. Booking detail uses existing inbox within Agency; return/navigation clears detail while preserving artist scope. Calendar links preserve event month/day in roster query.
+
+Public agency presentation is `/agency/<organization-slug>`: shared PublicAgencyProfile renders editable cover/logo/tagline/bio/contact and explicitly selected eligible artists. Settings Owner/Admin editor saves to existing Organization plus existing roster visibility column, supports draft preview, publishing/unpublishing and share link. An artist must be public, active and routed to this workspace. Artist links use canonical profiles and unchanged booking backend. Agency URLs use a narrow SPA rewrite in Cloudflare static hosting.
+
+Staging-only migrations: `20260930113404_agency_public_catalog.sql`, `20260930113750_agency_catalog_service_access.sql`. Existing get-public-artist-profile deployed v20: agency query resolves server-only allowlisted payload and signs only each artist-owned media. No client draft/public reader privilege, RLS unchanged. Rollback smoke passed including foreign principal rejection, unready artist rejection, HTTPS validation, public field allowlist and removal after unpublish. SQL test uses the disposable CUE Agency TEST staging account, not real users. Test account exists with two TEST artists; login was verified through normal Auth, browser secure login was declined and has not been bypassed.
+
+Validation: 335 assertions including compiled AgencyWorkspace scope transitions; staging static generation (38 routes), diff check. New deployed visual validation is pending. Browser refused localhost preview with ERR_BLOCKED_BY_CLIENT. The demo booking return now preserves its artist filter and previous section. Real authenticated browser A/B profile/publishing/team acceptance and ~390px QA remain explicit gates if not completed there. Logo/cover support HTTPS URLs, no agency-specific upload flow yet; dynamic SEO/social unfurls are not server-rendered. No existing-DJ ownership transfer or assigned-only role claim.
+
+
 ## 30 September 2026: Agency team beta closure
 
 Branch `feature/agency-multi-artist-beta`, PR #96, starting HEAD `96d5da3f892c2ca0ac138b0cbca7de12dd9330d2`. Final commit/CI/preview are recorded in PR. Production untouched.

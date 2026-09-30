@@ -103,7 +103,7 @@ export type PublicBookingRequestResult = {
 
 export const RESERVED_ARTIST_SLUGS = new Set([
   'access',
-  'agency-invite',
+  'agency-invite', 'agency',
   'account',
   'admin',
   'api',

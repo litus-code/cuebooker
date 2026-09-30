@@ -8,7 +8,9 @@ test('switching artists preserves bookings, activity and calendar; individual id
     assert.equal(agencyViewForArtist(view, false), view)
   }
   assert.equal(agencyViewForArtist('profile', true), 'profile')
-  for (const view of ['profile', 'passport', 'cue-id', 'roster'] as const) assert.equal(agencyViewForArtist(view, false), 'overview')
+  assert.equal(agencyViewForArtist('roster', true), 'roster')
+  assert.equal(agencyViewForArtist('roster', false), 'roster')
+  for (const view of ['profile', 'passport', 'cue-id'] as const) assert.equal(agencyViewForArtist(view, false), 'overview')
 })
 
 test('returning to global retains roster filters, month and day while removing booking and artist scope', () => {

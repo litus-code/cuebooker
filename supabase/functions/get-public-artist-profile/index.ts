@@ -288,6 +288,31 @@ Deno.serve(async request => {
   if (request.method !== "GET") return json({ error: "method_not_allowed" }, 405);
 
   const url = new URL(request.url);
+  // Agency is another public presentation, using the same server-only boundary.
+  // Its roster is explicitly published and routed to this agency workspace.
+  if (url.searchParams.has("agency")) {
+    const agencySlug = (url.searchParams.get("agency") || "").trim().toLowerCase();
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(agencySlug) || agencySlug.length > 120) return json({ error: "invalid_agency_slug" }, 400);
+    try {
+      const supabaseUrl = requiredEnv("SUPABASE_URL").replace(/\/$/, "");
+      const serviceKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
+      const agency = await serviceJson<{ artists: Array<{ id: string; imagePath?: string | null; coverPath?: string | null; imageUrl?: string | null; coverUrl?: string | null }> } | null>(
+        `${supabaseUrl}/rest/v1/rpc/get_public_agency_profile`,
+        { method: "POST", body: JSON.stringify({ agency_slug: agencySlug }) }, serviceKey
+      );
+      if (!agency) return json({ error: "agency_not_found" }, 404, { "Cache-Control": "no-store" });
+      await Promise.all(agency.artists.map(async artist => {
+        // Sign only media owned by this published artist; never an arbitrary path.
+        const owns = (path?: string | null) => path?.startsWith(`${artist.id}/`) ? path : null;
+        [artist.imageUrl, artist.coverUrl] = await Promise.all([
+          signArtistMedia(supabaseUrl, serviceKey, owns(artist.imagePath)),
+          signArtistMedia(supabaseUrl, serviceKey, owns(artist.coverPath))
+        ]);
+        delete artist.imagePath; delete artist.coverPath;
+      }));
+      return json({ agency }, 200, { "Cache-Control": "no-store" });
+    } catch { return json({ error: "agency_profile_failed" }, 500, { "Cache-Control": "no-store" }); }
+  }
   const slug = (url.searchParams.get("slug") || "").trim().toLowerCase();
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 120) {
     return json({ error: "invalid_artist_slug" }, 400, { "Cache-Control": "no-store" });
