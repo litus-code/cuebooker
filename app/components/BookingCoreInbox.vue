@@ -3,6 +3,7 @@ import type { Activity, Contact, CoreBooking, Counterparty, CoreBookingStatus, H
 import type { BookingEmailMessage, WorkspaceActivityHistoryRow } from '../services/bookingCoreApi'
 import { buildFollowUpDraft, shouldSuggestFollowUp } from '../services/followUpDraft'
 import { buildFailedEmailRetryDraft } from '../services/emailRetryDraft'
+import { emailReplyPresentation } from '../services/emailReplyPresentation'
 
 const props = withDefaults(defineProps<{
   mailboxArtists?: Array<{id:string;stage_name:string}>
@@ -180,7 +181,7 @@ const suggestedFollowUp = computed(() => {
 const conversationActivities = computed(() => activities.value.filter(activity =>
   Boolean(activity.body?.trim())
   && !['status_change', 'system', 'hold_created', 'hold_converted', 'hold_released', 'next_move_created', 'next_move_completed'].includes(activity.type)
-))
+).map(activity=>({ ...activity, presentation:activity.type==='email'?emailReplyPresentation(activity.body||''):{body:activity.body,quotedBody:''} })))
 
 watch(() => props.bookings, value => {
   if (!value.length) selectedBookingId.value = ''
@@ -761,7 +762,11 @@ async function selectBooking(bookingId: string) {
                 >{{ emailDeliveryLabel(activity) }}</em>
                 <time>{{ formatTime(activity.occurred_at) }}</time>
               </div>
-              <p>{{ activity.body }}</p>
+              <p>{{ activity.presentation.body }}</p>
+              <details v-if="activity.presentation.quotedBody" class="thread-item__quote">
+                <summary>{{ locale === 'es' ? 'Ver historial citado' : 'View quoted history' }}</summary>
+                <p>{{ activity.presentation.quotedBody }}</p>
+              </details>
             </article>
           </div>
 
@@ -1014,7 +1019,11 @@ async function selectBooking(bookingId: string) {
 .thread-item__delivery--error { border-color:color-mix(in srgb,var(--cue-status-rejected) 58%,var(--cue-border)); color:var(--cue-status-rejected); }
 .thread-item__delivery--pending { color:var(--cue-muted); }
 .thread-item__delivery + time { margin-left:0; }
-.thread-item > p { margin:7px 0 0; font-size:12px; line-height:1.45; }
+.thread-item > p { margin:7px 0 0; font-size:12px; line-height:1.45; white-space:pre-wrap; overflow-wrap:anywhere; }
+.thread-item__quote { margin-top:6px; }
+.thread-item__quote summary { width:fit-content; padding:6px 0; color:var(--cue-muted); font-size:11px; cursor:pointer; }
+.thread-item__quote summary:focus-visible { outline:2px solid var(--cue-accent); outline-offset:3px; border-radius:var(--cue-radius-sm); }
+.thread-item__quote p { margin:6px 0 0; padding-top:8px; border-top:1px solid var(--cue-border); white-space:pre-wrap; overflow-wrap:anywhere; font-size:11px; line-height:1.5; color:var(--cue-muted); }
 .core-inbox__empty { margin:0; padding:18px; color:var(--cue-muted); font-size:12px; }
 .core-inbox__empty--filtered { display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .core-inbox__empty--filtered p { margin:0; }
