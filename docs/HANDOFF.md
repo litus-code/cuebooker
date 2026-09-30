@@ -1,3 +1,11 @@
+## 2026-09-30 / Agency booking rows and visible calendar names
+
+Branch `feature/agency-multi-artist-beta`, base HEAD `8b0840fcfd6f5ccadff14eb904ca62b6032b7c9f`, PR #96 preview only.
+
+Bookings now align the full date on the left, artist/event/contact in the middle and the existing six status colors on the right, with a status dot and lateral mark. Narrow screens place status under event details. Calendar artist names remain visible inside day cells, two entries plus an overflow count, while the adjacent agenda supplies full details. User clarified that names should remain visible in the calendar. No domain/API/schema changes or production deployment.
+
+Validation: static generation and diff check before publication; remote checks and browser review after deployment. Existing pending authenticated and mobile viewport gates remain.
+
 ## 2026-09-30 / Agency calendar follows DJ visual design
 
 Branch `feature/agency-multi-artist-beta`, base HEAD `fee680d210ad70bdfdf18a6d5cdb47424ec58afb`, PR #96 preview only.
