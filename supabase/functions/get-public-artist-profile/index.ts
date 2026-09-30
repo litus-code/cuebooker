@@ -296,11 +296,19 @@ Deno.serve(async request => {
     try {
       const supabaseUrl = requiredEnv("SUPABASE_URL").replace(/\/$/, "");
       const serviceKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
-      const agency = await serviceJson<{ artists: Array<{ id: string; imagePath?: string | null; coverPath?: string | null; imageUrl?: string | null; coverUrl?: string | null }> } | null>(
+      const agency = await serviceJson<{ mediaWorkspaceId?: string; coverPath?: string; logoPath?: string; coverUrl?: string | null; logoUrl?: string | null; artists: Array<{ id: string; imagePath?: string | null; coverPath?: string | null; imageUrl?: string | null; coverUrl?: string | null }> } | null>(
         `${supabaseUrl}/rest/v1/rpc/get_public_agency_profile`,
         { method: "POST", body: JSON.stringify({ agency_slug: agencySlug }) }, serviceKey
       );
       if (!agency) return json({ error: "agency_not_found" }, 404, { "Cache-Control": "no-store" });
+      for (const slot of ['cover', 'logo'] as const) {
+        const path = slot === 'cover' ? agency.coverPath : agency.logoPath;
+        const folder = slot === 'cover' ? 'covers' : 'logos';
+        if (path && agency.mediaWorkspaceId && new RegExp(`^agency/${agency.mediaWorkspaceId}/${folder}/[0-9a-f-]{36}\\.(jpg|png|webp)$`).test(path)) {
+          agency[slot === 'cover' ? 'coverUrl' : 'logoUrl'] = await signArtistMedia(supabaseUrl, serviceKey, path);
+        }
+      }
+      delete agency.coverPath; delete agency.logoPath; delete agency.mediaWorkspaceId;
       await Promise.all(agency.artists.map(async artist => {
         // Sign only media owned by this published artist; never an arbitrary path.
         const owns = (path?: string | null) => path?.startsWith(`${artist.id}/`) ? path : null;

@@ -1,3 +1,11 @@
+## 30 September 2026: Agency cover/logo file uploads
+
+Based on PR #96 HEAD `ff3025ac9066eb28103343eb207f2f42979372e1`. Editor accepts validated JPG/PNG/WebP files up to 8 MB with image decode, preview, replace/remove and explicit page save. HTTPS links remain a secondary option. Authenticated files use private artist-media under `agency/<workspace>/covers|logos/<uuid>`. Only Owner/Admin can insert/read agency identity objects; replacements use fresh UUIDs. No destructive cleanup of old images. Abandoned uploads and previous versions remain private and need a future cleanup policy.
+
+Staging migrations `20260930124323_agency_catalog_media.sql` and `20260930124636_qualify_agency_media_object_name.sql` applied; second qualifies objects.name in the workspace lookup after the first metadata permission smoke detected an ambiguous-column denial. RPC validates workspace, slot and existing Storage object, preserves paths on legacy saves and supports explicit clear. Public Edge function get-public-artist-profile v21 signs only owned published agency paths (1 hour), removes raw paths/workspace identifier from response. Previously issued signed URLs can last until expiry after unpublishing.
+
+Local 336 tests and 38-route generation. Staging metadata-only rollback smoke validates owner insert/read/save/clear, rejects foreign principal read/insert and invalid slot/missing asset, preserves media through legacy saves; zero leftover objects. This does not prove a physical file upload. Advisors retain only pre-existing warnings. Demo upload/preview browser validation and authenticated upload/reload/public page, mobile QA, team acceptance and complete Agency A/B flow remain gates until explicitly checked on PR. Production untouched.
+
 ## 30 September 2026: Agency settings UX refinement
 
 Based on PR #96 HEAD `4b8665c27ff6a9417c1103dfe7a112bf76bbc6a6`. Catalog editor groups identity, public booking email, artist selection and publication. Optional imagery and external agency links use disclosure sections. Public email remains intentionally empty until explicitly provided; owner/admin may explicitly use their sign-in email. Never silently publish account email. This is public contact metadata, not mailbox connection or outbound sender configuration. No WhatsApp field or private notes added to the public contract.

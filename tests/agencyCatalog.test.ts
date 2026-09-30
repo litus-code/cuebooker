@@ -12,3 +12,11 @@ test('draft preview includes only explicitly chosen eligible artists, without ch
  assert.equal(base.artists.length,3)
  assert.deepEqual(agencyCatalogPreview(base,[]).artists,[])
 })
+
+test('agency uploads reject unsupported and oversized files before network upload',async()=>{
+ const {agencyMediaExtension}=await import('../app/domain/agencyCatalog.ts')
+ assert.equal(agencyMediaExtension({type:'image/png',size:2048}),'png')
+ assert.equal(agencyMediaExtension({type:'image/webp',size:8*1024*1024}),'webp')
+ for(const type of ['image/svg+xml','text/html','application/pdf',''])assert.throws(()=>agencyMediaExtension({type,size:200}),/invalid_type/)
+ for(const size of [0,8*1024*1024+1])assert.throws(()=>agencyMediaExtension({type:'image/jpeg',size}),/too_large/)
+})

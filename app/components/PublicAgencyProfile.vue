@@ -5,7 +5,8 @@ const props=withDefaults(defineProps<{agency:AgencyCatalog;locale:'es'|'en';prev
 const emit=defineEmits<{openArtist:[artistId:string]}>()
 function openArtist(event:MouseEvent,id:string){if(props.demo){event.preventDefault();emit('openArtist',id)}}
 const es=computed(()=>props.locale==='es')
-const cover=computed(()=>safeAgencyImage(props.agency.coverUrl))
+const previewMedia=(value:string|null|undefined)=>props.preview&&value?.startsWith('blob:') ? value : safeAgencyImage(value)
+const cover=computed(()=>previewMedia(props.agency.coverUrl))
 const email=computed(()=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(props.agency.contactEmail||'') ? props.agency.contactEmail : '')
 </script>
 <template>
@@ -13,7 +14,7 @@ const email=computed(()=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(props.agency.contactE
   <header class="public-agency__nav"><NuxtLink to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink><a href="#agency-roster">{{ es ? 'Artistas' : 'Artists' }}</a><a href="#agency-contact">Booking</a></header>
   <section class="public-agency__hero" :class="{'has-cover':cover}">
    <img v-if="cover" :src="cover" class="public-agency__cover" alt="" fetchpriority="high" referrerpolicy="no-referrer">
-   <div class="public-agency__hero-content"><span class="public-agency__eyebrow">{{ agency.city || 'ARTIST MANAGEMENT' }} / {{ es ? 'AGENCIA' : 'AGENCY' }}</span><img v-if="safeAgencyImage(agency.logoUrl)" class="public-agency__logo" :src="safeAgencyImage(agency.logoUrl)" :alt="agency.name" referrerpolicy="no-referrer"><h1>{{ agency.name }}</h1><p>{{ agency.tagline || (es ? 'Artistas con identidad. Música con dirección.' : 'Distinct artists. Music with direction.') }}</p><a class="public-agency__cta" href="#agency-roster">{{ es ? 'Explora nuestro roster' : 'Explore our roster' }} ↗</a></div>
+   <div class="public-agency__hero-content"><span class="public-agency__eyebrow">{{ agency.city || 'ARTIST MANAGEMENT' }} / {{ es ? 'AGENCIA' : 'AGENCY' }}</span><img v-if="previewMedia(agency.logoUrl)" class="public-agency__logo" :src="previewMedia(agency.logoUrl)" :alt="agency.name" referrerpolicy="no-referrer"><h1>{{ agency.name }}</h1><p>{{ agency.tagline || (es ? 'Artistas con identidad. Música con dirección.' : 'Distinct artists. Music with direction.') }}</p><a class="public-agency__cta" href="#agency-roster">{{ es ? 'Explora nuestro roster' : 'Explore our roster' }} ↗</a></div>
    <div class="public-agency__hero-foot"><span>01 / ROSTER & BOOKING</span><span>{{ String(agency.artists.length).padStart(2,'0') }} {{ es ? 'ARTISTAS' : 'ARTISTS' }}</span></div>
   </section>
   <section v-if="agency.bio" class="public-agency__intro"><span class="public-agency__eyebrow">{{ es ? 'NUESTRA IDENTIDAD' : 'OUR IDENTITY' }}</span><p>{{ agency.bio }}</p></section>
