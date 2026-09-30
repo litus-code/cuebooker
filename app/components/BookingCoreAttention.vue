@@ -8,7 +8,7 @@ const props = defineProps<{
   canOperate?: boolean
   artistId?: string
   artists?: Array<{ id: string; stage_name: string }>
-  demoData?: { bookings: CoreBooking[]; activities: Activity[]; holds: Hold[]; nextMoves?: NextMove[] }
+  demoData?: { bookings: CoreBooking[]; activities: Activity[]; holds: Hold[]; nextMoves?: NextMove[]; notifications?: CueNotification[] }
   bookings: CoreBooking[]
   locale: 'es' | 'en'
   refreshKey?: number
@@ -266,7 +266,7 @@ async function load(options: { silent?: boolean } = {}) {
       nextMoves.value = (props.demoData.nextMoves || []).filter(item => bookingIds.has(item.booking_id) && !item.completed_at)
       holds.value = props.demoData.holds.filter(item => bookingIds.has(item.booking_id) && item.status === 'active')
       activities.value = props.demoData.activities.filter(item => bookingIds.has(item.booking_id))
-      notificationItems.value = []; emailMessages.value = []
+      notificationItems.value = (props.demoData.notifications || []).filter(item => bookingIds.has(item.booking_id) && !item.read_at); emailMessages.value = []
       return
     }
     const [results, notifications] = await Promise.all([

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CoreBooking, Hold, NextMove } from '../domain/bookingCore'
+import type { CueNotification } from '../domain/notification'
 import type { WorkspaceActivityHistoryRow } from '../services/bookingCoreApi'
 import { agencyActiveBookingCount, filterRosterBookings } from '../domain/agencyRoster'
 
@@ -9,6 +10,7 @@ type AgencyDemoData = {
   activities: WorkspaceActivityHistoryRow[]
   holds: Array<Hold & { bookings: { artist_id: string } }>
   contacts: Array<{ id: string; name: string }>
+  notifications?: CueNotification[]
   nextMoves?: NextMove[]
   counterparties: Array<{ id: string; name: string }>
 }
@@ -54,7 +56,8 @@ const filterArtist = ref(!props.demoData && typeof route.query.rosterArtist === 
 const calendarArtists = ref<string[]>(!props.demoData && typeof route.query.rosterCalendar === 'string' ? route.query.rosterCalendar.split(',').filter(Boolean) : [])
 const calendarFilterInitialized = ref(!props.demoData && typeof route.query.rosterCalendar === 'string')
 const month = ref(props.initialMonth || (!props.demoData && typeof route.query.rosterMonth === 'string' && /^\d{4}-\d{2}-01$/.test(route.query.rosterMonth) ? route.query.rosterMonth : '') || new Date().toISOString().slice(0, 7) + '-01')
-const selectedDay = ref(props.initialMonth || (!props.demoData && typeof route.query.rosterDay === 'string' ? route.query.rosterDay : '') || new Date().toISOString().slice(0, 10))
+const today = new Date().toISOString().slice(0, 10)
+const selectedDay = ref(!props.demoData && typeof route.query.rosterDay === 'string' ? route.query.rosterDay : month.value.slice(0, 7) === today.slice(0, 7) ? today : '')
 const attentionRevision = ref(0)
 const artistName = ref('')
 const artistSlug = ref('')

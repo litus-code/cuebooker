@@ -48,8 +48,8 @@ const demoActivities: WorkspaceActivityHistoryRow[] = [
 const demoHolds: Array<Hold & { bookings: { artist_id: string } }> = [
   { id: 'demo-hold', workspace_id: 'preview-agency', booking_id: 'demo-booking-d', event_date: day(18), starts_at: null, ends_at: null, event_timezone: 'Europe/Madrid', expires_at: null, priority: null, status: 'active', released_at: null, converted_at: null, created_by: 'preview', created_at: now, updated_at: now, bookings: { artist_id: 'demo-nox' } }
 ]
-const demoNextMoves = ref<NextMove[]>([])
-const demoData = { bookings: demoBookings.value, activities: demoActivities, holds: demoHolds, nextMoves: demoNextMoves.value, contacts: [
+const demoNextMoves = ref<NextMove[]>([{ id: 'demo-next-followup', workspace_id: 'preview-agency', booking_id: 'demo-booking-d', label: 'Confirmar condiciones con el promotor', due_at: new Date(Date.now() - 86400000).toISOString(), assignee_user_id: null, completion_trigger: 'manual', completed_at: null, created_by: 'preview', created_at: now, updated_at: now }])
+const demoData = { bookings: demoBookings.value, activities: demoActivities, holds: demoHolds, nextMoves: demoNextMoves.value, notifications: [{ id: 'demo-unread-a', workspace_id: 'preview-agency', recipient_user_id: 'preview', booking_id: 'demo-booking-a', activity_id: null, kind: 'booking_request_received' as const, dedupe_key: 'preview-a', metadata: {}, read_at: null, created_at: now }], contacts: [
   { id: 'demo-contact-a', name: 'Promoter / Sala 04' }, { id: 'demo-contact-b', name: 'Programación / Club Norte' },
   { id: 'demo-contact-c', name: 'Producción / Warehouse 17' }, { id: 'demo-contact-d', name: 'Promoter / La Nave' }
 ], counterparties: [] }
