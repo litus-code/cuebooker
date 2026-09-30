@@ -98,7 +98,7 @@ const calendarDays = computed(() => {
   const first = currentMonth.value
   const offset = (first.getUTCDay() + 6) % 7
   const count = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0)).getUTCDate()
-  return [...Array(offset).fill(''), ...Array.from({ length: count }, (_, i) => `${month.value.slice(0, 7)}-${String(i + 1).padStart(2, '0')}`)]
+  return [...Array(offset).fill(''), ...Array.from({ length: count }, (_, i) => `${month.value.slice(0, 7)}-${String(i + 1).padStart(2, '0')}`), ...Array((7 - (offset + count) % 7) % 7).fill('')]
 })
 const nextEvents = computed(() => filterRosterBookings(monthBookings.value, scopedArtists.value).filter(item => item.event_date && item.event_date >= new Date().toISOString().slice(0, 10)).slice(0, 8))
 const upcomingThisMonthCount = computed(() => filterRosterBookings(monthBookings.value, scopedArtists.value).filter(item => item.event_date && item.event_date >= new Date().toISOString().slice(0, 10)).length)
@@ -109,6 +109,7 @@ const isEs = computed(() => props.locale === 'es')
 const title = computed(() => props.contextArtistName && props.view !== 'roster'
   ? ({ overview: props.contextArtistName.toUpperCase(), bookings: `BOOKINGS / ${props.contextArtistName}`, calendar: `${isEs.value ? 'CALENDARIO' : 'CALENDAR'} / ${props.contextArtistName}`, history: `ACTIVITY / ${props.contextArtistName}` })[props.view]
   : ({ overview: isEs.value ? 'PULSO DEL ROSTER.' : 'THE ROSTER PULSE.', bookings: 'BOOKINGS / ROSTER', calendar: isEs.value ? 'CALENDARIO DEL ROSTER.' : 'ROSTER CALENDAR.', history: 'ACTIVITY / ROSTER', roster: 'EL ROSTER.' })[props.view])
+function calendarCount(day: string | null) { return day ? visibleMonthBookings.value.filter(item => item.event_date === day).length + visibleHolds.value.filter(item => item.event_date === day).length : 0 }
 const monthLabel = computed(() => {
   const label = new Intl.DateTimeFormat(isEs.value ? 'es-ES' : 'en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(currentMonth.value)
   return label.charAt(0).toUpperCase() + label.slice(1)
@@ -268,7 +269,26 @@ function confirmRetire(artist: RosterArtist) {
         <template v-if="view === 'bookings'"><p v-if="!visibleBookings.length" class="agency-muted">{{ isEs ? 'Aún no hay bookings para este filtro.' : 'No bookings for this filter yet.' }}</p><div class="agency-list"><button v-for="booking in visibleBookings" :key="booking.id" class="agency-row" type="button" @click="emit('openBooking', booking.id)"><span><b>{{ label(booking.artist_id) }}</b><strong>{{ eventName(booking) }}</strong><small>{{ contact(booking) }}</small></span><time>{{ shortDate(booking.event_date) }}</time><em>{{ bookingStatusLabel(booking.status) }}</em></button></div><div v-if="page > 0 || bookings.length > pageSize" class="agency-pages"><button :aria-label="isEs ? 'Página anterior' : 'Previous page'" :disabled="page === 0" type="button" @click="page--">←</button><span>{{ page + 1 }}</span><button :aria-label="isEs ? 'Página siguiente' : 'Next page'" :disabled="bookings.length <= pageSize" type="button" @click="page++">→</button></div></template>
         <template v-else><p v-if="!visibleActivities.length" class="agency-muted">{{ isEs ? 'Aún no hay actividad real para este filtro.' : 'No activity for this filter yet.' }}</p><div class="agency-list"><button v-for="item in visibleActivities" :key="item.id" class="agency-row" type="button" @click="emit('openBooking', item.booking_id)"><span><b>{{ label(item.bookings.artist_id) }} / {{ activityTypeLabel(item.type) }}</b><strong>{{ item.body || item.bookings.event_name || item.bookings.venue_name || 'Booking' }}</strong></span><time>{{ shortDate(item.occurred_at.slice(0, 10)) }}</time></button></div><div v-if="activityPage > 0 || activities.length > pageSize" class="agency-pages"><button :aria-label="isEs ? 'Página anterior' : 'Previous page'" :disabled="activityPage === 0" type="button" @click="activityPage--">←</button><span>{{ activityPage + 1 }}</span><button :aria-label="isEs ? 'Página siguiente' : 'Next page'" :disabled="activities.length <= pageSize" type="button" @click="activityPage++">→</button></div></template>
       </template>
-      <template v-else-if="view === 'calendar'"><div class="agency-month"><button type="button" :aria-label="isEs ? 'Mes anterior' : 'Previous month'" @click="moveMonth(-1)">←</button><h2>{{ monthLabel }}</h2><button type="button" :aria-label="isEs ? 'Mes siguiente' : 'Next month'" @click="moveMonth(1)">→</button></div><fieldset v-if="!selectedArtistId" class="agency-calendar-filters"><legend>{{ isEs ? 'Artistas visibles' : 'Visible artists' }}</legend><label v-for="artist in activeArtists" :key="artist.id"><input type="checkbox" :checked="calendarArtists.includes(artist.id)" @change="toggleCalendarArtist(artist.id)">{{ artist.stage_name }}</label></fieldset><div class="agency-calendar"><span v-for="(day, index) in (isEs ? ['L','M','X','J','V','S','D'] : ['M','T','W','T','F','S','S'])" :key="index" class="agency-weekday">{{ day }}</span><div v-for="(day, index) in calendarDays" :key="`${day}-${index}`" class="agency-day" :class="{ 'agency-day--empty': !day }"><button v-if="day" class="agency-day-date" type="button" :aria-pressed="selectedDay === day" @click="selectedDay = day">{{ Number(day.slice(-2)) }}</button><button v-for="booking in visibleMonthBookings.filter(item => item.event_date === day)" :key="booking.id" type="button" @click="emit('openBooking', booking.id)"><b>{{ label(booking.artist_id) }}</b><small>{{ eventName(booking) }}</small></button><button v-for="hold in visibleHolds.filter(item => item.event_date === day)" :key="hold.id" class="agency-hold" type="button" @click="emit('openBooking', hold.booking_id)"><b>{{ label(hold.bookings.artist_id) }}</b><small>Hold</small></button></div></div><div v-if="selectedDay" class="agency-day-agenda"><h3>{{ shortDate(selectedDay) }} / {{ isEs ? 'Agenda' : 'Schedule' }}</h3><button v-for="booking in visibleMonthBookings.filter(item => item.event_date === selectedDay)" :key="booking.id" type="button" @click="emit('openBooking', booking.id)"><b>{{ label(booking.artist_id) }}</b><span>{{ eventName(booking) }}</span></button><button v-for="hold in visibleHolds.filter(item => item.event_date === selectedDay)" :key="hold.id" type="button" @click="emit('openBooking', hold.booking_id)"><b>{{ label(hold.bookings.artist_id) }}</b><span>Hold</span></button><p v-if="!visibleMonthBookings.some(item => item.event_date === selectedDay) && !visibleHolds.some(item => item.event_date === selectedDay)" class="agency-muted">{{ isEs ? 'Sin fechas ni holds.' : 'No dates or holds.' }}</p></div></template>
+      <template v-else-if="view === 'calendar'">
+        <fieldset v-if="!selectedArtistId" class="agency-calendar-filters"><legend>{{ isEs ? 'Artistas visibles' : 'Visible artists' }}</legend><label v-for="artist in activeArtists" :key="artist.id"><input type="checkbox" :checked="calendarArtists.includes(artist.id)" @change="toggleCalendarArtist(artist.id)">{{ artist.stage_name }}</label></fieldset>
+        <div class="agency-calendar-layout">
+          <section class="agency-month-panel">
+            <div class="agency-month"><button type="button" :aria-label="isEs ? 'Mes anterior' : 'Previous month'" @click="moveMonth(-1)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></button><h2>{{ monthLabel }}</h2><button type="button" :aria-label="isEs ? 'Mes siguiente' : 'Next month'" @click="moveMonth(1)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg></button></div>
+            <div class="agency-calendar">
+              <span v-for="(day, index) in (isEs ? ['L','M','X','J','V','S','D'] : ['M','T','W','T','F','S','S'])" :key="index" class="agency-weekday">{{ day }}</span>
+              <button v-for="(day, index) in calendarDays" :key="`${day}-${index}`" type="button" class="agency-calendar-cell" :class="{ 'is-empty': !day, 'is-selected': selectedDay === day, 'is-today': today === day }" :disabled="!day" :aria-pressed="Boolean(day && selectedDay === day)" :aria-current="day === today ? 'date' : undefined" :aria-label="day ? `${shortDate(day)} · ${calendarCount(day)} ${isEs ? 'fechas' : 'dates'}` : undefined" @click="selectedDay = day">
+                <span v-if="day">{{ Number(day.slice(-2)) }}</span><small v-if="calendarCount(day)">{{ calendarCount(day) }}</small>
+                <span class="agency-day-statuses"><i v-if="visibleHolds.some(item => item.event_date === day)" class="agency-status-dot is-hold" /><i v-if="visibleMonthBookings.some(item => item.event_date === day)" class="agency-status-dot is-confirmed" /></span>
+              </button>
+            </div>
+            <div class="agency-calendar-legend"><span><i class="agency-status-dot is-hold" />Hold</span><span><i class="agency-status-dot is-confirmed" />{{ isEs ? 'Confirmado' : 'Confirmed' }}</span></div>
+          </section>
+          <section class="agency-day-agenda"><header><p>{{ isEs ? 'AGENDA DEL DÍA' : 'DAY SCHEDULE' }}</p><h3>{{ selectedDay ? shortDate(selectedDay) : (isEs ? 'Selecciona un día' : 'Select a day') }}</h3></header>
+            <template v-if="selectedDay"><button v-for="booking in visibleMonthBookings.filter(item => item.event_date === selectedDay)" :key="booking.id" type="button" class="agency-agenda-card" @click="emit('openBooking', booking.id)"><i class="agency-status-dot is-confirmed" /><span><b>{{ label(booking.artist_id) }}</b><strong>{{ eventName(booking) }}</strong><small>{{ isEs ? 'Confirmado' : 'Confirmed' }}</small></span><span aria-hidden="true">→</span></button><button v-for="hold in visibleHolds.filter(item => item.event_date === selectedDay)" :key="hold.id" type="button" class="agency-agenda-card is-hold" @click="emit('openBooking', hold.booking_id)"><i class="agency-status-dot is-hold" /><span><b>{{ label(hold.bookings.artist_id) }}</b><strong>Hold</strong><small>{{ isEs ? 'Reserva provisional' : 'Provisional reservation' }}</small></span><span aria-hidden="true">→</span></button><p v-if="!calendarCount(selectedDay)" class="agency-calendar-empty">{{ isEs ? 'Sin fechas ni holds para este día.' : 'No dates or holds for this day.' }}</p></template>
+            <p v-else class="agency-calendar-empty">{{ isEs ? 'Elige una fecha para ver los bookings de los artistas visibles.' : 'Choose a date to see bookings for visible artists.' }}</p>
+          </section>
+        </div>
+      </template>
     </template>
         <div v-if="view === 'roster' && artists.some(item => item.roster_active === false)" class="agency-retired"><button type="button" @click="showRetired = !showRetired">{{ showRetired ? '−' : '+' }} {{ isEs ? 'Artistas retirados' : 'Removed artists' }}</button><div v-if="showRetired" class="agency-roster"><article v-for="artist in artists.filter(item => item.roster_active === false)" :key="artist.id"><div><h2>{{ artist.stage_name }}</h2><p>{{ isEs ? 'Historial conservado' : 'History retained' }}</p></div><button v-if="canManageRoster" type="button" @click="emit('restoreArtist', artist.id)">{{ isEs ? 'Reincorporar' : 'Restore' }}</button></article></div></div>
     <Teleport to="body"><dialog v-if="canManageRoster" ref="addDialog" class="agency-add" @cancel="showAdd = false"><form @submit.prevent="submitArtist"><div><h2>{{ isEs ? 'AÑADIR AL ROSTER' : 'ADD TO ROSTER' }}</h2><button type="button" :aria-label="isEs ? 'Cerrar' : 'Close'" @click="showAdd = false">×</button></div><label>{{ isEs ? 'Nombre artístico' : 'Artist name' }}<input v-model="artistName" required maxlength="100"></label><label>Slug<input v-model="artistSlug" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required></label><label>{{ isEs ? 'Ciudad base (opcional)' : 'Base city (optional)' }}<input v-model="artistCity" maxlength="120"></label><p v-if="addError" role="alert">{{ addError }}</p><button type="submit" :disabled="submittingArtist">{{ submittingArtist ? (isEs ? 'Creando…' : 'Creating…') : (isEs ? 'Crear artista' : 'Create artist') }}</button></form></dialog></Teleport>
@@ -298,4 +318,44 @@ function confirmRetire(artist: RosterArtist) {
 .agency-calendar{border-radius:var(--cue-radius-panel);overflow:hidden}
 .agency-pages button{min-width:40px;min-height:40px}
 .agency-pages button:disabled{opacity:.4;cursor:default}
+</style>
+
+<style scoped>
+.agency-calendar-filters{margin:22px 0 0}
+.agency-calendar-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);gap:20px;align-items:start;margin-top:20px}
+.agency-month-panel,.agency-day-agenda{border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:var(--cue-surface);overflow:hidden;min-width:0}
+.agency-month{display:grid;grid-template-columns:36px minmax(0,1fr) 36px;min-height:60px;gap:8px;padding:0 16px;margin:0;border-bottom:1px solid var(--cue-border)}
+.agency-month h2{text-align:center;margin:0;font-size:16px;font-weight:800;letter-spacing:-.01em}
+.agency-month button{display:grid;place-items:center;width:36px;height:36px;padding:0;color:var(--cue-muted)}
+.agency-month svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.agency-calendar{border:0;border-radius:0}
+.agency-weekday{padding:10px 8px;border-right:1px solid var(--cue-border);border-bottom:1px solid var(--cue-border);color:var(--cue-muted);background:color-mix(in srgb,var(--cue-raised) 24%,transparent);font:800 8px/1.2 monospace;letter-spacing:.08em}
+.agency-calendar-cell{position:relative;min-height:86px;padding:10px;border:0;border-right:1px solid var(--cue-border);border-bottom:1px solid var(--cue-border);background:transparent;color:var(--cue-text);text-align:left;border-radius:0;font:inherit}
+.agency-calendar>*:nth-child(7n){border-right:0}
+.agency-calendar-cell>span:first-child{font-size:12px;font-weight:750}
+.agency-calendar-cell small{position:absolute;top:10px;right:10px;color:var(--cue-muted);font:9px monospace}
+.agency-calendar-cell:hover:not(:disabled){background:var(--cue-raised)}
+.agency-calendar-cell.is-selected{background:var(--cue-raised);box-shadow:inset 0 0 0 1px var(--cue-toggle)}
+.agency-calendar-cell.is-today{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--cue-accent) 58%,var(--cue-border))}.agency-calendar-cell.is-today>span:first-child{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 5px;border-radius:999px;background:var(--cue-accent);color:var(--cue-accent-ink);font-weight:850}.agency-calendar-cell.is-today.is-selected{box-shadow:inset 0 0 0 1px var(--cue-toggle),inset 0 0 0 2px color-mix(in srgb,var(--cue-accent) 22%,transparent)}
+.agency-calendar-cell.is-empty{opacity:.42;cursor:default}
+.agency-day-statuses{position:absolute;left:10px;bottom:10px;display:flex;gap:6px}
+.agency-status-dot{display:inline-block;flex:none;width:7px;height:7px;border-radius:50%}
+.agency-status-dot.is-hold{background:var(--cue-accent)}
+.agency-status-dot.is-confirmed{background:#57e389}
+.agency-calendar-legend{display:flex;gap:16px;padding:16px;color:var(--cue-muted);font:700 9px/1.3 monospace;text-transform:uppercase}
+.agency-calendar-legend span{display:flex;align-items:center;gap:7px}
+.agency-day-agenda{display:block;margin:0;padding:0}
+.agency-day-agenda header{padding:18px;border-bottom:1px solid var(--cue-border)}
+.agency-day-agenda header p{color:var(--cue-accent);font:800 9px monospace;letter-spacing:.1em;margin:0 0 8px}
+.agency-day-agenda h3{font-size:18px;letter-spacing:0;text-transform:none;margin:0}
+.agency-day-agenda .agency-agenda-card{box-sizing:border-box;width:calc(100% - 24px);display:grid;grid-template-columns:7px minmax(0,1fr) auto;gap:10px;align-items:start;margin:12px;padding:12px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control);background:transparent;color:var(--cue-text);text-align:left}
+.agency-agenda-card>i{margin-top:5px}
+.agency-agenda-card>span{display:grid;gap:4px;min-width:0}
+.agency-day-agenda .agency-agenda-card b{min-width:0;font-size:10px;color:var(--cue-muted)}
+.agency-agenda-card strong{font-size:12px}.agency-agenda-card small{font-size:11px;color:var(--cue-muted)}
+.agency-day-agenda .agency-agenda-card.is-hold{border-style:dashed}
+.agency-calendar-empty{padding:20px;margin:0;color:var(--cue-muted);font-size:12px;line-height:1.5}
+.agency-calendar-layout button:focus-visible{outline:2px solid var(--cue-toggle);outline-offset:-3px}
+@media(max-width:950px){.agency-calendar-layout{grid-template-columns:1fr}}
+@media(max-width:560px){.agency-calendar-cell{min-height:62px;padding:8px}.agency-calendar-cell small{top:8px;right:6px}.agency-calendar-filters label{font-size:12px}.agency-month h2{font-size:14px}}
 </style>

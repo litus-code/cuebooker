@@ -1,3 +1,11 @@
+## 2026-09-30 / Agency calendar follows DJ visual design
+
+Branch `feature/agency-multi-artist-beta`, base HEAD `fee680d210ad70bdfdf18a6d5cdb47424ec58afb`, PR #96 preview only.
+
+Calendar now follows the DJ month toolbar, 86 px day cells, booking counts, hold/confirmed dots, legend, today badge and selected-day border. Artist visibility controls remain. The adjacent day agenda identifies artists and opens their bookings; below 950 px it stacks beneath the month, with 62 px cells below 560 px. No hourly availability editor was added to Agency. Blank trailing cells complete the grid.
+
+Staging static build succeeds. Browser checks and remote CI/deploy tracked after publication. No schema/function changes or production deployment. Real authenticated media and 390 px viewport verification remain pending.
+
 ## 2026-09-30 / Agency UI polish and ten-row pagination
 
 Branch `feature/agency-multi-artist-beta`, implementation HEAD `d28b38332f3521890619cc291967ea0041aca859`, PR #96 preview only.
