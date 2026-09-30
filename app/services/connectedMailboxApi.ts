@@ -11,7 +11,7 @@ export function createConnectedMailboxApi(options:{baseUrl:string;publishableKey
   connect:(workspaceId:string,email:string,provider:string)=>call({action:'connect',workspaceId,email,provider}) as Promise<{authorizationUrl:string}>,
   complete:(workspaceId:string,state:string,code:string)=>call({action:'complete',workspaceId,state,code}),
   recent:(workspaceId:string,connectionId:string)=>call({action:'recent',workspaceId,connectionId}) as Promise<{messages:MailboxMessage[];hasMore:boolean}>,
-  classify:(workspaceId:string,connectionId:string)=>call({action:'classify',workspaceId,connectionId,analysisConsent:true}) as Promise<{messages:MailboxMessage[];hasMore:boolean}>,
+  classify:(workspaceId:string,connectionId:string,messageId?:string)=>call({action:'classify',workspaceId,connectionId,messageId,analysisConsent:true}) as Promise<{messages:MailboxMessage[];hasMore:boolean}>,
   importMessage:(workspaceId:string,connectionId:string,messageId:string,artistId:string,bookingId?:string)=>call({action:'import',workspaceId,connectionId,messageId,artistId,bookingId}) as Promise<{bookingId:string}>,
   sync:(workspaceId:string,connectionId:string,bookingId:string,cursor?:string)=>call({action:'sync',workspaceId,connectionId,bookingId,cursor}) as Promise<{synced:boolean;partial:boolean}>,
   send:(input:{workspaceId:string;connectionId:string;bookingId:string;subject:string;bodyText:string;requestId:string})=>call({action:'send',...input}),

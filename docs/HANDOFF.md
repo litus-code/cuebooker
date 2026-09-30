@@ -1,3 +1,9 @@
+## 2026-09-30 / Single-message classification for controlled pilot
+
+Branch `feature/agency-multi-artist-beta`, base HEAD `4264602d64ea8e5f9777f6d0a6bb22e0138b5539`, PR #96 preview only. User sent a purpose-written test mail from their owned account; authenticated Agency UI confirms receipt and body. No AI analysis, import or outbound delivery yet at this checkpoint.
+
+Classifier accepts an optional exact message ID, fetches only that provider message and never falls back to recent-mail analysis when invalid. Selected-message disclosure/unchecked consent/button are independent of batch consent. Tests verify one-message provider read and OpenAI payload, invalid selection zero external calls. 350 tests pass; static generation/deployment and real roundtrip are tracked in the continuation. No schema changes, production untouched. Exact next: deploy/review selected-message control, analyze the purpose-written test only, explicitly assign TEST artist, import, reply and verify reply-back/dedup. Preserve unrelated personal inbox privacy.
+
 ## 2026-09-30 / Classification pilot and published email validation
 
 Implementation before this update: `86c1d8e9fe2a554636fe58c01f217a3dbfdce53b` on PR #96; CI and preview deployment successful. Authenticated Agency browser confirms genuine recent mail retrieval; no real mail imported/sent. Agency list uses AgencyWorkspace, so connected-mail panel was integrated there as well as DJ BookingCoreInbox. Original mailbox required for an already linked conversation; other agency members cannot silently use a different sender.

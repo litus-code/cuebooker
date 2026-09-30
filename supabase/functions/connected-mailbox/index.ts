@@ -92,7 +92,9 @@ Deno.serve(async(request:Request)=>{
    const provider=createNylasMailbox(config);
    if(input.action==='classify'&&input.analysisConsent!==true)return json({error:'mailbox_analysis_consent_required'},400);
    if(input.action==='recent'||input.action==='classify'){
-    const result=await provider.messages(connection.grant_id);
+    const single=input.action==='classify'&&input.messageId!==undefined;
+    if(single&&(typeof input.messageId!=='string'||!input.messageId.trim()||input.messageId.length>512))return json({error:'invalid_message'},400);
+    const result=single?{messages:[await provider.message(connection.grant_id,input.messageId)],nextCursor:null}:await provider.messages(connection.grant_id);
     const messages=result.messages.map((m:any)=>mailboxMessage(m,connection.email)).filter((m:any)=>m.from!==connection.email);
     if(input.action==='classify'){
      const threshold=encodeURIComponent(new Date(Date.now()-60000).toISOString());
