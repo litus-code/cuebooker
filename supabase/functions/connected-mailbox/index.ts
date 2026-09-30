@@ -62,11 +62,13 @@ Deno.serve(async(request:Request)=>{
     return {id:row.id,email:row.email,provider:row.provider,status,connectedAt:row.connected_at};
    }));
    let linkedConnectionIds:string[]=[];
+   let hasLinkedThread=false;
    if(uuid(input.bookingId)){
     const links=await db<Array<{connection_id:string}>>(`mailbox_booking_threads?workspace_id=eq.${workspace}&booking_id=eq.${input.bookingId}&select=connection_id`);
+    hasLinkedThread=links.length>0;
     linkedConnectionIds=links.map(l=>l.connection_id).filter(id=>connections.some(c=>c.id===id));
    }
-   return json({configured,connections:safe,linkedConnectionIds});
+   return json({configured,connections:safe,linkedConnectionIds,hasLinkedThread});
   }
   if(!configured)return json({error:'mailbox_not_configured'},503);
   back('check');

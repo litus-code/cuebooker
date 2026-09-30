@@ -42,7 +42,7 @@ watch(() => [props.workspaceId,props.booking.id], async ([workspace,booking]) =>
  const generation=++mailboxGeneration
  senderLoading.value=true;senderError.value=false
  mailboxes.value=[];senderId.value=''
- try {const result=await mailboxApi.status(workspace,booking);if(generation===mailboxGeneration){mailboxes.value=result.connections.filter(c=>c.status==='connected');senderId.value=result.linkedConnectionIds?.[0]||mailboxes.value[0]?.id||''}}
+ try {const result=await mailboxApi.status(workspace,booking);if(generation===mailboxGeneration){mailboxes.value=result.connections.filter(c=>c.status==='connected');senderId.value=result.linkedConnectionIds?.[0]||mailboxes.value[0]?.id||'';if(result.hasLinkedThread&&!mailboxes.value.some(c=>result.linkedConnectionIds.includes(c.id))){senderError.value=true;errorMessage.value=props.locale==='es'?'Esta conversación necesita su buzón original. Conéctalo o pide al responsable que responda.':'This conversation needs its original mailbox. Reconnect it or ask its owner to reply.'}}}
  catch {if(generation===mailboxGeneration){senderError.value=true;errorMessage.value=props.locale==='es'?'No se pudo comprobar tu correo. Recarga antes de enviar.':'Could not check your mailbox. Reload before sending.'}}
  finally {if(generation===mailboxGeneration)senderLoading.value=false}
 },{immediate:true})
@@ -180,7 +180,7 @@ async function submit() {
       subject.value = ''
       body.value = ''
       channelDrafts.email = ''
-      successMessage.value = copy.value.sent
+      successMessage.value = senderId.value ? (props.locale==='es'?'Email enviado desde tu correo y guardado en la conversación.':'Email sent from your mailbox and saved in the conversation.') : copy.value.sent
       analytics.track('booking_response_sent', { channel: 'email' })
       emit('created')
       return
