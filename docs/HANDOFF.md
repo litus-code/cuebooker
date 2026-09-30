@@ -1,3 +1,11 @@
+## 2026-09-30 / Agency UI polish and ten-row pagination
+
+Branch `feature/agency-multi-artist-beta`, implementation HEAD `d28b38332f3521890619cc291967ea0041aca859`, PR #96 preview only.
+
+Agency cards, panel containers, calendar outer border and controls now use existing panel/control radius tokens. Demo booking Follow-up is compact, labelled and uses quieter actions with explanatory text. Bookings and Activity paginate ten rows with an eleventh-row lookahead; navigation is hidden on the first page with ten or fewer rows and remains available on later pages. Overview summaries retain their separate 100-row fetch.
+
+Validated locally: 336 tests pass, staging static generation succeeds, diff check passes. Remote CI/deploy and browser validation tracked separately on the PR. No database/function changes, no production deployment. Mobile 390 px and authenticated media save/reload/public flow remain pending.
+
 ## 30 September 2026: Agency cover/logo file uploads
 
 Based on PR #96 HEAD `ff3025ac9066eb28103343eb207f2f42979372e1`. Editor accepts validated JPG/PNG/WebP files up to 8 MB with image decode, preview, replace/remove and explicit page save. HTTPS links remain a secondary option. Authenticated files use private artist-media under `agency/<workspace>/covers|logos/<uuid>`. Only Owner/Admin can insert/read agency identity objects; replacements use fresh UUIDs. No destructive cleanup of old images. Abandoned uploads and previous versions remain private and need a future cleanup policy.
