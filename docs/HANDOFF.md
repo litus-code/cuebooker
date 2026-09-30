@@ -1,3 +1,7 @@
+## 2026-09-30 / Compact shared booking decision buttons
+
+Branch `feature/agency-multi-artist-beta`, base HEAD `c3c3c0a301902af3a66651df2acb1a0e0eccad17`, PR #96 preview only. Shared BookingCoreInbox Confirm/Reject/Cancel now use content-width wrapping flex layout instead of three equal columns; desktop height 34 px, narrow/mobile touch height 44 px. Existing colors and decision behavior remain. Applies to both DJ and Agency using this component. Static generation and diff check before publication; remote deployment/browser checks afterward. No production changes.
+
 ## 2026-09-30 / Agency settings and roster consistency
 
 Branch `feature/agency-multi-artist-beta`, base HEAD `8e82e624c146995ba43931f4826b60b0ecb555ab`, PR #96 preview only.

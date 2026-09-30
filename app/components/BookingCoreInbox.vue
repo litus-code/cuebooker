@@ -953,8 +953,8 @@ async function selectBooking(bookingId: string) {
 .core-inbox__status > span { color:var(--cue-muted); font:700 7px monospace; letter-spacing:.08em; text-transform:uppercase; }
 .core-inbox__status > strong { color:var(--status-color,var(--cue-text)); font:800 10px monospace; text-transform:uppercase; }
 .core-inbox__status > small { max-width:220px; color:var(--cue-muted); font-size:9px; line-height:1.35; }
-.core-inbox__decisions { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
-.core-inbox__decisions button { min-height:var(--cue-button-sm); padding:0 10px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-control); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 7px monospace; text-transform:uppercase; }
+.core-inbox__decisions { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:8px; }
+.core-inbox__decisions button { flex:0 0 auto; width:auto; min-height:34px; padding:0 14px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-control); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 10px monospace; text-transform:uppercase; }
 .core-inbox__decisions button:disabled { opacity:.45; cursor:wait; }
 .core-inbox__decisions .decision-confirm { border-color:var(--cue-status-confirmed); color:var(--cue-status-confirmed); }
 .core-inbox__decisions .decision-reject { border-color:var(--cue-status-rejected); color:var(--cue-status-rejected); }
@@ -1043,16 +1043,16 @@ async function selectBooking(bookingId: string) {
   .core-inbox__decision-strip { display:grid; grid-template-columns:1fr; gap:10px; padding:12px 0 14px; }
   .core-inbox__status { min-width:0; margin:0; padding:7px 0 7px 10px; }
   .core-inbox__decisions { width:100%; }
-  .core-inbox__decisions button { min-height:46px; }
+  .core-inbox__decisions button { min-height:44px; }
   .core-inbox__contact-fact { padding-inline:0 !important; }
   .core-inbox__contact-head { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:10px; }
   .core-inbox__contact-head :deep(.contact-editor-entry) { justify-self:end; min-height:28px; }
   .core-inbox__contact-fact dd { margin-top:8px; overflow:visible; text-overflow:clip; white-space:normal; word-break:break-word; }
   .core-inbox__contact-fact small { overflow-wrap:anywhere; }
-  .core-inbox__decisions { grid-template-columns:repeat(3,minmax(0,1fr)); min-width:0; }
+  .core-inbox__decisions { min-width:0; }
   .core-inbox__decisions button,
   .core-inbox__archive { min-height:44px; }
-  .core-inbox__decisions button { min-width:0; padding-inline:4px; }
+  .core-inbox__decisions button { min-width:0; padding-inline:12px; }
   .core-inbox__details-heading { align-items:center; }
   .core-inbox__details-actions { width:100%; justify-content:flex-start; }
   .core-inbox__details-heading { flex-wrap:wrap; }
