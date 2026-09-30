@@ -73,7 +73,7 @@ const submittingArtist = ref(false)
 const addError = ref('')
 const showRetired = ref(false)
 const page = ref(0)
-const pageSize = 100
+const pageSize = 10
 const activityPage = ref(0)
 watch([filterArtist, calendarArtists, month, selectedDay], () => emit('contextChanged', { filterArtist: filterArtist.value, calendarArtists: [...calendarArtists.value], month: month.value, selectedDay: selectedDay.value }), { immediate: true })
 const activeArtists = computed(() => props.artists.filter(artist => artist.roster_active !== false))
@@ -84,8 +84,8 @@ watch(() => [props.selectedArtistId, props.view], () => {
   else if (props.view === 'calendar') calendarArtists.value = props.contextState?.calendarArtists.slice() || (typeof route.query.rosterCalendar === 'string' ? route.query.rosterCalendar.split(',').filter(id => activeArtists.value.some(a => a.id === id)) : activeArtists.value.map(a => a.id))
 }, { immediate: true })
 const activeIds = computed(() => new Set(activeArtists.value.map(artist => artist.id)))
-const visibleBookings = computed(() => filterRosterBookings(bookings.value, activeArtists.value, filterArtist.value === 'all' ? undefined : [filterArtist.value]))
-const visibleActivities = computed(() => activities.value.filter(activity => activeIds.value.has(activity.bookings?.artist_id) && (filterArtist.value === 'all' || activity.bookings?.artist_id === filterArtist.value)))
+const visibleBookings = computed(() => filterRosterBookings(bookings.value, activeArtists.value, filterArtist.value === 'all' ? undefined : [filterArtist.value]).slice(0, pageSize))
+const visibleActivities = computed(() => activities.value.filter(activity => activeIds.value.has(activity.bookings?.artist_id) && (filterArtist.value === 'all' || activity.bookings?.artist_id === filterArtist.value)).slice(0, props.view === 'history' ? pageSize : 100))
 const recentActivities = computed(() => activities.value.filter(activity => scopedArtists.value.some(a => a.id === activity.bookings?.artist_id)).slice(0, 5))
 const visibleMonthBookings = computed(() => filterRosterBookings(monthBookings.value, activeArtists.value, calendarArtists.value))
 const visibleHolds = computed(() => holds.value.filter(hold => {
@@ -187,13 +187,13 @@ async function load() {
     const ids = new Set(scopedArtists.value.map(a => a.id))
     const rows = props.demoData.bookings.filter(item => ids.has(item.artist_id))
     const filtered = filterArtist.value === 'all' ? rows : rows.filter(item => item.artist_id === filterArtist.value)
-    bookings.value = filtered.slice(page.value * pageSize, (page.value + 1) * pageSize)
+    bookings.value = filtered.slice(page.value * pageSize, (page.value + 1) * pageSize + 1)
     summaryBookings.value = rows.slice(0, 100)
     exactActiveCount.value = agencyActiveBookingCount(rows)
     exactHoldCount.value = props.demoData.holds.filter(item => item.status === 'active' && ids.has(item.bookings.artist_id)).length
     monthBookings.value = rows.filter(item => item.status === 'confirmed' && !item.archived_at && item.event_date && item.event_date >= month.value && item.event_date < monthEnd.value)
     const activityRows = props.demoData.activities.filter(item => ids.has(item.bookings.artist_id) && (props.view !== 'history' || filterArtist.value === 'all' || item.bookings.artist_id === filterArtist.value))
-    activities.value = activityRows.slice((props.view === 'history' ? activityPage.value : 0) * pageSize, ((props.view === 'history' ? activityPage.value : 0) + 1) * pageSize)
+    activities.value = activityRows.slice((props.view === 'history' ? activityPage.value : 0) * pageSize, props.view === 'history' ? (activityPage.value + 1) * pageSize + 1 : 100)
     holds.value = props.demoData.holds.filter(item => ids.has(item.bookings.artist_id) && item.event_date >= month.value && item.event_date < monthEnd.value)
     contacts.value = props.demoData.contacts
     counterparties.value = props.demoData.counterparties
@@ -202,12 +202,12 @@ async function load() {
   }
   try {
     const [rows, summaryRows, count, holdCount, monthRows, activityRows, holdRows, contactRows, partyRows] = await Promise.all([
-      api.listRosterBookings(props.workspaceId, page.value * pageSize, pageSize, filterArtist.value === 'all' ? undefined : filterArtist.value, activeArtists.value.map(item => item.id)),
+      api.listRosterBookings(props.workspaceId, page.value * pageSize, pageSize + 1, filterArtist.value === 'all' ? undefined : filterArtist.value, activeArtists.value.map(item => item.id)),
       api.listRosterBookings(props.workspaceId, 0, 100, undefined, scopedArtists.value.map(item => item.id)),
       api.countRosterActiveBookings(props.workspaceId, scopedArtists.value.map(item => item.id)).catch(() => null),
       api.countRosterActiveHolds(props.workspaceId, scopedArtists.value.map(item => item.id)).catch(() => null),
       api.listRosterCalendarBookings(props.workspaceId, month.value, monthEnd.value),
-      api.listRosterActivities(props.workspaceId, (props.view === 'history' ? activityPage.value : 0) * pageSize, pageSize, filterArtist.value === 'all' || props.view !== 'history' ? scopedArtists.value.map(item => item.id) : [filterArtist.value]),
+      api.listRosterActivities(props.workspaceId, (props.view === 'history' ? activityPage.value : 0) * pageSize, props.view === 'history' ? pageSize + 1 : 100, filterArtist.value === 'all' || props.view !== 'history' ? scopedArtists.value.map(item => item.id) : [filterArtist.value]),
       api.listRosterHolds(props.workspaceId, month.value, monthEnd.value),
       api.listContacts(props.workspaceId), api.listCounterparties(props.workspaceId)
     ])
@@ -265,8 +265,8 @@ function confirmRetire(artist: RosterArtist) {
       </template>
       <template v-else-if="view === 'bookings' || view === 'history'">
         <label v-if="!contextArtistName" class="agency-filter">{{ isEs ? 'Filtrar por artista' : 'Filter by artist' }}<select v-model="filterArtist"><option value="all">{{ isEs ? 'Todos los artistas' : 'All artists' }}</option><option v-for="artist in activeArtists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
-        <template v-if="view === 'bookings'"><p v-if="!visibleBookings.length" class="agency-muted">{{ isEs ? 'Aún no hay bookings para este filtro.' : 'No bookings for this filter yet.' }}</p><div class="agency-list"><button v-for="booking in visibleBookings" :key="booking.id" class="agency-row" type="button" @click="emit('openBooking', booking.id)"><span><b>{{ label(booking.artist_id) }}</b><strong>{{ eventName(booking) }}</strong><small>{{ contact(booking) }}</small></span><time>{{ shortDate(booking.event_date) }}</time><em>{{ bookingStatusLabel(booking.status) }}</em></button></div><div class="agency-pages"><button :disabled="page === 0" type="button" @click="page--">←</button><span>{{ page + 1 }}</span><button :disabled="bookings.length < pageSize" type="button" @click="page++">→</button></div></template>
-        <template v-else><p v-if="!visibleActivities.length" class="agency-muted">{{ isEs ? 'Aún no hay actividad real para este filtro.' : 'No activity for this filter yet.' }}</p><div class="agency-list"><button v-for="item in visibleActivities" :key="item.id" class="agency-row" type="button" @click="emit('openBooking', item.booking_id)"><span><b>{{ label(item.bookings.artist_id) }} / {{ activityTypeLabel(item.type) }}</b><strong>{{ item.body || item.bookings.event_name || item.bookings.venue_name || 'Booking' }}</strong></span><time>{{ shortDate(item.occurred_at.slice(0, 10)) }}</time></button></div><div class="agency-pages"><button :disabled="activityPage === 0" type="button" @click="activityPage--">←</button><span>{{ activityPage + 1 }}</span><button :disabled="activities.length < pageSize" type="button" @click="activityPage++">→</button></div></template>
+        <template v-if="view === 'bookings'"><p v-if="!visibleBookings.length" class="agency-muted">{{ isEs ? 'Aún no hay bookings para este filtro.' : 'No bookings for this filter yet.' }}</p><div class="agency-list"><button v-for="booking in visibleBookings" :key="booking.id" class="agency-row" type="button" @click="emit('openBooking', booking.id)"><span><b>{{ label(booking.artist_id) }}</b><strong>{{ eventName(booking) }}</strong><small>{{ contact(booking) }}</small></span><time>{{ shortDate(booking.event_date) }}</time><em>{{ bookingStatusLabel(booking.status) }}</em></button></div><div v-if="page > 0 || bookings.length > pageSize" class="agency-pages"><button :aria-label="isEs ? 'Página anterior' : 'Previous page'" :disabled="page === 0" type="button" @click="page--">←</button><span>{{ page + 1 }}</span><button :aria-label="isEs ? 'Página siguiente' : 'Next page'" :disabled="bookings.length <= pageSize" type="button" @click="page++">→</button></div></template>
+        <template v-else><p v-if="!visibleActivities.length" class="agency-muted">{{ isEs ? 'Aún no hay actividad real para este filtro.' : 'No activity for this filter yet.' }}</p><div class="agency-list"><button v-for="item in visibleActivities" :key="item.id" class="agency-row" type="button" @click="emit('openBooking', item.booking_id)"><span><b>{{ label(item.bookings.artist_id) }} / {{ activityTypeLabel(item.type) }}</b><strong>{{ item.body || item.bookings.event_name || item.bookings.venue_name || 'Booking' }}</strong></span><time>{{ shortDate(item.occurred_at.slice(0, 10)) }}</time></button></div><div v-if="activityPage > 0 || activities.length > pageSize" class="agency-pages"><button :aria-label="isEs ? 'Página anterior' : 'Previous page'" :disabled="activityPage === 0" type="button" @click="activityPage--">←</button><span>{{ activityPage + 1 }}</span><button :aria-label="isEs ? 'Página siguiente' : 'Next page'" :disabled="activities.length <= pageSize" type="button" @click="activityPage++">→</button></div></template>
       </template>
       <template v-else-if="view === 'calendar'"><div class="agency-month"><button type="button" :aria-label="isEs ? 'Mes anterior' : 'Previous month'" @click="moveMonth(-1)">←</button><h2>{{ monthLabel }}</h2><button type="button" :aria-label="isEs ? 'Mes siguiente' : 'Next month'" @click="moveMonth(1)">→</button></div><fieldset v-if="!selectedArtistId" class="agency-calendar-filters"><legend>{{ isEs ? 'Artistas visibles' : 'Visible artists' }}</legend><label v-for="artist in activeArtists" :key="artist.id"><input type="checkbox" :checked="calendarArtists.includes(artist.id)" @change="toggleCalendarArtist(artist.id)">{{ artist.stage_name }}</label></fieldset><div class="agency-calendar"><span v-for="(day, index) in (isEs ? ['L','M','X','J','V','S','D'] : ['M','T','W','T','F','S','S'])" :key="index" class="agency-weekday">{{ day }}</span><div v-for="(day, index) in calendarDays" :key="`${day}-${index}`" class="agency-day" :class="{ 'agency-day--empty': !day }"><button v-if="day" class="agency-day-date" type="button" :aria-pressed="selectedDay === day" @click="selectedDay = day">{{ Number(day.slice(-2)) }}</button><button v-for="booking in visibleMonthBookings.filter(item => item.event_date === day)" :key="booking.id" type="button" @click="emit('openBooking', booking.id)"><b>{{ label(booking.artist_id) }}</b><small>{{ eventName(booking) }}</small></button><button v-for="hold in visibleHolds.filter(item => item.event_date === day)" :key="hold.id" class="agency-hold" type="button" @click="emit('openBooking', hold.booking_id)"><b>{{ label(hold.bookings.artist_id) }}</b><small>Hold</small></button></div></div><div v-if="selectedDay" class="agency-day-agenda"><h3>{{ shortDate(selectedDay) }} / {{ isEs ? 'Agenda' : 'Schedule' }}</h3><button v-for="booking in visibleMonthBookings.filter(item => item.event_date === selectedDay)" :key="booking.id" type="button" @click="emit('openBooking', booking.id)"><b>{{ label(booking.artist_id) }}</b><span>{{ eventName(booking) }}</span></button><button v-for="hold in visibleHolds.filter(item => item.event_date === selectedDay)" :key="hold.id" type="button" @click="emit('openBooking', hold.booking_id)"><b>{{ label(hold.bookings.artist_id) }}</b><span>Hold</span></button><p v-if="!visibleMonthBookings.some(item => item.event_date === selectedDay) && !visibleHolds.some(item => item.event_date === selectedDay)" class="agency-muted">{{ isEs ? 'Sin fechas ni holds.' : 'No dates or holds.' }}</p></div></template>
     </template>
@@ -290,4 +290,12 @@ function confirmRetire(artist: RosterArtist) {
 
 <style scoped>
 .agency-heading h1{font-size:clamp(2.4rem,4.4vw,4.5rem)}.agency-heading-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}.agency-heading-actions .agency-primary{background:var(--cue-accent);color:#10130d}.agency-columns{grid-template-columns:1.2fr 1fr}.agency-roster-summary{border:1px solid var(--cue-border);padding:22px;margin-top:14px;background:var(--cue-surface)}.agency-roster-summary h2{font:700 12px monospace;letter-spacing:.1em}.agency-roster-summary p{font-size:12px;color:var(--cue-muted)}.agency-roster-shortcuts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}.agency-roster-shortcuts button{display:grid;grid-template-columns:40px 1fr;text-align:left;gap:4px 12px;padding:14px;background:transparent;color:var(--cue-text);border:1px solid var(--cue-border);cursor:pointer}.agency-roster-shortcuts span{grid-row:span 2;align-self:center;color:var(--cue-accent);font-weight:800}.agency-roster-shortcuts small{color:var(--cue-muted)}.agency-add{position:fixed;inset:0;margin:auto;max-height:calc(100dvh - 40px);overflow:auto;color:var(--cue-text);background:var(--cue-bg);z-index:100}.agency-add::backdrop{background:#000b;backdrop-filter:blur(4px)}.agency-add form>div{display:flex;justify-content:space-between;align-items:center}.agency-add form>div button{background:transparent;color:inherit;border:1px solid var(--cue-border);padding:8px}.agency-columns>:first-child{min-width:0}@media(max-width:750px){.agency-columns{grid-template-columns:1fr}.agency-heading{flex-direction:column;gap:16px}.agency-heading-actions{justify-content:flex-start}.agency-roster-shortcuts{grid-template-columns:1fr}}
+</style>
+
+<style scoped>
+.agency-stats button,.agency-columns section,.agency-recent,.agency-roster article,.agency-empty,.agency-add,.agency-roster-summary{border-radius:var(--cue-radius-panel)}
+.agency-heading button,.agency-actions button,.agency-empty button,.agency-add button,.agency-add input,.agency-roster-actions button,.agency-retired button,.agency-pages button,.agency-month button,.agency-roster-shortcuts button,.agency-avatar,.agency-day button{border-radius:var(--cue-radius-control)}
+.agency-calendar{border-radius:var(--cue-radius-panel);overflow:hidden}
+.agency-pages button{min-width:40px;min-height:40px}
+.agency-pages button:disabled{opacity:.4;cursor:default}
 </style>

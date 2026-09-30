@@ -776,9 +776,10 @@ async function selectBooking(bookingId: string) {
           <h4>{{ locale === 'es' ? 'SEGUIMIENTO' : 'FOLLOW-UP' }}</h4>
           <div><strong>{{ locale === 'es' ? 'Próxima acción' : 'Next action' }}</strong>
             <p v-if="activeDemoMove">{{ activeDemoMove }} <button type="button" @click="completeDemoMove">{{ locale === 'es' ? 'Hecho' : 'Done' }}</button></p>
-            <form v-else @submit.prevent="saveDemoMove"><input v-model="demoMoveText" :placeholder="locale === 'es' ? 'Ej. Confirmar horario con la sala' : 'E.g. Confirm schedule with venue'"><button type="submit" :disabled="!demoMoveText.trim()">{{ locale === 'es' ? 'Guardar próxima acción' : 'Save next action' }}</button></form>
+            <p class="core-inbox__demo-help">{{ locale === 'es' ? 'Anota el siguiente paso de esta solicitud.' : 'Note the next step for this enquiry.' }}</p>
+            <form v-if="!activeDemoMove" @submit.prevent="saveDemoMove"><input v-model="demoMoveText" :aria-label="locale === 'es' ? 'Próxima acción' : 'Next action'" maxlength="240" :placeholder="locale === 'es' ? 'Ej. Confirmar horario con la sala' : 'E.g. Confirm schedule with venue'"><button type="submit" :disabled="!demoMoveText.trim()">{{ locale === 'es' ? 'Guardar acción' : 'Save action' }}</button></form>
           </div>
-          <div><strong>{{ locale === 'es' ? 'Reservar fecha (hold)' : 'Reserve date (hold)' }}</strong><p>{{ selectedBooking.event_date ? formatDate(selectedBooking.event_date) : copy.noDate }} · {{ activeDemoHold ? 'Hold activo' : (locale === 'es' ? 'Sin hold' : 'No hold') }}</p><button type="button" :disabled="!selectedBooking.event_date" @click="toggleDemoHold">{{ activeDemoHold ? (locale === 'es' ? 'Liberar fecha' : 'Release date') : (locale === 'es' ? 'Reservar fecha' : 'Reserve date') }}</button></div>
+          <div><strong>{{ locale === 'es' ? 'Reserva provisional' : 'Provisional reservation' }}</strong><p class="core-inbox__demo-help">{{ locale === 'es' ? 'Mantén la fecha mientras negocias el booking.' : 'Keep the date while you negotiate the booking.' }}</p><p class="core-inbox__demo-date">{{ selectedBooking.event_date ? formatDate(selectedBooking.event_date) : copy.noDate }} · {{ activeDemoHold ? 'Hold activo' : (locale === 'es' ? 'Sin hold' : 'No hold') }}</p><button type="button" :disabled="!selectedBooking.event_date" @click="toggleDemoHold">{{ activeDemoHold ? (locale === 'es' ? 'Liberar fecha' : 'Release date') : (locale === 'es' ? 'Reservar fecha' : 'Reserve date') }}</button></div>
           <small>{{ locale === 'es' ? 'Simulación local. No envía mensajes ni modifica bookings reales.' : 'Local simulation. No messages are sent or real bookings changed.' }}</small>
         </section>
         <BookingCoreOperations
@@ -873,13 +874,23 @@ async function selectBooking(bookingId: string) {
 .core-inbox__demo-composer button,.core-inbox__demo-operations button{min-height:36px;padding:7px 12px;border:1px solid var(--cue-accent);background:transparent;color:var(--cue-accent);cursor:pointer;font:800 9px monospace;text-transform:uppercase}
 .core-inbox__demo-composer button:disabled,.core-inbox__demo-operations button:disabled{opacity:.4;cursor:default}
 .core-inbox__demo-composer>button{justify-self:start}
-.core-inbox__demo-operations{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin-top:18px;padding:18px;border:1px solid var(--cue-border);background:var(--cue-raised)}
+.core-inbox__demo-operations{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 28px;margin-top:18px;padding:20px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:var(--cue-surface)}
 .core-inbox__demo-operations h4,.core-inbox__demo-operations>small{grid-column:1/-1;margin:0}
-.core-inbox__demo-operations h4{color:var(--cue-accent);font:800 10px monospace;letter-spacing:.1em}
-.core-inbox__demo-operations>div{min-width:0;padding-top:12px;border-top:1px solid var(--cue-border)}
-.core-inbox__demo-operations strong{font-size:12px}.core-inbox__demo-operations p,.core-inbox__demo-operations>small{color:var(--cue-muted);font-size:11px}
-.core-inbox__demo-operations form{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.core-inbox__demo-operations input{flex:1 1 190px}
-@media(max-width:760px){.core-inbox__demo-operations{grid-template-columns:1fr}}
+.core-inbox__demo-operations h4{color:var(--cue-muted);font:800 10px monospace;letter-spacing:.1em}
+.core-inbox__demo-operations>div{min-width:0;padding-top:16px;border-top:1px solid var(--cue-border)}
+.core-inbox__demo-operations strong{font-size:13px;line-height:1.5}
+.core-inbox__demo-operations p,.core-inbox__demo-operations>small{color:var(--cue-muted);font-size:12px;line-height:1.5}
+.core-inbox__demo-operations .core-inbox__demo-help{margin:6px 0 16px}
+.core-inbox__demo-operations .core-inbox__demo-date{margin:0 0 12px;color:var(--cue-text)}
+.core-inbox__demo-operations form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:start;margin-top:12px}
+.core-inbox__demo-operations input{width:100%;box-sizing:border-box;min-height:40px;padding:0 12px;border-radius:var(--cue-radius-control);font-size:13px;background:var(--cue-bg)}
+.core-inbox__demo-operations button{min-height:40px;padding:0 14px;border-color:var(--cue-border);border-radius:var(--cue-radius-control);color:var(--cue-text);font-family:inherit;font-size:12px;font-weight:600;line-height:1.3;text-transform:none}
+.core-inbox__demo-operations button:focus-visible,.core-inbox__demo-operations input:focus-visible{outline:2px solid var(--cue-primary);outline-offset:3px}
+.core-inbox__demo-operations button:hover:not(:disabled){border-color:var(--cue-primary)}
+.core-inbox__demo-operations button:disabled{opacity:.5}
+.core-inbox__demo-operations>small{padding-top:14px;border-top:1px solid var(--cue-border);font-size:11px}
+@media(max-width:760px){.core-inbox__demo-operations{grid-template-columns:1fr;padding:16px;gap:16px}.core-inbox__demo-operations form{grid-template-columns:1fr}.core-inbox__demo-operations form button{justify-self:start}}
+
 .core-inbox > :deep(.cue-upgrade-prompt){margin:10px var(--cue-space-4) 0}
 
 .core-inbox__zero { display:grid; justify-items:start; gap:8px; padding:24px 18px 28px; }
