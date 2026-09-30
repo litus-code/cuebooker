@@ -3,7 +3,7 @@ import type { Activity, CoreBooking, Hold, NextMove } from '../domain/bookingCor
 import type { CueNotification } from '../domain/notification'
 import { deriveBookingAttentionSignals, deriveEmailDeliveryAttentionSignals, type BookingAttentionSignalKind } from '../services/bookingAttention'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   workspaceId: string
   canOperate?: boolean
   artistId?: string
@@ -12,7 +12,7 @@ const props = defineProps<{
   bookings: CoreBooking[]
   locale: 'es' | 'en'
   refreshKey?: number
-}>()
+}>(), { canOperate: true })
 
 const emit = defineEmits<{ changed: []; openBookings: []; openBooking: [bookingId: string] }>()
 const bookingCore = useBookingCore()

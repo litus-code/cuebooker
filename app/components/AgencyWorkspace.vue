@@ -14,7 +14,7 @@ type AgencyDemoData = {
   nextMoves?: NextMove[]
   counterparties: Array<{ id: string; name: string }>
 }
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   workspaceId: string
   agencyName: string
   artists: RosterArtist[]
@@ -27,7 +27,7 @@ const props = defineProps<{
   demoData?: AgencyDemoData
   initialMonth?: string
   contextArtistName?: string
-}>()
+}>(), { canCapture: true })
 const emit = defineEmits<{
   selectArtist: [artistId: string, view: 'overview' | 'profile']
   openBooking: [bookingId: string]
