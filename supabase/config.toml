@@ -38,3 +38,7 @@ verify_jwt = false
 
 [functions.brevo-transactional-events]
 verify_jwt = false
+
+# GET callback uses an expiring single-use state; POST validates Auth identity.
+[functions.connected-mailbox]
+verify_jwt = false
