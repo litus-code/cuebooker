@@ -7,8 +7,9 @@ export function createConnectedMailboxApi(options:{baseUrl:string;publishableKey
   const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.error||'mailbox_operation_failed');return result;
  }
  return {
-  status:(workspaceId:string,bookingId?:string)=>call({action:'status',workspaceId,bookingId}) as Promise<{configured:boolean;connections:ConnectedMailbox[];linkedConnectionIds:string[];hasLinkedThread:boolean}>,
-  connect:(workspaceId:string,email:string,provider:string)=>call({action:'connect',workspaceId,email,provider}) as Promise<{authorizationUrl:string}>,
+  status:(workspaceId:string,bookingId?:string)=>call({action:'status',workspaceId,bookingId}) as Promise<{configured:boolean;connections:ConnectedMailbox[];linkedConnectionIds:string[];hasLinkedThread:boolean;beta:{available:boolean;waitlisted:boolean}}>,
+  waitlist:(workspaceId:string)=>call({action:'waitlist',workspaceId}) as Promise<{waitlisted:boolean}>,
+  connect:(workspaceId:string,email:string,provider:string='auto')=>call({action:'connect',workspaceId,email,provider}) as Promise<{authorizationUrl:string}>,
   complete:(workspaceId:string,state:string,code:string)=>call({action:'complete',workspaceId,state,code}),
   recent:(workspaceId:string,connectionId:string)=>call({action:'recent',workspaceId,connectionId}) as Promise<{messages:MailboxMessage[];hasMore:boolean}>,
   classify:(workspaceId:string,connectionId:string,messageId?:string)=>call({action:'classify',workspaceId,connectionId,messageId,analysisConsent:true}) as Promise<{messages:MailboxMessage[];hasMore:boolean}>,

@@ -68,3 +68,60 @@ test('invalid selected message cannot fall back to analyzing the mailbox',async(
  }) as typeof fetch
  try{const response=await handler(req('classify',{analysisConsent:true,messageId:''}));assert.equal(response.status,400);assert.equal(externalCalls,0)}finally{globalThis.fetch=originalFetch}
 })
+
+test('global beta full rejects authorization before contacting the provider',async()=>{
+ let externalCalls=0
+ globalThis.fetch=(async(url:any,init:any)=>{
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:user})
+  if(url.includes('workspace_members'))return Response.json([{role:'owner'}])
+  if(url.includes('mailbox_connections'))return Response.json([])
+  if(url.includes('rpc/mailbox_beta_command')){const body=JSON.parse(init.body);assert.equal(body.target_action,'reserve');assert.equal(body.target_actor,user);return Response.json({error:'mailbox_beta_full'})}
+  externalCalls++;throw new Error('Unexpected external access')
+ }) as typeof fetch
+ try{const response=await handler(req('connect',{email:'test@gmail.com'}));assert.equal(response.status,409);assert.equal((await response.json()).error,'mailbox_beta_full');assert.equal(externalCalls,0)}finally{globalThis.fetch=originalFetch}
+})
+
+test('email-only Gmail connection reserves a place and requests only email scopes',async()=>{
+ globalThis.fetch=(async(url:any,init:any)=>{
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:user})
+  if(url.includes('workspace_members'))return Response.json([{role:'owner'}])
+  if(url.includes('mailbox_connections'))return Response.json([])
+  if(url.includes('rpc/mailbox_beta_command')){const body=JSON.parse(init.body);assert.equal(body.target_provider,'google');assert.equal(body.target_email,'test@gmail.com');return Response.json({reserved:true})}
+  throw new Error('No provider request should be needed')
+ }) as typeof fetch
+ try{const response=await handler(req('connect',{email:'test@gmail.com'}));assert.equal(response.status,200);const target=new URL((await response.json()).authorizationUrl);assert.equal(target.searchParams.get('provider'),'google');assert.doesNotMatch(target.searchParams.get('scope')||'',/calendar|contacts/)}finally{globalThis.fetch=originalFetch}
+})
+
+test('undetected custom domain releases its reservation and asks for a service',async()=>{
+ let released=false
+ globalThis.fetch=(async(url:any,init:any)=>{
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:user})
+  if(url.includes('workspace_members'))return Response.json([{role:'owner'}])
+  if(url.includes('mailbox_connections'))return Response.json([])
+  if(url.includes('rpc/mailbox_beta_command'))return Response.json({reserved:true})
+  if(url.includes('/providers/detect'))return Response.json({data:{provider:null}})
+  if(url.includes('mailbox_oauth_states')){assert.equal(init.method,'DELETE');released=true;return Response.json([])}
+  throw new Error('Unexpected access')
+ }) as typeof fetch
+ try{const response=await handler(req('connect',{email:'test@custom.invalid'}));assert.equal((await response.json()).error,'mailbox_provider_selection_required');assert.equal(released,true)}finally{globalThis.fetch=originalFetch}
+})
+
+test('waitlist uses authenticated membership without provider access',async()=>{
+ globalThis.fetch=(async(url:any,init:any)=>{
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:user})
+  if(url.includes('workspace_members'))return Response.json([{role:'owner'}])
+  if(url.includes('rpc/mailbox_beta_command')){assert.equal(JSON.parse(init.body).target_action,'waitlist');return Response.json({waitlisted:true})}
+  throw new Error('Unexpected access')
+ }) as typeof fetch
+ try{const response=await handler(req('waitlist'));assert.equal(response.status,200);assert.equal((await response.json()).waitlisted,true)}finally{globalThis.fetch=originalFetch}
+})
+
+test('replayed completion is rejected before exchanging a provider code',async()=>{
+ globalThis.fetch=(async(url:any,init:any)=>{
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:user})
+  if(url.includes('workspace_members'))return Response.json([{role:'owner'}])
+  if(url.includes('rpc/mailbox_beta_command')){assert.equal(JSON.parse(init.body).target_action,'claim');return Response.json({error:'invalid_oauth_state'})}
+  throw new Error('Must not reach provider')
+ }) as typeof fetch
+ try{const response=await handler(req('complete',{state:'a'.repeat(64),code:'used'}));assert.equal(response.status,400);assert.equal((await response.json()).error,'invalid_oauth_state')}finally{globalThis.fetch=originalFetch}
+})

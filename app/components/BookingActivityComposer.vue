@@ -252,6 +252,7 @@ async function submit() {
       <div v-else-if="type === 'email'" class="activity-composer__email-route">{{ locale === 'es' ? 'Tú → contacto' : 'You → contact' }}</div>
       <button class="activity-composer__save" type="submit" :disabled="saving || (sendsRealEmail && (senderLoading || senderError || sendUncertain))">{{ saving ? (sendsRealEmail ? copy.sending : copy.saving) : (sendsRealEmail ? copy.sendEmail : copy.save) }}</button>
     </div>
+    <p v-if="sendsRealEmail&&!senderLoading&&!senderError&&!mailboxes.length" class="activity-composer__fallback">{{locale==='es'?'Envías desde el correo de Cuebooker. No necesitas conectar tu buzón; las respuestas se guardan en esta conversación.':'You send from Cuebooker’s email. No connected mailbox is needed; replies are saved in this conversation.'}}</p>
     <p v-if="errorMessage" class="activity-composer__error">{{ errorMessage }}</p>
     <p v-if="successMessage" class="activity-composer__success" aria-live="polite">{{ successMessage }}</p>
   </form>

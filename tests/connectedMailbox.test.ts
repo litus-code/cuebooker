@@ -25,3 +25,11 @@ test('provider errors never expose provider bodies or private tokens',async()=>{
  const invalid=createNylasMailbox(config,(async()=>new Response(JSON.stringify({data:{provider:'unknown',email:'a@b.invalid'}}))) as typeof fetch)
  await assert.rejects(invalid.grant('grant'),{message:'invalid_provider_response'})
 })
+
+test('provider detection handles custom Workspace and unknown services without guessing',async()=>{
+ const urls:string[]=[]
+ const api=createNylasMailbox(config,(async(url:any)=>{urls.push(url);return Response.json({data:{provider:urls.length===1?'google':'unknown'}})}) as typeof fetch)
+ assert.equal(await api.detect('test@gmail.com'),'google');assert.equal(await api.detect('test@hotmail.es'),'microsoft');assert.equal(urls.length,0)
+ assert.equal(await api.detect('test@workspace.invalid'),'google');assert.equal(await api.detect('test@unknown.invalid'),null)
+ assert.match(urls[0],/\/v3\/providers\/detect\?/);assert.equal(new URL(urls[0]).searchParams.get('email'),'test@workspace.invalid')
+})

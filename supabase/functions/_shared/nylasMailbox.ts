@@ -1,5 +1,11 @@
 export type MailboxProvider = 'google' | 'microsoft' | 'imap';
 export type NylasConfig = { apiUri: string; apiKey: string; clientId: string; callbackUri: string };
+export function knownMailboxProvider(email: string): MailboxProvider | null {
+ const domain=normalizeMailboxEmail(email).split('@')[1];
+ if(['gmail.com','googlemail.com'].includes(domain))return 'google';
+ if(/^(outlook|hotmail|live|msn)\.(com|es|co\.uk|fr|de|it)$/.test(domain))return 'microsoft';
+ return null;
+}
 export function normalizeMailboxEmail(value: unknown): string {
  const email = String(value || '').trim().toLowerCase();
  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('invalid_email');
@@ -30,6 +36,12 @@ export function createNylasMailbox(config: NylasConfig, request: typeof fetch = 
   return response.status===204 ? null : await response.json();
  }
  return {
+  async detect(email:string):Promise<MailboxProvider|null> {
+   const known=knownMailboxProvider(email);if(known)return known;
+   const result=await call(`/v3/providers/detect?${new URLSearchParams({email:normalizeMailboxEmail(email),all_provider_types:'false'})}`,{method:'POST'});
+   const provider=result?.data?.provider;
+   return ['google','microsoft','imap'].includes(provider)?provider:null;
+  },
   async exchange(code: string) {
    const result=await call('/v3/connect/token',{method:'POST',body:JSON.stringify({client_id:config.clientId,client_secret:config.apiKey,grant_type:'authorization_code',code,redirect_uri:config.callbackUri,code_verifier:'nylas'})});
    if(typeof result?.grant_id!=='string'||!result.grant_id)throw new Error('invalid_provider_response');

@@ -1,3 +1,5 @@
+> Current status and commercial/AI policy: see [EMAIL_BETA_AND_AI.md](EMAIL_BETA_AND_AI.md) and the latest HANDOFF entry. Older "pending" statements below describe earlier checkpoints.
+
 # Connected mailbox pilot
 
 Date: 2026-09-30. Branch: feature/agency-multi-artist-beta. Preview/staging only.

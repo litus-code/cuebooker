@@ -1,13 +1,12 @@
 import { classifyBookingMail } from '../_shared/mailboxClassifier.ts';
 import { mailboxMessage } from '../_shared/mailboxMessage.ts';
-import { createNylasMailbox, mailboxAuthorizationUrl, normalizeMailboxEmail } from '../_shared/nylasMailbox.ts';
+import { createNylasMailbox, mailboxAuthorizationUrl, normalizeMailboxEmail, knownMailboxProvider } from '../_shared/nylasMailbox.ts';
 import type { MailboxProvider, NylasConfig } from '../_shared/nylasMailbox.ts';
 const headers={'Access-Control-Allow-Origin':'https://pr-96.cuebooker-staging.pages.dev','Access-Control-Allow-Headers':'authorization, apikey, content-type','Access-Control-Allow-Methods':'POST, GET, OPTIONS','Cache-Control':'no-store','Referrer-Policy':'no-referrer'};
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...headers,'Content-Type':'application/json'}});
 const uuid=(value:unknown)=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 async function hash(value:string){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value))),v=>v.toString(16).padStart(2,'0')).join('');}
 type Connection={id:string;email:string;provider:MailboxProvider;grant_id:string;status:string;connected_at:string};
-type OAuthState={workspace_id:string;user_id:string;expected_email:string;provider:MailboxProvider};
 Deno.serve(async(request:Request)=>{
  if(request.method==='OPTIONS')return new Response('ok',{headers});
  const supabaseUrl=Deno.env.get('SUPABASE_URL')||'',serviceKey=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||'',anonKey=Deno.env.get('SUPABASE_ANON_KEY')||'';
@@ -55,6 +54,10 @@ Deno.serve(async(request:Request)=>{
   const workspace=input.workspaceId,userId=user.id;
   await member(workspace,userId);
   const path=`mailbox_connections?workspace_id=eq.${workspace}&user_id=eq.${userId}`;
+  async function beta(action:string,extra:Record<string,unknown>={}){
+   return await db<any>('rpc/mailbox_beta_command',{method:'POST',body:JSON.stringify({target_action:action,target_workspace:workspace,target_actor:userId,...extra})});
+  }
+  if(input.action==='waitlist')return json(await beta('waitlist'));
   if(input.action==='status'){
    const connections=await db<Connection[]>(`${path}&status=eq.connected&select=id,email,provider,grant_id,status,connected_at&order=connected_at.desc&limit=5`);
    const safe=await Promise.all(connections.map(async(row)=>{
@@ -69,21 +72,21 @@ Deno.serve(async(request:Request)=>{
     hasLinkedThread=links.length>0;
     linkedConnectionIds=links.map(l=>l.connection_id).filter(id=>connections.some(c=>c.id===id));
    }
-   return json({configured,connections:safe,linkedConnectionIds,hasLinkedThread});
+   return json({configured,connections:safe,linkedConnectionIds,hasLinkedThread,beta:await beta('status')});
   }
   if(!configured)return json({error:'mailbox_not_configured'},503);
   back('check');
   if(input.action==='complete'){
    const state=String(input.state||''),code=String(input.code||'');
    if(!/^[0-9a-f]{64}$/.test(state)||!code||code.length>4096)return json({error:'invalid_oauth_state'},400);
-   const rows=await db<OAuthState[]>(`mailbox_oauth_states?state_hash=eq.${await hash(state)}&user_id=eq.${userId}&workspace_id=eq.${workspace}&expires_at=gt.${encodeURIComponent(new Date().toISOString())}`,{method:'DELETE'});
-   const pending=rows[0];if(!pending)return json({error:'invalid_oauth_state'},400);
+   const stateHash=await hash(state),pending=await beta('claim',{target_state:stateHash});
+   if(pending.error)return json({error:pending.error},400);
    const provider=createNylasMailbox(config),grantId=await provider.exchange(code),grant=await provider.grant(grantId);
    if(grant.email!==pending.expected_email||grant.provider!==pending.provider)return json({error:'account_mismatch'},400);
    if(grant.status!=='valid')return json({error:'mailbox_reconnect_required'},400);
    await member(workspace,userId);
-   await db('mailbox_connections?on_conflict=workspace_id,user_id,email',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:JSON.stringify({workspace_id:workspace,user_id:userId,email:grant.email,provider:grant.provider,grant_id:grantId,status:'connected',connected_at:new Date().toISOString()})});
-   return json({connected:true});
+   const result=await beta('complete',{target_state:stateHash,target_email:grant.email,target_provider:grant.provider,target_grant:grantId});
+   return json(result,result.error?409:200);
   }
   if(['recent','classify','import','sync','send'].includes(input.action)){
    if(!uuid(input.connectionId))return json({error:'invalid_connection'},400);
@@ -168,18 +171,26 @@ Deno.serve(async(request:Request)=>{
    }
   }
   if(input.action==='connect'){
-   const email=normalizeMailboxEmail(input.email),provider=input.provider as MailboxProvider;
-   if(!['google','microsoft','imap'].includes(provider))return json({error:'invalid_provider'},400);
+   const email=normalizeMailboxEmail(input.email),selection=input.provider||'auto';
+   if(!['auto','google','microsoft','imap'].includes(selection))return json({error:'invalid_provider'},400);
+   let provider:MailboxProvider=selection==='auto'?(knownMailboxProvider(email)||'imap'):selection;
    const existing=await db<Connection[]>(`${path}&status=eq.connected&select=id,email&limit=5`);
    if(existing.length>=5&&!existing.some(row=>row.email===email))return json({error:'mailbox_limit'},409);
-   const now=new Date().toISOString();
-   await db(`mailbox_oauth_states?expires_at=lt.${encodeURIComponent(now)}`,{method:'DELETE'});
-   const pending=await db<OAuthState[]>(`mailbox_oauth_states?workspace_id=eq.${workspace}&user_id=eq.${userId}&select=state_hash&limit=10`);
-   if(pending.length>=10)return json({error:'mailbox_attempt_limit'},429);
    const state=Array.from(crypto.getRandomValues(new Uint8Array(32)),v=>v.toString(16).padStart(2,'0')).join('');
-   const authorizationUrl=mailboxAuthorizationUrl(config,{email,provider,state});
-   await db('mailbox_oauth_states',{method:'POST',body:JSON.stringify({state_hash:await hash(state),workspace_id:workspace,user_id:userId,expected_email:email,provider,expires_at:new Date(Date.now()+600000).toISOString()})});
-   return json({authorizationUrl});
+   const stateHash=await hash(state),reserved=await beta('reserve',{target_email:email,target_provider:provider,target_state:stateHash});
+   if(reserved.error)return json({error:reserved.error},reserved.error==='mailbox_attempt_limit'?429:409);
+   try{
+    if(selection==='auto'&&!knownMailboxProvider(email)){
+     const detected=await createNylasMailbox(config).detect(email);
+     if(!detected)throw new Error('mailbox_provider_selection_required');
+     provider=detected;
+     await db(`mailbox_oauth_states?state_hash=eq.${stateHash}&workspace_id=eq.${workspace}&user_id=eq.${userId}`,{method:'PATCH',body:JSON.stringify({provider})});
+    }
+    return json({authorizationUrl:mailboxAuthorizationUrl(config,{email,provider,state})});
+   }catch(error){
+    await db(`mailbox_oauth_states?state_hash=eq.${stateHash}&workspace_id=eq.${workspace}&user_id=eq.${userId}`,{method:'DELETE'});
+    throw error;
+   }
   }
   if(input.action==='disconnect'){
    if(!uuid(input.connectionId))return json({error:'invalid_connection'},400);
@@ -194,7 +205,7 @@ Deno.serve(async(request:Request)=>{
   return json({error:'invalid_action'},400);
  }catch(error){
   const name=(error as Error).message;
-  const allowed=['workspace_access_denied','invalid_email','invalid_provider','invalid_provider_configuration','invalid_callback','invalid_return_url','mailbox_reconnect_required','mailbox_not_found','mailbox_provider_unavailable','mailbox_not_configured','invalid_oauth_state','account_mismatch','connection_not_found','invalid_message','artist_required','archived_booking_read_only','mailbox_analysis_consent_required','mailbox_ai_not_configured','mailbox_ai_unavailable','invalid_classification','mailbox_analysis_rate_limit'];
+  const allowed=['mailbox_provider_selection_required','mailbox_beta_full','workspace_access_denied','invalid_email','invalid_provider','invalid_provider_configuration','invalid_callback','invalid_return_url','mailbox_reconnect_required','mailbox_not_found','mailbox_provider_unavailable','mailbox_not_configured','invalid_oauth_state','account_mismatch','connection_not_found','invalid_message','artist_required','archived_booking_read_only','mailbox_analysis_consent_required','mailbox_ai_not_configured','mailbox_ai_unavailable','invalid_classification','mailbox_analysis_rate_limit'];
   console.warn('connected_mailbox_error',allowed.includes(name)?name:'mailbox_operation_failed',(error as Error).name==='TimeoutError'?'timeout':'request_failed');
   return json({error:allowed.includes(name)?name:'mailbox_operation_failed'},name==='workspace_access_denied'?403:400);
  }
