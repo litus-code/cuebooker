@@ -1,3 +1,9 @@
+## 30 September 2026: Agency settings UX refinement
+
+Based on PR #96 HEAD `4b8665c27ff6a9417c1103dfe7a112bf76bbc6a6`. Catalog editor groups identity, public booking email, artist selection and publication. Optional imagery and external agency links use disclosure sections. Public email remains intentionally empty until explicitly provided; owner/admin may explicitly use their sign-in email. Never silently publish account email. This is public contact metadata, not mailbox connection or outbound sender configuration. No WhatsApp field or private notes added to the public contract.
+
+Checkbox styling follows existing Profile presence controls, selects use shared Agency CSS and existing control tokens, keyboard focus is visible. Explicit draft/published status and publication readiness explain incomplete setup; saving disables form controls. Backend contracts, RLS, schema and email routing unchanged. Local 335 tests and staging generation (38 routes) pass; new deployed browser results must be checked on PR. Production untouched.
+
 # Cuebooker living handoff
 
 ## 30 September 2026: unified Agency workspace and public agency landing
