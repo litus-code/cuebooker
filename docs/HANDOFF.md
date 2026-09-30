@@ -1,3 +1,11 @@
+## 2026-09-30 / Classification pilot and published email validation
+
+Implementation before this update: `86c1d8e9fe2a554636fe58c01f217a3dbfdce53b` on PR #96; CI and preview deployment successful. Authenticated Agency browser confirms genuine recent mail retrieval; no real mail imported/sent. Agency list uses AgencyWorkspace, so connected-mail panel was integrated there as well as DJ BookingCoreInbox. Original mailbox required for an already linked conversation; other agency members cannot silently use a different sender.
+
+Added assisted detection with OpenAI Responses, strict output validation and privacy disclosure/explicit UI consent. No real mailbox content transmitted to OpenAI by agent. Default view hides raw unrelated mail; classified opportunities/review messages are shown after opt-in analysis. Automatic Booking creation/background webhooks remain unimplemented. Migration `20260930184019_mailbox_analysis_rate_limit.sql` adds service-only last-analysis timestamp; atomic minute claim tested in staging rollback transaction. 348 tests pass, 38-route static generation succeeds. New classifier tests validate injection/data bounds/storage disabled/output IDs, missing-consent request never reaches mailbox or AI providers. Classification live-model quality and connected-email roundtrip remain pending; do not claim these mocked tests validate live classification accuracy.
+
+Server `connected-mailbox` version 5 deployed ACTIVE with classifier. Production untouched. Exact next: publish classifier pilot, verify UI, user explicitly authorizes limited real-mail analysis, then purpose-written email import/reply/reply-back and duplicate tests. Instagram/WhatsApp account/app setup and mobile 390 px remain pending.
+
 ## 2026-09-30 / Own-mailbox Booking conversations
 
 Branch `feature/agency-multi-artist-beta`, base HEAD `e8af961483917945554e474e7fbb3b359365dc28`, PR #96 preview only. Staging secrets configured by user; a Google mailbox genuinely connected, verified after reload. Do not publish its address in fixtures/docs. Old entries below describe earlier states.

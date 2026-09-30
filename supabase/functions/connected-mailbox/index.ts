@@ -1,3 +1,4 @@
+import { classifyBookingMail } from '../_shared/mailboxClassifier.ts';
 import { mailboxMessage } from '../_shared/mailboxMessage.ts';
 import { createNylasMailbox, mailboxAuthorizationUrl, normalizeMailboxEmail } from '../_shared/nylasMailbox.ts';
 import type { MailboxProvider, NylasConfig } from '../_shared/nylasMailbox.ts';
@@ -84,14 +85,22 @@ Deno.serve(async(request:Request)=>{
    await db('mailbox_connections?on_conflict=workspace_id,user_id,email',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:JSON.stringify({workspace_id:workspace,user_id:userId,email:grant.email,provider:grant.provider,grant_id:grantId,status:'connected',connected_at:new Date().toISOString()})});
    return json({connected:true});
   }
-  if(['recent','import','sync','send'].includes(input.action)){
+  if(['recent','classify','import','sync','send'].includes(input.action)){
    if(!uuid(input.connectionId))return json({error:'invalid_connection'},400);
    const rows=await db<Connection[]>(`${path}&id=eq.${input.connectionId}&status=eq.connected&select=id,email,grant_id,provider,status,connected_at&limit=1`);
    const connection=rows[0];if(!connection)return json({error:'connection_not_found'},404);
    const provider=createNylasMailbox(config);
-   if(input.action==='recent'){
+   if(input.action==='classify'&&input.analysisConsent!==true)return json({error:'mailbox_analysis_consent_required'},400);
+   if(input.action==='recent'||input.action==='classify'){
     const result=await provider.messages(connection.grant_id);
     const messages=result.messages.map((m:any)=>mailboxMessage(m,connection.email)).filter((m:any)=>m.from!==connection.email);
+    if(input.action==='classify'){
+     const threshold=encodeURIComponent(new Date(Date.now()-60000).toISOString());
+     const claimed=await db<any[]>(`${path}&id=eq.${connection.id}&or=(ai_last_requested_at.is.null,ai_last_requested_at.lt.${threshold})`,{method:'PATCH',body:JSON.stringify({ai_last_requested_at:new Date().toISOString()})});
+     if(!claimed.length)return json({error:'mailbox_analysis_rate_limit'},429);
+     const classifications=await classifyBookingMail(messages,Deno.env.get('OPENAI_API_KEY')||'');
+     return json({messages:messages.map((m:any)=>({...m,classification:classifications.find(c=>c.id===m.id)})),hasMore:Boolean(result.nextCursor)});
+    }
     return json({messages,hasMore:Boolean(result.nextCursor)});
    }
    const bookingId=input.bookingId;
@@ -183,7 +192,7 @@ Deno.serve(async(request:Request)=>{
   return json({error:'invalid_action'},400);
  }catch(error){
   const name=(error as Error).message;
-  const allowed=['workspace_access_denied','invalid_email','invalid_provider','invalid_provider_configuration','invalid_callback','invalid_return_url','mailbox_reconnect_required','mailbox_not_found','mailbox_provider_unavailable','mailbox_not_configured','invalid_oauth_state','account_mismatch','connection_not_found','invalid_message','artist_required','archived_booking_read_only'];
+  const allowed=['workspace_access_denied','invalid_email','invalid_provider','invalid_provider_configuration','invalid_callback','invalid_return_url','mailbox_reconnect_required','mailbox_not_found','mailbox_provider_unavailable','mailbox_not_configured','invalid_oauth_state','account_mismatch','connection_not_found','invalid_message','artist_required','archived_booking_read_only','mailbox_analysis_consent_required','mailbox_ai_not_configured','mailbox_ai_unavailable','invalid_classification','mailbox_analysis_rate_limit'];
   return json({error:allowed.includes(name)?name:'mailbox_operation_failed'},name==='workspace_access_denied'?403:400);
  }
 });

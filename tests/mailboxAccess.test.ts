@@ -31,3 +31,15 @@ test('repeated send attempt never sends again to the external provider',async()=
  }) as typeof fetch
  try{const response=await handler(req('send',{bookingId:booking,requestId:workspace,subject:'Consulta',bodyText:'Hola'}));assert.equal(response.status,409);assert.equal((await response.json()).error,'email_send_already_attempted');assert.equal(providerCalls,0)}finally{globalThis.fetch=originalFetch}
 })
+
+test('classification requires explicit analysis consent before reading or transmitting mail',async()=>{
+ let providerCalls=0
+ globalThis.fetch=(async(url:any)=>{
+ if(url.includes('nylas.com')||url.includes('openai.com')){providerCalls++;throw new Error('Unexpected transmission')}
+ if(url.endsWith('/auth/v1/user'))return Response.json({id:user})
+ if(url.includes('workspace_members'))return Response.json([{role:'owner'}])
+ if(url.includes('mailbox_connections'))return Response.json([{id:connection,email:'dj@example.invalid',grant_id:'grant'}])
+ throw new Error('Unexpected access')
+ }) as typeof fetch
+ try{const response=await handler(req('classify'));assert.equal(response.status,400);assert.equal((await response.json()).error,'mailbox_analysis_consent_required');assert.equal(providerCalls,0)}finally{globalThis.fetch=originalFetch}
+})
