@@ -1,6 +1,17 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {classifyBookingMail,validateMailClassifications} from '../supabase/functions/_shared/mailboxClassifier.ts'
+test('AI 429 distinguishes explicit quota and rate codes without exposing provider text or retrying',async()=>{
+ const warn=console.warn,logs:any[]=[];console.warn=(...args)=>{logs.push(args)}
+ try{
+  for(const [code,expected] of [['insufficient_quota','mailbox_ai_quota_exhausted'],['rate_limit_exceeded','mailbox_ai_rate_limit'],['private-code','mailbox_ai_unavailable']]){
+   let calls=0
+   await assert.rejects(classifyBookingMail([{id:'one',subject:'Test',body:'Test'}],'key',(async()=>{calls++;return Response.json({error:{code,message:'private-provider-detail'}},{status:429})}) as typeof fetch),{message:expected})
+   assert.equal(calls,1)
+  }
+  assert.doesNotMatch(JSON.stringify(logs),/private-provider-detail|private-code/)
+ }finally{console.warn=warn}
+})
 test('classifier rejects invented IDs, duplicated results and unexpected categories',()=>{
  const value={messages:[{id:'one',kind:'booking',reason:'Pide disponibilidad'}]}
  assert.equal(validateMailClassifications(value,['one'])[0].kind,'booking')

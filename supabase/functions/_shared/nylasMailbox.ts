@@ -31,7 +31,9 @@ export function mailboxAuthorizationUrl(config: NylasConfig, input: {email: stri
 export function createNylasMailbox(config: NylasConfig, request: typeof fetch = fetch) {
  validateNylasConfig(config);
  async function call(path: string, init: RequestInit = {}) {
-  const response = await request(`${config.apiUri}${path}`,{...init,headers:{Authorization:`Bearer ${config.apiKey}`,'Content-Type':'application/json'},signal:AbortSignal.timeout(15000)});
+  let response:Response;
+  try{response=await request(`${config.apiUri}${path}`,{...init,headers:{Authorization:`Bearer ${config.apiKey}`,'Content-Type':'application/json'},signal:AbortSignal.timeout(15000)});}
+  catch(error){if((error as Error).name==='TimeoutError')throw new Error('mailbox_provider_timeout');throw error;}
   if (!response.ok) throw new Error(response.status===401 || response.status===403 ? 'mailbox_reconnect_required' : response.status===404 ? 'mailbox_not_found' : 'mailbox_provider_unavailable');
   return response.status===204 ? null : await response.json();
  }

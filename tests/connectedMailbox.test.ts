@@ -2,6 +2,12 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createNylasMailbox,mailboxAuthorizationUrl,normalizeMailboxEmail } from '../supabase/functions/_shared/nylasMailbox.ts'
 const config={apiUri:'https://api.us.nylas.com',apiKey:'server-secret',clientId:'client',callbackUri:'https://staging.invalid/functions/v1/connected-mailbox'}
+test('provider timeout is distinct from expired authorization and is never retried',async()=>{
+ let calls=0
+ const api=createNylasMailbox(config,(async()=>{calls++;throw new DOMException('private timeout detail','TimeoutError')}) as typeof fetch)
+ await assert.rejects(api.grant('grant'),{message:'mailbox_provider_timeout'})
+ assert.equal(calls,1)
+})
 test('authorization uses hosted provider, opaque state and email-only scopes without API secret',()=>{
  for(const provider of ['google','microsoft','imap'] as const){
   const target=new URL(mailboxAuthorizationUrl(config,{email:' TEST@EXAMPLE.INVALID ',provider,state:'a'.repeat(64)}))

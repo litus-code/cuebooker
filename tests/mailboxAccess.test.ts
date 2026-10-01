@@ -7,6 +7,11 @@ const env:Record<string,string>={SUPABASE_URL:'https://db.invalid',SUPABASE_ANON
 await import('../supabase/functions/connected-mailbox/index.ts')
 const originalFetch=globalThis.fetch
 function req(action:string,extra:Record<string,unknown>={}){return new Request('https://edge.invalid',{method:'POST',headers:{Authorization:'Bearer token','Content-Type':'application/json'},body:JSON.stringify({action,workspaceId:workspace,connectionId:connection,...extra})})}
+test('storage timeout returns a safe category and never reaches mailbox provider',async()=>{
+ const warn=console.warn,logs:any[]=[];console.warn=(...args)=>logs.push(args)
+ globalThis.fetch=(async(url:any)=>{if(url.endsWith('/auth/v1/user'))return Response.json({id:user});if(url.includes('workspace_members'))throw new DOMException('private detail','TimeoutError');throw new Error('Unexpected provider access')}) as typeof fetch
+ try{const response=await handler(req('status'));assert.equal((await response.json()).error,'mailbox_storage_timeout');assert.deepEqual(logs[0],['connected_mailbox_error','mailbox_storage_timeout','status'])}finally{globalThis.fetch=originalFetch;console.warn=warn}
+})
 test('foreign mailbox cannot reach Nylas even if caller supplies its connection ID',async()=>{
  const seen:string[]=[]
  globalThis.fetch=(async(url:any)=>{seen.push(url);if(url.endsWith('/auth/v1/user'))return Response.json({id:user});if(url.includes('workspace_members'))return Response.json([{role:'owner'}]);if(url.includes('mailbox_connections')){assert.match(url,new RegExp(`user_id=eq.${user}`));return Response.json([])}throw new Error('Unexpected access')}) as typeof fetch

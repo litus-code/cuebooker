@@ -13,8 +13,11 @@ Deno.serve(async(request:Request)=>{
  const config:NylasConfig={apiUri:Deno.env.get('NYLAS_API_URI')||'https://api.us.nylas.com',apiKey:Deno.env.get('NYLAS_API_KEY')||'',clientId:Deno.env.get('NYLAS_CLIENT_ID')||'',callbackUri:`${supabaseUrl}/functions/v1/connected-mailbox`};
  const returnUrl=Deno.env.get('CUEBOOKER_MAILBOX_RETURN_URL')||'';
  const configured=Deno.env.get('CUEBOOKER_MAILBOX_ENABLED')==='true'&&Boolean(config.apiKey&&config.clientId&&returnUrl);
+ let action='authentication';
  async function db<T>(path:string,init:RequestInit={}):Promise<T>{
-  const response=await fetch(`${supabaseUrl}/rest/v1/${path}`,{...init,headers:{apikey:serviceKey,Authorization:`Bearer ${serviceKey}`,'Content-Type':'application/json',Prefer:'return=representation',...(init.headers||{})},signal:AbortSignal.timeout(10000)});
+  let response:Response;
+  try{response=await fetch(`${supabaseUrl}/rest/v1/${path}`,{...init,headers:{apikey:serviceKey,Authorization:`Bearer ${serviceKey}`,'Content-Type':'application/json',Prefer:'return=representation',...(init.headers||{})},signal:AbortSignal.timeout(10000)});}
+  catch(error){if((error as Error).name==='TimeoutError')throw new Error('mailbox_storage_timeout');throw error;}
   if(!response.ok)throw new Error('mailbox_storage_failed');
   const text=await response.text();return (text?JSON.parse(text):null) as T;
  }
@@ -51,6 +54,7 @@ Deno.serve(async(request:Request)=>{
   const user=await response.json();if(!uuid(user?.id))return json({error:'authentication_required'},401);
   let input;try{input=await request.json();}catch{return json({error:'invalid_json'},400);}
   if(!uuid(input?.workspaceId))return json({error:'invalid_workspace'},400);
+  action=['status','waitlist','complete','recent','classify','import','sync','send','connect','disconnect'].includes(input.action)?input.action:'invalid_action';
   const workspace=input.workspaceId,userId=user.id;
   await member(workspace,userId);
   const path=`mailbox_connections?workspace_id=eq.${workspace}&user_id=eq.${userId}`;
@@ -204,9 +208,10 @@ Deno.serve(async(request:Request)=>{
   }
   return json({error:'invalid_action'},400);
  }catch(error){
-  const name=(error as Error).message;
+  const name=(error as Error).name==='TimeoutError'?'mailbox_request_timeout':(error as Error).message;
   const allowed=['mailbox_provider_selection_required','mailbox_beta_full','workspace_access_denied','invalid_email','invalid_provider','invalid_provider_configuration','invalid_callback','invalid_return_url','mailbox_reconnect_required','mailbox_not_found','mailbox_provider_unavailable','mailbox_not_configured','invalid_oauth_state','account_mismatch','connection_not_found','invalid_message','artist_required','archived_booking_read_only','mailbox_analysis_consent_required','mailbox_ai_not_configured','mailbox_ai_unavailable','invalid_classification','mailbox_analysis_rate_limit'];
-  console.warn('connected_mailbox_error',allowed.includes(name)?name:'mailbox_operation_failed',(error as Error).name==='TimeoutError'?'timeout':'request_failed');
+  allowed.push('mailbox_request_timeout','mailbox_storage_timeout','mailbox_provider_timeout','mailbox_ai_quota_exhausted','mailbox_ai_rate_limit');
+  console.warn('connected_mailbox_error',allowed.includes(name)?name:'mailbox_operation_failed',action);
   return json({error:allowed.includes(name)?name:'mailbox_operation_failed'},name==='workspace_access_denied'?403:400);
  }
 });
