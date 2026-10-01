@@ -1,5 +1,6 @@
 export type ConnectedMailbox = {id:string;email:string;provider:string;status:'connected'|'reconnect_required'|'unknown';connectedAt:string}
-export type MailboxMessage = {id:string;threadId:string;from:string;to:string;senderName:string;subject:string;body:string;date:string;classification?:{id:string;kind:'booking'|'review'|'other';reason:string}}
+import type {MailboxBookingDraft,ReviewedMailboxDraft} from '../../supabase/functions/_shared/mailboxBookingDraft'
+export type MailboxMessage = {id:string;threadId:string;from:string;to:string;senderName:string;subject:string;body:string;date:string;classification?:{id:string;kind:'booking'|'review'|'other';reason:string;draft?:MailboxBookingDraft}}
 export function createConnectedMailboxApi(options:{baseUrl:string;publishableKey:string;accessToken:()=>string|null|undefined}) {
  async function call(payload:Record<string,unknown>) {
   const token=options.accessToken();if(!token)throw new Error('authentication_required');
@@ -13,7 +14,7 @@ export function createConnectedMailboxApi(options:{baseUrl:string;publishableKey
   complete:(workspaceId:string,state:string,code:string)=>call({action:'complete',workspaceId,state,code}),
   recent:(workspaceId:string,connectionId:string)=>call({action:'recent',workspaceId,connectionId}) as Promise<{messages:MailboxMessage[];hasMore:boolean}>,
   classify:(workspaceId:string,connectionId:string,messageId?:string)=>call({action:'classify',workspaceId,connectionId,messageId,analysisConsent:true,analysisProvider:'groq'}) as Promise<{messages:MailboxMessage[];hasMore:boolean}>,
-  importMessage:(workspaceId:string,connectionId:string,messageId:string,artistId:string,bookingId?:string)=>call({action:'import',workspaceId,connectionId,messageId,artistId,bookingId}) as Promise<{bookingId:string}>,
+  importMessage:(workspaceId:string,connectionId:string,messageId:string,artistId:string,bookingId?:string,reviewedDraft?:ReviewedMailboxDraft)=>call({action:'import',workspaceId,connectionId,messageId,artistId,bookingId,reviewedDraft}) as Promise<{bookingId:string}>,
   sync:(workspaceId:string,connectionId:string,bookingId:string,cursor?:string)=>call({action:'sync',workspaceId,connectionId,bookingId,cursor}) as Promise<{synced:boolean;partial:boolean}>,
   send:(input:{workspaceId:string;connectionId:string;bookingId:string;subject:string;bodyText:string;requestId:string})=>call({action:'send',...input}),
   disconnect:(workspaceId:string,connectionId:string)=>call({action:'disconnect',workspaceId,connectionId})

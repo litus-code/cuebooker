@@ -1,4 +1,5 @@
 import { classifyBookingMail } from '../_shared/mailboxClassifier.ts';
+import { validateReviewedMailboxDraft } from '../_shared/mailboxBookingDraft.ts';
 import { mailboxMessage } from '../_shared/mailboxMessage.ts';
 import { createNylasMailbox, mailboxAuthorizationUrl, normalizeMailboxEmail, knownMailboxProvider } from '../_shared/nylasMailbox.ts';
 import type { MailboxProvider, NylasConfig } from '../_shared/nylasMailbox.ts';
@@ -109,7 +110,7 @@ Deno.serve(async(request:Request)=>{
      const threshold=encodeURIComponent(new Date(Date.now()-60000).toISOString());
      const claimed=await db<any[]>(`${path}&id=eq.${connection.id}&or=(ai_last_requested_at.is.null,ai_last_requested_at.lt.${threshold})`,{method:'PATCH',body:JSON.stringify({ai_last_requested_at:new Date().toISOString()})});
      if(!claimed.length)return json({error:'mailbox_analysis_rate_limit'},429);
-     const classifications=await classifyBookingMail(messages,Deno.env.get('GROQ_API_KEY')||'');
+     const classifications=await classifyBookingMail(messages,Deno.env.get('GROQ_API_KEY')||'',fetch,single);
      return json({messages:messages.map((m:any)=>({...m,classification:classifications.find(c=>c.id===m.id)})),hasMore:Boolean(result.nextCursor)});
     }
     return json({messages,hasMore:Boolean(result.nextCursor)});
@@ -128,7 +129,8 @@ Deno.serve(async(request:Request)=>{
    if(input.action==='import'){
     if(!bookingId&&!uuid(input.artistId))return json({error:'artist_required'},400);
     if(typeof input.messageId!=='string'||input.messageId.length>512)return json({error:'invalid_message'},400);
-    const message=mailboxMessage(await provider.message(connection.grant_id,input.messageId),connection.email);
+    const reviewed=input.reviewedDraft===undefined?null:validateReviewedMailboxDraft(input.reviewedDraft);
+    const message={...mailboxMessage(await provider.message(connection.grant_id,input.messageId),connection.email),...(reviewed?{reviewedDetails:reviewed}:{})};
     const id=await ingest(message.threadId,[message],input.artistId);
     return json({bookingId:id});
    }
@@ -212,7 +214,7 @@ Deno.serve(async(request:Request)=>{
  }catch(error){
   const name=(error as Error).name==='TimeoutError'?'mailbox_request_timeout':(error as Error).message;
   const allowed=['mailbox_provider_selection_required','mailbox_beta_full','workspace_access_denied','invalid_email','invalid_provider','invalid_provider_configuration','invalid_callback','invalid_return_url','mailbox_reconnect_required','mailbox_not_found','mailbox_provider_unavailable','mailbox_not_configured','invalid_oauth_state','account_mismatch','connection_not_found','invalid_message','artist_required','archived_booking_read_only','mailbox_analysis_consent_required','mailbox_ai_not_configured','mailbox_ai_unavailable','invalid_classification','mailbox_analysis_rate_limit'];
-  allowed.push('mailbox_request_timeout','mailbox_storage_timeout','mailbox_provider_timeout','mailbox_ai_quota_exhausted','mailbox_ai_rate_limit');
+  allowed.push('mailbox_request_timeout','mailbox_storage_timeout','mailbox_provider_timeout','mailbox_ai_quota_exhausted','mailbox_ai_rate_limit','invalid_booking_draft','booking_time_requires_date','booking_currency_required');
   console.warn('connected_mailbox_error',allowed.includes(name)?name:'mailbox_operation_failed',action);
   return json({error:allowed.includes(name)?name:'mailbox_operation_failed'},name==='workspace_access_denied'?403:400);
  }
