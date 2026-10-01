@@ -1,3 +1,10 @@
+## 2026-10-01 / Read-only mailbox refresh and usable manual intake
+
+Branch feature/agency-multi-artist-beta, base d6419c0ed1a02aff203a02680d58c4158f70f5e1, PR96 preview/staging only. Shared DJ/Agency MailboxRequestsPanel separates reading from explicit batch detection. Refresh, mailbox changes and post-import reload never call Groq. Changing mailbox/workspace clears consent. Batch failures preserve loaded messages for manual creation and use scoped AI quota/rate/unavailable explanations. “Revisar correos sin IA” exposes the manual route. Detection shows a working label; mailbox selection is disabled during loading/operations. Delayed analysis results cannot populate a changed workspace.
+
+376 local tests and 38-route static generation passed, including mounted regression for no refresh/import reanalysis, no analysis without consent, manual import after quota failure, per-mailbox consent and stale-workspace results. No Edge, schema, provider-account, permission, automatic capture or production changes. Existing booking reviewed-save safeguards remain. Build/deployment and final browser validation are recorded in the follow-up below when complete. Next: measured classifier evaluation and budget/cache gates before automatic capture; live mobile390/separate DJ smoke remain pending.
+
+
 ## 2026-10-01 / Live linked-thread reviewed save verified
 
 PR96 staging only. User restored preview login; existing browser tab recovered and opened the known Agency test booking. Original linked test email was selected individually with explicit Groq consent. Live extraction proposed 2026-10-24, 23:00-01:00, Europe/Madrid, Sala Apolo, Barcelona and 500 EUR. Apply reviewed changes started unchecked; explicitly checking it and saving closed review and showed populated booking facts.
