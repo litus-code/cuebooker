@@ -1217,11 +1217,11 @@ function collectionChanged<T>(current: T[], next: T[]) {
 }
 
 async function loadRealBookings() {
-  if (!bookingCoreWorkspaceId.value || !selectedArtistId.value) {
+  if (!bookingCoreWorkspaceId.value || (!selectedArtistId.value && !isAgency.value)) {
     if (realBookings.value.length) realBookings.value = []
     return
   }
-  const rows = await bookingCore.listBookings(bookingCoreWorkspaceId.value, 100, selectedArtistId.value)
+  const rows = await bookingCore.listBookings(bookingCoreWorkspaceId.value, 100, selectedArtistId.value || undefined)
   if (collectionChanged(realBookings.value, rows)) realBookings.value = rows
 }
 
@@ -1352,7 +1352,7 @@ async function ensureBookingCoreWorkspace() {
 
 async function refreshBookingCoreFromExternal() {
   if (!import.meta.client || document.visibilityState !== 'visible') return
-  if (!bookingCoreWorkspaceId.value || !selectedArtistId.value || cueCoreLoading.value) return
+  if (!bookingCoreWorkspaceId.value || (!selectedArtistId.value && !isAgency.value) || cueCoreLoading.value) return
   try {
     await loadRealBookings()
     await loadPassportBookings()
