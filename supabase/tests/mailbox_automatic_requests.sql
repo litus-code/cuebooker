@@ -26,3 +26,23 @@ begin
  if not rejected then raise exception 'revoked_capture_allowed'; end if;
 end;$$;
 rollback;
+
+begin;
+do $$
+declare c public.mailbox_connections; sc public.mailbox_connections; w uuid:=gen_random_uuid(); j uuid:=gen_random_uuid(); bid uuid; aid uuid; m jsonb; cl jsonb;
+begin
+ select * into c from public.mailbox_connections where workspace_id='37e3f326-86f8-4529-9648-67620c06d790' and background_analysis_enabled limit 1;
+ select artist_id into aid from public.workspace_artists where workspace_id=c.workspace_id and roster_active limit 1;
+ insert into public.workspaces(id,kind,name,created_by) values(w,'solo','Prueba transaccional DJ',c.user_id);
+ insert into public.workspace_members(workspace_id,user_id,role) values(w,c.user_id,'owner') on conflict do nothing;
+ insert into public.workspace_artists(workspace_id,artist_id,created_by) values(w,aid,c.user_id);
+ sc:=jsonb_populate_record(null::public.mailbox_connections,to_jsonb(c)||jsonb_build_object('id',gen_random_uuid(),'workspace_id',w,'grant_id','solo-smoke-'||w));
+ insert into public.mailbox_connections select sc.*;
+ insert into public.mailbox_incoming_jobs(id,connection_id,message_id,event_id,thread_id,message_date,consent_revision,state)
+ values(j,sc.id,'solo-mail-'||j,'solo-event-'||j,'solo-thread-'||j,now(),sc.background_analysis_revision,'processing');
+ m:=jsonb_build_object('id','solo-mail-'||j,'threadId','solo-thread-'||j,'from','synthetic-dj@example.invalid','to',sc.email,'senderName','Promotor ficticio','date',now(),'subject','Prueba para un DJ','body','Consulta ficticia para el 4 de noviembre de 2026. 500 EUR.');
+ cl:=jsonb_build_object('id','solo-mail-'||j,'kind','booking','reason','Consulta para DJ','draft',jsonb_build_object('eventDate','2026-11-04','startTime',null,'endTime',null,'venue',null,'city',null,'offerAmountMinor',50000,'currency','EUR','artistName',null,'contactPhone',null,'warnings','[]'::jsonb));
+ bid:=public.create_automatic_mailbox_request(j,m,cl);
+ if not exists(select 1 from public.bookings where id=bid and artist_id=aid and status='new' and offer_amount_minor=50000 and event_date='2026-11-04') then raise exception 'solo_capture_invalid'; end if;
+end;$$;
+rollback;
