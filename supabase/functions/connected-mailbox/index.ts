@@ -9,7 +9,7 @@ const headers={'Access-Control-Allow-Origin':'https://pr-96.cuebooker-staging.pa
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...headers,'Content-Type':'application/json'}});
 const uuid=(value:unknown)=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 async function hash(value:string){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value))),v=>v.toString(16).padStart(2,'0')).join('');}
-type Connection={id:string;email:string;provider:MailboxProvider;grant_id:string;status:string;connected_at:string};
+type Connection={id:string;email:string;provider:MailboxProvider;grant_id:string;status:string;connected_at:string;background_analysis_enabled?:boolean;background_analysis_processor?:string|null;background_analysis_since?:string|null};
 Deno.serve(async(request:Request)=>{
  if(request.method==='OPTIONS')return new Response('ok',{headers});
  const supabaseUrl=Deno.env.get('SUPABASE_URL')||'',serviceKey=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||'',anonKey=Deno.env.get('SUPABASE_ANON_KEY')||'';
@@ -57,7 +57,7 @@ Deno.serve(async(request:Request)=>{
   const user=await response.json();if(!uuid(user?.id))return json({error:'authentication_required'},401);
   let input;try{input=await request.json();}catch{return json({error:'invalid_json'},400);}
   if(!uuid(input?.workspaceId))return json({error:'invalid_workspace'},400);
-  action=['status','waitlist','complete','recent','thread','classify','import','sync','send','connect','disconnect'].includes(input.action)?input.action:'invalid_action';
+  action=['status','waitlist','complete','recent','thread','classify','import','sync','send','connect','disconnect','background'].includes(input.action)?input.action:'invalid_action';
   const workspace=input.workspaceId,userId=user.id;
   await member(workspace,userId);
   const path=`mailbox_connections?workspace_id=eq.${workspace}&user_id=eq.${userId}`;
@@ -65,12 +65,23 @@ Deno.serve(async(request:Request)=>{
    return await db<any>('rpc/mailbox_beta_command',{method:'POST',body:JSON.stringify({target_action:action,target_workspace:workspace,target_actor:userId,...extra})});
   }
   if(input.action==='waitlist')return json(await beta('waitlist'));
+  // Keep unavailable until the authenticated incoming-message processor is deployed.
+  const backgroundAvailable=false,backgroundProcessor='groq-gpt-oss-20b-v1';
+  if(input.action==='background'){
+   if(!uuid(input.connectionId))return json({error:'invalid_connection'},400);
+   if(typeof input.enabled!=='boolean'||(input.enabled&&input.processor!==backgroundProcessor))return json({error:'mailbox_background_consent_required'},400);
+   if(input.enabled&&!backgroundAvailable)return json({error:'mailbox_background_unavailable'},409);
+   const rows=await db<Connection[]>(`${path}&id=eq.${input.connectionId}&select=id,status&limit=1`);
+   if(!rows[0])return json({error:'connection_not_found'},404);
+   const preference=await db('rpc/set_mailbox_background_analysis',{method:'POST',body:JSON.stringify({target_workspace:workspace,target_actor:userId,target_connection:input.connectionId,target_enabled:input.enabled,target_processor:input.enabled?backgroundProcessor:null})});
+   return json({background:preference});
+  }
   if(input.action==='status'){
-   const connections=await db<Connection[]>(`${path}&status=eq.connected&select=id,email,provider,grant_id,status,connected_at&order=connected_at.desc&limit=5`);
+   const connections=await db<Connection[]>(`${path}&status=eq.connected&select=id,email,provider,grant_id,status,connected_at,background_analysis_enabled,background_analysis_processor,background_analysis_since&order=connected_at.desc&limit=5`);
    const safe=await Promise.all(connections.map(async(row)=>{
     let status='unknown';
     if(configured){try{const grant=await createNylasMailbox(config).grant(row.grant_id);status=grant.status==='valid'?'connected':'reconnect_required';}catch(error){if(['mailbox_reconnect_required','mailbox_not_found'].includes((error as Error).message))status='reconnect_required';}}
-    return {id:row.id,email:row.email,provider:row.provider,status,connectedAt:row.connected_at};
+    return {id:row.id,email:row.email,provider:row.provider,status,connectedAt:row.connected_at,background:{enabled:row.background_analysis_enabled===true,processor:row.background_analysis_processor||null,since:row.background_analysis_since||null}};
    }));
    let linkedConnectionIds:string[]=[];
    let hasLinkedThread=false;
@@ -79,7 +90,7 @@ Deno.serve(async(request:Request)=>{
     hasLinkedThread=links.length>0;
     linkedConnectionIds=links.map(l=>l.connection_id).filter(id=>connections.some(c=>c.id===id));
    }
-   return json({configured,connections:safe,linkedConnectionIds,hasLinkedThread,beta:await beta('status'),ai:{provider:'groq',model:'openai/gpt-oss-20b',configured:Boolean(Deno.env.get('GROQ_API_KEY'))}});
+   return json({configured,connections:safe,linkedConnectionIds,hasLinkedThread,beta:await beta('status'),background:{available:backgroundAvailable,processor:backgroundProcessor},ai:{provider:'groq',model:'openai/gpt-oss-20b',configured:Boolean(Deno.env.get('GROQ_API_KEY'))}});
   }
   if(!configured)return json({error:'mailbox_not_configured'},503);
   back('check');
@@ -250,6 +261,7 @@ Deno.serve(async(request:Request)=>{
    const rows=await db<Connection[]>(`${path}&id=eq.${input.connectionId}&select=id,grant_id,status&limit=1`);
    if(!rows[0])return json({error:'connection_not_found'},404);
    if(rows[0].status==='connected'){
+    await db('rpc/set_mailbox_background_analysis',{method:'POST',body:JSON.stringify({target_workspace:workspace,target_actor:userId,target_connection:input.connectionId,target_enabled:false,target_processor:null})});
     try{await createNylasMailbox(config).disconnect(rows[0].grant_id);}catch(error){if((error as Error).message!=='mailbox_not_found')throw error;}
     await db(`${path}&id=eq.${input.connectionId}`,{method:'PATCH',body:JSON.stringify({status:'disconnected'})});
    }

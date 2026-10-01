@@ -7,6 +7,40 @@ const env:Record<string,string>={SUPABASE_URL:'https://db.invalid',SUPABASE_ANON
 ;(globalThis as any).Deno={env:{get:(key:string)=>env[key]},serve:(fn:any)=>{handler=fn}}
 await import('../supabase/functions/connected-mailbox/index.ts')
 const originalFetch=globalThis.fetch
+test('automatic authorization is unavailable and never reads or transmits mailbox content',async()=>{
+ let writes=0;
+ globalThis.fetch=(async(url:any,init:any)=>{
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:user});
+  if(url.includes('workspace_members'))return Response.json([{role:'owner'}]);
+  writes++;throw new Error('Unexpected access');
+ }) as typeof fetch;
+ try{
+  const consent=await handler(req('background',{enabled:true,processor:'old',connectionId:connection}));assert.equal((await consent.json()).error,'mailbox_background_consent_required');
+  const unavailable=await handler(req('background',{enabled:true,processor:'groq-gpt-oss-20b-v1',connectionId:connection}));assert.equal(unavailable.status,409);assert.equal((await unavailable.json()).error,'mailbox_background_unavailable');
+  const injected=await handler(req('background',{enabled:'false',connectionId:connection}));assert.equal((await injected.json()).error,'mailbox_background_consent_required');
+  assert.equal(writes,0);
+ }finally{globalThis.fetch=originalFetch}
+})
+test('withdrawal remains available without provider configuration and is limited to the owned mailbox',async()=>{
+ const enabled=env.CUEBOOKER_MAILBOX_ENABLED;env.CUEBOOKER_MAILBOX_ENABLED='false';let rpc=0;
+ globalThis.fetch=(async(url:any,init:any)=>{
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:user});
+  if(url.includes('workspace_members'))return Response.json([{role:'owner'}]);
+  if(url.includes('mailbox_connections')){assert.match(url,new RegExp(`user_id=eq.${user}`));assert.match(url,new RegExp(`workspace_id=eq.${workspace}`));return Response.json([{id:connection,status:'disconnected'}]);}
+  if(url.includes('rpc/set_mailbox_background_analysis')){rpc++;assert.deepEqual(JSON.parse(init.body),{target_workspace:workspace,target_actor:user,target_connection:connection,target_enabled:false,target_processor:null});return Response.json({enabled:false,processor:null,since:null,revision:null});}
+  throw new Error('Unexpected access');
+ }) as typeof fetch;
+ try{const r=await handler(req('background',{enabled:false,connectionId:connection}));assert.equal(r.status,200);assert.equal((await r.json()).background.enabled,false);assert.equal(rpc,1)}finally{globalThis.fetch=originalFetch;env.CUEBOOKER_MAILBOX_ENABLED=enabled}
+})
+test('foreign mailbox cannot withdraw another owners authorization',async()=>{
+ let rpc=0;globalThis.fetch=(async(url:any)=>{
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:user});
+  if(url.includes('workspace_members'))return Response.json([{role:'owner'}]);
+  if(url.includes('mailbox_connections'))return Response.json([]);
+  rpc++;throw new Error('Unexpected access');
+ }) as typeof fetch;
+ try{const r=await handler(req('background',{enabled:false,connectionId:connection}));assert.equal(r.status,404);assert.equal(rpc,0)}finally{globalThis.fetch=originalFetch}
+})
 test('cached selected analysis requires consent and returns fresh booking without AI or budget reservation',async()=>{
  env.GROQ_API_KEY='test-key';let version=0,cacheReads=0;
  const draft={eventDate:null,startTime:null,endTime:null,venue:null,city:null,offerAmountMinor:null,currency:null,artistName:null,contactPhone:null,warnings:[]};
