@@ -1,3 +1,9 @@
+## 2026-10-01 / Live linked-thread reviewed save verified
+
+PR96 staging only. User restored preview login; existing browser tab recovered and opened the known Agency test booking. Original linked test email was selected individually with explicit Groq consent. Live extraction proposed 2026-10-24, 23:00-01:00, Europe/Madrid, Sala Apolo, Barcelona and 500 EUR. Apply reviewed changes started unchecked; explicitly checking it and saving closed review and showed populated booking facts.
+
+Read-only SQL verified persisted fields (50000 minor units), unchanged artist/contact and in_conversation. Counts remain one workspace booking, three emails and one mailbox thread; activities rose from seven to eight for the reviewed internal update. No new outbound email, automatic confirmation, hold, duplicate booking or duplicate message. This completes the live guarded save smoke pending in the previous entry. Implementation remains 810f5f067c79f7f2b71934494d6c8d80f2442f79 with prior 375 tests, 38-route build and successful CI/staging deployment; no code/schema changes in this verification. Earlier generic Access error cause was not determined; latest successful login and recovered authenticated view are verified. Mobile390 and separate live DJ smoke remain unverified. Production untouched.
+
 ## 2026-10-01 / Review an email from its existing booking thread
 
 Branch feature/agency-multi-artist-beta, base af4ab3daecfb2936907dbd67024ecb88244864e8. PR96 preview/staging only. Booking detail replaces the account-wide pilot inbox with a collapsed Review email details section for email_import bookings. Opening loads only the authenticated actor's linked connection and the first bound thread page (up to 20 messages, no seven-day filter); outbound and mismatched-thread results are excluded. Multiple linked threads or longer pages show a limitation notice. Saved conversation remains readable for other workspace members. No new scope, schema, grant or provider account.
