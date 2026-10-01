@@ -1,11 +1,33 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import {mailboxAnalysisKey} from '../supabase/functions/_shared/mailboxAnalysisCache.ts'
 let handler:(request:Request)=>Promise<Response>
 const workspace='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',user='bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',connection='cccccccc-cccc-cccc-cccc-cccccccccccc',booking='dddddddd-dddd-dddd-dddd-dddddddddddd'
 const env:Record<string,string>={SUPABASE_URL:'https://db.invalid',SUPABASE_ANON_KEY:'anon',SUPABASE_SERVICE_ROLE_KEY:'service',NYLAS_API_KEY:'private',NYLAS_CLIENT_ID:'client',CUEBOOKER_MAILBOX_ENABLED:'true',CUEBOOKER_MAILBOX_RETURN_URL:'https://pr-96.cuebooker-staging.pages.dev/workspace/'}
 ;(globalThis as any).Deno={env:{get:(key:string)=>env[key]},serve:(fn:any)=>{handler=fn}}
 await import('../supabase/functions/connected-mailbox/index.ts')
 const originalFetch=globalThis.fetch
+test('cached selected analysis requires consent and returns fresh booking without AI or budget reservation',async()=>{
+ env.GROQ_API_KEY='test-key';let version=0,cacheReads=0;
+ const draft={eventDate:null,startTime:null,endTime:null,venue:null,city:null,offerAmountMinor:null,currency:null,artistName:null,contactPhone:null,warnings:[]};
+ const key=await mailboxAnalysisKey({id:'one',subject:'Consulta',body:'Disponible?'},true);
+ globalThis.fetch=(async(url:any,init:any)=>{
+  assert.notEqual(init?.method,'POST');assert.notEqual(init?.method,'PATCH');assert.notEqual(init?.method,'DELETE');
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:user});
+  if(url.includes('workspace_members'))return Response.json([{role:'owner'}]);
+  if(url.includes('mailbox_connections'))return Response.json([{id:connection,email:'dj@example.invalid',grant_id:'grant'}]);
+  if(url.includes('nylas.com'))return Response.json({data:{id:'one',thread_id:'thread',subject:'Consulta',body:'Disponible?',date:1700000000,from:[{email:'promoter@example.invalid'}],to:[{email:'dj@example.invalid'}]}});
+  if(url.includes('mailbox_ai_results')){cacheReads++;assert.match(url,new RegExp(`connection_id=eq.${connection}`));assert.match(url,/extract_draft=eq.true/);assert.match(url,/expires_at=gt/);return Response.json([{input_hash:key,classification:{id:'one',kind:'booking',reason:'Consulta',draft}}]);}
+  if(url.includes('mailbox_booking_threads'))return Response.json([{booking_id:booking}]);
+  if(url.includes('bookings?'))return Response.json([{id:booking,updated_at:`version-${++version}`,status:'in_conversation'}]);
+  throw new Error('Unexpected access');
+ }) as typeof fetch;
+ try{
+  const denied=await handler(req('classify',{messageId:'one'}));assert.equal((await denied.json()).error,'mailbox_analysis_consent_required');assert.equal(cacheReads,0);
+  for(const expected of ['version-1','version-2']){const r=await handler(req('classify',{messageId:'one',analysisConsent:true,analysisProvider:'groq'}));assert.equal(r.status,200);assert.equal((await r.json()).messages[0].existingBooking.updated_at,expected)}
+  assert.equal(cacheReads,2);
+ }finally{globalThis.fetch=originalFetch;delete env.GROQ_API_KEY}
+})
 test('linked-thread review reads old mail only from the owned booking link without AI or writes',async()=>{
  let providerReads=0
  globalThis.fetch=(async(url:any,init:any)=>{
@@ -77,6 +99,7 @@ test('monthly budget exhaustion blocks Groq at the actual authenticated Edge bou
   if(url.includes('workspace_members'))return Response.json([{role:'owner'}]);
   if(url.includes('mailbox_connections'))return Response.json([{id:connection,email:'dj@example.invalid',grant_id:'grant'}]);
   if(url.includes('nylas.com'))return Response.json({data:{id:'one',thread_id:'thread',from:[{email:'promoter@example.invalid'}],to:[{email:'dj@example.invalid'}],body:'Solicitud ficticia',date:1700000000}});
+  if(url.includes('mailbox_ai_results'))return Response.json([])
   if(url.includes('rpc/reserve_mailbox_analysis')){const input=JSON.parse(init.body);assert.equal(input.target_workspace,workspace);assert.equal(input.target_actor,user);assert.equal(input.target_connection,connection);return Response.json({error:'mailbox_ai_budget_exhausted'})}
   if(url.includes('groq.com'))aiCalls++;
   throw new Error('Unexpected provider or accounting access');
@@ -130,6 +153,7 @@ test('selected-mail analysis reads and transmits only the requested message',asy
  env.GROQ_API_KEY='test-key'
  const reads:string[]=[]
  globalThis.fetch=(async(url:any,init:any)=>{
+ if(url.includes('mailbox_ai_results'))return Response.json([])
  if(url.includes('rpc/reserve_mailbox_analysis')){const input=JSON.parse(init.body);assert.equal(input.target_connection,connection);assert.equal(input.target_actor,user);return Response.json({reserved:true})}
  if(url.includes('rpc/complete_mailbox_analysis')){assert.equal(JSON.parse(init.body).target_outcome,'succeeded');return Response.json({recorded:true})}
  if(url.endsWith('/auth/v1/user'))return Response.json({id:user})

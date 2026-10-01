@@ -1,5 +1,6 @@
 import { classifyBookingMail } from '../_shared/mailboxClassifier.ts';
 import { withMailboxAnalysisBudget } from '../_shared/mailboxAnalysisBudget.ts';
+import { withMailboxAnalysisCache } from '../_shared/mailboxAnalysisCache.ts';
 import { validateReviewedMailboxDraft } from '../_shared/mailboxBookingDraft.ts';
 import { mailboxMessage } from '../_shared/mailboxMessage.ts';
 import { createNylasMailbox, mailboxAuthorizationUrl, normalizeMailboxEmail, knownMailboxProvider } from '../_shared/nylasMailbox.ts';
@@ -128,16 +129,26 @@ Deno.serve(async(request:Request)=>{
      await linkedBooking(messages[0].threadId);
     }
     if(input.action==='classify'){
+     const cachePath=`mailbox_ai_results?connection_id=eq.${connection.id}`;
+     const classifications=await withMailboxAnalysisCache({messages,extractDraft:single,
+      read:keys=>db(`${cachePath}&extract_draft=eq.${single}&input_hash=in.(${keys.join(',')})&expires_at=gt.${encodeURIComponent(new Date().toISOString())}&select=input_hash,classification`),
+      write:async rows=>{
+       await db(`${cachePath}&expires_at=lte.${encodeURIComponent(new Date().toISOString())}`,{method:'DELETE'});
+       return db('mailbox_ai_results?on_conflict=connection_id,message_id,extract_draft',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(rows.map(row=>({...row,connection_id:connection.id,extract_draft:single,expires_at:new Date(Date.now()+86400000).toISOString()})))});
+      },
+      run:async missing=>{
      const threshold=encodeURIComponent(new Date(Date.now()-60000).toISOString());
      const claimed=await db<any[]>(`${path}&id=eq.${connection.id}&or=(ai_last_requested_at.is.null,ai_last_requested_at.lt.${threshold})`,{method:'PATCH',body:JSON.stringify({ai_last_requested_at:new Date().toISOString()})});
-     if(!claimed.length)return json({error:'mailbox_analysis_rate_limit'},429);
+     if(!claimed.length)throw new Error('mailbox_analysis_rate_limit');
      const requestId=crypto.randomUUID();
      const budgetContext={target_workspace:workspace,target_actor:userId,target_connection:connection.id,target_request:requestId};
-     const classifications=messages.length?await withMailboxAnalysisBudget({
+     return await withMailboxAnalysisBudget({
       reserve:()=>db<any>('rpc/reserve_mailbox_analysis',{method:'POST',body:JSON.stringify(budgetContext)}),
       complete:(outcome,usage)=>db('rpc/complete_mailbox_analysis',{method:'POST',body:JSON.stringify({...budgetContext,target_outcome:outcome,target_input_tokens:usage.inputTokens,target_output_tokens:usage.outputTokens})}),
-      run:report=>classifyBookingMail(messages,Deno.env.get('GROQ_API_KEY')||'',fetch,single,report)
-     }):[];
+      run:report=>classifyBookingMail(missing,Deno.env.get('GROQ_API_KEY')||'',fetch,single,report)
+     });
+      }
+     });
      let existingBooking:any=null;
      if(single&&messages[0]){
       const links=await db<Array<{booking_id:string}>>(`mailbox_booking_threads?workspace_id=eq.${workspace}&connection_id=eq.${connection.id}&thread_id=eq.${encodeURIComponent(messages[0].threadId)}&select=booking_id&limit=1`);
@@ -251,6 +262,6 @@ Deno.serve(async(request:Request)=>{
   allowed.push('mailbox_request_timeout','mailbox_storage_timeout','mailbox_provider_timeout','mailbox_ai_quota_exhausted','mailbox_ai_rate_limit','invalid_booking_draft','booking_time_requires_date','booking_currency_required','booking_review_stale','invalid_booking','booking_not_found','thread_mailbox_required');
   allowed.push('mailbox_ai_budget_exhausted','mailbox_analysis_already_attempted');
   console.warn('connected_mailbox_error',allowed.includes(name)?name:'mailbox_operation_failed',action);
-  return json({error:allowed.includes(name)?name:'mailbox_operation_failed'},name==='workspace_access_denied'?403:400);
+  return json({error:allowed.includes(name)?name:'mailbox_operation_failed'},name==='workspace_access_denied'?403:name==='mailbox_analysis_rate_limit'?429:400);
  }
 });
