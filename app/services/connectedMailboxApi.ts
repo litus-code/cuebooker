@@ -1,7 +1,7 @@
 export type ConnectedMailbox = {id:string;email:string;provider:string;status:'connected'|'reconnect_required'|'unknown';connectedAt:string;background?:{enabled:boolean;processor:string|null;since:string|null}}
 import type {MailboxBookingDraft,ReviewedMailboxDraft} from '../../supabase/functions/_shared/mailboxBookingDraft'
 export type MailboxExistingBooking={id:string;artist_id:string;status:string;event_date:string|null;start_time:string|null;end_time:string|null;venue_name:string|null;city:string|null;offer_amount_minor:number|null;currency:string|null;event_timezone:string|null;updated_at:string}
-export type MailboxMessage = {id:string;threadId:string;from:string;to:string;senderName:string;subject:string;body:string;date:string;existingBooking?:MailboxExistingBooking|null;classification?:{id:string;kind:'booking'|'review'|'other';reason:string;draft?:MailboxBookingDraft}}
+export type MailboxMessage = {id:string;threadId:string;from:string;to:string;senderName:string;subject:string;body:string;date:string;bookingId?:string|null;existingBooking?:MailboxExistingBooking|null;classification?:{id:string;kind:'booking'|'review'|'other';reason:string;draft?:MailboxBookingDraft}}
 export function createConnectedMailboxApi(options:{baseUrl:string;publishableKey:string;accessToken:()=>string|null|undefined}) {
  async function call(payload:Record<string,unknown>) {
   const token=options.accessToken();if(!token)throw new Error('authentication_required');

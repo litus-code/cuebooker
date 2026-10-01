@@ -1430,14 +1430,14 @@ async function loadExactBookingIntoInbox(workspaceId: string, bookingId: string)
   if (!booking) throw new Error('booking_not_found')
 
   if (selectedArtistId.value !== booking.artist_id) {
-    selectedArtistId.value = booking.artist_id
+    selectedArtistId.value = booking.artist_id || ''
     await nextTick()
   }
 
   bookingCoreWorkspaceId.value = workspaceId
   await syncWorkspaceBillingPlan(workspaceId)
 
-  const rows = await bookingCore.listBookings(workspaceId, 100, booking.artist_id)
+  const rows = await bookingCore.listBookings(workspaceId, 100, booking.artist_id || undefined)
   realBookings.value = mergeBookingIntoInbox(rows, booking)
   await loadPassportBookings()
   await loadRealHolds()
@@ -1455,7 +1455,8 @@ function openRealBooking(bookingId: string) {
       query: {
         ...route.query,
         view: 'bookings',
-        artist: selectedArtistId.value || route.query.artist,
+        artist: selectedArtistId.value || undefined,
+        scope: isAgency.value && !selectedArtistId.value ? 'all' : route.query.scope,
         booking: bookingId
       }
     }).catch(() => {

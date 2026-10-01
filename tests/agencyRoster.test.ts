@@ -59,3 +59,10 @@ test('new agency artist has one closed agency booking route, retirement closes i
   assert.match(publishing, /booking_route_other_workspace/)
   assert.match(publicProfile, /bookingManagedBy/)
 })
+
+test('one agency enquiry is visible globally without duplicating it across artist filters',()=>{
+ const rows=[booking('a','artist-a'),{...booking('agency','artist-a'),artist_id:null}];
+ assert.deepEqual(filterRosterBookings(rows,artists).map(r=>r.id),['a','agency']);
+ assert.deepEqual(filterRosterBookings(rows,artists,['artist-a']).map(r=>r.id),['a']);
+ assert.deepEqual(filterRosterBookings(rows,artists,['artist-b']).map(r=>r.id),[]);
+});

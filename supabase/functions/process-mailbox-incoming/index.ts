@@ -3,6 +3,7 @@ import {createNylasMailbox} from '../_shared/nylasMailbox.ts';
 import {classifyBookingMail} from '../_shared/mailboxClassifier.ts';
 import {withMailboxAnalysisBudget} from '../_shared/mailboxAnalysisBudget.ts';
 import {withMailboxAnalysisCache} from '../_shared/mailboxAnalysisCache.ts';
+import {automaticMailboxDraft} from '../_shared/automaticMailboxDraft.ts';
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
 Deno.serve(async(request:Request)=>{
  if(request.method!=='POST')return json({error:'method_not_allowed'},405);
@@ -21,13 +22,14 @@ Deno.serve(async(request:Request)=>{
    linkedBooking:async()=>{const rows=await db<any[]>(`mailbox_booking_threads?connection_id=eq.${job.connectionId}&workspace_id=eq.${job.workspaceId}&thread_id=eq.${encodeURIComponent(job.threadId)}&select=booking_id&limit=1`);return rows[0]?.booking_id||null;},
    sync:(bookingId,message)=>rpc('ingest_mailbox_thread',{target_connection:job.connectionId,target_actor:job.actorId,target_thread:job.threadId,target_messages:[message],target_artist:null,target_booking:bookingId}),
    classify:async message=>{
-    const context={target_workspace:job.workspaceId,target_actor:job.actorId,target_connection:job.connectionId,target_request:job.id};
-    const values=await withMailboxAnalysisCache({messages:[message],extractDraft:false,
-     read:keys=>db(`mailbox_ai_results?connection_id=eq.${job.connectionId}&extract_draft=eq.false&input_hash=in.(${keys.join(',')})&expires_at=gt.${encodeURIComponent(new Date().toISOString())}&select=input_hash,classification`),
-     write:async rows=>{await db(`mailbox_ai_results?connection_id=eq.${job.connectionId}&expires_at=lte.${encodeURIComponent(new Date().toISOString())}`,{method:'DELETE'});return db('mailbox_ai_results?on_conflict=connection_id,message_id,extract_draft',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(rows.map(row=>({...row,connection_id:job.connectionId,extract_draft:false,expires_at:new Date(Date.now()+86400000).toISOString()})))});},
-     run:messages=>withMailboxAnalysisBudget({reserve:()=>rpc('reserve_mailbox_analysis',context),complete:(outcome,usage)=>rpc('complete_mailbox_analysis',{...context,target_outcome:outcome,target_input_tokens:usage.inputTokens,target_output_tokens:usage.outputTokens}),run:async report=>{if(!await rpc<boolean>('authorize_mailbox_incoming',{target_job:job.id}))throw new Error('mailbox_consent_withdrawn');return classifyBookingMail(messages,Deno.env.get('GROQ_API_KEY')||'',fetch,false,report)}})
+    const context={target_workspace:job.workspaceId,target_actor:job.actorId,target_connection:job.connectionId,target_request:job.requestId};
+    const values=await withMailboxAnalysisCache({messages:[message],extractDraft:true,
+     read:keys=>db(`mailbox_ai_results?connection_id=eq.${job.connectionId}&extract_draft=eq.true&input_hash=in.(${keys.join(',')})&expires_at=gt.${encodeURIComponent(new Date().toISOString())}&select=input_hash,classification`),
+     write:async rows=>{await db(`mailbox_ai_results?connection_id=eq.${job.connectionId}&expires_at=lte.${encodeURIComponent(new Date().toISOString())}`,{method:'DELETE'});return db('mailbox_ai_results?on_conflict=connection_id,message_id,extract_draft',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(rows.map(row=>({...row,connection_id:job.connectionId,extract_draft:true,expires_at:new Date(Date.now()+86400000).toISOString()})))});},
+     run:messages=>withMailboxAnalysisBudget({reserve:()=>rpc('reserve_mailbox_analysis',context),complete:(outcome,usage)=>rpc('complete_mailbox_analysis',{...context,target_outcome:outcome,target_input_tokens:usage.inputTokens,target_output_tokens:usage.outputTokens}),run:async report=>{if(!await rpc<boolean>('authorize_mailbox_incoming',{target_job:job.id}))throw new Error('mailbox_consent_withdrawn');return classifyBookingMail(messages,Deno.env.get('GROQ_API_KEY')||'',fetch,true,report)}})
     });return values[0];
    },
+   create:(message,value)=>rpc('create_automatic_mailbox_request',{target_job:job.id,target_message:message,target_classification:{...value,draft:automaticMailboxDraft(value.draft!)}}),
    complete:(state,value)=>rpc('complete_mailbox_incoming',{target_job:job.id,target_state:state,target_kind:value?.kind||null,target_reason:value?.reason||null})
   });
   return json({processed:1,outcome});

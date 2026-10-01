@@ -47,11 +47,11 @@ const copy = computed(() => props.locale === 'es' ? {
 })
 
 function titleFor(item: CueNotification) {
-  return item.kind === 'promoter_reply_received' ? copy.value.reply : copy.value.booking
+  return item.kind === 'promoter_reply_received' ? copy.value.reply : item.metadata.capture_method === 'ai_capture' ? (props.locale === 'es' ? 'Nueva solicitud por correo' : 'New email enquiry') : copy.value.booking
 }
 
 function bodyFor(item: CueNotification) {
-  return item.kind === 'promoter_reply_received' ? copy.value.replyBody : copy.value.bookingBody
+  return item.kind === 'promoter_reply_received' ? copy.value.replyBody : item.metadata.capture_method === 'ai_capture' ? `${String(item.metadata.subject || '')} · ${props.locale === 'es' ? 'Pendiente de gestionar' : 'Ready to manage'}` : copy.value.bookingBody
 }
 
 function timeLabel(value: string) {

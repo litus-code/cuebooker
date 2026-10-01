@@ -1,7 +1,7 @@
 import {mailboxMessage} from './mailboxMessage.ts';
 import type {BookingMailClassification} from './mailboxClassifier.ts';
 type Job={id:string;connectionId:string;workspaceId:string;actorId:string;grantId:string;email:string;messageId:string;threadId:string;since:string};
-export async function processMailboxIncoming(job:Job,options:{authorize:()=>Promise<boolean>;message:()=>Promise<any>;inbox:()=>Promise<{inbox:string[];excluded:string[]}>;linkedBooking:()=>Promise<string|null>;sync:(bookingId:string,message:ReturnType<typeof mailboxMessage>)=>Promise<unknown>;classify:(message:ReturnType<typeof mailboxMessage>)=>Promise<BookingMailClassification>;complete:(state:'completed'|'ignored'|'failed',classification?:BookingMailClassification)=>Promise<unknown>}){
+export async function processMailboxIncoming(job:Job,options:{authorize:()=>Promise<boolean>;message:()=>Promise<any>;inbox:()=>Promise<{inbox:string[];excluded:string[]}>;linkedBooking:()=>Promise<string|null>;sync:(bookingId:string,message:ReturnType<typeof mailboxMessage>)=>Promise<unknown>;classify:(message:ReturnType<typeof mailboxMessage>)=>Promise<BookingMailClassification>;create:(message:ReturnType<typeof mailboxMessage>,classification:BookingMailClassification)=>Promise<unknown>;complete:(state:'completed'|'ignored'|'failed',classification?:BookingMailClassification)=>Promise<unknown>}){
  try{
   if(!await options.authorize()){await options.complete('ignored');return 'ignored';}
   const raw=await options.message(),message=mailboxMessage(raw,job.email);
@@ -14,6 +14,10 @@ export async function processMailboxIncoming(job:Job,options:{authorize:()=>Prom
   if(bookingId){await options.sync(bookingId,message);await options.complete('ignored');return 'synced';}
   const classification=await options.classify(message);
   if(!await options.authorize()){await options.complete('ignored');return 'ignored';}
+  if(classification.kind==='booking'){
+   if(!classification.draft)throw new Error('missing_booking_draft');
+   await options.create(message,classification);return 'created';
+  }
   await options.complete('completed',classification);return 'classified';
  }catch{
   // No automatic retry after an uncertain AI/provider attempt. Operator review is required.

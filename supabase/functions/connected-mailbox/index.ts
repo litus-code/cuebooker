@@ -167,9 +167,9 @@ Deno.serve(async(request:Request)=>{
      }
      return json({messages:messages.map((m:any)=>({...m,classification:classifications.find(c=>c.id===m.id),...(single?{existingBooking}:{})})),hasMore:Boolean(result.nextCursor)});
     }
-    let detected:Array<{message_id:string;classification_kind:string;classification_reason:string}>=[];
-    try{detected=await db(`mailbox_incoming_jobs?connection_id=eq.${connection.id}&state=eq.completed&select=message_id,classification_kind,classification_reason&order=created_at.desc&limit=100`)}catch{console.warn('mailbox_detection_metadata_unavailable');}
-    return json({messages:messages.map((message:any)=>{const saved=detected.find(row=>row.message_id===message.id);return saved?{...message,classification:{id:message.id,kind:saved.classification_kind,reason:saved.classification_reason}}:message}),hasMore:Boolean(result.nextCursor)});
+    let detected:Array<{message_id:string;classification_kind:string;classification_reason:string;booking_id:string|null}>=[];
+    try{detected=await db(`mailbox_incoming_jobs?connection_id=eq.${connection.id}&state=eq.completed&select=message_id,classification_kind,classification_reason,booking_id&order=created_at.desc&limit=100`)}catch{console.warn('mailbox_detection_metadata_unavailable');}
+    return json({messages:messages.map((message:any)=>{const saved=detected.find(row=>row.message_id===message.id);return saved?{...message,bookingId:saved.booking_id,classification:{id:message.id,kind:saved.classification_kind,reason:saved.classification_reason}}:message}),hasMore:Boolean(result.nextCursor)});
    }
    const bookingId=input.bookingId;
    if(bookingId&&!uuid(bookingId))return json({error:'invalid_booking'},400);

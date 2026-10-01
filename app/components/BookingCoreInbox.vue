@@ -674,6 +674,11 @@ async function selectBooking(bookingId: string) {
           <button v-if="canOperate" class="core-inbox__archive" type="button" :disabled="archiving" @click="toggleArchive">{{ selectedBooking.archived_at ? copy.restore : copy.archive }}</button>
         </header>
 
+        <aside v-if="selectedBooking.capture_method === 'ai_capture'" class="core-inbox__mailbox-review" aria-label="Datos por revisar">
+          <strong>{{ locale === 'es' ? 'Solicitud recibida por correo' : 'Enquiry received by email' }}</strong>
+          <p>{{ locale === 'es' ? 'Hemos guardado los datos disponibles y la conversación. Revisa la información antes de decidir.' : 'The available details and conversation have been saved. Review the information before deciding.' }}</p>
+          <p v-for="warning in selectedBooking.mailbox_draft?.warnings || []" :key="warning">{{ warning }}</p>
+        </aside>
         <section v-if="!selectedBooking.archived_at" class="core-inbox__decision-strip">
           <div :class="['core-inbox__status', `core-inbox__status--${selectedBooking.status}`]">
             <span>{{ copy.status }}</span>
@@ -730,7 +735,7 @@ async function selectBooking(bookingId: string) {
           </dl>
         </section>
 
-        <details v-if="!demoData && canOperate && mailboxArtists?.length && !selectedBooking.archived_at && selectedBooking.capture_method === 'email_import'" class="core-inbox__email-review" :open="reviewEmailsOpen" @toggle="reviewEmailsOpen=($event.target as HTMLDetailsElement).open">
+        <details v-if="!demoData && canOperate && mailboxArtists?.length && !selectedBooking.archived_at && ['email_import','ai_capture'].includes(selectedBooking.capture_method)" class="core-inbox__email-review" :open="reviewEmailsOpen" @toggle="reviewEmailsOpen=($event.target as HTMLDetailsElement).open">
           <summary>{{ locale === 'es' ? 'Revisar datos de los correos' : 'Review email details' }}</summary>
           <MailboxRequestsPanel v-if="reviewEmailsOpen" :key="selectedBooking.id" :booking-id="selectedBooking.id" :workspace-id="workspaceId" :locale="locale" :artists="mailboxArtists" @created="() => { reviewEmailsOpen=false; void handleOperationsChanged() }" />
         </details>
@@ -885,6 +890,7 @@ async function selectBooking(bookingId: string) {
 </template>
 
 <style scoped>
+.core-inbox__mailbox-review{margin:14px 0;padding:14px 16px;border:1px solid var(--cue-border);border-left:3px solid var(--cue-status-new);border-radius:var(--cue-radius-panel);font-size:13px;line-height:1.5}.core-inbox__mailbox-review p{color:var(--cue-muted);margin:8px 0 0}
 .core-inbox__email-review{margin:16px 0;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);overflow:hidden}
 .core-inbox__email-review>summary{padding:12px 16px;cursor:pointer;font-size:13px;color:var(--cue-text);min-height:44px;box-sizing:border-box}
 .core-inbox__email-review>summary:focus-visible{outline:2px solid var(--cue-accent);outline-offset:-3px}

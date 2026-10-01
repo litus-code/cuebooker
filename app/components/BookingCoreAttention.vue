@@ -6,6 +6,7 @@ import { deriveBookingAttentionSignals, deriveEmailDeliveryAttentionSignals, typ
 const props = withDefaults(defineProps<{
   workspaceId: string
   canOperate?: boolean
+  includeAgencyRequests?: boolean
   artistId?: string
   artists?: Array<{ id: string; stage_name: string }>
   demoData?: { bookings: CoreBooking[]; activities: Activity[]; holds: Hold[]; nextMoves?: NextMove[]; notifications?: CueNotification[] }
@@ -251,7 +252,7 @@ async function load(options: { silent?: boolean } = {}) {
   const sequence = ++loadSequence
   const ids = props.artists ? props.artists.map(item => item.id) : props.artistId ? [props.artistId] : []
   loadError.value = ''
-  if (!props.workspaceId || !ids.length) {
+  if (!props.workspaceId || (!ids.length && !props.includeAgencyRequests)) {
     attentionBookings.value = []; nextMoves.value = []; holds.value = []
     activities.value = []; emailMessages.value = []; notificationItems.value = []
     loading.value = false
@@ -269,7 +270,7 @@ async function load(options: { silent?: boolean } = {}) {
       notificationItems.value = (props.demoData.notifications || []).filter(item => bookingIds.has(item.booking_id) && !item.read_at); emailMessages.value = []
       return
     }
-    const [results, notifications] = await Promise.all([
+    const [results, notifications, agencyRequests] = await Promise.all([
       Promise.all(ids.map(async id => {
         const [bookings, moves, holds, activities, deliveries] = await Promise.all([
           bookingCore.listArtistAttentionBookings(props.workspaceId, id, 500),
@@ -280,10 +281,11 @@ async function load(options: { silent?: boolean } = {}) {
         ])
         return { bookings, moves, holds, activities, deliveries }
       })),
-      notificationApi.listWorkspaceUnread(props.workspaceId, 500)
+      notificationApi.listWorkspaceUnread(props.workspaceId, 500),
+      props.includeAgencyRequests ? bookingCore.listAgencyRequests(props.workspaceId) : Promise.resolve([])
     ])
     if (sequence !== loadSequence) return
-    const rows = results.flatMap(item => item.bookings)
+    const rows = [...agencyRequests,...results.flatMap(item => item.bookings)]
     const bookingIds = new Set(rows.map(item => item.id))
     attentionBookings.value = rows
     nextMoves.value = results.flatMap(item => item.moves)
