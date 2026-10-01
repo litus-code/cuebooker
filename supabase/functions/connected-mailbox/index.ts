@@ -65,8 +65,8 @@ Deno.serve(async(request:Request)=>{
    return await db<any>('rpc/mailbox_beta_command',{method:'POST',body:JSON.stringify({target_action:action,target_workspace:workspace,target_actor:userId,...extra})});
   }
   if(input.action==='waitlist')return json(await beta('waitlist'));
-  // Keep unavailable until the authenticated incoming-message processor is deployed.
-  const backgroundAvailable=false,backgroundProcessor='groq-gpt-oss-20b-v1';
+  // Operator gate stays off until webhook/scheduler and model evaluation are verified.
+  const backgroundAvailable=configured&&Deno.env.get('CUEBOOKER_MAILBOX_BACKGROUND_ENABLED')==='true'&&Boolean(Deno.env.get('NYLAS_WEBHOOK_SECRET')&&Deno.env.get('MAILBOX_WORKER_SECRET')&&Deno.env.get('GROQ_API_KEY')),backgroundProcessor='groq-gpt-oss-20b-v1';
   if(input.action==='background'){
    if(!uuid(input.connectionId))return json({error:'invalid_connection'},400);
    if(typeof input.enabled!=='boolean'||(input.enabled&&input.processor!==backgroundProcessor))return json({error:'mailbox_background_consent_required'},400);
@@ -167,7 +167,9 @@ Deno.serve(async(request:Request)=>{
      }
      return json({messages:messages.map((m:any)=>({...m,classification:classifications.find(c=>c.id===m.id),...(single?{existingBooking}:{})})),hasMore:Boolean(result.nextCursor)});
     }
-    return json({messages,hasMore:Boolean(result.nextCursor)});
+    let detected:Array<{message_id:string;classification_kind:string;classification_reason:string}>=[];
+    try{detected=await db(`mailbox_incoming_jobs?connection_id=eq.${connection.id}&state=eq.completed&select=message_id,classification_kind,classification_reason&order=created_at.desc&limit=100`)}catch{console.warn('mailbox_detection_metadata_unavailable');}
+    return json({messages:messages.map((message:any)=>{const saved=detected.find(row=>row.message_id===message.id);return saved?{...message,classification:{id:message.id,kind:saved.classification_kind,reason:saved.classification_reason}}:message}),hasMore:Boolean(result.nextCursor)});
    }
    const bookingId=input.bookingId;
    if(bookingId&&!uuid(bookingId))return json({error:'invalid_booking'},400);

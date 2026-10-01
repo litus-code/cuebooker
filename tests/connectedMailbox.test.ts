@@ -17,6 +17,10 @@ test('authorization uses hosted provider, opaque state and email-only scopes wit
  assert.throws(()=>mailboxAuthorizationUrl({...config,apiUri:'https://attacker.invalid'},{email:'a@b.invalid',provider:'google',state:'state'}))
  for(const email of ['bad','a@b.invalid\nInjected','a b@example.invalid'])assert.throws(()=>normalizeMailboxEmail(email))
 })
+test('inbox resolution uses provider attributes and opaque IDs, excluding spam/trash/sent',async()=>{
+ const api=createNylasMailbox(config,(async()=>Response.json({data:[{id:'opaque-inbox',attributes:['\\Inbox'],system_folder:true},{id:'opaque-junk',attributes:['\\Junk']},{id:'opaque-trash',attributes:['\\Trash']},{id:'opaque-sent',attributes:['\\Sent']},{id:'fake-inbox-name',name:'Inbox',system_folder:true}]})) as typeof fetch);
+ assert.deepEqual(await api.inboxFolders('grant'),{inbox:['opaque-inbox'],excluded:['opaque-junk','opaque-trash','opaque-sent']});
+})
 test('exchange keeps API capability server-side and validates grant metadata',async()=>{
  const calls:Array<{url:string;options:RequestInit}>=[]
  const request=(async(url:any,options:any)=>{calls.push({url,options});return new Response(JSON.stringify(url.endsWith('/token')?{grant_id:'grant/one',access_token:'unused-secret'}:{data:{email:'TEST@EXAMPLE.INVALID',provider:'google',grant_status:'valid'}}),{status:200})}) as typeof fetch

@@ -11,6 +11,7 @@ export function createConnectedMailboxApi(options:{baseUrl:string;publishableKey
  return {
   status:(workspaceId:string,bookingId?:string)=>call({action:'status',workspaceId,bookingId}) as Promise<{configured:boolean;ai?:{provider:string;model:string;configured:boolean};background?:{available:boolean;processor:string};connections:ConnectedMailbox[];linkedConnectionIds:string[];hasLinkedThread:boolean;beta:{available:boolean;waitlisted:boolean}}>,
   pauseBackground:(workspaceId:string,connectionId:string)=>call({action:'background',workspaceId,connectionId,enabled:false}),
+  authorizeBackground:(workspaceId:string,connectionId:string,processor:string)=>call({action:'background',workspaceId,connectionId,enabled:true,processor}),
   waitlist:(workspaceId:string)=>call({action:'waitlist',workspaceId}) as Promise<{waitlisted:boolean}>,
   connect:(workspaceId:string,email:string,provider:string='auto')=>call({action:'connect',workspaceId,email,provider}) as Promise<{authorizationUrl:string}>,
   complete:(workspaceId:string,state:string,code:string)=>call({action:'complete',workspaceId,state,code}),

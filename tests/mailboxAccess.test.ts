@@ -7,6 +7,18 @@ const env:Record<string,string>={SUPABASE_URL:'https://db.invalid',SUPABASE_ANON
 ;(globalThis as any).Deno={env:{get:(key:string)=>env[key]},serve:(fn:any)=>{handler=fn}}
 await import('../supabase/functions/connected-mailbox/index.ts')
 const originalFetch=globalThis.fetch
+test('recent inbox displays completed owned detection without invoking AI or writing data',async()=>{
+ globalThis.fetch=(async(url:any,init:any)=>{
+  assert.notEqual(init?.method,'PATCH');assert.notEqual(init?.method,'POST');
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:user});
+  if(url.includes('workspace_members'))return Response.json([{role:'owner'}]);
+  if(url.includes('mailbox_connections'))return Response.json([{id:connection,email:'dj@example.invalid',grant_id:'grant'}]);
+  if(url.includes('nylas.com'))return Response.json({data:[{id:'one',thread_id:'thread',date:1700000000,from:[{email:'promoter@example.invalid'}],to:[{email:'dj@example.invalid'}]}]});
+  if(url.includes('mailbox_incoming_jobs')){assert.match(url,new RegExp(`connection_id=eq.${connection}`));assert.match(url,/state=eq.completed/);return Response.json([{message_id:'one',classification_kind:'booking',classification_reason:'Consulta de actuación'}]);}
+  throw new Error('Unexpected access');
+ }) as typeof fetch;
+ try{const r=await handler(req('recent'));assert.equal(r.status,200);assert.equal((await r.json()).messages[0].classification.kind,'booking')}finally{globalThis.fetch=originalFetch}
+})
 test('automatic authorization is unavailable and never reads or transmits mailbox content',async()=>{
  let writes=0;
  globalThis.fetch=(async(url:any,init:any)=>{

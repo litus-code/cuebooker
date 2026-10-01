@@ -69,6 +69,12 @@ export function createNylasMailbox(config: NylasConfig, request: typeof fetch = 
    if(!result?.data?.id||!result.data.thread_id)throw new Error('invalid_provider_response');
    return result.data;
   },
+  async inboxFolders(id:string){
+   const result=await call(`/v3/grants/${encodeURIComponent(id)}/folders?limit=200`);
+   if(!Array.isArray(result?.data)||result.next_cursor)throw new Error('invalid_provider_response');
+   const ids=(attributes:string[])=>result.data.filter((folder:any)=>typeof folder.id==='string'&&Array.isArray(folder.attributes)&&folder.attributes.some((value:unknown)=>typeof value==='string'&&attributes.includes(value))).map((folder:any)=>folder.id as string);
+   return {inbox:ids(['\\Inbox']),excluded:ids(['\\Junk','\\Trash','\\Sent','\\Drafts'])};
+  },
   async send(id:string,input:{to:string;subject:string;bodyText:string;replyToMessageId?:string}) {
    const body=input.bodyText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>');
    const result=await call(`/v3/grants/${encodeURIComponent(id)}/messages/send`,{method:'POST',body:JSON.stringify({to:[{email:normalizeMailboxEmail(input.to)}],subject:input.subject,body,...(input.replyToMessageId?{reply_to_message_id:input.replyToMessageId}:{})})});
