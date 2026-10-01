@@ -1,3 +1,9 @@
+## 2026-10-01 / Real post-consent incoming enquiry classified; reveal saved proposals by default
+
+User sent the fictional enquiry and confirmed sending. Signed webhook admitted one job at 17:54:35Z; scheduled worker completed it at 17:55:04Z as booking (direct availability/quote enquiry for two artists). Live mailbox UI shows the matching subject Presunta oferta from the expected owned test sender and the saved classification. No manual classify call was made and no enquiry was created or confirmed.
+
+Found a UI defect: recent() returned saved background classifications, but shownMessages required a manual-analysis session or show-all toggle, hiding the detected proposal. Fixed the shared DJ/agency panel to show saved booking/review proposals by default while excluding unclassified and other mail. Manual review and manual detection remain available. Updated the obsolete pilot copy to reflect per-mailbox automatic-detection state and explicit reviewed creation. Nuxt generate passed. Full UI verification after the new staging deployment remains required; linked-thread background reply validation remains pending.
+
 ## 2026-10-01 / Gmail background detection explicitly authorized and staging scheduler active
 
 User explicitly accepted background Groq analysis after reviewing the per-mailbox disclosure. Enabled through the signed-in CUE Agency TEST UI, not by bypassing the consent setter. UI now shows authorization granted and the withdrawal button. Database verifies exactly one authorized mailbox, belonging to the test workspace, with cutover 2026-10-01T17:50:14.969766Z (19:50 Europe/Madrid). Activated the existing cuebooker-mailbox-incoming cron job only after that verification; active=true confirmed. It processes one queued message per minute and sends no HTTP request for an empty queue.
