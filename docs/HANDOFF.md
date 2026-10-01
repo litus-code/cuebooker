@@ -1,3 +1,9 @@
+## 2026-10-01 / Gmail background detection explicitly authorized and staging scheduler active
+
+User explicitly accepted background Groq analysis after reviewing the per-mailbox disclosure. Enabled through the signed-in CUE Agency TEST UI, not by bypassing the consent setter. UI now shows authorization granted and the withdrawal button. Database verifies exactly one authorized mailbox, belonging to the test workspace, with cutover 2026-10-01T17:50:14.969766Z (19:50 Europe/Madrid). Activated the existing cuebooker-mailbox-incoming cron job only after that verification; active=true confirmed. It processes one queued message per minute and sends no HTTP request for an empty queue.
+
+CI and Deploy Staging for 9c2447ac2eeeaacccf17b1511100230d8a5603d7 both completed successfully. Incoming queue remains empty at activation: a fresh post-consent fictional incoming email and linked-thread reply are still required for end-to-end validation. Do not claim an actual incoming email has been classified, create or confirm bookings automatically, or replay pre-consent history. Production untouched.
+
 ## 2026-10-01 / Live synthetic evaluation passed; worker configured, mailbox opt-in pending
 
 Branch feature/agency-multi-artist-beta, PR96 preview/staging only, base HEAD a6d8d9faf85247bc3217777de565845f89a56f8a. User saved MAILBOX_WORKER_SECRET; a server-side digest comparison confirms it matches Vault without returning the value. Authenticated worker smoke returned200 processed:0; unsigned worker POST returned401 unauthorized. Nylas notification logs show several successful message.created deliveries to the exact staging receiver, including Google grant a2b560a2-9f41-4e77-8b77-eeceb81bd388 at2026-10-01T16:29:05Z; webhook ID ryazK5hRkBqWvkvvewJ78H7843. Signing configuration is now verified by provider delivery, not just secret presence.
