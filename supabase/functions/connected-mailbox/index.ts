@@ -19,7 +19,7 @@ Deno.serve(async(request:Request)=>{
   let response:Response;
   try{response=await fetch(`${supabaseUrl}/rest/v1/${path}`,{...init,headers:{apikey:serviceKey,Authorization:`Bearer ${serviceKey}`,'Content-Type':'application/json',Prefer:'return=representation',...(init.headers||{})},signal:AbortSignal.timeout(10000)});}
   catch(error){if((error as Error).name==='TimeoutError')throw new Error('mailbox_storage_timeout');throw error;}
-  if(!response.ok)throw new Error('mailbox_storage_failed');
+  if(!response.ok){if(path==='rpc/ingest_mailbox_thread'){const failure=await response.json().catch(()=>null);if(['booking_review_stale','archived_booking_read_only','invalid_booking_draft'].includes(failure?.message))throw new Error(failure.message);}throw new Error('mailbox_storage_failed');}
   const text=await response.text();return (text?JSON.parse(text):null) as T;
  }
  async function member(workspace:string,user:string){
@@ -111,7 +111,12 @@ Deno.serve(async(request:Request)=>{
      const claimed=await db<any[]>(`${path}&id=eq.${connection.id}&or=(ai_last_requested_at.is.null,ai_last_requested_at.lt.${threshold})`,{method:'PATCH',body:JSON.stringify({ai_last_requested_at:new Date().toISOString()})});
      if(!claimed.length)return json({error:'mailbox_analysis_rate_limit'},429);
      const classifications=await classifyBookingMail(messages,Deno.env.get('GROQ_API_KEY')||'',fetch,single);
-     return json({messages:messages.map((m:any)=>({...m,classification:classifications.find(c=>c.id===m.id)})),hasMore:Boolean(result.nextCursor)});
+     let existingBooking:any=null;
+     if(single&&messages[0]){
+      const links=await db<Array<{booking_id:string}>>(`mailbox_booking_threads?workspace_id=eq.${workspace}&connection_id=eq.${connection.id}&thread_id=eq.${encodeURIComponent(messages[0].threadId)}&select=booking_id&limit=1`);
+      if(links[0]){const saved=await db<any[]>(`bookings?workspace_id=eq.${workspace}&id=eq.${links[0].booking_id}&select=id,artist_id,status,event_date,start_time,end_time,venue_name,city,offer_amount_minor,currency,event_timezone,updated_at&limit=1`);existingBooking=saved[0]||null;}
+     }
+     return json({messages:messages.map((m:any)=>({...m,classification:classifications.find(c=>c.id===m.id),...(single?{existingBooking}:{})})),hasMore:Boolean(result.nextCursor)});
     }
     return json({messages,hasMore:Boolean(result.nextCursor)});
    }
@@ -130,7 +135,9 @@ Deno.serve(async(request:Request)=>{
     if(!bookingId&&!uuid(input.artistId))return json({error:'artist_required'},400);
     if(typeof input.messageId!=='string'||input.messageId.length>512)return json({error:'invalid_message'},400);
     const reviewed=input.reviewedDraft===undefined?null:validateReviewedMailboxDraft(input.reviewedDraft);
-    const message={...mailboxMessage(await provider.message(connection.grant_id,input.messageId),connection.email),...(reviewed?{reviewedDetails:reviewed}:{})};
+    if(input.applyReviewedToExisting!==undefined&&typeof input.applyReviewedToExisting!=='boolean')return json({error:'invalid_booking_draft'},400);
+    if(input.applyReviewedToExisting===true&&(!reviewed||typeof input.expectedUpdatedAt!=='string'||input.expectedUpdatedAt.length>60||!Number.isFinite(Date.parse(input.expectedUpdatedAt))))return json({error:'invalid_booking_draft'},400);
+    const message={...mailboxMessage(await provider.message(connection.grant_id,input.messageId),connection.email),...(reviewed?{reviewedDetails:reviewed,applyReviewedToExisting:input.applyReviewedToExisting===true,expectedUpdatedAt:input.expectedUpdatedAt}:{})};
     const id=await ingest(message.threadId,[message],input.artistId);
     return json({bookingId:id});
    }
@@ -214,7 +221,7 @@ Deno.serve(async(request:Request)=>{
  }catch(error){
   const name=(error as Error).name==='TimeoutError'?'mailbox_request_timeout':(error as Error).message;
   const allowed=['mailbox_provider_selection_required','mailbox_beta_full','workspace_access_denied','invalid_email','invalid_provider','invalid_provider_configuration','invalid_callback','invalid_return_url','mailbox_reconnect_required','mailbox_not_found','mailbox_provider_unavailable','mailbox_not_configured','invalid_oauth_state','account_mismatch','connection_not_found','invalid_message','artist_required','archived_booking_read_only','mailbox_analysis_consent_required','mailbox_ai_not_configured','mailbox_ai_unavailable','invalid_classification','mailbox_analysis_rate_limit'];
-  allowed.push('mailbox_request_timeout','mailbox_storage_timeout','mailbox_provider_timeout','mailbox_ai_quota_exhausted','mailbox_ai_rate_limit','invalid_booking_draft','booking_time_requires_date','booking_currency_required');
+  allowed.push('mailbox_request_timeout','mailbox_storage_timeout','mailbox_provider_timeout','mailbox_ai_quota_exhausted','mailbox_ai_rate_limit','invalid_booking_draft','booking_time_requires_date','booking_currency_required','booking_review_stale');
   console.warn('connected_mailbox_error',allowed.includes(name)?name:'mailbox_operation_failed',action);
   return json({error:allowed.includes(name)?name:'mailbox_operation_failed'},name==='workspace_access_denied'?403:400);
  }

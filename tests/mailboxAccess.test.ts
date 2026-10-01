@@ -6,6 +6,22 @@ const env:Record<string,string>={SUPABASE_URL:'https://db.invalid',SUPABASE_ANON
 ;(globalThis as any).Deno={env:{get:(key:string)=>env[key]},serve:(fn:any)=>{handler=fn}}
 await import('../supabase/functions/connected-mailbox/index.ts')
 const originalFetch=globalThis.fetch
+test('existing review is explicit, versioned and stale failures remain safe',async()=>{
+ let providerReads=0,rpcCalls=0
+ const reviewedDraft={eventDate:'2026-10-24',startTime:'23:00',endTime:'01:00',venue:null,city:null,offerAmountMinor:60000,currency:'EUR',contactName:'Contacto',contactPhone:null,eventTimezone:'Europe/Madrid'}
+ globalThis.fetch=(async(url:any,init:any)=>{
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:user})
+  if(url.includes('workspace_members'))return Response.json([{role:'owner'}])
+  if(url.includes('mailbox_connections'))return Response.json([{id:connection,email:'dj@example.invalid',grant_id:'grant'}])
+  if(url.includes('nylas.com')){providerReads++;return Response.json({data:{id:'one',thread_id:'thread',from:[{email:'promoter@example.invalid'}],to:[{email:'dj@example.invalid'}],subject:'Cambio de oferta',body:'600 euros',date:1700000000}})}
+  if(url.includes('rpc/ingest_mailbox_thread')){rpcCalls++;const m=JSON.parse(init.body).target_messages[0];assert.equal(m.applyReviewedToExisting,true);assert.equal(m.expectedUpdatedAt,'2026-10-01T07:00:00Z');assert.equal('status' in m.reviewedDetails,false);return Response.json({message:'booking_review_stale',details:'private-detail'},{status:400})}
+  throw new Error('Unexpected access')
+ }) as typeof fetch
+ try{
+  const noVersion=await handler(req('import',{messageId:'one',artistId:user,reviewedDraft,applyReviewedToExisting:true}));assert.equal((await noVersion.json()).error,'invalid_booking_draft');assert.equal(providerReads,0)
+  const stale=await handler(req('import',{messageId:'one',artistId:user,reviewedDraft,applyReviewedToExisting:true,expectedUpdatedAt:'2026-10-01T07:00:00Z'}));assert.deepEqual(await stale.json(),{error:'booking_review_stale'});assert.equal(rpcCalls,1)
+ }finally{globalThis.fetch=originalFetch}
+})
 test('reviewed imports reject status or contact email injection before reading a provider message',async()=>{
  let external=0
  globalThis.fetch=(async(url:any)=>{if(url.endsWith('/auth/v1/user'))return Response.json({id:user});if(url.includes('workspace_members'))return Response.json([{role:'owner'}]);if(url.includes('mailbox_connections'))return Response.json([{id:connection,email:'dj@example.invalid',grant_id:'grant'}]);external++;throw new Error('Unexpected external call')}) as typeof fetch
@@ -34,6 +50,7 @@ test('repeated send attempt never sends again to the external provider',async()=
  if(url.includes('workspace_members'))return Response.json([{role:'owner'}])
  if(url.includes('mailbox_connections'))return Response.json([{id:connection,email:'dj@example.invalid',grant_id:'grant'}])
  if(url.includes('mailbox_booking_threads'))return Response.json([])
+ if(url.includes('mailbox_booking_threads'))return Response.json([])
  if(url.includes('bookings?'))return Response.json([{id:booking,primary_contact_id:user,archived_at:null}])
  if(url.includes('contacts?'))return Response.json([{email:'promoter@example.invalid'}])
  if(url.includes('mailbox_send_attempts'))return Response.json([{id:workspace,user_id:user,state:'uncertain'}])
@@ -61,6 +78,7 @@ test('selected-mail analysis reads and transmits only the requested message',asy
  if(url.endsWith('/auth/v1/user'))return Response.json({id:user})
  if(url.includes('workspace_members'))return Response.json([{role:'owner'}])
  if(url.includes('mailbox_connections'))return Response.json([{id:connection,email:'dj@example.invalid',grant_id:'grant'}])
+ if(url.includes('mailbox_booking_threads'))return Response.json([])
  if(url.includes('nylas.com')){reads.push(url);assert.match(url,/\/messages\/selected-mail$/);return Response.json({data:{id:'selected-mail',thread_id:'thread',from:[{email:'promoter@example.invalid'}],to:[{email:'dj@example.invalid'}],subject:'Disponibilidad',body:'Actuación de prueba',date:1700000000}})}
  if(url.includes('groq.com')){const payload=JSON.parse(init.body),messages=JSON.parse(payload.messages[1].content);assert.deepEqual(messages.map((m:any)=>m.id),['selected-mail']);return Response.json({choices:[{finish_reason:'stop',message:{content:JSON.stringify({messages:[{id:'selected-mail',kind:'booking',reason:'Consulta disponibilidad',draft:{eventDate:null,startTime:null,endTime:null,venue:null,city:null,offerAmountMinor:null,currency:null,artistName:null,contactPhone:null,warnings:['Falta fecha']}}]})}}]})}
  throw new Error('Unexpected access')

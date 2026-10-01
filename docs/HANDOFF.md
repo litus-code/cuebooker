@@ -1,3 +1,11 @@
+## 2026-10-01 / Explicit reviewed changes for existing mailbox threads
+
+PR96 preview/staging only. Selected classification returns the existing linked booking from server-owned connection/thread lookup, including current details and updated_at. Shared DJ/Agency form merges missing suggestions with current fields, locks existing artist/contact inputs, shows current/proposed changes and leaves Apply changes unchecked. Opening the existing enquiry alone does not update details. Saving reviewed changes requires explicit checkbox plus action; changing an input resets that checkbox. No AI/status/artist/contact mutation is allowed. Missing proposed values never erase current data.
+
+Migration `20261001075121_mailbox_existing_review.sql` replaces same service-only ingest signature. Existing booking is locked; explicitly reviewed update must match its updated_at and uses canonical update_booking_details RPC under verified actor claims. Stale/deleted links reject with safe booking_review_stale; unrelated concurrent edits are not silently replaced. Existing terminal decisions remain unchanged. Classifier reuses pure emailReplyPresentation to exclude recognized quoted history before draft extraction/year validation; original stored email remains intact. Quotation detection remains heuristic for unrecognized formats.
+
+371 tests passed, including selected-message scope, quoted-history year rejection and explicit versioned/stale endpoint behavior. Staging rollback SQL passed new/retry/contact/privacy cases plus reviewed offer update, null-field preservation, stale review rejection, existing human confirmation preservation and no email duplication. Staging Edge v15 ACTIVE; final generation/preview/live review verification tracked next. Security advisor categories unchanged. No outbound email or production change. Next: preview smoke using known synthetic email, then broader classifier evaluation and streamlined intake. Mobile390 and separate live DJ smoke remain unverified.
+
 ## 2026-10-01 / Reviewed mailbox booking details and verified sender contact
 
 Final refinement HEAD `23a4eaa736b1ef379c526289cf70688eb664f44f`: CI and PR96 preview deployment succeeded. Contact and booking review extraction are ready in preview; final live test already exercised the refined server prompt. Staging Edge remains ACTIVE v14. No production deployment authorized.

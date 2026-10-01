@@ -13,6 +13,16 @@ begin
  if not exists(select 1 from public.contacts where id=contact and email='draft-smoke@example.invalid' and phone='+34930000000' and name='Contacto ficticio') then raise exception 'verified_sender_contact_failed'; end if;
  retry:=public.ingest_mailbox_thread(c.id,c.user_id,thread,jsonb_build_array(msg||jsonb_build_object('reviewedDetails',draft||jsonb_build_object('offerAmountMinor',90000))),a);
  if retry<>bid or (select offer_amount_minor from public.bookings where id=bid)<>50000 or (select count(*) from public.email_messages where booking_id=bid)<>1 then raise exception 'retry_changed_data_or_duplicated_mail'; end if;
+ retry:=public.ingest_mailbox_thread(c.id,c.user_id,thread,jsonb_build_array(msg||jsonb_build_object('applyReviewedToExisting',true,'expectedUpdatedAt',(select updated_at from public.bookings where id=bid),'reviewedDetails',draft||jsonb_build_object('offerAmountMinor',60000,'city',null))),a);
+ if retry<>bid or not exists(select 1 from public.bookings where id=bid and offer_amount_minor=60000 and city='Barcelona' and status not in ('confirmed','rejected','cancelled')) then raise exception 'explicit_review_failed'; end if;
+ begin
+  perform public.ingest_mailbox_thread(c.id,c.user_id,thread,jsonb_build_array(msg||jsonb_build_object('applyReviewedToExisting',true,'expectedUpdatedAt','2000-01-01T00:00:00Z')),a);
+  raise exception 'stale_review_allowed';
+ exception when others then if sqlerrm<>'booking_review_stale' then raise; end if; end;
+ perform public.set_booking_status(c.workspace_id,bid,'confirmed');
+ perform public.ingest_mailbox_thread(c.id,c.user_id,thread,jsonb_build_array(msg||jsonb_build_object('applyReviewedToExisting',true,'expectedUpdatedAt',(select updated_at from public.bookings where id=bid),'reviewedDetails',draft||jsonb_build_object('offerAmountMinor',70000))),a);
+ if not exists(select 1 from public.bookings where id=bid and offer_amount_minor=70000 and status='confirmed') then raise exception 'human_decision_not_preserved'; end if;
+ if (select count(*) from public.email_messages where booking_id=bid)<>1 then raise exception 'review_duplicated_email'; end if;
  thread:='second-smoke-'||gen_random_uuid();
  retry:=public.ingest_mailbox_thread(c.id,c.user_id,thread,jsonb_build_array(msg||jsonb_build_object('id',gen_random_uuid(),'threadId',thread)),a);
  if (select primary_contact_id from public.bookings where id=retry)<>contact then raise exception 'contact_not_reused'; end if;
