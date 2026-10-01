@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Activity, CoreBooking } from '../domain/bookingCore'
 import type { WorkspaceActivityHistoryRow } from '../services/bookingCoreApi'
+import { emailReplyPresentation } from '../services/emailReplyPresentation'
 
 const props = defineProps<{
   workspaceId: string
@@ -179,7 +180,7 @@ function activityDetail(activity: Activity) {
     return activity.body
   }
 
-  if (activity.body) return activity.body
+  if (activity.body) return activity.type === 'email' ? emailReplyPresentation(activity.body).body : activity.body
   if (activity.type === 'status_change') {
     const from = String(activity.metadata?.from_status || '')
     const to = String(activity.metadata?.to_status || '')

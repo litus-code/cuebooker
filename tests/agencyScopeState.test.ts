@@ -10,7 +10,8 @@ test('actual AgencyWorkspace keeps one operational scope across selected artist,
  const {descriptor}=parse(await readFile(filename,'utf8'))
  const compiled=compileScript(descriptor,{id:'agency-scope'}).content
  const rosterUrl=new URL('../app/domain/agencyRoster.ts',import.meta.url).href
- const code=stripTypeScriptTypes(compiled.replace("'../domain/agencyRoster'",JSON.stringify(rosterUrl)).replace(/from ['"]vue['"]/g,`from ${JSON.stringify(import.meta.resolve('vue'))}`),{mode:'transform'})
+ const emailUrl=new URL('../app/services/emailReplyPresentation.ts',import.meta.url).href
+ const code=stripTypeScriptTypes(compiled.replace("'../domain/agencyRoster'",JSON.stringify(rosterUrl)).replace("'../services/emailReplyPresentation'",JSON.stringify(emailUrl)).replace(/from ['"]vue['"]/g,`from ${JSON.stringify(import.meta.resolve('vue'))}`),{mode:'transform'})
  const module=await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`)
  const globals={ref,computed,watch,onUnmounted,nextTick,useRoute:()=>({query:{}}),useRouter:()=>({replace:async()=>{}}),useBookingCore:()=>({}),useArtistProfile:()=>({})}
  for(const [key,value] of Object.entries(globals))(globalThis as any)[key]=value
@@ -21,6 +22,9 @@ test('actual AgencyWorkspace keeps one operational scope across selected artist,
  const app=renderer.createApp(harness)
  try{
   app.mount({});await nextTick()
+  const reply='Recibido!\nEl 2026-09-30 23:38, Test escribi&oacute;:\nMensaje anterior'
+  assert.equal(state.activityPreview({type:'email',body:reply}),'Recibido!')
+  assert.equal(state.activityPreview({type:'note',body:reply}),reply)
   assert.deepEqual(state.scopedArtists.value.map((a:any)=>a.id),['b'])
   assert.deepEqual(state.calendarArtists.value,['b'])
   assert.deepEqual(state.visibleMonthBookings.value.map((b:any)=>b.id),['b1'])

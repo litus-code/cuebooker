@@ -1,3 +1,9 @@
+## 2026-10-01 / Email reply summaries across agency and DJ activity
+
+Branch `feature/agency-multi-artist-beta`, base HEAD `e8e4c33ed9ae13f0540e4bb917a20bd5215038f5`, PR #96 preview only. Agency overview/recent activity and Activity list now reuse the existing emailReplyPresentation helper; shared DJ BookingCoreHistory does likewise. Only email rows decode entities and omit recognized quoted history from the summary. Notes and operational descriptions retain their original presentation. Original stored messages remain intact and accessible from Booking conversation. No schema, provider, authorization or backend changes.
+
+361 tests pass, including mounted AgencyWorkspace checks for new-message-only email preview and unchanged note body; test harness resolves the newly imported helper. 38-route static generation and diff check pass. Preview deployment and authenticated visual confirmation tracked next. Mobile390 remains unverified because the current browser API exposes no viewport resizing. Next: confirm overview and Activity with the real test reply, then mobile verification when a supported viewport is available. OpenAI429, Microsoft/custom-domain live pilot, automatic capture and Meta integrations remain pending. Production untouched.
+
 ## 2026-10-01 / Agency team load correction and access regression
 
 Branch `feature/agency-multi-artist-beta`, remote base HEAD `0314a227e638cce772d86cfaa577ff0c8277fb2b`, PR #96 preview/staging only. Reproduced team-load failure: PostgreSQL 42804 because `auth.users.email` is varchar(255), while `list_agency_team` declares text. Migration `20261001022812_agency_team_email_result_type.sql` explicitly casts email to text and adds deterministic ordering. Existing private definer/public invoker boundary, membership checks and grants remain unchanged. Applied only to staging `lycprjeuuynfzwskycwv`; production untouched.
