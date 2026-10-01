@@ -1,3 +1,4 @@
+import {setTimeout as pace} from 'node:timers/promises'
 import {classifyBookingMail} from '../supabase/functions/_shared/mailboxClassifier.ts'
 import {mailboxEvaluationCases,scoreMailboxEvaluation} from './mailbox-evaluation-cases.ts'
 // Optional operator-only synthetic test. Never logs a credential or reads mail.
@@ -11,7 +12,7 @@ if(!process.argv.includes('--live')){
  try{
   calls++;const categories=await classifyBookingMail(mailboxEvaluationCases,key,fetch,false,report);
   const extracted=[];
-  for(const item of mailboxEvaluationCases.filter(c=>c.draft)){calls++;extracted.push(...await classifyBookingMail([item],key,fetch,true,report));}
+  for(const item of mailboxEvaluationCases.filter(c=>c.draft)){await pace(35000);calls++;extracted.push(...await classifyBookingMail([item],key,fetch,true,report));}
   const categoryReport=scoreMailboxEvaluation(mailboxEvaluationCases,categories);
   const draftReport=scoreMailboxEvaluation(mailboxEvaluationCases.filter(c=>c.draft),extracted,true);
   console.log(JSON.stringify({mode:'live-synthetic',model:'openai/gpt-oss-20b',categories:categoryReport,extraction:draftReport,calls,inputTokens,outputTokens,usageMissing}));
