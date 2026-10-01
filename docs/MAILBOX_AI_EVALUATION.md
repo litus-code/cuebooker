@@ -32,4 +32,8 @@ The script only sends its fictional corpus to the configured existing Groq model
 
 ## Before automatic intake
 
+Proposed interpretation of user direction, 1 October: allowlist the connected mailboxes explicitly authorized for background AI, rather than restricting enquiries to known senders. A new promoter must remain eligible. Connecting a mailbox alone is not background AI consent. Background processing requires active owned connection, valid workspace membership, explicit consent for the current processor and available allowance. Scope analysis to newly received messages in those authorized mailboxes; do not reanalyze old history on refresh or repeated provider delivery. Outbound mail and obvious provider spam/trash should not enter the detection path. Verify actual folder metadata/provider event support during implementation.
+
+Replies to an already linked thread should sync directly to that booking through the existing deterministic path without reclassifying the conversation. Extracting proposed changed conditions remains separately reviewed. Use provider event/message IDs and tenant/connection scope for deduplication; retry delivery must not spend another AI attempt. This is the proposed target design, not an enabled background feature. Cache, background opt-in storage and webhook/job processing are not implemented by this block.
+
 Run the corpus against the live model, inspect false positives and uncertain cases, expand it using consented/redacted examples, and measure usage. Add per-message caching/deduplication, background consent and an authenticated idempotent webhook/job path before automatic detection/import. Category results must not confirm/reject/cancel, create holds or send a reply. Production remains unchanged.
