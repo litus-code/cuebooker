@@ -76,7 +76,7 @@ Deno.serve(async(request:Request)=>{
     hasLinkedThread=links.length>0;
     linkedConnectionIds=links.map(l=>l.connection_id).filter(id=>connections.some(c=>c.id===id));
    }
-   return json({configured,connections:safe,linkedConnectionIds,hasLinkedThread,beta:await beta('status')});
+   return json({configured,connections:safe,linkedConnectionIds,hasLinkedThread,beta:await beta('status'),ai:{provider:'groq',model:'openai/gpt-oss-20b',configured:Boolean(Deno.env.get('GROQ_API_KEY'))}});
   }
   if(!configured)return json({error:'mailbox_not_configured'},503);
   back('check');
@@ -98,16 +98,18 @@ Deno.serve(async(request:Request)=>{
    const connection=rows[0];if(!connection)return json({error:'connection_not_found'},404);
    const provider=createNylasMailbox(config);
    if(input.action==='classify'&&input.analysisConsent!==true)return json({error:'mailbox_analysis_consent_required'},400);
+   if(input.action==='classify'&&input.analysisProvider!=='groq')return json({error:'mailbox_analysis_consent_required'},400);
    if(input.action==='recent'||input.action==='classify'){
     const single=input.action==='classify'&&input.messageId!==undefined;
     if(single&&(typeof input.messageId!=='string'||!input.messageId.trim()||input.messageId.length>512))return json({error:'invalid_message'},400);
+    if(input.action==='classify'&&!Deno.env.get('GROQ_API_KEY'))return json({error:'mailbox_ai_not_configured'},503);
     const result=single?{messages:[await provider.message(connection.grant_id,input.messageId)],nextCursor:null}:await provider.messages(connection.grant_id);
     const messages=result.messages.map((m:any)=>mailboxMessage(m,connection.email)).filter((m:any)=>m.from!==connection.email);
     if(input.action==='classify'){
      const threshold=encodeURIComponent(new Date(Date.now()-60000).toISOString());
      const claimed=await db<any[]>(`${path}&id=eq.${connection.id}&or=(ai_last_requested_at.is.null,ai_last_requested_at.lt.${threshold})`,{method:'PATCH',body:JSON.stringify({ai_last_requested_at:new Date().toISOString()})});
      if(!claimed.length)return json({error:'mailbox_analysis_rate_limit'},429);
-     const classifications=await classifyBookingMail(messages,Deno.env.get('OPENAI_API_KEY')||'');
+     const classifications=await classifyBookingMail(messages,Deno.env.get('GROQ_API_KEY')||'');
      return json({messages:messages.map((m:any)=>({...m,classification:classifications.find(c=>c.id===m.id)})),hasMore:Boolean(result.nextCursor)});
     }
     return json({messages,hasMore:Boolean(result.nextCursor)});

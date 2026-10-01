@@ -1,3 +1,11 @@
+## 2026-10-01 / Groq mailbox classifier transition
+
+PR #96, branch `feature/agency-multi-artist-beta`, base `24e63bba14e2b2fe16fb561ff4cc2c80dda02258`. User approved Groq GPT-OSS20B for mailbox classification. Adapter uses Groq Chat Completions `openai/gpt-oss-20b`, strict JSON schema, bounded text and validated IDs. No tools, retries, provider fallback or automatic imports. Unsupported Chat Completions `store` parameter omitted after checking official API reference; retention depends on provider/account controls, no zero-retention guarantee. Smart Capture remains unchanged and still uses OpenAI.
+
+Server requires `analysisConsent:true` and `analysisProvider:'groq'` before mailbox retrieval. Old OpenAI consent cannot authorize transmission to Groq. `GROQ_API_KEY` absent returns 503 before provider message access, even if an old OpenAI key exists. Status exposes only provider/model/configured boolean. Shared DJ/Agency disclosure names Groq; Settings shows pending activation when unconfigured. No secret exposed to browser/chat. Credential setup and real synthetic quality/latency/cost validation remain pending; transport tests are not accuracy evidence.
+
+365 tests passed, including provider contract and old-consent/missing-key zero-network regression. Final static generation passed 38 routes. Staging Edge deployment and authenticated preview verification tracked below. No new inbox reads, AI calls, outbound emails, subscriptions, accounts or production changes. Keep private-mail classification and automatic capture pending until synthetic evaluation succeeds. Mobile390 remains unverified.
+
 ## 2026-10-01 / Mailbox timeout and AI limit diagnostics
 
 Branch `feature/agency-multi-artist-beta`, base HEAD `a3ea9687cf0f050bd7f484216fb2ed984067fda5`, PR #96 preview/staging only. Sanitized log aggregation for 30 September 06:00Z to 1 October 05:25Z finds six generic timeout failures and one logged OpenAI429. Existing logs cannot identify timed-out dependency/action or quota-vs-rate cause; do not claim a root-cause fix.

@@ -50,17 +50,32 @@ test('classification requires explicit analysis consent before reading or transm
 })
 
 test('selected-mail analysis reads and transmits only the requested message',async()=>{
- env.OPENAI_API_KEY='test-key'
+ env.GROQ_API_KEY='test-key'
  const reads:string[]=[]
  globalThis.fetch=(async(url:any,init:any)=>{
  if(url.endsWith('/auth/v1/user'))return Response.json({id:user})
  if(url.includes('workspace_members'))return Response.json([{role:'owner'}])
  if(url.includes('mailbox_connections'))return Response.json([{id:connection,email:'dj@example.invalid',grant_id:'grant'}])
  if(url.includes('nylas.com')){reads.push(url);assert.match(url,/\/messages\/selected-mail$/);return Response.json({data:{id:'selected-mail',thread_id:'thread',from:[{email:'promoter@example.invalid'}],to:[{email:'dj@example.invalid'}],subject:'Disponibilidad',body:'Actuación de prueba',date:1700000000}})}
- if(url.includes('openai.com')){const payload=JSON.parse(init.body),messages=JSON.parse(payload.input);assert.deepEqual(messages.map((m:any)=>m.id),['selected-mail']);return Response.json({output:[{content:[{type:'output_text',text:JSON.stringify({messages:[{id:'selected-mail',kind:'booking',reason:'Consulta disponibilidad'}]})}]}]})}
+ if(url.includes('groq.com')){const payload=JSON.parse(init.body),messages=JSON.parse(payload.messages[1].content);assert.deepEqual(messages.map((m:any)=>m.id),['selected-mail']);return Response.json({choices:[{finish_reason:'stop',message:{content:JSON.stringify({messages:[{id:'selected-mail',kind:'booking',reason:'Consulta disponibilidad'}]})}}]})}
  throw new Error('Unexpected access')
  }) as typeof fetch
- try{const response=await handler(req('classify',{analysisConsent:true,messageId:'selected-mail'}));assert.equal(response.status,200);const result=await response.json();assert.equal(result.messages.length,1);assert.equal(result.messages[0].classification.kind,'booking');assert.equal(result.hasMore,false);assert.equal(reads.length,1)}finally{globalThis.fetch=originalFetch;delete env.OPENAI_API_KEY}
+ try{const response=await handler(req('classify',{analysisConsent:true,analysisProvider:'groq',messageId:'selected-mail'}));assert.equal(response.status,200);const result=await response.json();assert.equal(result.messages.length,1);assert.equal(result.messages[0].classification.kind,'booking');assert.equal(result.hasMore,false);assert.equal(reads.length,1)}finally{globalThis.fetch=originalFetch;delete env.GROQ_API_KEY}
+})
+
+test('old provider consent and missing Groq key never read mail or fall back to OpenAI',async()=>{
+ env.OPENAI_API_KEY='old-key'
+ let externalCalls=0
+ globalThis.fetch=(async(url:any)=>{
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:user})
+  if(url.includes('workspace_members'))return Response.json([{role:'owner'}])
+  if(url.includes('mailbox_connections'))return Response.json([{id:connection,email:'dj@example.invalid',grant_id:'grant'}])
+  externalCalls++;throw new Error('Unexpected transmission')
+ }) as typeof fetch
+ try{
+  const old=await handler(req('classify',{analysisConsent:true,messageId:'one'}));assert.equal((await old.json()).error,'mailbox_analysis_consent_required')
+  const missing=await handler(req('classify',{analysisConsent:true,analysisProvider:'groq',messageId:'one'}));assert.equal(missing.status,503);assert.equal((await missing.json()).error,'mailbox_ai_not_configured');assert.equal(externalCalls,0)
+ }finally{globalThis.fetch=originalFetch;delete env.OPENAI_API_KEY}
 })
 
 test('invalid selected message cannot fall back to analyzing the mailbox',async()=>{
@@ -71,7 +86,7 @@ test('invalid selected message cannot fall back to analyzing the mailbox',async(
  if(url.includes('mailbox_connections'))return Response.json([{id:connection,email:'dj@example.invalid',grant_id:'grant'}])
  externalCalls++;throw new Error('Unexpected transmission')
  }) as typeof fetch
- try{const response=await handler(req('classify',{analysisConsent:true,messageId:''}));assert.equal(response.status,400);assert.equal(externalCalls,0)}finally{globalThis.fetch=originalFetch}
+ try{const response=await handler(req('classify',{analysisConsent:true,analysisProvider:'groq',messageId:''}));assert.equal(response.status,400);assert.equal(externalCalls,0)}finally{globalThis.fetch=originalFetch}
 })
 
 test('global beta full rejects authorization before contacting the provider',async()=>{

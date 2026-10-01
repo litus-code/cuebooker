@@ -21,6 +21,6 @@ test('classifier rejects invented IDs, duplicated results and unexpected categor
 })
 test('analysis sends bounded text with no attachments, disables storage and treats mail as untrusted',async()=>{
  let payload:any
- const result=await classifyBookingMail([{id:'one',subject:'Disponibilidad',body:'x'.repeat(10000)}],'key',(async(_url:any,init:any)=>{payload=JSON.parse(init.body);return Response.json({output:[{content:[{type:'output_text',text:JSON.stringify({messages:[{id:'one',kind:'review',reason:'Falta contexto'}]})}]}]})}) as typeof fetch)
- assert.equal(payload.store,false);assert.equal(JSON.parse(payload.input)[0].body.length,2500);assert.match(payload.instructions,/untrusted/);assert.equal('tools' in payload,false);assert.equal(result[0].kind,'review')
+ const result=await classifyBookingMail([{id:'one',subject:'Disponibilidad',body:'x'.repeat(10000)}],'key',(async(url:any,init:any)=>{assert.equal(url,'https://api.groq.com/openai/v1/chat/completions');payload=JSON.parse(init.body);return Response.json({choices:[{finish_reason:'stop',message:{content:JSON.stringify({messages:[{id:'one',kind:'review',reason:'Falta contexto'}]})}}]})}) as typeof fetch)
+ assert.equal(payload.model,'openai/gpt-oss-20b');assert.equal(payload.response_format.json_schema.strict,true);assert.equal('store' in payload,false);assert.equal(JSON.parse(payload.messages[1].content)[0].body.length,2500);assert.match(payload.messages[0].content,/untrusted/);assert.equal('tools' in payload,false);assert.equal(result[0].kind,'review')
 })
