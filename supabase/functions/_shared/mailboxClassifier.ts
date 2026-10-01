@@ -1,6 +1,8 @@
 import {mailboxDraftSchema,validateMailboxDraft} from './mailboxBookingDraft.ts';
 import {emailReplyPresentation} from '../../../app/services/emailReplyPresentation.ts';
 import type {MailboxBookingDraft} from './mailboxBookingDraft.ts';
+import {mailboxTokenUsage} from './mailboxAnalysisBudget.ts';
+import type {MailboxTokenUsage} from './mailboxAnalysisBudget.ts';
 export type BookingMailClassification={id:string;kind:'booking'|'review'|'other';reason:string;draft?:MailboxBookingDraft}
 export function validateMailClassifications(value:any,ids:string[]):BookingMailClassification[]{
  if(!Array.isArray(value?.messages)||value.messages.length!==ids.length)throw new Error('invalid_classification');
@@ -10,7 +12,7 @@ export function validateMailClassifications(value:any,ids:string[]):BookingMailC
   seen.add(item.id);return {id:item.id,kind:item.kind,reason:item.reason,...(item.draft?{draft:validateMailboxDraft(item.draft)}:{})};
  });
 }
-export async function classifyBookingMail(messages:Array<{id:string;subject:string;body:string}>,key:string,request:typeof fetch=fetch,extractDraft=false){
+export async function classifyBookingMail(messages:Array<{id:string;subject:string;body:string}>,key:string,request:typeof fetch=fetch,extractDraft=false,reportUsage?:(usage:MailboxTokenUsage)=>void){
  if(!key)throw new Error('mailbox_ai_not_configured');
  if(!messages.length)return [];
  const response=await request('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{Authorization:`Bearer ${key}`,'Content-Type':'application/json'},signal:AbortSignal.timeout(25000),body:JSON.stringify({
@@ -31,6 +33,7 @@ JSON.stringify(messages.slice(0,20).map(m=>({id:m.id,subject:m.subject,body:(ext
   throw new Error(category);
  }
  const result=await response.json();
+ reportUsage?.(mailboxTokenUsage(result.usage));
  const text=result.choices?.[0]?.message?.content;
  if(typeof text!=='string'||result.choices?.[0]?.finish_reason==='length')throw new Error('invalid_classification');
  try{const parsed=validateMailClassifications(JSON.parse(text),messages.slice(0,20).map(m=>m.id));if(extractDraft){for(const item of parsed){if(!item.draft)throw new Error('missing_draft');const source=messages.find(m=>m.id===item.id)!;if(item.draft.eventDate&&!new RegExp('\\b'+item.draft.eventDate.slice(0,4)+'\\b').test(source.subject+' '+emailReplyPresentation(source.body).body)){item.draft.eventDate=null;item.draft.warnings.push('Revisa el año: no aparece explícitamente en el correo.')}}}return parsed;}catch{throw new Error('invalid_classification');}

@@ -70,6 +70,19 @@ test('reviewed imports reject status or contact email injection before reading a
  try{for(const reviewedDraft of [{status:'confirmed'},{email:'attacker@example.invalid'}]){const r=await handler(req('import',{messageId:'one',artistId:user,reviewedDraft}));assert.equal((await r.json()).error,'invalid_booking_draft')}assert.equal(external,0)}finally{globalThis.fetch=originalFetch}
 })
 function req(action:string,extra:Record<string,unknown>={}){return new Request('https://edge.invalid',{method:'POST',headers:{Authorization:'Bearer token','Content-Type':'application/json'},body:JSON.stringify({action,workspaceId:workspace,connectionId:connection,...extra})})}
+test('monthly budget exhaustion blocks Groq at the actual authenticated Edge boundary',async()=>{
+ env.GROQ_API_KEY='test-key';let aiCalls=0;
+ globalThis.fetch=(async(url:any,init:any)=>{
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:user});
+  if(url.includes('workspace_members'))return Response.json([{role:'owner'}]);
+  if(url.includes('mailbox_connections'))return Response.json([{id:connection,email:'dj@example.invalid',grant_id:'grant'}]);
+  if(url.includes('nylas.com'))return Response.json({data:{id:'one',thread_id:'thread',from:[{email:'promoter@example.invalid'}],to:[{email:'dj@example.invalid'}],body:'Solicitud ficticia',date:1700000000}});
+  if(url.includes('rpc/reserve_mailbox_analysis')){const input=JSON.parse(init.body);assert.equal(input.target_workspace,workspace);assert.equal(input.target_actor,user);assert.equal(input.target_connection,connection);return Response.json({error:'mailbox_ai_budget_exhausted'})}
+  if(url.includes('groq.com'))aiCalls++;
+  throw new Error('Unexpected provider or accounting access');
+ }) as typeof fetch;
+ try{const response=await handler(req('classify',{messageId:'one',analysisConsent:true,analysisProvider:'groq'}));assert.deepEqual(await response.json(),{error:'mailbox_ai_budget_exhausted'});assert.equal(aiCalls,0)}finally{globalThis.fetch=originalFetch;delete env.GROQ_API_KEY}
+})
 test('storage timeout returns a safe category and never reaches mailbox provider',async()=>{
  const warn=console.warn,logs:any[]=[];console.warn=(...args)=>logs.push(args)
  globalThis.fetch=(async(url:any)=>{if(url.endsWith('/auth/v1/user'))return Response.json({id:user});if(url.includes('workspace_members'))throw new DOMException('private detail','TimeoutError');throw new Error('Unexpected provider access')}) as typeof fetch
@@ -117,6 +130,8 @@ test('selected-mail analysis reads and transmits only the requested message',asy
  env.GROQ_API_KEY='test-key'
  const reads:string[]=[]
  globalThis.fetch=(async(url:any,init:any)=>{
+ if(url.includes('rpc/reserve_mailbox_analysis')){const input=JSON.parse(init.body);assert.equal(input.target_connection,connection);assert.equal(input.target_actor,user);return Response.json({reserved:true})}
+ if(url.includes('rpc/complete_mailbox_analysis')){assert.equal(JSON.parse(init.body).target_outcome,'succeeded');return Response.json({recorded:true})}
  if(url.endsWith('/auth/v1/user'))return Response.json({id:user})
  if(url.includes('workspace_members'))return Response.json([{role:'owner'}])
  if(url.includes('mailbox_connections'))return Response.json([{id:connection,email:'dj@example.invalid',grant_id:'grant'}])

@@ -1,4 +1,5 @@
 import { classifyBookingMail } from '../_shared/mailboxClassifier.ts';
+import { withMailboxAnalysisBudget } from '../_shared/mailboxAnalysisBudget.ts';
 import { validateReviewedMailboxDraft } from '../_shared/mailboxBookingDraft.ts';
 import { mailboxMessage } from '../_shared/mailboxMessage.ts';
 import { createNylasMailbox, mailboxAuthorizationUrl, normalizeMailboxEmail, knownMailboxProvider } from '../_shared/nylasMailbox.ts';
@@ -130,7 +131,13 @@ Deno.serve(async(request:Request)=>{
      const threshold=encodeURIComponent(new Date(Date.now()-60000).toISOString());
      const claimed=await db<any[]>(`${path}&id=eq.${connection.id}&or=(ai_last_requested_at.is.null,ai_last_requested_at.lt.${threshold})`,{method:'PATCH',body:JSON.stringify({ai_last_requested_at:new Date().toISOString()})});
      if(!claimed.length)return json({error:'mailbox_analysis_rate_limit'},429);
-     const classifications=await classifyBookingMail(messages,Deno.env.get('GROQ_API_KEY')||'',fetch,single);
+     const requestId=crypto.randomUUID();
+     const budgetContext={target_workspace:workspace,target_actor:userId,target_connection:connection.id,target_request:requestId};
+     const classifications=messages.length?await withMailboxAnalysisBudget({
+      reserve:()=>db<any>('rpc/reserve_mailbox_analysis',{method:'POST',body:JSON.stringify(budgetContext)}),
+      complete:(outcome,usage)=>db('rpc/complete_mailbox_analysis',{method:'POST',body:JSON.stringify({...budgetContext,target_outcome:outcome,target_input_tokens:usage.inputTokens,target_output_tokens:usage.outputTokens})}),
+      run:report=>classifyBookingMail(messages,Deno.env.get('GROQ_API_KEY')||'',fetch,single,report)
+     }):[];
      let existingBooking:any=null;
      if(single&&messages[0]){
       const links=await db<Array<{booking_id:string}>>(`mailbox_booking_threads?workspace_id=eq.${workspace}&connection_id=eq.${connection.id}&thread_id=eq.${encodeURIComponent(messages[0].threadId)}&select=booking_id&limit=1`);
@@ -242,6 +249,7 @@ Deno.serve(async(request:Request)=>{
   const name=(error as Error).name==='TimeoutError'?'mailbox_request_timeout':(error as Error).message;
   const allowed=['mailbox_provider_selection_required','mailbox_beta_full','workspace_access_denied','invalid_email','invalid_provider','invalid_provider_configuration','invalid_callback','invalid_return_url','mailbox_reconnect_required','mailbox_not_found','mailbox_provider_unavailable','mailbox_not_configured','invalid_oauth_state','account_mismatch','connection_not_found','invalid_message','artist_required','archived_booking_read_only','mailbox_analysis_consent_required','mailbox_ai_not_configured','mailbox_ai_unavailable','invalid_classification','mailbox_analysis_rate_limit'];
   allowed.push('mailbox_request_timeout','mailbox_storage_timeout','mailbox_provider_timeout','mailbox_ai_quota_exhausted','mailbox_ai_rate_limit','invalid_booking_draft','booking_time_requires_date','booking_currency_required','booking_review_stale','invalid_booking','booking_not_found','thread_mailbox_required');
+  allowed.push('mailbox_ai_budget_exhausted','mailbox_analysis_already_attempted');
   console.warn('connected_mailbox_error',allowed.includes(name)?name:'mailbox_operation_failed',action);
   return json({error:allowed.includes(name)?name:'mailbox_operation_failed'},name==='workspace_access_denied'?403:400);
  }
