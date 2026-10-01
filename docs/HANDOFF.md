@@ -1,3 +1,11 @@
+## 2026-10-01 / Agency team load correction and access regression
+
+Branch `feature/agency-multi-artist-beta`, remote base HEAD `0314a227e638cce772d86cfaa577ff0c8277fb2b`, PR #96 preview/staging only. Reproduced team-load failure: PostgreSQL 42804 because `auth.users.email` is varchar(255), while `list_agency_team` declares text. Migration `20261001022812_agency_team_email_result_type.sql` explicitly casts email to text and adds deterministic ordering. Existing private definer/public invoker boundary, membership checks and grants remain unchanged. Applied only to staging `lycprjeuuynfzwskycwv`; production untouched.
+
+Added repeatable `supabase/tests/agency_team_access.sql`. Live rollback test passed authenticated owner team/invitation reads, owner/admin list access, manager/editor/viewer denial, owner/self mutation protection, foreign workspace denial, missing-auth rejection and anonymous EXECUTE denial. A second existing actor is temporarily added as member inside the transaction; all changes rolled back. Last-owner protection also rejected an initial test attempt to demote the only owner; test corrected without weakening that protection. 361 local tests pass and diff check passes. Security advisors retain the existing five definer warnings and leaked-password warning, with no additional warning introduced. Performance notices remain outside this narrow type correction.
+
+Browser session from the previous turn was not retained; PR preview redirects to Access. Authenticated visual confirmation and mobile390 remain pending secure sign-in. No real email, invitation, provider authorization or AI call made. Next: secure preview sign-in, verify Team loads, then mobile smoke and investigate transient mailbox status failures. OpenAI429, live Microsoft/custom-domain pilot, automatic capture and Meta connectors remain unresolved.
+
 ## 2026-10-01 / Email beta capacity, simple setup and fallback disclosure
 
 Branch `feature/agency-multi-artist-beta`, remote base HEAD `f27f05ff2b8068556871aea8156589713e2b877f`, local code base `21953f77a11c728bb3fa600c0bd2e05ae1d6a91e`, PR #96 only. User agreed limited free email beta, wants shared DJ/Agency setup by address, AI documentation and platform-email fallback made explicit.
