@@ -20,6 +20,7 @@ const { capacity: cueCapacity } = useCueEntitlements()
 const bookingCore = useBookingCore()
 const mailboxApi = useConnectedMailbox()
 const mailboxSyncNotice=ref('')
+const reviewEmailsOpen=ref(false)
 const analytics = useAnalytics()
 const selectedBookingId = ref('')
 const contacts = ref<Contact[]>([])
@@ -341,7 +342,7 @@ function emailDeliveryTone(activity: Activity) {
   return 'pending'
 }
 
-watch(() => selectedBooking.value?.id, () => loadActivity(), { immediate: true })
+watch(() => selectedBooking.value?.id, () => { reviewEmailsOpen.value=false; void loadActivity() }, { immediate: true })
 
 let activityPollTimer: ReturnType<typeof setInterval> | null = null
 
@@ -558,7 +559,7 @@ async function selectBooking(bookingId: string) {
 
 <template>
   <section class="core-inbox">
-    <MailboxRequestsPanel v-if="!demoData && canOperate && mailboxArtists?.length" :workspace-id="workspaceId" :locale="locale" :artists="mailboxArtists" @created="(id) => { emit('operationsChanged'); emit('bookingOpened',id) }" />
+    <MailboxRequestsPanel v-if="!focusBookingId && !demoData && canOperate && mailboxArtists?.length" :workspace-id="workspaceId" :locale="locale" :artists="mailboxArtists" @created="(id) => { emit('operationsChanged'); emit('bookingOpened',id) }" />
     <header class="core-inbox__heading">
       <div>
         <span>{{ copy.eyebrow }}</span>
@@ -729,6 +730,11 @@ async function selectBooking(bookingId: string) {
           </dl>
         </section>
 
+        <details v-if="!demoData && canOperate && mailboxArtists?.length && !selectedBooking.archived_at && selectedBooking.capture_method === 'email_import'" class="core-inbox__email-review" :open="reviewEmailsOpen" @toggle="reviewEmailsOpen=($event.target as HTMLDetailsElement).open">
+          <summary>{{ locale === 'es' ? 'Revisar datos de los correos' : 'Review email details' }}</summary>
+          <MailboxRequestsPanel v-if="reviewEmailsOpen" :key="selectedBooking.id" :booking-id="selectedBooking.id" :workspace-id="workspaceId" :locale="locale" :artists="mailboxArtists" @created="() => { reviewEmailsOpen=false; void handleOperationsChanged() }" />
+        </details>
+
         <section id="core-inbox-conversation" class="core-inbox__conversation" tabindex="-1">
           <div class="core-inbox__conversation-heading">
             <div>
@@ -879,6 +885,11 @@ async function selectBooking(bookingId: string) {
 </template>
 
 <style scoped>
+.core-inbox__email-review{margin:16px 0;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);overflow:hidden}
+.core-inbox__email-review>summary{padding:12px 16px;cursor:pointer;font-size:13px;color:var(--cue-text);min-height:44px;box-sizing:border-box}
+.core-inbox__email-review>summary:focus-visible{outline:2px solid var(--cue-accent);outline-offset:-3px}
+.core-inbox__email-review[open]>summary{border-bottom:1px solid var(--cue-border)}
+.core-inbox__email-review :deep(.mailbox-requests){margin:0;border:0;border-radius:0}
 .core-inbox { margin:var(--cue-space-3) 0 var(--cue-space-5); border:1px solid var(--cue-border); border-radius:var(--cue-radius-panel); background:var(--cue-surface); overflow:hidden; }
 .core-inbox__heading { display:flex; align-items:center; justify-content:space-between; gap:var(--cue-space-4); padding:var(--cue-space-4); border-bottom:1px solid var(--cue-border); }
 .core-inbox__heading-meta{display:flex;align-items:center;gap:8px}.core-inbox__heading-meta>b{color:var(--cue-accent);font:700 12px monospace}

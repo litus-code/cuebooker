@@ -6,6 +6,48 @@ const env:Record<string,string>={SUPABASE_URL:'https://db.invalid',SUPABASE_ANON
 ;(globalThis as any).Deno={env:{get:(key:string)=>env[key]},serve:(fn:any)=>{handler=fn}}
 await import('../supabase/functions/connected-mailbox/index.ts')
 const originalFetch=globalThis.fetch
+test('linked-thread review reads old mail only from the owned booking link without AI or writes',async()=>{
+ let providerReads=0
+ globalThis.fetch=(async(url:any,init:any)=>{
+  assert.notEqual(init?.method,'PATCH');assert.notEqual(init?.method,'POST')
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:user})
+  if(url.includes('workspace_members'))return Response.json([{role:'owner'}])
+  if(url.includes('mailbox_connections')){assert.match(url,new RegExp(`user_id=eq.${user}`));return Response.json([{id:connection,email:'dj@example.invalid',grant_id:'grant'}])}
+  if(url.includes('mailbox_booking_threads')){assert.match(url,new RegExp(`workspace_id=eq.${workspace}`));assert.match(url,new RegExp(`booking_id=eq.${booking}`));assert.match(url,new RegExp(`connection_id=eq.${connection}`));return Response.json([{thread_id:'owned-thread'}])}
+  if(url.includes('bookings?'))return Response.json([{id:booking,artist_id:user,status:'confirmed',updated_at:'2026-10-01T07:00:00Z'}])
+  if(url.includes('nylas.com')){providerReads++;const u=new URL(url);assert.equal(u.searchParams.get('thread_id'),'owned-thread');assert.equal(u.searchParams.has('received_after'),false);return Response.json({data:[
+   {id:'old',thread_id:'owned-thread',from:[{email:'promoter@example.invalid'}],to:[{email:'dj@example.invalid'}],body:'Old enquiry',date:1700000000},
+   {id:'outbound',thread_id:'owned-thread',from:[{email:'dj@example.invalid'}],to:[{email:'promoter@example.invalid'}],date:1700000001},
+   {id:'foreign',thread_id:'unrelated-thread',from:[{email:'someone@example.invalid'}],to:[{email:'dj@example.invalid'}],date:1700000002}
+  ]})}
+  throw new Error('Unexpected access')
+ }) as typeof fetch
+ try{const r=await handler(req('thread',{bookingId:booking}));assert.equal(r.status,200);const body=await r.json();assert.deepEqual(body.messages.map((m:any)=>m.id),['old']);assert.equal(body.messages[0].existingBooking.status,'confirmed');assert.equal(providerReads,1);assert.equal(body.hasMore,false)}finally{globalThis.fetch=originalFetch}
+})
+test('unlinked booking and foreign mailbox cannot read a thread or transmit to AI',async()=>{
+ let external=0
+ globalThis.fetch=(async(url:any)=>{
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:user})
+  if(url.includes('workspace_members'))return Response.json([{role:'owner'}])
+  if(url.includes('mailbox_connections'))return Response.json([{id:connection,email:'dj@example.invalid',grant_id:'grant'}])
+  if(url.includes('mailbox_booking_threads'))return Response.json([])
+  external++;throw new Error('Unexpected access')
+ }) as typeof fetch
+ try{const r=await handler(req('thread',{bookingId:booking}));assert.equal((await r.json()).error,'thread_mailbox_required');assert.equal(external,0)}finally{globalThis.fetch=originalFetch}
+})
+test('booking-scoped analysis rejects another thread before transmitting content to Groq',async()=>{
+ env.GROQ_API_KEY='test-key';let aiCalls=0
+ globalThis.fetch=(async(url:any)=>{
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:user})
+  if(url.includes('workspace_members'))return Response.json([{role:'owner'}])
+  if(url.includes('mailbox_connections'))return Response.json([{id:connection,email:'dj@example.invalid',grant_id:'grant'}])
+  if(url.includes('nylas.com'))return Response.json({data:{id:'one',thread_id:'wrong-thread',from:[{email:'promoter@example.invalid'}],to:[{email:'dj@example.invalid'}],date:1700000000}})
+  if(url.includes('mailbox_booking_threads')){assert.match(url,/thread_id=eq.wrong-thread/);return Response.json([])}
+  if(url.includes('groq.com'))aiCalls++
+  throw new Error('Unexpected access')
+ }) as typeof fetch
+ try{const r=await handler(req('classify',{bookingId:booking,messageId:'one',analysisConsent:true,analysisProvider:'groq'}));assert.equal((await r.json()).error,'thread_mailbox_required');assert.equal(aiCalls,0)}finally{globalThis.fetch=originalFetch;delete env.GROQ_API_KEY}
+})
 test('existing review is explicit, versioned and stale failures remain safe',async()=>{
  let providerReads=0,rpcCalls=0
  const reviewedDraft={eventDate:'2026-10-24',startTime:'23:00',endTime:'01:00',venue:null,city:null,offerAmountMinor:60000,currency:'EUR',contactName:'Contacto',contactPhone:null,eventTimezone:'Europe/Madrid'}

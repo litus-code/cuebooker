@@ -1,3 +1,11 @@
+## 2026-10-01 / Review an email from its existing booking thread
+
+Branch feature/agency-multi-artist-beta, base af4ab3daecfb2936907dbd67024ecb88244864e8. PR96 preview/staging only. Booking detail replaces the account-wide pilot inbox with a collapsed Review email details section for email_import bookings. Opening loads only the authenticated actor's linked connection and the first bound thread page (up to 20 messages, no seven-day filter); outbound and mismatched-thread results are excluded. Multiple linked threads or longer pages show a limitation notice. Saved conversation remains readable for other workspace members. No new scope, schema, grant or provider account.
+
+New connected-mailbox action thread resolves thread IDs exclusively from workspace/owned-connection/booking links. Booking-scoped single-email classification checks the exact message's link before Groq transmission; no batch mode inside booking detail. Explicit single-email consent remains. Shared DJ/Agency review component reuses reviewed update validation, current/proposed comparison, unchecked approval and updated_at protection. Refreshing the roster preserves the existing artist. Saving passes the booking ID and closes review before reloading normal data. No automatic confirmation, hold or outbound email.
+
+Tests add old linked-mail retrieval, no account-wide feed/AI/writes on thread read, wrong-link refusal before AI and mounted numeric review/booking context/artist preservation. Final build, deployment and live guarded save tracked below. Production untouched. Mobile390 and separate live DJ smoke remain unverified.
+
 ## 2026-10-01 / Explicit reviewed changes for existing mailbox threads
 
 PR96 preview/staging only. Selected classification returns the existing linked booking from server-owned connection/thread lookup, including current details and updated_at. Shared DJ/Agency form merges missing suggestions with current fields, locks existing artist/contact inputs, shows current/proposed changes and leaves Apply changes unchecked. Opening the existing enquiry alone does not update details. Saving reviewed changes requires explicit checkbox plus action; changing an input resets that checkbox. No AI/status/artist/contact mutation is allowed. Missing proposed values never erase current data.
