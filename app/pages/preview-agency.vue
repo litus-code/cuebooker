@@ -138,7 +138,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
     <header class="agency-preview__header workspace-header">
       <NuxtLink class="brand" to="/" aria-label="Cuebooker"><CueBrand class="agency-preview__brand" /></NuxtLink>
       <nav aria-label="Workspace Agency">
-        <button v-for="item in nav" :key="item.id" :data-workspace-view="item.id" type="button" :aria-current="(view === item.id || item.id === 'roster' && ['profile','passport','cue-id'].includes(view)) ? 'page' : undefined" @click="changeView(item.id)">{{ item.label }}</button>
+        <button v-for="item in nav" :key="item.id" :data-workspace-view="item.id" type="button" :aria-current="!previewNotificationsOpen && (view === item.id || item.id === 'roster' && ['profile','passport','cue-id'].includes(view)) ? 'page' : undefined" @click="changeView(item.id)">{{ item.label }}</button>
         <button class="agency-preview__desktop-notifications" type="button" :aria-label="locale === 'es' ? 'Notificaciones' : 'Notifications'" :aria-expanded="previewNotificationsOpen" @click="togglePreviewNotifications"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span>{{ locale === 'es' ? 'Notificaciones' : 'Notifications' }}</span><i v-if="previewNotificationsUnread" class="agency-preview__desktop-badge">1</i></button>
         <NuxtLink class="agency-preview__desktop-exit" to="/access"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/></svg><span>{{ locale === 'es' ? 'Cerrar sesión' : 'Sign out' }}</span></NuxtLink>
       </nav>
@@ -467,5 +467,22 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
   .agency-preview__notification-panel { position:fixed;z-index:100;inset:12px;width:auto;max-height:none;height:auto;margin:0;padding:0;overflow:auto;border-radius:var(--cue-radius-panel,18px);box-shadow:0 22px 70px #000a; }
   .agency-preview__notification-panel>header { padding:20px 18px; }
   .agency-preview__notification-item { padding:20px 18px; }
+}
+</style>
+
+<style scoped>
+.agency-preview__notification-panel .agency-preview__notification-close {
+  border:1px solid var(--cue-border)!important;border-radius:50%!important;background:transparent!important;color:var(--cue-text)!important;
+}
+.agency-preview__notification-panel .agency-preview__notification-close:hover,
+.agency-preview__notification-panel .agency-preview__notification-close:focus-visible {
+  border-color:var(--cue-accent)!important;background:transparent!important;color:var(--cue-accent)!important;
+}
+.agency-preview__notification-panel .agency-preview__notification-item {
+  border:0!important;border-radius:0!important;background:transparent!important;color:var(--cue-text)!important;
+}
+.agency-preview__notification-panel .agency-preview__notification-item:hover,
+.agency-preview__notification-panel .agency-preview__notification-item:focus-visible {
+  background:color-mix(in srgb,var(--cue-accent) 5%,var(--cue-surface))!important;
 }
 </style>
