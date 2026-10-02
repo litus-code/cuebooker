@@ -63,9 +63,13 @@ function closeBooking() { focusBookingId.value = ''; view.value = returnView.val
 const nav = computed<Array<{ id: DemoView; label: string }>>(() => [
   { id: 'overview', label: 'Overview' }, { id: 'bookings', label: 'Bookings' }, { id: 'calendar', label: 'Calendar' },
   { id: 'history', label: 'Activity' }, { id: 'roster', label: locale.value === 'es' ? 'Artistas' : 'Artists' },
-
   { id: 'settings', label: 'Settings' }
 ])
+const previewNotificationsOpen = ref(false)
+function openPreviewNotification() {
+  previewNotificationsOpen.value = false
+  openBooking('demo-booking-a')
+}
 
 onMounted(async () => {
   const hostname = window.location.hostname.toLowerCase()
@@ -130,7 +134,20 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
       <nav aria-label="Workspace Agency">
         <button v-for="item in nav" :key="item.id" :data-workspace-view="item.id" type="button" :aria-current="(view === item.id || item.id === 'roster' && ['profile','passport','cue-id'].includes(view)) ? 'page' : undefined" @click="changeView(item.id)">{{ item.label }}</button>
       </nav>
-      <label class="agency-preview__selector"><span>AGENCIA / CUE TEST AGENCY</span><select :value="selectedArtistId" :aria-label="locale === 'es' ? 'Contexto de artista' : 'Artist context'" @change="chooseArtist(($event.target as HTMLSelectElement).value)"><option value="">{{ locale === 'es' ? 'Todos los artistas' : 'All artists' }}</option><option v-for="artist in artists.filter(item => item.roster_active)" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
+      <div class="agency-preview__actions">
+        <button class="agency-preview__icon agency-preview__notification" type="button" :aria-label="locale === 'es' ? 'Notificaciones' : 'Notifications'" :aria-expanded="previewNotificationsOpen" @click="previewNotificationsOpen = !previewNotificationsOpen">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+          <span class="agency-preview__badge" aria-hidden="true">1</span>
+        </button>
+        <NuxtLink class="agency-preview__icon agency-preview__exit" to="/access" :aria-label="locale === 'es' ? 'Salir' : 'Exit'" :title="locale === 'es' ? 'Salir' : 'Exit'">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/></svg>
+        </NuxtLink>
+        <section v-if="previewNotificationsOpen" class="agency-preview__notification-panel" role="dialog" :aria-label="locale === 'es' ? 'Notificaciones' : 'Notifications'">
+          <strong>{{ locale === 'es' ? 'Nueva solicitud de booking' : 'New booking request' }}</strong>
+          <span>Nave Industrial · Sala 04</span>
+          <button type="button" @click="openPreviewNotification">{{ locale === 'es' ? 'Abrir solicitud' : 'Open request' }}</button>
+        </section>
+      </div>
     </header>
     <div class="agency-preview__notice"><strong>PREVIEW AGENCIA / DATOS FICTICIOS</strong><span>{{ locale === 'es' ? 'Puedes recorrer el workspace sin iniciar sesión. Los cambios se pierden al recargar.' : 'Explore the workspace without signing in. Changes reset on reload.' }}</span></div>
 
@@ -209,3 +226,103 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 </style>
 
 <style scoped>.agency-preview__record-tabs{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.agency-preview__record-tabs button{background:var(--cue-surface);color:var(--cue-text);padding:10px;border:1px solid var(--cue-border)}.agency-preview__record-tabs button[aria-current=page]{color:var(--cue-accent);border-bottom:2px solid var(--cue-accent)}</style>
+
+<style scoped>
+.agency-preview__header {
+  grid-template-columns: auto minmax(0,1fr) auto;
+}
+.agency-preview__actions {
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+}
+.agency-preview__icon {
+  position:relative;
+  display:grid;
+  place-items:center;
+  flex:0 0 42px;
+  width:42px;
+  height:42px;
+  box-sizing:border-box;
+  padding:9px;
+  border:1px solid var(--cue-border);
+  border-radius:50%;
+  background:transparent;
+  color:var(--cue-muted);
+  text-decoration:none;
+  cursor:pointer;
+}
+.agency-preview__exit { border-radius:10px; }
+.agency-preview__icon svg {
+  width:100%;
+  height:100%;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.7;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.agency-preview__icon:hover,.agency-preview__icon:focus-visible {
+  border-color:var(--cue-accent);
+  color:var(--cue-text);
+}
+.agency-preview__badge {
+  position:absolute;
+  top:-3px;
+  right:-3px;
+  display:grid;
+  width:16px;
+  height:16px;
+  place-items:center;
+  border:2px solid var(--cue-bg);
+  border-radius:50%;
+  background:var(--cue-accent);
+  color:#111;
+  font:800 9px/1 monospace;
+}
+.agency-preview__notification-panel {
+  position:absolute;
+  z-index:50;
+  top:calc(100% + 12px);
+  right:0;
+  display:grid;
+  gap:8px;
+  width:min(280px,calc(100vw - 32px));
+  box-sizing:border-box;
+  padding:16px;
+  border:1px solid var(--cue-border);
+  border-radius:var(--cue-radius-panel,16px);
+  background:var(--cue-surface);
+  box-shadow:0 18px 48px #0009;
+}
+.agency-preview__notification-panel span { color:var(--cue-muted);font-size:13px; }
+.agency-preview__notification-panel button {
+  justify-self:start;
+  min-height:38px;
+  margin-top:4px;
+  padding:0 12px;
+  border:1px solid var(--cue-accent);
+  border-radius:var(--cue-radius-control,10px);
+  background:var(--cue-accent);
+  color:#111;
+  font-weight:800;
+}
+@media(max-width:960px) {
+  .agency-preview__header {
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-areas:'brand actions' 'nav nav'!important;
+    gap:8px;
+    padding:10px 16px!important;
+  }
+  .agency-preview__header>.brand { grid-area:brand;width:auto!important; }
+  .agency-preview__brand { width:120px;height:40px; }
+  .agency-preview__header nav { grid-area:nav;grid-column:auto;grid-row:auto; }
+  .agency-preview__actions { grid-area:actions; }
+}
+@media(max-width:390px) {
+  .agency-preview__brand { width:108px;height:38px; }
+  .agency-preview__actions { gap:6px; }
+}
+</style>
