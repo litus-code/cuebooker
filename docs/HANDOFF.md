@@ -1,3 +1,15 @@
+## 2026-10-02 / Agency preview and roster interaction polish
+
+PR #96 (`feature/agency-multi-artist-beta`), for staging review only.
+
+- Public agency enquiry preview now renders the actual artist selector, name/email fields, message area and privacy copy. Preview mode keeps submission disabled and the submit handler remains guarded, so no enquiry is created from the preview.
+- Artist profile action “Distribución” is relabeled “Compartir perfil”. Its preview panel explains publication and enquiry status; it no longer falls through to an unrelated image/cover note or displays a no-op Save button.
+- Agency roster actions use compact pencil/trash icon buttons with per-artist accessible labels and focus styles. Removing an artist still requires the existing confirmation.
+- Added source-contract tests for preview form behavior, the share panel and accessible roster actions.
+- The agency share URL already follows `/agency/<slug>`. Onboarding derives the slug from the agency name; `organizations.slug` is unique and validated. The catalog editor does not yet expose slug editing, so do not describe the slug as editable from Settings.
+
+Code commits: `f5a7d0cc57eb565afebbcfeae4c46c56d5d43580` plus template correction `a5bec624ab3242b1fabb06b990a47355db3b28a0`; test assertion alignment follows on the same PR branch. A staging preview build succeeded for the corrected template. Final CI and preview deployment are pending after the test assertion update. Production was not touched.
+
 ## 2026-10-02 / Agency mobile header: restore wordmark and separate controls
 
 Follow-up from the owner's iPhone screenshot on PR96. At mobile widths the Agency header replaced the full Cuebooker wordmark with a small icon and placed the artist selector beside account actions, where the selector text was obscured by the notification control. The <=680px Agency header now uses three rows: Cuebooker wordmark and account actions; a full-width agency/artist selector; then horizontally scrollable workspace navigation. The full wordmark is shown at 112x38px and the selector truncates its label within its own grid cell.
