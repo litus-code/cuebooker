@@ -710,3 +710,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 <style scoped>
 .cue-capture__artist{display:grid;grid-template-columns:max-content minmax(0,320px);align-items:center;gap:14px;margin:0;padding:16px 26px;border-bottom:1px solid var(--cue-border);color:var(--cue-accent);font:700 11px/1.3 monospace;letter-spacing:.06em}.cue-capture__artist select{width:100%;min-width:0;min-height:44px;padding:0 38px 0 12px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control,8px);background:var(--cue-bg);color:var(--cue-text);font:700 13px Arial,Helvetica,sans-serif;letter-spacing:0}
 </style>
+
+<style scoped>
+.cue-capture__artist{grid-template-columns:max-content minmax(0,1fr);gap:20px}
+.cue-capture__artist select{width:100%;max-width:none;border-radius:var(--cue-radius-control,12px)}
+.cue-capture__channel button,.cue-capture__switch button,.cue-capture__interpret button,.cue-capture__preview-actions button,.cue-capture__actions button{border-radius:var(--cue-radius-control,12px)}
+.cue-capture__header>button{border-radius:50%}
+@media(max-width:640px){
+ .cue-capture__artist{grid-template-columns:minmax(0,1fr);gap:9px;padding:14px 16px}
+ .cue-capture__artist select{width:100%;max-width:none}
+}
+</style>
