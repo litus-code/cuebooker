@@ -4659,6 +4659,14 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .workspace--agency .workspace-header{min-height:0}
   .workspace--agency .workspace-brand-row .workspace-brand-wordmark{width:112px;height:38px}
   .workspace--agency .agency-context-selector span{font-size:9px;letter-spacing:.04em}
+  .workspace--agency .agency-context-selector{
+    flex:0 1 auto;
+    width:max-content;
+    max-width:100%;
+    grid-template-columns:max-content minmax(0,240px);
+    justify-content:start;
+    margin-right:auto;
+  }
   .workspace--agency .agency-context-selector select{font-size:12px}
   .workspace--agency .workspace-header nav button{min-height:40px}
 }
