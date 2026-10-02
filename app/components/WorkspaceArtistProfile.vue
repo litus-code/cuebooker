@@ -246,7 +246,7 @@ const links = computed(() => [
             {{ profile.acceptingRequests ? (locale === 'es' ? 'Cerrar solicitudes' : 'Close requests') : (locale === 'es' ? 'Abrir solicitudes' : 'Open requests') }}
           </button>
           <button v-if="editable" type="button" @click="emit('edit','booking')">{{ locale === 'es' ? 'Configurar booking' : 'Booking settings' }}</button>
-          <button v-if="editable" type="button" @click="emit('edit','distribution')">{{ locale === 'es' ? 'Distribución' : 'Distribution' }}</button>
+          <button v-if="editable" type="button" @click="emit('edit','distribution')">{{ locale === 'es' ? 'Compartir perfil' : 'Share profile' }}</button>
         </div>
       </section>
     </article>

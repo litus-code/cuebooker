@@ -13,7 +13,7 @@ function send(){
 <template>
  <form class="agency-enquiry" @submit.prevent="send">
   <p v-if="sent" class="agency-enquiry__success" role="status">{{ es?'Consulta enviada. El equipo de la agencia ya la ha recibido.':'Enquiry sent. The agency team has received it.' }}</p>
-  <p v-if="preview" class="agency-enquiry__privacy">{{ es?'Vista previa: el formulario no enviará una solicitud.':'Preview only: this form will not send an enquiry.' }}</p><template v-else>
+  <p v-if="preview" class="agency-enquiry__privacy">{{ es?'Vista previa: el formulario no enviará una solicitud.':'Preview only: this form will not send an enquiry.' }}</p>
    <label class="agency-enquiry__field"><span>{{ es?'Artista (opcional)':'Artist (optional)' }}</span><select v-model="form.artistSlug"><option value="">{{ es?'Consulta general a la agencia':'General agency enquiry' }}</option><option v-for="artist in artists" :key="artist.id" :value="artist.slug">{{ artist.name }}</option></select></label>
    <div class="agency-enquiry__row">
     <label class="agency-enquiry__field"><span>{{ es?'Tu nombre':'Your name' }}</span><input v-model="form.contactName" required maxlength="160" autocomplete="name"></label>
@@ -23,8 +23,7 @@ function send(){
    <label class="agency-enquiry__honeypot" aria-hidden="true">Website<input v-model="form.website" tabindex="-1" autocomplete="off"></label>
    <p v-if="error" class="agency-enquiry__error" role="alert">{{ message }}</p>
    <p class="agency-enquiry__privacy">{{ es?'El equipo de la agencia recibirá tus datos para responder a esta consulta.':'The agency team will receive your details to reply to this enquiry.' }}</p>
-   <button class="agency-enquiry__submit" type="submit" :disabled="submitting">{{ submitting?(es?'Enviando…':'Sending…'):(es?'Enviar consulta':'Send enquiry') }} <span aria-hidden="true">↗</span></button>
-  </template>
+   <button class="agency-enquiry__submit" type="submit" :disabled="preview || submitting">{{ submitting?(es?'Enviando…':'Sending…'):(es?'Enviar consulta':'Send enquiry') }} <span aria-hidden="true">↗</span></button>
  </form>
 </template>
 <style scoped>
