@@ -227,7 +227,7 @@ async function load() {
     contacts.value = contactRows
     counterparties.value = partyRows
   } catch (cause: any) {
-    if (current === request) error.value = cause?.message || (isEs.value ? 'No se pudo cargar el roster.' : 'Could not load the roster.')
+    if (current === request) error.value = isEs.value ? 'No se pudieron cargar los datos de la agencia. Comprueba la conexión e inténtalo de nuevo.' : 'Agency data could not be loaded. Check your connection and try again.'
   } finally {
     if (current === request) loading.value = false
   }
