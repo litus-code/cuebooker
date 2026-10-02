@@ -253,7 +253,7 @@ function confirmRetire(artist: RosterArtist) {
 
 <template>
   <section class="agency" :class="{ 'agency--roster': view === 'roster' }" :aria-busy="loading">
-    <div class="agency-heading"><div><h1>{{ title }}</h1></div><div class="agency-heading-actions"><button v-if="canCapture !== false && activeArtists.length && ['overview','bookings'].includes(view)" type="button" class="agency-primary" @click="emit('capture')">+ CUE</button><button v-if="canManageRoster && view === 'overview'" type="button" @click="showAdd = true">{{ isEs ? 'Añadir artista' : 'Add artist' }}</button><button v-if="view !== 'roster'" type="button" @click="emit('navigate', 'roster')">{{ isEs ? 'Ver roster' : 'View roster' }}</button></div></div>
+    <div class="agency-heading"><div><h1>{{ title }}</h1></div><div class="agency-heading-actions"><div v-if="view === 'roster'" class="agency-roster-heading-tools"><span>{{ activeArtists.length }} {{ isEs ? 'artistas activos' : 'active artists' }}</span><button v-if="canManageRoster" type="button" @click="showAdd = true">+ {{ isEs ? 'Añadir artista' : 'Add artist' }}</button></div><template v-else><button v-if="canCapture !== false && activeArtists.length && ['overview','bookings'].includes(view)" type="button" class="agency-primary" @click="emit('capture')">+ CUE</button><button v-if="canManageRoster && view === 'overview'" type="button" @click="showAdd = true">{{ isEs ? 'Añadir artista' : 'Add artist' }}</button><button type="button" @click="emit('navigate', 'roster')">{{ isEs ? 'Ver roster' : 'View roster' }}</button></template></div></div>
     <p v-if="error" role="alert" class="agency-error">{{ error }} <button type="button" @click="load">{{ isEs ? 'Reintentar' : 'Retry' }}</button></p>
     <div v-if="!activeArtists.length" class="agency-empty"><span>00 / ROSTER</span><h2>{{ isEs ? 'Tu roster todavía está vacío.' : 'Your roster is still empty.' }}</h2><p>{{ isEs ? 'Añade tu primer artista para empezar a gestionar fechas y bookings.' : 'Add your first artist to manage dates and bookings.' }}</p><button v-if="canManageRoster" type="button" @click="showAdd = true">{{ isEs ? 'Añadir primer artista' : 'Add first artist' }}</button></div>
     <template v-else>
@@ -264,7 +264,6 @@ function confirmRetire(artist: RosterArtist) {
 <section class="agency-recent"><h2>{{ isEs ? 'ACTIVIDAD RECIENTE' : 'RECENT ACTIVITY' }}</h2><p v-if="!recentActivities.length" class="agency-muted">{{ isEs ? 'Todavía no hay actividad.' : 'No activity yet.' }}</p><button v-for="item in recentActivities" :key="item.id" class="agency-row" type="button" @click="emit('openBooking', item.booking_id)"><span><b>{{ label(item.bookings.artist_id) }}</b><strong>{{ activityPreview(item) || activityTypeLabel(item.type) }}</strong></span><small>{{ shortDate(item.occurred_at.slice(0, 10)) }}</small></button></section>
       </template>
       <template v-else-if="view === 'roster'">
-        <div class="agency-actions"><span>{{ activeArtists.length }} {{ isEs ? 'artistas activos' : 'active artists' }}</span><button v-if="canManageRoster" type="button" @click="showAdd = true">+ {{ isEs ? 'Añadir artista' : 'Add artist' }}</button></div>
         <div class="agency-roster"><article v-for="artist in activeArtists" :key="artist.id"><div class="agency-avatar" aria-hidden="true"><img v-if="portraitUrls[artist.id]" :src="portraitUrls[artist.id]" alt="">{{ portraitUrls[artist.id] ? '' : artist.stage_name.slice(0, 2).toUpperCase() }}</div><div><span>ARTIST / {{ artist.slug }}</span><h2>{{ artist.stage_name }}</h2><p>{{ artist.city || (isEs ? 'Ciudad sin definir' : 'City not set') }} · {{ upcomingSnapshotLabel(artist.id) }}</p><small class="agency-artist-active">{{ isEs ? 'En el roster' : 'On the roster' }}</small></div><div class="agency-roster-actions"><button type="button" @click="emit('selectArtist', artist.id, 'profile')">{{ canManageRoster ? (isEs ? 'Editar ficha' : 'Edit record') : (isEs ? 'Ver ficha' : 'View record') }}</button><button v-if="canManageRoster" type="button" @click="confirmRetire(artist)">{{ isEs ? 'Retirar del roster' : 'Remove from roster' }}</button></div></article></div>
 
       </template>
@@ -405,4 +404,11 @@ function confirmRetire(artist: RosterArtist) {
   .agency--roster .agency-heading h1{margin:0;font-size:clamp(2rem,8vw,2.6rem);line-height:.95}
   .agency--roster .agency-actions{margin:14px 0;gap:10px}
 }
+</style>
+
+<style scoped>
+.agency-roster-heading-tools{display:flex;align-items:center;justify-content:flex-end;gap:18px}
+.agency-roster-heading-tools>span{font-size:14px;font-weight:700;color:var(--cue-text);white-space:nowrap}
+.agency-roster-heading-tools button{white-space:nowrap}
+@media(max-width:750px){.agency-roster-heading-tools{width:100%;justify-content:space-between;gap:12px}.agency-roster-heading-tools>span{white-space:normal}}
 </style>
