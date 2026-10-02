@@ -4867,3 +4867,20 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 }
 @media(max-width:680px){.workspace--agency .agency-context-selector{grid-template-columns:minmax(0,1fr) minmax(200px,220px)!important;padding-inline:20px!important}}
 </style>
+
+
+<style scoped>
+@media(max-width:960px){
+  .workspace--agency .view-heading{overflow:visible!important;padding-inline:16px!important}
+  .workspace--agency .view-heading h1{
+    box-sizing:border-box;width:100%;max-width:100%;margin:0 0 12px!important;
+    padding:.14em 10px .18em!important;line-height:1.16!important;overflow:visible!important;
+    text-indent:0;overflow-wrap:anywhere;
+  }
+  .workspace--agency .settings-panel>.editor-heading{overflow:visible!important}
+  .workspace--agency .settings-panel>.editor-heading h2{line-height:1.2!important;padding-block:.08em .12em!important}
+  .workspace--agency .agency-context-selector{grid-template-columns:minmax(0,1fr) minmax(220px,250px)!important}
+  .workspace--agency .agency-context-selector select{font-size:14px!important}
+}
+@media(max-width:680px){.workspace--agency .agency-context-selector{grid-template-columns:minmax(0,1fr) minmax(210px,230px)!important;padding-inline:20px!important}}
+</style>
