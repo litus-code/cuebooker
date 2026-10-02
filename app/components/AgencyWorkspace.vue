@@ -112,7 +112,7 @@ const pendingHolds = computed(() => exactHoldCount.value ?? `≥${holds.value.fi
 const isEs = computed(() => props.locale === 'es')
 const title = computed(() => props.contextArtistName && props.view !== 'roster'
   ? ({ overview: props.contextArtistName.toUpperCase(), bookings: `BOOKINGS / ${props.contextArtistName}`, calendar: `${isEs.value ? 'CALENDARIO' : 'CALENDAR'} / ${props.contextArtistName}`, history: `ACTIVITY / ${props.contextArtistName}` })[props.view]
-  : ({ overview: isEs.value ? 'PULSO DEL ROSTER.' : 'THE ROSTER PULSE.', bookings: 'BOOKINGS / ROSTER', calendar: isEs.value ? 'CALENDARIO DEL ROSTER.' : 'ROSTER CALENDAR.', history: 'ACTIVITY / ROSTER', roster: 'EL ROSTER.' })[props.view])
+  : ({ overview: isEs.value ? 'PULSO DEL ROSTER.' : 'THE ROSTER PULSE.', bookings: 'BOOKINGS / ROSTER', calendar: isEs.value ? 'CALENDARIO DEL ROSTER.' : 'ROSTER CALENDAR.', history: 'ACTIVITY / ROSTER', roster: isEs.value ? 'ARTISTAS.' : 'ARTISTS.' })[props.view])
 function calendarCount(day: string | null) { return day ? visibleMonthBookings.value.filter(item => item.event_date === day).length + visibleHolds.value.filter(item => item.event_date === day).length : 0 }
 const monthLabel = computed(() => {
   const label = new Intl.DateTimeFormat(isEs.value ? 'es-ES' : 'en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(currentMonth.value)
@@ -253,7 +253,7 @@ function confirmRetire(artist: RosterArtist) {
 
 <template>
   <section class="agency" :aria-busy="loading">
-    <div class="agency-heading"><div><p>AGENCY / {{ agencyName }}</p><h1>{{ title }}</h1><span>{{ contextArtistName ? (isEs ? `Artista seleccionado · ${contextArtistName}` : `Selected artist · ${contextArtistName}`) : (isEs ? 'Todos los artistas · Operación global' : 'All artists · Global operations') }}</span></div><div class="agency-heading-actions"><button v-if="canCapture !== false && activeArtists.length && ['overview','bookings'].includes(view)" type="button" class="agency-primary" @click="emit('capture')">+ CUE</button><button v-if="canManageRoster && view === 'overview'" type="button" @click="showAdd = true">{{ isEs ? 'Añadir artista' : 'Add artist' }}</button><button v-if="view !== 'roster'" type="button" @click="emit('navigate', 'roster')">{{ isEs ? 'Ver roster' : 'View roster' }}</button></div></div>
+    <div class="agency-heading"><div><h1>{{ title }}</h1></div><div class="agency-heading-actions"><button v-if="canCapture !== false && activeArtists.length && ['overview','bookings'].includes(view)" type="button" class="agency-primary" @click="emit('capture')">+ CUE</button><button v-if="canManageRoster && view === 'overview'" type="button" @click="showAdd = true">{{ isEs ? 'Añadir artista' : 'Add artist' }}</button><button v-if="view !== 'roster'" type="button" @click="emit('navigate', 'roster')">{{ isEs ? 'Ver roster' : 'View roster' }}</button></div></div>
     <p v-if="error" role="alert" class="agency-error">{{ error }} <button type="button" @click="load">{{ isEs ? 'Reintentar' : 'Retry' }}</button></p>
     <div v-if="!activeArtists.length" class="agency-empty"><span>00 / ROSTER</span><h2>{{ isEs ? 'Tu roster todavía está vacío.' : 'Your roster is still empty.' }}</h2><p>{{ isEs ? 'Añade tu primer artista para empezar a gestionar fechas y bookings.' : 'Add your first artist to manage dates and bookings.' }}</p><button v-if="canManageRoster" type="button" @click="showAdd = true">{{ isEs ? 'Añadir primer artista' : 'Add first artist' }}</button></div>
     <template v-else>
