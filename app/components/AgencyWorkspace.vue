@@ -425,3 +425,48 @@ function confirmRetire(artist: RosterArtist) {
   .agency--roster .agency-heading{gap:10px;padding-bottom:16px}
 }
 </style>
+
+<style scoped>
+/* Keep agency page titles inside the mobile viewport and give glyphs real vertical room. */
+@media (max-width: 750px) {
+  .agency {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 12px 16px 24px;
+    overflow: visible;
+  }
+  .agency-heading {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    margin: 0 0 16px;
+    padding: 22px 18px 24px;
+    overflow: visible;
+  }
+  .agency-heading > div:first-child {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    overflow: visible;
+  }
+  .agency-heading h1 {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    height: auto;
+    min-height: 1.2em;
+    margin: 0;
+    padding: .12em 0 .16em;
+    font-size: clamp(1.85rem, 7vw, 2.65rem);
+    line-height: 1.2;
+    letter-spacing: -.045em;
+    white-space: normal;
+    overflow: visible;
+    overflow-wrap: anywhere;
+  }
+}
+</style>
