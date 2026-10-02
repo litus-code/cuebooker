@@ -182,7 +182,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
     <section v-else class="agency-preview__detail">
       <span>{{ selectedArtist ? `AGENCIA / ${selectedArtist.stage_name}` : 'AGENCIA / CUE TEST AGENCY' }}</span>
       <h1>{{ view === 'profile' ? selectedArtist?.stage_name : view === 'passport' ? 'CUE PASSPORT' : view === 'cue-id' ? 'CUE ID' : 'SETTINGS' }}</h1>
-      <p v-if="view === 'profile'">{{ locale === 'es' ? 'Ficha del artista seleccionado. Una agencia autorizada puede editar su identidad pública y configurar el booking.' : 'Selected artist profile. An authorized agency can edit the public identity and booking settings.' }}</p>
+      <p v-if="view === 'profile'">{{ locale === 'es' ? 'Vista previa del perfil público del artista.' : 'Preview of the artist’s public profile.' }}</p>
       <p v-else-if="view === 'passport'">{{ locale === 'es' ? 'El CUE Passport reúne la trayectoria del artista y sus actuaciones confirmadas.' : 'The CUE Passport brings together the artist’s career and confirmed performances.' }}</p>
       <p v-else-if="view === 'cue-id'">{{ locale === 'es' ? 'La identidad visual pertenece al artista seleccionado.' : 'The visual identity belongs to the selected artist.' }}</p>
       <p v-else>{{ locale === 'es' ? 'Configuración del workspace de Agencia.' : 'Agency workspace settings.' }}</p>
@@ -192,6 +192,23 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
       <section v-if="view === 'settings'" class="agency-preview__preferences" :aria-label="locale === 'es' ? 'Preferencias' : 'Preferences'">
         <div><span>{{ locale === 'es' ? 'PREFERENCIAS' : 'PREFERENCES' }}</span><h2>{{ locale === 'es' ? 'Idioma y apariencia' : 'Language and appearance' }}</h2><p>{{ locale === 'es' ? 'Elige el idioma y el tema de Cuebooker.' : 'Choose the Cuebooker language and theme.' }}</p></div>
         <CuePreferencesControl compact labels />
+      </section>
+      <section v-else-if="view === 'profile'" class="agency-preview__profile-preview" :aria-label="locale === 'es' ? 'Vista previa del perfil público' : 'Public profile preview'">
+        <div class="agency-preview__profile-identity">
+          <div class="agency-preview__profile-photo" role="img" :aria-label="locale === 'es' ? 'Foto de perfil no disponible en los datos de ejemplo' : 'Profile photo unavailable in demo data'">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3l1.5-2h7L17 7h3v12H4z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span>{{ selectedArtist?.stage_name.split(' ').map(part => part[0]).slice(0, 2).join('').toUpperCase() }}</span>
+          </div>
+          <div class="agency-preview__profile-name">
+            <span>{{ locale === 'es' ? 'PERFIL PÚBLICO / ARTISTA' : 'PUBLIC PROFILE / ARTIST' }}</span>
+            <h2>{{ selectedArtist?.stage_name }}</h2>
+            <p>{{ selectedArtist?.city || (locale === 'es' ? 'Ciudad sin definir' : 'City not set') }}</p>
+          </div>
+        </div>
+        <div class="agency-preview__profile-empty">
+          <strong>{{ locale === 'es' ? 'Foto y biografía pendientes' : 'Photo and bio not set' }}</strong>
+          <p>{{ locale === 'es' ? 'Esta ficha de demostración no incluye foto ni biografía. En el perfil real aparecerá la información pública del artista.' : 'This demo profile has no photo or bio. The artist’s public information will appear here in the live profile.' }}</p>
+        </div>
       </section>
       <div v-else class="agency-preview__read-only"><span>PREVIEW / {{ locale === 'es' ? 'SIN EDICIÓN REAL' : 'NO LIVE EDITING' }}</span><p>{{ locale === 'es' ? 'Esta sección muestra el contexto y la navegación. Su editor real requiere una cuenta Agency.' : 'This section shows context and navigation. The live editor requires an Agency account.' }}</p></div>
     </section>
@@ -537,4 +554,19 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 @media(max-width:960px){
   .agency-preview__notification-item{padding:28px 18px!important;}
 }
+</style>
+
+<style scoped>
+.agency-preview__profile-preview{margin-top:24px;padding:24px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel,18px);background:var(--cue-surface)}
+.agency-preview__profile-identity{display:flex;align-items:center;gap:20px}
+.agency-preview__profile-photo{display:grid;flex:0 0 112px;place-items:center;align-content:center;gap:8px;width:112px;height:112px;box-sizing:border-box;border:1px dashed var(--cue-border);border-radius:16px;background:linear-gradient(145deg,var(--cue-bg),var(--cue-surface));color:var(--cue-muted)}
+.agency-preview__profile-photo svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.agency-preview__profile-photo span{font:800 20px/1 monospace;color:var(--cue-accent)}
+.agency-preview__profile-name>span{font:800 10px/1.4 monospace;letter-spacing:.12em;color:var(--cue-accent)}
+.agency-preview__profile-name h2{margin:8px 0 4px;font-size:clamp(1.35rem,3vw,2rem)}
+.agency-preview__profile-name p{margin:0;color:var(--cue-muted)}
+.agency-preview__profile-empty{margin-top:24px;padding:16px 18px;border-left:3px solid var(--cue-accent);border-radius:0 12px 12px 0;background:color-mix(in srgb,var(--cue-accent) 7%,var(--cue-surface))}
+.agency-preview__profile-empty strong{font-size:14px}
+.agency-preview__profile-empty p{margin:6px 0 0;color:var(--cue-muted);font-size:14px;line-height:1.55}
+@media(max-width:600px){.agency-preview__profile-preview{margin-top:18px;padding:16px}.agency-preview__profile-identity{align-items:flex-start;gap:14px}.agency-preview__profile-photo{flex-basis:84px;width:84px;height:84px;border-radius:14px}.agency-preview__profile-name h2{font-size:1.3rem}}
 </style>
