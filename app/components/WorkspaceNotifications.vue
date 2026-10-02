@@ -190,6 +190,7 @@ onBeforeUnmount(() => {
     </button>
 
     <Teleport to="body">
+    <div v-if="open" class="notification-backdrop" aria-hidden="true" @click="open = false" />
     <section
       ref="panel"
       v-if="open"
@@ -250,7 +251,9 @@ onBeforeUnmount(() => {
 .notification-panel > header div { min-width: 0; }
 .notification-panel > header span { display: block; font-size: 15px; font-weight: 900; }
 .notification-panel > header strong { display: block; margin-top: 3px; color: var(--cue-accent); font: 700 9px/1.2 monospace; letter-spacing: .08em; text-transform: uppercase; }
-.notification-panel > header button { width: 34px; height: 34px; border: 0; background: transparent; color: var(--cue-muted); cursor: pointer; font-size: 24px; line-height: 1; }
+.notification-panel > header button { display:grid; place-items:center; flex:0 0 42px; width:42px; height:42px; padding:0; border:1px solid var(--cue-accent); border-radius:50%; background:transparent; color:var(--cue-text); cursor:pointer; font-size:24px; line-height:1; transition:background-color .16s ease,color .16s ease; }
+.notification-panel > header button:hover,.notification-panel > header button:focus-visible { background:var(--cue-accent); color:var(--cue-accent-ink); outline:none; }
+.notification-backdrop { position:fixed; z-index:79; inset:0; background:rgba(0,0,0,.62); backdrop-filter:blur(2px); }
 .notification-toolbar { display: flex; justify-content: flex-end; padding: 9px 14px; border-bottom: 1px solid var(--cue-border); }
 .notification-toolbar button { border: 0; background: transparent; color: var(--cue-muted); cursor: pointer; font: 700 10px/1.2 monospace; text-decoration: underline; text-underline-offset: 3px; }
 .notification-toolbar button:disabled { opacity: .35; cursor: default; }
