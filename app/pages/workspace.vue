@@ -4656,10 +4656,29 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .workspace--agency .agency-context-selector{
     order:4;
     flex:0 0 100%;
+    width:100%;
+    max-width:320px;
     box-sizing:border-box;
-    grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);
-    align-items:center;
-    gap:8px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    justify-self:start;
+    align-items:start;
+    gap:10px;
+    margin:14px 0 18px;
+    padding:0 8px 8px;
+  }
+  .workspace--agency .agency-context-selector span{padding-inline:4px;line-height:1.4}
+  .workspace--agency .agency-context-selector select{
+    box-sizing:border-box;
+    width:100%!important;
+    max-width:280px!important;
+    min-height:46px;
+    margin:0;
+    padding:0 38px 0 14px;
+    border:1px solid var(--cue-border);
+    border-radius:var(--cue-radius-control,10px);
+    background:var(--cue-surface);
+    color:var(--cue-text);
   }
   .workspace--agency .workspace-header nav{
     order:3;
@@ -4740,4 +4759,11 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .workspace--agency .settings-panel .editor-heading>div{min-width:0}
 .workspace--agency .settings-panel .editor-heading h2{max-width:100%;overflow-wrap:anywhere;line-height:1.08}
 @media(max-width:680px){.workspace--agency .agency-context-selector{max-width:320px;margin:16px 0 20px;padding-inline:10px}.workspace--agency .agency-context-selector select{max-width:280px!important}.agency-artist-tabs{gap:14px}.agency-artist-tabs button{padding-inline:3px}}
+</style>
+
+<style scoped>
+.workspace--agency .settings-panel .editor-heading{min-width:0;gap:16px}
+.workspace--agency .settings-panel .editor-heading>div{min-width:0;max-width:100%;padding-inline:4px}
+.workspace--agency .settings-panel .editor-heading h2{box-sizing:border-box;width:100%;max-width:100%;font-size:clamp(2rem,6vw,5rem);line-height:1.02;letter-spacing:-.045em;overflow-wrap:anywhere;padding-inline:4px}
+.workspace--agency .settings-panel .editor-heading .eyebrow{max-width:100%;white-space:normal;overflow-wrap:anywhere}
 </style>
