@@ -4848,3 +4848,22 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 }
 @media(max-width:680px){.workspace--agency .agency-context-selector{padding-inline:22px}}
 </style>
+
+
+<style scoped>
+@media(max-width:960px){
+  .workspace--agency .agency-context-selector{
+    display:grid!important;grid-template-columns:minmax(0,1fr) minmax(210px,240px)!important;
+    align-items:center!important;gap:12px!important;width:100%!important;max-width:none!important;
+    box-sizing:border-box!important;margin:6px 0 8px!important;padding:0 24px!important;
+  }
+  .workspace--agency .agency-context-selector span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .workspace--agency .agency-context-selector select{
+    display:block;width:100%!important;min-width:0!important;max-width:none!important;box-sizing:border-box;
+    justify-self:end;margin:0!important;padding:0 34px 0 12px;font-size:14px!important;
+  }
+  .workspace--agency .settings-panel>.editor-heading{box-sizing:border-box;min-height:0;overflow:visible}
+  .workspace--agency .settings-panel>.editor-heading h2{display:block;min-height:1.15em;overflow:visible;white-space:normal}
+}
+@media(max-width:680px){.workspace--agency .agency-context-selector{grid-template-columns:minmax(0,1fr) minmax(200px,220px)!important;padding-inline:20px!important}}
+</style>
