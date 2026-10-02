@@ -4680,25 +4680,29 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
     flex:0 0 100%;
     width:100%;
     max-width:none;
+    box-sizing:border-box;
     display:grid;
     grid-template-columns:minmax(0,1fr);
     justify-content:start;
     justify-self:start;
-    gap:4px;
-    margin:2px 0 0;
+    gap:8px;
+    margin:6px 0 10px;
+    padding-inline:4px;
   }
   .workspace--agency .agency-context-selector select{
-    width:auto;
-    max-width:100%;
+    box-sizing:border-box;
+    width:min(100%,260px)!important;
+    max-width:260px!important;
     justify-self:start;
-    min-height:38px;
-    padding:0 28px 0 0;
-    border:0;
-    border-radius:0;
-    background:transparent;
+    min-height:44px;
+    margin:0 0 0 4px;
+    padding:0 38px 0 14px;
+    border:1px solid var(--cue-border);
+    border-radius:var(--cue-radius-control,10px);
+    background:var(--cue-surface);
     color:var(--cue-text);
     font-size:14px;
-    font-weight:800;
+    font-weight:700;
   }
   .workspace--agency .agency-context-selector select:focus-visible{outline:2px solid var(--cue-toggle);outline-offset:2px}
   .workspace--agency .workspace-header nav button{min-height:40px}
