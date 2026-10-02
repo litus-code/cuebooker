@@ -5,10 +5,12 @@ PR #96 (`feature/agency-multi-artist-beta`), for staging review only.
 - Public agency enquiry preview now renders the actual artist selector, name/email fields, message area and privacy copy. Preview mode keeps submission disabled and the submit handler remains guarded, so no enquiry is created from the preview.
 - Artist profile action “Distribución” is relabeled “Compartir perfil”. Its preview panel explains publication and enquiry status; it no longer falls through to an unrelated image/cover note or displays a no-op Save button.
 - Agency roster actions use compact pencil/trash icon buttons with per-artist accessible labels and focus styles. Removing an artist still requires the existing confirmation.
-- Added source-contract tests for preview form behavior, the share panel and accessible roster actions.
+- Added source-contract tests for preview form behavior, the share panel, accessible roster actions and the local artist preview.
+- The agency demo now wires “Ver como público” to a full local Public Artist Profile preview with a close control; the booking form remains visibly disabled in preview mode.
+- Agency catalog settings already include Instagram and website links, plus a public `/agency/<slug>` URL and copy-link action after publishing. Keep these agency-level links on the catalog; artist distribution stays on each artist profile. The visible roster is the content of the catalog, not a substitute for the public agency page.
 - The agency share URL already follows `/agency/<slug>`. Onboarding derives the slug from the agency name; `organizations.slug` is unique and validated. The catalog editor does not yet expose slug editing, so do not describe the slug as editable from Settings.
 
-Code commits: `f5a7d0cc57eb565afebbcfeae4c46c56d5d43580` plus template correction `a5bec624ab3242b1fabb06b990a47355db3b28a0`; tests were aligned in `c26a1fd2e2ed63d50a40000a61728a282acb5f93`. CI run `37060257502` and Deploy Staging run `37060257536` passed for the code snapshot, and the PR preview rendered the accessible roster icon labels. A documentation-only handoff update follows on the branch. Production was not touched.
+Code commits: `f5a7d0cc57eb565afebbcfeae4c46c56d5d43580` plus template correction `a5bec624ab3242b1fabb06b990a47355db3b28a0`; tests were aligned in `c26a1fd2e2ed63d50a40000a61728a282acb5f93`. The public-profile preview fix is in `9408e6c9ec9dbffd2bf75ce02b83ff07c596ddaf`; CI run `37064260848` and Deploy Staging run `37064260864` passed. The PR preview rendered the local artist profile and accessible roster icon labels. Production was not touched. Production was not touched.
 
 ## 2026-10-02 / Agency mobile header: restore wordmark and separate controls
 
