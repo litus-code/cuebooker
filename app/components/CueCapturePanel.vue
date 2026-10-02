@@ -639,7 +639,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 .cue-capture__switch { display: flex; gap: 4px; }
 .cue-capture__switch button { min-height: 28px; padding: 0 8px; font-size: 8px; }
 .cue-capture__switch button.active { border-color: #777; color: #fff; background: #1c1c1c; }
-.cue-capture input, .cue-capture select, .cue-capture textarea { width: 100%; box-sizing: border-box; border: 1px solid #343434; border-radius: 0; background: #111; color: #f4f3ef; font: inherit; outline: none; }
+.cue-capture input, .cue-capture select, .cue-capture textarea { width: 100%; box-sizing: border-box; border: 1px solid #343434; border-radius: var(--cue-radius-control,8px); background: #111; color: #f4f3ef; font: inherit; outline: none; }
+.cue-capture button { border-radius:var(--cue-radius-control,8px); }
+.cue-capture__header > button { border-radius:50%; }
 .cue-capture button:focus-visible,
 .cue-capture input:focus-visible,
 .cue-capture select:focus-visible,
@@ -689,6 +691,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   .cue-capture__header { position: sticky; top: 0; z-index: 4; padding: max(18px, env(safe-area-inset-top)) 16px 15px; background: color-mix(in srgb,var(--cue-surface,#0d0d0d) 97%,transparent); backdrop-filter: blur(12px); }
   .cue-capture__header h2 { font-size: 2.35rem; }
   .cue-capture__form { padding: 0 16px 20px; }
+  .cue-capture__artist { grid-template-columns:minmax(0,1fr); gap:7px; padding:14px 16px; }
+  .cue-capture__artist select { width:min(100%,320px); }
   .cue-capture__channel { padding: 16px 0; gap: 5px; }
   .cue-capture__channel button { min-height:44px; padding:0 10px; font-size:9px; }
   .cue-capture__switch button,
@@ -704,5 +708,5 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 </style>
 
 <style scoped>
-.cue-capture__artist{display:grid;gap:8px;margin:18px 0;color:var(--cue-accent);font:700 11px monospace}.cue-capture__artist select{min-height:44px;padding:10px;background:var(--cue-bg);color:var(--cue-text);border:1px solid var(--cue-border);font:inherit}
+.cue-capture__artist{display:grid;grid-template-columns:max-content minmax(0,320px);align-items:center;gap:14px;margin:0;padding:16px 26px;border-bottom:1px solid var(--cue-border);color:var(--cue-accent);font:700 11px/1.3 monospace;letter-spacing:.06em}.cue-capture__artist select{width:100%;min-width:0;min-height:44px;padding:0 38px 0 12px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control,8px);background:var(--cue-bg);color:var(--cue-text);font:700 13px Arial,Helvetica,sans-serif;letter-spacing:0}
 </style>
