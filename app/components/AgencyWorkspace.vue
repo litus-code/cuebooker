@@ -252,7 +252,7 @@ function confirmRetire(artist: RosterArtist) {
 </script>
 
 <template>
-  <section class="agency" :class="{ 'agency--roster': view === 'roster' }" :aria-busy="loading">
+  <section class="agency" :class="{ 'agency--roster': view === 'roster', 'agency--overview': view === 'overview' }" :aria-busy="loading">
     <div class="agency-heading"><div><h1>{{ title }}</h1></div><div class="agency-heading-actions"><div v-if="view === 'roster'" class="agency-roster-heading-tools"><span>{{ activeArtists.length }} {{ isEs ? 'artistas activos' : 'active artists' }}</span><button v-if="canManageRoster" type="button" @click="showAdd = true">+ {{ isEs ? 'Añadir artista' : 'Add artist' }}</button></div><template v-else><button v-if="canCapture !== false && activeArtists.length && ['overview','bookings'].includes(view)" type="button" class="agency-primary" @click="emit('capture')">+ CUE</button><button v-if="canManageRoster && view === 'overview'" type="button" @click="showAdd = true">{{ isEs ? 'Añadir artista' : 'Add artist' }}</button><button v-if="view === 'overview'" type="button" @click="emit('navigate', 'roster')">{{ isEs ? 'Ver roster' : 'View roster' }}</button></template></div></div>
     <p v-if="error" role="alert" class="agency-error">{{ error }} <button type="button" @click="load">{{ isEs ? 'Reintentar' : 'Retry' }}</button></p>
     <div v-if="!activeArtists.length" class="agency-empty"><span>00 / ROSTER</span><h2>{{ isEs ? 'Tu roster todavía está vacío.' : 'Your roster is still empty.' }}</h2><p>{{ isEs ? 'Añade tu primer artista para empezar a gestionar fechas y bookings.' : 'Add your first artist to manage dates and bookings.' }}</p><button v-if="canManageRoster" type="button" @click="showAdd = true">{{ isEs ? 'Añadir primer artista' : 'Add first artist' }}</button></div>
@@ -280,7 +280,7 @@ function confirmRetire(artist: RosterArtist) {
             <div class="agency-month"><button type="button" :aria-label="isEs ? 'Mes anterior' : 'Previous month'" @click="moveMonth(-1)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></button><h2>{{ monthLabel }}</h2><button type="button" :aria-label="isEs ? 'Mes siguiente' : 'Next month'" @click="moveMonth(1)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg></button></div>
             <div class="agency-calendar">
               <span v-for="(day, index) in (isEs ? ['L','M','X','J','V','S','D'] : ['M','T','W','T','F','S','S'])" :key="index" class="agency-weekday">{{ day }}</span>
-              <button v-for="(day, index) in calendarDays" :key="`${day}-${index}`" type="button" class="agency-calendar-cell" :class="{ 'is-empty': !day, 'is-selected': selectedDay === day, 'is-today': today === day }" :disabled="!day" :aria-pressed="Boolean(day && selectedDay === day)" :aria-current="day === today ? 'date' : undefined" :aria-label="day ? `${shortDate(day)} · ${calendarCount(day)} ${isEs ? 'fechas' : 'dates'}` : undefined" @click="selectedDay = day">
+              <button v-for="(day, index) in calendarDays" :key="`${day}-${index}`" type="button" class="agency-calendar-cell" :class="{ 'is-empty': !day, 'is-selected': Boolean(day) && selectedDay === day, 'is-today': Boolean(day) && today === day }" :disabled="!day" :aria-pressed="Boolean(day && selectedDay === day)" :aria-current="day === today ? 'date' : undefined" :aria-label="day ? `${shortDate(day)} · ${calendarCount(day)} ${isEs ? 'fechas' : 'dates'}` : undefined" @click="selectedDay = day">
                 <span v-if="day">{{ Number(day.slice(-2)) }}</span><small v-if="calendarCount(day)">{{ calendarCount(day) }}</small>
                 <span class="agency-day-names"><span v-for="booking in visibleMonthBookings.filter(item => item.event_date === day).slice(0,2)" :key="booking.id" class="is-confirmed">{{ label(booking.artist_id) }}</span><span v-for="hold in visibleHolds.filter(item => item.event_date === day).slice(0, Math.max(0, 2 - visibleMonthBookings.filter(item => item.event_date === day).length))" :key="hold.id" class="is-hold">{{ label(hold.bookings.artist_id) }} · Hold</span><span v-if="calendarCount(day) > 2">+{{ calendarCount(day) - 2 }} {{ isEs ? 'más' : 'more' }}</span></span>
                 <span class="agency-day-statuses"><i v-if="visibleHolds.some(item => item.event_date === day)" class="agency-status-dot is-hold" /><i v-if="visibleMonthBookings.some(item => item.event_date === day)" class="agency-status-dot is-confirmed" /></span>
@@ -467,6 +467,29 @@ function confirmRetire(artist: RosterArtist) {
     white-space: normal;
     overflow: visible;
     overflow-wrap: anywhere;
+  }
+}
+</style>
+
+<style scoped>
+@media(max-width:750px){
+  /* The page shell owns the mobile gutter; the component must not add a second one. */
+  .agency{padding:12px 0 24px}
+  .agency--overview .agency-heading-actions{
+    display:flex;
+    flex-wrap:nowrap;
+    justify-content:flex-start;
+    gap:6px;
+    min-width:0;
+  }
+  .agency--overview .agency-heading-actions>button{
+    flex:0 1 auto;
+    min-width:0;
+    min-height:40px;
+    padding:8px clamp(6px,2vw,10px);
+    font-size:clamp(11px,3.2vw,13px);
+    line-height:1.1;
+    white-space:nowrap;
   }
 }
 </style>
