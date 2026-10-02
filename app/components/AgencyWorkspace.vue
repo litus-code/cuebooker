@@ -252,7 +252,7 @@ function confirmRetire(artist: RosterArtist) {
 </script>
 
 <template>
-  <section class="agency" :aria-busy="loading">
+  <section class="agency" :class="{ 'agency--roster': view === 'roster' }" :aria-busy="loading">
     <div class="agency-heading"><div><h1>{{ title }}</h1></div><div class="agency-heading-actions"><button v-if="canCapture !== false && activeArtists.length && ['overview','bookings'].includes(view)" type="button" class="agency-primary" @click="emit('capture')">+ CUE</button><button v-if="canManageRoster && view === 'overview'" type="button" @click="showAdd = true">{{ isEs ? 'Añadir artista' : 'Add artist' }}</button><button v-if="view !== 'roster'" type="button" @click="emit('navigate', 'roster')">{{ isEs ? 'Ver roster' : 'View roster' }}</button></div></div>
     <p v-if="error" role="alert" class="agency-error">{{ error }} <button type="button" @click="load">{{ isEs ? 'Reintentar' : 'Retry' }}</button></p>
     <div v-if="!activeArtists.length" class="agency-empty"><span>00 / ROSTER</span><h2>{{ isEs ? 'Tu roster todavía está vacío.' : 'Your roster is still empty.' }}</h2><p>{{ isEs ? 'Añade tu primer artista para empezar a gestionar fechas y bookings.' : 'Add your first artist to manage dates and bookings.' }}</p><button v-if="canManageRoster" type="button" @click="showAdd = true">{{ isEs ? 'Añadir primer artista' : 'Add first artist' }}</button></div>
@@ -396,4 +396,13 @@ function confirmRetire(artist: RosterArtist) {
 .agency-roster .agency-artist-active{display:inline-flex;align-items:center;gap:6px;margin-top:8px;color:var(--cue-muted);font-size:11px}
 .agency-artist-active::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--cue-status-confirmed)}
 .agency-roster-actions button:last-child:not(:first-child){color:var(--cue-muted)}
+</style>
+
+<style scoped>
+@media(max-width:750px){
+  .agency--roster{padding:10px 0 24px}
+  .agency--roster .agency-heading{padding-bottom:14px;gap:8px}
+  .agency--roster .agency-heading h1{margin:0;font-size:clamp(2rem,8vw,2.6rem);line-height:.95}
+  .agency--roster .agency-actions{margin:14px 0;gap:10px}
+}
 </style>
