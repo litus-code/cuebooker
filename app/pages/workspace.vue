@@ -4770,7 +4770,7 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 </style>
 
 <style scoped>
-.workspace--agency .view-heading{
+.workspace .view-heading{
   box-sizing:border-box;
   min-height:156px;
   align-items:center;
@@ -4780,20 +4780,25 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   border-bottom:1px solid var(--cue-border);
   background:var(--cue-surface);
 }
-.workspace--agency .view-heading>div{min-width:0;max-width:900px}
-.workspace--agency .view-heading h1{font-size:clamp(2.25rem,5.3vw,5.5rem);line-height:.98;letter-spacing:-.055em}
+.workspace .view-heading>div{min-width:0;max-width:900px}
+.workspace .view-heading h1{font-size:clamp(2.25rem,5.3vw,5.5rem);line-height:.98;letter-spacing:-.055em}
 .workspace--agency .settings-panel > .editor-heading{
   padding-top:40px;
   border-bottom-color:var(--cue-border);
   background:var(--cue-surface);
 }
 @media(max-width:960px){
-  .workspace--agency .view-heading{min-height:132px;margin-bottom:20px;padding:26px 22px}
-  .workspace--agency .view-heading h1{font-size:clamp(2rem,7vw,4rem)}
+  .workspace .view-heading{min-height:132px;margin-bottom:20px;padding:26px 22px}
+  .workspace .view-heading h1{font-size:clamp(2rem,7vw,4rem)}
   .workspace--agency .settings-panel > .editor-heading{padding-top:max(30px,env(safe-area-inset-top))}
 }
 @media(max-width:600px){
-  .workspace--agency .view-heading{min-height:118px;margin-bottom:18px;padding:22px 16px}
-  .workspace--agency .view-heading h1{font-size:clamp(1.9rem,8vw,3rem)}
+  .workspace .view-heading{min-height:118px;margin-bottom:18px;padding:22px 16px}
+  .workspace .view-heading h1{font-size:clamp(1.9rem,8vw,3rem)}
 }
+</style>
+
+<style scoped>
+.workspace .agency-booking-detail>.secondary-button{display:inline-flex;align-items:center;min-height:44px;margin:8px 0 18px;padding:0 16px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control,10px);background:var(--cue-surface);color:var(--cue-text);font:700 13px/1.2 Arial,Helvetica,sans-serif;cursor:pointer}
+.workspace .agency-booking-detail>.secondary-button:hover,.workspace .agency-booking-detail>.secondary-button:focus-visible{border-color:var(--cue-accent);color:var(--cue-accent);background:var(--cue-surface)}
 </style>
