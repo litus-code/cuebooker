@@ -160,7 +160,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
     </section>
 
     <div v-if="selectedArtist" class="agency-preview__context"><span>CUE Test Agency / <strong>{{ selectedArtist.stage_name }}</strong></span><button type="button" @click="returnToAgency">{{ locale === 'es' ? 'Quitar filtro de artista' : 'Clear artist filter' }}</button></div>
-    <nav v-if="selectedArtist && ['profile','passport','cue-id'].includes(view)" class="agency-preview__record-tabs" aria-label="Ficha del artista"><button type="button" @click="changeView('roster')">← {{ locale === 'es' ? 'Artistas' : 'Artists' }}</button><button v-for="tab in (['profile','passport','cue-id'] as const)" :key="tab" type="button" :aria-current="view===tab?'page':undefined" @click="changeView(tab)">{{ tab==='profile'?(locale==='es'?'Ficha y perfil público':'Record & public profile'):tab==='passport'?(locale==='es'?'Trayectoria':'Career'):'CUE Passport' }}</button></nav>
+    <nav v-if="selectedArtist && ['profile','passport'].includes(view)" class="agency-preview__record-tabs" aria-label="Ficha del artista"><button type="button" @click="changeView('roster')">← {{ locale === 'es' ? 'Artistas' : 'Artists' }}</button><button v-for="tab in (['profile','passport'] as const)" :key="tab" type="button" :aria-current="view===tab?'page':undefined" @click="changeView(tab)">{{ tab==='profile'?(locale==='es'?'Ficha y perfil público':'Record & public profile'):'CUE Passport' }}</button></nav>
     <AgencyWorkspace
       v-if="!focusedBooking && ['overview', 'bookings', 'calendar', 'history', 'roster'].includes(view)"
       :selected-artist-id="selectedArtistId" :workspace-id="'preview-agency'" agency-name="CUE Test Agency"
@@ -183,7 +183,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
       <span>{{ selectedArtist ? `AGENCIA / ${selectedArtist.stage_name}` : 'AGENCIA / CUE TEST AGENCY' }}</span>
       <h1>{{ view === 'profile' ? selectedArtist?.stage_name : view === 'passport' || view === 'cue-id' ? 'CUE PASSPORT' : 'SETTINGS' }}</h1>
       <p v-if="view === 'profile'">{{ locale === 'es' ? 'Ficha del artista seleccionado. Una agencia autorizada puede editar su identidad pública y configurar el booking.' : 'Selected artist profile. An authorized agency can edit the public identity and booking settings.' }}</p>
-      <p v-else-if="view === 'passport'">{{ locale === 'es' ? 'El recorrido pertenece a este artista y se alimenta de sus bookings confirmados.' : 'This artist journey grows from confirmed bookings.' }}</p>
+      <p v-else-if="view === 'passport'">{{ locale === 'es' ? 'El CUE Passport reúne la trayectoria del artista y sus actuaciones confirmadas.' : 'The CUE Passport brings together the artist’s career and confirmed performances.' }}</p>
       <p v-else-if="view === 'cue-id'">{{ locale === 'es' ? 'El CUE Passport reúne la trayectoria del artista y sus actuaciones confirmadas.' : 'The CUE Passport brings together the artist’s career and confirmed performances.' }}</p>
       <p v-else>{{ locale === 'es' ? 'Configuración del workspace de Agencia.' : 'Agency workspace settings.' }}</p>
       <AgencyCatalogEditor v-if="view === 'settings'" workspace-id="preview-agency" role="owner" :locale="locale" demo @edit-artist="id => { chooseArtist(id); changeView('profile') }" />
@@ -521,5 +521,17 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 @media(max-width:960px){
   .agency-preview__notification-panel {top:0!important;right:0!important;bottom:0!important;left:0!important;transform:none;width:100vw;height:100dvh;max-height:none;border:0;border-radius:0;}
   .agency-preview__notification-panel>header {padding-top:max(20px,env(safe-area-inset-top));}
+}
+</style>
+
+<style scoped>
+/* Match the sidebar notification control to the icon and label columns above. */
+@media(min-width:961px){
+  .agency-preview__desktop-notifications{padding-left:15px!important;gap:18px!important;}
+}
+/* Give the notification row more vertical breathing room. */
+.agency-preview__notification-item{padding-block:32px!important;}
+@media(max-width:960px){
+  .agency-preview__notification-item{padding:28px 18px!important;}
 }
 </style>
