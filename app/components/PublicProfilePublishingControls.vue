@@ -262,7 +262,7 @@ function downloadQr() {
                       <path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />
                     </template>
                     <template v-else-if="link.key === 'profile'">
-                      <circle cx="12" cy="8" r="3" /><path d="M5 20c.8-4 3.1-6 7-6s6.2 2 7 6" />
+                      <path d="M10 13a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1M14 11a5 5 0 0 0-7.1 0l-2 2A5 5 0 0 0 12 20l1.1-1.1" />
                     </template>
                     <template v-else>
                       <path d="M7 4h10v16H7zM9 8h6M9 12h6M9 16h4" />
@@ -272,6 +272,7 @@ function downloadQr() {
                   {{ link.label }}
                 </span>
                 <p>{{ link.description }}</p>
+                <code v-if="link.key !== 'widget'">{{ link.value }}</code>
                 <small>{{ link.meta }}</small>
               </div>
               <div v-if="link.key === 'qr'" class="public-profile-controls__qr">
@@ -340,6 +341,7 @@ function downloadQr() {
 .public-profile-controls__channel-icon .fill { fill:currentColor; stroke:none; }
 .public-profile-controls__channel p { margin: 8px 0 10px; color: var(--cue-muted); font-size: 11px; line-height: 1.45; }
 .public-profile-controls__channel small { display: block; color: var(--cue-dim); font: 9px/1.3 monospace; }
+.public-profile-controls__channel code { display:block; margin:8px 0 2px; padding:8px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-control); color:var(--cue-text); font:10px/1.45 monospace; overflow-wrap:anywhere; word-break:break-word; }
 .public-profile-controls__channel button { align-self: flex-start; min-height: 34px; margin-top: 14px; padding: 0 10px; border: 1px solid var(--cue-border); background: transparent; color: var(--cue-text); cursor: pointer; font: 800 9px/1 monospace; text-transform: uppercase; }
 .public-profile-controls__channel button:hover:not(:disabled) { border-color: var(--cue-accent); color: var(--cue-accent); }
 .public-profile-controls__qr { display:grid; grid-template-columns:110px minmax(0,1fr); gap:12px; align-items:end; margin-top:14px; }
