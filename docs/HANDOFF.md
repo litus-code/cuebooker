@@ -1,3 +1,9 @@
+## 2026-10-02 / Agency mobile header: restore wordmark and separate controls
+
+Follow-up from the owner's iPhone screenshot on PR96. At mobile widths the Agency header replaced the full Cuebooker wordmark with a small icon and placed the artist selector beside account actions, where the selector text was obscured by the notification control. The <=680px Agency header now uses three rows: Cuebooker wordmark and account actions; a full-width agency/artist selector; then horizontally scrollable workspace navigation. The full wordmark is shown at 112x38px and the selector truncates its label within its own grid cell.
+
+CI run1920 tests and production build passed. Deploy Staging run2394 deployed the PR preview successfully; stable staging deployment was skipped. Owner can verify at https://pr-96.cuebooker-staging.pages.dev/access/. Authenticated iPhone workspace visual check remains with the owner; no login credentials were entered, mailbox connection was not performed, and production remains unchanged.
+
 ## 2026-10-02 / Session refresh, safe Agency errors and mobile navigation
 
 PR #96, branch feature/agency-multi-artist-beta. Supabase staging logs for the user's Agency workspace show authenticated PostgREST requests at 2026-10-02 07:03Z returning401 with a token issued at04:57Z and expired at05:57Z. The app refreshed sessions only during initialization, so a tab left open past token expiry kept using the stale access token. This explains the concurrent Agency data, team, profile and mailbox request failures in the mobile screenshots; no RLS or permission policy was changed. The exact mailbox connect attempt was not independently confirmed in function logs.
