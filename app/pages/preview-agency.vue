@@ -385,7 +385,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 .agency-preview__exit:hover,.agency-preview__exit:focus-visible{color:#ff8996}
 .agency-preview__desktop-notifications{display:none}
 .agency-preview__desktop-exit{display:none}
-.agency-preview__desktop-notifications{position:relative}
+.agency-preview__desktop-notifications{position:relative;flex-direction:row!important;justify-content:flex-start!important;min-height:42px;height:42px;padding:10px 12px;box-sizing:border-box}
 .agency-preview__desktop-notifications::before,.agency-preview__desktop-notifications::after{display:none!important;content:none!important;background:none!important}
 .agency-preview__desktop-notifications svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .agency-preview__desktop-notifications .agency-preview__desktop-badge{position:absolute;top:-4px;left:42px;display:grid;place-items:center;width:16px;height:16px;margin:0;border-radius:50%;background:var(--cue-accent);color:#111;font:800 9px/1 monospace}
