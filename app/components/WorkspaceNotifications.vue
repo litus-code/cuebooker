@@ -246,14 +246,14 @@ onBeforeUnmount(() => {
 .notification-trigger:hover, .notification-trigger:focus-visible { border-color: var(--cue-accent); color: var(--cue-text); outline: none; }
 .notification-trigger svg { width:18px; height:18px; flex:0 0 auto; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 .notification-badge { position: absolute; top: -5px; right: -5px; display: grid; min-width: 17px; height: 17px; place-items: center; box-sizing: border-box; padding: 0 4px; border: 2px solid var(--cue-bg); border-radius: 999px; background: var(--cue-accent); color: #080808; font: 900 9px/1 monospace; }
-.notification-panel { border-radius:var(--cue-radius-panel); position:fixed; z-index:80; top:64px; right:18px; bottom:18px; width:min(420px,calc(100vw - 36px)); overflow:hidden; border:1px solid var(--cue-border); background:var(--cue-surface); color:var(--cue-text); box-shadow:0 22px 70px var(--cue-shadow); }
+.notification-panel { border-radius:var(--cue-radius-panel); position:fixed !important; z-index:10001 !important; top:64px; right:18px; bottom:18px; width:min(420px,calc(100vw - 36px)); overflow:hidden; border:1px solid var(--cue-border); background:var(--cue-surface); color:var(--cue-text); box-shadow:0 22px 70px var(--cue-shadow); }
 .notification-panel > header { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 16px 16px 13px; border-bottom: 1px solid var(--cue-border); }
 .notification-panel > header div { min-width: 0; }
 .notification-panel > header span { display: block; font-size: 15px; font-weight: 900; }
 .notification-panel > header strong { display: block; margin-top: 3px; color: var(--cue-accent); font: 700 9px/1.2 monospace; letter-spacing: .08em; text-transform: uppercase; }
 .notification-panel > header button { display:grid; place-items:center; flex:0 0 42px; width:42px; height:42px; padding:0; border:1px solid var(--cue-accent); border-radius:50%; background:transparent; color:var(--cue-text); cursor:pointer; font-size:24px; line-height:1; transition:background-color .16s ease,color .16s ease; }
 .notification-panel > header button:hover,.notification-panel > header button:focus-visible { background:var(--cue-accent); color:var(--cue-accent-ink); outline:none; }
-.notification-backdrop { position:fixed; z-index:79; inset:0; background:rgba(0,0,0,.62); backdrop-filter:blur(2px); }
+.notification-backdrop { position:fixed !important; z-index:10000 !important; inset:0 !important; width:100vw !important; height:100dvh !important; margin:0 !important; padding:0 !important; border:0 !important; background:rgba(0,0,0,.72) !important; backdrop-filter:blur(6px); }
 .notification-toolbar { display: flex; justify-content: flex-end; padding: 9px 14px; border-bottom: 1px solid var(--cue-border); }
 .notification-toolbar button { border: 0; background: transparent; color: var(--cue-muted); cursor: pointer; font: 700 10px/1.2 monospace; text-decoration: underline; text-underline-offset: 3px; }
 .notification-toolbar button:disabled { opacity: .35; cursor: default; }
