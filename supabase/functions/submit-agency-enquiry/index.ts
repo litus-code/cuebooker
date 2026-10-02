@@ -37,7 +37,7 @@ Deno.serve(async request=>{
    consumePublicRateLimit(serviceJson,supabaseUrl,serviceKey,"public_agency_enquiry_client",clientKey,12,600),
    consumePublicRateLimit(serviceJson,supabaseUrl,serviceKey,"public_agency_enquiry_contact",contactKey,4,3600)
   ]);
-  const blocked=decisions.filter(item=>!item.allowed);if(blocked.length)return json({error:"rate_limited"},429,{"Retry-After":String(Math.max(...blocked.map(item=>item.retryAfterSeconds),1)});
+  const blocked=decisions.filter(item=>!item.allowed);if(blocked.length)return json({error:"rate_limited"},429,{"Retry-After":String(Math.max(...blocked.map(item=>item.retryAfterSeconds),1))});
   const fingerprint=await sha256Hex(JSON.stringify({agencySlug:payload.agencySlug,contactName:payload.contactName,contactEmail:payload.contactEmail,initialMessage:payload.initialMessage}));
   const rows=await serviceJson<Array<{booking_id:string;created:boolean}>>(`${supabaseUrl}/rest/v1/rpc/create_public_agency_enquiry`,{
    method:"POST",body:JSON.stringify({target_agency_slug:payload.agencySlug,target_idempotency_key:payload.requestId,target_request_fingerprint:fingerprint,contact_name:payload.contactName,contact_email:payload.contactEmail,initial_message:payload.initialMessage})
