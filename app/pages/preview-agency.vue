@@ -446,7 +446,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 .agency-preview button,.agency-preview a { cursor:pointer; }
 .agency-preview button:disabled { cursor:not-allowed; }
 .agency-preview__notification-panel {
-  position:relative;z-index:1;display:block;box-sizing:border-box;width:min(900px,calc(100% - 250px));
+  position:relative;z-index:1;display:block;box-sizing:border-box;width:calc(100% - 238px);
   max-height:none;margin:40px 20px 40px 218px;padding:0;overflow:hidden;border:1px solid var(--cue-border);
   border-radius:var(--cue-radius-panel,18px);background:var(--cue-surface);color:var(--cue-text);box-shadow:none;
 }
