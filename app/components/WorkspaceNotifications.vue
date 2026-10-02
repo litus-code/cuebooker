@@ -278,7 +278,7 @@ onBeforeUnmount(() => {
 @media (max-width: 680px) {
   .notification-trigger { width:36px; min-width:36px; padding:8px; border-radius:50%; justify-content:center; }
   .notification-trigger__label { display:none; }
-  .notification-panel { border-radius:var(--cue-radius-panel); position:fixed; top:auto; right:0; bottom:0; left:0; width:100%; height:min(72dvh,620px); border-right:0; border-bottom:0; border-left:0; box-shadow:0 -20px 60px var(--cue-shadow); }
+  .notification-panel { position:fixed; inset:0; width:100vw; height:100dvh; max-height:none; border:0; border-radius:0; box-shadow:none; }
   .notification-list { height:calc(100% - 108px); }
   .notification-item { padding:15px 16px; }
   .notification-meta { gap:8px; }
