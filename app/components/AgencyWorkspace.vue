@@ -111,7 +111,7 @@ const pendingHolds = computed(() => exactHoldCount.value ?? `≥${holds.value.fi
 
 const isEs = computed(() => props.locale === 'es')
 const title = computed(() => props.contextArtistName && props.view !== 'roster'
-  ? ({ overview: props.contextArtistName.toUpperCase(), bookings: `BOOKINGS / ${props.contextArtistName}`, calendar: `${isEs.value ? 'CALENDARIO' : 'CALENDAR'} / ${props.contextArtistName}`, history: `ACTIVITY / ${props.contextArtistName}` })[props.view]
+  ? ({ overview: props.contextArtistName.toUpperCase(), bookings: 'BOOKINGS', calendar: isEs.value ? 'CALENDARIO' : 'CALENDAR', history: isEs.value ? 'ACTIVIDAD' : 'ACTIVITY' })[props.view]
   : ({ overview: isEs.value ? 'PULSO DEL ROSTER.' : 'THE ROSTER PULSE.', bookings: 'BOOKINGS / ROSTER', calendar: isEs.value ? 'CALENDARIO DEL ROSTER.' : 'ROSTER CALENDAR.', history: 'ACTIVITY / ROSTER', roster: isEs.value ? 'ARTISTAS.' : 'ARTISTS.' })[props.view])
 function calendarCount(day: string | null) { return day ? visibleMonthBookings.value.filter(item => item.event_date === day).length + visibleHolds.value.filter(item => item.event_date === day).length : 0 }
 const monthLabel = computed(() => {
@@ -253,7 +253,7 @@ function confirmRetire(artist: RosterArtist) {
 
 <template>
   <section class="agency" :class="{ 'agency--roster': view === 'roster' }" :aria-busy="loading">
-    <div class="agency-heading"><div><h1>{{ title }}</h1></div><div class="agency-heading-actions"><div v-if="view === 'roster'" class="agency-roster-heading-tools"><span>{{ activeArtists.length }} {{ isEs ? 'artistas activos' : 'active artists' }}</span><button v-if="canManageRoster" type="button" @click="showAdd = true">+ {{ isEs ? 'Añadir artista' : 'Add artist' }}</button></div><template v-else><button v-if="canCapture !== false && activeArtists.length && ['overview','bookings'].includes(view)" type="button" class="agency-primary" @click="emit('capture')">+ CUE</button><button v-if="canManageRoster && view === 'overview'" type="button" @click="showAdd = true">{{ isEs ? 'Añadir artista' : 'Add artist' }}</button><button type="button" @click="emit('navigate', 'roster')">{{ isEs ? 'Ver roster' : 'View roster' }}</button></template></div></div>
+    <div class="agency-heading"><div><h1>{{ title }}</h1></div><div class="agency-heading-actions"><div v-if="view === 'roster'" class="agency-roster-heading-tools"><span>{{ activeArtists.length }} {{ isEs ? 'artistas activos' : 'active artists' }}</span><button v-if="canManageRoster" type="button" @click="showAdd = true">+ {{ isEs ? 'Añadir artista' : 'Add artist' }}</button></div><template v-else><button v-if="canCapture !== false && activeArtists.length && ['overview','bookings'].includes(view)" type="button" class="agency-primary" @click="emit('capture')">+ CUE</button><button v-if="canManageRoster && view === 'overview'" type="button" @click="showAdd = true">{{ isEs ? 'Añadir artista' : 'Add artist' }}</button><button v-if="view === 'overview'" type="button" @click="emit('navigate', 'roster')">{{ isEs ? 'Ver roster' : 'View roster' }}</button></template></div></div>
     <p v-if="error" role="alert" class="agency-error">{{ error }} <button type="button" @click="load">{{ isEs ? 'Reintentar' : 'Retry' }}</button></p>
     <div v-if="!activeArtists.length" class="agency-empty"><span>00 / ROSTER</span><h2>{{ isEs ? 'Tu roster todavía está vacío.' : 'Your roster is still empty.' }}</h2><p>{{ isEs ? 'Añade tu primer artista para empezar a gestionar fechas y bookings.' : 'Add your first artist to manage dates and bookings.' }}</p><button v-if="canManageRoster" type="button" @click="showAdd = true">{{ isEs ? 'Añadir primer artista' : 'Add first artist' }}</button></div>
     <template v-else>
@@ -411,4 +411,17 @@ function confirmRetire(artist: RosterArtist) {
 .agency-roster-heading-tools>span{font-size:14px;font-weight:700;color:var(--cue-text);white-space:nowrap}
 .agency-roster-heading-tools button{white-space:nowrap}
 @media(max-width:750px){.agency-roster-heading-tools{width:100%;justify-content:space-between;gap:12px}.agency-roster-heading-tools>span{white-space:normal}}
+</style>
+
+
+<style scoped>
+@media(max-width:750px){
+  .agency{padding:12px 0 24px}
+  .agency-heading{min-height:0;flex-direction:column;align-items:flex-start;gap:10px;margin-bottom:14px;padding:18px 16px}
+  .agency-heading>div:first-child,.agency-heading-actions{width:100%}
+  .agency-heading h1{margin:0;font-size:clamp(1.85rem,7vw,2.65rem);line-height:.98}
+  .agency-heading-actions{justify-content:flex-start;gap:8px}
+  .agency-heading-actions button{min-height:40px;padding:8px 12px}
+  .agency--roster .agency-heading{gap:10px;padding-bottom:16px}
+}
 </style>
