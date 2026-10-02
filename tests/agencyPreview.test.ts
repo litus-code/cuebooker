@@ -30,7 +30,7 @@ test('agency profile preview has a dedicated share state and no meaningless save
   const page = await readFile(new URL('../app/pages/preview-agency.vue', import.meta.url), 'utf8')
   assert.match(page, /COMPARTIR PERFIL \/ ARTISTA/)
   assert.match(page, /agency-preview__share-status/)
-  assert.match(page, /footer v-if="!\['distribution', 'image', 'portrait'\]/)
+  assert.match(page, /profileEditorSection !== 'distribution'/)
 })
 
 test('agency roster actions are icon-only, accessible, and keep retirement confirmation', async () => {
