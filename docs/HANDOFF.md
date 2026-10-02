@@ -8,7 +8,7 @@ PR #96 (`feature/agency-multi-artist-beta`), for staging review only.
 - Added source-contract tests for preview form behavior, the share panel and accessible roster actions.
 - The agency share URL already follows `/agency/<slug>`. Onboarding derives the slug from the agency name; `organizations.slug` is unique and validated. The catalog editor does not yet expose slug editing, so do not describe the slug as editable from Settings.
 
-Code commits: `f5a7d0cc57eb565afebbcfeae4c46c56d5d43580` plus template correction `a5bec624ab3242b1fabb06b990a47355db3b28a0`; test assertion alignment follows on the same PR branch. A staging preview build succeeded for the corrected template. Final CI and preview deployment are pending after the test assertion update. Production was not touched.
+Code commits: `f5a7d0cc57eb565afebbcfeae4c46c56d5d43580` plus template correction `a5bec624ab3242b1fabb06b990a47355db3b28a0`; tests were aligned in `c26a1fd2e2ed63d50a40000a61728a282acb5f93`. CI run `37060257502` and Deploy Staging run `37060257536` passed for the code snapshot, and the PR preview rendered the accessible roster icon labels. A documentation-only handoff update follows on the branch. Production was not touched.
 
 ## 2026-10-02 / Agency mobile header: restore wordmark and separate controls
 
