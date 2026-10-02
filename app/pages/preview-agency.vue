@@ -83,6 +83,7 @@ watch(selectedArtist, artist => {
   if (!artist && ['profile', 'passport', 'cue-id'].includes(view.value)) view.value = 'overview'
 })
 function changeView(next: DemoView) {
+  previewNotificationsOpen.value = false
   view.value = next
   focusBookingId.value = ''
 }
