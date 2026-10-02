@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import type { AgencyCatalog } from '../domain/agencyCatalog'
 import { safeAgencyImage } from '../domain/agencyCatalog'
-import type { PublicAgencyEnquiryInput } from '../services/publicBookingIngressApi'
 const props=withDefaults(defineProps<{agency:AgencyCatalog;locale:'es'|'en';preview?:boolean;demo?:boolean;enquirySubmitting?:boolean;enquirySent?:boolean;enquiryError?:string}>(),{preview:false,demo:false,enquirySubmitting:false,enquirySent:false,enquiryError:''})
-const emit=defineEmits<{openArtist:[artistId:string];submitEnquiry:[payload:Omit<PublicAgencyEnquiryInput,'agencySlug'|'requestId'> & {artistSlug:string|null}]}>()
+const emit=defineEmits<{openArtist:[artistId:string];submitEnquiry:[payload:{artistSlug:string|null;contactName:string;contactEmail:string;initialMessage:string;website:string}]}>()
 function openArtist(event:MouseEvent,id:string){if(props.demo){event.preventDefault();emit('openArtist',id)}}
 const es=computed(()=>props.locale==='es')
 const previewMedia=(value:string|null|undefined)=>props.preview&&value?.startsWith('blob:') ? value : safeAgencyImage(value)
