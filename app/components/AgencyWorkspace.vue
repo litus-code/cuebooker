@@ -513,3 +513,14 @@ function confirmRetire(artist: RosterArtist) {
  .agency-calendar-filters{gap:18px;margin:0 0 10px;padding:0 0 6px}
 }
 </style>
+
+<style scoped>
+@media(max-width:750px){
+ .agency--roster .agency-heading{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;padding:18px 16px 20px}
+ .agency--roster .agency-heading>div:first-child{flex:1 1 auto;width:auto;min-width:0}
+ .agency--roster .agency-heading h1{font-size:clamp(1.8rem,7vw,2.6rem);line-height:1.1}
+ .agency--roster .agency-heading-actions{flex:0 0 auto;width:auto;justify-content:flex-end;margin:0}
+ .agency--roster .agency-roster-heading-tools{width:auto;justify-content:flex-end}
+ .agency--roster .agency-heading-actions button{flex:none;min-height:40px;padding:8px 12px}
+}
+</style>
