@@ -61,6 +61,31 @@ const artistPassportBookings = computed(() => demoBookings.value
   .filter(item => item.artist_id === selectedArtistId.value && item.status === 'confirmed')
   .sort((a, b) => (a.event_date || '').localeCompare(b.event_date || '')))
 const artistInitials = computed(() => selectedArtist.value?.stage_name.split(' ').map(part => part[0]).slice(0, 2).join('').toUpperCase() || '')
+type ArtistProfileSection = 'identity' | 'image' | 'portrait' | 'sound' | 'links' | 'booking' | 'distribution' | 'passport'
+const agencyArtistProfile = ref({ stageName: '', bio: null as string | null, city: null as string | null, countryCode: 'ES', languages: [] as string[], primaryGenres: [] as string[], secondaryGenres: [] as string[], performanceFormats: [] as string[], yearsActive: null as number | null, websiteUrl: null as string | null, instagramUrl: null as string | null, soundcloudUrl: null as string | null, mixcloudUrl: null as string | null, youtubeUrl: null as string | null, spotifyUrl: null as string | null, coverUrl: null as string | null, artistImageUrl: null as string | null, artistCutoutUrl: null as string | null, visualMode: 'editorial', cueId: null as unknown | null, acceptingRequests: false })
+const agencyProfilePublished = ref(false)
+const agencyPassportPublic = ref(true)
+const profileEditorSection = ref<ArtistProfileSection | null>(null)
+const agencyGenreDraft = ref('')
+const agencyFormatDraft = ref('')
+watch(selectedArtist, artist => {
+  if (artist) {
+    agencyArtistProfile.value.stageName = artist.stage_name
+    agencyArtistProfile.value.city = artist.city || null
+  }
+}, { immediate: true })
+function openAgencyProfileEditor(section: ArtistProfileSection) {
+  profileEditorSection.value = section
+  agencyGenreDraft.value = [...agencyArtistProfile.value.primaryGenres, ...agencyArtistProfile.value.secondaryGenres].join(', ')
+  agencyFormatDraft.value = agencyArtistProfile.value.performanceFormats.join(', ')
+}
+function saveAgencyProfileEditor() {
+  if (profileEditorSection.value === 'sound') {
+    agencyArtistProfile.value.primaryGenres = agencyGenreDraft.value.split(',').map(value => value.trim()).filter(Boolean)
+    agencyArtistProfile.value.performanceFormats = agencyFormatDraft.value.split(',').map(value => value.trim()).filter(Boolean)
+  }
+  profileEditorSection.value = null
+}
 const focusedBooking = computed(() => demoBookings.value.find(item => item.id === focusBookingId.value))
 const bookingArtist = computed(() => artists.value.find(item => item.id === focusedBooking.value?.artist_id))
 function closeBooking() { focusBookingId.value = ''; view.value = returnView.value }
@@ -197,22 +222,30 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
         <div><span>{{ locale === 'es' ? 'PREFERENCIAS' : 'PREFERENCES' }}</span><h2>{{ locale === 'es' ? 'Idioma y apariencia' : 'Language and appearance' }}</h2><p>{{ locale === 'es' ? 'Elige el idioma y el tema de Cuebooker.' : 'Choose the Cuebooker language and theme.' }}</p></div>
         <CuePreferencesControl compact labels />
       </section>
-      <section v-else-if="view === 'profile'" class="agency-preview__profile-preview" :aria-label="locale === 'es' ? 'Vista previa del perfil público' : 'Public profile preview'">
-        <div class="agency-preview__profile-identity">
-          <div class="agency-preview__profile-photo" role="img" :aria-label="locale === 'es' ? 'Foto de perfil no disponible en los datos de ejemplo' : 'Profile photo unavailable in demo data'">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3l1.5-2h7L17 7h3v12H4z"/><circle cx="12" cy="13" r="4"/></svg>
-            <span>{{ selectedArtist?.stage_name.split(' ').map(part => part[0]).slice(0, 2).join('').toUpperCase() }}</span>
-          </div>
-          <div class="agency-preview__profile-name">
-            <span>{{ locale === 'es' ? 'PERFIL PÚBLICO / ARTISTA' : 'PUBLIC PROFILE / ARTIST' }}</span>
-            <h2>{{ selectedArtist?.stage_name }}</h2>
-            <p>{{ selectedArtist?.city || (locale === 'es' ? 'Ciudad sin definir' : 'City not set') }}</p>
-          </div>
-        </div>
-        <div class="agency-preview__profile-empty">
-          <strong>{{ locale === 'es' ? 'Foto y biografía pendientes' : 'Photo and bio not set' }}</strong>
-          <p>{{ locale === 'es' ? 'Esta ficha de demostración no incluye foto ni biografía. En el perfil real aparecerá la información pública del artista.' : 'This demo profile has no photo or bio. The artist’s public information will appear here in the live profile.' }}</p>
-        </div>
+      <section v-else-if="view === 'profile'" class="agency-preview__profile-builder" :aria-label="locale === 'es' ? 'Editor de ficha del artista' : 'Artist profile editor'">
+        <WorkspaceArtistProfile
+          :profile="agencyArtistProfile"
+          :editable="true"
+          :published="agencyProfilePublished"
+          :locale="locale"
+          :passport="{ confirmedBookings: artistPassportBookings.length, cities: artistPassportBookings.map(item => item.city || '').filter(Boolean), venues: artistPassportBookings.map(item => item.venue_name || '').filter(Boolean), milestones: [], media: [] }"
+          @edit="openAgencyProfileEditor"
+          @toggle-published="agencyProfilePublished = $event"
+          @toggle-requests="agencyArtistProfile.acceptingRequests = $event"
+          @cue-id="changeView('cue-id')"
+          @passport="changeView('passport')"
+        />
+        <section v-if="profileEditorSection" class="agency-preview__profile-editor">
+          <header><span>{{ locale === 'es' ? 'EDITAR FICHA / ARTISTA' : 'EDIT ARTIST PROFILE' }}</span><button type="button" @click="profileEditorSection = null">×</button></header>
+          <h2>{{ profileEditorSection === 'identity' ? (locale === 'es' ? 'Identidad y biografía' : 'Identity and bio') : profileEditorSection === 'sound' ? (locale === 'es' ? 'Sonido y formato' : 'Sound and format') : profileEditorSection === 'links' ? (locale === 'es' ? 'Enlaces del artista' : 'Artist links') : profileEditorSection === 'booking' ? 'Booking' : profileEditorSection === 'passport' ? 'CUE Passport' : profileEditorSection === 'distribution' ? (locale === 'es' ? 'Distribución' : 'Distribution') : profileEditorSection === 'portrait' ? (locale === 'es' ? 'Imagen del artista' : 'Artist image') : (locale === 'es' ? 'Portada' : 'Cover') }}</h2>
+          <div v-if="profileEditorSection === 'identity'" class="agency-preview__profile-fields"><label>{{ locale === 'es' ? 'Nombre artístico' : 'Artist name' }}<input v-model="agencyArtistProfile.stageName"></label><label>{{ locale === 'es' ? 'Ciudad base' : 'Base city' }}<input v-model="agencyArtistProfile.city"></label><label>{{ locale === 'es' ? 'Biografía' : 'Biography' }}<textarea v-model="agencyArtistProfile.bio" rows="4"></textarea></label></div>
+          <div v-else-if="profileEditorSection === 'sound'" class="agency-preview__profile-fields"><label>{{ locale === 'es' ? 'Géneros, separados por comas' : 'Genres, comma separated' }}<input v-model="agencyGenreDraft"></label><label>{{ locale === 'es' ? 'Formatos, separados por comas' : 'Formats, comma separated' }}<input v-model="agencyFormatDraft"></label></div>
+          <div v-else-if="profileEditorSection === 'links'" class="agency-preview__profile-fields"><label>Web<input v-model="agencyArtistProfile.websiteUrl"></label><label>Instagram<input v-model="agencyArtistProfile.instagramUrl"></label><label>SoundCloud<input v-model="agencyArtistProfile.soundcloudUrl"></label></div>
+          <div v-else-if="profileEditorSection === 'booking'" class="agency-preview__profile-fields"><label class="agency-preview__profile-check"><input v-model="agencyArtistProfile.acceptingRequests" type="checkbox">{{ locale === 'es' ? 'Aceptar solicitudes desde el perfil público' : 'Accept enquiries through the public profile' }}</label></div>
+          <div v-else-if="profileEditorSection === 'passport'" class="agency-preview__profile-fields"><label class="agency-preview__profile-check"><input v-model="agencyPassportPublic" type="checkbox">{{ locale === 'es' ? 'Mostrar el CUE Passport en el perfil' : 'Show CUE Passport on profile' }}</label></div>
+          <p v-else class="agency-preview__profile-editor-note">{{ locale === 'es' ? 'La imagen y la portada se editan desde los controles del perfil. Los cambios de esta vista son de demostración.' : 'Images are managed from the profile controls. Changes in this preview are for demonstration.' }}</p>
+          <footer><button type="button" @click="profileEditorSection = null">{{ locale === 'es' ? 'Cancelar' : 'Cancel' }}</button><button type="button" class="agency-preview__profile-save" @click="saveAgencyProfileEditor">{{ locale === 'es' ? 'Guardar cambios' : 'Save changes' }}</button></footer>
+        </section>
       </section>
       <section v-else-if="view === 'passport'" class="agency-preview__passport" :aria-label="locale === 'es' ? 'Trayectoria del artista' : 'Artist career history'">
         <header><div><span>{{ locale === 'es' ? 'TRAYECTORIA / ACTUACIONES' : 'CAREER / PERFORMANCES' }}</span><h2>{{ locale === 'es' ? 'Actuaciones confirmadas' : 'Confirmed performances' }}</h2></div><strong>{{ artistPassportBookings.length }}</strong></header>
@@ -602,4 +635,26 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 .agency-preview__cue-id-copy h2{font-size:clamp(1.5rem,4vw,2.2rem)}.agency-preview__cue-id-copy code{display:inline-block;margin-top:12px;padding:6px 9px;border:1px solid var(--cue-border);border-radius:8px;color:var(--cue-muted);font-size:12px}
 .agency-preview__cue-id-foot{grid-column:1/-1;display:flex;justify-content:space-between;gap:12px;padding-top:16px;border-top:1px solid var(--cue-border)}.agency-preview__cue-id-foot strong{color:var(--cue-text);font-size:12px}
 @media(max-width:600px){.agency-preview__passport,.agency-preview__cue-id-card{margin-top:18px;padding:16px}.agency-preview__passport-event{grid-template-columns:50px minmax(0,1fr);gap:12px}.agency-preview__passport-status{grid-column:2}.agency-preview__cue-id-card{gap:14px}.agency-preview__cue-id-mark{width:78px;height:78px;border-radius:18px;font-size:24px}}
+</style>
+
+<style scoped>
+.agency-preview__profile-builder{margin-top:24px}
+.agency-preview__profile-editor{position:fixed;z-index:120;top:50%;left:50%;transform:translate(-50%,-50%);box-sizing:border-box;width:min(600px,calc(100vw - 32px));max-height:85dvh;overflow:auto;padding:22px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel,18px);background:var(--cue-surface);color:var(--cue-text);box-shadow:0 24px 72px #000b}
+.agency-preview__profile-editor:before{content:'';position:fixed;z-index:-1;inset:-100vh -100vw;background:rgba(0,0,0,.76);backdrop-filter:blur(5px)}
+.agency-preview__profile-editor>header,.agency-preview__profile-editor>footer{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.agency-preview__profile-editor>header{padding-bottom:16px;border-bottom:1px solid var(--cue-border)}
+.agency-preview__profile-editor>header span{font:800 10px/1.4 monospace;letter-spacing:.12em;color:var(--cue-accent)}
+.agency-preview__profile-editor>header button{width:38px;height:38px;border:1px solid var(--cue-border);border-radius:50%;background:transparent;color:var(--cue-text);font-size:23px}
+.agency-preview__profile-editor h2{margin:8px 0;font-size:22px}
+.agency-preview__profile-fields{display:grid;gap:14px;padding:16px 0}
+.agency-preview__profile-fields label{display:grid;gap:7px;font-size:13px}
+.agency-preview__profile-fields input:not([type=checkbox]),.agency-preview__profile-fields textarea{width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--cue-border);border-radius:10px;background:var(--cue-bg);color:var(--cue-text);font:inherit}
+.agency-preview__profile-fields textarea{resize:vertical}
+.agency-preview__profile-check{display:flex!important;align-items:center;gap:10px}
+.agency-preview__profile-check input{accent-color:var(--cue-accent)}
+.agency-preview__profile-editor-note{color:var(--cue-muted);font-size:14px;line-height:1.5}
+.agency-preview__profile-editor>footer{justify-content:flex-end;padding-top:14px;border-top:1px solid var(--cue-border)}
+.agency-preview__profile-editor>footer button{min-height:40px;padding:0 14px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control,10px);background:transparent;color:var(--cue-text)}
+.agency-preview__profile-editor>footer .agency-preview__profile-save{border-color:var(--cue-accent);background:var(--cue-accent);color:#111;font-weight:800}
+@media(max-width:600px){.agency-preview__profile-builder{margin-top:18px}.agency-preview__profile-editor{padding:16px}}
 </style>
