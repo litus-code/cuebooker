@@ -21,6 +21,12 @@ function normalize(payload:Record<string,unknown>){
  return{agencySlug,requestId,contactName,contactEmail,initialMessage};
 }
 async function sha256Hex(value:string){const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(value));return Array.from(new Uint8Array(digest),byte=>byte.toString(16).padStart(2,"0")).join("")}
+function dispatchNotificationEmails(supabaseUrl:string,serviceKey:string){
+ const task=fetch(`${supabaseUrl.replace(/\/$/,"")}/functions/v1/dispatch-notification-emails`,{
+  method:"POST",headers:{Authorization:`Bearer ${serviceKey}`,"Content-Type":"application/json"},body:JSON.stringify({limit:10})
+ }).then(async response=>{if(!response.ok)throw new Error(`notification_dispatch_${response.status}`)}).catch(error=>console.error("agency-enquiry-notification-dispatch",error));
+ EdgeRuntime.waitUntil(task);
+}
 Deno.serve(async request=>{
  if(request.method==="OPTIONS")return new Response(null,{status:204,headers:corsHeaders});
  if(request.method!=="POST")return json({error:"method_not_allowed"},405);
@@ -43,7 +49,7 @@ Deno.serve(async request=>{
    method:"POST",body:JSON.stringify({target_agency_slug:payload.agencySlug,target_idempotency_key:payload.requestId,target_request_fingerprint:fingerprint,contact_name:payload.contactName,contact_email:payload.contactEmail,initial_message:payload.initialMessage})
   },serviceKey);
   const result=rows?.[0];if(!result?.booking_id)throw new Error("agency_enquiry_missing_result");
-  return json({accepted:true,created:Boolean(result.created),reference:result.booking_id},result.created?201:200);
+  if(result.created)dispatchNotificationEmails(supabaseUrl,serviceKey);\n  return json({accepted:true,created:Boolean(result.created),reference:result.booking_id},result.created?201:200);
  }catch(error){
   const message=error instanceof Error?error.message:String(error);
   if(message.includes("public_agency_unavailable"))return json({error:"agency_unavailable"},404);
