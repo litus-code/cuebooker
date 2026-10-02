@@ -4802,3 +4802,10 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .workspace .agency-booking-detail>.secondary-button{display:inline-flex;align-items:center;min-height:44px;margin:8px 0 18px;padding:0 16px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control,10px);background:var(--cue-surface);color:var(--cue-text);font:700 13px/1.2 Arial,Helvetica,sans-serif;cursor:pointer}
 .workspace .agency-booking-detail>.secondary-button:hover,.workspace .agency-booking-detail>.secondary-button:focus-visible{border-color:var(--cue-accent);color:var(--cue-accent);background:var(--cue-surface)}
 </style>
+
+
+<style scoped>
+/* Programmatic focus should not leave a browser-blue frame around the full settings page. */
+.workspace--agency .settings-panel:focus:not(:focus-visible){outline:none;box-shadow:none}
+.workspace--agency .settings-panel:focus-visible{outline:2px solid var(--cue-accent);outline-offset:3px}
+</style>
