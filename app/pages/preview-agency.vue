@@ -144,13 +144,14 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
         <NuxtLink class="agency-preview__icon agency-preview__exit" to="/access" :aria-label="locale === 'es' ? 'Salir' : 'Exit'" :title="locale === 'es' ? 'Salir' : 'Exit'">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/></svg>
         </NuxtLink>
-        <section v-if="previewNotificationsOpen" class="agency-preview__notification-panel" role="dialog" :aria-label="locale === 'es' ? 'Notificaciones' : 'Notifications'">
-          <strong>{{ locale === 'es' ? 'Nueva solicitud de booking' : 'New booking request' }}</strong>
-          <span>Nave Industrial · Sala 04</span>
-          <button type="button" @click="openPreviewNotification">{{ locale === 'es' ? 'Abrir solicitud' : 'Open request' }}</button>
-        </section>
       </div>
     </header>
+
+    <section v-if="previewNotificationsOpen" class="agency-preview__notification-panel" role="dialog" :aria-label="locale === 'es' ? 'Notificaciones' : 'Notifications'">
+      <strong>{{ locale === 'es' ? 'Nueva solicitud de booking' : 'New booking request' }}</strong>
+      <span>Nave Industrial · Sala 04</span>
+      <button type="button" @click="openPreviewNotification">{{ locale === 'es' ? 'Abrir solicitud' : 'Open request' }}</button>
+    </section>
 
     <div v-if="selectedArtist" class="agency-preview__context"><span>CUE Test Agency / <strong>{{ selectedArtist.stage_name }}</strong></span><button type="button" @click="returnToAgency">{{ locale === 'es' ? 'Quitar filtro de artista' : 'Clear artist filter' }}</button></div>
     <nav v-if="selectedArtist && ['profile','passport','cue-id'].includes(view)" class="agency-preview__record-tabs" aria-label="Ficha del artista"><button type="button" @click="changeView('roster')">← {{ locale === 'es' ? 'Artistas' : 'Artists' }}</button><button v-for="tab in (['profile','passport','cue-id'] as const)" :key="tab" type="button" :aria-current="view===tab?'page':undefined" @click="changeView(tab)">{{ tab==='profile'?(locale==='es'?'Ficha y perfil público':'Record & public profile'):tab==='passport'?(locale==='es'?'Trayectoria':'Career'):'CUE ID' }}</button></nav>
