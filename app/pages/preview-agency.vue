@@ -519,6 +519,9 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 .agency-preview__record-tabs button:first-child:hover,
 .agency-preview__record-tabs button:first-child:focus-visible { color:var(--cue-accent)!important;border-color:var(--cue-accent)!important; }
 @media(max-width:960px){
+  .agency-preview__header nav .agency-preview__desktop-exit{display:none!important;}
+}
+@media(max-width:960px){
   .agency-preview__notification-panel {top:0!important;right:0!important;bottom:0!important;left:0!important;transform:none;width:100vw;height:100dvh;max-height:none;border:0;border-radius:0;}
   .agency-preview__notification-panel>header {padding-top:max(20px,env(safe-area-inset-top));}
 }
