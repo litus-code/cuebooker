@@ -431,6 +431,7 @@ export function useCueAuth() {
     signedIn,
     initialize,
     fetchProfile,
+    ensureFreshSession,
     signIn,
     signUp,
     signOut,
