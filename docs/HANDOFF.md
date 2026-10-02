@@ -1,3 +1,11 @@
+## 2026-10-02 / Session refresh, safe Agency errors and mobile navigation
+
+PR #96, branch feature/agency-multi-artist-beta. Supabase staging logs for the user's Agency workspace show authenticated PostgREST requests at 2026-10-02 07:03Z returning401 with a token issued at04:57Z and expired at05:57Z. The app refreshed sessions only during initialization, so a tab left open past token expiry kept using the stale access token. This explains the concurrent Agency data, team, profile and mailbox request failures in the mobile screenshots; no RLS or permission policy was changed. The exact mailbox connect attempt was not independently confirmed in function logs.
+
+Added a client session refresh 90 seconds before expiry and a freshness check when a backgrounded tab becomes visible. Agency roster load errors now show a localized safe message instead of rendering raw Supabase request URLs/query strings. Workspace navigation centers the active tab in the horizontally scrollable mobile nav after view changes.
+
+Validation: CI run1918 tests and production build passed. PR preview run2392 deployed successfully; deployment to staging.cuebooker.com was skipped. User-facing preview: https://pr-96.cuebooker-staging.pages.dev/access/. The owner still needs to sign in and perform the Nylas authorization from Settings to verify their mailbox; no mailbox was connected, no user credentials entered, no data created, and production was untouched.
+
 ## 2026-10-01 / Automatic request verified with the real owned test email
 
 The explicitly authorized post-consent pilot email Presunta oferta now maps to one real agency booking bdbc8826-ba71-4604-8d00-d8e50d389932, status new, artist_id null, contact retained, offer220000 EUR and original inbound conversation stored once. Event date remains unset because 4/5 November has no explicit year. Exactly one in-app notification was created, with no notification-email delivery. Fresh staging UI shows the agency request in the global list, notification badge1, and New email enquiry in the bell; opening that alert navigates directly to the request with price, uncertainty and the Gmail reply composer. No send or booking decision was taken. The old completed pilot job alone was explicitly requeued for this upgrade; no failed attempts or history were bulk replayed. Scheduler active again with consent preserved.
