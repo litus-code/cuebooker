@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Contact, CoreBooking, Hold, NextMove, CreateManualBookingInput } from '../domain/bookingCore'
+import type { PublicArtistProfile } from '../domain/publicArtistProfile'
 import type { WorkspaceActivityHistoryRow } from '../services/bookingCoreApi'
 import { cloneCueIdStylizedCreatorConfig, DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG, type CueIdStylizedCreatorConfigV1 } from '../domain/cueIdStylizedCreator'
 
@@ -94,6 +95,37 @@ type ArtistProfileSection = 'identity' | 'image' | 'portrait' | 'sound' | 'links
 const agencyArtistProfile = ref({ stageName: '', bio: null as string | null, city: null as string | null, countryCode: 'ES', languages: [] as string[], primaryGenres: [] as string[], secondaryGenres: [] as string[], performanceFormats: [] as string[], yearsActive: null as number | null, websiteUrl: null as string | null, instagramUrl: null as string | null, soundcloudUrl: null as string | null, mixcloudUrl: null as string | null, youtubeUrl: null as string | null, spotifyUrl: null as string | null, coverUrl: null as string | null, artistImageUrl: null as string | null, artistCutoutUrl: null as string | null, visualMode: 'editorial', cueId: null as unknown | null, acceptingRequests: false })
 const agencyProfilePublished = ref(false)
 const agencyPassportPublic = ref(true)
+const agencyPublicPreviewOpen = ref(false)
+const agencyPublicArtistPreview = computed<PublicArtistProfile>(() => ({
+  stageName: agencyArtistProfile.value.stageName || selectedArtist.value?.stage_name || 'Artist',
+  slug: selectedArtist.value?.slug || '',
+  bio: agencyArtistProfile.value.bio,
+  city: agencyArtistProfile.value.city,
+  countryCode: agencyArtistProfile.value.countryCode,
+  languages: agencyArtistProfile.value.languages,
+  primaryGenres: agencyArtistProfile.value.primaryGenres,
+  secondaryGenres: agencyArtistProfile.value.secondaryGenres,
+  performanceFormats: agencyArtistProfile.value.performanceFormats,
+  eventTypes: [],
+  yearsActive: agencyArtistProfile.value.yearsActive,
+  websiteUrl: agencyArtistProfile.value.websiteUrl,
+  instagramUrl: agencyArtistProfile.value.instagramUrl,
+  soundcloudUrl: agencyArtistProfile.value.soundcloudUrl,
+  mixcloudUrl: agencyArtistProfile.value.mixcloudUrl,
+  youtubeUrl: agencyArtistProfile.value.youtubeUrl,
+  spotifyUrl: agencyArtistProfile.value.spotifyUrl,
+  coverUrl: agencyArtistProfile.value.coverUrl,
+  coverPositionY: 50,
+  artistImageUrl: agencyArtistProfile.value.artistImageUrl,
+  artistCutoutUrl: agencyArtistProfile.value.artistCutoutUrl,
+  artistImageStyle: 'photo',
+  artistImagePositionX: 50,
+  artistImagePositionY: 50,
+  artistImageScale: 1,
+  visualMode: 'photo',
+  acceptingRequests: agencyArtistProfile.value.acceptingRequests,
+  bookingManagedBy: 'CUE Test Agency'
+}))
 const profileEditorSection = ref<ArtistProfileSection | null>(null)
 const agencyGenreDraft = ref('')
 const agencyFormatDraft = ref('')
@@ -259,6 +291,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
           :locale="locale"
           :passport="{ confirmedBookings: artistPassportBookings.length, cities: artistPassportBookings.map(item => item.city || '').filter(Boolean), venues: artistPassportBookings.map(item => item.venue_name || '').filter(Boolean), milestones: [], media: [] }"
           @edit="openAgencyProfileEditor"
+          @preview="agencyPublicPreviewOpen = true"
           @toggle-published="agencyProfilePublished = $event"
           @toggle-requests="agencyArtistProfile.acceptingRequests = $event"
           @cue-id="changeView('cue-id')"
@@ -300,6 +333,12 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
     </section>
 
     <CueCapturePanel :open="cueOpen" workspace-id="preview-agency" :artist-id="selectedArtistId" :artists="artists.filter(item => item.roster_active)" :locale="locale" :demo-create="createDemoCue" @close="cueOpen = false" @created="item => { cueOpen = false; openBooking(item.id) }" />
+    <Teleport to="body">
+      <div v-if="agencyPublicPreviewOpen" class="agency-preview__public-artist-overlay" role="dialog" aria-modal="true" :aria-label="locale === 'es' ? 'Vista previa del perfil público' : 'Public profile preview'" tabindex="-1" @keydown.esc.stop.prevent="agencyPublicPreviewOpen = false">
+        <button class="agency-preview__public-artist-close" type="button" @click="agencyPublicPreviewOpen = false">{{ locale === 'es' ? 'Cerrar preview' : 'Close preview' }} ×</button>
+        <PublicArtistProfile :profile="agencyPublicArtistPreview" :locale="locale" preview />
+      </div>
+    </Teleport>
   </main>
 </template>
 
@@ -706,4 +745,6 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 .agency-preview__profile-editor>footer .agency-preview__profile-save{border-color:var(--cue-accent);background:var(--cue-accent);color:#111;font-weight:800}
 @media(max-width:600px){.agency-preview__profile-builder{margin-top:18px}.agency-preview__profile-editor{padding:16px}}
 .agency-preview__share-status{display:grid;grid-template-columns:1fr 1fr;gap:12px}.agency-preview__share-status>p{grid-column:1/-1;margin:0;color:var(--cue-muted);line-height:1.6}.agency-preview__share-status>div{display:grid;gap:8px;padding:14px;border:1px solid var(--cue-border);border-radius:12px;background:var(--cue-bg)}.agency-preview__share-status>div span{font:800 10px/1.3 monospace;letter-spacing:.1em;color:var(--cue-muted);text-transform:uppercase}.agency-preview__share-status>div strong{color:var(--cue-accent)}@media(max-width:560px){.agency-preview__share-status{grid-template-columns:1fr}.agency-preview__share-status>p{grid-column:auto}}
+
+.agency-preview__public-artist-overlay{position:fixed;z-index:220;inset:0;overflow:auto;background:#050505;color:#f2f0eb;overscroll-behavior:contain}.agency-preview__public-artist-close{position:fixed;z-index:225;top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));min-height:42px;padding:0 14px;border:1px solid #444;border-radius:999px;background:#111;color:#f2f0eb;font:700 12px/1 monospace;cursor:pointer}.agency-preview__public-artist-close:focus-visible{outline:2px solid var(--cue-accent);outline-offset:3px}
 </style>

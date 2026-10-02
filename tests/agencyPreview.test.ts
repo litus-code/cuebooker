@@ -40,3 +40,11 @@ test('agency roster actions are icon-only, accessible, and keep retirement confi
   assert.match(component, /@click="confirmRetire\(artist\)"/)
   assert.match(component, /function confirmRetire/)
 })
+
+
+test('agency demo opens a local public artist profile preview', async () => {
+  const page = await readFile(new URL('../app/pages/preview-agency.vue', import.meta.url), 'utf8')
+  assert.match(page, /@preview="agencyPublicPreviewOpen = true"/)
+  assert.match(page, /<PublicArtistProfile :profile="agencyPublicArtistPreview"/)
+  assert.match(page, /agency-preview__public-artist-close/)
+})
