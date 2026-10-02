@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Contact, CoreBooking, Hold, NextMove, CreateManualBookingInput } from '../domain/bookingCore'
 import type { WorkspaceActivityHistoryRow } from '../services/bookingCoreApi'
+import { cloneCueIdStylizedCreatorConfig, DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG, type CueIdStylizedCreatorConfigV1 } from '../domain/cueIdStylizedCreator'
 
 type DemoView = 'overview' | 'bookings' | 'calendar' | 'history' | 'roster' | 'profile' | 'passport' | 'cue-id' | 'settings'
 type DemoArtist = { id: string; stage_name: string; slug: string; city: string; roster_active: boolean }
@@ -61,6 +62,30 @@ const artistPassportBookings = computed(() => demoBookings.value
   .filter(item => item.artist_id === selectedArtistId.value && item.status === 'confirmed')
   .sort((a, b) => (a.event_date || '').localeCompare(b.event_date || '')))
 const artistInitials = computed(() => selectedArtist.value?.stage_name.split(' ').map(part => part[0]).slice(0, 2).join('').toUpperCase() || '')
+
+const agencyCueIdDrafts = reactive<Record<string, CueIdStylizedCreatorConfigV1>>({})
+const agencyCueIdSection = ref<'identity' | 'face' | 'outfit' | 'accessories'>('identity')
+const agencyCueIdSaved = ref(false)
+const agencyCueIdConfig = computed({
+  get: () => {
+    const artistId = selectedArtistId.value
+    if (!agencyCueIdDrafts[artistId]) agencyCueIdDrafts[artistId] = cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG)
+    return agencyCueIdDrafts[artistId]
+  },
+  set: (value: CueIdStylizedCreatorConfigV1) => { if (selectedArtistId.value) agencyCueIdDrafts[selectedArtistId.value] = value }
+})
+function saveAgencyCueIdDraft(value: CueIdStylizedCreatorConfigV1) {
+  agencyCueIdConfig.value = cloneCueIdStylizedCreatorConfig(value)
+  agencyCueIdSaved.value = true
+  window.setTimeout(() => { agencyCueIdSaved.value = false }, 2200)
+}
+function resetAgencyCueIdDraft() {
+  if (!selectedArtistId.value) return
+  agencyCueIdConfig.value = cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG)
+  agencyCueIdSaved.value = false
+}
+const artistPassportCities = computed(() => [...new Set(artistPassportBookings.value.map(item => item.city).filter((value): value is string => Boolean(value)))])
+const artistPassportVenues = computed(() => [...new Set(artistPassportBookings.value.map(item => item.venue_name).filter((value): value is string => Boolean(value)))])
 type ArtistProfileSection = 'identity' | 'image' | 'portrait' | 'sound' | 'links' | 'booking' | 'distribution' | 'passport'
 const agencyArtistProfile = ref({ stageName: '', bio: null as string | null, city: null as string | null, countryCode: 'ES', languages: [] as string[], primaryGenres: [] as string[], secondaryGenres: [] as string[], performanceFormats: [] as string[], yearsActive: null as number | null, websiteUrl: null as string | null, instagramUrl: null as string | null, soundcloudUrl: null as string | null, mixcloudUrl: null as string | null, youtubeUrl: null as string | null, spotifyUrl: null as string | null, coverUrl: null as string | null, artistImageUrl: null as string | null, artistCutoutUrl: null as string | null, visualMode: 'editorial', cueId: null as unknown | null, acceptingRequests: false })
 const agencyProfilePublished = ref(false)
@@ -247,18 +272,25 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
           <footer><button type="button" @click="profileEditorSection = null">{{ locale === 'es' ? 'Cancelar' : 'Cancel' }}</button><button type="button" class="agency-preview__profile-save" @click="saveAgencyProfileEditor">{{ locale === 'es' ? 'Guardar cambios' : 'Save changes' }}</button></footer>
         </section>
       </section>
-      <section v-else-if="view === 'passport'" class="agency-preview__passport" :aria-label="locale === 'es' ? 'Trayectoria del artista' : 'Artist career history'">
-        <header><div><span>{{ locale === 'es' ? 'TRAYECTORIA / ACTUACIONES' : 'CAREER / PERFORMANCES' }}</span><h2>{{ locale === 'es' ? 'Actuaciones confirmadas' : 'Confirmed performances' }}</h2></div><strong>{{ artistPassportBookings.length }}</strong></header>
-        <p v-if="!artistPassportBookings.length" class="agency-preview__passport-empty">{{ locale === 'es' ? 'Las actuaciones confirmadas aparecerán aquí.' : 'Confirmed performances will appear here.' }}</p>
-        <article v-for="item in artistPassportBookings" :key="item.id" class="agency-preview__passport-event">
-          <div class="agency-preview__passport-date"><strong>{{ item.event_date ? new Date(item.event_date + 'T12:00:00').toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-GB', { day: '2-digit' }) : '—' }}</strong><span>{{ item.event_date ? new Date(item.event_date + 'T12:00:00').toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-GB', { month: 'short' }).toUpperCase() : '' }}</span></div>
-          <div><h3>{{ item.event_name }}</h3><p>{{ [item.venue_name, item.city].filter(Boolean).join(' · ') }}</p></div><span class="agency-preview__passport-status">{{ locale === 'es' ? 'Confirmada' : 'Confirmed' }}</span>
-        </article>
+      <section v-else-if="view === 'passport'" class="agency-preview__passport" :aria-label="locale === 'es' ? 'CUE Passport del artista' : 'Artist CUE Passport'">
+        <header class="agency-preview__passport-heading">
+          <div><span>{{ locale === 'es' ? 'CUE PASSPORT / TRAYECTORIA REAL' : 'CUE PASSPORT / REAL CAREER' }}</span><h2>{{ locale === 'es' ? 'Trayectoria de' : 'Career of' }} {{ selectedArtist?.stage_name }}</h2><p>{{ locale === 'es' ? 'Construida a partir de sus bookings confirmados.' : 'Built from the artist’s confirmed bookings.' }}</p></div>
+          <button type="button" @click="openAgencyProfileEditor('passport')">{{ locale === 'es' ? 'Editar visibilidad' : 'Edit visibility' }}</button>
+        </header>
+        <CuePassportProfileSummary :bookings="artistPassportBookings.length" :cities="artistPassportCities" :venues="artistPassportVenues" :locale="locale" :public-enabled="agencyPassportPublic" />
+        <div class="agency-preview__passport-events"><h3>{{ locale === 'es' ? 'Actuaciones confirmadas' : 'Confirmed performances' }}</h3>
+          <p v-if="!artistPassportBookings.length" class="agency-preview__passport-empty">{{ locale === 'es' ? 'Las actuaciones confirmadas aparecerán aquí.' : 'Confirmed performances will appear here.' }}</p>
+          <article v-for="item in artistPassportBookings" :key="item.id" class="agency-preview__passport-event">
+            <div class="agency-preview__passport-date"><strong>{{ item.event_date ? new Date(item.event_date + 'T12:00:00').toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-GB', { day: '2-digit' }) : '—' }}</strong><span>{{ item.event_date ? new Date(item.event_date + 'T12:00:00').toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-GB', { month: 'short' }).toUpperCase() : '' }}</span></div>
+            <div><h3>{{ item.event_name }}</h3><p>{{ [item.venue_name, item.city].filter(Boolean).join(' · ') }}</p></div><span class="agency-preview__passport-status">{{ locale === 'es' ? 'Confirmada' : 'Confirmed' }}</span>
+          </article>
+        </div>
       </section>
-      <section v-else-if="view === 'cue-id'" class="agency-preview__cue-id-card" :aria-label="locale === 'es' ? 'Identidad CUE ID del artista' : 'Artist CUE ID identity'">
-        <div class="agency-preview__cue-id-mark"><span>{{ artistInitials }}</span><i aria-hidden="true"></i></div>
-        <div class="agency-preview__cue-id-copy"><span>CUEBOOKER / ARTIST ID</span><h2>{{ selectedArtist?.stage_name }}</h2><p>{{ selectedArtist?.city || (locale === 'es' ? 'Ciudad sin definir' : 'City not set') }}</p><code>{{ selectedArtist?.slug }}</code></div>
-        <div class="agency-preview__cue-id-foot"><span>{{ locale === 'es' ? 'IDENTIDAD DEL ARTISTA' : 'ARTIST IDENTITY' }}</span><strong>{{ locale === 'es' ? 'En el roster' : 'On roster' }}</strong></div>
+      <section v-else-if="view === 'cue-id'" class="agency-preview__cue-id-editor" :aria-label="locale === 'es' ? 'Editor CUE ID del artista' : 'Artist CUE ID editor'">
+        <header><span>CUE ID / {{ selectedArtist?.stage_name }}</span><small>{{ locale === 'es' ? 'BORRADOR DE PREVIEW' : 'PREVIEW DRAFT' }}</small></header>
+        <p>{{ locale === 'es' ? 'Personaliza la identidad visual de este artista. Esta demo mantiene un borrador independiente por artista mientras está abierta.' : 'Customize this artist’s visual identity. This demo keeps a separate draft for each artist while it is open.' }}</p>
+        <CueIdStylizedWorkspace v-model="agencyCueIdConfig" :locale="locale" :section="agencyCueIdSection" @section-change="agencyCueIdSection = $event" @save="saveAgencyCueIdDraft" @reset="resetAgencyCueIdDraft" />
+        <p v-if="agencyCueIdSaved" class="agency-preview__cue-id-saved" role="status">{{ locale === 'es' ? 'Borrador de demostración actualizado.' : 'Demo draft updated.' }}</p>
       </section>
     </section>
 
@@ -297,6 +329,17 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
   .agency-preview__selector{grid-area:context;min-width:0;width:170px}
   .agency-preview__header nav button[aria-current=page]:before{top:auto;bottom:0;left:12px;right:12px;width:auto;height:2px}
 }
+
+.agency-preview__passport-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:20px;padding:18px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:var(--cue-surface)}
+.agency-preview__passport-heading>div{min-width:0}.agency-preview__passport-heading>div>span,.agency-preview__cue-id-editor>header>span{color:var(--cue-accent);font:800 10px/1.5 monospace;letter-spacing:.12em}
+.agency-preview__passport-heading h2{margin:8px 0;font-size:clamp(22px,4vw,32px)}.agency-preview__passport-heading p{margin:0;color:var(--cue-muted)}
+.agency-preview__passport-heading button{flex:none;min-height:42px;padding:0 14px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control);background:var(--cue-bg);color:var(--cue-text)}
+.agency-preview__passport-events{margin-top:22px}.agency-preview__passport-events>h3{font-size:18px}
+.agency-preview__cue-id-editor>header{display:flex;align-items:center;justify-content:space-between;gap:12px}.agency-preview__cue-id-editor>header small{padding:6px 9px;border:1px solid var(--cue-border);border-radius:999px;color:var(--cue-muted);font:700 9px/1 monospace}
+.agency-preview__cue-id-editor>p{max-width:760px;color:var(--cue-muted);line-height:1.6}
+.agency-preview__cue-id-saved{padding:12px;border-left:3px solid var(--cue-accent);background:color-mix(in srgb,var(--cue-accent) 8%,var(--cue-surface));color:var(--cue-text)}
+@media(max-width:600px){.agency-preview__passport-heading{flex-direction:column}.agency-preview__passport-heading button{width:100%}}
+
 </style>
 
 <style scoped>
