@@ -3635,14 +3635,24 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-preview-block nav { display: flex; flex-wrap: wrap; gap: 8px; }
 .profile-preview-block a { padding: 9px 11px; border: 1px solid #343434; color: #f4f2ed; font-size: 11px; font-weight: 800; text-decoration: none; }
 .settings-panel { display: block; }
-.settings-group { display: grid; gap: 10px; padding: 18px 0; border-top: 1px solid var(--cue-border); }
+.settings-panel > .editor-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:-26px -26px 18px; padding:20px 26px 16px; border-bottom:1px solid var(--cue-border); background:var(--cue-surface); }
+.settings-panel > .editor-heading h2 { margin:6px 0 0; font-size:clamp(1.5rem,4vw,2rem); line-height:1; }
+.settings-panel > .editor-heading > button { display:grid; place-items:center; flex:0 0 42px; width:42px; height:42px; padding:0; border:1px solid var(--cue-border); border-radius:50%; background:transparent; color:var(--cue-text); font-size:24px; cursor:pointer; }
+.settings-group { display: grid; gap: 12px; padding: 18px 0; border-top: 1px solid var(--cue-border); }
 .settings-group > span { color: var(--cue-muted); font: 700 10px monospace; letter-spacing: .1em; text-transform: uppercase; }
 .settings-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .settings-options--three { grid-template-columns:repeat(3,minmax(0,1fr)); }
 .settings-group--demo > small { color:var(--cue-muted); font-size:10px; line-height:1.4; }
-.settings-options button { min-height: 44px; border: 1px solid var(--cue-border); background: transparent; color: var(--cue-muted); cursor: pointer; font-weight: 800; }
+.settings-options button { min-height: 44px; padding:0 14px; border: 1px solid var(--cue-border); border-radius:var(--cue-radius-control); background: transparent; color: var(--cue-muted); cursor: pointer; font-weight: 800; transition:border-color .16s ease,background-color .16s ease,color .16s ease; }
+.settings-options button:hover { border-color:var(--cue-toggle); color:var(--cue-text); }
 .settings-options button.active { border-color: var(--cue-toggle); background: var(--cue-toggle); color: #070707; }
 .password-form { display: grid; gap: 16px; margin-top: 14px; padding-top: 24px; border-top: 1px solid var(--cue-border); }
+.settings-panel .primary-button { border-radius:var(--cue-radius-control); }
+@media (max-width: 680px) {
+  .settings-panel { padding:20px 16px max(24px, env(safe-area-inset-bottom)); }
+  .settings-panel > .editor-heading { position:sticky; top:-20px; z-index:4; margin:-20px -16px 16px; padding: max(14px, env(safe-area-inset-top)) 16px 14px; }
+  .settings-group { gap:10px; padding:16px 0; }
+}
 
 :global(:root[data-theme='light']) .panel-empty button,
 :global(:root[data-theme='light']) .add-button { border-color: var(--cue-accent); background: var(--cue-accent); color: var(--cue-accent-ink); }
