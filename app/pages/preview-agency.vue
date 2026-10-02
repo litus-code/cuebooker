@@ -160,7 +160,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
     </section>
 
     <div v-if="selectedArtist" class="agency-preview__context"><span>CUE Test Agency / <strong>{{ selectedArtist.stage_name }}</strong></span><button type="button" @click="returnToAgency">{{ locale === 'es' ? 'Quitar filtro de artista' : 'Clear artist filter' }}</button></div>
-    <nav v-if="selectedArtist && ['profile','passport'].includes(view)" class="agency-preview__record-tabs" aria-label="Ficha del artista"><button type="button" @click="changeView('roster')">← {{ locale === 'es' ? 'Artistas' : 'Artists' }}</button><button v-for="tab in (['profile','passport'] as const)" :key="tab" type="button" :aria-current="view===tab?'page':undefined" @click="changeView(tab)">{{ tab==='profile'?(locale==='es'?'Ficha y perfil público':'Record & public profile'):'CUE Passport' }}</button></nav>
+    <nav v-if="selectedArtist && ['profile','passport','cue-id'].includes(view)" class="agency-preview__record-tabs" aria-label="Ficha del artista"><button type="button" @click="changeView('roster')">← {{ locale === 'es' ? 'Artistas' : 'Artists' }}</button><button v-for="tab in (['profile','passport','cue-id'] as const)" :key="tab" type="button" :aria-current="view===tab?'page':undefined" @click="changeView(tab)">{{ tab==='profile'?(locale==='es'?'Ficha y perfil público':'Record & public profile'):tab==='passport'?'CUE Passport':'CUE ID' }}</button></nav>
     <AgencyWorkspace
       v-if="!focusedBooking && ['overview', 'bookings', 'calendar', 'history', 'roster'].includes(view)"
       :selected-artist-id="selectedArtistId" :workspace-id="'preview-agency'" agency-name="CUE Test Agency"
@@ -181,10 +181,10 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 
     <section v-else class="agency-preview__detail">
       <span>{{ selectedArtist ? `AGENCIA / ${selectedArtist.stage_name}` : 'AGENCIA / CUE TEST AGENCY' }}</span>
-      <h1>{{ view === 'profile' ? selectedArtist?.stage_name : view === 'passport' || view === 'cue-id' ? 'CUE PASSPORT' : 'SETTINGS' }}</h1>
+      <h1>{{ view === 'profile' ? selectedArtist?.stage_name : view === 'passport' ? 'CUE PASSPORT' : view === 'cue-id' ? 'CUE ID' : 'SETTINGS' }}</h1>
       <p v-if="view === 'profile'">{{ locale === 'es' ? 'Ficha del artista seleccionado. Una agencia autorizada puede editar su identidad pública y configurar el booking.' : 'Selected artist profile. An authorized agency can edit the public identity and booking settings.' }}</p>
       <p v-else-if="view === 'passport'">{{ locale === 'es' ? 'El CUE Passport reúne la trayectoria del artista y sus actuaciones confirmadas.' : 'The CUE Passport brings together the artist’s career and confirmed performances.' }}</p>
-      <p v-else-if="view === 'cue-id'">{{ locale === 'es' ? 'El CUE Passport reúne la trayectoria del artista y sus actuaciones confirmadas.' : 'The CUE Passport brings together the artist’s career and confirmed performances.' }}</p>
+      <p v-else-if="view === 'cue-id'">{{ locale === 'es' ? 'La identidad visual pertenece al artista seleccionado.' : 'The visual identity belongs to the selected artist.' }}</p>
       <p v-else>{{ locale === 'es' ? 'Configuración del workspace de Agencia.' : 'Agency workspace settings.' }}</p>
       <AgencyCatalogEditor v-if="view === 'settings'" workspace-id="preview-agency" role="owner" :locale="locale" demo @edit-artist="id => { chooseArtist(id); changeView('profile') }" />
       <AgencyTeamPanel v-if="view === 'settings'" workspace-id="preview-agency" role="owner" user-id="demo-owner" :locale="locale" :demo="true" />
@@ -527,7 +527,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 <style scoped>
 /* Match the sidebar notification control to the icon and label columns above. */
 @media(min-width:961px){
-  .agency-preview.workspace .agency-preview__header nav button.agency-preview__desktop-notifications{padding-left:15px!important;gap:18px!important;}
+  .agency-preview.workspace .agency-preview__header nav button.agency-preview__desktop-notifications{padding-left:15px!important;gap:4px!important;}
 }
 /* Give the notification row more vertical breathing room. */
 .agency-preview__notification-item{padding-block:32px!important;}
