@@ -149,7 +149,6 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
         </section>
       </div>
     </header>
-    <div class="agency-preview__notice"><strong>PREVIEW AGENCIA / DATOS FICTICIOS</strong><span>{{ locale === 'es' ? 'Puedes recorrer el workspace sin iniciar sesión. Los cambios se pierden al recargar.' : 'Explore the workspace without signing in. Changes reset on reload.' }}</span></div>
 
     <div v-if="selectedArtist" class="agency-preview__context"><span>CUE Test Agency / <strong>{{ selectedArtist.stage_name }}</strong></span><button type="button" @click="returnToAgency">{{ locale === 'es' ? 'Quitar filtro de artista' : 'Clear artist filter' }}</button></div>
     <nav v-if="selectedArtist && ['profile','passport','cue-id'].includes(view)" class="agency-preview__record-tabs" aria-label="Ficha del artista"><button type="button" @click="changeView('roster')">← {{ locale === 'es' ? 'Artistas' : 'Artists' }}</button><button v-for="tab in (['profile','passport','cue-id'] as const)" :key="tab" type="button" :aria-current="view===tab?'page':undefined" @click="changeView(tab)">{{ tab==='profile'?(locale==='es'?'Ficha y perfil público':'Record & public profile'):tab==='passport'?(locale==='es'?'Trayectoria':'Career'):'CUE ID' }}</button></nav>
