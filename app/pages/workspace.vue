@@ -2378,8 +2378,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-    <div v-if="isAgency && !workspaceSurfaceLoading" class="agency-artist-context agency-mode-banner"><span><small>{{ preferences.locale.value === 'es' ? 'WORKSPACE DE AGENCIA' : 'AGENCY WORKSPACE' }}</small><strong>{{ agency?.name }}</strong> / {{ selectedArtist?.stage_name || (preferences.locale.value === 'es' ? 'Todos los artistas' : 'All artists') }}</span><button v-if="selectedArtistId" type="button" @click="chooseArtist('')">{{ preferences.locale.value === 'es' ? 'Quitar filtro de artista' : 'Clear artist filter' }}</button></div>
-    <nav v-if="isAgency && selectedArtistId && ['profile','passport','cue-id'].includes(activeView) && !workspaceSurfaceLoading" class="agency-artist-tabs" :aria-label="preferences.locale.value === 'es' ? 'Ficha del artista' : 'Artist record'">
+        <nav v-if="isAgency && selectedArtistId && ['profile','passport','cue-id'].includes(activeView) && !workspaceSurfaceLoading" class="agency-artist-tabs" :aria-label="preferences.locale.value === 'es' ? 'Ficha del artista' : 'Artist record'">
       <button type="button" @click="changeView('roster')">← {{ preferences.locale.value === 'es' ? 'Artistas' : 'Artists' }}</button>
       <strong>{{ selectedArtist?.stage_name }}</strong>
       <button v-for="tab in (['profile','passport','cue-id'] as const)" :key="tab" type="button" :aria-current="activeView === tab ? 'page' : undefined" @click="changeView(tab)">{{ tab === 'profile' ? (preferences.locale.value === 'es' ? 'Ficha y perfil público' : 'Record & public profile') : tab === 'passport' ? (preferences.locale.value === 'es' ? 'Trayectoria' : 'Career') : 'CUE ID' }}</button>
@@ -4638,7 +4637,7 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .workspace--agency .workspace-brand-row .workspace-brand-icon{display:none}
   .workspace--agency .account-actions{order:2;flex:0 0 auto;gap:4px;margin-left:auto}
   .workspace--agency .agency-context-selector{
-    order:3;
+    order:4;
     flex:0 0 100%;
     box-sizing:border-box;
     grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);
@@ -4646,7 +4645,7 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
     gap:8px;
   }
   .workspace--agency .workspace-header nav{
-    order:4;
+    order:3;
     flex:0 0 100%;
     grid-column:auto;
     grid-row:auto;
