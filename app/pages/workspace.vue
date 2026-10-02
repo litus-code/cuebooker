@@ -4809,3 +4809,19 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .workspace--agency .settings-panel:focus:not(:focus-visible){outline:none;box-shadow:none}
 .workspace--agency .settings-panel:focus-visible{outline:2px solid var(--cue-accent);outline-offset:3px}
 </style>
+
+
+<style scoped>
+@media(max-width:960px){
+  .workspace--agency .agency-context-selector{
+    box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;
+    flex:0 0 100%;width:100%;max-width:none;margin:8px 0 10px;padding:0 16px;
+  }
+  .workspace--agency .agency-context-selector span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0;font-size:9px;line-height:1.3}
+  .workspace--agency .agency-context-selector select{
+    box-sizing:border-box;width:auto!important;max-width:min(56vw,260px)!important;min-width:0;min-height:42px;
+    justify-self:end;margin:0;padding:0 32px 0 12px;font-size:13px;
+  }
+}
+@media(max-width:680px){.workspace--agency .agency-context-selector{gap:8px;margin:6px 0 8px;padding-inline:14px}.workspace--agency .agency-context-selector select{max-width:58vw!important}}
+</style>
