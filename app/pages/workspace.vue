@@ -3232,8 +3232,11 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <AgencyCatalogEditor v-if="isAgency && agencyWorkspaceId" :workspace-id="agencyWorkspaceId" :role="agencyWorkspaceRole" :locale="preferences.locale.value" @edit-artist="id => { closeSettings(); chooseArtist(id, 'profile') }" />
         <AgencyTeamPanel v-if="isAgency && agencyWorkspaceId" :workspace-id="agencyWorkspaceId" :role="agencyWorkspaceRole" :user-id="auth.session.value?.user.id || ''" :locale="preferences.locale.value" />
         <ConnectedMailboxPanel v-if="auth.session.value && bookingCoreWorkspaceId && (!isAgency || canOperateAgency)" :workspace-id="bookingCoreWorkspaceId" :locale="preferences.locale.value" />
-        <section class="settings-group"><span>{{ copy.language }}</span><div class="settings-options"><button :class="{ active: preferences.locale.value === 'es' }" type="button" @click="preferences.setLocale('es')">ES</button><button :class="{ active: preferences.locale.value === 'en' }" type="button" @click="preferences.setLocale('en')">EN</button></div></section>
-        <section class="settings-group"><span>{{ copy.appearance }}</span><div class="settings-options"><button :class="{ active: preferences.theme.value === 'dark' }" type="button" @click="preferences.setTheme('dark')">{{ copy.dark }}</button><button :class="{ active: preferences.theme.value === 'light' }" type="button" @click="preferences.setTheme('light')">{{ copy.light }}</button></div></section>
+        <section class="settings-preferences" aria-label="Preferencias">
+          <p class="eyebrow">{{ preferences.locale.value === 'es' ? 'PREFERENCIAS' : 'PREFERENCES' }}</p>
+          <section class="settings-group"><span>{{ copy.language }}</span><div class="settings-options"><button :class="{ active: preferences.locale.value === 'es' }" type="button" @click="preferences.setLocale('es')">ES</button><button :class="{ active: preferences.locale.value === 'en' }" type="button" @click="preferences.setLocale('en')">EN</button></div></section>
+          <section class="settings-group"><span>{{ copy.appearance }}</span><div class="settings-options"><button :class="{ active: preferences.theme.value === 'dark' }" type="button" @click="preferences.setTheme('dark')">{{ copy.dark }}</button><button :class="{ active: preferences.theme.value === 'light' }" type="button" @click="preferences.setTheme('light')">{{ copy.light }}</button></div></section>
+        </section>
         <section v-if="demoOverrideEnabled" class="settings-group settings-group--demo">
           <span>DEMO PLAN / {{ currentPlan.toUpperCase().replace('_', ' ') }}</span>
           <div class="settings-options settings-options--three">
@@ -3635,6 +3638,10 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-preview-block nav { display: flex; flex-wrap: wrap; gap: 8px; }
 .profile-preview-block a { padding: 9px 11px; border: 1px solid #343434; color: #f4f2ed; font-size: 11px; font-weight: 800; text-decoration: none; }
 .settings-panel { display: block; }
+.settings-preferences { display:grid; gap:4px; margin-top:20px; padding:16px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-panel); background:var(--cue-bg); }
+.settings-preferences > .eyebrow { margin:0 0 2px; }
+.settings-preferences .settings-group { padding:12px 0 0; border-top:1px solid var(--cue-border); }
+.settings-preferences .settings-group + .settings-group { margin-top:2px; }
 .settings-panel > .editor-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:-26px -26px 18px; padding:20px 26px 16px; border-bottom:1px solid var(--cue-border); background:var(--cue-surface); }
 .settings-panel > .editor-heading h2 { margin:6px 0 0; font-size:clamp(1.5rem,4vw,2rem); line-height:1; }
 .settings-panel > .editor-heading > button { display:grid; place-items:center; flex:0 0 42px; width:42px; height:42px; padding:0; border:1px solid var(--cue-border); border-radius:50%; background:transparent; color:var(--cue-text); font-size:24px; cursor:pointer; }
@@ -4666,18 +4673,34 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .workspace--agency .workspace-header nav button{padding-inline:12px}
 }
 @media(max-width:680px){
-  .workspace--agency .workspace-header{min-height:0}
+  .workspace--agency .workspace-header{min-height:0;row-gap:10px}
   .workspace--agency .workspace-brand-row .workspace-brand-wordmark{width:112px;height:38px}
-  .workspace--agency .agency-context-selector span{font-size:9px;letter-spacing:.04em}
+  .workspace--agency .agency-context-selector span{font-size:9px;letter-spacing:.06em}
   .workspace--agency .agency-context-selector{
-    flex:0 1 auto;
-    width:max-content;
-    max-width:100%;
-    grid-template-columns:max-content minmax(0,240px);
+    flex:0 0 100%;
+    width:100%;
+    max-width:none;
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
     justify-content:start;
-    margin-right:auto;
+    justify-self:start;
+    gap:4px;
+    margin:2px 0 0;
   }
-  .workspace--agency .agency-context-selector select{font-size:12px}
+  .workspace--agency .agency-context-selector select{
+    width:auto;
+    max-width:100%;
+    justify-self:start;
+    min-height:38px;
+    padding:0 28px 0 0;
+    border:0;
+    border-radius:0;
+    background:transparent;
+    color:var(--cue-text);
+    font-size:14px;
+    font-weight:800;
+  }
+  .workspace--agency .agency-context-selector select:focus-visible{outline:2px solid var(--cue-toggle);outline-offset:2px}
   .workspace--agency .workspace-header nav button{min-height:40px}
 }
 @media(max-width:960px){
