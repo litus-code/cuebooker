@@ -428,7 +428,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 .agency-preview__desktop-notifications{position:relative;flex-direction:row!important;justify-content:flex-start!important;min-height:42px;height:42px;padding:10px 12px;box-sizing:border-box}
 .agency-preview__desktop-notifications::before,.agency-preview__desktop-notifications::after{display:none!important;content:none!important;background:none!important}
 .agency-preview__desktop-notifications svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.agency-preview__desktop-notifications .agency-preview__desktop-badge{position:absolute;top:13px;left:17px;z-index:2;display:grid;place-items:center;width:13px;height:13px;margin:0;border-radius:50%;background:var(--cue-accent);color:#111;font:800 7px/1 monospace}
+.agency-preview__desktop-notifications .agency-preview__desktop-badge{position:absolute;top:16px;left:22px;z-index:2;display:grid;place-items:center;width:13px;height:13px;margin:0;border-radius:50%;background:var(--cue-accent);color:#111;font:800 7px/1 monospace}
 .agency-preview__desktop-exit{display:flex;align-items:center;gap:12px;margin-top:auto;padding:10px 12px;border:0;border-left:2px solid transparent;border-radius:0;background:transparent;color:#f17b86;text-decoration:none;font-size:12px;font-weight:700}
 .agency-preview__desktop-exit svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .agency-preview__desktop-exit:hover,.agency-preview__desktop-exit:focus-visible{color:#ff8996}
