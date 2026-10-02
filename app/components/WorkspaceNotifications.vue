@@ -95,7 +95,10 @@ async function load() {
 
 async function toggle() {
   open.value = !open.value
-  if (open.value) await load()
+  if (open.value) {
+    await load()
+    await markAll()
+  }
 }
 
 async function markAll() {
