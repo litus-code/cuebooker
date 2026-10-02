@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import type { AgencyCatalogArtist } from '../domain/agencyCatalog'
-const props=withDefaults(defineProps<{artists:AgencyCatalogArtist[];locale:'es'|'en';submitting?:boolean;sent?:boolean;error?:string}>(),{submitting:false,sent:false,error:''})
+const props=withDefaults(defineProps<{artists:AgencyCatalogArtist[];locale:'es'|'en';submitting?:boolean;sent?:boolean;error?:string;preview?:boolean}>(),{submitting:false,sent:false,error:'',preview:false})
 const emit=defineEmits<{submit:[payload:{artistSlug:string|null;contactName:string;contactEmail:string;initialMessage:string;website:string}]}>()
 const form=reactive({artistSlug:'',contactName:'',contactEmail:'',initialMessage:'',website:''})
 const es=computed(()=>props.locale==='es')
 const message=computed(()=>props.error||(es.value?'No se pudo enviar. Inténtalo de nuevo.':'Could not send. Please try again.'))
 function send(){
- if(props.submitting||props.sent||!form.contactName.trim()||!/^\S+@\S+\.\S+$/.test(form.contactEmail.trim())||!form.initialMessage.trim())return
+ if(props.preview||props.submitting||props.sent||!form.contactName.trim()||!/^\S+@\S+\.\S+$/.test(form.contactEmail.trim())||!form.initialMessage.trim())return
  emit('submit',{artistSlug:form.artistSlug||null,contactName:form.contactName.trim(),contactEmail:form.contactEmail.trim(),initialMessage:form.initialMessage.trim(),website:form.website})
 }
 </script>
 <template>
  <form class="agency-enquiry" @submit.prevent="send">
   <p v-if="sent" class="agency-enquiry__success" role="status">{{ es?'Consulta enviada. El equipo de la agencia ya la ha recibido.':'Enquiry sent. The agency team has received it.' }}</p>
-  <template v-else>
+  <p v-if="preview" class="agency-enquiry__privacy">{{ es?'Vista previa: el formulario no enviará una solicitud.':'Preview only: this form will not send an enquiry.' }}</p><template v-else>
    <label class="agency-enquiry__field"><span>{{ es?'Artista (opcional)':'Artist (optional)' }}</span><select v-model="form.artistSlug"><option value="">{{ es?'Consulta general a la agencia':'General agency enquiry' }}</option><option v-for="artist in artists" :key="artist.id" :value="artist.slug">{{ artist.name }}</option></select></label>
    <div class="agency-enquiry__row">
     <label class="agency-enquiry__field"><span>{{ es?'Tu nombre':'Your name' }}</span><input v-model="form.contactName" required maxlength="160" autocomplete="name"></label>
