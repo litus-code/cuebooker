@@ -4679,23 +4679,29 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .workspace--agency .agency-context-selector{
     flex:0 0 100%;
     width:100%;
-    max-width:none;
+    max-width:320px;
     box-sizing:border-box;
     display:grid;
     grid-template-columns:minmax(0,1fr);
     justify-content:start;
     justify-self:start;
-    gap:8px;
-    margin:6px 0 10px;
+    gap:10px;
+    margin:14px 0 18px;
+    padding:0 8px 8px;
+  }
+  .workspace--agency .agency-context-selector span{
+    display:block;
     padding-inline:4px;
+    font-size:10px;
+    line-height:1.4;
   }
   .workspace--agency .agency-context-selector select{
     box-sizing:border-box;
-    width:min(100%,260px)!important;
-    max-width:260px!important;
+    width:100%!important;
+    max-width:280px!important;
     justify-self:start;
-    min-height:44px;
-    margin:0 0 0 4px;
+    min-height:46px;
+    margin:0;
     padding:0 38px 0 14px;
     border:1px solid var(--cue-border);
     border-radius:var(--cue-radius-control,10px);
@@ -4724,5 +4730,14 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 </style>
 
 <style scoped>
-.agency-mode-banner{border-left:3px solid var(--cue-accent);background:color-mix(in srgb,var(--cue-accent) 6%,var(--cue-bg));padding:14px 18px;margin-block:20px}.agency-mode-banner small{display:block;font:700 10px monospace;letter-spacing:.13em;color:var(--cue-accent);margin-bottom:5px}.agency-artist-tabs{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 0;border-bottom:1px solid var(--cue-border);margin-bottom:20px}.agency-artist-tabs strong{margin-right:auto}.agency-artist-tabs button{padding:10px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control,8px);background:var(--cue-surface);color:var(--cue-text);cursor:pointer}.agency-artist-tabs button[aria-current=page]{border-bottom:2px solid var(--cue-accent);color:var(--cue-accent)}.agency-booking-detail>button{margin-bottom:18px}
+.agency-mode-banner{border-left:3px solid var(--cue-accent);background:color-mix(in srgb,var(--cue-accent) 6%,var(--cue-bg));padding:14px 18px;margin-block:20px}.agency-mode-banner small{display:block;font:700 10px monospace;letter-spacing:.13em;color:var(--cue-accent);margin-bottom:5px}.agency-artist-tabs{display:flex;flex-wrap:wrap;align-items:center;gap:18px;padding:12px 0;border-bottom:1px solid var(--cue-border);margin-bottom:20px}.agency-artist-tabs strong{margin-right:auto}.agency-artist-tabs button{position:relative;min-height:44px;padding:10px 4px;border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important;background:transparent!important;color:var(--cue-text);cursor:pointer}.agency-artist-tabs button[aria-current=page]{border-bottom-color:var(--cue-accent)!important;color:var(--cue-accent)}.agency-booking-detail>button{margin-bottom:18px}
+</style>
+
+<style scoped>
+.workspace--agency .view-heading,.workspace--agency .view-heading>div{min-width:0;max-width:100%}
+.workspace--agency .view-heading h1{box-sizing:border-box;width:100%;max-width:100%;line-height:.96;overflow-wrap:anywhere;padding-inline:3px}
+.workspace--agency .view-heading .eyebrow{max-width:100%;overflow-wrap:anywhere}
+.workspace--agency .settings-panel .editor-heading>div{min-width:0}
+.workspace--agency .settings-panel .editor-heading h2{max-width:100%;overflow-wrap:anywhere;line-height:1.08}
+@media(max-width:680px){.workspace--agency .agency-context-selector{max-width:320px;margin:16px 0 20px;padding-inline:10px}.workspace--agency .agency-context-selector select{max-width:280px!important}.agency-artist-tabs{gap:14px}.agency-artist-tabs button{padding-inline:3px}}
 </style>
