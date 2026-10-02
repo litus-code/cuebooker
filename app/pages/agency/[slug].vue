@@ -6,7 +6,7 @@ import type { PublicBookingRequestInput } from '../../domain/publicArtistProfile
 const route=useRoute(),config=useRuntimeConfig(),preferences=useCuePreferences()
 const agency=ref<AgencyCatalog|null>(null),loading=ref(true),error=ref<'not_found'|'failed'|''>('')
 const es=computed(()=>preferences.locale.value==='es')
-const enquirySubmitting=ref(false),enquirySent=ref(false),enquiryError=ref('')
+const enquirySubmitting=ref(false),enquirySent=ref(false),enquiryError=ref(''),enquiryRequestId=ref('')
 let sequence=0
 async function load(){
  const current=++sequence;loading.value=true;error.value='';agency.value=null
@@ -22,7 +22,8 @@ async function submitEnquiry(payload:{artistSlug:string|null;contactName:string;
  if(!agency.value||enquirySubmitting.value||enquirySent.value)return
  enquirySubmitting.value=true;enquiryError.value=''
  const supabaseUrl=String(config.public.supabaseUrl||'')
- const requestId=crypto.randomUUID()
+ if(!enquiryRequestId.value)enquiryRequestId.value=crypto.randomUUID()
+ const requestId=enquiryRequestId.value
  try{
   if(payload.artistSlug){
    const bookingInput:PublicBookingRequestInput={
@@ -45,7 +46,7 @@ async function submitEnquiry(payload:{artistSlug:string|null;contactName:string;
  }finally{enquirySubmitting.value=false}
 }
 onMounted(load)
-watch(()=>route.params.slug,()=>{enquirySent.value=false;enquiryError.value='';load()})
+watch(()=>route.params.slug,()=>{enquirySent.value=false;enquiryError.value='';enquiryRequestId.value='';load()})
 useHead(()=>({title:agency.value?`${agency.value.name} · Artist roster | Cuebooker`:'Agency | Cuebooker',meta:[{name:'description',content:agency.value?.tagline||agency.value?.bio?.slice(0,160)||''},{name:'robots',content:agency.value?'index,follow':'noindex,nofollow'}]}))
 </script>
 <template><main><div class="public-agency-preferences"><CuePreferencesControl compact /></div><section v-if="loading" class="public-agency-state" aria-busy="true"><CueBrand decorative /><p>{{ es?'Cargando agencia…':'Loading agency…' }}</p></section><section v-else-if="error||!agency" class="public-agency-state"><h1>{{ error==='not_found'?(es?'Esta agencia no está publicada.':'This agency is not published.'):(es?'No se pudo cargar la agencia.':'Could not load the agency.') }}</h1><button v-if="error==='failed'" type="button" @click="load">{{ es?'Reintentar':'Retry' }}</button><NuxtLink to="/">Cuebooker</NuxtLink></section><PublicAgencyProfile v-else :agency="agency" :locale="preferences.locale.value" :enquiry-submitting="enquirySubmitting" :enquiry-sent="enquirySent" :enquiry-error="enquiryError" @submit-enquiry="submitEnquiry" /></main></template>
