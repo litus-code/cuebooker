@@ -384,13 +384,13 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 .agency-preview__cue-id-saved{padding:12px;border-left:3px solid var(--cue-accent);background:color-mix(in srgb,var(--cue-accent) 8%,var(--cue-surface));color:var(--cue-text)}
 @media(max-width:600px){.agency-preview__passport-heading{flex-direction:column}.agency-preview__passport-heading button{width:100%}}
 
-<style scoped>
+
 .agency-preview__share-url{grid-column:1/-1;display:grid!important;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:12px!important}
 .agency-preview__share-url>svg{width:20px;height:20px;fill:none;stroke:var(--cue-accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .agency-preview__share-url>span{display:grid;gap:6px}.agency-preview__share-url>span strong{color:var(--cue-text);font-size:12px}.agency-preview__share-url>span small{color:var(--cue-muted);font-size:11px;line-height:1.4}
 .agency-preview__share-url button{min-height:36px;padding:0 12px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control);background:transparent;color:var(--cue-muted);font-size:11px}.agency-preview__share-url button:disabled{opacity:.55}
 @media(max-width:560px){.agency-preview__share-url{grid-template-columns:22px minmax(0,1fr)}.agency-preview__share-url button{grid-column:2;justify-self:start}}
-</style></style>
+</style>
 
 <style scoped>
 .agency-preview__context{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin-top:20px;padding:12px;border-left:3px solid var(--cue-accent);background:var(--cue-surface);font-size:12px}.agency-preview__context button{background:transparent;color:var(--cue-accent);border:1px solid var(--cue-border);border-radius:var(--cue-radius-control,12px);padding:8px 12px}

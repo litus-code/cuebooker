@@ -118,13 +118,13 @@ async function copyLink(){try{await navigator.clipboard.writeText(publicUrl.valu
 
 .agency-catalog-editor__media-grid{display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-top:28px}.agency-catalog-editor__media{min-width:0}.agency-catalog-editor__media h3{font-size:14px;letter-spacing:0;display:flex;align-items:center;gap:10px}.agency-catalog-editor__media h3 small{font-weight:400}.agency-catalog-editor__media-preview{aspect-ratio:16/9;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control);background:var(--cue-bg);display:grid;place-items:center;overflow:hidden}.agency-catalog-editor__media-preview img{width:100%;height:100%;object-fit:cover}.agency-catalog-editor__media-preview.is-logo img{object-fit:contain;padding:20px;box-sizing:border-box}.agency-catalog-editor__media-preview span{padding:20px;color:var(--cue-muted);font-size:12px;text-align:center}.agency-catalog-editor__media-actions{display:flex;gap:10px;align-items:center}.agency-catalog-editor__media-picker{position:relative;display:inline-flex;align-items:center;justify-content:center;padding:0 14px;min-height:44px;cursor:pointer;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control);font-size:12px}.agency-catalog-editor__media-picker input[type=file]{position:absolute;width:1px;height:1px;min-height:1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%)}.agency-catalog-editor__media-picker:focus-within{outline:2px solid var(--cue-toggle);outline-offset:3px}fieldset:disabled .agency-catalog-editor__media-picker{opacity:.5;cursor:wait}@media(max-width:600px){.agency-catalog-editor__media-grid{grid-template-columns:1fr}}
 
-<style scoped>
+
 .agency-catalog-editor__share,.agency-catalog-editor__share-pending{margin:16px 0 0;padding:16px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:var(--cue-surface)}
 .agency-catalog-editor__share-heading{display:flex;align-items:center;gap:10px;font-size:14px}.agency-catalog-editor__share-heading svg{width:20px;height:20px;fill:none;stroke:var(--cue-accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .agency-catalog-editor__url{display:block;margin:12px 0;color:var(--cue-accent);font:12px/1.5 monospace;overflow-wrap:anywhere;word-break:break-word}
 .agency-catalog-editor__share-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.agency-catalog-editor__share-actions a{color:var(--cue-text);font-size:12px}.agency-catalog-editor__share-pending{color:var(--cue-muted);font-size:12px;line-height:1.5}
 @media(max-width:600px){.agency-catalog-editor__share-actions>*{flex:1 1 auto;text-align:center}}
-</style>
+
 </style>
 
 <style scoped>
