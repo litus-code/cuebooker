@@ -4631,10 +4631,31 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .workspace--agency .account-actions{grid-column:3;grid-row:1}
 }
 @media(max-width:680px){
-  .workspace--agency .workspace-header{grid-template-columns:auto minmax(0,1fr) auto}
-  .workspace--agency .agency-context-selector{grid-column:2}
-  .workspace--agency .agency-context-selector span{font-size:8px}
-  .workspace--agency .agency-context-selector select{font-size:11px}
+  .workspace--agency .workspace-header{
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-rows:auto auto auto;
+    gap:8px;
+    min-height:0;
+    padding-block:10px;
+  }
+  .workspace--agency .workspace-brand-row{grid-column:1;grid-row:1}
+  .workspace--agency .workspace-brand-row .workspace-brand-wordmark{
+    display:inline-flex;
+    width:112px;
+    height:38px;
+  }
+  .workspace--agency .workspace-brand-row .workspace-brand-icon{display:none}
+  .workspace--agency .account-actions{grid-column:2;grid-row:1;gap:4px}
+  .workspace--agency .agency-context-selector{
+    grid-column:1/-1;
+    grid-row:2;
+    grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);
+    align-items:center;
+    gap:8px;
+  }
+  .workspace--agency .agency-context-selector span{font-size:9px;letter-spacing:.04em}
+  .workspace--agency .agency-context-selector select{font-size:12px}
+  .workspace--agency .workspace-header nav{grid-column:1/-1;grid-row:3}
 }
 
 @media(max-width:960px){
