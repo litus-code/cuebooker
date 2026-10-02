@@ -49,7 +49,8 @@ Deno.serve(async request=>{
    method:"POST",body:JSON.stringify({target_agency_slug:payload.agencySlug,target_idempotency_key:payload.requestId,target_request_fingerprint:fingerprint,contact_name:payload.contactName,contact_email:payload.contactEmail,initial_message:payload.initialMessage})
   },serviceKey);
   const result=rows?.[0];if(!result?.booking_id)throw new Error("agency_enquiry_missing_result");
-  if(result.created)dispatchNotificationEmails(supabaseUrl,serviceKey);\n  return json({accepted:true,created:Boolean(result.created),reference:result.booking_id},result.created?201:200);
+  if(result.created)dispatchNotificationEmails(supabaseUrl,serviceKey);
+  return json({accepted:true,created:Boolean(result.created),reference:result.booking_id},result.created?201:200);
  }catch(error){
   const message=error instanceof Error?error.message:String(error);
   if(message.includes("public_agency_unavailable"))return json({error:"agency_unavailable"},404);
