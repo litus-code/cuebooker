@@ -4834,3 +4834,17 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .workspace--agency .settings-panel>.editor-heading h2{box-sizing:border-box;width:100%;max-width:100%;font-size:clamp(1.45rem,6vw,2.2rem);line-height:1.15;overflow-wrap:anywhere;padding:0}
 }
 </style>
+
+
+<style scoped>
+@media(max-width:960px){
+  .workspace--agency .agency-context-selector{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    box-sizing:border-box;flex:0 0 100%;width:100%!important;max-width:none!important;
+    margin:6px 0 8px;padding:0 24px 0 28px;
+  }
+  .workspace--agency .agency-context-selector span{flex:1 1 auto;min-width:0}
+  .workspace--agency .agency-context-selector select{flex:0 1 auto;width:auto!important;max-width:min(58vw,260px)!important;justify-self:auto;margin:0}
+}
+@media(max-width:680px){.workspace--agency .agency-context-selector{padding-inline:22px}}
+</style>
