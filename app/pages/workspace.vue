@@ -4617,51 +4617,52 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .skeleton-panel--cue-stage{width:100%;min-height:520px;margin-bottom:16px}
 .workspace-skeleton__cue-grid>.skeleton-panel{min-height:220px}
 
-.workspace--agency .workspace-header{grid-template-columns:auto minmax(0,1fr) minmax(150px,220px) auto;gap:12px}
-.agency-context-selector{display:grid;gap:3px;min-width:0;color:var(--cue-accent);font:700 10px/1.2 monospace;letter-spacing:.06em}
-.agency-context-selector span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.agency-context-selector select{min-width:0;width:100%;min-height:36px;padding:0 8px;font:700 12px Arial,Helvetica,sans-serif;letter-spacing:0}
+.workspace--agency .agency-context-selector{display:grid;gap:3px;min-width:0;color:var(--cue-accent);font:700 10px/1.2 monospace;letter-spacing:.06em}
+.workspace--agency .agency-context-selector span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.workspace--agency .agency-context-selector select{min-width:0;width:100%;min-height:36px;padding:0 8px;font:700 12px Arial,Helvetica,sans-serif;letter-spacing:0}
 @media(max-width:1100px){
   .sidebar-collapse-button{display:none}
-  .workspace-brand-row .workspace-brand-wordmark{display:none}
-  .workspace-brand-row .workspace-brand-icon{display:inline-flex;width:42px;height:42px}
   .workspace--agency .workspace-header{
-    grid-template-columns:auto minmax(135px,190px) auto;
-    grid-template-areas:"brand context actions" "nav nav nav";
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
     gap:8px;
-  }
-  .workspace--agency .workspace-brand-row{grid-area:brand}
-  .workspace--agency .agency-context-selector{grid-area:context}
-  .workspace--agency .account-actions{grid-area:actions}
-  .workspace--agency .workspace-header nav{grid-area:nav;max-width:none;width:100%}
-}
-@media(max-width:680px){
-  .workspace--agency .workspace-header{
-    grid-template-columns:minmax(0,1fr) auto;
-    grid-template-areas:"brand actions" "context context" "nav nav";
-    gap:8px;
-    min-height:0;
     padding-block:10px;
   }
-  .workspace--agency .workspace-brand-row{grid-area:brand}
-  .workspace--agency .workspace-brand-row .workspace-brand-wordmark{
-    display:inline-flex;
-    width:112px;
-    height:38px;
+  .workspace--agency .workspace-brand-row{
+    order:1;
+    flex:1 1 auto;
+    min-width:0;
   }
+  .workspace--agency .workspace-brand-row .workspace-brand-wordmark{display:inline-flex;width:min(120px,100%);height:40px}
   .workspace--agency .workspace-brand-row .workspace-brand-icon{display:none}
-  .workspace--agency .account-actions{grid-area:actions;gap:4px}
+  .workspace--agency .account-actions{order:2;flex:0 0 auto;gap:4px;margin-left:auto}
   .workspace--agency .agency-context-selector{
-    grid-area:context;
+    order:3;
+    flex:0 0 100%;
+    box-sizing:border-box;
     grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);
     align-items:center;
     gap:8px;
   }
+  .workspace--agency .workspace-header nav{
+    order:4;
+    flex:0 0 100%;
+    grid-column:auto;
+    grid-row:auto;
+    width:100%;
+    max-width:none;
+    min-width:0;
+  }
+  .workspace--agency .workspace-header nav button{padding-inline:12px}
+}
+@media(max-width:680px){
+  .workspace--agency .workspace-header{min-height:0}
+  .workspace--agency .workspace-brand-row .workspace-brand-wordmark{width:112px;height:38px}
   .workspace--agency .agency-context-selector span{font-size:9px;letter-spacing:.04em}
   .workspace--agency .agency-context-selector select{font-size:12px}
-  .workspace--agency .workspace-header nav{grid-area:nav}
+  .workspace--agency .workspace-header nav button{min-height:40px}
 }
-
 @media(max-width:960px){
   .workspace-skeleton__page-head{min-height:150px}
   .workspace-skeleton__passport-grid,
