@@ -160,9 +160,9 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
     </section>
 
     <div v-if="selectedArtist" class="agency-preview__context"><span>CUE Test Agency / <strong>{{ selectedArtist.stage_name }}</strong></span><button type="button" @click="returnToAgency">{{ locale === 'es' ? 'Quitar filtro de artista' : 'Clear artist filter' }}</button></div>
-    <nav v-if="selectedArtist && ['profile','passport','cue-id'].includes(view)" class="agency-preview__record-tabs" aria-label="Ficha del artista"><button type="button" @click="changeView('roster')">← {{ locale === 'es' ? 'Artistas' : 'Artists' }}</button><button v-for="tab in (['profile','passport','cue-id'] as const)" :key="tab" type="button" :aria-current="view===tab?'page':undefined" @click="changeView(tab)">{{ tab==='profile'?(locale==='es'?'Ficha y perfil público':'Record & public profile'):tab==='passport'?(locale==='es'?'Trayectoria':'Career'):'CUE ID' }}</button></nav>
+    <nav v-if="selectedArtist && ['profile','passport','cue-id'].includes(view)" class="agency-preview__record-tabs" aria-label="Ficha del artista"><button type="button" @click="changeView('roster')">← {{ locale === 'es' ? 'Artistas' : 'Artists' }}</button><button v-for="tab in (['profile','passport','cue-id'] as const)" :key="tab" type="button" :aria-current="view===tab?'page':undefined" @click="changeView(tab)">{{ tab==='profile'?(locale==='es'?'Ficha y perfil público':'Record & public profile'):tab==='passport'?(locale==='es'?'Trayectoria':'Career'):'CUE Passport' }}</button></nav>
     <AgencyWorkspace
-      v-if="!previewNotificationsOpen && !focusedBooking && ['overview', 'bookings', 'calendar', 'history', 'roster'].includes(view)"
+      v-if="!focusedBooking && ['overview', 'bookings', 'calendar', 'history', 'roster'].includes(view)"
       :selected-artist-id="selectedArtistId" :workspace-id="'preview-agency'" agency-name="CUE Test Agency"
       :artists="artists"
       :view="view as 'overview' | 'bookings' | 'calendar' | 'history' | 'roster'"
@@ -174,17 +174,17 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
       @open-booking="openBooking" @retire-artist="setRosterActive($event, false)" @restore-artist="setRosterActive($event, true)"
     />
 
-    <section v-else-if="!previewNotificationsOpen && focusedBooking && view === 'bookings'" class="agency-preview__inbox">
+    <section v-else-if="focusedBooking && view === 'bookings'" class="agency-preview__inbox">
       <div class="agency-preview__inbox-heading"><div><span>AGENCIA / {{ bookingArtist?.stage_name }}</span><h1>{{ locale === 'es' ? 'Seguimiento del booking.' : 'Booking follow-up.' }}</h1><p>{{ locale === 'es' ? 'Estás gestionando este booking desde tu agencia.' : 'You are managing this booking within your agency.' }}</p></div><button type="button" @click="closeBooking">← {{ locale === 'es' ? 'Volver a Agencia' : 'Back to Agency' }}</button></div>
       <BookingCoreInbox workspace-id="preview-agency" :bookings="demoBookings.filter(item => item.artist_id === focusedBooking?.artist_id)" :locale="locale" :focus-booking-id="focusBookingId" :demo-data="demoInboxData" @booking-opened="focusBookingId = $event" @calendar-requested="changeView('calendar')" />
     </section>
 
-    <section v-else-if="!previewNotificationsOpen" class="agency-preview__detail">
+    <section v-else class="agency-preview__detail">
       <span>{{ selectedArtist ? `AGENCIA / ${selectedArtist.stage_name}` : 'AGENCIA / CUE TEST AGENCY' }}</span>
-      <h1>{{ view === 'profile' ? selectedArtist?.stage_name : view === 'passport' ? 'CUE PASSPORT' : view === 'cue-id' ? 'CUE ID' : 'SETTINGS' }}</h1>
+      <h1>{{ view === 'profile' ? selectedArtist?.stage_name : view === 'passport' || view === 'cue-id' ? 'CUE PASSPORT' : 'SETTINGS' }}</h1>
       <p v-if="view === 'profile'">{{ locale === 'es' ? 'Ficha del artista seleccionado. Una agencia autorizada puede editar su identidad pública y configurar el booking.' : 'Selected artist profile. An authorized agency can edit the public identity and booking settings.' }}</p>
       <p v-else-if="view === 'passport'">{{ locale === 'es' ? 'El recorrido pertenece a este artista y se alimenta de sus bookings confirmados.' : 'This artist journey grows from confirmed bookings.' }}</p>
-      <p v-else-if="view === 'cue-id'">{{ locale === 'es' ? 'La identidad visual pertenece al artista seleccionado.' : 'The visual identity belongs to the selected artist.' }}</p>
+      <p v-else-if="view === 'cue-id'">{{ locale === 'es' ? 'El CUE Passport reúne la trayectoria del artista y sus actuaciones confirmadas.' : 'The CUE Passport brings together the artist’s career and confirmed performances.' }}</p>
       <p v-else>{{ locale === 'es' ? 'Configuración del workspace de Agencia.' : 'Agency workspace settings.' }}</p>
       <AgencyCatalogEditor v-if="view === 'settings'" workspace-id="preview-agency" role="owner" :locale="locale" demo @edit-artist="id => { chooseArtist(id); changeView('profile') }" />
       <AgencyTeamPanel v-if="view === 'settings'" workspace-id="preview-agency" role="owner" user-id="demo-owner" :locale="locale" :demo="true" />
@@ -484,5 +484,42 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 .agency-preview__notification-panel .agency-preview__notification-item:hover,
 .agency-preview__notification-panel .agency-preview__notification-item:focus-visible {
   background:color-mix(in srgb,var(--cue-accent) 5%,var(--cue-surface))!important;
+}
+</style>
+
+<style scoped>
+.agency-preview__notification-backdrop {
+  display:block!important;position:fixed!important;z-index:99!important;inset:0!important;width:100vw!important;height:100dvh!important;
+  margin:0!important;padding:0!important;border:0!important;background:rgba(0,0,0,.72)!important;backdrop-filter:blur(5px);
+}
+.agency-preview__notification-panel {
+  position:fixed!important;z-index:100!important;top:50%!important;right:auto!important;bottom:auto!important;left:50%!important;
+  transform:translate(-50%,-50%);box-sizing:border-box;width:min(640px,calc(100vw - 40px));height:auto;max-height:calc(100dvh - 48px);
+  margin:0!important;padding:0;overflow:auto;border-radius:var(--cue-radius-panel,18px);box-shadow:0 24px 72px #000b;
+}
+.agency-preview__notification-panel .agency-preview__notification-close {
+  border:1px solid var(--cue-border)!important;border-radius:50%!important;background:transparent!important;color:var(--cue-text)!important;
+}
+.agency-preview__notification-panel .agency-preview__notification-close:hover,
+.agency-preview__notification-panel .agency-preview__notification-close:focus-visible {
+  border-color:var(--cue-accent)!important;background:var(--cue-accent)!important;color:var(--cue-accent-ink)!important;
+}
+.agency-preview__notification-panel .agency-preview__notification-item {
+  border:0!important;border-radius:0!important;background:transparent!important;color:var(--cue-text)!important;
+}
+.agency-preview__notification-panel .agency-preview__notification-item:hover,
+.agency-preview__notification-panel .agency-preview__notification-item:focus-visible {
+  background:color-mix(in srgb,var(--cue-accent) 5%,var(--cue-surface))!important;
+}
+.agency-preview__desktop-notifications { margin-top:0!important; }
+.agency-preview__context button { color:var(--cue-text)!important; }
+.agency-preview__context button:hover,.agency-preview__context button:focus-visible { color:var(--cue-accent)!important;border-color:var(--cue-accent)!important; }
+.agency-preview__record-tabs button:not(:first-child):hover,
+.agency-preview__record-tabs button:not(:first-child):focus-visible { color:var(--cue-accent)!important;border-bottom-color:var(--cue-accent)!important; }
+.agency-preview__record-tabs button:first-child:hover,
+.agency-preview__record-tabs button:first-child:focus-visible { color:var(--cue-accent)!important;border-color:var(--cue-accent)!important; }
+@media(max-width:960px){
+  .agency-preview__notification-panel {top:0!important;right:0!important;bottom:0!important;left:0!important;transform:none;width:100vw;height:100dvh;max-height:none;border:0;border-radius:0;}
+  .agency-preview__notification-panel>header {padding-top:max(20px,env(safe-area-inset-top));}
 }
 </style>
