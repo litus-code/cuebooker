@@ -4625,37 +4625,41 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .sidebar-collapse-button{display:none}
   .workspace-brand-row .workspace-brand-wordmark{display:none}
   .workspace-brand-row .workspace-brand-icon{display:inline-flex;width:42px;height:42px}
-  .workspace--agency .workspace-header{grid-template-columns:minmax(0,1fr) minmax(135px,190px) auto;gap:8px}
-  .workspace--agency .workspace-header nav{grid-column:1/-1;grid-row:2;max-width:none;width:100%}
-  .workspace--agency .agency-context-selector{grid-column:2;grid-row:1}
-  .workspace--agency .account-actions{grid-column:3;grid-row:1}
+  .workspace--agency .workspace-header{
+    grid-template-columns:auto minmax(135px,190px) auto;
+    grid-template-areas:"brand context actions" "nav nav nav";
+    gap:8px;
+  }
+  .workspace--agency .workspace-brand-row{grid-area:brand}
+  .workspace--agency .agency-context-selector{grid-area:context}
+  .workspace--agency .account-actions{grid-area:actions}
+  .workspace--agency .workspace-header nav{grid-area:nav;max-width:none;width:100%}
 }
 @media(max-width:680px){
   .workspace--agency .workspace-header{
     grid-template-columns:minmax(0,1fr) auto;
-    grid-template-rows:auto auto auto;
+    grid-template-areas:"brand actions" "context context" "nav nav";
     gap:8px;
     min-height:0;
     padding-block:10px;
   }
-  .workspace--agency .workspace-brand-row{grid-column:1;grid-row:1}
+  .workspace--agency .workspace-brand-row{grid-area:brand}
   .workspace--agency .workspace-brand-row .workspace-brand-wordmark{
     display:inline-flex;
     width:112px;
     height:38px;
   }
   .workspace--agency .workspace-brand-row .workspace-brand-icon{display:none}
-  .workspace--agency .account-actions{grid-column:2;grid-row:1;gap:4px}
+  .workspace--agency .account-actions{grid-area:actions;gap:4px}
   .workspace--agency .agency-context-selector{
-    grid-column:1/-1;
-    grid-row:2;
+    grid-area:context;
     grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);
     align-items:center;
     gap:8px;
   }
   .workspace--agency .agency-context-selector span{font-size:9px;letter-spacing:.04em}
   .workspace--agency .agency-context-selector select{font-size:12px}
-  .workspace--agency .workspace-header nav{grid-column:1/-1;grid-row:3}
+  .workspace--agency .workspace-header nav{grid-area:nav}
 }
 
 @media(max-width:960px){
