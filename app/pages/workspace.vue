@@ -4763,7 +4763,8 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 
 <style scoped>
 .workspace--agency .settings-panel .editor-heading{min-width:0;gap:16px}
-.workspace--agency .settings-panel .editor-heading>div{min-width:0;max-width:100%;padding-inline:4px}
-.workspace--agency .settings-panel .editor-heading h2{box-sizing:border-box;width:100%;max-width:100%;font-size:clamp(2rem,6vw,5rem);line-height:1.02;letter-spacing:-.045em;overflow-wrap:anywhere;padding-inline:4px}
-.workspace--agency .settings-panel .editor-heading .eyebrow{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.workspace--agency .settings-panel > .editor-heading>div{box-sizing:border-box;min-width:0;max-width:100%;padding:0 4px 0 40px}
+.workspace--agency .settings-panel > .editor-heading h2{box-sizing:border-box;width:100%;max-width:100%;margin:8px 0 0;font-size:clamp(2rem,4vw,3.5rem);line-height:1.08;letter-spacing:-.04em;overflow-wrap:anywhere;padding-inline:2px}
+.workspace--agency .settings-panel > .editor-heading .eyebrow{max-width:100%;white-space:normal;overflow-wrap:anywhere;padding-inline:2px}
+@media(max-width:680px){.workspace--agency .settings-panel > .editor-heading>div{padding-left:24px}.workspace--agency .settings-panel > .editor-heading h2{font-size:clamp(1.8rem,8vw,2.8rem)}}
 </style>
