@@ -4768,3 +4768,32 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .workspace--agency .settings-panel > .editor-heading .eyebrow{max-width:100%;white-space:normal;overflow-wrap:anywhere;padding-inline:2px}
 @media(max-width:680px){.workspace--agency .settings-panel > .editor-heading>div{padding-left:24px}.workspace--agency .settings-panel > .editor-heading h2{font-size:clamp(1.8rem,8vw,2.8rem)}}
 </style>
+
+<style scoped>
+.workspace--agency .view-heading{
+  box-sizing:border-box;
+  min-height:156px;
+  align-items:center;
+  margin:0 0 28px;
+  padding:32px clamp(20px,3vw,38px);
+  border:0;
+  border-bottom:1px solid var(--cue-border);
+  background:var(--cue-surface);
+}
+.workspace--agency .view-heading>div{min-width:0;max-width:900px}
+.workspace--agency .view-heading h1{font-size:clamp(2.25rem,5.3vw,5.5rem);line-height:.98;letter-spacing:-.055em}
+.workspace--agency .settings-panel > .editor-heading{
+  padding-top:40px;
+  border-bottom-color:var(--cue-border);
+  background:var(--cue-surface);
+}
+@media(max-width:960px){
+  .workspace--agency .view-heading{min-height:132px;margin-bottom:20px;padding:26px 22px}
+  .workspace--agency .view-heading h1{font-size:clamp(2rem,7vw,4rem)}
+  .workspace--agency .settings-panel > .editor-heading{padding-top:max(30px,env(safe-area-inset-top))}
+}
+@media(max-width:600px){
+  .workspace--agency .view-heading{min-height:118px;margin-bottom:18px;padding:22px 16px}
+  .workspace--agency .view-heading h1{font-size:clamp(1.9rem,8vw,3rem)}
+}
+</style>
