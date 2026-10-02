@@ -527,7 +527,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 <style scoped>
 /* Match the sidebar notification control to the icon and label columns above. */
 @media(min-width:961px){
-  .agency-preview__header nav .agency-preview__desktop-notifications{padding-left:15px!important;gap:18px!important;}
+  .agency-preview.workspace .agency-preview__header nav button.agency-preview__desktop-notifications{padding-left:15px!important;gap:18px!important;}
 }
 /* Give the notification row more vertical breathing room. */
 .agency-preview__notification-item{padding-block:32px!important;}
