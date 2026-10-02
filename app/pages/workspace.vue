@@ -4825,3 +4825,12 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 }
 @media(max-width:680px){.workspace--agency .agency-context-selector{gap:8px;margin:6px 0 8px;padding-inline:14px}.workspace--agency .agency-context-selector select{max-width:58vw!important}}
 </style>
+
+
+<style scoped>
+@media(max-width:960px){
+  .workspace--agency .settings-panel>.editor-heading{top:0;padding-top:max(16px,env(safe-area-inset-top))}
+  .workspace--agency .settings-panel>.editor-heading>div{flex:1;min-width:0;padding:0}
+  .workspace--agency .settings-panel>.editor-heading h2{box-sizing:border-box;width:100%;max-width:100%;font-size:clamp(1.45rem,6vw,2.2rem);line-height:1.15;overflow-wrap:anywhere;padding:0}
+}
+</style>
