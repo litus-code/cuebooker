@@ -37,3 +37,21 @@ export function submitPublicBookingRequest(supabaseUrl: string, input: PublicBoo
     body: JSON.stringify(input)
   })
 }
+
+
+export type PublicAgencyEnquiryInput = {
+  agencySlug: string
+  requestId: string
+  contactName: string
+  contactEmail: string
+  initialMessage: string
+  website?: string
+}
+
+export function submitPublicAgencyEnquiry(supabaseUrl: string, input: PublicAgencyEnquiryInput) {
+  return publicRequest<PublicBookingRequestResult>(functionUrl(supabaseUrl, 'submit-agency-enquiry'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input)
+  })
+}
