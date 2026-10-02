@@ -31,7 +31,7 @@ begin
  if target_idempotency_key is null then raise exception 'idempotency_key_required'; end if;
  if target_request_fingerprint is null or target_request_fingerprint !~ '^[0-9a-f]{64}$' then raise exception 'invalid_request_fingerprint'; end if;
  if normalized_name is null or char_length(normalized_name)>160 then raise exception 'invalid_contact_name'; end if;
- if normalized_email='' or char_length(normalized_email)>320 or normalized_email !~ '^[^[:space:]@]+@[^[:space:]@]+\\.[^[:space:]@]+$' then raise exception 'invalid_contact_email'; end if;
+ if normalized_email='' or char_length(normalized_email)>320 or normalized_email !~ '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$' then raise exception 'invalid_contact_email'; end if;
  if normalized_message is null or char_length(normalized_message)>10000 then raise exception 'invalid_message'; end if;
 
  select o.id,l.workspace_id into resolved_org,resolved_workspace
