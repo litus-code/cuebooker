@@ -325,3 +325,49 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
   .agency-preview__actions { gap:6px; }
 }
 </style>
+
+<style scoped>
+/* One consistent 16px mobile gutter for every preview screen. */
+@media(max-width:960px){
+  .agency-preview.workspace{
+    box-sizing:border-box;
+    padding:0 16px 40px;
+  }
+}
+.agency-preview__detail{
+  box-sizing:border-box;
+  border-radius:var(--cue-radius-panel,18px);
+}
+@media(max-width:600px){
+  .agency-preview__detail{
+    width:100%;
+    margin:20px 0;
+    padding:20px 16px;
+    border-radius:var(--cue-radius-panel,18px);
+  }
+  .agency-preview__detail h1{
+    margin:10px 0;
+    font-size:clamp(2.1rem,10vw,3rem);
+    line-height:1.04;
+    overflow-wrap:anywhere;
+  }
+  .agency-preview__detail .agency-catalog-editor{
+    margin-top:18px;
+    padding:16px 0 0;
+  }
+  .agency-preview__detail :deep(.agency-catalog-editor__heading){
+    min-height:0;
+    margin-bottom:14px;
+    padding:16px 0;
+  }
+  .agency-preview__detail :deep(.agency-catalog-editor__heading h2){
+    font-size:clamp(22px,6vw,28px);
+    line-height:1.15;
+  }
+  .agency-preview__detail :deep(.agency-catalog-editor__group){
+    margin-bottom:16px;
+    padding:16px 12px;
+    border-radius:var(--cue-radius-panel,18px);
+  }
+}
+</style>
