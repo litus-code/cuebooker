@@ -134,6 +134,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
       <nav aria-label="Workspace Agency">
         <button v-for="item in nav" :key="item.id" :data-workspace-view="item.id" type="button" :aria-current="(view === item.id || item.id === 'roster' && ['profile','passport','cue-id'].includes(view)) ? 'page' : undefined" @click="changeView(item.id)">{{ item.label }}</button>
         <button class="agency-preview__desktop-notifications" type="button" :aria-label="locale === 'es' ? 'Notificaciones' : 'Notifications'" :aria-expanded="previewNotificationsOpen" @click="previewNotificationsOpen = !previewNotificationsOpen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span>{{ locale === 'es' ? 'Notificaciones' : 'Notifications' }}</span><i class="agency-preview__desktop-badge">1</i></button>
+        <NuxtLink class="agency-preview__desktop-exit" to="/access"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/></svg><span>{{ locale === 'es' ? 'Cerrar sesión' : 'Sign out' }}</span></NuxtLink>
       </nav>
       <div class="agency-preview__actions">
         <button class="agency-preview__icon agency-preview__notification" type="button" :aria-label="locale === 'es' ? 'Notificaciones' : 'Notifications'" :aria-expanded="previewNotificationsOpen" @click="previewNotificationsOpen = !previewNotificationsOpen">
@@ -178,10 +179,13 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
       <p v-else-if="view === 'passport'">{{ locale === 'es' ? 'El recorrido pertenece a este artista y se alimenta de sus bookings confirmados.' : 'This artist journey grows from confirmed bookings.' }}</p>
       <p v-else-if="view === 'cue-id'">{{ locale === 'es' ? 'La identidad visual pertenece al artista seleccionado.' : 'The visual identity belongs to the selected artist.' }}</p>
       <p v-else>{{ locale === 'es' ? 'Configuración del workspace de Agencia.' : 'Agency workspace settings.' }}</p>
-      <div v-if="view === 'settings'" class="agency-preview__preferences" :aria-label="locale === 'es' ? 'Preferencias' : 'Preferences'"><CuePreferencesControl compact /></div>
       <AgencyCatalogEditor v-if="view === 'settings'" workspace-id="preview-agency" role="owner" :locale="locale" demo @edit-artist="id => { chooseArtist(id); changeView('profile') }" />
       <AgencyTeamPanel v-if="view === 'settings'" workspace-id="preview-agency" role="owner" user-id="demo-owner" :locale="locale" :demo="true" />
       <ConnectedMailboxPanel v-if="view === 'settings'" workspace-id="preview-agency" :locale="locale" demo />
+      <section v-if="view === 'settings'" class="agency-preview__preferences" :aria-label="locale === 'es' ? 'Preferencias' : 'Preferences'">
+        <div><span>{{ locale === 'es' ? 'PREFERENCIAS' : 'PREFERENCES' }}</span><h2>{{ locale === 'es' ? 'Idioma y apariencia' : 'Language and appearance' }}</h2><p>{{ locale === 'es' ? 'Elige el idioma y el tema de Cuebooker.' : 'Choose the Cuebooker language and theme.' }}</p></div>
+        <CuePreferencesControl compact labels />
+      </section>
       <div v-else class="agency-preview__read-only"><span>PREVIEW / {{ locale === 'es' ? 'SIN EDICIÓN REAL' : 'NO LIVE EDITING' }}</span><p>{{ locale === 'es' ? 'Esta sección muestra el contexto y la navegación. Su editor real requiere una cuenta Agency.' : 'This section shows context and navigation. The live editor requires an Agency account.' }}</p></div>
     </section>
 
@@ -223,10 +227,10 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 </style>
 
 <style scoped>
-.agency-preview__context{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin-top:20px;padding:12px;border-left:3px solid var(--cue-accent);background:var(--cue-surface);font-size:12px}.agency-preview__context button{background:transparent;color:var(--cue-accent);border:1px solid var(--cue-border);padding:8px}
+.agency-preview__context{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin-top:20px;padding:12px;border-left:3px solid var(--cue-accent);background:var(--cue-surface);font-size:12px}.agency-preview__context button{background:transparent;color:var(--cue-accent);border:1px solid var(--cue-border);border-radius:var(--cue-radius-control,12px);padding:8px 12px}
 </style>
 
-<style scoped>.agency-preview__record-tabs{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.agency-preview__record-tabs button{background:var(--cue-surface);color:var(--cue-text);padding:10px;border:1px solid var(--cue-border)}.agency-preview__record-tabs button[aria-current=page]{color:var(--cue-accent);border-bottom:2px solid var(--cue-accent)}</style>
+<style scoped>.agency-preview__record-tabs{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.agency-preview__record-tabs button{background:transparent;color:var(--cue-muted);padding:10px 8px;border:0;border-bottom:2px solid transparent;border-radius:0}.agency-preview__record-tabs button:first-child{padding:10px 12px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control,12px);color:var(--cue-text)}.agency-preview__record-tabs button[aria-current=page]{background:transparent;color:var(--cue-accent);border:0;border-bottom:2px solid var(--cue-accent);border-radius:0}</style>
 
 <style scoped>
 .agency-preview__header {
@@ -284,13 +288,15 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
   font:800 9px/1 monospace;
 }
 .agency-preview__notification-panel {
-  position:absolute;
-  z-index:50;
-  top:calc(100% + 12px);
-  right:0;
+  position:fixed;
+  z-index:100;
+  top:88px;
+  right:24px;
   display:grid;
   gap:8px;
-  width:min(280px,calc(100vw - 32px));
+  width:min(360px,calc(100vw - 32px));
+  max-height:min(70vh,520px);
+  overflow:auto;
   box-sizing:border-box;
   padding:16px;
   border:1px solid var(--cue-border);
@@ -377,20 +383,31 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 <style scoped>
 .agency-preview__exit{border-radius:50%;color:#f17b86}
 .agency-preview__exit:hover,.agency-preview__exit:focus-visible{color:#ff8996}
-.agency-preview__preferences{display:flex;justify-content:flex-end;align-items:center;margin:14px 0 4px}
-.agency-preview__preferences :deep(.cue-preferences-control){padding:8px 10px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel,16px);background:var(--cue-bg)}
 .agency-preview__desktop-notifications{display:none}
+.agency-preview__desktop-exit{display:none}
+.agency-preview__desktop-notifications{position:relative}
+.agency-preview__desktop-notifications::before{display:none!important;content:none!important}
 .agency-preview__desktop-notifications svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.agency-preview__desktop-notifications .agency-preview__desktop-badge{display:grid;place-items:center;width:16px;height:16px;margin-left:auto;border-radius:50%;background:var(--cue-accent);color:#111;font:800 9px/1 monospace}
+.agency-preview__desktop-notifications .agency-preview__desktop-badge{position:absolute;top:2px;left:25px;display:grid;place-items:center;width:16px;height:16px;margin:0;border-radius:50%;background:var(--cue-accent);color:#111;font:800 9px/1 monospace}
+.agency-preview__desktop-exit{display:flex;align-items:center;gap:12px;margin-top:auto;padding:10px 12px;border:0;border-left:2px solid transparent;border-radius:0;background:transparent;color:#f17b86;text-decoration:none;font-size:12px;font-weight:700}
+.agency-preview__desktop-exit svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.agency-preview__desktop-exit:hover,.agency-preview__desktop-exit:focus-visible{color:#ff8996}
 @media(min-width:961px){
   .agency-preview__notification{display:none}
+  .agency-preview__actions .agency-preview__exit{display:none}
   .agency-preview__desktop-notifications{display:flex!important;align-items:center;gap:12px;width:100%;text-align:left!important}
+  .agency-preview__desktop-exit{display:flex}
 }
 @media(max-width:960px){
   .agency-preview__desktop-notifications{display:none!important}
   .agency-preview__exit{border-radius:50%}
 }
-@media(max-width:420px){
-  .agency-preview__preferences{justify-content:flex-start}
-}
+.agency-preview__preferences{box-sizing:border-box;display:flex;justify-content:space-between;align-items:center;gap:20px;margin:36px 0 8px;padding:20px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel,18px);background:var(--cue-surface)}
+.agency-preview__preferences>div>span{font:800 10px/1.4 monospace;letter-spacing:.14em;color:var(--cue-accent)}
+.agency-preview__preferences h2{margin:7px 0 4px;font-size:18px}
+.agency-preview__preferences p{margin:0;color:var(--cue-muted);font-size:13px}
+.agency-preview__preferences :deep(.cue-preferences-control){flex:none}
+@media(max-width:600px){.agency-preview__preferences{align-items:flex-start;flex-direction:column;margin-top:24px;padding:16px}}
+@media(max-width:420px){.agency-preview__preferences{justify-content:flex-start}}
+@media(max-width:390px){.agency-preview__notification-panel{top:76px;right:12px;width:calc(100vw - 24px)}}
 </style>
