@@ -1042,6 +1042,22 @@ function handleWorkspaceKeydown(event: KeyboardEvent) {
   if (editorOpen.value) void closeEditor()
 }
 
+function revealActiveWorkspaceTab() {
+  const nav = document.getElementById('workspace-navigation')
+  const selected = nav?.querySelector<HTMLElement>('[aria-current="page"]')
+  if (!nav || !selected || nav.scrollWidth <= nav.clientWidth) return
+
+  const navRect = nav.getBoundingClientRect()
+  const selectedRect = selected.getBoundingClientRect()
+  const nextLeft = nav.scrollLeft + selectedRect.left - navRect.left - (nav.clientWidth - selected.clientWidth) / 2
+  nav.scrollTo({ left: Math.max(0, nextLeft), behavior: prefersReducedMotion() ? 'instant' : 'smooth' })
+}
+
+watch([activeView, settingsOpen, workspaceBootResolved], async () => {
+  await nextTick()
+  revealActiveWorkspaceTab()
+}, { flush: 'post' })
+
 async function changeView(view: WorkspaceView) {
   settingsOpen.value = false
   if (view !== 'profile') profileEditSection.value = null
