@@ -64,6 +64,8 @@ const artistPassportBookings = computed(() => demoBookings.value
 const artistInitials = computed(() => selectedArtist.value?.stage_name.split(' ').map(part => part[0]).slice(0, 2).join('').toUpperCase() || '')
 
 const agencyCueIdDrafts = reactive<Record<string, CueIdStylizedCreatorConfigV1>>({})
+const agencyCueIdDirtyByArtist = reactive<Record<string, boolean>>({})
+const agencyCueIdDirty = computed(() => Boolean(agencyCueIdDirtyByArtist[selectedArtistId.value]))
 const agencyCueIdSection = ref<'identity' | 'face' | 'outfit' | 'accessories'>('identity')
 const agencyCueIdSaved = ref(false)
 const agencyCueIdConfig = computed({
@@ -72,16 +74,18 @@ const agencyCueIdConfig = computed({
     if (!agencyCueIdDrafts[artistId]) agencyCueIdDrafts[artistId] = cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG)
     return agencyCueIdDrafts[artistId]
   },
-  set: (value: CueIdStylizedCreatorConfigV1) => { if (selectedArtistId.value) agencyCueIdDrafts[selectedArtistId.value] = value }
+  set: (value: CueIdStylizedCreatorConfigV1) => { if (selectedArtistId.value) { agencyCueIdDrafts[selectedArtistId.value] = value; agencyCueIdDirtyByArtist[selectedArtistId.value] = true } }
 })
 function saveAgencyCueIdDraft(value: CueIdStylizedCreatorConfigV1) {
   agencyCueIdConfig.value = cloneCueIdStylizedCreatorConfig(value)
+  agencyCueIdDirtyByArtist[selectedArtistId.value] = false
   agencyCueIdSaved.value = true
   window.setTimeout(() => { agencyCueIdSaved.value = false }, 2200)
 }
 function resetAgencyCueIdDraft() {
   if (!selectedArtistId.value) return
   agencyCueIdConfig.value = cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG)
+  agencyCueIdDirtyByArtist[selectedArtistId.value] = false
   agencyCueIdSaved.value = false
 }
 const artistPassportCities = computed(() => [...new Set(artistPassportBookings.value.map(item => item.city).filter((value): value is string => Boolean(value)))])
@@ -289,7 +293,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
       <section v-else-if="view === 'cue-id'" class="agency-preview__cue-id-editor" :aria-label="locale === 'es' ? 'Editor CUE ID del artista' : 'Artist CUE ID editor'">
         <header><span>CUE ID / {{ selectedArtist?.stage_name }}</span><small>{{ locale === 'es' ? 'BORRADOR DE PREVIEW' : 'PREVIEW DRAFT' }}</small></header>
         <p>{{ locale === 'es' ? 'Personaliza la identidad visual de este artista. Esta demo mantiene un borrador independiente por artista mientras está abierta.' : 'Customize this artist’s visual identity. This demo keeps a separate draft for each artist while it is open.' }}</p>
-        <CueIdStylizedWorkspace v-model="agencyCueIdConfig" :locale="locale" :section="agencyCueIdSection" @section-change="agencyCueIdSection = $event" @save="saveAgencyCueIdDraft" @reset="resetAgencyCueIdDraft" />
+        <CueIdStylizedWorkspace v-model="agencyCueIdConfig" :locale="locale" :section="agencyCueIdSection" :dirty="agencyCueIdDirty" @section-change="agencyCueIdSection = $event" @save="saveAgencyCueIdDraft" @reset="resetAgencyCueIdDraft" />
         <p v-if="agencyCueIdSaved" class="agency-preview__cue-id-saved" role="status">{{ locale === 'es' ? 'Borrador de demostración actualizado.' : 'Demo draft updated.' }}</p>
       </section>
     </section>
