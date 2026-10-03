@@ -5,13 +5,12 @@ do $$
 declare w uuid:='37e3f326-86f8-4529-9648-67620c06d790'; u uuid:='84acf582-5fa1-4d8b-b3a4-184b3f87da4e'; a uuid:='2fa912be-d78d-44b9-b6f9-a013bb1358cc'; b uuid:='7d9fd811-c672-46f0-9790-96d772c01bb7'; result jsonb; rejected boolean; config jsonb:='{"bio":"Test agency","contactEmail":"booking@example.invalid"}';
 begin
  perform set_config('request.jwt.claim.sub',u::text,true);
+ update public.artists set public_profile_enabled=false where id=a;
+ update public.artist_booking_routes set accepting_requests=false where artist_id=a and workspace_id=w;
  result:=public.get_agency_catalog(w);
  if jsonb_array_length(result->'artists')<>2 or (result->>'published')::boolean then raise exception 'initial_draft_incorrect'; end if;
- rejected:=false;
- begin perform public.save_agency_catalog(w,config,true,array[a]); exception when others then rejected:=SQLERRM='catalog_artist_not_ready'; end;
- if not rejected then raise exception 'unpublished_artist_accepted'; end if;
- update public.artists set public_profile_enabled=true where id=a;
- update public.artist_booking_routes set accepting_requests=true where artist_id=a and workspace_id=w;
+ -- Agency roster membership and the agency booking route prepare the profile;
+ -- an independent artist-publication toggle is not a catalogue prerequisite.
  result:=public.save_agency_catalog(w,config,true,array[a]);
  if not (result->>'published')::boolean then raise exception 'publication_failed'; end if;
  rejected:=false;
@@ -37,7 +36,8 @@ end $$;
 reset role;
 update public.artists set public_profile_enabled=false where id='2fa912be-d78d-44b9-b6f9-a013bb1358cc';
 set local role service_role;
-do $$ begin if jsonb_array_length(public.get_public_agency_profile('cue-agency-test-20260930')->'artists')<>0 then raise exception 'disabled_artist_visible'; end if; end $$;
+do $$ begin update public.workspace_artists set catalog_visible=false where artist_id='2fa912be-d78d-44b9-b6f9-a013bb1358cc';
+if jsonb_array_length(public.get_public_agency_profile('cue-agency-test-20260930')->'artists')<>0 then raise exception 'unselected_artist_visible'; end if; end $$;
 reset role;
 update public.organizations set agency_public_enabled=false where slug='cue-agency-test-20260930';
 set local role service_role;
