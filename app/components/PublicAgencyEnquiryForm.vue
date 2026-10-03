@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { AgencyCatalogArtist } from '../domain/agencyCatalog'
 import { safeAgencyImage } from '../domain/agencyCatalog'
-const props=withDefaults(defineProps<{artists:AgencyCatalogArtist[];locale:'es'|'en';submitting?:boolean;sent?:boolean;error?:string;preview?:boolean}>(),{submitting:false,sent:false,error:'',preview:false})
+const props=withDefaults(defineProps<{artists:AgencyCatalogArtist[];locale:'es'|'en';submitting?:boolean;sent?:boolean;error?:string;preview?:boolean;initialArtistSlug?:string}>(),{submitting:false,sent:false,error:'',preview:false,initialArtistSlug:''})
 const emit=defineEmits<{submit:[payload:{artistSlug:string|null;contactName:string;contactEmail:string;initialMessage:string;website:string}]}>()
 const form=reactive({artistSlug:'',contactName:'',contactEmail:'',initialMessage:'',website:''})
 const es=computed(()=>props.locale==='es')
@@ -9,6 +9,7 @@ const artistPickerOpen=ref(false)
 const selectedArtist=computed(()=>props.artists.find(artist=>artist.slug===form.artistSlug)||null)
 function artistImage(artist:AgencyCatalogArtist){return safeAgencyImage(artist.imageUrl||artist.coverUrl)||''}
 function chooseArtist(slug:string){form.artistSlug=slug;artistPickerOpen.value=false}
+watch(()=>[props.initialArtistSlug,props.artists] as const,([slug,artists])=>{if(slug&&artists.some(artist=>artist.slug===slug))form.artistSlug=slug},{immediate:true})
 const message=computed(()=>props.error||(es.value?'No se pudo enviar. Inténtalo de nuevo.':'Could not send. Please try again.'))
 function send(){
  if(props.preview||props.submitting||props.sent||!form.contactName.trim()||!/^\S+@\S+\.\S+$/.test(form.contactEmail.trim())||!form.initialMessage.trim())return
