@@ -1,5 +1,17 @@
 begin;
 
+-- Establish the agency as booking manager for active roster artists that
+-- do not yet have a booking destination. Existing destinations are preserved;
+-- changing another workspace's route still requires an explicit transfer.
+insert into public.artist_booking_routes (artist_id, workspace_id, created_by)
+select wa.artist_id, wa.workspace_id, a.created_by
+from public.workspace_artists wa
+join public.workspaces w on w.id=wa.workspace_id and w.kind='agency'
+join public.artists a on a.id=wa.artist_id
+where wa.roster_active
+  and not exists (select 1 from public.artist_booking_routes r where r.artist_id=wa.artist_id)
+on conflict (artist_id) do nothing;
+
 -- Agency roster membership is the representation relationship. Public catalogue
 -- visibility is controlled by the agency, not by the artist's independent
 -- public-profile switch. Keep the booking route workspace check so enquiries
