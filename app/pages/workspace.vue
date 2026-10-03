@@ -4963,14 +4963,18 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   :global(.profile-portrait-editor__upload > strong) { font-size:16px!important; }
 }
 
-/* Keep the agency settings drawer bounded to the viewport and its heading readable. */
+/* Match the settings drawer heading to the page gutter and keep it in normal scroll flow. */
 .workspace--agency .settings-panel{box-sizing:border-box;width:min(460px,100vw);max-width:100vw;max-height:100dvh;overflow-x:hidden;overscroll-behavior:contain}
-.workspace--agency .settings-panel>.editor-heading{box-sizing:border-box;width:auto;min-width:0}
+.workspace--agency .settings-panel>.editor-heading{box-sizing:border-box;position:static;top:auto;min-width:0}
 .workspace--agency .settings-panel>.editor-heading>div{box-sizing:border-box;flex:1 1 auto;min-width:0;max-width:100%;padding:0}
-.workspace--agency .settings-panel>.editor-heading h2{overflow-wrap:anywhere}
+.workspace--agency .settings-panel>.editor-heading h2{box-sizing:border-box;width:auto;max-width:100%;overflow-wrap:anywhere}
+.account-actions>.header-icon-button{box-sizing:border-box;display:grid;width:44px;height:44px;min-width:44px;min-height:44px;padding:10px;place-items:center;border-radius:50%}
+.account-actions>.header-icon-button svg{width:100%;height:100%}
 @media(max-width:680px){
- .workspace--agency .settings-panel{width:100vw;height:100dvh;max-height:100dvh;padding-bottom:max(24px,env(safe-area-inset-bottom))}
- .workspace--agency .settings-panel>.editor-heading{top:0}
+ .workspace--agency .settings-panel{width:100vw;height:100dvh;max-height:100dvh;padding:20px 16px max(24px,env(safe-area-inset-bottom))}
+ .workspace--agency .settings-panel>.editor-heading{position:static;top:auto;margin:0 0 20px;padding:0 0 18px;align-items:flex-start}
+ .workspace--agency .settings-panel>.editor-heading>div{padding:0}
+ .workspace--agency .settings-panel>.editor-heading h2{width:auto;margin:8px 0 0;padding:0;font-size:clamp(1.8rem,8vw,2.8rem);line-height:1.08}
 }
 </style>
 
