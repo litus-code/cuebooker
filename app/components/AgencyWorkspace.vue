@@ -524,4 +524,11 @@ function confirmRetire(artist: RosterArtist) {
  .agency--roster .agency-heading-actions button{flex:none;min-height:40px;padding:8px 12px}
 }
 .agency-roster-actions button.agency-roster-icon-action{display:inline-grid;place-items:center;flex:none;width:42px;height:42px;min-height:42px;padding:0;border:1px solid var(--cue-border);border-radius:12px;background:transparent;color:var(--cue-text);transition:border-color .16s ease,color .16s ease,background .16s ease}.agency-roster-actions button.agency-roster-icon-action:first-child{border-color:var(--cue-accent);color:var(--cue-accent)}.agency-roster-icon-action svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.agency-roster-actions button.agency-roster-icon-action--danger{color:var(--cue-muted,#9a9a9a)}.agency-roster-actions button.agency-roster-icon-action--danger:hover,.agency-roster-actions button.agency-roster-icon-action--danger:focus-visible{border-color:#e4777d;background:color-mix(in srgb,#e4777d 10%,transparent);color:#ff8b91}.agency-roster-icon-action:focus-visible{outline:2px solid var(--cue-accent);outline-offset:3px}
+
+/* Keep roster actions in the open upper-right area of each mobile artist card. */
+@media(max-width:750px){
+ .agency-roster article{position:relative;padding-right:118px;min-height:210px}
+ .agency-roster-actions{position:absolute;top:54px;right:20px;width:auto;margin:0;display:flex;flex-direction:column;gap:8px}
+ .agency-roster-actions button{width:48px;height:48px;min-height:48px;padding:10px}
+}
 </style>
