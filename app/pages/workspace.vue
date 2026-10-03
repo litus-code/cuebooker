@@ -5,6 +5,8 @@ import { buildCuePassportWorld, cuePassportNextMilestones, cuePassportUnlockedMi
 import type { CueNotification } from '../domain/notification'
 import { toPublicCueIdConfig, type PublicArtistProfile } from '../domain/publicArtistProfile'
 import { createBookingQrSvg } from '../services/bookingQr'
+import { agencyGlobalQuery, agencyViewForArtist, canOperateAgency as hasAgencyOperationAccess } from '../domain/agencyContext'
+import { resolveAgencyArtist } from '../domain/agencyRoster'
 
 const auth = useCueAuth()
 const availability = useAvailability()
@@ -28,19 +30,20 @@ const {
 const route = useRoute()
 const router = useRouter()
 
-type WorkspaceView = 'overview' | 'bookings' | 'calendar' | 'history' | 'profile' | 'passport' | 'cue-id'
-const WORKSPACE_VIEWS: WorkspaceView[] = ['overview', 'bookings', 'calendar', 'history', 'profile', 'passport', 'cue-id']
+type WorkspaceView = 'overview' | 'bookings' | 'calendar' | 'history' | 'roster' | 'profile' | 'passport' | 'cue-id'
+const WORKSPACE_VIEWS: WorkspaceView[] = ['overview', 'bookings', 'calendar', 'history', 'roster', 'profile', 'passport', 'cue-id']
 function workspaceViewFromQuery(value: unknown, booking?: unknown): WorkspaceView {
   if (typeof value === 'string' && WORKSPACE_VIEWS.includes(value as WorkspaceView)) return value as WorkspaceView
   if (typeof booking === 'string' && booking) return 'bookings'
   return 'overview'
 }
+
 type ProfileEditSection = 'identity' | 'image' | 'portrait' | 'sound' | 'links' | 'booking' | 'passport' | 'distribution' | null
 const PROFILE_EDIT_SECTIONS = ['identity', 'image', 'portrait', 'sound', 'links', 'booking', 'passport', 'distribution'] as const
 function profileSectionFromQuery(value: unknown): Exclude<ProfileEditSection, null> | null {
   return typeof value === 'string' && PROFILE_EDIT_SECTIONS.includes(value as any) ? value as Exclude<ProfileEditSection, null> : null
 }
-type ManagedArtist = { id: string; stage_name: string; slug: string; role: 'owner' | 'manager' | 'editor' }
+type ManagedArtist = { id: string; stage_name: string; slug: string; city?: string | null; artist_image_path?: string | null; cover_image_path?: string | null; role: 'owner' | 'manager' | 'editor'; roster_active?: boolean }
 type ManagedOrganization = { id: string; name: string; slug: string; type: 'agency' | 'promoter'; role: 'owner' | 'admin' | 'member' }
 
 type ArtistProfileForm = {
@@ -92,6 +95,18 @@ const activeView = ref<WorkspaceView>(initialWorkspaceView)
 const artists = ref<ManagedArtist[]>([])
 const organizations = ref<ManagedOrganization[]>([])
 const selectedArtistId = ref('')
+const agencyWorkspaceId = ref('')
+const agencyWorkspaceRole = ref('viewer')
+const agencyReturnQuery = ref<Record<string, any> | null>(null)
+const canOperateAgency = computed(() => hasAgencyOperationAccess(agencyWorkspaceRole.value))
+function rememberAgencyContext() { if (isAgencyGlobal.value) agencyReturnQuery.value = agencyGlobalQuery(route.query, activeView.value) }
+async function returnToAgency() {
+  const query = agencyReturnQuery.value || agencyGlobalQuery(route.query, 'overview')
+  selectedArtistId.value = ''
+  await router.replace({ query })
+  await changeView(workspaceViewFromQuery(query.view))
+}
+const rosterRevision = ref(0)
 const blocks = ref<AvailabilityBlock[]>([])
 const monthCursor = ref(new Date().toISOString().slice(0, 7) + '-01')
 const todayDate = new Date().toISOString().slice(0, 10)
@@ -106,9 +121,6 @@ const endTime = ref('20:00')
 const blockStatus = ref<AvailabilityStatus>('unavailable')
 const blockLabel = ref('')
 const editingBlockId = ref<string | null>(null)
-const rosterArtistName = ref('')
-const rosterArtistSlug = ref('')
-const rosterSubmitting = ref(false)
 const sidebarCollapsed = ref(false)
 const bookingCoreWorkspaceId = ref('')
 const realBookings = ref<CoreBooking[]>([])
@@ -126,6 +138,7 @@ const realBookingFocusId = ref('')
 let bookingCoreSyncTimer: ReturnType<typeof setInterval> | null = null
 const tourStep = ref(-1)
 const settingsOpen = ref(false)
+watch(() => route.query.mailbox, value => { if (value) settingsOpen.value = true }, { immediate: true })
 const settingsTrigger = ref<HTMLElement | null>(null)
 const passwordCurrent = ref('')
 const passwordNew = ref('')
@@ -273,7 +286,7 @@ function setPassportMilestoneAuto(enabled: boolean) {
   }
 }
 
-const copy = computed(() => preferences.locale.value === 'es' ? {
+const baseCopy = computed(() => preferences.locale.value === 'es' ? {
   overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Actividad', profile: 'Perfil', passport: 'Passport', cueId: 'CUE ID',
   artist: 'Artista', role: 'DJ', settings: 'Ajustes', logout: 'Cerrar sesión',
   loading: 'Cargando workspace…', rosterEyebrow: 'ROSTER / PRIMER ARTISTA', addFirstArtist: 'Añade el primer artista de',
@@ -369,6 +382,19 @@ const tourSteps = computed(() => preferences.locale.value === 'es' ? [
 
 const manageableAgency = computed(() => organizations.value.find(item => item.type === 'agency' && ['owner', 'admin'].includes(item.role)))
 const ownerAgency = computed(() => organizations.value.find(item => item.type === 'agency' && item.role === 'owner'))
+const agency = computed(() => organizations.value.find(item => item.type === 'agency'))
+const isAgency = computed(() => Boolean(agency.value))
+const isAgencyGlobal = computed(() => isAgency.value && !selectedArtistId.value)
+const copy = computed(() => !isAgency.value ? baseCopy.value : { ...baseCopy.value,
+ profileEyebrow: preferences.locale.value === 'es' ? 'AGENCIA / FICHA DE ARTISTA' : 'AGENCY / ARTIST RECORD',
+ profileTitle: selectedArtist.value?.stage_name || baseCopy.value.profileTitle,
+ profileBody: preferences.locale.value === 'es' ? 'Completa su ficha profesional, prepara el perfil público y decide qué compartir con promotores.' : 'Complete the professional record, prepare the public profile and choose what to share with promoters.',
+ passportTitle: preferences.locale.value === 'es' ? 'TRAYECTORIA DEL ARTISTA.' : 'ARTIST CAREER.',
+ passportBody: preferences.locale.value === 'es' ? 'Su trayectoria se construye con bookings confirmados. Gestiona el material vinculado y su visibilidad pública desde esta ficha.' : 'Their career grows from confirmed bookings. Manage linked material and public visibility from this record.',
+ cueIdTitle: preferences.locale.value === 'es' ? 'IDENTIDAD DEL ARTISTA.' : 'ARTIST IDENTITY.',
+ cueIdBody: preferences.locale.value === 'es' ? 'Gestiona la identidad visual de este artista y decide si aparece en su perfil público.' : 'Manage this artist visual identity and decide whether to include it in the public profile.',
+ settingsTitle: preferences.locale.value === 'es' ? 'Ajustes de Agencia' : 'Agency settings'
+})
 const selectedArtist = computed(() => artists.value.find(item => item.id === selectedArtistId.value))
 const canEditSelectedArtist = computed(() => ['owner', 'manager'].includes(selectedArtist.value?.role || ''))
 const profileSurfaceReady = computed(() => Boolean(artistProfiles.activeProfile.value?.artist || profileForm.value.stageName))
@@ -500,7 +526,7 @@ const confirmedCount = computed(() => blocks.value.filter(block => block.status 
 const occupiedDays = computed(() => new Set([...blocks.value.map(block => block.starts_at.slice(0, 10)), ...realHolds.value.filter(isVisibleActiveHold).map(hold => hold.event_date), ...calendarBookings.value.filter(booking => booking.event_date).map(booking => booking.event_date as string)]).size)
 const validTimeRange = computed(() => endTime.value > startTime.value)
 const currentTour = computed(() => tourStep.value >= 0 ? tourSteps.value[tourStep.value] : null)
-const hasArtistSelector = computed(() => artists.value.length > 1)
+const hasArtistSelector = computed(() => isAgency.value || artists.value.length > 1)
 const profileCompletion = computed(() => {
   const fields = [
     profileForm.value.stageName,
@@ -779,7 +805,8 @@ const publicProfilePreview = computed<PublicArtistProfile>(() => {
       milestones: publicPassportMilestones.value,
       media: publicPassportMedia.value
     } : null,
-    acceptingRequests: publicProfileAcceptingRequests.value
+    acceptingRequests: publicProfileAcceptingRequests.value,
+    bookingManagedBy: isAgency.value && publicProfileWorkspaceId.value === agencyWorkspaceId.value ? agency.value?.name || null : null
   }
 })
 async function openProfilePreview() {
@@ -845,9 +872,22 @@ watch([selectedArtistId, monthCursor], async () => {
 })
 watch(selectedArtistId, async (artistId) => {
   if (loading.value) return
-  bookingCoreWorkspaceId.value = ''
+  // Never render the previous artist's private profile/booking state while
+  // switching context, even if the next request is slow.
+  artistProfiles.activeProfile.value = null
+  profileForm.value = emptyProfileForm()
+  replaceProfileCoverUrl('')
+  replaceProfileArtistImageUrl('')
+  replaceProfileArtistCutoutUrl('')
+  blocks.value = []
+  realBookings.value = []
+  calendarBookings.value = []
+  passportBookings.value = []
+  passportMediaItems.value = []
+  realHolds.value = []
+  bookingCoreWorkspaceId.value = agencyWorkspaceId.value
   publicProfileWorkspaceId.value = ''
-  setBasePlan('free')
+  if (!agencyWorkspaceId.value) setBasePlan('free')
   if (!artistId) return
   await loadArtistProfile()
   await ensureBookingCoreWorkspace()
@@ -856,15 +896,42 @@ watch(() => [route.query.view, route.query.booking], ([value, booking]) => {
   const next = workspaceViewFromQuery(value, booking)
   if (loading.value) loadingView.value = next
   if (next !== activeView.value) activeView.value = next
+
   if (next === 'profile') profileEditSection.value = profileSectionFromQuery(route.query.section)
 })
 
 watch(() => route.query.artist, artistValue => {
   const artistId = typeof artistValue === 'string' ? artistValue : ''
+  if (!artistId && isAgency.value) { selectedArtistId.value = ''; return }
   if (!artistId || artistId === selectedArtistId.value) return
   if (!artists.value.some(item => item.id === artistId)) return
   selectedArtistId.value = artistId
 })
+
+async function chooseArtist(artistId: string, view?: WorkspaceView) {
+  rememberAgencyContext()
+  const targetView = view || agencyViewForArtist(activeView.value, Boolean(artistId))
+  if (artistId && !artists.value.some(item => item.id === artistId && item.roster_active !== false)) return
+  selectedArtistId.value = artistId
+  await router.replace({ query: { ...route.query, artist: artistId || undefined, scope: artistId ? undefined : 'all', booking: undefined, view: targetView } })
+  await changeView(targetView)
+}
+
+async function closeAgencyBooking() {
+  realBookingFocusId.value = ''
+  await router.replace({ query: { ...route.query, booking: undefined } })
+  await changeView('bookings')
+}
+async function openAgencyBooking(bookingId: string) {
+  rememberAgencyContext()
+  if (!agencyWorkspaceId.value) return
+  try {
+    const booking = await loadExactBookingIntoInbox(agencyWorkspaceId.value, bookingId)
+    openRealBooking(booking.id)
+  } catch (error: any) {
+    errorMessage.value = error?.message || (preferences.locale.value === 'es' ? 'No se pudo abrir el booking.' : 'Could not open booking.')
+  }
+}
 
 let routeBookingSyncSequence = 0
 watch(
@@ -914,7 +981,6 @@ watch(activeView, async (view) => {
   if (!nav || !tab) return
   nav.scrollTo({ left: tab.offsetLeft - (nav.clientWidth - tab.clientWidth) / 2, behavior: 'smooth' })
 })
-watch(rosterArtistName, value => { rosterArtistSlug.value = slugify(value) })
 watch([profileEditSection, settingsOpen, editorOpen], ([editSection, settingsVisible, calendarEditorVisible]) => {
   if (!import.meta.client) return
   document.body.style.overflow = Boolean(editSection) || settingsVisible || calendarEditorVisible ? 'hidden' : ''
@@ -976,6 +1042,22 @@ function handleWorkspaceKeydown(event: KeyboardEvent) {
   if (editorOpen.value) void closeEditor()
 }
 
+function revealActiveWorkspaceTab() {
+  const nav = document.getElementById('workspace-navigation')
+  const selected = nav?.querySelector<HTMLElement>('[aria-current="page"]')
+  if (!nav || !selected || nav.scrollWidth <= nav.clientWidth) return
+
+  const navRect = nav.getBoundingClientRect()
+  const selectedRect = selected.getBoundingClientRect()
+  const nextLeft = nav.scrollLeft + selectedRect.left - navRect.left - (nav.clientWidth - selected.clientWidth) / 2
+  nav.scrollTo({ left: Math.max(0, nextLeft), behavior: prefersReducedMotion() ? 'instant' : 'smooth' })
+}
+
+watch([activeView, settingsOpen, workspaceBootResolved], async () => {
+  await nextTick()
+  revealActiveWorkspaceTab()
+}, { flush: 'post' })
+
 async function changeView(view: WorkspaceView) {
   settingsOpen.value = false
   if (view !== 'profile') profileEditSection.value = null
@@ -986,7 +1068,7 @@ async function changeView(view: WorkspaceView) {
 
   const nextQuery: Record<string, any> = { ...route.query, view }
   delete nextQuery.setup
-  if (view !== 'bookings') delete nextQuery.booking
+  if (view !== 'bookings' || isAgency.value) delete nextQuery.booking
   if (view !== 'profile') delete nextQuery.section
   try {
     await router.replace({ query: nextQuery })
@@ -1133,10 +1215,6 @@ function handleViewportChange() {
 
 onMounted(() => window.addEventListener('resize', handleViewportChange, { passive: true }))
 
-function slugify(value: string) {
-  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
-}
-
 const cueEntryCopy = computed(() => preferences.locale.value === 'es' ? {
   eyebrow: 'CUE / CAPTURA RÁPIDA',
   title: 'REGISTRA LO QUE ACABA DE PASAR.',
@@ -1155,11 +1233,11 @@ function collectionChanged<T>(current: T[], next: T[]) {
 }
 
 async function loadRealBookings() {
-  if (!bookingCoreWorkspaceId.value || !selectedArtistId.value) {
+  if (!bookingCoreWorkspaceId.value || (!selectedArtistId.value && !isAgency.value)) {
     if (realBookings.value.length) realBookings.value = []
     return
   }
-  const rows = await bookingCore.listBookings(bookingCoreWorkspaceId.value, 100, selectedArtistId.value)
+  const rows = await bookingCore.listBookings(bookingCoreWorkspaceId.value, 100, selectedArtistId.value || undefined)
   if (collectionChanged(realBookings.value, rows)) realBookings.value = rows
 }
 
@@ -1243,6 +1321,11 @@ async function ensureBookingCoreWorkspace() {
   if (!selectedArtistId.value) return
   cueCoreLoading.value = true
   try {
+    if (agencyWorkspaceId.value) {
+      bookingCoreWorkspaceId.value = agencyWorkspaceId.value
+      await Promise.all([loadRealBookings(), loadPassportBookings(), loadRealHolds(), loadPassportMedia()])
+      return
+    }
     const workspaces = await bookingCore.listWorkspaces()
     let resolvedWorkspaceId = ''
 
@@ -1285,7 +1368,7 @@ async function ensureBookingCoreWorkspace() {
 
 async function refreshBookingCoreFromExternal() {
   if (!import.meta.client || document.visibilityState !== 'visible') return
-  if (!bookingCoreWorkspaceId.value || !selectedArtistId.value || cueCoreLoading.value) return
+  if (!bookingCoreWorkspaceId.value || (!selectedArtistId.value && !isAgency.value) || cueCoreLoading.value) return
   try {
     await loadRealBookings()
     await loadPassportBookings()
@@ -1304,8 +1387,9 @@ const liveBookingProcessCount = computed(() => realBookings.value.filter(booking
 const liveBookingCapacity = computed(() => cueCapacity('activeBookings', liveBookingProcessCount.value))
 
 function openCueCapture() {
-  if (!bookingCoreWorkspaceId.value) return
-  if (liveBookingCapacity.value.reached) {
+  if (!bookingCoreWorkspaceId.value || (isAgency.value && !canOperateAgency.value)) return
+  rememberAgencyContext()
+  if (!isAgency.value && liveBookingCapacity.value.reached) {
     cueCapacityBlocked.value = true
     return
   }
@@ -1316,6 +1400,7 @@ function openCueCapture() {
 async function handleCueCreated(booking: CoreBooking) {
   cueOpen.value = false
   cueCapacityBlocked.value = false
+  if (isAgency.value && selectedArtistId.value !== booking.artist_id) await chooseArtist(booking.artist_id, 'bookings')
   cueMessage.value = cueEntryCopy.value.saved
   analytics.track('booking_capture_created', {
     source: booking.source || 'manual',
@@ -1361,14 +1446,14 @@ async function loadExactBookingIntoInbox(workspaceId: string, bookingId: string)
   if (!booking) throw new Error('booking_not_found')
 
   if (selectedArtistId.value !== booking.artist_id) {
-    selectedArtistId.value = booking.artist_id
+    selectedArtistId.value = booking.artist_id || ''
     await nextTick()
   }
 
   bookingCoreWorkspaceId.value = workspaceId
   await syncWorkspaceBillingPlan(workspaceId)
 
-  const rows = await bookingCore.listBookings(workspaceId, 100, booking.artist_id)
+  const rows = await bookingCore.listBookings(workspaceId, 100, booking.artist_id || undefined)
   realBookings.value = mergeBookingIntoInbox(rows, booking)
   await loadPassportBookings()
   await loadRealHolds()
@@ -1386,7 +1471,8 @@ function openRealBooking(bookingId: string) {
       query: {
         ...route.query,
         view: 'bookings',
-        artist: selectedArtistId.value || route.query.artist,
+        artist: selectedArtistId.value || undefined,
+        scope: isAgency.value && !selectedArtistId.value ? 'all' : route.query.scope,
         booking: bookingId
       }
     }).catch(() => {
@@ -1397,6 +1483,11 @@ function openRealBooking(bookingId: string) {
 
 async function openBookingCalendar(date: string) {
   if (!date) return
+  if (isAgency.value) {
+    await router.replace({ query: { ...route.query, rosterMonth: `${date.slice(0,7)}-01`, rosterDay: date } })
+    await changeView('calendar')
+    return
+  }
   selectedDate.value = date
   monthCursor.value = `${date.slice(0, 7)}-01`
   await changeView('calendar')
@@ -1424,23 +1515,64 @@ function withWorkspaceTimeout<T>(promise: Promise<T>, timeoutMs: number, label: 
 
 async function loadWorkspaceIdentity() {
   try {
-    // Artist identity is the only hard dependency for releasing the Workspace shell.
-    // Organizations and product modules hydrate independently afterwards.
-    const artistRows = await withWorkspaceTimeout(availability.listArtists(), 6000, 'artists')
-    artists.value = artistRows
+    const [artistRows, organizationRows] = await withWorkspaceTimeout(Promise.all([
+      availability.listArtists(),
+      availability.listOrganizations().catch(error => {
+        console.warn('[workspace] organizations unavailable', error?.message || error)
+        errorMessage.value = preferences.locale.value === 'es' ? 'No se pudo cargar la agencia. Recarga para volver a intentarlo.' : 'Could not load agency. Reload to retry.'
+        return [] as ManagedOrganization[]
+      })
+    ]), 6000, 'identity')
+    // Invitation routes select the exact joined workspace identity, even when
+    // this account already belongs to another agency. Membership remains RLS-bound.
+    if (typeof route.query.agency === 'string') {
+      const links = await bookingCore.listAgencyWorkspaceIdentities()
+      const requested = links.find(item => item.workspace_id === route.query.agency)
+      if (requested) organizationRows.sort((a,b) => Number(b.id === requested.organization_id) - Number(a.id === requested.organization_id))
+    }
+    organizations.value = organizationRows
+
+    if (agency.value) {
+      // An agency has a workspace even before its first artist. The legacy
+      // organization is its identity, not a parallel Booking Core tenant.
+      bookingCoreBootstrapLoading.value = true
+      try {
+        const workspaceId = await withWorkspaceTimeout(
+          bookingCore.ensureBookingWorkspace({ organizationId: agency.value.id }), 6000, 'agency_workspace'
+        )
+        agencyWorkspaceId.value = workspaceId
+        bookingCoreWorkspaceId.value = workspaceId
+        const [links, workspaces] = await Promise.all([
+          bookingCore.listWorkspaceArtists(workspaceId), bookingCore.listWorkspaces()
+        ])
+        const workspaceRole = workspaces.find(item => item.id === workspaceId)?.role || 'viewer'
+        agencyWorkspaceRole.value = workspaceRole
+        const roster = await availability.listRosterArtists(links.map(item => item.artist_id))
+        artists.value = roster.map(artist => ({
+          ...artist,
+          role: artistRows.find(item => item.id === artist.id)?.role || (['owner', 'admin', 'manager'].includes(workspaceRole) ? 'manager' : 'editor'),
+          roster_active: links.find(item => item.artist_id === artist.id)?.roster_active !== false
+        }))
+        await syncWorkspaceBillingPlan(workspaceId)
+      } finally {
+        bookingCoreBootstrapLoading.value = false
+      }
+    } else {
+      artists.value = artistRows
+    }
 
     const requestedArtistId = typeof route.query.artist === 'string' ? route.query.artist : ''
-    if (requestedArtistId && artists.value.some(item => item.id === requestedArtistId)) {
+    if (requestedArtistId && activeView.value !== 'roster' && (agency.value ? resolveAgencyArtist(requestedArtistId, artists.value) : artists.value.some(item => item.id === requestedArtistId))) {
       selectedArtistId.value = requestedArtistId
+    } else if (agency.value) {
+      selectedArtistId.value = ''
     } else if (!selectedArtistId.value || !artists.value.some(item => item.id === selectedArtistId.value)) {
       selectedArtistId.value = artists.value[0]?.id || ''
     }
 
     if (!selectedArtistId.value) {
-      // Organizations are only needed to decide whether the empty state can create a roster artist.
-      void availability.listOrganizations()
-        .then(rows => { organizations.value = rows })
-        .catch(error => console.warn('[workspace] organizations unavailable', error?.message || error))
+      const requestedBookingId = typeof route.query.booking === 'string' ? route.query.booking : ''
+      if (requestedBookingId && agencyWorkspaceId.value) void openAgencyBooking(requestedBookingId)
       return
     }
 
@@ -1448,15 +1580,9 @@ async function loadWorkspaceIdentity() {
     void loadBlocks()
     void loadArtistProfile()
 
-    // Booking Core depends on organization ownership, but must never hold the whole Workspace hostage.
+    // The artist-facing modules hydrate without blocking the workspace shell.
     bookingCoreBootstrapLoading.value = true
-    void availability.listOrganizations()
-      .then(rows => { organizations.value = rows })
-      .catch(error => {
-        organizations.value = []
-        console.warn('[workspace] organizations unavailable', error?.message || error)
-      })
-      .then(() => ensureBookingCoreWorkspace())
+    void ensureBookingCoreWorkspace()
       .catch(error => console.warn('[workspace] booking core bootstrap failed', error?.message || error))
       .finally(() => { bookingCoreBootstrapLoading.value = false })
 
@@ -1519,14 +1645,22 @@ function replaceProfileArtistCutoutUrl(nextUrl: string) {
   profileArtistCutoutUrl.value = nextUrl
 }
 
-async function loadProfileVisualMedia(artistImagePath: string | null, artistCutoutPath: string | null) {
+async function loadProfileVisualMedia(artistImagePath: string | null, artistCutoutPath: string | null, artistId = selectedArtistId.value) {
   replaceProfileArtistImageUrl('')
   replaceProfileArtistCutoutUrl('')
   if (artistImagePath) {
-    try { replaceProfileArtistImageUrl(await artistProfiles.getArtistImageObjectUrl(artistImagePath)) } catch { /* optional preview media */ }
+    try {
+      const url = await artistProfiles.getArtistImageObjectUrl(artistImagePath)
+      if (selectedArtistId.value === artistId) replaceProfileArtistImageUrl(url)
+      else URL.revokeObjectURL(url)
+    } catch { /* optional preview media */ }
   }
   if (artistCutoutPath) {
-    try { replaceProfileArtistCutoutUrl(await artistProfiles.getArtistCutoutObjectUrl(artistCutoutPath)) } catch { /* optional preview media */ }
+    try {
+      const url = await artistProfiles.getArtistCutoutObjectUrl(artistCutoutPath)
+      if (selectedArtistId.value === artistId) replaceProfileArtistCutoutUrl(url)
+      else URL.revokeObjectURL(url)
+    } catch { /* optional preview media */ }
   }
 }
 
@@ -1543,8 +1677,10 @@ async function loadPublicPublishingState() {
   publicProfileWorkspaceId.value = ''
   publicPublishingMessage.value = ''
   if (!selectedArtistId.value) return
+  const artistId = selectedArtistId.value
   try {
-    const state = await publicPublishing.load(selectedArtistId.value)
+    const state = await publicPublishing.load(artistId)
+    if (selectedArtistId.value !== artistId) return
     publicProfilePublished.value = state.publicProfileEnabled
     publicPassportEnabled.value = state.passportPublicEnabled
     publicPassportMilestoneIds.value = state.passportPublicMilestoneIds
@@ -1567,11 +1703,13 @@ function replaceProfileCoverUrl(nextUrl: string) {
   profileCoverUrl.value = nextUrl
 }
 
-async function loadProfileCover(path: string) {
+async function loadProfileCover(path: string, artistId = selectedArtistId.value) {
   replaceProfileCoverUrl('')
   if (!path) return
   try {
-    replaceProfileCoverUrl(await artistProfiles.getCoverObjectUrl(path))
+    const url = await artistProfiles.getCoverObjectUrl(path)
+    if (selectedArtistId.value === artistId) replaceProfileCoverUrl(url)
+    else URL.revokeObjectURL(url)
   } catch {
     profileCoverMessage.value = copy.value.coverError
   }
@@ -1696,10 +1834,13 @@ async function useProfileCueIdPresentation() {
 
 async function loadArtistProfile() {
   if (!selectedArtistId.value) return
+  const artistId = selectedArtistId.value
+  artistProfiles.activeArtistId.value = artistId
   profileLoading.value = true
   profileMessage.value = ''
   try {
-    const record = await artistProfiles.getProfile(selectedArtistId.value)
+    const record = await artistProfiles.getProfile(artistId)
+    if (selectedArtistId.value !== artistId) return
     const booking = record.booking
     profileForm.value = {
       stageName: record.artist.stage_name,
@@ -1733,14 +1874,15 @@ async function loadArtistProfile() {
       hospitalityRiderUrl: booking?.hospitality_rider_url || ''
     }
     await Promise.all([
-      loadProfileCover(profileForm.value.coverImagePath),
-      loadProfileVisualMedia(record.artist.artist_image_path, record.artist.artist_cutout_path),
+      loadProfileCover(profileForm.value.coverImagePath, artistId),
+      loadProfileVisualMedia(record.artist.artist_image_path, record.artist.artist_cutout_path, artistId),
       loadPublicPublishingState()
     ])
   } catch (error: any) {
+    if (selectedArtistId.value !== artistId) return
     errorMessage.value = error?.data?.message || error?.message || copy.value.profileSaveError
   } finally {
-    profileLoading.value = false
+    if (selectedArtistId.value === artistId) profileLoading.value = false
   }
 }
 
@@ -1759,6 +1901,16 @@ async function updatePublicProfilePublished(enabled: boolean) {
   publicPublishingSaving.value = true
   publicPublishingMessage.value = ''
   try {
+    if (isAgency.value && publicProfileWorkspaceId.value && publicProfileWorkspaceId.value !== agencyWorkspaceId.value) {
+      throw new Error(preferences.locale.value === 'es'
+        ? 'La ruta de booking de este artista pertenece a otro workspace. Hay que acordar su transferencia antes de gestionar el perfil desde la agencia.'
+        : 'This artist booking route belongs to another workspace. Agree on a transfer before managing the profile from this agency.')
+    }
+    if (isAgency.value && !publicProfileWorkspaceId.value) {
+      if (!agencyWorkspaceId.value) throw new Error('booking_workspace_required')
+      publicProfileAcceptingRequests.value = await publicPublishing.setAcceptingRequests(selectedArtistId.value, agencyWorkspaceId.value, false)
+      publicProfileWorkspaceId.value = agencyWorkspaceId.value
+    }
     if (!enabled && publicProfileAcceptingRequests.value) {
       const workspaceId = publicProfileWorkspaceId.value || bookingCoreWorkspaceId.value
       if (workspaceId) {
@@ -1775,7 +1927,9 @@ async function updatePublicProfilePublished(enabled: boolean) {
       ? (enabled ? 'Perfil público activado.' : 'Perfil público desactivado.')
       : (enabled ? 'Public profile enabled.' : 'Public profile disabled.')
   } catch (error: any) {
-    publicPublishingMessage.value = error?.message || (preferences.locale.value === 'es'
+    publicPublishingMessage.value = error?.message === 'booking_route_other_workspace'
+      ? (preferences.locale.value === 'es' ? 'Este artista ya recibe bookings en otro workspace. La representación requiere una transferencia explícita.' : 'This artist already receives bookings in another workspace. Representation requires an explicit transfer.')
+      : error?.message || (preferences.locale.value === 'es'
       ? 'No se pudo actualizar el perfil público.'
       : 'The public profile could not be updated.')
     await loadPublicPublishingState()
@@ -1818,7 +1972,12 @@ async function updatePublicAcceptingRequests(enabled: boolean) {
   publicPublishingSaving.value = true
   publicPublishingMessage.value = ''
   try {
-    let workspaceId = publicProfileWorkspaceId.value || bookingCoreWorkspaceId.value
+    if (isAgency.value && publicProfileWorkspaceId.value && publicProfileWorkspaceId.value !== agencyWorkspaceId.value) {
+      throw new Error(preferences.locale.value === 'es'
+        ? 'Este artista recibe solicitudes en otro workspace. El cambio de representación requiere una transferencia explícita.'
+        : 'This artist receives enquiries in another workspace. Representation requires an explicit transfer.')
+    }
+    let workspaceId = isAgency.value ? agencyWorkspaceId.value : publicProfileWorkspaceId.value || bookingCoreWorkspaceId.value
     if (!workspaceId) {
       await ensureBookingCoreWorkspace()
       workspaceId = bookingCoreWorkspaceId.value
@@ -1830,7 +1989,9 @@ async function updatePublicAcceptingRequests(enabled: boolean) {
       ? (enabled ? 'Solicitudes de booking abiertas.' : 'Solicitudes de booking cerradas.')
       : (enabled ? 'Booking enquiries opened.' : 'Booking enquiries closed.')
   } catch (error: any) {
-    publicPublishingMessage.value = error?.message || (preferences.locale.value === 'es'
+    publicPublishingMessage.value = error?.message === 'booking_route_other_workspace'
+      ? (preferences.locale.value === 'es' ? 'Este artista ya recibe bookings en otro workspace. La representación requiere una transferencia explícita.' : 'This artist already receives bookings in another workspace. Representation requires an explicit transfer.')
+      : error?.message || (preferences.locale.value === 'es'
       ? 'No se pudo actualizar la recepción de bookings.'
       : 'Booking enquiry availability could not be updated.')
     await loadPublicPublishingState()
@@ -1910,20 +2071,36 @@ async function dismissProfileWelcome() {
   await router.replace({ query: { ...route.query, setup: undefined } })
 }
 
-async function addFirstRosterArtist() {
-  if (!manageableAgency.value) return
+async function addRosterArtist(name: string, slug: string, city = '') {
+  if (!manageableAgency.value || !agencyWorkspaceId.value) return false
   errorMessage.value = ''
-  rosterSubmitting.value = true
   try {
-    const artistId = await availability.addAgencyArtist({ organizationId: manageableAgency.value.id, artistName: rosterArtistName.value, artistSlug: rosterArtistSlug.value })
-    rosterArtistName.value = ''
-    rosterArtistSlug.value = ''
+    const firstArtist = !artists.value.some(item => item.roster_active !== false)
+    const artistId = await availability.addAgencyArtist({ organizationId: manageableAgency.value.id, artistName: name, artistSlug: slug })
+    if (city) {
+      try { await availability.updateRosterArtist(artistId, { city }) }
+      catch { errorMessage.value = preferences.locale.value === 'es' ? 'Artista añadido; no se pudo guardar la ciudad. Puedes editarla desde Perfil.' : 'Artist added; city could not be saved. Edit it from Profile.' }
+    }
     await loadWorkspaceIdentity()
-    selectedArtistId.value = artistId
+    rosterRevision.value++
+    if (firstArtist) await chooseArtist('', 'overview')
+    return true
   } catch (error: any) {
     errorMessage.value = error?.data?.message || error?.message || (preferences.locale.value === 'es' ? 'No se pudo añadir el artista.' : 'The artist could not be added.')
-  } finally {
-    rosterSubmitting.value = false
+    return false
+  }
+}
+
+async function setArtistRosterActive(artistId: string, active: boolean) {
+  if (!manageableAgency.value || !agencyWorkspaceId.value) return
+  try {
+    await bookingCore.setRosterActive(agencyWorkspaceId.value, artistId, active)
+    if (!active && selectedArtistId.value === artistId) await chooseArtist('')
+    const artist = artists.value.find(item => item.id === artistId)
+    if (artist) artist.roster_active = active
+    rosterRevision.value++
+  } catch (error: any) {
+    errorMessage.value = error?.message || (preferences.locale.value === 'es' ? 'No se pudo actualizar el roster.' : 'Could not update the roster.')
   }
 }
 
@@ -1964,6 +2141,7 @@ async function focusCalendarEditor() {
 }
 
 function openCreate(start = '18:00') {
+  if (isAgency.value && !canEditSelectedArtist.value) return
   calendarEditorTrigger.value = import.meta.client && document.activeElement instanceof HTMLElement ? document.activeElement : null
   const startMinutes = Number(start.slice(0, 2)) * 60 + Number(start.slice(3, 5))
   const endMinutes = Math.min(startMinutes + 120, 23 * 60 + 59)
@@ -1977,6 +2155,7 @@ function openCreate(start = '18:00') {
 }
 
 function startEdit(block: AvailabilityBlock) {
+  if (isAgency.value && !canEditSelectedArtist.value) return
   calendarEditorTrigger.value = import.meta.client && document.activeElement instanceof HTMLElement ? document.activeElement : null
   selectedDate.value = block.starts_at.slice(0, 10)
   startTime.value = block.starts_at.slice(11, 16)
@@ -2167,7 +2346,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 </script>
 
 <template>
-  <main class="workspace" :class="{ 'workspace--sidebar-collapsed': sidebarCollapsed }">
+  <main class="workspace" :class="{ 'workspace--sidebar-collapsed': sidebarCollapsed, 'workspace--agency': isAgency }">
     <header id="workspace-header" class="workspace-header">
       <div class="workspace-brand-row">
         <NuxtLink class="brand" to="/" aria-label="Cuebooker">
@@ -2183,9 +2362,10 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <button :title="copy.bookings" data-workspace-view="bookings" :aria-current="workspaceBootResolved && activeView === 'bookings' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
         <button :title="copy.calendar" data-workspace-view="calendar" :aria-current="workspaceBootResolved && activeView === 'calendar' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
         <button :title="copy.history" data-workspace-view="history" :aria-current="workspaceBootResolved && activeView === 'history' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('history')">{{ copy.history }}</button>
-        <button :title="copy.profile" data-workspace-view="profile" :aria-current="workspaceBootResolved && activeView === 'profile' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
-        <button :title="copy.passport" data-workspace-view="passport" :aria-current="workspaceBootResolved && activeView === 'passport' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('passport')">{{ copy.passport }}</button>
-        <button :title="copy.cueId" data-workspace-view="cue-id" :aria-current="workspaceBootResolved && activeView === 'cue-id' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('cue-id')">{{ copy.cueId }}</button>
+        <button v-if="isAgency" title="Artistas" data-workspace-view="roster" :aria-current="workspaceBootResolved && ['roster', 'profile', 'passport', 'cue-id'].includes(activeView) && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('roster')">{{ preferences.locale.value === 'es' ? 'Artistas' : 'Artists' }}</button>
+        <button v-if="!isAgency" :title="copy.profile" data-workspace-view="profile" :aria-current="workspaceBootResolved && activeView === 'profile' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
+        <button v-if="!isAgency" :title="copy.passport" data-workspace-view="passport" :aria-current="workspaceBootResolved && activeView === 'passport' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('passport')">{{ copy.passport }}</button>
+        <button v-if="!isAgency" :title="copy.cueId" data-workspace-view="cue-id" :aria-current="workspaceBootResolved && activeView === 'cue-id' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('cue-id')">{{ copy.cueId }}</button>
         <button :title="copy.settings" data-workspace-view="settings" :aria-current="workspaceBootResolved && settingsOpen ? 'page' : undefined" type="button" @click="openSettings">{{ copy.settings }}</button>
       </nav>
       <div class="account-actions">
@@ -2197,27 +2377,40 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
+        <nav v-if="isAgency && selectedArtistId && ['profile','passport','cue-id'].includes(activeView) && !workspaceSurfaceLoading" class="agency-artist-tabs" :aria-label="preferences.locale.value === 'es' ? 'Ficha del artista' : 'Artist record'">
+      <button type="button" @click="changeView('roster')">← {{ preferences.locale.value === 'es' ? 'Artistas' : 'Artists' }}</button>
+      <strong>{{ selectedArtist?.stage_name }}</strong>
+      <button v-for="tab in (['profile','passport','cue-id'] as const)" :key="tab" type="button" :aria-current="activeView === tab ? 'page' : undefined" @click="changeView(tab)">{{ tab === 'profile' ? (preferences.locale.value === 'es' ? 'Ficha y perfil público' : 'Record & public profile') : tab === 'passport' ? (preferences.locale.value === 'es' ? 'Trayectoria' : 'Career') : 'CUE ID' }}</button>
+    </nav>
+
     <section v-if="workspaceSurfaceLoading" class="workspace-loading-state" aria-busy="true" aria-live="polite">
       <CueBrand class="workspace-loading-state__logo" decorative />
       <div class="workspace-loading-state__pulse" aria-hidden="true"><i /><i /><i /></div>
       <span class="sr-only">{{ copy.loading }}</span>
     </section>
 
+    <AgencyWorkspace
+      v-else-if="isAgency && ['overview', 'bookings', 'calendar', 'history', 'roster'].includes(activeView) && !(activeView === 'bookings' && route.query.booking)"
+      class="view" :workspace-id="agencyWorkspaceId" :agency-name="agency?.name || ''"
+      :artists="artists" :selected-artist-id="selectedArtistId" :context-artist-name="selectedArtist?.stage_name" :view="activeView as 'overview' | 'bookings' | 'calendar' | 'history' | 'roster'"
+      :locale="preferences.locale.value" :can-manage-roster="Boolean(manageableAgency)" :revision="rosterRevision"
+      :create-artist="addRosterArtist" :can-capture="canOperateAgency"
+      @capture="openCueCapture" @filter-artist="chooseArtist($event)"
+      @select-artist="(id, view) => chooseArtist(id, view)" @open-booking="openAgencyBooking"
+      @retire-artist="id => setArtistRosterActive(id, false)"
+      @restore-artist="id => setArtistRosterActive(id, true)" @navigate="changeView"
+    />
+
+    <section v-else-if="isAgency && activeView === 'bookings' && route.query.booking" class="view agency-booking-detail">
+      <button type="button" class="secondary-button" @click="closeAgencyBooking">← {{ preferences.locale.value === 'es' ? 'Volver a la lista de bookings' : 'Back to booking list' }}</button>
+      <BookingCoreInbox :mailbox-artists="artists" :workspace-id="agencyWorkspaceId" :bookings="realBookings" :locale="preferences.locale.value" :focus-booking-id="realBookingFocusId" :can-operate="canOperateAgency" @booking-opened="openRealBooking" @operations-changed="handleBookingCoreOperationsChanged" @cue-requested="openCueCapture" @calendar-requested="openBookingCalendar" />
+    </section>
+    <section v-else-if="isAgencyGlobal" class="empty-card"><h1>{{ preferences.locale.value === 'es' ? 'Selecciona un artista para gestionar su perfil.' : 'Select an artist to manage their profile.' }}</h1><button class="primary-button" type="button" @click="changeView('roster')">{{ preferences.locale.value === 'es' ? 'Ir al roster' : 'Go to roster' }}</button></section>
+
     <section v-else-if="!artists.length" class="empty-card">
       <p class="eyebrow">{{ copy.rosterEyebrow }}</p>
-      <template v-if="manageableAgency">
-        <h1>{{ copy.addFirstArtist }} {{ manageableAgency.name }}.</h1>
-        <p>{{ copy.rosterBody }}</p>
-        <form class="roster-form" @submit.prevent="addFirstRosterArtist">
-          <label><span>{{ copy.artistName }}</span><input v-model="rosterArtistName" minlength="1" required></label>
-          <label><span>{{ copy.identifier }}</span><input v-model="rosterArtistSlug" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required></label>
-          <button class="primary-button" type="submit" :disabled="rosterSubmitting">{{ rosterSubmitting ? copy.creating : copy.addArtist }}</button>
-        </form>
-      </template>
-      <template v-else>
-        <h1>{{ copy.noArtist }}</h1>
-        <p>{{ copy.noArtistBody }}</p>
-      </template>
+      <h1>{{ copy.noArtist }}</h1>
+      <p>{{ copy.noArtistBody }}</p>
     </section>
 
     <template v-else>
@@ -2228,8 +2421,8 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             <h1>{{ copy.overviewTitle }}</h1>
             <p>{{ copy.overviewBody }}</p>
           </div>
-          <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
-          <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
+          <label v-if="hasArtistSelector && !isAgency" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
+          <div v-else-if="!isAgency" class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
 
         <section v-if="firstRunActivation" class="activation-panel">
@@ -2272,6 +2465,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             :bookings="realBookings.filter(item => !item.archived_at)"
             :locale="preferences.locale.value"
             :refresh-key="bookingCoreOperationsRevision"
+            :can-operate="!isAgency || canOperateAgency"
             @changed="handleBookingCoreOperationsChanged"
             @open-bookings="activeView = 'bookings'"
             @open-booking="openRealBooking"
@@ -2311,8 +2505,8 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       <section v-else-if="activeView === 'bookings'" class="view bookings-view">
         <div class="view-heading">
           <div><p class="eyebrow">{{ copy.bookingsEyebrow }}</p><h1>{{ copy.bookingsTitle }}</h1><p>{{ copy.bookingsBody }}</p></div>
-          <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
-          <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
+          <label v-if="hasArtistSelector && !isAgency" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
+          <div v-else-if="!isAgency" class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
 
         <section v-if="bookingCoreWorkspaceId" id="workspace-cue" class="cue-entry-bar">
@@ -2337,11 +2531,13 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <p v-if="cueMessage" class="cue-entry-message">{{ cueMessage }}</p>
 
         <BookingCoreInbox
+          :mailbox-artists="artists"
           v-if="bookingCoreWorkspaceId"
           :workspace-id="bookingCoreWorkspaceId"
           :bookings="realBookings"
           :locale="preferences.locale.value"
           :focus-booking-id="realBookingFocusId"
+          :can-operate="!isAgency || canOperateAgency"
           @operations-changed="handleBookingCoreOperationsChanged"
           @cue-requested="openCueCapture"
           @booking-opened="markBookingNotificationsRead"
@@ -2353,8 +2549,8 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       <section v-else-if="activeView === 'calendar'" class="view calendar-view">
         <div class="view-heading calendar-heading">
           <div><p class="eyebrow">{{ copy.calendarEyebrow }}</p><h1>{{ copy.calendarTitle }}</h1><p>{{ copy.calendarBody }}</p></div>
-          <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
-          <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
+          <label v-if="hasArtistSelector && !isAgency" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
+          <div v-else-if="!isAgency" class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
 
         <div id="workspace-calendar" class="calendar-layout" :class="{ 'tour-focus': tourStep === 7 }">
@@ -2380,7 +2576,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           </section>
 
           <section id="workspace-day-panel" class="day-panel panel">
-            <div class="day-heading"><div><p class="eyebrow">{{ copy.dayHours }}</p><h2>{{ selectedDateLabel }}</h2></div><button class="add-button" type="button" @click="openCreate()">{{ copy.add }}</button></div>
+            <div class="day-heading"><div><p class="eyebrow">{{ copy.dayHours }}</p><h2>{{ selectedDateLabel }}</h2></div><button v-if="!isAgency || canEditSelectedArtist" class="add-button" type="button" @click="openCreate()">{{ copy.add }}</button></div>
               <div v-if="selectedDayDateOnlyCoreHolds.length || selectedDayDateOnlyConfirmedBookings.length" class="core-calendar-holds">
                 <button
                   v-for="booking in selectedDayDateOnlyConfirmedBookings"
@@ -2426,8 +2622,8 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       <section v-else-if="activeView === 'history'" class="view history-view">
         <div class="view-heading">
           <div><p class="eyebrow">{{ copy.historyEyebrow }}</p><h1>{{ copy.historyTitle }}</h1><p>{{ copy.historyBody }}</p></div>
-          <label v-if="hasArtistSelector" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
-          <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
+          <label v-if="hasArtistSelector && !isAgency" class="artist-select"><span>{{ copy.artist }}</span><select v-model="selectedArtistId"><option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
+          <div v-else-if="!isAgency" class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
         <BookingCoreHistory
           v-if="bookingCoreWorkspaceId"
@@ -2436,6 +2632,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           :bookings="realBookings"
           :locale="preferences.locale.value"
           :refresh-key="bookingCoreOperationsRevision"
+            :can-operate="!isAgency || canOperateAgency"
           @open-booking="openRealBooking"
         />
       </section>
@@ -2447,13 +2644,13 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             <h1>{{ copy.cueIdTitle }}</h1>
             <p>{{ copy.cueIdBody }}</p>
           </div>
-          <label v-if="hasArtistSelector" class="artist-select">
+          <label v-if="hasArtistSelector && !isAgency" class="artist-select">
             <span>{{ copy.artist }}</span>
             <select v-model="selectedArtistId">
               <option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option>
             </select>
           </label>
-          <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
+          <div v-else-if="!isAgency" class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
 
         <section class="cue-id-hub">
@@ -2519,13 +2716,13 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
               {{ preferences.locale.value === 'es' ? 'Ajustes públicos' : 'Public settings' }}
             </button>
           </div>
-          <label v-if="hasArtistSelector" class="artist-select">
+          <label v-if="hasArtistSelector && !isAgency" class="artist-select">
             <span>{{ copy.artist }}</span>
             <select v-model="selectedArtistId">
               <option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option>
             </select>
           </label>
-          <div v-else class="artist-identity">
+          <div v-else-if="!isAgency" class="artist-identity">
             <span>{{ copy.artist }}</span>
             <small>{{ copy.role }}</small>
             <strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong>
@@ -2666,13 +2863,13 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             <h1>{{ copy.profileTitle }}</h1>
             <p>{{ copy.profileBody }}</p>
           </div>
-          <label v-if="hasArtistSelector" class="artist-select">
+          <label v-if="hasArtistSelector && !isAgency" class="artist-select">
             <span>{{ copy.artist }}</span>
             <select v-model="selectedArtistId">
               <option v-for="artist in artists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option>
             </select>
           </label>
-          <div v-else class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
+          <div v-else-if="!isAgency" class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
 
         <aside v-if="profileWelcome" class="profile-welcome">
@@ -2823,15 +3020,18 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                     : 'This photo appears as the small portrait on your portfolio. No positioning or scaling is needed.' }}</p>
                 </div>
 
-                <label class="profile-portrait-editor__upload">
+                <label class="profile-portrait-editor__upload" :class="{ 'is-uploading': profilePortraitUploading }">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 14v5h14v-5" /></svg>
                   <strong>{{ profilePortraitUploading
-                    ? (preferences.locale.value === 'es' ? 'Subiendo…' : 'Uploading…')
+                    ? (preferences.locale.value === 'es' ? 'Subiendo foto…' : 'Uploading photo…')
                     : (profileArtistImageUrl
                       ? (preferences.locale.value === 'es' ? 'Cambiar foto' : 'Change photo')
                       : (preferences.locale.value === 'es' ? 'Añadir foto' : 'Add photo')) }}</strong>
+                  <small>{{ preferences.locale.value === 'es' ? 'JPG, PNG o WebP · máximo 8 MB' : 'JPG, PNG or WebP · up to 8 MB' }}</small>
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
+                    :aria-label="preferences.locale.value === 'es' ? 'Elegir foto del artista' : 'Choose artist photo'"
                     :disabled="profilePortraitUploading"
                     @change="($event) => { const file = ($event.currentTarget as HTMLInputElement).files?.[0]; if (file) selectProfilePortrait(file) }"
                   >
@@ -3031,8 +3231,14 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
     <div v-if="settingsOpen" class="editor-backdrop" @click.self="closeSettings">
       <aside class="editor-panel settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title" tabindex="-1">
         <div class="editor-heading"><div><p class="eyebrow">{{ copy.accountPrivate }}</p><h2 id="settings-title">{{ copy.settingsTitle }}</h2></div><button type="button" :aria-label="copy.close" @click="closeSettings">×</button></div>
-        <section class="settings-group"><span>{{ copy.language }}</span><div class="settings-options"><button :class="{ active: preferences.locale.value === 'es' }" type="button" @click="preferences.setLocale('es')">ES</button><button :class="{ active: preferences.locale.value === 'en' }" type="button" @click="preferences.setLocale('en')">EN</button></div></section>
-        <section class="settings-group"><span>{{ copy.appearance }}</span><div class="settings-options"><button :class="{ active: preferences.theme.value === 'dark' }" type="button" @click="preferences.setTheme('dark')">{{ copy.dark }}</button><button :class="{ active: preferences.theme.value === 'light' }" type="button" @click="preferences.setTheme('light')">{{ copy.light }}</button></div></section>
+        <AgencyCatalogEditor v-if="isAgency && agencyWorkspaceId" :workspace-id="agencyWorkspaceId" :role="agencyWorkspaceRole" :locale="preferences.locale.value" @edit-artist="id => { closeSettings(); chooseArtist(id, 'profile') }" />
+        <AgencyTeamPanel v-if="isAgency && agencyWorkspaceId" :workspace-id="agencyWorkspaceId" :role="agencyWorkspaceRole" :user-id="auth.session.value?.user.id || ''" :locale="preferences.locale.value" />
+        <ConnectedMailboxPanel v-if="auth.session.value && bookingCoreWorkspaceId && (!isAgency || canOperateAgency)" :workspace-id="bookingCoreWorkspaceId" :locale="preferences.locale.value" />
+        <section class="settings-preferences" aria-label="Preferencias">
+          <p class="eyebrow">{{ preferences.locale.value === 'es' ? 'PREFERENCIAS' : 'PREFERENCES' }}</p>
+          <section class="settings-group"><span>{{ copy.language }}</span><div class="settings-options"><button :class="{ active: preferences.locale.value === 'es' }" type="button" @click="preferences.setLocale('es')">ES</button><button :class="{ active: preferences.locale.value === 'en' }" type="button" @click="preferences.setLocale('en')">EN</button></div></section>
+          <section class="settings-group"><span>{{ copy.appearance }}</span><div class="settings-options"><button :class="{ active: preferences.theme.value === 'dark' }" type="button" @click="preferences.setTheme('dark')">{{ copy.dark }}</button><button :class="{ active: preferences.theme.value === 'light' }" type="button" @click="preferences.setTheme('light')">{{ copy.light }}</button></div></section>
+        </section>
         <section v-if="demoOverrideEnabled" class="settings-group settings-group--demo">
           <span>DEMO PLAN / {{ currentPlan.toUpperCase().replace('_', ' ') }}</span>
           <div class="settings-options settings-options--three">
@@ -3080,6 +3286,8 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       :open="cueOpen"
       :workspace-id="bookingCoreWorkspaceId"
       :artist-id="selectedArtistId"
+      :artists="isAgency ? artists.filter(item => item.roster_active !== false) : undefined"
+      :beta-agency="isAgency"
       :locale="preferences.locale.value"
       @close="cueOpen = false"
       @created="handleCueCreated"
@@ -3094,6 +3302,12 @@ button, select, input, textarea { font: inherit; }
 button, a, select { -webkit-tap-highlight-color: transparent; }
 .workspace { min-height: 100vh; padding: 0 28px 64px; background: var(--cue-bg); color: var(--cue-text); font-family: Arial, Helvetica, sans-serif; }
 .workspace-header { position: sticky; z-index: 20; top: 0; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 64px; margin-inline: -28px; padding-inline: 28px; border-bottom: 1px solid var(--cue-border); background: color-mix(in srgb, var(--cue-bg) 94%, transparent); backdrop-filter: blur(12px); }
+.workspace-brand-row{display:flex;align-items:center;gap:8px;min-width:0}
+.workspace-brand-row .brand{display:flex;align-items:center;min-width:0}
+.workspace-brand-row .workspace-brand-wordmark{width:120px;height:40px}
+.workspace-brand-row .workspace-brand-icon{display:none}
+.sidebar-collapse-button{display:grid;place-items:center;width:32px;height:32px;border:1px solid var(--cue-border);background:transparent;color:var(--cue-muted);cursor:pointer}
+.sidebar-collapse-button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7}
 .brand { color: inherit; text-decoration: none; font-weight: 900; letter-spacing: .08em; }
 .brand span { color: var(--cue-toggle); }
 .eyebrow { color: var(--cue-accent); }
@@ -3426,14 +3640,28 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .profile-preview-block nav { display: flex; flex-wrap: wrap; gap: 8px; }
 .profile-preview-block a { padding: 9px 11px; border: 1px solid #343434; color: #f4f2ed; font-size: 11px; font-weight: 800; text-decoration: none; }
 .settings-panel { display: block; }
-.settings-group { display: grid; gap: 10px; padding: 18px 0; border-top: 1px solid var(--cue-border); }
+.settings-preferences { display:grid; gap:4px; margin-top:20px; padding:16px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-panel); background:var(--cue-bg); }
+.settings-preferences > .eyebrow { margin:0 0 2px; }
+.settings-preferences .settings-group { padding:12px 0 0; border-top:1px solid var(--cue-border); }
+.settings-preferences .settings-group + .settings-group { margin-top:2px; }
+.settings-panel > .editor-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:-26px -26px 18px; padding:20px 26px 16px; border-bottom:1px solid var(--cue-border); background:var(--cue-surface); }
+.settings-panel > .editor-heading h2 { margin:6px 0 0; font-size:clamp(1.5rem,4vw,2rem); line-height:1; }
+.settings-panel > .editor-heading > button { display:grid; place-items:center; flex:0 0 42px; width:42px; height:42px; padding:0; border:1px solid var(--cue-border); border-radius:50%; background:transparent; color:var(--cue-text); font-size:24px; cursor:pointer; }
+.settings-group { display: grid; gap: 12px; padding: 18px 0; border-top: 1px solid var(--cue-border); }
 .settings-group > span { color: var(--cue-muted); font: 700 10px monospace; letter-spacing: .1em; text-transform: uppercase; }
 .settings-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .settings-options--three { grid-template-columns:repeat(3,minmax(0,1fr)); }
 .settings-group--demo > small { color:var(--cue-muted); font-size:10px; line-height:1.4; }
-.settings-options button { min-height: 44px; border: 1px solid var(--cue-border); background: transparent; color: var(--cue-muted); cursor: pointer; font-weight: 800; }
+.settings-options button { min-height: 44px; padding:0 14px; border: 1px solid var(--cue-border); border-radius:var(--cue-radius-control); background: transparent; color: var(--cue-muted); cursor: pointer; font-weight: 800; transition:border-color .16s ease,background-color .16s ease,color .16s ease; }
+.settings-options button:hover { border-color:var(--cue-toggle); color:var(--cue-text); }
 .settings-options button.active { border-color: var(--cue-toggle); background: var(--cue-toggle); color: #070707; }
 .password-form { display: grid; gap: 16px; margin-top: 14px; padding-top: 24px; border-top: 1px solid var(--cue-border); }
+.settings-panel .primary-button { border-radius:var(--cue-radius-control); }
+@media (max-width: 680px) {
+  .settings-panel { padding:20px 16px max(24px, env(safe-area-inset-bottom)); }
+  .settings-panel > .editor-heading { position:sticky; top:-20px; z-index:4; margin:-20px -16px 16px; padding: max(14px, env(safe-area-inset-top)) 16px 14px; }
+  .settings-group { gap:10px; padding:16px 0; }
+}
 
 :global(:root[data-theme='light']) .panel-empty button,
 :global(:root[data-theme='light']) .add-button { border-color: var(--cue-accent); background: var(--cue-accent); color: var(--cue-accent-ink); }
@@ -4407,6 +4635,105 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .skeleton-panel--cue-stage{width:100%;min-height:520px;margin-bottom:16px}
 .workspace-skeleton__cue-grid>.skeleton-panel{min-height:220px}
 
+.workspace--agency .agency-context-selector{display:grid;gap:3px;min-width:0;color:var(--cue-accent);font:700 10px/1.2 monospace;letter-spacing:.06em}
+.workspace--agency .agency-context-selector span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.workspace--agency .agency-context-selector select{min-width:0;width:100%;min-height:36px;padding:0 8px;font:700 12px Arial,Helvetica,sans-serif;letter-spacing:0}
+@media(max-width:1100px){
+  .sidebar-collapse-button{display:none}
+  .workspace--agency .workspace-header{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:8px;
+    padding-block:10px;
+  }
+  .workspace--agency .workspace-brand-row{
+    order:1;
+    flex:1 1 auto;
+    min-width:0;
+  }
+  .workspace--agency .workspace-brand-row .workspace-brand-wordmark{display:inline-flex;width:min(120px,100%);height:40px}
+  .workspace--agency .workspace-brand-row .workspace-brand-icon{display:none}
+  .workspace--agency .account-actions{order:2;flex:0 0 auto;gap:4px;margin-left:auto}
+  .workspace--agency .agency-context-selector{
+    order:4;
+    flex:0 0 100%;
+    width:100%;
+    max-width:320px;
+    box-sizing:border-box;
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    justify-self:start;
+    align-items:start;
+    gap:10px;
+    margin:14px 0 18px;
+    padding:0 8px 8px;
+  }
+  .workspace--agency .agency-context-selector span{padding-inline:4px;line-height:1.4}
+  .workspace--agency .agency-context-selector select{
+    box-sizing:border-box;
+    width:100%!important;
+    max-width:280px!important;
+    min-height:46px;
+    margin:0;
+    padding:0 38px 0 14px;
+    border:1px solid var(--cue-border);
+    border-radius:var(--cue-radius-control,10px);
+    background:var(--cue-surface);
+    color:var(--cue-text);
+  }
+  .workspace--agency .workspace-header nav{
+    order:3;
+    flex:0 0 100%;
+    grid-column:auto;
+    grid-row:auto;
+    width:100%;
+    max-width:none;
+    min-width:0;
+  }
+  .workspace--agency .workspace-header nav button{padding-inline:12px}
+}
+@media(max-width:680px){
+  .workspace--agency .workspace-header{min-height:0;row-gap:10px}
+  .workspace--agency .workspace-brand-row .workspace-brand-wordmark{width:112px;height:38px}
+  .workspace--agency .agency-context-selector span{font-size:9px;letter-spacing:.06em}
+  .workspace--agency .agency-context-selector{
+    flex:0 0 100%;
+    width:100%;
+    max-width:320px;
+    box-sizing:border-box;
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    justify-content:start;
+    justify-self:start;
+    gap:10px;
+    margin:14px 0 18px;
+    padding:0 8px 8px;
+  }
+  .workspace--agency .agency-context-selector span{
+    display:block;
+    padding-inline:4px;
+    font-size:10px;
+    line-height:1.4;
+  }
+  .workspace--agency .agency-context-selector select{
+    box-sizing:border-box;
+    width:100%!important;
+    max-width:280px!important;
+    justify-self:start;
+    min-height:46px;
+    margin:0;
+    padding:0 38px 0 14px;
+    border:1px solid var(--cue-border);
+    border-radius:var(--cue-radius-control,10px);
+    background:var(--cue-surface);
+    color:var(--cue-text);
+    font-size:14px;
+    font-weight:700;
+  }
+  .workspace--agency .agency-context-selector select:focus-visible{outline:2px solid var(--cue-toggle);outline-offset:2px}
+  .workspace--agency .workspace-header nav button{min-height:40px}
+}
 @media(max-width:960px){
   .workspace-skeleton__page-head{min-height:150px}
   .workspace-skeleton__passport-grid,
@@ -4418,3 +4745,222 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   .skeleton-panel--cue-stage{min-height:420px}
 }
 </style>
+
+<style scoped>
+.agency-artist-context{display:flex;justify-content:space-between;align-items:center;gap:12px;max-width:1440px;margin:18px auto 0;padding:12px 16px;border-left:3px solid var(--cue-accent);background:var(--cue-surface);font-size:12px}.agency-artist-context strong{color:var(--cue-accent)}.agency-artist-context button{background:transparent;color:var(--cue-text);border:1px solid var(--cue-border);padding:10px;cursor:pointer}@media(max-width:600px){.agency-artist-context{align-items:start;flex-direction:column}}
+</style>
+
+<style scoped>
+.agency-mode-banner{border-left:3px solid var(--cue-accent);background:color-mix(in srgb,var(--cue-accent) 6%,var(--cue-bg));padding:14px 18px;margin-block:20px}.agency-mode-banner small{display:block;font:700 10px monospace;letter-spacing:.13em;color:var(--cue-accent);margin-bottom:5px}.agency-artist-tabs{display:flex;flex-wrap:wrap;align-items:center;gap:18px;padding:12px 0;border-bottom:1px solid var(--cue-border);margin-bottom:20px}.agency-artist-tabs strong{margin-right:auto}.agency-artist-tabs button{position:relative;min-height:44px;padding:10px 4px;border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important;background:transparent!important;color:var(--cue-text);cursor:pointer}.agency-artist-tabs button[aria-current=page]{border-bottom-color:var(--cue-accent)!important;color:var(--cue-accent)}.agency-booking-detail>button{margin-bottom:18px}
+</style>
+
+<style scoped>
+.workspace--agency .view-heading,.workspace--agency .view-heading>div{min-width:0;max-width:100%}
+.workspace--agency .view-heading h1{box-sizing:border-box;width:100%;max-width:100%;line-height:.96;overflow-wrap:anywhere;padding-inline:3px}
+.workspace--agency .view-heading .eyebrow{max-width:100%;overflow-wrap:anywhere}
+.workspace--agency .settings-panel .editor-heading>div{min-width:0}
+.workspace--agency .settings-panel .editor-heading h2{max-width:100%;overflow-wrap:anywhere;line-height:1.08}
+@media(max-width:680px){.workspace--agency .agency-context-selector{max-width:320px;margin:16px 0 20px;padding-inline:10px}.workspace--agency .agency-context-selector select{max-width:280px!important}.agency-artist-tabs{gap:14px}.agency-artist-tabs button{padding-inline:3px}}
+</style>
+
+<style scoped>
+.workspace--agency .settings-panel .editor-heading{min-width:0;gap:16px}
+.workspace--agency .settings-panel > .editor-heading>div{box-sizing:border-box;min-width:0;max-width:100%;padding:0 4px 0 40px}
+.workspace--agency .settings-panel > .editor-heading h2{box-sizing:border-box;width:100%;max-width:100%;margin:8px 0 0;font-size:clamp(2rem,4vw,3.5rem);line-height:1.08;letter-spacing:-.04em;overflow-wrap:anywhere;padding-inline:2px}
+.workspace--agency .settings-panel > .editor-heading .eyebrow{max-width:100%;white-space:normal;overflow-wrap:anywhere;padding-inline:2px}
+@media(max-width:680px){.workspace--agency .settings-panel > .editor-heading>div{padding-left:24px}.workspace--agency .settings-panel > .editor-heading h2{font-size:clamp(1.8rem,8vw,2.8rem)}}
+</style>
+
+<style scoped>
+.workspace .view-heading{
+  box-sizing:border-box;
+  min-height:156px;
+  align-items:center;
+  margin:0 0 28px;
+  padding:32px clamp(20px,3vw,38px);
+  border:0;
+  border-bottom:1px solid var(--cue-border);
+  background:var(--cue-surface);
+}
+.workspace .view-heading>div{min-width:0;max-width:900px}
+.workspace .view-heading h1{font-size:clamp(2.25rem,5.3vw,5.5rem);line-height:.98;letter-spacing:-.055em}
+.workspace--agency .settings-panel > .editor-heading{
+  padding-top:40px;
+  border-bottom-color:var(--cue-border);
+  background:var(--cue-surface);
+}
+@media(max-width:960px){
+  .workspace .view-heading{min-height:132px;margin-bottom:20px;padding:26px 22px}
+  .workspace .view-heading h1{font-size:clamp(2rem,7vw,4rem)}
+  .workspace--agency .settings-panel > .editor-heading{padding-top:max(30px,env(safe-area-inset-top))}
+}
+@media(max-width:600px){
+  .workspace .view-heading{min-height:118px;margin-bottom:18px;padding:22px 16px}
+  .workspace .view-heading h1{font-size:clamp(1.9rem,8vw,3rem)}
+}
+</style>
+
+<style scoped>
+.workspace .agency-booking-detail>.secondary-button{display:inline-flex;align-items:center;min-height:44px;margin:8px 0 18px;padding:0 16px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control,10px);background:var(--cue-surface);color:var(--cue-text);font:700 13px/1.2 Arial,Helvetica,sans-serif;cursor:pointer}
+.workspace .agency-booking-detail>.secondary-button:hover,.workspace .agency-booking-detail>.secondary-button:focus-visible{border-color:var(--cue-accent);color:var(--cue-accent);background:var(--cue-surface)}
+</style>
+
+
+<style scoped>
+/* Programmatic focus should not leave a browser-blue frame around the full settings page. */
+.workspace--agency .settings-panel:focus:not(:focus-visible){outline:none;box-shadow:none}
+.workspace--agency .settings-panel:focus-visible{outline:2px solid var(--cue-accent);outline-offset:3px}
+</style>
+
+
+<style scoped>
+@media(max-width:960px){
+  .workspace--agency .agency-context-selector{
+    box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;
+    flex:0 0 100%;width:100%;max-width:none;margin:8px 0 10px;padding:0 16px;
+  }
+  .workspace--agency .agency-context-selector span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0;font-size:9px;line-height:1.3}
+  .workspace--agency .agency-context-selector select{
+    box-sizing:border-box;width:auto!important;max-width:min(56vw,260px)!important;min-width:0;min-height:42px;
+    justify-self:end;margin:0;padding:0 32px 0 12px;font-size:13px;
+  }
+}
+@media(max-width:680px){.workspace--agency .agency-context-selector{gap:8px;margin:6px 0 8px;padding-inline:14px}.workspace--agency .agency-context-selector select{max-width:58vw!important}}
+</style>
+
+
+<style scoped>
+@media(max-width:960px){
+  .workspace--agency .settings-panel>.editor-heading{top:0;padding-top:max(16px,env(safe-area-inset-top))}
+  .workspace--agency .settings-panel>.editor-heading>div{flex:1;min-width:0;padding:0}
+  .workspace--agency .settings-panel>.editor-heading h2{box-sizing:border-box;width:100%;max-width:100%;font-size:clamp(1.45rem,6vw,2.2rem);line-height:1.15;overflow-wrap:anywhere;padding:0}
+}
+</style>
+
+
+<style scoped>
+@media(max-width:960px){
+  .workspace--agency .agency-context-selector{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    box-sizing:border-box;flex:0 0 100%;width:100%!important;max-width:none!important;
+    margin:6px 0 8px;padding:0 24px 0 28px;
+  }
+  .workspace--agency .agency-context-selector span{flex:1 1 auto;min-width:0}
+  .workspace--agency .agency-context-selector select{flex:0 1 auto;width:auto!important;max-width:min(58vw,260px)!important;justify-self:auto;margin:0}
+}
+@media(max-width:680px){.workspace--agency .agency-context-selector{padding-inline:22px}}
+</style>
+
+
+<style scoped>
+@media(max-width:960px){
+  .workspace--agency .agency-context-selector{
+    display:grid!important;grid-template-columns:minmax(0,1fr) minmax(210px,240px)!important;
+    align-items:center!important;gap:12px!important;width:100%!important;max-width:none!important;
+    box-sizing:border-box!important;margin:6px 0 8px!important;padding:0 24px!important;
+  }
+  .workspace--agency .agency-context-selector span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .workspace--agency .agency-context-selector select{
+    display:block;width:100%!important;min-width:0!important;max-width:none!important;box-sizing:border-box;
+    justify-self:end;margin:0!important;padding:0 34px 0 12px;font-size:14px!important;
+  }
+  .workspace--agency .settings-panel>.editor-heading{box-sizing:border-box;min-height:0;overflow:visible}
+  .workspace--agency .settings-panel>.editor-heading h2{display:block;min-height:1.15em;overflow:visible;white-space:normal}
+}
+@media(max-width:680px){.workspace--agency .agency-context-selector{grid-template-columns:minmax(0,1fr) minmax(200px,220px)!important;padding-inline:20px!important}}
+</style>
+
+
+<style scoped>
+@media(max-width:960px){
+  .workspace--agency .view-heading{overflow:visible!important;padding-inline:16px!important}
+  .workspace--agency .view-heading h1{
+    box-sizing:border-box;width:100%;max-width:100%;margin:0 0 12px!important;
+    padding:.14em 10px .18em!important;line-height:1.16!important;overflow:visible!important;
+    text-indent:0;overflow-wrap:anywhere;
+  }
+  .workspace--agency .settings-panel>.editor-heading{overflow:visible!important}
+  .workspace--agency .settings-panel>.editor-heading h2{line-height:1.2!important;padding-block:.08em .12em!important}
+  .workspace--agency .agency-context-selector{grid-template-columns:minmax(0,1fr) minmax(220px,250px)!important}
+  .workspace--agency .agency-context-selector select{font-size:14px!important}
+}
+@media(max-width:680px){.workspace--agency .agency-context-selector{grid-template-columns:minmax(0,1fr) minmax(210px,230px)!important;padding-inline:20px!important}}
+</style>
+
+<style scoped>
+:global(.profile-portrait-editor__upload) {
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:24px minmax(0,1fr)!important;
+  grid-template-rows:auto auto!important;
+  align-items:center!important;
+  justify-content:initial!important;
+  column-gap:12px!important;
+  row-gap:4px!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-height:72px!important;
+  margin:12px 0 4px!important;
+  padding:14px 18px!important;
+  border:1px solid var(--cue-accent)!important;
+  border-radius:14px!important;
+  background:color-mix(in srgb,var(--cue-accent) 12%,var(--cue-surface))!important;
+  color:var(--cue-text)!important;
+  text-align:left!important;
+  cursor:pointer!important;
+  transition:background .18s ease,border-color .18s ease,transform .18s ease!important;
+}
+:global(.profile-portrait-editor__upload:hover) {
+  background:color-mix(in srgb,var(--cue-accent) 20%,var(--cue-surface))!important;
+}
+:global(.profile-portrait-editor__upload:active) { transform:scale(.99); }
+:global(.profile-portrait-editor__upload:focus-within) {
+  outline:2px solid var(--cue-accent)!important;
+  outline-offset:3px!important;
+}
+:global(.profile-portrait-editor__upload > svg) {
+  grid-column:1;
+  grid-row:1 / span 2;
+  width:24px;
+  height:24px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+:global(.profile-portrait-editor__upload > strong) {
+  grid-column:2;
+  grid-row:1;
+  color:var(--cue-text)!important;
+  font-size:16px!important;
+  line-height:1.2!important;
+}
+:global(.profile-portrait-editor__upload > small) {
+  grid-column:2;
+  grid-row:2;
+  color:var(--cue-muted)!important;
+  font-size:12px!important;
+  line-height:1.35!important;
+}
+:global(.profile-portrait-editor__upload > input[type=file]) {
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  margin:0!important;
+  padding:0!important;
+  opacity:0!important;
+  cursor:pointer!important;
+}
+:global(.profile-portrait-editor__upload.is-uploading) { opacity:.75; cursor:wait!important; }
+@media(max-width:680px) {
+  :global(.profile-portrait-editor__upload) {
+    min-height:76px!important;
+    margin-top:16px!important;
+    padding:16px!important;
+  }
+  :global(.profile-portrait-editor__upload > strong) { font-size:16px!important; }
+}
+</style>
+

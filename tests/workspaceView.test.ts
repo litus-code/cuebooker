@@ -8,7 +8,7 @@ import {
 } from '../app/domain/workspaceView.ts'
 
 test('workspace route chooses each supported surface directly', () => {
-  for (const view of ['overview', 'bookings', 'calendar', 'history', 'profile', 'passport', 'cue-id']) {
+  for (const view of ['overview', 'bookings', 'calendar', 'history', 'roster', 'profile', 'passport', 'cue-id']) {
     assert.equal(explicitWorkspaceViewFromQuery(view), view)
   }
 })

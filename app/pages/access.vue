@@ -98,7 +98,7 @@ async function submit() {
       message.value = copy.value.confirmation
       return
     }
-    await navigateTo('/onboarding')
+    await navigateTo(auth.accountDestination())
   } catch (error: any) {
     const raw = String(error?.data?.msg || error?.data?.message || error?.message || '').toLowerCase()
     const status = Number(error?.statusCode || error?.status || error?.response?.status || 0)

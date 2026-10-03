@@ -256,6 +256,7 @@ onBeforeUnmount(() => {
         <p>{{ locale === 'es'
           ? 'Una fecha empieza con una conversación. Cuéntame qué tienes en mente.'
           : 'Every date starts with a conversation. Tell me what you have in mind.' }}</p>
+        <p v-if="profile.bookingManagedBy" class="public-artist-profile__booking-agent">{{ locale === 'es' ? 'Booking gestionado por' : 'Booking managed by' }} {{ profile.bookingManagedBy }}</p>
       </div>
       <button
         type="button"
@@ -290,6 +291,7 @@ onBeforeUnmount(() => {
             <div>
               <span>BOOKING REQUEST</span>
               <strong>{{ profile.stageName }}</strong>
+              <small v-if="profile.bookingManagedBy">{{ locale === 'es' ? 'Gestionado por' : 'Managed by' }} {{ profile.bookingManagedBy }}</small>
             </div>
             <button
               type="button"
@@ -392,6 +394,7 @@ onBeforeUnmount(() => {
 .public-artist-profile__booking-band { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:end; gap:30px; padding:clamp(46px,7vw,86px) clamp(18px,6vw,90px); border-bottom:1px solid var(--cue-border,#2c2c2c); background:linear-gradient(110deg,color-mix(in srgb,var(--cue-accent,#e8ff2f) 8%,#080808),#080808 58%); }
 .public-artist-profile__booking-band h2 { max-width:900px; margin:10px 0 7px; font-size:clamp(3rem,7vw,7rem); line-height:.82; letter-spacing:-.055em; text-transform:uppercase; }
 .public-artist-profile__booking-band p { max-width:620px; margin:0; color:var(--cue-muted,#888); font-size:12px; line-height:1.5; }
+.public-artist-profile__booking-band .public-artist-profile__booking-agent { margin-top:14px; color:var(--cue-accent,#e8ff2f); font-weight:700; }
 .public-artist-profile__booking-band button { min-height:52px; padding:0 18px; border:1px solid var(--cue-accent,#e8ff2f); border-radius:8px; background:var(--cue-accent,#e8ff2f); color:#080808; cursor:pointer; font-weight:900; }
 .public-artist-profile__booking-band button:disabled { border-color:var(--cue-border,#333); background:transparent; color:var(--cue-muted,#777); cursor:default; }
 .public-artist-profile__form-preview { scroll-margin-top:24px; border-bottom:1px solid var(--cue-border,#2c2c2c); }

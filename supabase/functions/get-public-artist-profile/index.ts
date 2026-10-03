@@ -288,6 +288,39 @@ Deno.serve(async request => {
   if (request.method !== "GET") return json({ error: "method_not_allowed" }, 405);
 
   const url = new URL(request.url);
+  // Agency is another public presentation, using the same server-only boundary.
+  // Its roster is explicitly published and routed to this agency workspace.
+  if (url.searchParams.has("agency")) {
+    const agencySlug = (url.searchParams.get("agency") || "").trim().toLowerCase();
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(agencySlug) || agencySlug.length > 120) return json({ error: "invalid_agency_slug" }, 400);
+    try {
+      const supabaseUrl = requiredEnv("SUPABASE_URL").replace(/\/$/, "");
+      const serviceKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
+      const agency = await serviceJson<{ mediaWorkspaceId?: string; coverPath?: string; logoPath?: string; coverUrl?: string | null; logoUrl?: string | null; artists: Array<{ id: string; imagePath?: string | null; coverPath?: string | null; imageUrl?: string | null; coverUrl?: string | null }> } | null>(
+        `${supabaseUrl}/rest/v1/rpc/get_public_agency_profile`,
+        { method: "POST", body: JSON.stringify({ agency_slug: agencySlug }) }, serviceKey
+      );
+      if (!agency) return json({ error: "agency_not_found" }, 404, { "Cache-Control": "no-store" });
+      for (const slot of ['cover', 'logo'] as const) {
+        const path = slot === 'cover' ? agency.coverPath : agency.logoPath;
+        const folder = slot === 'cover' ? 'covers' : 'logos';
+        if (path && agency.mediaWorkspaceId && new RegExp(`^agency/${agency.mediaWorkspaceId}/${folder}/[0-9a-f-]{36}\\.(jpg|png|webp)$`).test(path)) {
+          agency[slot === 'cover' ? 'coverUrl' : 'logoUrl'] = await signArtistMedia(supabaseUrl, serviceKey, path);
+        }
+      }
+      delete agency.coverPath; delete agency.logoPath; delete agency.mediaWorkspaceId;
+      await Promise.all(agency.artists.map(async artist => {
+        // Sign only media owned by this published artist; never an arbitrary path.
+        const owns = (path?: string | null) => path?.startsWith(`${artist.id}/`) ? path : null;
+        [artist.imageUrl, artist.coverUrl] = await Promise.all([
+          signArtistMedia(supabaseUrl, serviceKey, owns(artist.imagePath)),
+          signArtistMedia(supabaseUrl, serviceKey, owns(artist.coverPath))
+        ]);
+        delete artist.imagePath; delete artist.coverPath;
+      }));
+      return json({ agency }, 200, { "Cache-Control": "no-store" });
+    } catch { return json({ error: "agency_profile_failed" }, 500, { "Cache-Control": "no-store" }); }
+  }
   const slug = (url.searchParams.get("slug") || "").trim().toLowerCase();
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 120) {
     return json({ error: "invalid_artist_slug" }, 400, { "Cache-Control": "no-store" });
@@ -339,11 +372,20 @@ Deno.serve(async request => {
     const artist = artists[0];
     if (!artist) return json({ error: "artist_not_found" }, 404, { "Cache-Control": "no-store" });
 
-    const routes = await serviceJson<Array<{ accepting_requests: boolean }>>(
-      `${supabaseUrl}/rest/v1/artist_booking_routes?artist_id=eq.${encodeURIComponent(artist.id)}&select=accepting_requests&limit=1`,
+    const routes = await serviceJson<Array<{ accepting_requests: boolean; workspace_id: string }>>(
+      `${supabaseUrl}/rest/v1/artist_booking_routes?artist_id=eq.${encodeURIComponent(artist.id)}&select=accepting_requests,workspace_id&limit=1`,
       { method: "GET" },
       serviceKey
     );
+
+    const bookingWorkspace = routes[0]?.workspace_id
+      ? await serviceJson<Array<{ name: string; kind: string }>>(
+        `${supabaseUrl}/rest/v1/workspaces?id=eq.${encodeURIComponent(routes[0].workspace_id)}&select=name,kind&limit=1`,
+        { method: "GET" },
+        serviceKey
+      )
+      : [];
+    const bookingManagedBy = bookingWorkspace[0]?.kind === "agency" ? bookingWorkspace[0].name : null;
 
     const workspaceArtists = await serviceJson<Array<{ workspace_id: string }>>(
       `${supabaseUrl}/rest/v1/workspace_artists?artist_id=eq.${encodeURIComponent(artist.id)}&select=workspace_id`,
@@ -450,7 +492,8 @@ Deno.serve(async request => {
         visualMode,
         cueId: visualMode === "cue_id" ? cueId : null,
         passport: artist.passport_public_enabled ? passport : null,
-        acceptingRequests: Boolean(routes[0]?.accepting_requests)
+        acceptingRequests: Boolean(routes[0]?.accepting_requests),
+        bookingManagedBy
       }
     }, 200, { "Cache-Control": "private, no-cache, max-age=0, must-revalidate" });
   } catch (error) {

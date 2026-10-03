@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import type { BookingSource, CoreBooking, CounterpartyKind } from '../domain/bookingCore'
+import type { BookingSource, CoreBooking, CounterpartyKind, CreateManualBookingInput } from '../domain/bookingCore'
 import type { SmartCaptureResult } from '../domain/smartCapture'
+
+import { interpretCueText } from '../services/cueInterpreter'
+import { localInterpretationToSmartCapture } from '../services/captureEngine'
 
 const props = defineProps<{
   open: boolean
   workspaceId: string
   artistId: string
+  artists?: Array<{ id: string; stage_name: string }>
+  betaAgency?: boolean
+  demoCreate?: (input: CreateManualBookingInput) => Promise<CoreBooking>
   locale: 'es' | 'en'
 }>()
 
@@ -21,6 +27,8 @@ const productTelemetry = useProductTelemetry()
 const { can: canEntitlement } = useCueEntitlements()
 const voiceInput = ref<{ setProcessing: (value: boolean) => void } | null>(null)
 const submitting = ref(false)
+const captureArtistId = ref(props.artistId)
+const captureArtists = computed(() => props.artists || [])
 const analyzing = ref(false)
 const loadingOptions = ref(false)
 const errorMessage = ref('')
@@ -55,6 +63,7 @@ const interpretationMessage = ref('')
 const smartResult = ref<SmartCaptureResult | null>(null)
 const moreOpen = ref(false)
 const capturePanel = ref<HTMLElement | null>(null)
+let previousFocus: HTMLElement | null = null
 
 const text = computed(() => props.locale === 'es' ? {
   eyebrow: 'CUE / NUEVA OPORTUNIDAD',
@@ -142,7 +151,7 @@ function reset() {
 }
 
 async function loadOptions() {
-  if (!props.workspaceId) return
+  if (!props.workspaceId || props.demoCreate) return
   loadingOptions.value = true
   try {
     const [contactRows, counterpartyRows] = await Promise.all([
@@ -161,13 +170,16 @@ async function loadOptions() {
 }
 
 watch(() => props.open, async value => {
-  if (!value) return
+  if (!value) { previousFocus?.focus(); return }
+  previousFocus = document.activeElement as HTMLElement | null
   await nextTick()
+  capturePanel.value?.querySelector<HTMLElement>('select,textarea,input,button')?.focus()
   capturePanel.value?.scrollTo({ top: 0, behavior: 'auto' })
   reset()
+  captureArtistId.value = props.artistId || (captureArtists.value.length === 1 ? captureArtists.value[0].id : '')
   analytics.track('cue_open', {
     workspace_id: props.workspaceId,
-    artist_id: props.artistId
+    artist_id: captureArtistId.value
   })
   await loadOptions()
 })
@@ -184,12 +196,16 @@ function normalizeEntityName(value: string) {
 async function interpretNote() {
   const raw = initialNote.value.trim()
   if (!raw || analyzing.value) return
+  if (props.demoCreate) {
+    smartResult.value = localInterpretationToSmartCapture(raw, props.locale, interpretCueText(raw, props.locale))
+    return
+  }
 
   analytics.track('smart_capture_start', {
     mode: 'text',
     text_length: raw.length
   })
-  void productTelemetry.record('smart_capture_start', {
+  if (!props.demoCreate) void productTelemetry.record('smart_capture_start', {
     mode: 'text',
     text_length: raw.length
   }, props.workspaceId)
@@ -200,7 +216,7 @@ async function interpretNote() {
   try {
     const analysis = await captureEngine.analyzeText({
       workspaceId: props.workspaceId,
-      artistId: props.artistId,
+      artistId: captureArtistId.value,
       locale: props.locale,
       text: raw
     })
@@ -212,7 +228,7 @@ async function interpretNote() {
       missing_fields: analysis.result.missingFields.length,
       warnings: analysis.result.warnings.length
     })
-    void productTelemetry.record('smart_capture_result', {
+    if (!props.demoCreate) void productTelemetry.record('smart_capture_result', {
       mode: 'text',
       success: analysis.method !== 'local_parser',
       fallback: analysis.method === 'local_parser' ? analysis.method : null,
@@ -259,7 +275,7 @@ function applySmartResult() {
     missing_fields: parsed.missingFields.length,
     warnings: parsed.warnings.length
   })
-  void productTelemetry.record('smart_capture_apply', {
+  if (!props.demoCreate) void productTelemetry.record('smart_capture_apply', {
     source: parsed.source.value || null,
     missing_fields: parsed.missingFields.length,
     warnings: parsed.warnings.length
@@ -298,7 +314,7 @@ function discardSmartResult() {
       missing_fields: smartResult.value.missingFields.length,
       warnings: smartResult.value.warnings.length
     })
-    void productTelemetry.record('smart_capture_discard', {
+    if (!props.demoCreate) void productTelemetry.record('smart_capture_discard', {
       missing_fields: smartResult.value.missingFields.length,
       warnings: smartResult.value.warnings.length
     }, props.workspaceId)
@@ -319,7 +335,7 @@ async function onAudioCaptured(audio: Blob, filename: string, fallbackTranscript
     audio_bytes: audio.size,
     audio_type: audio.type || null
   })
-  void productTelemetry.record('smart_capture_start', {
+  if (!props.demoCreate) void productTelemetry.record('smart_capture_start', {
     mode: 'audio',
     audio_bytes: audio.size,
     audio_type: audio.type || null
@@ -331,7 +347,7 @@ async function onAudioCaptured(audio: Blob, filename: string, fallbackTranscript
   try {
     const analysis = await captureEngine.analyzeAudio({
       workspaceId: props.workspaceId,
-      artistId: props.artistId,
+      artistId: captureArtistId.value,
       locale: props.locale,
       audio,
       filename,
@@ -354,7 +370,7 @@ async function onAudioCaptured(audio: Blob, filename: string, fallbackTranscript
       missing_fields: analysis.result.missingFields.length,
       warnings: analysis.result.warnings.length
     })
-    void productTelemetry.record('smart_capture_result', {
+    if (!props.demoCreate) void productTelemetry.record('smart_capture_result', {
       mode: analysis.method === 'browser_transcript' ? 'audio_browser_fallback' : 'audio',
       success: analysis.method !== 'local_parser',
       fallback: analysis.method === 'local_parser' ? analysis.method : null,
@@ -371,7 +387,7 @@ async function onAudioCaptured(audio: Blob, filename: string, fallbackTranscript
       success: false,
       browser_fallback_available: Boolean(fallbackTranscript.trim())
     })
-    void productTelemetry.record('smart_capture_result', {
+    if (!props.demoCreate) void productTelemetry.record('smart_capture_result', {
       mode: 'audio',
       success: false,
       browser_fallback_available: Boolean(fallbackTranscript.trim())
@@ -392,6 +408,10 @@ function parseOfferMinor() {
 
 async function submit() {
   errorMessage.value = ''
+  if (!captureArtistId.value || (props.artists && !captureArtists.value.some(item => item.id === captureArtistId.value))) {
+    errorMessage.value = props.locale === 'es' ? 'Selecciona el artista de este booking.' : 'Select the artist for this booking.'
+    return
+  }
   const hasContact = contactMode.value === 'existing' ? Boolean(existingContactId.value) : Boolean(contactName.value.trim())
   const hasCounterparty = counterpartyMode.value === 'existing' ? Boolean(existingCounterpartyId.value) : Boolean(counterpartyName.value.trim())
   const hasContext = hasContact || hasCounterparty || Boolean(eventName.value.trim() || venueName.value.trim() || initialNote.value.trim())
@@ -408,9 +428,9 @@ async function submit() {
 
   submitting.value = true
   try {
-    const booking = await bookingCore.createManualBooking({
+    const booking = await (props.demoCreate || bookingCore.createManualBooking)({
       workspaceId: props.workspaceId,
-      artistId: props.artistId,
+      artistId: captureArtistId.value,
       source: source.value,
       existingContactId: contactMode.value === 'existing' ? existingContactId.value || null : null,
       contactName: contactMode.value === 'new' ? contactName.value : null,
@@ -457,8 +477,15 @@ async function submit() {
 }
 
 function onKeydown(event: KeyboardEvent) {
-  if (event.key === 'Escape') close()
+  if (!props.open) return
+  if (event.key === 'Escape') { event.preventDefault(); close() }
+  if (event.key !== 'Tab') return
+  const controls = Array.from(capturePanel.value?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),textarea:not(:disabled),select:not(:disabled),a[href]') || []).filter(item => item.getClientRects().length)
+  const first = controls[0], last = controls[controls.length - 1]
+  if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() }
+  else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus() }
 }
+
 
 onMounted(() => window.addEventListener('keydown', onKeydown))
 onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
@@ -478,6 +505,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
           </button>
         </header>
+        <label v-if="captureArtists.length" class="cue-capture__artist">{{ locale === 'es' ? 'ARTISTA DEL BOOKING' : 'BOOKING ARTIST' }}
+          <select v-model="captureArtistId" :disabled="submitting" required><option value="" disabled>{{ locale === 'es' ? 'Selecciona un artista' : 'Select an artist' }}</option><option v-for="artist in captureArtists" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select>
+        </label>
 
         <form class="cue-capture__form" @submit.prevent="submit">
           <fieldset class="cue-capture__channel">
@@ -492,14 +522,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
             </div>
             <textarea v-model="initialNote" rows="4" :placeholder="text.notePlaceholder" />
             <div class="cue-capture__smart-actions">
-              <CueVoiceInput ref="voiceInput" v-model="initialNote" :locale="locale" @captured="onVoiceCaptured" @audio-captured="onAudioCaptured" />
+              <CueVoiceInput v-if="!demoCreate" ref="voiceInput" v-model="initialNote" :locale="locale" @captured="onVoiceCaptured" @audio-captured="onAudioCaptured" />
               <div class="cue-capture__interpret">
                 <div class="cue-capture__interpret-head">
                   <button type="button" :disabled="!initialNote.trim() || analyzing" @click="interpretNote">{{ analyzing ? (locale === 'es' ? 'Analizando…' : 'Analysing…') : 'Smart Capture' }}</button>
-                  <CuePlanBadge v-if="!canEntitlement('capture.smart_extended')" entitlement="capture.smart_extended" />
+                  <CuePlanBadge v-if="!betaAgency && !demoCreate && !canEntitlement('capture.smart_extended')" entitlement="capture.smart_extended" />
                 </div>
                 <p>{{ locale === 'es' ? 'Una sola captura para voz o texto. Revisa siempre antes de aplicar.' : 'One capture flow for voice or text. Always review before applying.' }}</p>
-                <small v-if="!canEntitlement('capture.smart_extended')" class="cue-capture__commercial-note">
+                <small v-if="!betaAgency && !demoCreate && !canEntitlement('capture.smart_extended')" class="cue-capture__commercial-note">
                   {{ locale === 'es'
                     ? 'Free incluye una cuota mensual de Smart Capture. Artist Pro amplía esta capacidad.'
                     : 'Free includes a monthly Smart Capture allowance. Artist Pro extends this capacity.' }}
@@ -609,7 +639,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 .cue-capture__switch { display: flex; gap: 4px; }
 .cue-capture__switch button { min-height: 28px; padding: 0 8px; font-size: 8px; }
 .cue-capture__switch button.active { border-color: #777; color: #fff; background: #1c1c1c; }
-.cue-capture input, .cue-capture select, .cue-capture textarea { width: 100%; box-sizing: border-box; border: 1px solid #343434; border-radius: 0; background: #111; color: #f4f3ef; font: inherit; outline: none; }
+.cue-capture input, .cue-capture select, .cue-capture textarea { width: 100%; box-sizing: border-box; border: 1px solid #343434; border-radius: var(--cue-radius-control,8px); background: #111; color: #f4f3ef; font: inherit; outline: none; }
+.cue-capture button { border-radius:var(--cue-radius-control,8px); }
+.cue-capture__header > button { border-radius:50%; }
 .cue-capture button:focus-visible,
 .cue-capture input:focus-visible,
 .cue-capture select:focus-visible,
@@ -659,6 +691,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   .cue-capture__header { position: sticky; top: 0; z-index: 4; padding: max(18px, env(safe-area-inset-top)) 16px 15px; background: color-mix(in srgb,var(--cue-surface,#0d0d0d) 97%,transparent); backdrop-filter: blur(12px); }
   .cue-capture__header h2 { font-size: 2.35rem; }
   .cue-capture__form { padding: 0 16px 20px; }
+  .cue-capture__artist { grid-template-columns:minmax(0,1fr); gap:7px; padding:14px 16px; }
+  .cue-capture__artist select { width:min(100%,320px); }
   .cue-capture__channel { padding: 16px 0; gap: 5px; }
   .cue-capture__channel button { min-height:44px; padding:0 10px; font-size:9px; }
   .cue-capture__switch button,
@@ -670,5 +704,20 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   .cue-capture__interpret { margin-top:0; }
   .cue-capture__grid--contact, .cue-capture__grid--party, .cue-capture__details, .cue-capture__next { grid-template-columns: 1fr; }
   .cue-capture__actions { margin: 18px -16px -20px; padding-right: 16px; padding-left: 16px; }
+}
+</style>
+
+<style scoped>
+.cue-capture__artist{display:grid;grid-template-columns:max-content minmax(0,320px);align-items:center;gap:14px;margin:0;padding:16px 26px;border-bottom:1px solid var(--cue-border);color:var(--cue-accent);font:700 11px/1.3 monospace;letter-spacing:.06em}.cue-capture__artist select{width:100%;min-width:0;min-height:44px;padding:0 38px 0 12px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control,8px);background:var(--cue-bg);color:var(--cue-text);font:700 13px Arial,Helvetica,sans-serif;letter-spacing:0}
+</style>
+
+<style scoped>
+.cue-capture__artist{grid-template-columns:max-content minmax(0,1fr);gap:20px}
+.cue-capture__artist select{width:100%;max-width:none;border-radius:var(--cue-radius-control,12px)}
+.cue-capture__channel button,.cue-capture__switch button,.cue-capture__interpret button,.cue-capture__preview-actions button,.cue-capture__actions button{border-radius:var(--cue-radius-control,12px)}
+.cue-capture__header>button{border-radius:50%}
+@media(max-width:640px){
+ .cue-capture__artist{grid-template-columns:minmax(0,1fr);gap:9px;padding:14px 16px}
+ .cue-capture__artist select{width:100%;max-width:none}
 }
 </style>

@@ -24,7 +24,7 @@ const copy = computed(() => locale.value === 'es'
       cueIdNowBody: 'Ir al Creator después de crear tu workspace.',
       cueIdLater: 'Hacerlo más tarde',
       cueIdLaterBody: 'Entrar a tu workspace y crear tu CUE ID cuando quieras.',
-      profileNote: 'Después podrás completar tu ficha profesional. Al terminar entrarás en tu Overview con los siguientes pasos claros para activar Cuebooker.',
+      profileNote: accountType.value === 'agency' ? 'Entrarás al Overview de Agencia para crear tu roster.' : 'Después podrás completar tu ficha profesional. Al terminar entrarás en tu Overview con los siguientes pasos claros para activar Cuebooker.',
       planIntent: 'Plan seleccionado', planPending: 'La activación de pago se realizará después de crear el workspace.',
       saving: 'Guardando…', submit: 'Crear workspace', genericError: 'No se pudo completar la configuración.',
       slugTaken: 'Ese identificador ya está en uso. Prueba con otro diferente.',
@@ -44,7 +44,7 @@ const copy = computed(() => locale.value === 'es'
       cueIdNowBody: 'Open the Creator after your workspace is created.',
       cueIdLater: 'Do it later',
       cueIdLaterBody: 'Open your workspace and create your CUE ID whenever you want.',
-      profileNote: 'Afterwards you can complete your professional profile. When setup is complete, Overview will show the next steps to activate Cuebooker.',
+      profileNote: accountType.value === 'agency' ? 'You will enter Agency Overview to build your roster.' : 'Afterwards you can complete your professional profile. When setup is complete, Overview will show the next steps to activate Cuebooker.',
       planIntent: 'Selected plan', planPending: 'Paid activation will happen after the workspace is created.',
       saving: 'Saving…', submit: 'Create workspace', genericError: 'Setup could not be completed.',
       slugTaken: 'That identifier is already in use. Try a different one.',
@@ -125,7 +125,7 @@ async function submit() {
       await navigateTo('/cue-id?from=onboarding')
       return
     }
-    await navigateTo('/workspace?view=overview&from=onboarding')
+    await navigateTo(accountType.value === 'agency' ? '/workspace?view=overview&scope=all&from=onboarding' : '/workspace?view=overview&from=onboarding')
   } catch (error: any) {
     errorMessage.value = friendlyOnboardingError(error)
   } finally {

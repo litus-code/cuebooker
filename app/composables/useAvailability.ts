@@ -21,6 +21,9 @@ type Artist = {
   id: string
   stage_name: string
   slug: string
+  city: string | null
+  artist_image_path: string | null
+  cover_image_path: string | null
 }
 
 type OrganizationMembership = {
@@ -65,13 +68,20 @@ export function useAvailability() {
     const ids = memberships.map(item => item.artist_id)
     const artists = await $fetch<Artist[]>(`${supabaseUrl.value}/rest/v1/artists`, {
       headers: headers(),
-      query: { id: `in.(${ids.join(',')})`, select: 'id,stage_name,slug', order: 'stage_name.asc' }
+      query: { id: `in.(${ids.join(',')})`, select: 'id,stage_name,slug,city,artist_image_path,cover_image_path', order: 'stage_name.asc' }
     })
 
     return artists.map(artist => ({
       ...artist,
       role: memberships.find(item => item.artist_id === artist.id)?.role || 'editor'
     }))
+  }
+
+  async function listRosterArtists(ids: string[]) {
+    if (!ids.length) return [] as Artist[]
+    return $fetch<Artist[]>(`${supabaseUrl.value}/rest/v1/artists`, {
+      headers: headers(), query: { id: `in.(${ids.join(',')})`, select: 'id,stage_name,slug,city', order: 'stage_name.asc' }
+    })
   }
 
   async function listOrganizations() {
@@ -107,6 +117,15 @@ export function useAvailability() {
         artist_slug: input.artistSlug
       }
     })
+  }
+
+  async function updateRosterArtist(artistId: string, input: { stageName?: string; city?: string }) {
+    const rows = await $fetch<Array<{ id: string }>>(`${supabaseUrl.value}/rest/v1/artists`, {
+      method: 'PATCH', headers: { ...headers(), Prefer: 'return=representation' },
+      query: { id: `eq.${artistId}`, select: 'id' },
+      body: { ...(input.stageName ? { stage_name: input.stageName.trim() } : {}), ...(input.city !== undefined ? { city: input.city.trim() || null } : {}) }
+    })
+    if (!rows.length) throw new Error('artist_not_found_or_forbidden')
   }
 
   async function listBlocks(artistId: string, from: string, to: string) {
@@ -182,5 +201,5 @@ export function useAvailability() {
     })
   }
 
-  return { listArtists, listOrganizations, addAgencyArtist, listBlocks, createBlock, updateBlock, deleteBlock }
+  return { listArtists, listRosterArtists, listOrganizations, addAgencyArtist, updateRosterArtist, listBlocks, createBlock, updateBlock, deleteBlock }
 }

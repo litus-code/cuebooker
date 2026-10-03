@@ -825,6 +825,8 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
 
     <section tabindex="-1" id="cue-id" class="ed-section ed-identity cp-wrap"><div><p class="cp-kicker">{{ p.identity.label }}</p><h2>{{ p.identity.title }}</h2><p class="ed-deck">{{ p.identity.body }}</p><p>{{ p.identity.detail }}</p><span class="cp-beta-note">{{ p.identity.beta }}</span></div><div class="ed-identity-poster"><span class="ed-mono">CUE ID / ARTIST PROFILE</span><strong>{{ p.identity.visual }}</strong><span>{{ p.identity.caption }}</span><span class="ed-poster-corner" aria-hidden="true">C /</span></div></section>
 
+    <div class="cp-wrap"><MailboxBetaNotice :locale="locale" /></div>
+
     <section v-if="showPricing" id="pricing" class="ed-section ed-pricing cp-wrap" aria-labelledby="pricing-title">
       <div class="ed-pricing-intro">
         <p class="cp-kicker">{{ p.pricing.label }}</p>

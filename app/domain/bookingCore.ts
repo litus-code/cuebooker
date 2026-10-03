@@ -69,7 +69,8 @@ export interface Counterparty {
 export interface CoreBooking {
   id: string
   workspace_id: string
-  artist_id: string
+  artist_id: string | null
+  mailbox_draft?: {warnings?:string[];artistName?:string|null} | null
   primary_contact_id: string | null
   counterparty_id: string | null
   /** Legacy compatibility field. Prefer origin_channel + capture_method in new logic. */

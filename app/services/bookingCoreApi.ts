@@ -43,6 +43,7 @@ export type WorkspaceArtist = {
   artist_id: string
   created_by: string
   created_at: string
+  roster_active?: boolean
 }
 
 export type WorkspaceActivityHistoryRow = Activity & {
@@ -78,6 +79,15 @@ function currency(value: string | null | undefined) {
 export function createBookingCoreApi(options: BookingCoreApiOptions) {
   const baseUrl = options.baseUrl.replace(/\/$/, '')
 
+  async function collectRosterPages<T>(fetchPage: (offset: number, limit: number) => Promise<T[]>, pageSize = 500) {
+    const all: T[] = []
+    for (;;) {
+      const rows = await fetchPage(all.length, pageSize)
+      all.push(...rows)
+      if (rows.length < pageSize) return all
+    }
+  }
+
   function authHeaders(prefer?: string) {
     const token = options.accessToken()
     if (!token) throw new Error('authentication_required')
@@ -110,6 +120,10 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         target_artist_id: artistId
       }
     })
+  }
+
+  async function listAgencyWorkspaceIdentities() {
+    return $fetch<Array<{workspace_id:string;organization_id:string}>>(`${baseUrl}/rest/v1/workspace_legacy_organizations`,{headers:authHeaders(),query:{select:'workspace_id,organization_id'}})
   }
 
   async function listWorkspaceMemberships() {
@@ -149,10 +163,27 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
       headers: authHeaders(),
       query: {
         workspace_id: `eq.${workspaceId}`,
-        select: 'workspace_id,artist_id,created_by,created_at',
+        select: 'workspace_id,artist_id,created_by,created_at,roster_active',
         order: 'created_at.asc'
       }
     })
+  }
+
+  async function attachWorkspaceArtist(workspaceId: string, artistId: string) {
+    await $fetch(`${baseUrl}/rest/v1/workspace_artists`, {
+      method: 'POST', headers: authHeaders('resolution=ignore-duplicates,return=minimal'),
+      body: { workspace_id: workspaceId, artist_id: artistId, created_by: currentUserId() }
+    })
+  }
+
+  async function setRosterActive(workspaceId: string, artistId: string, active: boolean) {
+    const rows = await $fetch<WorkspaceArtist[]>(`${baseUrl}/rest/v1/workspace_artists`, {
+      method: 'PATCH', headers: authHeaders('return=representation'),
+      query: { workspace_id: `eq.${workspaceId}`, artist_id: `eq.${artistId}`, select: 'workspace_id,artist_id,created_by,created_at,roster_active' },
+      body: { roster_active: active }
+    })
+    if (!rows.length) throw new Error('roster_artist_not_found_or_forbidden')
+    return rows[0]
   }
 
   async function listContacts(workspaceId: string) {
@@ -242,9 +273,76 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
       query: {
         workspace_id: `eq.${workspaceId}`,
         ...(artistId ? { artist_id: `eq.${artistId}` } : {}),
-        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
+        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,mailbox_draft,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
         order: 'updated_at.desc',
         limit: String(Math.min(Math.max(limit, 1), 100))
+      }
+    })
+  }
+
+  async function listRosterBookings(workspaceId: string, offset = 0, limit = 100, artistId?: string, artistIds?: string[], includeAgencyRequests = false) {
+    if (artistIds && !artistIds.length && !includeAgencyRequests) return [] as CoreBooking[]
+    return $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/bookings`, {
+      headers: authHeaders(),
+      query: {
+        workspace_id: `eq.${workspaceId}`,
+        ...(artistId ? { artist_id: `eq.${artistId}` } : {}),
+        ...(!artistId && artistIds ? includeAgencyRequests ? {or: artistIds.length ? `(artist_id.in.(${artistIds.join(',')}),artist_id.is.null)` : '(artist_id.is.null)'} : { artist_id: `in.(${artistIds.join(',')})` } : {}),
+        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,mailbox_draft,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
+        order: 'updated_at.desc,id.desc', offset: String(offset), limit: String(Math.min(limit, 100))
+      }
+    })
+  }
+
+  async function countRosterActiveBookings(workspaceId: string, artistIds: string[], includeAgencyRequests = false) {
+    if (!artistIds.length && !includeAgencyRequests) return 0
+    const response = await $fetch.raw<Array<{ id: string }>>(`${baseUrl}/rest/v1/bookings`, {
+      headers: authHeaders('count=exact'), query: {
+        workspace_id: `eq.${workspaceId}`, ...(includeAgencyRequests ? {or:artistIds.length ? `(artist_id.in.(${artistIds.join(',')}),artist_id.is.null)` : '(artist_id.is.null)'} : {artist_id:`in.(${artistIds.join(',')})`}),
+        archived_at: 'is.null', status: 'in.(new,in_conversation,waiting_response)',
+        select: 'id', limit: '1'
+      }
+    })
+    const total = response.headers.get('content-range')?.split('/').pop()
+    return total && /^\d+$/.test(total) ? Number(total) : null
+  }
+
+  async function listAgencyRequests(workspaceId:string) {
+    return $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/bookings`, {headers:authHeaders(),query:{workspace_id:`eq.${workspaceId}`,artist_id:'is.null',archived_at:'is.null',status:'in.(new,in_conversation,waiting_response)',select:'*',order:'created_at.desc',limit:'500'}})
+  }
+
+  async function listRosterCalendarBookings(workspaceId: string, fromDate: string, toDate: string) {
+    return collectRosterPages((offset, limit) => $fetch<CoreBooking[]>(`${baseUrl}/rest/v1/bookings`, {
+      headers: authHeaders(), query: {
+        workspace_id: `eq.${workspaceId}`, status: 'eq.confirmed', archived_at: 'is.null',
+        and: `(event_date.gte.${fromDate},event_date.lt.${toDate})`,
+        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,mailbox_draft,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
+        order: 'event_date.asc,id.asc', offset: String(offset), limit: String(limit)
+      }
+    }))
+  }
+
+  async function countRosterActiveHolds(workspaceId: string, artistIds: string[]) {
+    if (!artistIds.length) return 0
+    const response = await $fetch.raw<Array<{ id: string }>>(`${baseUrl}/rest/v1/holds`, {
+      headers: authHeaders('count=exact'), query: {
+        workspace_id: `eq.${workspaceId}`, status: 'eq.active',
+        'bookings.artist_id': `in.(${artistIds.join(',')})`,
+        select: 'id,bookings!inner(artist_id)', limit: '1'
+      }
+    })
+    const total = response.headers.get('content-range')?.split('/').pop()
+    return total && /^\d+$/.test(total) ? Number(total) : null
+  }
+
+  async function listRosterActivities(workspaceId: string, offset = 0, limit = 100, artistIds?: string[]) {
+    if (artistIds && !artistIds.length) return [] as WorkspaceActivityHistoryRow[]
+    return $fetch<WorkspaceActivityHistoryRow[]>(`${baseUrl}/rest/v1/activities`, {
+      headers: authHeaders(), query: {
+        workspace_id: `eq.${workspaceId}`,
+        ...(artistIds ? { 'bookings.artist_id': `in.(${artistIds.join(',')})` } : {}),
+        select: 'id,workspace_id,booking_id,type,direction,contact_id,actor_user_id,body,metadata,visibility,occurred_at,created_by,created_at,bookings!inner(id,artist_id,event_name,venue_name,city)',
+        order: 'occurred_at.desc,id.desc', offset: String(offset), limit: String(Math.min(limit, 100))
       }
     })
   }
@@ -262,7 +360,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         artist_id: `eq.${artistId}`,
         archived_at: 'is.null',
         status: 'not.in.(rejected,cancelled)',
-        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
+        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,mailbox_draft,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
         order: 'updated_at.desc',
         limit: String(Math.min(Math.max(limit, 1), 500))
       }
@@ -284,7 +382,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         artist_id: `eq.${artistId}`,
         and: `(event_date.gte.${fromDate},event_date.lt.${toDate})`,
         status: 'eq.confirmed',
-        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
+        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,mailbox_draft,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
         order: 'event_date.asc,start_time.asc.nullslast,created_at.asc',
         limit: String(Math.min(Math.max(limit, 1), 500))
       }
@@ -306,7 +404,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         event_date: `eq.${eventDate}`,
         archived_at: 'is.null',
         status: 'not.in.(rejected,cancelled)',
-        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
+        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,mailbox_draft,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
         order: 'start_time.asc.nullslast,created_at.asc',
         limit: String(Math.min(Math.max(limit, 1), 100))
       }
@@ -320,7 +418,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
       query: {
         workspace_id: `eq.${workspaceId}`,
         id: `eq.${bookingId}`,
-        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
+        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,mailbox_draft,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
         limit: '1'
       }
     })
@@ -343,7 +441,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         ...(counterpartyId
           ? { counterparty_id: `eq.${counterpartyId}` }
           : { primary_contact_id: `eq.${contactId}` }),
-        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
+        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,mailbox_draft,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
         order: 'event_date.desc.nullslast,updated_at.desc',
         limit: String(Math.min(Math.max(limit, 1), 200))
       }
@@ -359,7 +457,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         artist_id: `eq.${artistId}`,
         status: 'eq.confirmed',
         archived_at: 'is.null',
-        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
+        select: 'id,workspace_id,artist_id,primary_contact_id,counterparty_id,source,origin_channel,capture_method,mailbox_draft,status,event_name,venue_name,city,country_code,event_date,start_time,end_time,event_timezone,offer_amount_minor,currency,fee_basis,archived_at,created_by,created_at,updated_at',
         order: 'event_date.asc.nullslast,created_at.asc',
         limit: String(Math.min(Math.max(limit, 1), 500))
       }
@@ -695,6 +793,17 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     })
   }
 
+  async function listRosterHolds(workspaceId: string, fromDate: string, toDate: string) {
+    return collectRosterPages((offset, limit) => $fetch<Array<Hold & { bookings: { artist_id: string } }>>(`${baseUrl}/rest/v1/holds`, {
+      headers: authHeaders(), query: {
+        workspace_id: `eq.${workspaceId}`, status: 'eq.active',
+        and: `(event_date.gte.${fromDate},event_date.lt.${toDate})`,
+        select: 'id,workspace_id,booking_id,event_date,starts_at,ends_at,event_timezone,expires_at,priority,status,released_at,converted_at,created_by,created_at,updated_at,bookings!inner(artist_id)',
+        order: 'event_date.asc,id.asc', offset: String(offset), limit: String(limit)
+      }
+    }))
+  }
+
   async function listArtistActiveHolds(workspaceId: string, artistId: string) {
     if (!workspaceId || !artistId) return [] as Hold[]
     return $fetch<Hold[]>(`${baseUrl}/rest/v1/holds`, {
@@ -795,15 +904,23 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
 
   return {
     ensureBookingWorkspace,
+    listAgencyWorkspaceIdentities,
     listWorkspaceMemberships,
     listWorkspaces,
     listWorkspaceArtists,
+    attachWorkspaceArtist,
+    setRosterActive,
     listContacts,
     createContact,
     updateContact,
     listCounterparties,
     createCounterparty,
     listBookings,
+    listRosterBookings,
+    countRosterActiveBookings,
+    countRosterActiveHolds,
+    listRosterCalendarBookings,
+    listRosterActivities,
     listArtistAttentionBookings,
     listArtistCalendarBookings,
     listArtistBookingsForDate,
@@ -814,6 +931,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     createManualBooking,
     updateBookingDetails,
     setBookingStatus,
+    listAgencyRequests,
     setBookingArchived,
     listActivities,
     listBookingEmailMessages,
@@ -827,6 +945,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     setNextMove,
     completeNextMove,
     listHolds,
+    listRosterHolds,
     listArtistActiveHolds,
     listArtistCalendarHolds,
     listArtistHoldsForDate,

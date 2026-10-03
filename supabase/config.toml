@@ -38,3 +38,15 @@ verify_jwt = false
 
 [functions.brevo-transactional-events]
 verify_jwt = false
+
+# GET callback uses an expiring single-use state; POST validates Auth identity.
+[functions.connected-mailbox]
+verify_jwt = false
+
+# Public provider callback; POST requires raw-body HMAC authentication.
+[functions.nylas-mailbox-events]
+verify_jwt = false
+
+# Scheduled/operator callback requires MAILBOX_WORKER_SECRET and explicit server gate.
+[functions.process-mailbox-incoming]
+verify_jwt = false

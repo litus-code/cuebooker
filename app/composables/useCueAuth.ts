@@ -1,3 +1,4 @@
+import { AGENCY_INVITE_STORAGE, validAgencyInviteToken } from '../domain/agencyTeam'
 type CueUser = {
   id: string
   email?: string
@@ -415,6 +416,9 @@ export function useCueAuth() {
   }
 
   function accountDestination() {
+    if (import.meta.client) {
+      try { if (validAgencyInviteToken(sessionStorage.getItem(AGENCY_INVITE_STORAGE))) return '/agency-invite' } catch { /* Normal sign-in remains available without browser storage. */ }
+    }
     return profile.value?.onboarding_completed ? '/workspace' : '/onboarding'
   }
 
@@ -427,6 +431,7 @@ export function useCueAuth() {
     signedIn,
     initialize,
     fetchProfile,
+    ensureFreshSession,
     signIn,
     signUp,
     signOut,
