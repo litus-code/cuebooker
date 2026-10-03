@@ -237,7 +237,7 @@ const links = computed(() => [
         <button v-if="editable" type="button" class="artist-workspace-profile__section-edit" @click="emit('edit','links')" aria-label="Edit links" />
       </section>
 
-      <section class="artist-workspace-profile__booking-band">
+      <section v-if="!agencyManaged" class="artist-workspace-profile__booking-band">
         <div class="artist-workspace-profile__booking-index" aria-hidden="true">05</div>
         <div>
           <span>BOOKING</span>
