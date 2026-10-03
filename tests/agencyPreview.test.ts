@@ -79,7 +79,7 @@ test('public artist portfolios from agency catalogue stay managed by that agency
   assert.match(page, /getPublicAgencyProfile/)
   assert.match(page, /agency\.artists\.find\(artist => artist\.slug === slug\.value\)/)
   assert.match(page, /:agency-managed="agencyManaged"/)
-  assert.match(profile, /v-if="agencyManaged" class="public-artist-profile__agency-return"/)
+  assert.match(profile, /v-else-if="agencyManaged" class="public-artist-profile__agency-return"/)
   assert.match(profile, /requestOpen && !agencyManaged/)
   assert.match(api, /url\.searchParams\.set\('agency', slug\)/)
   assert.match(edge, /agency RPC is the allowlist/)
