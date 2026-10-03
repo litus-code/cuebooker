@@ -50,6 +50,7 @@ const props = withDefaults(defineProps<{
   passport?: ProfilePassport
   passportPublicEnabled?: boolean
   publishReady?: boolean
+  agencyManaged?: boolean
 }>(), {
   published: false,
   editable: true,
@@ -57,6 +58,7 @@ const props = withDefaults(defineProps<{
   locale: 'es',
   passportPublicEnabled: true,
   publishReady: true,
+  agencyManaged: false,
   passport: () => ({
     confirmedBookings: 0,
     cities: [],
@@ -99,13 +101,14 @@ const links = computed(() => [
   <section class="artist-workspace-profile">
     <header class="artist-workspace-profile__bar">
       <div>
-        <span>ARTIST PROFILE</span>
-        <strong :class="{ published }">{{ published ? (locale === 'es' ? 'PUBLICADO' : 'PUBLISHED') : (locale === 'es' ? 'BORRADOR' : 'DRAFT') }}</strong>
+        <span>{{ agencyManaged ? (locale === 'es' ? 'AGENCIA / FICHA DE ARTISTA' : 'AGENCY / ARTIST PROFILE') : 'ARTIST PROFILE' }}</span>
+        <strong v-if="agencyManaged">{{ locale === 'es' ? 'GESTIONADO POR LA AGENCIA' : 'MANAGED BY AGENCY' }}</strong>
+        <strong v-else :class="{ published }">{{ published ? (locale === 'es' ? 'PUBLICADO' : 'PUBLISHED') : (locale === 'es' ? 'BORRADOR' : 'DRAFT') }}</strong>
       </div>
       <div class="artist-workspace-profile__bar-actions">
-        <button type="button" class="secondary" :aria-label="locale === 'es' ? 'Ver como público en una pestaña nueva' : 'Open public view in a new tab'" @click="emit('preview')">{{ locale === 'es' ? 'Ver como público' : 'Public view' }} <span aria-hidden="true">↗</span></button>
+        <button type="button" class="secondary" :aria-label="agencyManaged ? (locale === 'es' ? 'Previsualizar ficha del artista' : 'Preview artist profile') : (locale === 'es' ? 'Ver como público en una pestaña nueva' : 'Open public view in a new tab')" @click="emit('preview')">{{ agencyManaged ? (locale === 'es' ? 'Previsualizar ficha' : 'Preview profile') : (locale === 'es' ? 'Ver como público' : 'Public view') }} <span aria-hidden="true">↗</span></button>
         <button
-          v-if="editable"
+          v-if="editable && !agencyManaged"
           type="button"
           class="primary"
           :disabled="saving"
@@ -242,11 +245,11 @@ const links = computed(() => [
           <p>{{ locale === 'es' ? 'El formulario público alimenta el mismo Booking Core que gestionas en el workspace.' : 'The public form feeds the same Booking Core you manage in the workspace.' }}</p>
         </div>
         <div class="artist-workspace-profile__booking-actions">
-          <button v-if="published" type="button" class="primary" @click="emit('toggleRequests', !profile.acceptingRequests)">
+          <button v-if="published && !agencyManaged" type="button" class="primary" @click="emit('toggleRequests', !profile.acceptingRequests)">
             {{ profile.acceptingRequests ? (locale === 'es' ? 'Cerrar solicitudes' : 'Close requests') : (locale === 'es' ? 'Abrir solicitudes' : 'Open requests') }}
           </button>
           <button v-if="editable" type="button" @click="emit('edit','booking')">{{ locale === 'es' ? 'Configurar booking' : 'Booking settings' }}</button>
-          <button v-if="editable" type="button" @click="emit('edit','distribution')">{{ locale === 'es' ? 'Compartir perfil' : 'Share profile' }}</button>
+          <button v-if="editable && !agencyManaged" type="button" @click="emit('edit','distribution')">{{ locale === 'es' ? 'Compartir perfil' : 'Share profile' }}</button>
         </div>
       </section>
     </article>
