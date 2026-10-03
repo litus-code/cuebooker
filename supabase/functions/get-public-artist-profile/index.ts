@@ -296,7 +296,7 @@ Deno.serve(async request => {
     try {
       const supabaseUrl = requiredEnv("SUPABASE_URL").replace(/\/$/, "");
       const serviceKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
-      const agency = await serviceJson<{ mediaWorkspaceId?: string; coverPath?: string; logoPath?: string; coverUrl?: string | null; logoUrl?: string | null; artists: Array<{ id: string; imagePath?: string | null; coverPath?: string | null; imageUrl?: string | null; coverUrl?: string | null }> } | null>(
+      const agency = await serviceJson<{ name: string; mediaWorkspaceId?: string; coverPath?: string; logoPath?: string; coverUrl?: string | null; logoUrl?: string | null; artists: Array<{ id: string; imagePath?: string | null; coverPath?: string | null; imageUrl?: string | null; coverUrl?: string | null; profile?: Record<string, unknown> }> } | null>(
         `${supabaseUrl}/rest/v1/rpc/get_public_agency_profile`,
         { method: "POST", body: JSON.stringify({ agency_slug: agencySlug }) }, serviceKey
       );
