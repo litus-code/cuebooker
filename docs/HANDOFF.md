@@ -1,3 +1,9 @@
+## 2026-10-04 / Agency preview artist record booking band
+
+Branch `feature/agency-multi-artist-beta`, based on `35a11942586cc6542221d6f0306c617ad77bc589`. The anonymous agency preview omitted `agencyManaged` when rendering WorkspaceArtistProfile, so its default false exposed the individual booking band despite the live workspace already hiding it. The preview now passes true explicitly, hiding Booking paused, Configure booking and Share profile in the managed record and retaining the independent artist behavior. The existing agency integration test verifies the preview prop connection and component condition.
+
+Validation: npm test and staging generation, as recorded in this change's CI. No schema, functions, production or live data changes. Next: inspect the artist record in PR96 preview on the owner's phone.
+
 ## 2026-10-04 / Recover PR96 mobile follow-up
 
 Branch `feature/agency-multi-artist-beta`, base HEAD `851c6206399f1a62ca86c0db0e09db7bf9d07137`. This section travels in the implementation commit; use Git history for its resulting SHA.

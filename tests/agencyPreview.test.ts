@@ -53,6 +53,10 @@ test('agency artist profiles are agency-managed, not individually published', as
   const agencyPage = await readFile(new URL('../app/components/PublicAgencyProfile.vue', import.meta.url), 'utf8')
   const migration = await readFile(new URL('../supabase/migrations/20261003200000_agency_managed_catalog_artists.sql', import.meta.url), 'utf8')
   assert.match(workspace, /:agency-managed="isAgency"/)
+  const preview = await readFile(new URL('../app/pages/preview-agency.vue', import.meta.url), 'utf8')
+  assert.match(preview, /<WorkspaceArtistProfile\s+:profile="agencyArtistProfile"\s+:agency-managed="true"/)
+  assert.match(profile, /<section v-if="!agencyManaged" class="artist-workspace-profile__booking-band"/)
+
   assert.match(profile, /v-if="editable && !agencyManaged"/)
   assert.match(profile, /GESTIONADO POR LA AGENCIA/)
   assert.match(catalog, /Ficha lista para incluir/)

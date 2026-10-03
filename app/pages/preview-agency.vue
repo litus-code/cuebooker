@@ -320,6 +320,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
       <section v-else-if="view === 'profile'" class="agency-preview__profile-builder" :aria-label="locale === 'es' ? 'Editor de ficha del artista' : 'Artist profile editor'">
         <WorkspaceArtistProfile
           :profile="agencyArtistProfile"
+          :agency-managed="true"
           :editable="true"
           :published="agencyProfilePublished"
           :locale="locale"
