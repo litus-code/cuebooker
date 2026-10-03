@@ -46,7 +46,7 @@ const demoProfile=computed<PublicArtistProfile|null>(()=>{
  return {stageName:a.name,slug:a.slug,bio:es.value?'Ficha ficticia para revisar el recorrido Agencia → Artista → Booking. Los datos no se publican.':'Fictional profile to review Agency → Artist → Booking. This data is not published.',city:a.city,countryCode:'ES',languages:['ES','EN'],primaryGenres:a.genres,secondaryGenres:[],performanceFormats:['DJ set'],eventTypes:['Club'],yearsActive:null,websiteUrl:null,instagramUrl:null,soundcloudUrl:null,mixcloudUrl:null,youtubeUrl:null,spotifyUrl:null,coverUrl:null,coverPositionY:50,artistImageUrl:null,artistCutoutUrl:null,artistImageStyle:'photo',artistImagePositionX:50,artistImagePositionY:50,artistImageScale:1,acceptingRequests:true,bookingManagedBy:catalog.value?.name||null}
 })
 const previewDialog=ref<HTMLDialogElement|null>(null)
-const previewData=computed(()=>catalog.value ? agencyCatalogPreview({...catalog.value,coverUrl:mediaUrls.value.cover||catalog.value.coverUrl,logoUrl:mediaUrls.value.logo||catalog.value.logoUrl},visibleIds.value) : null)
+const previewData=computed(()=>{if(!catalog.value)return null;const snapshot={...catalog.value,coverUrl:mediaUrls.value.cover||catalog.value.coverUrl,logoUrl:mediaUrls.value.logo||catalog.value.logoUrl};return props.demo?agencyCatalogPreview(snapshot,visibleIds.value):{...snapshot,artists:[...snapshot.artists]}})
 const publicUrl=computed(()=>catalog.value && import.meta.client ? `${window.location.origin}/agency/${catalog.value.slug}` : '')
 const fields=[{id:'tagline',es:'Frase de portada',en:'Cover tagline',max:254},{id:'city',es:'Ciudad base',en:'Base city',max:254},{id:'coverUrl',es:'Imagen de portada · URL HTTPS',en:'Cover image · HTTPS URL',max:2048},{id:'logoUrl',es:'Logo · URL HTTPS',en:'Logo · HTTPS URL',max:2048},{id:'contactEmail',es:'Email público de booking',en:'Public booking email',max:254},{id:'instagramUrl',es:'Instagram · URL HTTPS',en:'Instagram · HTTPS URL',max:2048},{id:'websiteUrl',es:'Web · URL HTTPS',en:'Website · HTTPS URL',max:2048}] as const
 async function load(){
@@ -74,7 +74,7 @@ async function openPreview(){
  if(!catalog.value)return
  previewArtistId.value=''
  error.value=''
- if(!props.demo) await Promise.all(catalog.value.artists.filter(a=>a.eligible&&visibleIds.value.includes(a.id)).map(async a=>{try{const profile=await getPublicArtistProfile(String(config.public.supabaseUrl),a.slug);a.imageUrl=profile.artistImageUrl;a.coverUrl=profile.coverUrl}catch{a.imageUrl=null;a.coverUrl=null}}))
+ if(!props.demo) await Promise.all(catalog.value.artists.map(async a=>{try{const profile=await getPublicArtistProfile(String(config.public.supabaseUrl),a.slug);a.imageUrl=profile.artistImageUrl;a.coverUrl=profile.coverUrl}catch{a.imageUrl=null;a.coverUrl=null}}))
  previewDialog.value?.showModal()
 }
 async function copyLink(){try{await navigator.clipboard.writeText(publicUrl.value);notice.value=es.value?'Enlace copiado.':'Link copied.'}catch{notice.value=publicUrl.value}}
