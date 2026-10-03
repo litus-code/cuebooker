@@ -527,7 +527,7 @@ function confirmRetire(artist: RosterArtist) {
 
 /* Keep roster actions in the open upper-right area of each mobile artist card. */
 @media(max-width:750px){
- .agency-roster article{position:relative;padding-right:118px;min-height:210px}
+ .agency-roster article{position:relative}
  .agency-roster-actions{position:absolute;top:54px;right:20px;width:auto;margin:0;display:flex;flex-direction:column;gap:8px}
  .agency-roster-actions button{width:48px;height:48px;min-height:48px;padding:10px}
 }
