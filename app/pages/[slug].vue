@@ -21,9 +21,9 @@ const bookingReference = ref('')
 const bookingError = ref('')
 const requestId = ref('')
 
-const embedMode = computed(() => route.query.embed === '1')
 const agencySlug = computed(() => String(route.query.agency || '').trim().toLowerCase())
 const agencyManaged = computed(() => route.query.src === 'agency' && Boolean(agencySlug.value))
+const embedMode = computed(() => route.query.embed === '1' && !agencyManaged.value)
 const agencyHref = computed(() => agencySlug.value ? `/agency/${encodeURIComponent(agencySlug.value)}#agency-contact` : '/')
 const entrySource = computed(() => normalizePublicEntrySource(route.query.src) || (embedMode.value ? 'website' : null))
 const bookingFocused = computed(() => route.query.booking === '1' || embedMode.value)
@@ -119,10 +119,10 @@ watch([slug, agencySlug, agencyManaged], () => {
 
 useHead(() => {
   const artist = profile.value
-  const title = artist ? `${artist.stageName} · Booking | Cuebooker` : 'Artist · Cuebooker'
+  const title = artist ? `${artist.stageName} · ${agencyManaged.value ? (locale.value === 'es' ? 'Catálogo' : 'Catalogue') : 'Booking'} | Cuebooker` : 'Artist · Cuebooker'
   const description = artist?.bio?.trim().slice(0, 180) || (locale.value === 'es'
-    ? 'Perfil profesional y solicitudes de booking en Cuebooker.'
-    : 'Professional artist profile and booking enquiries on Cuebooker.')
+    ? (agencyManaged.value ? 'Artista representado por una agencia en Cuebooker.' : 'Perfil profesional y solicitudes de booking en Cuebooker.')
+    : (agencyManaged.value ? 'Agency-represented artist portfolio on Cuebooker.' : 'Professional artist profile and booking enquiries on Cuebooker.'))
   const canonical = agencyManaged.value
     ? `https://cuebooker.com/${encodeURIComponent(slug.value)}?src=agency&agency=${encodeURIComponent(agencySlug.value)}`
     : `https://cuebooker.com/${encodeURIComponent(slug.value)}`
