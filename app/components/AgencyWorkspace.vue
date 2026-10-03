@@ -176,7 +176,6 @@ watch(calendarArtists, ids => {
 watch(() => props.artists.map(item => `${item.id}:${item.artist_image_path || item.cover_image_path || ''}`).join(','), async () => {
   for (const url of Object.values(portraitUrls.value)) URL.revokeObjectURL(url)
   portraitUrls.value = {}
-  if (props.demoData) return
   for (const artist of props.artists) {
     const path = artist.artist_image_path || artist.cover_image_path
     if (!path) continue
