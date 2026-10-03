@@ -241,8 +241,8 @@ const links = computed(() => [
         <div class="artist-workspace-profile__booking-index" aria-hidden="true">05</div>
         <div>
           <span>BOOKING</span>
-          <h2>{{ profile.acceptingRequests ? (locale === 'es' ? 'SOLICITUDES ABIERTAS.' : 'OPEN FOR BOOKINGS.') : (locale === 'es' ? 'BOOKING PAUSADO.' : 'BOOKING PAUSED.') }}</h2>
-          <p>{{ locale === 'es' ? 'El formulario público alimenta el mismo Booking Core que gestionas en el workspace.' : 'The public form feeds the same Booking Core you manage in the workspace.' }}</p>
+          <h2>{{ agencyManaged ? (locale === 'es' ? 'BOOKING GESTIONADO POR LA AGENCIA.' : 'BOOKING MANAGED BY THE AGENCY.') : profile.acceptingRequests ? (locale === 'es' ? 'SOLICITUDES ABIERTAS.' : 'OPEN FOR BOOKINGS.') : (locale === 'es' ? 'BOOKING PAUSADO.' : 'BOOKING PAUSED.') }}</h2>
+          <p>{{ agencyManaged ? (locale === 'es' ? 'Las consultas de este artista llegan al equipo de la agencia.' : 'Enquiries for this artist go to the agency team.') : locale === 'es' ? 'El formulario público alimenta el mismo Booking Core que gestionas en el workspace.' : 'The public form feeds the same Booking Core you manage in the workspace.' }}</p>
         </div>
         <div class="artist-workspace-profile__booking-actions">
           <button v-if="published && !agencyManaged" type="button" class="primary" @click="emit('toggleRequests', !profile.acceptingRequests)">
