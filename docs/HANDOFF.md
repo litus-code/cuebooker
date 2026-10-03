@@ -3716,3 +3716,6 @@ Branch `feature/app-visual-system`, based on `fa7448a9a54f97aa542c04b7e05e3a5309
 Validation: modular registry tests, `npm run cue-id:validate-modular`, and application build (local worktree). The validator checks shape/files/GLB metadata but cannot replace visual rig and device QA. No schema, migrations, functions, environment or production change.
 
 Next: approve a common body/rig master and segmentation, build one real piece in Blender, perform pose/combination/device QA, then integrate a gated modular loader with cache and semantic-ID migration plan. Do not switch the live creator to the empty registry.
+## 2026-10-04 / Always show agency calendar artist checkboxes
+
+PR96, base `6a88f9dcf0e55dba22f626ec600fd859317b500d`. Agency calendar always renders checkboxes for the complete active roster, including entry from a selected artist. The demo loads calendar bookings and holds from the full active roster so adding another checked artist displays their dates. Live calendar queries already cover the entire roster. Checkbox URL updates are no longer suppressed by selectedArtistId. Tests verify the visible filter fieldset and adding/removing artists against the compiled component. No production or schema changes.

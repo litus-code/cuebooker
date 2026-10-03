@@ -185,7 +185,7 @@ watch([month, selectedDay], () => {
   if (!props.demoData && props.view === 'calendar') void router.replace({ query: { ...route.query, rosterMonth: month.value, rosterDay: selectedDay.value } })
 })
 watch(calendarArtists, ids => {
-  if (props.demoData || props.view !== 'calendar' || props.selectedArtistId) return
+  if (props.demoData || props.view !== 'calendar') return
   void router.replace({ query: { ...route.query, view: props.view, rosterCalendar: ids.join(',') } })
 })
 watch(() => props.artists.map(item => `${item.id}:${item.artist_image_path || item.cover_image_path || ''}`).join(','), async () => {
@@ -214,10 +214,10 @@ async function load() {
     summaryBookings.value = rows.slice(0, 100)
     exactActiveCount.value = agencyActiveBookingCount(rows)
     exactHoldCount.value = props.demoData.holds.filter(item => item.status === 'active' && ids.has(item.bookings.artist_id)).length
-    monthBookings.value = rows.filter(item => item.status === 'confirmed' && !item.archived_at && item.event_date && item.event_date >= month.value && item.event_date < monthEnd.value)
+    monthBookings.value = props.demoData.bookings.filter(item => activeIds.value.has(item.artist_id) && item.status === 'confirmed' && !item.archived_at && item.event_date && item.event_date >= month.value && item.event_date < monthEnd.value)
     const activityRows = props.demoData.activities.filter(item => ids.has(item.bookings.artist_id) && (props.view !== 'history' || filterArtist.value === 'all' || item.bookings.artist_id === filterArtist.value))
     activities.value = activityRows.slice((props.view === 'history' ? activityPage.value : 0) * pageSize, props.view === 'history' ? (activityPage.value + 1) * pageSize + 1 : 100)
-    holds.value = props.demoData.holds.filter(item => ids.has(item.bookings.artist_id) && item.event_date >= month.value && item.event_date < monthEnd.value)
+    holds.value = props.demoData.holds.filter(item => activeIds.value.has(item.bookings.artist_id) && item.event_date >= month.value && item.event_date < monthEnd.value)
     contacts.value = props.demoData.contacts
     counterparties.value = props.demoData.counterparties
     loading.value = false
@@ -300,7 +300,7 @@ function retirePendingArtist() {
         <template v-else><p v-if="!visibleActivities.length" class="agency-muted">{{ isEs ? 'Aún no hay actividad real para este filtro.' : 'No activity for this filter yet.' }}</p><div class="agency-list"><button v-for="item in visibleActivities" :key="item.id" class="agency-row" type="button" @click="emit('openBooking', item.booking_id)"><span><b>{{ label(item.bookings.artist_id) }} / {{ activityTypeLabel(item.type) }}</b><strong>{{ activityPreview(item) || item.bookings.event_name || item.bookings.venue_name || 'Booking' }}</strong></span><time>{{ shortDate(item.occurred_at.slice(0, 10)) }}</time></button></div><div v-if="activityPage > 0 || activities.length > pageSize" class="agency-pages"><button :aria-label="isEs ? 'Página anterior' : 'Previous page'" :disabled="activityPage === 0" type="button" @click="activityPage--">←</button><span>{{ activityPage + 1 }}</span><button :aria-label="isEs ? 'Página siguiente' : 'Next page'" :disabled="activities.length <= pageSize" type="button" @click="activityPage++">→</button></div></template>
       </template>
       <template v-else-if="view === 'calendar'">
-        <fieldset v-if="!selectedArtistId" class="agency-calendar-filters"><legend class="agency-visually-hidden">{{ isEs ? 'Artistas visibles' : 'Visible artists' }}</legend><label v-for="artist in activeArtists" :key="artist.id"><input type="checkbox" :checked="calendarArtists.includes(artist.id)" @change="toggleCalendarArtist(artist.id)">{{ artist.stage_name }}</label></fieldset>
+        <fieldset class="agency-calendar-filters"><legend class="agency-visually-hidden">{{ isEs ? 'Artistas visibles' : 'Visible artists' }}</legend><label v-for="artist in activeArtists" :key="artist.id"><input type="checkbox" :checked="calendarArtists.includes(artist.id)" @change="toggleCalendarArtist(artist.id)">{{ artist.stage_name }}</label></fieldset>
         <div class="agency-calendar-layout">
           <section class="agency-month-panel">
             <div class="agency-month"><button type="button" :aria-label="isEs ? 'Mes anterior' : 'Previous month'" @click="moveMonth(-1)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></button><h2>{{ monthLabel }}</h2><button type="button" :aria-label="isEs ? 'Mes siguiente' : 'Next month'" @click="moveMonth(1)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg></button></div>

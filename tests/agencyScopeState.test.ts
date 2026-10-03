@@ -8,6 +8,7 @@ import {createRenderer,h,reactive,nextTick,ref,computed,watch,onUnmounted} from 
 test('actual AgencyWorkspace keeps one operational scope across selected artist, bookings and calendar',async()=>{
  const filename=new URL('../app/components/AgencyWorkspace.vue',import.meta.url)
  const {descriptor}=parse(await readFile(filename,'utf8'))
+ assert.match(descriptor.template!.content, /<fieldset class="agency-calendar-filters">/)
  const compiled=compileScript(descriptor,{id:'agency-scope'}).content
  const rosterUrl=new URL('../app/domain/agencyRoster.ts',import.meta.url).href
  const emailUrl=new URL('../app/services/emailReplyPresentation.ts',import.meta.url).href
@@ -46,6 +47,10 @@ test('actual AgencyWorkspace keeps one operational scope across selected artist,
   assert.deepEqual(state.scopedArtists.value.map((a:any)=>a.id),['b'])
   assert.deepEqual(state.calendarArtists.value,['b'])
   assert.deepEqual(state.visibleMonthBookings.value.map((b:any)=>b.id),['b1'])
+  state.toggleCalendarArtist('a');await nextTick()
+  assert.deepEqual(state.visibleMonthBookings.value.map((b:any)=>b.id).sort(),['a1','b1'])
+  state.toggleCalendarArtist('b');await nextTick()
+  assert.deepEqual(state.visibleMonthBookings.value.map((b:any)=>b.id),['a1'])
   props.selectedArtistId='a';await nextTick();await nextTick()
   assert.deepEqual(state.visibleMonthBookings.value.map((b:any)=>b.id),['a1'])
   props.view='bookings';await nextTick();await nextTick()
