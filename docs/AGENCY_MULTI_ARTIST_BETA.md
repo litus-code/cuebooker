@@ -130,3 +130,10 @@ The agency's `Ver ficha` route is available publicly only for artists selected i
 - The agency overview's artist total always reflects the complete active roster, even when bookings and calendar are scoped to one artist.
 - The agency contact CTA uses a drawn SVG arrow and the shared rounded control radius instead of an emoji glyph.
 - The internal managed artist record omits the redundant booking-status band. Booking enquiries remain directed through the agency catalogue contact form.
+
+
+## PR #96 public portfolio labels
+
+- A public artist portfolio only renders CUE ID when the artist has selected CUE ID as the public visual and has a CUE ID configuration. It renders CUE Passport only when a public Passport summary is present; otherwise those optional sections stay hidden.
+- The agency booking heading is shortened for the large mobile type scale, and the repeated agency-name booking line is removed. The rounded contact button remains the clear route to the agency enquiry form.
+- The agency artist editor labels the career section “CUE Passport”.
