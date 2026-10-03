@@ -115,3 +115,11 @@ The agency editor's roster selection has an explicit **Save selection** action d
 **One enquiry owner:** for an agency-represented DJ, the agency is the booking contact and owns the enquiry workflow. The public artist portfolio is a presentation page, not a second intake form. Its contact actions return to the agency form with the artist selected, so the promoter submits one request and the agency team receives it in Bookings. A general agency enquiry remains available when no artist is selected. Independent artists keep their separate artist-owned booking form.
 
 The agency's `Ver ficha` route is available publicly only for artists selected in a published agency catalogue. Its return/contact URLs retain the agency and artist context. Public forms validate the selected artist against the published agency catalogue server-side; the URL query only initializes the visitor's selection and does not grant access.
+
+
+## PR #96 mobile and agency catalogue follow-up
+
+- Agency Settings is teleported to the document body. Its mobile sizing, page gutters, and wrapping rules therefore live on a class attached directly to the panel, so the heading remains fully visible on narrow screens.
+- In the unsaved catalogue preview, selecting an artist opens the local portfolio preview in place. It shows loading or an error state and does not navigate to a public URL.
+- Agency-managed artist portfolios describe booking as handled by the agency. The independent artist flow retains its own open or paused booking state.
+- The public agency catalogue has a Share action that opens the phone's native share sheet where available, with a copy-link fallback in browsers without Web Share.
