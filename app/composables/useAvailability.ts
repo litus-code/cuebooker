@@ -80,7 +80,7 @@ export function useAvailability() {
   async function listRosterArtists(ids: string[]) {
     if (!ids.length) return [] as Artist[]
     return $fetch<Artist[]>(`${supabaseUrl.value}/rest/v1/artists`, {
-      headers: headers(), query: { id: `in.(${ids.join(',')})`, select: 'id,stage_name,slug,city', order: 'stage_name.asc' }
+      headers: headers(), query: { id: `in.(${ids.join(',')})`, select: 'id,stage_name,slug,city,artist_image_path,cover_image_path', order: 'stage_name.asc' }
     })
   }
 
