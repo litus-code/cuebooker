@@ -104,3 +104,14 @@ For operators: in **Agency → Settings → 03 / Catalogue artists**, select the
 - The agency-managed catalogue migration is applied to the staging Supabase project, and `get-public-artist-profile` is deployed there as version 28. CI tests and the static production build passed on commit `dbb0f13c50bbb5acc97caa3928e43e78186616eb`.
 - Staging currently has two active artists in **CUE Agency TEST**, zero selected for its public catalogue, and the agency page is unpublished. Seeing an empty public roster in this state is expected. To show them, open the agency workspace, select the artists in **Settings → Catalogue artists**, save, and enable publication under **Visibility**. This publishes them as an agency catalogue; their individual-public-profile setting is not involved.
 - No production database or production Edge Function was changed.
+
+
+## 3 October 2026: catalogue preview, persistence and enquiry handoff
+
+The agency editor's roster selection has an explicit **Save selection** action directly beneath the artist list. Selecting or unselecting changes draft state; the visible unsaved notice remains until the agency saves successfully. The page-level **Save draft** / **Save and publish** action saves the same settings and selection atomically. Leaving before either save discards unsaved browser state. A draft selection does not appear publicly until the agency page is published.
+
+**Preview is local.** From an unpublished or edited catalogue, **View profile** opens the artist's portfolio inside the preview dialog using the authenticated roster profile data. It does not open the public route, which intentionally returns unavailable until published. The dialog's back action returns to the agency catalogue. The profile's contact action returns to the agency enquiry section with that artist preselected. This is a preview only; the enquiry form cannot submit from preview.
+
+**One enquiry owner:** for an agency-represented DJ, the agency is the booking contact and owns the enquiry workflow. The public artist portfolio is a presentation page, not a second intake form. Its contact actions return to the agency form with the artist selected, so the promoter submits one request and the agency team receives it in Bookings. A general agency enquiry remains available when no artist is selected. Independent artists keep their separate artist-owned booking form.
+
+The agency's `Ver ficha` route is available publicly only for artists selected in a published agency catalogue. Its return/contact URLs retain the agency and artist context. Public forms validate the selected artist against the published agency catalogue server-side; the URL query only initializes the visitor's selection and does not grant access.
