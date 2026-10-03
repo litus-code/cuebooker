@@ -2380,7 +2380,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <nav v-if="isAgency && selectedArtistId && ['profile','passport','cue-id'].includes(activeView) && !workspaceSurfaceLoading" class="agency-artist-tabs" :aria-label="preferences.locale.value === 'es' ? 'Ficha del artista' : 'Artist record'">
       <button type="button" @click="changeView('roster')">← {{ preferences.locale.value === 'es' ? 'Artistas' : 'Artists' }}</button>
       <strong>{{ selectedArtist?.stage_name }}</strong>
-      <button v-for="tab in (['profile','passport','cue-id'] as const)" :key="tab" type="button" :aria-current="activeView === tab ? 'page' : undefined" @click="changeView(tab)">{{ tab === 'profile' ? (preferences.locale.value === 'es' ? 'Ficha y perfil público' : 'Record & public profile') : tab === 'passport' ? (preferences.locale.value === 'es' ? 'Trayectoria' : 'Career') : 'CUE ID' }}</button>
+      <button v-for="tab in (['profile','passport','cue-id'] as const)" :key="tab" type="button" :aria-current="activeView === tab ? 'page' : undefined" @click="changeView(tab)">{{ tab === 'profile' ? (preferences.locale.value === 'es' ? 'Ficha y perfil público' : 'Record & public profile') : tab === 'passport' ? 'CUE Passport' : 'CUE ID' }}</button>
     </nav>
 
     <section v-if="workspaceSurfaceLoading" class="workspace-loading-state" aria-busy="true" aria-live="polite">
