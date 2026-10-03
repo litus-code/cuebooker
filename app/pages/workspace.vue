@@ -3234,11 +3234,6 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <AgencyCatalogEditor v-if="isAgency && agencyWorkspaceId" :workspace-id="agencyWorkspaceId" :role="agencyWorkspaceRole" :locale="preferences.locale.value" @edit-artist="id => { closeSettings(); chooseArtist(id, 'profile') }" />
         <AgencyTeamPanel v-if="isAgency && agencyWorkspaceId" :workspace-id="agencyWorkspaceId" :role="agencyWorkspaceRole" :user-id="auth.session.value?.user.id || ''" :locale="preferences.locale.value" />
         <ConnectedMailboxPanel v-if="auth.session.value && bookingCoreWorkspaceId && (!isAgency || canOperateAgency)" :workspace-id="bookingCoreWorkspaceId" :locale="preferences.locale.value" />
-        <section class="settings-preferences" aria-label="Preferencias">
-          <p class="eyebrow">{{ preferences.locale.value === 'es' ? 'PREFERENCIAS' : 'PREFERENCES' }}</p>
-          <section class="settings-group"><span>{{ copy.language }}</span><div class="settings-options"><button :class="{ active: preferences.locale.value === 'es' }" type="button" @click="preferences.setLocale('es')">ES</button><button :class="{ active: preferences.locale.value === 'en' }" type="button" @click="preferences.setLocale('en')">EN</button></div></section>
-          <section class="settings-group"><span>{{ copy.appearance }}</span><div class="settings-options"><button :class="{ active: preferences.theme.value === 'dark' }" type="button" @click="preferences.setTheme('dark')">{{ copy.dark }}</button><button :class="{ active: preferences.theme.value === 'light' }" type="button" @click="preferences.setTheme('light')">{{ copy.light }}</button></div></section>
-        </section>
         <section v-if="demoOverrideEnabled" class="settings-group settings-group--demo">
           <span>DEMO PLAN / {{ currentPlan.toUpperCase().replace('_', ' ') }}</span>
           <div class="settings-options settings-options--three">
@@ -3256,6 +3251,11 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <p v-if="passwordMessage" class="form-hint" :class="{ 'form-hint--success': passwordMessage === copy.passwordSaved, 'form-hint--error': passwordMessage !== copy.passwordSaved }">{{ passwordMessage }}</p>
           <button class="primary-button" type="submit" :disabled="passwordSaving">{{ passwordSaving ? '…' : copy.savePassword }}</button>
         </form>
+        <section class="settings-preferences" aria-label="Preferencias">
+          <p class="eyebrow">{{ preferences.locale.value === 'es' ? 'PREFERENCIAS' : 'PREFERENCES' }}</p>
+          <section class="settings-group"><span>{{ copy.language }}</span><div class="settings-options"><button :class="{ active: preferences.locale.value === 'es' }" type="button" @click="preferences.setLocale('es')">ES</button><button :class="{ active: preferences.locale.value === 'en' }" type="button" @click="preferences.setLocale('en')">EN</button></div></section>
+          <section class="settings-group"><span>{{ copy.appearance }}</span><div class="settings-options"><button :class="{ active: preferences.theme.value === 'dark' }" type="button" @click="preferences.setTheme('dark')">{{ copy.dark }}</button><button :class="{ active: preferences.theme.value === 'light' }" type="button" @click="preferences.setTheme('light')">{{ copy.light }}</button></div></section>
+        </section>
       </aside>
     </div>
 
@@ -4961,6 +4961,16 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
     padding:16px!important;
   }
   :global(.profile-portrait-editor__upload > strong) { font-size:16px!important; }
+}
+
+/* Keep the agency settings drawer bounded to the viewport and its heading readable. */
+.workspace--agency .settings-panel{box-sizing:border-box;width:min(460px,100vw);max-width:100vw;max-height:100dvh;overflow-x:hidden;overscroll-behavior:contain}
+.workspace--agency .settings-panel>.editor-heading{box-sizing:border-box;width:auto;min-width:0}
+.workspace--agency .settings-panel>.editor-heading>div{box-sizing:border-box;flex:1 1 auto;min-width:0;max-width:100%;padding:0}
+.workspace--agency .settings-panel>.editor-heading h2{overflow-wrap:anywhere}
+@media(max-width:680px){
+ .workspace--agency .settings-panel{width:100vw;height:100dvh;max-height:100dvh;padding-bottom:max(24px,env(safe-area-inset-bottom))}
+ .workspace--agency .settings-panel>.editor-heading{top:0}
 }
 </style>
 
