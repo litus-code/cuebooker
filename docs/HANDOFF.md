@@ -3719,3 +3719,9 @@ Next: approve a common body/rig master and segmentation, build one real piece in
 ## 2026-10-04 / Always show agency calendar artist checkboxes
 
 PR96, base `6a88f9dcf0e55dba22f626ec600fd859317b500d`. Agency calendar always renders checkboxes for the complete active roster, including entry from a selected artist. The demo loads calendar bookings and holds from the full active roster so adding another checked artist displays their dates. Live calendar queries already cover the entire roster. Checkbox URL updates are no longer suppressed by selectedArtistId. Tests verify the visible filter fieldset and adding/removing artists against the compiled component. No production or schema changes.
+## 2026-10-04 / Clearing artist filter retains the current tab
+
+PR96, base `6c80a3f863b7fa2a5dbf2bd8196670292d80a340`. Clearing the selected artist in the preview no longer restores a previously remembered tab. Workspace return-to-agency query also derives the target from the current view, with the existing fallback for artist-only profile views. Bookings, Calendar, Overview and Activity stay in place. Added regression contracts. No production or schema changes.
+## 2026-10-04 / Navigation uses the selected language
+
+PR96 follow-up to filter retention: anonymous agency preview menu now reacts to locale for all six destinations. Spanish labels are Resumen, Reservas, Calendario, Actividad, Artistas, Ajustes. Live workspace uses Reservas for the Spanish Bookings label and preserves CUE Passport as the product name. Test evaluates both locale mappings. No production changes.

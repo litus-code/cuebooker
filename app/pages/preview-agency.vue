@@ -182,9 +182,9 @@ const focusedBooking = computed(() => demoBookings.value.find(item => item.id ==
 const bookingArtist = computed(() => artists.value.find(item => item.id === focusedBooking.value?.artist_id))
 function closeBooking() { focusBookingId.value = ''; view.value = returnView.value }
 const nav = computed<Array<{ id: DemoView; label: string }>>(() => [
-  { id: 'overview', label: 'Overview' }, { id: 'bookings', label: 'Bookings' }, { id: 'calendar', label: 'Calendar' },
-  { id: 'history', label: 'Activity' }, { id: 'roster', label: locale.value === 'es' ? 'Artistas' : 'Artists' },
-  { id: 'settings', label: 'Settings' }
+  { id: 'overview', label: locale.value === 'es' ? 'Resumen' : 'Overview' }, { id: 'bookings', label: locale.value === 'es' ? 'Reservas' : 'Bookings' }, { id: 'calendar', label: locale.value === 'es' ? 'Calendario' : 'Calendar' },
+  { id: 'history', label: locale.value === 'es' ? 'Actividad' : 'Activity' }, { id: 'roster', label: locale.value === 'es' ? 'Artistas' : 'Artists' },
+  { id: 'settings', label: locale.value === 'es' ? 'Ajustes' : 'Settings' }
 ])
 const previewNotificationsOpen = ref(false)
 const previewNotificationsUnread = ref(true)
@@ -242,7 +242,7 @@ async function createDemoCue(input: CreateManualBookingInput) {
   rosterRevision.value++
   return item
 }
-function returnToAgency() { selectedArtistId.value = ''; focusBookingId.value = ''; view.value = returnView.value }
+function returnToAgency() { selectedArtistId.value = ''; focusBookingId.value = '' }
 function setRosterActive(id: string, active: boolean) {
   const artist = artists.value.find(item => item.id === id)
   if (!artist) return

@@ -101,7 +101,7 @@ const agencyReturnQuery = ref<Record<string, any> | null>(null)
 const canOperateAgency = computed(() => hasAgencyOperationAccess(agencyWorkspaceRole.value))
 function rememberAgencyContext() { if (isAgencyGlobal.value) agencyReturnQuery.value = agencyGlobalQuery(route.query, activeView.value) }
 async function returnToAgency() {
-  const query = agencyReturnQuery.value || agencyGlobalQuery(route.query, 'overview')
+  const query = agencyGlobalQuery(route.query, agencyViewForArtist(activeView.value, false))
   selectedArtistId.value = ''
   await router.replace({ query })
   await changeView(workspaceViewFromQuery(query.view))
@@ -287,7 +287,7 @@ function setPassportMilestoneAuto(enabled: boolean) {
 }
 
 const baseCopy = computed(() => preferences.locale.value === 'es' ? {
-  overview: 'Resumen', bookings: 'Bookings', calendar: 'Calendario', history: 'Actividad', profile: 'Perfil', passport: 'Passport', cueId: 'CUE ID',
+  overview: 'Resumen', bookings: 'Reservas', calendar: 'Calendario', history: 'Actividad', profile: 'Perfil', passport: 'CUE Passport', cueId: 'CUE ID',
   artist: 'Artista', role: 'DJ', settings: 'Ajustes', logout: 'Cerrar sesión',
   loading: 'Cargando workspace…', rosterEyebrow: 'ROSTER / PRIMER ARTISTA', addFirstArtist: 'Añade el primer artista de',
   rosterBody: 'Quedará asociado al roster y podrás empezar a gestionar su actividad.', artistName: 'Nombre artístico', identifier: 'Identificador', creating: 'Creando…', addArtist: 'Añadir artista',

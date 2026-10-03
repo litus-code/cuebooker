@@ -90,3 +90,18 @@ test('public artist portfolios from agency catalogue stay managed by that agency
   assert.match(edge, /bookingManagedBy: agency\.name/)
   assert.match(edge, /owns\(artist\.imagePath\)/)
 })
+test('clearing agency artist filter preserves the current operational tab', async () => {
+  const preview = await readFile(new URL('../app/pages/preview-agency.vue', import.meta.url), 'utf8')
+  const workspace = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
+  const clear = preview.match(/function returnToAgency\(\) \{([^}]+)\}/)![1]
+  assert.match(clear, /selectedArtistId.value = ''/)
+  assert.doesNotMatch(clear, /view.value\s*=/)
+  assert.match(workspace, /agencyGlobalQuery\(route.query, agencyViewForArtist\(activeView.value, false\)\)/)
+})
+test('agency preview navigation reacts to the selected language', async () => {
+  const source = await readFile(new URL('../app/pages/preview-agency.vue', import.meta.url), 'utf8')
+  const nav = source.match(/const nav = computed[^]*?\(\(\) => (\[[^]*?\])\)/)![1]
+  const labels = (language:string) => Function('locale', `return ${nav}`)({value:language}).map((item:any)=>item.label)
+  assert.deepEqual(labels('es'), ['Resumen','Reservas','Calendario','Actividad','Artistas','Ajustes'])
+  assert.deepEqual(labels('en'), ['Overview','Bookings','Calendar','Activity','Artists','Settings'])
+})
