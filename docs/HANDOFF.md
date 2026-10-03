@@ -1,3 +1,9 @@
+## 2026-10-03 / Individual DJ settings and rounded actions
+
+PR96, branch `feature/agency-multi-artist-beta`, base `0d14d8748aa2f506d5c43bee69c48b8d2307844e`. Agency/artists is accepted by the owner for now and left unchanged. Individual account settings now use the shared CuePreferencesControl with ES/EN and light/dark appearance controls. The mobile heading cancels the inherited negative gutter and sticky offset, fits its available width and wraps. Individual workspace primary/secondary/destructive actions, including Passport Public settings, use the rounded control token; login/signup/reset submission and access tabs have explicit rounded corners. Flat workspace navigation remains flat.
+
+Validation: 426 tests pass, including three new source-contract regressions. Staging static generation is checked before publishing this change. No production, schema, auth logic or booking data changes. Visual device verification remains pending; browser QA was unavailable in this environment. Next: owner checks individual Settings, Passport action and login on the PR96 phone preview.
+
 ## 2026-10-04 / Artist roster and calendar omit context strip
 
 PR96, base `0f2b535c9b1ba5f6295d16853bfbb43f192f4503`. The preview context strip now appears only on Overview, Bookings and Activity. Artists lists the complete roster without the redundant artist-filter banner; Calendar keeps its existing artist checkboxes. Profile/Passport/CUE ID remain unchanged from the previous fix. Validation: existing tests and staging static generation. No production changes.

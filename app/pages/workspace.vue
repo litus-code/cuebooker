@@ -3231,7 +3231,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
     </template>
 
     <div v-if="settingsOpen" class="editor-backdrop" @click.self="closeSettings">
-      <aside class="editor-panel settings-panel" :class="isAgency ? 'settings-panel--agency' : ''" role="dialog" aria-modal="true" aria-labelledby="settings-title" tabindex="-1">
+      <aside class="editor-panel settings-panel" :class="isAgency ? 'settings-panel--agency' : 'settings-panel--individual'" role="dialog" aria-modal="true" aria-labelledby="settings-title" tabindex="-1">
         <div class="editor-heading"><div><p class="eyebrow">{{ copy.accountPrivate }}</p><h2 id="settings-title">{{ copy.settingsTitle }}</h2></div><button type="button" :aria-label="copy.close" @click="closeSettings">×</button></div>
         <AgencyCatalogEditor v-if="isAgency && agencyWorkspaceId" :workspace-id="agencyWorkspaceId" :role="agencyWorkspaceRole" :locale="preferences.locale.value" @edit-artist="id => { closeSettings(); chooseArtist(id, 'profile') }" />
         <AgencyTeamPanel v-if="isAgency && agencyWorkspaceId" :workspace-id="agencyWorkspaceId" :role="agencyWorkspaceRole" :user-id="auth.session.value?.user.id || ''" :locale="preferences.locale.value" />
@@ -3253,7 +3253,12 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <p v-if="passwordMessage" class="form-hint" :class="{ 'form-hint--success': passwordMessage === copy.passwordSaved, 'form-hint--error': passwordMessage !== copy.passwordSaved }">{{ passwordMessage }}</p>
           <button class="primary-button" type="submit" :disabled="passwordSaving">{{ passwordSaving ? '…' : copy.savePassword }}</button>
         </form>
-        <section class="settings-preferences" aria-label="Preferencias">
+        <section v-if="!isAgency" class="settings-preferences settings-preferences--individual" aria-labelledby="individual-preferences-title">
+          <p class="eyebrow">{{ preferences.locale.value === 'es' ? 'PREFERENCIAS' : 'PREFERENCES' }}</p>
+          <h3 id="individual-preferences-title">{{ preferences.locale.value === 'es' ? 'Idioma y apariencia' : 'Language and appearance' }}</h3>
+          <CuePreferencesControl compact labels />
+        </section>
+        <section v-else class="settings-preferences" aria-label="Preferencias">
           <p class="eyebrow">{{ preferences.locale.value === 'es' ? 'PREFERENCIAS' : 'PREFERENCES' }}</p>
           <section class="settings-group"><span>{{ copy.language }}</span><div class="settings-options"><button :class="{ active: preferences.locale.value === 'es' }" type="button" @click="preferences.setLocale('es')">ES</button><button :class="{ active: preferences.locale.value === 'en' }" type="button" @click="preferences.setLocale('en')">EN</button></div></section>
           <section class="settings-group"><span>{{ copy.appearance }}</span><div class="settings-options"><button :class="{ active: preferences.theme.value === 'dark' }" type="button" @click="preferences.setTheme('dark')">{{ copy.dark }}</button><button :class="{ active: preferences.theme.value === 'light' }" type="button" @click="preferences.setTheme('light')">{{ copy.light }}</button></div></section>
@@ -4987,4 +4992,35 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .agency-artist-tabs button { min-width:0; white-space:nowrap; font-size:clamp(11px,3vw,14px); }
 .agency-artist-back { min-height:44px; padding:8px 12px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-control,12px); background:transparent; color:var(--cue-text); cursor:pointer; }
 .agency-artist-back:focus-visible { outline:2px solid var(--cue-accent); outline-offset:3px; }
+</style>
+
+<style scoped>
+/* Individual account controls share the rounded action style, not the flat navigation tabs. */
+.workspace:not(.workspace--agency) :is(.primary-button,.delete-button,.demo-action,.demo-secondary-action,.demo-danger-action) {
+  border-radius:var(--cue-radius-control,8px)!important;
+}
+.settings-preferences--individual { min-width:0; box-sizing:border-box; gap:14px; }
+.settings-preferences--individual h3 { margin:0; font-size:18px; line-height:1.3; }
+.settings-panel--individual > .editor-heading > div { min-width:0; max-width:100%; }
+@media(max-width:680px) {
+  .workspace .settings-panel--individual > .editor-heading {
+    position:static!important;
+    top:auto!important;
+    box-sizing:border-box;
+    min-width:0;
+    max-width:100%;
+    margin:0!important;
+    padding:0 0 18px!important;
+    align-items:flex-start;
+  }
+  .workspace .settings-panel--individual > .editor-heading h2 {
+    width:auto!important;
+    max-width:100%;
+    margin:8px 0 0!important;
+    padding:0!important;
+    font-size:clamp(1.8rem,8vw,2.8rem)!important;
+    line-height:1.08!important;
+    overflow-wrap:anywhere;
+  }
+}
 </style>
