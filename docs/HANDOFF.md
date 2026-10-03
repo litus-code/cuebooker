@@ -1,3 +1,7 @@
+## 2026-10-04 / Remove redundant artist context strip
+
+PR96, branch `feature/agency-multi-artist-beta`, base `713db4572720249cb3068cc6e62bbf00bfcdd53e`. The anonymous agency preview now omits its agency/artist context strip and Clear artist filter action on Profile, CUE Passport and CUE ID. The separate Back to artists control remains. Operational views retain their filter control. The live artist record already has no equivalent strip. Validation: existing tests and staging static generation. No production changes.
+
 ## 2026-10-04 / Agency preview artist record booking band
 
 Branch `feature/agency-multi-artist-beta`, based on `35a11942586cc6542221d6f0306c617ad77bc589`. The anonymous agency preview omitted `agencyManaged` when rendering WorkspaceArtistProfile, so its default false exposed the individual booking band despite the live workspace already hiding it. The preview now passes true explicitly, hiding Booking paused, Configure booking and Share profile in the managed record and retaining the independent artist behavior. The existing agency integration test verifies the preview prop connection and component condition.
