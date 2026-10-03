@@ -95,3 +95,12 @@ For operators: in **Agency → Settings → 03 / Catalogue artists**, select the
 - Agency-context portfolios do not show an independent booking request form. The return link and contact buttons lead to the owning agency's enquiry section; the public enquiry form lets the visitor select an artist or contact the agency generally. Requests are received by the agency workspace.
 - The standalone artist URL and request flow still require the artist's own independent public-profile setting. Agency roster membership does not activate an individual account or transfer ownership of an existing booking route. An existing route to a different workspace blocks agency publication until an explicit representation transfer is agreed and implemented.
 - QA for this route: open a selected artist from a published agency page; confirm photo, cover and profile details; submit a general enquiry and one targeted to that artist; unselect or unpublish the agency and confirm the agency-context URL no longer loads. Open the artist's direct URL separately and confirm it follows the independent publication setting.
+
+
+
+## 3 October 2026: staging verification
+
+- PR #96 preview: `https://pr-96.cuebooker-staging.pages.dev`.
+- The agency-managed catalogue migration is applied to the staging Supabase project, and `get-public-artist-profile` is deployed there as version 28. CI tests and the static production build passed on commit `dbb0f13c50bbb5acc97caa3928e43e78186616eb`.
+- Staging currently has two active artists in **CUE Agency TEST**, zero selected for its public catalogue, and the agency page is unpublished. Seeing an empty public roster in this state is expected. To show them, open the agency workspace, select the artists in **Settings → Catalogue artists**, save, and enable publication under **Visibility**. This publishes them as an agency catalogue; their individual-public-profile setting is not involved.
+- No production database or production Edge Function was changed.
