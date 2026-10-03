@@ -70,6 +70,9 @@ const artistCity = ref('')
 const showAdd = ref(false)
 const addDialog = ref<HTMLDialogElement | null>(null)
 watch(showAdd, async value => { await nextTick(); if (value) addDialog.value?.showModal(); else addDialog.value?.close() })
+const pendingRetireArtist = ref<RosterArtist | null>(null)
+const retireDialog = ref<HTMLDialogElement | null>(null)
+watch(pendingRetireArtist, async artist => { await nextTick(); if (artist) retireDialog.value?.showModal(); else retireDialog.value?.close() })
 const submittingArtist = ref(false)
 const addError = ref('')
 const showRetired = ref(false)
@@ -247,7 +250,13 @@ async function submitArtist() {
   } finally { submittingArtist.value = false }
 }
 function confirmRetire(artist: RosterArtist) {
-  if (window.confirm(isEs.value ? `¿Retirar a ${artist.stage_name} del roster? Sus bookings e historial se conservarán.` : `Remove ${artist.stage_name} from the active roster? Bookings and history will be kept.`)) emit('retireArtist', artist.id)
+  pendingRetireArtist.value = artist
+}
+function retirePendingArtist() {
+  const artist = pendingRetireArtist.value
+  if (!artist) return
+  emit('retireArtist', artist.id)
+  pendingRetireArtist.value = null
 }
 </script>
 
@@ -297,7 +306,18 @@ function confirmRetire(artist: RosterArtist) {
       </template>
     </template>
         <div v-if="view === 'roster' && artists.some(item => item.roster_active === false)" class="agency-retired"><button type="button" @click="showRetired = !showRetired">{{ showRetired ? '−' : '+' }} {{ isEs ? 'Artistas retirados' : 'Removed artists' }}</button><div v-if="showRetired" class="agency-roster"><article v-for="artist in artists.filter(item => item.roster_active === false)" :key="artist.id"><div><h2>{{ artist.stage_name }}</h2><p>{{ isEs ? 'Historial conservado' : 'History retained' }}</p></div><button v-if="canManageRoster" type="button" @click="emit('restoreArtist', artist.id)">{{ isEs ? 'Reincorporar' : 'Restore' }}</button></article></div></div>
-    <Teleport to="body"><dialog v-if="canManageRoster" ref="addDialog" class="agency-add" @cancel="showAdd = false"><form @submit.prevent="submitArtist"><div><h2>{{ isEs ? 'AÑADIR AL ROSTER' : 'ADD TO ROSTER' }}</h2><button type="button" :aria-label="isEs ? 'Cerrar' : 'Close'" @click="showAdd = false">×</button></div><label>{{ isEs ? 'Nombre artístico' : 'Artist name' }}<input v-model="artistName" required maxlength="100"></label><label>Slug<input v-model="artistSlug" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required></label><label>{{ isEs ? 'Ciudad base (opcional)' : 'Base city (optional)' }}<input v-model="artistCity" maxlength="120"></label><p v-if="addError" role="alert">{{ addError }}</p><button type="submit" :disabled="submittingArtist">{{ submittingArtist ? (isEs ? 'Creando…' : 'Creating…') : (isEs ? 'Crear artista' : 'Create artist') }}</button></form></dialog></Teleport>
+    <Teleport to="body">
+      <dialog v-if="canManageRoster" ref="addDialog" class="agency-add" @cancel="showAdd = false"><form @submit.prevent="submitArtist"><div><h2>{{ isEs ? 'AÑADIR AL ROSTER' : 'ADD TO ROSTER' }}</h2><button type="button" :aria-label="isEs ? 'Cerrar' : 'Close'" @click="showAdd = false">×</button></div><label>{{ isEs ? 'Nombre artístico' : 'Artist name' }}<input v-model="artistName" required maxlength="100"></label><label>Slug<input v-model="artistSlug" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required></label><label>{{ isEs ? 'Ciudad base (opcional)' : 'Base city (optional)' }}<input v-model="artistCity" maxlength="120"></label><p v-if="addError" role="alert">{{ addError }}</p><button type="submit" :disabled="submittingArtist">{{ submittingArtist ? (isEs ? 'Creando…' : 'Creating…') : (isEs ? 'Crear artista' : 'Create artist') }}</button></form></dialog>
+      <dialog v-if="pendingRetireArtist" ref="retireDialog" class="agency-retire" aria-labelledby="agency-retire-title" aria-describedby="agency-retire-description" @cancel.prevent="pendingRetireArtist = null" @click.self="pendingRetireArtist = null">
+        <span class="agency-retire__eyebrow">CUE / ROSTER</span>
+        <h2 id="agency-retire-title">{{ isEs ? 'Retirar del roster' : 'Remove from roster' }}</h2>
+        <p id="agency-retire-description">{{ isEs ? `¿Retirar a ${pendingRetireArtist.stage_name} del roster? Sus bookings e historial se conservarán.` : `Remove ${pendingRetireArtist.stage_name} from the active roster? Bookings and history will be kept.` }}</p>
+        <div class="agency-retire__actions">
+          <button type="button" class="agency-retire__cancel" @click="pendingRetireArtist = null">{{ isEs ? 'Cancelar' : 'Cancel' }}</button>
+          <button type="button" class="agency-retire__confirm" @click="retirePendingArtist">{{ isEs ? 'Retirar artista' : 'Remove artist' }}</button>
+        </div>
+      </dialog>
+    </Teleport>
   </section>
 </template>
 
@@ -531,4 +551,17 @@ function confirmRetire(artist: RosterArtist) {
  .agency-roster-actions{position:absolute;top:54px;right:20px;width:auto;margin:0;display:flex;flex-direction:column;gap:8px}
  .agency-roster-actions button{width:48px;height:48px;min-height:48px;padding:10px}
 }
+</style>
+
+<style scoped>
+.agency-retire{box-sizing:border-box;width:min(560px,calc(100vw - 32px));max-width:none;margin:auto;padding:clamp(22px,5vw,36px);border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel,24px);background:var(--cue-surface,#111);color:var(--cue-text,#f4f4f4);box-shadow:0 24px 80px #0009}
+.agency-retire::backdrop{background:#000b;backdrop-filter:blur(3px)}
+.agency-retire__eyebrow{color:var(--cue-accent,#d6ff63);font:800 11px/1.3 monospace;letter-spacing:.16em}
+.agency-retire h2{margin:16px 0 10px;font-size:clamp(1.5rem,5vw,2rem);line-height:1.08;letter-spacing:-.035em}
+.agency-retire p{margin:0;color:var(--cue-muted,#aaa);font-size:1rem;line-height:1.55}
+.agency-retire__actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:28px}
+.agency-retire__actions button{min-height:48px;padding:10px 18px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control,12px);font:700 14px/1.2 inherit}
+.agency-retire__cancel{background:transparent;color:var(--cue-text)}
+.agency-retire__confirm{border-color:var(--cue-accent)!important;background:var(--cue-accent)!important;color:#10130d!important}
+@media(max-width:520px){.agency-retire__actions{display:grid;grid-template-columns:1fr 1fr}.agency-retire__actions button{padding-inline:10px}}
 </style>
