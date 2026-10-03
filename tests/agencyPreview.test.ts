@@ -46,6 +46,22 @@ test('agency roster actions are grouped in an accessible menu and keep retiremen
 })
 
 
+test('agency artist profiles are agency-managed, not individually published', async () => {
+  const profile = await readFile(new URL('../app/components/WorkspaceArtistProfile.vue', import.meta.url), 'utf8')
+  const workspace = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
+  const catalog = await readFile(new URL('../app/components/AgencyCatalogEditor.vue', import.meta.url), 'utf8')
+  const agencyPage = await readFile(new URL('../app/components/PublicAgencyProfile.vue', import.meta.url), 'utf8')
+  const migration = await readFile(new URL('../supabase/migrations/20261003200000_agency_managed_catalog_artists.sql', import.meta.url), 'utf8')
+  assert.match(workspace, /:agency-managed="isAgency"/)
+  assert.match(profile, /v-if="editable && !agencyManaged"/)
+  assert.match(profile, /GESTIONADO POR LA AGENCIA/)
+  assert.match(catalog, /Ficha lista para incluir/)
+  assert.match(agencyPage, /:artists="agency\.artists"/)
+  assert.doesNotMatch(agencyPage, /filter\(artist => artist\.acceptingRequests\)/)
+  assert.doesNotMatch(migration, /public_profile_enabled/)
+  assert.match(migration, /r\.workspace_id=wa\.workspace_id/)
+})
+
 test('agency demo opens a local public artist profile preview', async () => {
   const page = await readFile(new URL('../app/pages/preview-agency.vue', import.meta.url), 'utf8')
   assert.match(page, /@preview="agencyPublicPreviewOpen = true"/)
