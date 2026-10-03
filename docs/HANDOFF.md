@@ -1,3 +1,7 @@
+## 2026-10-04 / Artist roster and calendar omit context strip
+
+PR96, base `0f2b535c9b1ba5f6295d16853bfbb43f192f4503`. The preview context strip now appears only on Overview, Bookings and Activity. Artists lists the complete roster without the redundant artist-filter banner; Calendar keeps its existing artist checkboxes. Profile/Passport/CUE ID remain unchanged from the previous fix. Validation: existing tests and staging static generation. No production changes.
+
 ## 2026-10-04 / Remove redundant artist context strip
 
 PR96, branch `feature/agency-multi-artist-beta`, base `713db4572720249cb3068cc6e62bbf00bfcdd53e`. The anonymous agency preview now omits its agency/artist context strip and Clear artist filter action on Profile, CUE Passport and CUE ID. The separate Back to artists control remains. Operational views retain their filter control. The live artist record already has no equivalent strip. Validation: existing tests and staging static generation. No production changes.
