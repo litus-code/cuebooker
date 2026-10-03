@@ -34,6 +34,8 @@ const analytics = useAnalytics()
 
 const emit = defineEmits<{
   submitBooking: [payload: BookingFormSubmission]
+  agencyBack: []
+  agencyContact: [artistSlug: string]
 }>()
 
 const requestOpen = ref(props.bookingFocused && !props.agencyManaged)
@@ -135,8 +137,9 @@ onBeforeUnmount(() => {
   <main class="public-artist-profile">
     <header class="public-artist-profile__topbar">
       <NuxtLink to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink>
-      <span v-if="preview">{{ copy.preview }}</span>
+      <button v-if="preview && agencyManaged" type="button" class="public-artist-profile__agency-return" @click="emit('agencyBack')">← {{ copy.backAgency }} · {{ agencyName }}</button>
       <NuxtLink v-else-if="agencyManaged" class="public-artist-profile__agency-return" :to="agencyHref">← {{ copy.backAgency }} · {{ agencyName }}</NuxtLink>
+      <span v-else-if="preview">{{ copy.preview }}</span>
     </header>
 
     <section class="public-artist-profile__hero">
@@ -179,7 +182,10 @@ onBeforeUnmount(() => {
           <div v-if="genres.length" class="public-artist-profile__genres">
             <span v-for="(genre, index) in genres.slice(0, 4)" :key="genre"><small>0{{ index + 1 }}</small>{{ genre }}</span>
           </div>
-          <NuxtLink v-if="agencyManaged" class="public-artist-profile__booking-cta" :to="agencyHref">
+          <button v-if="agencyManaged && preview" class="public-artist-profile__booking-cta" type="button" @click="emit('agencyContact',profile.slug)">
+            {{ copy.contactAgency }} <span class="arrow arrow--ne" aria-hidden="true" />
+          </button>
+          <NuxtLink v-else-if="agencyManaged" class="public-artist-profile__booking-cta" :to="agencyHref">
             {{ copy.contactAgency }} <span class="arrow arrow--ne" aria-hidden="true" />
           </NuxtLink>
           <button
@@ -275,7 +281,8 @@ onBeforeUnmount(() => {
           : (agencyManaged ? 'This portfolio belongs to the agency catalogue. Enquiries go to its team.' : 'Every date starts with a conversation. Tell me what you have in mind.') }}</p>
         <p v-if="profile.bookingManagedBy" class="public-artist-profile__booking-agent">{{ locale === 'es' ? 'Booking gestionado por' : 'Booking managed by' }} {{ profile.bookingManagedBy }}</p>
       </div>
-      <NuxtLink v-if="agencyManaged" class="public-artist-profile__agency-contact" :to="agencyHref">{{ copy.contactAgency }} ↗</NuxtLink>
+      <button v-if="agencyManaged && preview" class="public-artist-profile__agency-contact" type="button" @click="emit('agencyContact',profile.slug)">{{ copy.contactAgency }} ↗</button>
+      <NuxtLink v-else-if="agencyManaged" class="public-artist-profile__agency-contact" :to="agencyHref">{{ copy.contactAgency }} ↗</NuxtLink>
       <button
         v-else
         type="button"
@@ -286,7 +293,7 @@ onBeforeUnmount(() => {
       </button>
     </section>
 
-    <section v-if="preview" id="artist-booking-preview" class="public-artist-profile__form-preview" :aria-label="locale === 'es' ? 'Vista previa del formulario de booking' : 'Booking form preview'">
+    <section v-if="preview && !agencyManaged" id="artist-booking-preview" class="public-artist-profile__form-preview" :aria-label="locale === 'es' ? 'Vista previa del formulario de booking' : 'Booking form preview'">
       <PublicBookingForm :artist-name="profile.stageName" :locale="locale" preview />
     </section>
 
@@ -341,8 +348,8 @@ onBeforeUnmount(() => {
 <style scoped>
 :global(body) { margin: 0; background: var(--cue-bg, #080808); }
 .public-artist-profile { min-height: 100vh; background: var(--cue-bg, #080808); color: var(--cue-text, #f2f0eb); font-family: Arial, Helvetica, sans-serif; }
-.public-artist-profile__agency-return { color:var(--cue-accent,#e8ff2f); font:700 10px/1.3 monospace; text-align:right; text-decoration:none; text-transform:uppercase; letter-spacing:.06em; }
-.public-artist-profile__agency-contact { display:grid; place-items:center; min-height:64px; padding:0 24px; border:1px solid var(--cue-accent,#e8ff2f); color:#111; background:var(--cue-accent,#e8ff2f); font:800 13px/1 Arial,sans-serif; text-align:center; text-decoration:none; text-transform:uppercase; }
+.public-artist-profile__agency-return { color:var(--cue-accent,#e8ff2f); font:700 10px/1.3 monospace; text-align:right; text-decoration:none; text-transform:uppercase; letter-spacing:.06em; border:0; padding:8px 0; background:transparent; cursor:pointer; }
+.public-artist-profile__agency-contact { display:grid; place-items:center; min-height:64px; padding:0 24px; border:1px solid var(--cue-accent,#e8ff2f); border-radius:var(--cue-radius-control,12px); color:#111; background:var(--cue-accent,#e8ff2f); font:800 13px/1 Arial,sans-serif; text-align:center; text-decoration:none; text-transform:uppercase; cursor:pointer; }
 .public-artist-profile__topbar { position: relative; z-index: 4; display: flex; justify-content: space-between; align-items: center; min-height: 64px; padding: 0 clamp(18px, 4vw, 48px); border-bottom: 1px solid var(--cue-border, #2c2c2c); }
 .public-artist-profile__topbar a { color: inherit; text-decoration: none; }
 .public-artist-profile__topbar > span { color: var(--cue-muted, #999); font: 700 9px/1.2 monospace; letter-spacing: .1em; text-transform: uppercase; }
