@@ -2918,6 +2918,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             }"
             :passport-public-enabled="publicPassportEnabled"
             :publish-ready="profileCompletion >= 70"
+            :agency-managed="isAgency"
             @edit="toggleProfileEditSection($event)"
             @preview="openProfilePreview"
             @toggle-published="updatePublicProfilePublished($event)"
