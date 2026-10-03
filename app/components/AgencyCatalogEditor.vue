@@ -78,8 +78,8 @@ async function openPreview(){
  releasePreviewArtistMedia()
  if(!props.demo) await Promise.all(catalog.value.artists.map(async a=>{
   const urls:string[]=[]
-  if(a.imagePath){try{a.imageUrl=await media.getArtistImageObjectUrl(a.imagePath);urls.push(a.imageUrl)}catch{a.imageUrl=null}}
-  if(a.coverPath){try{a.coverUrl=await media.getCoverObjectUrl(a.coverPath);urls.push(a.coverUrl)}catch{a.coverUrl=null}}
+  if(a.imagePath){try{const url=await media.getArtistImageObjectUrl(a.imagePath);a.imageUrl=url;urls.push(url)}catch{a.imageUrl=null}}
+  if(a.coverPath){try{const url=await media.getCoverObjectUrl(a.coverPath);a.coverUrl=url;urls.push(url)}catch{a.coverUrl=null}}
   previewArtistMediaUrls.value[a.id]=urls
  }))
  previewDialog.value?.showModal()
