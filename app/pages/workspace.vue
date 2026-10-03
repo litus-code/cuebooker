@@ -2368,7 +2368,6 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <button v-if="!isAgency" :title="copy.cueId" data-workspace-view="cue-id" :aria-current="workspaceBootResolved && activeView === 'cue-id' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('cue-id')">{{ copy.cueId }}</button>
         <button :title="copy.settings" data-workspace-view="settings" :aria-current="workspaceBootResolved && settingsOpen ? 'page' : undefined" type="button" @click="openSettings">{{ copy.settings }}</button>
       </nav>
-      <label v-if="isAgency" class="agency-context-selector"><span>{{ agency?.name }}</span><select :value="selectedArtistId" :aria-label="preferences.locale.value === 'es' ? 'Contexto de artista' : 'Artist context'" @change="chooseArtist(($event.target as HTMLSelectElement).value)"><option value="">{{ preferences.locale.value === 'es' ? 'Todos los artistas' : 'All artists' }}</option><option v-for="artist in artists.filter(item => item.roster_active !== false)" :key="artist.id" :value="artist.id">{{ artist.stage_name }}</option></select></label>
       <div class="account-actions">
         <WorkspaceNotifications :locale="preferences.locale.value" @open-booking="openNotificationBooking" />
         <CuePreferencesControl compact />
@@ -3021,15 +3020,18 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
                     : 'This photo appears as the small portrait on your portfolio. No positioning or scaling is needed.' }}</p>
                 </div>
 
-                <label class="profile-portrait-editor__upload">
+                <label class="profile-portrait-editor__upload" :class="{ 'is-uploading': profilePortraitUploading }">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 14v5h14v-5" /></svg>
                   <strong>{{ profilePortraitUploading
-                    ? (preferences.locale.value === 'es' ? 'Subiendo…' : 'Uploading…')
+                    ? (preferences.locale.value === 'es' ? 'Subiendo foto…' : 'Uploading photo…')
                     : (profileArtistImageUrl
                       ? (preferences.locale.value === 'es' ? 'Cambiar foto' : 'Change photo')
                       : (preferences.locale.value === 'es' ? 'Añadir foto' : 'Add photo')) }}</strong>
+                  <small>{{ preferences.locale.value === 'es' ? 'JPG, PNG o WebP · máximo 8 MB' : 'JPG, PNG or WebP · up to 8 MB' }}</small>
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
+                    :aria-label="preferences.locale.value === 'es' ? 'Elegir foto del artista' : 'Choose artist photo'"
                     :disabled="profilePortraitUploading"
                     @change="($event) => { const file = ($event.currentTarget as HTMLInputElement).files?.[0]; if (file) selectProfilePortrait(file) }"
                   >
@@ -4884,3 +4886,81 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 }
 @media(max-width:680px){.workspace--agency .agency-context-selector{grid-template-columns:minmax(0,1fr) minmax(210px,230px)!important;padding-inline:20px!important}}
 </style>
+
+<style scoped>
+:global(.profile-portrait-editor__upload) {
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:24px minmax(0,1fr)!important;
+  grid-template-rows:auto auto!important;
+  align-items:center!important;
+  justify-content:initial!important;
+  column-gap:12px!important;
+  row-gap:4px!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-height:72px!important;
+  margin:12px 0 4px!important;
+  padding:14px 18px!important;
+  border:1px solid var(--cue-accent)!important;
+  border-radius:14px!important;
+  background:color-mix(in srgb,var(--cue-accent) 12%,var(--cue-surface))!important;
+  color:var(--cue-text)!important;
+  text-align:left!important;
+  cursor:pointer!important;
+  transition:background .18s ease,border-color .18s ease,transform .18s ease!important;
+}
+:global(.profile-portrait-editor__upload:hover) {
+  background:color-mix(in srgb,var(--cue-accent) 20%,var(--cue-surface))!important;
+}
+:global(.profile-portrait-editor__upload:active) { transform:scale(.99); }
+:global(.profile-portrait-editor__upload:focus-within) {
+  outline:2px solid var(--cue-accent)!important;
+  outline-offset:3px!important;
+}
+:global(.profile-portrait-editor__upload > svg) {
+  grid-column:1;
+  grid-row:1 / span 2;
+  width:24px;
+  height:24px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+:global(.profile-portrait-editor__upload > strong) {
+  grid-column:2;
+  grid-row:1;
+  color:var(--cue-text)!important;
+  font-size:16px!important;
+  line-height:1.2!important;
+}
+:global(.profile-portrait-editor__upload > small) {
+  grid-column:2;
+  grid-row:2;
+  color:var(--cue-muted)!important;
+  font-size:12px!important;
+  line-height:1.35!important;
+}
+:global(.profile-portrait-editor__upload > input[type=file]) {
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  margin:0!important;
+  padding:0!important;
+  opacity:0!important;
+  cursor:pointer!important;
+}
+:global(.profile-portrait-editor__upload.is-uploading) { opacity:.75; cursor:wait!important; }
+@media(max-width:680px) {
+  :global(.profile-portrait-editor__upload) {
+    min-height:76px!important;
+    margin-top:16px!important;
+    padding:16px!important;
+  }
+  :global(.profile-portrait-editor__upload > strong) { font-size:16px!important; }
+}
+</style>
+
