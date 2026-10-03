@@ -123,3 +123,10 @@ The agency's `Ver ficha` route is available publicly only for artists selected i
 - In the unsaved catalogue preview, selecting an artist opens the local portfolio preview in place. It shows loading or an error state and does not navigate to a public URL.
 - Agency-managed artist portfolios describe booking as handled by the agency. The independent artist flow retains its own open or paused booking state.
 - The public agency catalogue has a Share action that opens the phone's native share sheet where available, with a copy-link fallback in browsers without Web Share.
+
+
+## PR #96 dashboard and portfolio polish
+
+- The agency overview's artist total always reflects the complete active roster, even when bookings and calendar are scoped to one artist.
+- The agency contact CTA uses a drawn SVG arrow and the shared rounded control radius instead of an emoji glyph.
+- The internal managed artist record omits the redundant booking-status band. Booking enquiries remain directed through the agency catalogue contact form.
