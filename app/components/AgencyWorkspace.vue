@@ -560,7 +560,7 @@ function retirePendingArtist() {
 .agency-retire h2{margin:16px 0 10px;font-size:clamp(1.5rem,5vw,2rem);line-height:1.08;letter-spacing:-.035em}
 .agency-retire p{margin:0;color:var(--cue-muted,#aaa);font-size:1rem;line-height:1.55}
 .agency-retire__actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:28px}
-.agency-retire__actions button{min-height:48px;padding:10px 18px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control,12px);font:700 14px/1.2 inherit}
+.agency-retire__actions button{min-height:48px;padding:10px 18px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control,12px);font:700 14px/1.2 Arial,Helvetica,sans-serif}
 .agency-retire__cancel{background:transparent;color:var(--cue-text)}
 .agency-retire__confirm{border-color:var(--cue-accent)!important;background:var(--cue-accent)!important;color:#10130d!important}
 @media(max-width:520px){.agency-retire__actions{display:grid;grid-template-columns:1fr 1fr}.agency-retire__actions button{padding-inline:10px}}
