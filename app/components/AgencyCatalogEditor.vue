@@ -42,7 +42,7 @@ const accountEmail=computed(()=>props.demo ? 'owner@example.invalid' : auth.sess
 const emailValid=computed(()=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(catalog.value?.contactEmail?.trim() || ''))
 const readyToPublish=computed(()=>Boolean(catalog.value?.bio?.trim() && emailValid.value && visibleIds.value.some(id=>catalog.value?.artists.some(a=>a.id===id&&a.eligible))))
 const selectedCount=computed(()=>previewData.value?.artists.length || 0)
-const previewArtistId=ref('')
+const previewArtistId=ref(''),previewArtistLoading=ref(false),previewArtistError=ref('')
 const demoProfile=computed<PublicArtistProfile|null>(()=>{
  const a=catalog.value?.artists.find(a=>a.id===previewArtistId.value)
  if(!props.demo||!a)return null
@@ -89,7 +89,7 @@ async function openPreview(){
  previewDialog.value?.showModal()
 }
 async function openArtistPreview(id:string){
- previewArtistId.value=id;previewArtistProfile.value=null
+ previewArtistId.value=id;previewArtistProfile.value=null;previewArtistError.value='';previewArtistLoading.value=!props.demo
  if(props.demo)return
  const artist=catalog.value?.artists.find(a=>a.id===id)
  if(!artist)return
@@ -103,7 +103,7 @@ async function openArtistPreview(id:string){
   const urls=[coverUrl,artistImageUrl,artistCutoutUrl].filter((url):url is string=>Boolean(url))
   previewArtistMediaUrls.value[id]=[...(previewArtistMediaUrls.value[id]||[]),...urls]
   previewArtistProfile.value={stageName:a.stage_name,slug:a.slug,bio:a.bio,city:a.city,countryCode:a.country_code,languages:a.languages||[],primaryGenres:a.primary_genres||[],secondaryGenres:a.secondary_genres||[],performanceFormats:a.performance_formats||[],eventTypes:a.event_types||[],yearsActive:a.years_active,websiteUrl:a.website_url,instagramUrl:a.instagram_url,soundcloudUrl:a.soundcloud_url,mixcloudUrl:a.mixcloud_url,youtubeUrl:a.youtube_url,spotifyUrl:a.spotify_url,coverUrl,coverPositionY:a.cover_position_y,artistImageUrl,artistCutoutUrl,artistImageStyle:a.artist_image_style,artistImagePositionX:a.artist_image_position_x,artistImagePositionY:a.artist_image_position_y,artistImageScale:a.artist_image_scale,visualMode:a.visual_source,cueId:a.visual_source==='cue_id'?toPublicCueIdConfig(a.cue_id_config):null,acceptingRequests:artist.acceptingRequests,bookingManagedBy:catalog.value?.name||null}
- }catch{error.value=es.value?'No se pudo cargar la ficha del artista para la vista previa.':'Could not load this artist portfolio preview.'}
+ }catch{previewArtistError.value=es.value?'No se pudo cargar la ficha del artista para la vista previa.':'Could not load this artist portfolio preview.'}finally{previewArtistLoading.value=false}
 }
 async function backToAgency(contact=false,artistSlug=''){
  if(contact)previewEnquiryArtistSlug.value=artistSlug
@@ -142,7 +142,7 @@ async function copyLink(){try{await navigator.clipboard.writeText(publicUrl.valu
    </fieldset>
    <section v-if="savedPublished&&!demo" class="agency-catalog-editor__share" :aria-label="es?'Compartir página pública de la agencia':'Share agency public page'"><div class="agency-catalog-editor__share-heading"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1M14 11a5 5 0 0 0-7.1 0l-2 2A5 5 0 0 0 12 20l1.1-1.1" /></svg><strong>{{ es?'Enlace público de la agencia':'Agency public link' }}</strong></div><a class="agency-catalog-editor__url" :href="publicUrl" target="_blank" rel="noopener noreferrer">{{ publicUrl }}</a><div class="agency-catalog-editor__share-actions"><button type="button" @click="copyLink">{{ es?'Copiar enlace':'Copy link' }}</button><a :href="publicUrl" target="_blank" rel="noopener noreferrer">{{ es?'Abrir catálogo':'Open catalogue' }} ↗</a></div></section><p v-else class="agency-catalog-editor__share-pending">{{ demo ? (es?'Esta preview no publica el catálogo ni genera una URL real.':'This preview does not publish the catalogue or generate a real URL.') : (es?'Al publicar, aquí aparecerá el enlace para compartir el catálogo.':'Publish the catalogue to get a shareable public link here.') }}</p><p v-if="notice" class="agency-catalog-editor__notice" role="status">{{ notice }}</p>
   </form>
-  <dialog ref="previewDialog" class="agency-catalog-preview" :aria-label="es?'Vista previa de la agencia':'Agency preview'"><div class="agency-catalog-preview__bar"><span>{{ es?'VISTA PREVIA · CONTENIDO SIN PUBLICAR':'PREVIEW · UNSAVED CONTENT' }}</span><button v-if="previewArtistId" type="button" @click="backToAgency()">← {{ es?'Artistas':'Artists' }}</button><button type="button" @click="previewDialog?.close()">{{ es?'Cerrar':'Close' }} ×</button></div><PublicArtistProfile v-if="previewArtistId&&(demoProfile||previewArtistProfile)" :profile="demoProfile||previewArtistProfile!" :locale="locale" preview agency-managed :agency-href="`/agency/${encodeURIComponent(catalog?.slug||'')}#agency-contact`" :agency-name="catalog?.name||''" @agency-back="backToAgency()" @agency-contact="backToAgency(true,$event)" /><PublicAgencyProfile v-else-if="previewData" :agency="previewData" :locale="locale" preview :demo="demo" :initial-artist-slug="previewEnquiryArtistSlug" @open-artist="openArtistPreview" /></dialog>
+  <dialog ref="previewDialog" class="agency-catalog-preview" :aria-label="es?'Vista previa de la agencia':'Agency preview'"><div class="agency-catalog-preview__bar"><span>{{ es?'VISTA PREVIA · CONTENIDO SIN PUBLICAR':'PREVIEW · UNSAVED CONTENT' }}</span><button v-if="previewArtistId" type="button" @click="backToAgency()">← {{ es?'Artistas':'Artists' }}</button><button type="button" @click="previewDialog?.close()">{{ es?'Cerrar':'Close' }} ×</button></div><PublicArtistProfile v-if="previewArtistId&&(demoProfile||previewArtistProfile)" :profile="demoProfile||previewArtistProfile!" :locale="locale" preview agency-managed :agency-href="`/agency/${encodeURIComponent(catalog?.slug||'')}#agency-contact`" :agency-name="catalog?.name||''" @agency-back="backToAgency()" @agency-contact="backToAgency(true,$event)" /><div v-else-if="previewArtistId" role="status">{{ previewArtistLoading ? "Cargando ficha…" : previewArtistError }}</div><PublicAgencyProfile v-else-if="previewData" :agency="previewData" :locale="locale" preview :demo="demo" :initial-artist-slug="previewEnquiryArtistSlug" @open-artist="openArtistPreview" /></dialog>
  </section>
 </template>
 <style scoped>
