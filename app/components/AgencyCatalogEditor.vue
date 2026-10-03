@@ -2,19 +2,20 @@
 import type { PublicArtistProfile } from '../domain/publicArtistProfile'
 import type { AgencyCatalog } from '../domain/agencyCatalog'
 import { agencyCatalogPreview, agencyMediaExtension } from '../domain/agencyCatalog'
-import { getPublicArtistProfile } from '../services/publicBookingIngressApi'
 const props=withDefaults(defineProps<{workspaceId:string;role:string;locale:'es'|'en';demo?:boolean}>(),{demo:false})
 const emit=defineEmits<{editArtist:[id:string]}>()
-const api=useAgencyCatalog(),config=useRuntimeConfig(),auth=useCueAuth()
+const api=useAgencyCatalog(),auth=useCueAuth()
 const editable=computed(()=>['owner','admin'].includes(props.role))
 const es=computed(()=>props.locale==='es')
 const catalog=ref<AgencyCatalog|null>(null),visibleIds=ref<string[]>([]),loading=ref(false),saving=ref(false),error=ref(''),notice=ref('')
 const savedPublished=ref(false)
 const media=useArtistProfile()
+const previewArtistMediaUrls=ref<Record<string,string[]>>({})
 const uploading=ref<'cover'|'logo'|''>('')
 const mediaUrls=ref<Record<'cover'|'logo',string>>({cover:'',logo:''})
 function releaseMedia(slot:'cover'|'logo'){if(mediaUrls.value[slot].startsWith('blob:'))URL.revokeObjectURL(mediaUrls.value[slot]);mediaUrls.value[slot]=''}
-onUnmounted(()=>{releaseMedia('cover');releaseMedia('logo')})
+function releasePreviewArtistMedia(){for(const urls of Object.values(previewArtistMediaUrls.value))for(const url of urls)if(url.startsWith('blob:'))URL.revokeObjectURL(url);previewArtistMediaUrls.value={}}
+onUnmounted(()=>{releaseMedia('cover');releaseMedia('logo');releasePreviewArtistMedia()})
 async function hydrateMedia(){
  for(const slot of ['cover','logo'] as const){releaseMedia(slot);const path=catalog.value?.[slot==='cover'?'coverPath':'logoPath'];if(path){try{mediaUrls.value[slot]=await media.getCoverObjectUrl(path)}catch{error.value=es.value?'No se pudo cargar una imagen guardada. Recarga la página para reintentar.':'A saved image could not load. Reload the page to retry.'}}}
 }
@@ -74,7 +75,13 @@ async function openPreview(){
  if(!catalog.value)return
  previewArtistId.value=''
  error.value=''
- if(!props.demo) await Promise.all(catalog.value.artists.map(async a=>{try{const profile=await getPublicArtistProfile(String(config.public.supabaseUrl),a.slug);a.imageUrl=profile.artistImageUrl;a.coverUrl=profile.coverUrl}catch{a.imageUrl=null;a.coverUrl=null}}))
+ releasePreviewArtistMedia()
+ if(!props.demo) await Promise.all(catalog.value.artists.map(async a=>{
+  const urls:string[]=[]
+  if(a.imagePath){try{a.imageUrl=await media.getArtistImageObjectUrl(a.imagePath);urls.push(a.imageUrl)}catch{a.imageUrl=null}}
+  if(a.coverPath){try{a.coverUrl=await media.getCoverObjectUrl(a.coverPath);urls.push(a.coverUrl)}catch{a.coverUrl=null}}
+  previewArtistMediaUrls.value[a.id]=urls
+ }))
  previewDialog.value?.showModal()
 }
 async function copyLink(){try{await navigator.clipboard.writeText(publicUrl.value);notice.value=es.value?'Enlace copiado.':'Link copied.'}catch{notice.value=publicUrl.value}}
@@ -97,7 +104,7 @@ async function copyLink(){try{await navigator.clipboard.writeText(publicUrl.valu
     <details class="agency-catalog-editor__optional"><summary>{{ es?'Enlaces de la agencia · opcional':'Agency links · optional' }}</summary><p>{{ es?'Añádelos si ayudan a presentar tu agencia. Puedes dejar ambos vacíos.':'Add these if they help present your agency. Both can stay empty.' }}</p><div class="agency-catalog-editor__fields"><label v-for="field in fields.filter(f=>['instagramUrl','websiteUrl'].includes(f.id))" :key="field.id"><span>{{ es?field.es:field.en }}</span><input v-model="catalog[field.id]" type="url" :maxlength="field.max" placeholder="https://…"></label></div></details>
    </fieldset>
    <fieldset :disabled="saving||Boolean(uploading)" class="agency-catalog-editor__group"><legend>{{ es?'03 / Artistas del catálogo':'03 / Catalogue artists' }}</legend><p>{{ es?'Selecciona quién aparece en la página. Añadir un artista al roster privado no publica su ficha.':'Choose who appears on the page. Adding an artist to your private roster does not publish their profile.' }}</p>
-    <div v-for="artist in catalog.artists" :key="artist.id" class="agency-catalog-editor__artist" :class="{'is-selected':visibleIds.includes(artist.id)&&artist.eligible}"><label><input v-model="visibleIds" type="checkbox" :value="artist.id" :disabled="!artist.eligible"><span><strong>{{ artist.name }}</strong><small>{{ artist.eligible ? (es?'Perfil público preparado':'Public profile ready') : (es?'Activa su perfil público y asigna el booking a esta agencia.':'Enable the public profile and assign bookings to this agency.') }}</small></span></label><button type="button" @click="emit('editArtist',artist.id)">{{ es?'Editar ficha':'Edit record' }}</button></div>
+    <div v-for="artist in catalog.artists" :key="artist.id" class="agency-catalog-editor__artist" :class="{'is-selected':visibleIds.includes(artist.id)&&artist.eligible}"><label><input v-model="visibleIds" type="checkbox" :value="artist.id" :disabled="!artist.eligible"><span><strong>{{ artist.name }}</strong><small>{{ artist.eligible ? (es?'Ficha lista para incluir':'Ready to include') : (es?'Asegúrate de que el booking de este artista esté gestionado por esta agencia.':'Make sure this artist’s bookings are managed by this agency.') }}</small></span></label><button type="button" @click="emit('editArtist',artist.id)">{{ es?'Editar ficha':'Edit record' }}</button></div>
     <p v-if="!catalog.artists.length">{{ es?'Añade tu primer artista desde Artistas.':'Add your first artist from Artists.' }}</p><p v-else>{{ selectedCount }} {{ es?'artistas seleccionados para la página':'artists selected for the page' }}</p>
    </fieldset>
    <fieldset :disabled="saving||Boolean(uploading)" class="agency-catalog-editor__group agency-catalog-editor__publication"><legend>{{ es?'04 / Visibilidad':'04 / Visibility' }}</legend>
