@@ -33,11 +33,15 @@ test('agency profile preview has a dedicated share state and no meaningless save
   assert.match(page, /profileEditorSection !== 'distribution'/)
 })
 
-test('agency roster actions are icon-only, accessible, and keep retirement confirmation', async () => {
+test('agency roster actions are grouped in an accessible menu and keep retirement confirmation', async () => {
   const component = await readFile(new URL('../app/components/AgencyWorkspace.vue', import.meta.url), 'utf8')
-  assert.match(component, /agency-roster-icon-action/)
-  assert.match(component, /aria-label=.*Editar ficha/)
-  assert.match(component, /@click="confirmRetire\(artist\)"/)
+  assert.match(component, /class="agency-roster-menu"/)
+  assert.match(component, /<summary :aria-label=/)
+  assert.match(component, /role="menu"/)
+  assert.match(component, /role="menuitem"/)
+  assert.match(component, /Editar ficha/)
+  assert.match(component, /Retirar del roster/)
+  assert.match(component, /function closeRosterMenu/)
   assert.match(component, /function confirmRetire/)
 })
 
