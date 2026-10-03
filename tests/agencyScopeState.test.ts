@@ -25,6 +25,24 @@ test('actual AgencyWorkspace keeps one operational scope across selected artist,
   const reply='Recibido!\nEl 2026-09-30 23:38, Test escribi&oacute;:\nMensaje anterior'
   assert.equal(state.activityPreview({type:'email',body:reply}),'Recibido!')
   assert.equal(state.activityPreview({type:'note',body:reply}),reply)
+  const scrolls:any[]=[]
+  let mobile=true
+  let reducedMotion=false
+  ;(globalThis as any).window={scrollY:300,matchMedia:(query:string)=>({matches:query.includes('reduced-motion')?reducedMotion:mobile}),scrollTo:(options:any)=>scrolls.push(options),getComputedStyle:()=>({position:'sticky'})}
+  ;(globalThis as any).document={getElementById:()=>({getBoundingClientRect:()=>({height:80})}),querySelector:()=>null}
+  state.dayAgenda.value={getBoundingClientRect:()=>({top:500})}
+  await state.selectCalendarDay('2026-10-12')
+  assert.equal(state.selectedDay.value,'2026-10-12')
+  assert.deepEqual(scrolls,[{top:708,behavior:'smooth'}])
+  reducedMotion=true
+  await state.selectCalendarDay('2026-10-12')
+  assert.equal(scrolls[1].behavior,'auto')
+  mobile=false
+  await state.selectCalendarDay('2026-10-08')
+  assert.equal(state.selectedDay.value,'2026-10-08')
+  assert.equal(scrolls.length,2)
+  delete (globalThis as any).window
+  delete (globalThis as any).document
   assert.deepEqual(state.scopedArtists.value.map((a:any)=>a.id),['b'])
   assert.deepEqual(state.calendarArtists.value,['b'])
   assert.deepEqual(state.visibleMonthBookings.value.map((b:any)=>b.id),['b1'])
@@ -34,5 +52,5 @@ test('actual AgencyWorkspace keeps one operational scope across selected artist,
   assert.deepEqual(state.visibleBookings.value.map((b:any)=>b.id),['a1'])
   props.selectedArtistId='';await nextTick();await nextTick()
   assert.deepEqual(state.visibleBookings.value.map((b:any)=>b.id).sort(),['a1','b1'])
- }finally{app.unmount();for(const key of Object.keys(globals))delete (globalThis as any)[key]}
+ }finally{delete (globalThis as any).window;delete (globalThis as any).document;app.unmount();for(const key of Object.keys(globals))delete (globalThis as any)[key]}
 })

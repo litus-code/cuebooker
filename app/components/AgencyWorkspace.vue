@@ -63,6 +63,21 @@ const calendarFilterInitialized = ref(Boolean(props.contextState) || !props.demo
 const month = ref(props.contextState?.month || props.initialMonth || (!props.demoData && typeof route.query.rosterMonth === 'string' && /^\d{4}-\d{2}-01$/.test(route.query.rosterMonth) ? route.query.rosterMonth : '') || new Date().toISOString().slice(0, 7) + '-01')
 const today = new Date().toISOString().slice(0, 10)
 const selectedDay = ref(props.contextState?.selectedDay ?? (!props.demoData && typeof route.query.rosterDay === 'string' ? route.query.rosterDay : month.value.slice(0, 7) === today.slice(0, 7) ? today : ''))
+const dayAgenda = ref<HTMLElement | null>(null)
+async function selectCalendarDay(day: string) {
+  selectedDay.value = day
+  if (typeof window === 'undefined' || !window.matchMedia('(max-width: 950px)').matches) return
+  await nextTick()
+  const panel = dayAgenda.value
+  if (!panel) return
+  const header = document.getElementById('workspace-header') || document.querySelector('.agency-preview__header')
+  const headerPosition = header ? window.getComputedStyle(header).position : ''
+  const offset = headerPosition === 'sticky' || headerPosition === 'fixed' ? header!.getBoundingClientRect().height + 12 : 12
+  window.scrollTo({
+    top: Math.max(0, panel.getBoundingClientRect().top + window.scrollY - offset),
+    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+  })
+}
 const attentionRevision = ref(0)
 const artistName = ref('')
 const artistSlug = ref('')
@@ -291,7 +306,7 @@ function retirePendingArtist() {
             <div class="agency-month"><button type="button" :aria-label="isEs ? 'Mes anterior' : 'Previous month'" @click="moveMonth(-1)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></button><h2>{{ monthLabel }}</h2><button type="button" :aria-label="isEs ? 'Mes siguiente' : 'Next month'" @click="moveMonth(1)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg></button></div>
             <div class="agency-calendar">
               <span v-for="(day, index) in (isEs ? ['L','M','X','J','V','S','D'] : ['M','T','W','T','F','S','S'])" :key="index" class="agency-weekday">{{ day }}</span>
-              <button v-for="(day, index) in calendarDays" :key="`${day}-${index}`" type="button" class="agency-calendar-cell" :class="{ 'is-empty': !day, 'is-selected': Boolean(day) && selectedDay === day, 'is-today': Boolean(day) && today === day }" :disabled="!day" :aria-pressed="Boolean(day && selectedDay === day)" :aria-current="day === today ? 'date' : undefined" :aria-label="day ? `${shortDate(day)} · ${calendarCount(day)} ${isEs ? 'fechas' : 'dates'}` : undefined" @click="selectedDay = day">
+              <button v-for="(day, index) in calendarDays" :key="`${day}-${index}`" type="button" class="agency-calendar-cell" :class="{ 'is-empty': !day, 'is-selected': Boolean(day) && selectedDay === day, 'is-today': Boolean(day) && today === day }" :disabled="!day" :aria-pressed="Boolean(day && selectedDay === day)" :aria-current="day === today ? 'date' : undefined" :aria-label="day ? `${shortDate(day)} · ${calendarCount(day)} ${isEs ? 'fechas' : 'dates'}` : undefined" @click="selectCalendarDay(day)">
                 <span v-if="day">{{ Number(day.slice(-2)) }}</span><small v-if="calendarCount(day)">{{ calendarCount(day) }}</small>
                 <span class="agency-day-names"><span v-for="booking in visibleMonthBookings.filter(item => item.event_date === day).slice(0,2)" :key="booking.id" class="is-confirmed">{{ label(booking.artist_id) }}</span><span v-for="hold in visibleHolds.filter(item => item.event_date === day).slice(0, Math.max(0, 2 - visibleMonthBookings.filter(item => item.event_date === day).length))" :key="hold.id" class="is-hold">{{ label(hold.bookings.artist_id) }} · Hold</span><span v-if="calendarCount(day) > 2">+{{ calendarCount(day) - 2 }} {{ isEs ? 'más' : 'more' }}</span></span>
                 <span class="agency-day-statuses"><i v-if="visibleHolds.some(item => item.event_date === day)" class="agency-status-dot is-hold" /><i v-if="visibleMonthBookings.some(item => item.event_date === day)" class="agency-status-dot is-confirmed" /></span>
@@ -299,7 +314,7 @@ function retirePendingArtist() {
             </div>
             <div class="agency-calendar-legend"><span><i class="agency-status-dot is-hold" />Hold</span><span><i class="agency-status-dot is-confirmed" />{{ isEs ? 'Confirmado' : 'Confirmed' }}</span></div>
           </section>
-          <section class="agency-day-agenda"><header><p>{{ isEs ? 'AGENDA DEL DÍA' : 'DAY SCHEDULE' }}</p><h3>{{ selectedDay ? shortDate(selectedDay) : (isEs ? 'Selecciona un día' : 'Select a day') }}</h3></header>
+          <section ref="dayAgenda" class="agency-day-agenda"><header><p>{{ isEs ? 'AGENDA DEL DÍA' : 'DAY SCHEDULE' }}</p><h3>{{ selectedDay ? shortDate(selectedDay) : (isEs ? 'Selecciona un día' : 'Select a day') }}</h3></header>
             <template v-if="selectedDay"><button v-for="booking in visibleMonthBookings.filter(item => item.event_date === selectedDay)" :key="booking.id" type="button" class="agency-agenda-card" @click="emit('openBooking', booking.id)"><i class="agency-status-dot is-confirmed" /><span><b>{{ label(booking.artist_id) }}</b><strong>{{ eventName(booking) }}</strong><small>{{ isEs ? 'Confirmado' : 'Confirmed' }}</small></span><span aria-hidden="true">→</span></button><button v-for="hold in visibleHolds.filter(item => item.event_date === selectedDay)" :key="hold.id" type="button" class="agency-agenda-card is-hold" @click="emit('openBooking', hold.booking_id)"><i class="agency-status-dot is-hold" /><span><b>{{ label(hold.bookings.artist_id) }}</b><strong>Hold</strong><small>{{ isEs ? 'Reserva provisional' : 'Provisional reservation' }}</small></span><span aria-hidden="true">→</span></button><p v-if="!calendarCount(selectedDay)" class="agency-calendar-empty">{{ isEs ? 'Sin fechas ni holds para este día.' : 'No dates or holds for this day.' }}</p></template>
             <p v-else class="agency-calendar-empty">{{ isEs ? 'Elige una fecha para ver los bookings de los artistas visibles.' : 'Choose a date to see bookings for visible artists.' }}</p>
           </section>

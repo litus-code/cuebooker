@@ -1,3 +1,13 @@
+## 2026-10-04 / Recover PR96 mobile follow-up
+
+Branch `feature/agency-multi-artist-beta`, base HEAD `851c6206399f1a62ca86c0db0e09db7bf9d07137`. This section travels in the implementation commit; use Git history for its resulting SHA.
+
+- Agency calendar day clicks scroll to the rendered day agenda at widths up to 950px, including repeated clicks on the same date. Sticky/fixed header height is accounted for. Desktop does not scroll; reduced-motion users get immediate movement. This is shared by the live workspace and local agency demo.
+- The second agency-contact CTA at the end of PublicArtistProfile now draws an SVG arrow. Preview button and published link use the rounded control radius and the same responsive placement.
+- Managed artist navigation removes the repeated stage name, labels the destinations Ficha / CUE Passport / CUE ID and keeps those three destinations on one grid row. Volver a artistas is a separate control. Live workspace and anonymous preview follow the same structure; aria-current remains the active-state source.
+- Validation: 421 tests passed, including actual compiled AgencyWorkspace day selection, mobile scrolling, repeated selection, desktop behavior and reduced motion. Production and staging static generation each passed with 38 routes. No typecheck script exists. Visual browser QA was attempted but unavailable: local Chromium was absent and its download returned a truncated archive. Device visual verification remains pending, not claimed.
+- No schema, migration, Edge Function or production deployment. Next: verify PR96 preview on a phone, especially day-agenda scroll, three-tab fit and portfolio contact CTA.
+
 ## 2026-10-02 / Agency preview and roster interaction polish
 
 PR #96 (`feature/agency-multi-artist-beta`), for staging review only.

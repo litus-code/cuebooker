@@ -280,8 +280,8 @@ onBeforeUnmount(() => {
           ? (agencyManaged ? 'Esta ficha forma parte del catálogo de la agencia. Las consultas se envían a su equipo.' : 'Una fecha empieza con una conversación. Cuéntame qué tienes en mente.')
           : (agencyManaged ? 'This portfolio belongs to the agency catalogue. Enquiries go to its team.' : 'Every date starts with a conversation. Tell me what you have in mind.') }}</p>
       </div>
-      <button v-if="agencyManaged && preview" class="public-artist-profile__agency-contact" type="button" @click="emit('agencyContact',profile.slug)">{{ copy.contactAgency }} ↗</button>
-      <NuxtLink v-else-if="agencyManaged" class="public-artist-profile__agency-contact" :to="agencyHref">{{ copy.contactAgency }} ↗</NuxtLink>
+      <button v-if="agencyManaged && preview" class="public-artist-profile__agency-contact" type="button" @click="emit('agencyContact',profile.slug)">{{ copy.contactAgency }} <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 18 18 6M6 6h12v12" /></svg></button>
+      <NuxtLink v-else-if="agencyManaged" class="public-artist-profile__agency-contact" :to="agencyHref">{{ copy.contactAgency }} <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 18 18 6M6 6h12v12" /></svg></NuxtLink>
       <button
         v-else
         type="button"
@@ -348,7 +348,7 @@ onBeforeUnmount(() => {
 :global(body) { margin: 0; background: var(--cue-bg, #080808); }
 .public-artist-profile { min-height: 100vh; background: var(--cue-bg, #080808); color: var(--cue-text, #f2f0eb); font-family: Arial, Helvetica, sans-serif; }
 .public-artist-profile__agency-return { color:var(--cue-accent,#e8ff2f); font:700 10px/1.3 monospace; text-align:right; text-decoration:none; text-transform:uppercase; letter-spacing:.06em; border:0; padding:8px 0; background:transparent; cursor:pointer; }
-.public-artist-profile__agency-contact { display:grid; place-items:center; min-height:64px; padding:0 24px; border:1px solid var(--cue-accent,#e8ff2f); border-radius:var(--cue-radius-control,12px); color:#111; background:var(--cue-accent,#e8ff2f); font:800 13px/1 Arial,sans-serif; text-align:center; text-decoration:none; text-transform:uppercase; cursor:pointer; }
+.public-artist-profile__agency-contact { box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; gap:12px; min-height:64px; padding:0 24px; border:1px solid var(--cue-accent,#e8ff2f); border-radius:var(--cue-radius-control,12px); color:#111; background:var(--cue-accent,#e8ff2f); font:800 13px/1 Arial,sans-serif; text-align:center; text-decoration:none; text-transform:uppercase; cursor:pointer; }
 .public-artist-profile__topbar { position: relative; z-index: 4; display: flex; justify-content: space-between; align-items: center; min-height: 64px; padding: 0 clamp(18px, 4vw, 48px); border-bottom: 1px solid var(--cue-border, #2c2c2c); }
 .public-artist-profile__topbar a { color: inherit; text-decoration: none; }
 .public-artist-profile__topbar > span { color: var(--cue-muted, #999); font: 700 9px/1.2 monospace; letter-spacing: .1em; text-transform: uppercase; }
@@ -448,7 +448,7 @@ onBeforeUnmount(() => {
   .public-artist-profile__links { grid-template-columns:auto 1fr; gap:18px; }
   .public-artist-profile__links nav { grid-column:1 / -1; }
   .public-artist-profile__booking-band { grid-template-columns:auto 1fr; align-items:start; gap:18px; }
-  .public-artist-profile__booking-band>button { grid-column:2; justify-self:start; }
+  .public-artist-profile__booking-band>button, .public-artist-profile__booking-band>.public-artist-profile__agency-contact { grid-column:2; justify-self:start; }
 
   .public-artist-profile__hero { min-height:78svh; }
   .public-artist-profile__identity {
@@ -588,7 +588,7 @@ onBeforeUnmount(() => {
 .public-artist-profile__booking-band::before { content:""; position:absolute; top:0; left:clamp(24px,5vw,88px); right:clamp(24px,5vw,88px); height:1px; background:linear-gradient(90deg,#ef3935,var(--cue-accent,#e8ff2f) 30%,transparent); }
 .public-artist-profile__booking-band h2 { max-width:1000px; margin:18px 0 26px; font-size:clamp(4.5rem,9vw,11rem); line-height:.82; letter-spacing:-.075em; }
 .public-artist-profile__booking-band p { max-width:530px; color:#c7c7c2; font-size:clamp(15px,1.25vw,19px); }
-.public-artist-profile__booking-band>button { min-height:64px; padding:0 24px; border-radius:0; justify-self:end; font-size:13px; text-transform:uppercase; }
+.public-artist-profile__booking-band>button, .public-artist-profile__booking-band>.public-artist-profile__agency-contact { min-height:64px; padding:0 24px; border-radius:var(--cue-radius-control,12px); justify-self:end; font-size:13px; text-transform:uppercase; }
 .public-artist-profile__form-preview { background:#101010; }
 .public-artist-profile__form-preview :deep(.public-booking-form) { max-width:1440px; margin-inline:auto; border:0; padding-block:clamp(60px,8vw,120px); }
 
@@ -603,7 +603,7 @@ onBeforeUnmount(() => {
   .public-artist-profile__links-head,.public-artist-profile__links nav { grid-column:2; }
   .public-artist-profile__links-head { gap:10px; }
   .public-artist-profile__booking-band { grid-template-columns:70px minmax(0,1fr); min-height:440px; }
-  .public-artist-profile__booking-band>button { grid-column:2; justify-self:start; }
+  .public-artist-profile__booking-band>button, .public-artist-profile__booking-band>.public-artist-profile__agency-contact { grid-column:2; justify-self:start; }
 }
 @media(max-width:600px) {
   .public-artist-profile__topbar { min-height:54px; }
@@ -638,9 +638,13 @@ onBeforeUnmount(() => {
   .public-artist-profile__links a strong { font-size:clamp(1.7rem,8vw,2.5rem); }
   .public-artist-profile__booking-band { grid-template-columns:minmax(0,1fr); gap:24px; min-height:0; padding:100px 18px 110px; }
   .public-artist-profile__booking-band h2 { font-size:clamp(4rem,16vw,7rem); overflow-wrap:anywhere; }
-  .public-artist-profile__booking-band>button { grid-column:1; width:100%; justify-self:stretch; }
+  .public-artist-profile__booking-band>button, .public-artist-profile__booking-band>.public-artist-profile__agency-contact { grid-column:1; width:100%; justify-self:stretch; }
 }
 @media(prefers-reduced-motion:reduce) {
   .public-artist-profile__booking-cta,.public-artist-profile__links a { transition:none; }
 }
+</style>
+
+<style scoped>
+.public-artist-profile__agency-contact svg { width:20px; height:20px; flex:none; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 </style>

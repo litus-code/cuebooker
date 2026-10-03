@@ -2377,11 +2377,12 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-        <nav v-if="isAgency && selectedArtistId && ['profile','passport','cue-id'].includes(activeView) && !workspaceSurfaceLoading" class="agency-artist-tabs" :aria-label="preferences.locale.value === 'es' ? 'Ficha del artista' : 'Artist record'">
-      <button type="button" @click="changeView('roster')">← {{ preferences.locale.value === 'es' ? 'Artistas' : 'Artists' }}</button>
-      <strong>{{ selectedArtist?.stage_name }}</strong>
-      <button v-for="tab in (['profile','passport','cue-id'] as const)" :key="tab" type="button" :aria-current="activeView === tab ? 'page' : undefined" @click="changeView(tab)">{{ tab === 'profile' ? (preferences.locale.value === 'es' ? 'Ficha y perfil público' : 'Record & public profile') : tab === 'passport' ? 'CUE Passport' : 'CUE ID' }}</button>
-    </nav>
+    <div v-if="isAgency && selectedArtistId && ['profile','passport','cue-id'].includes(activeView) && !workspaceSurfaceLoading" class="agency-artist-navigation">
+      <button class="agency-artist-back" type="button" @click="changeView('roster')">{{ preferences.locale.value === 'es' ? 'Volver a artistas' : 'Back to artists' }}</button>
+      <nav class="agency-artist-tabs" :aria-label="preferences.locale.value === 'es' ? 'Ficha del artista' : 'Artist record'">
+        <button v-for="tab in (['profile','passport','cue-id'] as const)" :key="tab" type="button" :aria-current="activeView === tab ? 'page' : undefined" @click="changeView(tab)">{{ tab === 'profile' ? (preferences.locale.value === 'es' ? 'Ficha' : 'Profile') : tab === 'passport' ? 'CUE Passport' : 'CUE ID' }}</button>
+      </nav>
+    </div>
 
     <section v-if="workspaceSurfaceLoading" class="workspace-loading-state" aria-busy="true" aria-live="polite">
       <CueBrand class="workspace-loading-state__logo" decorative />
@@ -4979,3 +4980,11 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 }
 </style>
 
+
+<style scoped>
+.agency-artist-navigation { min-width:0; }
+.agency-artist-tabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.agency-artist-tabs button { min-width:0; white-space:nowrap; font-size:clamp(11px,3vw,14px); }
+.agency-artist-back { min-height:44px; padding:8px 12px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-control,12px); background:transparent; color:var(--cue-text); cursor:pointer; }
+.agency-artist-back:focus-visible { outline:2px solid var(--cue-accent); outline-offset:3px; }
+</style>

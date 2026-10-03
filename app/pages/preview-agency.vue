@@ -281,7 +281,10 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
     </section>
 
     <div v-if="selectedArtist" class="agency-preview__context"><span>CUE Test Agency / <strong>{{ selectedArtist.stage_name }}</strong></span><button type="button" @click="returnToAgency">{{ locale === 'es' ? 'Quitar filtro de artista' : 'Clear artist filter' }}</button></div>
-    <nav v-if="selectedArtist && ['profile','passport','cue-id'].includes(view)" class="agency-preview__record-tabs" aria-label="Ficha del artista"><button type="button" @click="changeView('roster')">← {{ locale === 'es' ? 'Artistas' : 'Artists' }}</button><button v-for="tab in (['profile','passport','cue-id'] as const)" :key="tab" type="button" :aria-current="view===tab?'page':undefined" @click="changeView(tab)">{{ tab==='profile'?(locale==='es'?'Ficha y perfil público':'Record & public profile'):tab==='passport'?'CUE Passport':'CUE ID' }}</button></nav>
+    <div v-if="selectedArtist && ['profile','passport','cue-id'].includes(view)" class="agency-preview__record-navigation">
+      <button class="agency-preview__record-back" type="button" @click="changeView('roster')">{{ locale === 'es' ? 'Volver a artistas' : 'Back to artists' }}</button>
+      <nav class="agency-preview__record-tabs" :aria-label="locale === 'es' ? 'Ficha del artista' : 'Artist record'"><button v-for="tab in (['profile','passport','cue-id'] as const)" :key="tab" type="button" :aria-current="view===tab?'page':undefined" @click="changeView(tab)">{{ tab==='profile'?(locale==='es'?'Ficha':'Profile'):tab==='passport'?'CUE Passport':'CUE ID' }}</button></nav>
+    </div>
     <AgencyWorkspace
       v-if="!focusedBooking && ['overview', 'bookings', 'calendar', 'history', 'roster'].includes(view)"
       :selected-artist-id="selectedArtistId" :workspace-id="'preview-agency'" agency-name="CUE Test Agency"
@@ -438,7 +441,7 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 .agency-preview__context{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin-top:20px;padding:12px;border-left:3px solid var(--cue-accent);background:var(--cue-surface);font-size:12px}.agency-preview__context button{background:transparent;color:var(--cue-accent);border:1px solid var(--cue-border);border-radius:var(--cue-radius-control,12px);padding:8px 12px}
 </style>
 
-<style scoped>.agency-preview__record-tabs{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.agency-preview__record-tabs button{background:transparent;color:var(--cue-muted);padding:10px 8px;border:0;border-bottom:2px solid transparent;border-radius:0}.agency-preview__record-tabs button:first-child{padding:10px 12px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control,12px);color:var(--cue-text)}.agency-preview__record-tabs button[aria-current=page]{background:transparent;color:var(--cue-accent);border:0;border-bottom:2px solid var(--cue-accent);border-radius:0}</style>
+<style scoped>.agency-preview__record-tabs{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.agency-preview__record-tabs button{background:transparent;color:var(--cue-muted);padding:10px 8px;border:0;border-bottom:2px solid transparent;border-radius:0}.agency-preview__record-back{padding:10px 12px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control,12px);color:var(--cue-text)}.agency-preview__record-tabs button[aria-current=page]{background:transparent;color:var(--cue-accent);border:0;border-bottom:2px solid var(--cue-accent);border-radius:0}</style>
 
 <style scoped>
 .agency-preview__header {
@@ -715,10 +718,10 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 .agency-preview__desktop-notifications { margin-top:0!important; }
 .agency-preview__context button { color:var(--cue-text)!important; }
 .agency-preview__context button:hover,.agency-preview__context button:focus-visible { color:var(--cue-accent)!important;border-color:var(--cue-accent)!important; }
-.agency-preview__record-tabs button:not(:first-child):hover,
-.agency-preview__record-tabs button:not(:first-child):focus-visible { color:var(--cue-accent)!important;border-bottom-color:var(--cue-accent)!important; }
-.agency-preview__record-tabs button:first-child:hover,
-.agency-preview__record-tabs button:first-child:focus-visible { color:var(--cue-accent)!important;border-color:var(--cue-accent)!important; }
+.agency-preview__record-tabs button:hover,
+.agency-preview__record-tabs button:focus-visible { color:var(--cue-accent)!important;border-bottom-color:var(--cue-accent)!important; }
+.agency-preview__record-back:hover,
+.agency-preview__record-back:focus-visible { color:var(--cue-accent)!important;border-color:var(--cue-accent)!important; }
 @media(max-width:960px){
   .agency-preview__header nav .agency-preview__desktop-exit{display:none!important;}
 }
@@ -825,4 +828,12 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
   font-size:13px;
   line-height:1.5;
 }
+</style>
+
+<style scoped>
+.agency-preview__record-navigation { min-width:0; margin-top:20px; }
+.agency-preview__record-back { min-height:44px; background:transparent; cursor:pointer; }
+.agency-preview__record-tabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:12px; }
+.agency-preview__record-tabs button { min-width:0; min-height:44px; padding-inline:4px; white-space:nowrap; font-size:clamp(11px,3vw,14px); }
+.agency-preview__record-back:focus-visible { outline:2px solid var(--cue-accent); outline-offset:3px; }
 </style>
