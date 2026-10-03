@@ -183,10 +183,10 @@ onBeforeUnmount(() => {
             <span v-for="(genre, index) in genres.slice(0, 4)" :key="genre"><small>0{{ index + 1 }}</small>{{ genre }}</span>
           </div>
           <button v-if="agencyManaged && preview" class="public-artist-profile__booking-cta" type="button" @click="emit('agencyContact',profile.slug)">
-            {{ copy.contactAgency }} <span class="arrow arrow--ne" aria-hidden="true" />
+            {{ copy.contactAgency }} <svg class="public-artist-profile__cta-arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12 12 4M5 4h7v7" /></svg>
           </button>
           <NuxtLink v-else-if="agencyManaged" class="public-artist-profile__booking-cta" :to="agencyHref">
-            {{ copy.contactAgency }} <span class="arrow arrow--ne" aria-hidden="true" />
+            {{ copy.contactAgency }} <svg class="public-artist-profile__cta-arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12 12 4M5 4h7v7" /></svg>
           </NuxtLink>
           <button
             v-else
@@ -381,8 +381,8 @@ onBeforeUnmount(() => {
 .public-artist-profile__hero-bottom { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-top:clamp(24px,4vw,42px); }
 .public-artist-profile__genres { display:flex; flex-wrap:wrap; gap:7px; margin:0; }
 .public-artist-profile__genres span { padding: 7px 9px; border: 1px solid var(--cue-border, #333); color: var(--cue-muted, #aaa); font: 700 9px/1 monospace; text-transform: uppercase; }
-.public-artist-profile__booking-cta { display: inline-flex; align-items: center; align-self: flex-start; gap: 10px; min-height: 54px; margin-top: 34px; padding: 0 20px; border: 0; background: var(--cue-accent, #e8ff2f); color: #080808; cursor: pointer; font-weight: 900; }
-.public-artist-profile__hero::after { content:""; position:absolute; z-index:2; left:0; right:0; top:0; height:3px; background:linear-gradient(90deg,var(--cue-accent,#e8ff2f) 0 17%,transparent 17% 82%,#ef3a31 82% 100%); pointer-events:none; }
+.public-artist-profile__booking-cta { display: inline-flex; align-items: center; align-self: flex-start; gap: 10px; min-height: 54px; margin-top: 34px; padding: 0 20px; border: 0; border-radius: var(--cue-radius-control, 14px); background: var(--cue-accent, #e8ff2f); color: #080808; cursor: pointer; font-weight: 900; }
+.public-artist-profile__cta-arrow{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}.public-artist-profile__hero::after { content:""; position:absolute; z-index:2; left:0; right:0; top:0; height:3px; background:linear-gradient(90deg,var(--cue-accent,#e8ff2f) 0 17%,transparent 17% 82%,#ef3a31 82% 100%); pointer-events:none; }
 .public-artist-profile__cover-image { filter:saturate(.83) contrast(1.16) brightness(.78); }
 .public-artist-profile__shade { background:linear-gradient(90deg,rgba(3,3,3,.82) 0%,rgba(3,3,3,.25) 56%,rgba(3,3,3,.06) 100%),linear-gradient(0deg,rgba(3,3,3,.98) 0%,rgba(3,3,3,.1) 65%,rgba(3,3,3,.3) 100%); }
 .public-artist-profile__story-copy>span::before,.public-artist-profile__sound>span::before { content:"●"; margin-right:10px; color:#ee3731; font-size:8px; vertical-align:2px; }
