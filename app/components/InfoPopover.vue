@@ -47,6 +47,6 @@ onBeforeUnmount(() => {
 .cue-info__trigger:hover+.cue-info__popup,.cue-info__trigger:focus-visible+.cue-info__popup,.cue-info__popup.is-open{opacity:1;visibility:visible;pointer-events:auto}
 .cue-info__popup :deep(p){margin:0;color:var(--cue-muted);font:inherit}
 .cue-info__popup :deep(p+p){margin-top:8px}
-@media(max-width:600px){.cue-info__trigger{width:34px;height:34px;min-height:34px}.cue-info__popup{width:min(330px,calc(100vw - 32px));padding:14px}}
+@media(max-width:600px){.cue-info__trigger{width:34px;height:34px;min-height:34px}.cue-info__popup{position:fixed;top:50%;left:50%;right:auto;bottom:auto;transform:translate(-50%,-50%);width:min(360px,calc(100vw - 32px));max-height:min(70dvh,420px);overflow:auto;padding:16px}}
 @media(prefers-reduced-motion:reduce){.cue-info__popup{transition:none}}
 </style>
