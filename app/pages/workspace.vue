@@ -3230,7 +3230,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
     </template>
 
     <div v-if="settingsOpen" class="editor-backdrop" @click.self="closeSettings">
-      <aside class="editor-panel settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title" tabindex="-1">
+      <aside class="editor-panel settings-panel" :class="isAgency ? 'settings-panel--agency' : ''" role="dialog" aria-modal="true" aria-labelledby="settings-title" tabindex="-1">
         <div class="editor-heading"><div><p class="eyebrow">{{ copy.accountPrivate }}</p><h2 id="settings-title">{{ copy.settingsTitle }}</h2></div><button type="button" :aria-label="copy.close" @click="closeSettings">×</button></div>
         <AgencyCatalogEditor v-if="isAgency && agencyWorkspaceId" :workspace-id="agencyWorkspaceId" :role="agencyWorkspaceRole" :locale="preferences.locale.value" @edit-artist="id => { closeSettings(); chooseArtist(id, 'profile') }" />
         <AgencyTeamPanel v-if="isAgency && agencyWorkspaceId" :workspace-id="agencyWorkspaceId" :role="agencyWorkspaceRole" :user-id="auth.session.value?.user.id || ''" :locale="preferences.locale.value" />
@@ -4759,17 +4759,17 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .workspace--agency .view-heading,.workspace--agency .view-heading>div{min-width:0;max-width:100%}
 .workspace--agency .view-heading h1{box-sizing:border-box;width:100%;max-width:100%;line-height:.96;overflow-wrap:anywhere;padding-inline:3px}
 .workspace--agency .view-heading .eyebrow{max-width:100%;overflow-wrap:anywhere}
-.workspace--agency .settings-panel .editor-heading>div{min-width:0}
-.workspace--agency .settings-panel .editor-heading h2{max-width:100%;overflow-wrap:anywhere;line-height:1.08}
+.settings-panel--agency .editor-heading>div{min-width:0}
+.settings-panel--agency .editor-heading h2{max-width:100%;overflow-wrap:anywhere;line-height:1.08}
 @media(max-width:680px){.workspace--agency .agency-context-selector{max-width:320px;margin:16px 0 20px;padding-inline:10px}.workspace--agency .agency-context-selector select{max-width:280px!important}.agency-artist-tabs{gap:14px}.agency-artist-tabs button{padding-inline:3px}}
 </style>
 
 <style scoped>
-.workspace--agency .settings-panel .editor-heading{min-width:0;gap:16px}
-.workspace--agency .settings-panel > .editor-heading>div{box-sizing:border-box;min-width:0;max-width:100%;padding:0 4px 0 40px}
-.workspace--agency .settings-panel > .editor-heading h2{box-sizing:border-box;width:100%;max-width:100%;margin:8px 0 0;font-size:clamp(2rem,4vw,3.5rem);line-height:1.08;letter-spacing:-.04em;overflow-wrap:anywhere;padding-inline:2px}
-.workspace--agency .settings-panel > .editor-heading .eyebrow{max-width:100%;white-space:normal;overflow-wrap:anywhere;padding-inline:2px}
-@media(max-width:680px){.workspace--agency .settings-panel > .editor-heading>div{padding-left:24px}.workspace--agency .settings-panel > .editor-heading h2{font-size:clamp(1.8rem,8vw,2.8rem)}}
+.settings-panel--agency .editor-heading{min-width:0;gap:16px}
+.settings-panel--agency > .editor-heading>div{box-sizing:border-box;min-width:0;max-width:100%;padding:0 4px 0 40px}
+.settings-panel--agency > .editor-heading h2{box-sizing:border-box;width:100%;max-width:100%;margin:8px 0 0;font-size:clamp(2rem,4vw,3.5rem);line-height:1.08;letter-spacing:-.04em;overflow-wrap:anywhere;padding-inline:2px}
+.settings-panel--agency > .editor-heading .eyebrow{max-width:100%;white-space:normal;overflow-wrap:anywhere;padding-inline:2px}
+@media(max-width:680px){.settings-panel--agency > .editor-heading>div{padding-left:24px}.settings-panel--agency > .editor-heading h2{font-size:clamp(1.8rem,8vw,2.8rem)}}
 </style>
 
 <style scoped>
@@ -4785,7 +4785,7 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 }
 .workspace .view-heading>div{min-width:0;max-width:900px}
 .workspace .view-heading h1{font-size:clamp(2.25rem,5.3vw,5.5rem);line-height:.98;letter-spacing:-.055em}
-.workspace--agency .settings-panel > .editor-heading{
+.settings-panel--agency > .editor-heading{
   padding-top:40px;
   border-bottom-color:var(--cue-border);
   background:var(--cue-surface);
@@ -4793,7 +4793,7 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 @media(max-width:960px){
   .workspace .view-heading{min-height:132px;margin-bottom:20px;padding:26px 22px}
   .workspace .view-heading h1{font-size:clamp(2rem,7vw,4rem)}
-  .workspace--agency .settings-panel > .editor-heading{padding-top:max(30px,env(safe-area-inset-top))}
+  .settings-panel--agency > .editor-heading{padding-top:max(30px,env(safe-area-inset-top))}
 }
 @media(max-width:600px){
   .workspace .view-heading{min-height:118px;margin-bottom:18px;padding:22px 16px}
@@ -4809,8 +4809,8 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 
 <style scoped>
 /* Programmatic focus should not leave a browser-blue frame around the full settings page. */
-.workspace--agency .settings-panel:focus:not(:focus-visible){outline:none;box-shadow:none}
-.workspace--agency .settings-panel:focus-visible{outline:2px solid var(--cue-accent);outline-offset:3px}
+.settings-panel--agency:focus:not(:focus-visible){outline:none;box-shadow:none}
+.settings-panel--agency:focus-visible{outline:2px solid var(--cue-accent);outline-offset:3px}
 </style>
 
 
@@ -4832,9 +4832,9 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 
 <style scoped>
 @media(max-width:960px){
-  .workspace--agency .settings-panel>.editor-heading{top:0;padding-top:max(16px,env(safe-area-inset-top))}
-  .workspace--agency .settings-panel>.editor-heading>div{flex:1;min-width:0;padding:0}
-  .workspace--agency .settings-panel>.editor-heading h2{box-sizing:border-box;width:100%;max-width:100%;font-size:clamp(1.45rem,6vw,2.2rem);line-height:1.15;overflow-wrap:anywhere;padding:0}
+  .settings-panel--agency>.editor-heading{top:0;padding-top:max(16px,env(safe-area-inset-top))}
+  .settings-panel--agency>.editor-heading>div{flex:1;min-width:0;padding:0}
+  .settings-panel--agency>.editor-heading h2{box-sizing:border-box;width:100%;max-width:100%;font-size:clamp(1.45rem,6vw,2.2rem);line-height:1.15;overflow-wrap:anywhere;padding:0}
 }
 </style>
 
@@ -4865,8 +4865,8 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
     display:block;width:100%!important;min-width:0!important;max-width:none!important;box-sizing:border-box;
     justify-self:end;margin:0!important;padding:0 34px 0 12px;font-size:14px!important;
   }
-  .workspace--agency .settings-panel>.editor-heading{box-sizing:border-box;min-height:0;overflow:visible}
-  .workspace--agency .settings-panel>.editor-heading h2{display:block;min-height:1.15em;overflow:visible;white-space:normal}
+  .settings-panel--agency>.editor-heading{box-sizing:border-box;min-height:0;overflow:visible}
+  .settings-panel--agency>.editor-heading h2{display:block;min-height:1.15em;overflow:visible;white-space:normal}
 }
 @media(max-width:680px){.workspace--agency .agency-context-selector{grid-template-columns:minmax(0,1fr) minmax(200px,220px)!important;padding-inline:20px!important}}
 </style>
@@ -4880,8 +4880,8 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
     padding:.14em 10px .18em!important;line-height:1.16!important;overflow:visible!important;
     text-indent:0;overflow-wrap:anywhere;
   }
-  .workspace--agency .settings-panel>.editor-heading{overflow:visible!important}
-  .workspace--agency .settings-panel>.editor-heading h2{line-height:1.2!important;padding-block:.08em .12em!important}
+  .settings-panel--agency>.editor-heading{overflow:visible!important}
+  .settings-panel--agency>.editor-heading h2{line-height:1.2!important;padding-block:.08em .12em!important}
   .workspace--agency .agency-context-selector{grid-template-columns:minmax(0,1fr) minmax(220px,250px)!important}
   .workspace--agency .agency-context-selector select{font-size:14px!important}
 }
@@ -4965,17 +4965,17 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 }
 
 /* Match the settings drawer heading to the page gutter and keep it in normal scroll flow. */
-.workspace--agency .settings-panel{box-sizing:border-box;width:min(460px,100vw);max-width:100vw;max-height:100dvh;overflow-x:hidden;overscroll-behavior:contain}
-.workspace--agency .settings-panel>.editor-heading{box-sizing:border-box;position:static;top:auto;min-width:0}
-.workspace--agency .settings-panel>.editor-heading>div{box-sizing:border-box;flex:1 1 auto;min-width:0;max-width:100%;padding:0}
-.workspace--agency .settings-panel>.editor-heading h2{box-sizing:border-box;width:auto;max-width:100%;overflow-wrap:anywhere}
+.settings-panel--agency{box-sizing:border-box;width:min(460px,100vw);max-width:100vw;max-height:100dvh;overflow-x:hidden;overscroll-behavior:contain}
+.settings-panel--agency>.editor-heading{box-sizing:border-box;position:static;top:auto;min-width:0}
+.settings-panel--agency>.editor-heading>div{box-sizing:border-box;flex:1 1 auto;min-width:0;max-width:100%;padding:0}
+.settings-panel--agency>.editor-heading h2{box-sizing:border-box;width:auto;max-width:100%;overflow-wrap:anywhere}
 .account-actions>.header-icon-button{box-sizing:border-box;display:grid;width:44px;height:44px;min-width:44px;min-height:44px;padding:10px;place-items:center;border-radius:50%}
 .account-actions>.header-icon-button svg{width:100%;height:100%}
 @media(max-width:680px){
- .workspace--agency .settings-panel{width:100vw;height:100dvh;max-height:100dvh;padding:20px 16px max(24px,env(safe-area-inset-bottom))}
- .workspace--agency .settings-panel>.editor-heading{position:static;top:auto;margin:0 0 20px;padding:0 0 18px;align-items:flex-start}
- .workspace--agency .settings-panel>.editor-heading>div{padding:0}
- .workspace--agency .settings-panel>.editor-heading h2{width:auto;margin:8px 0 0;padding:0;font-size:clamp(1.8rem,8vw,2.8rem);line-height:1.08}
+ .settings-panel--agency{width:100vw;height:100dvh;max-height:100dvh;padding:20px 16px max(24px,env(safe-area-inset-bottom))}
+ .settings-panel--agency>.editor-heading{position:static;top:auto;margin:0 0 20px;padding:0 0 18px;align-items:flex-start}
+ .settings-panel--agency>.editor-heading>div{padding:0}
+ .settings-panel--agency>.editor-heading h2{width:auto;margin:8px 0 0;padding:0;font-size:clamp(1.8rem,8vw,2.8rem);line-height:1.08}
 }
 </style>
 
