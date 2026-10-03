@@ -1,4 +1,6 @@
-export type AgencyCatalogArtist = { id: string; name: string; slug: string; city: string | null; genres: string[]; catalogVisible: boolean; eligible: boolean; acceptingRequests: boolean; imageUrl?: string | null; coverUrl?: string | null; imagePath?: string | null; coverPath?: string | null }
+import type { PublicArtistProfile } from './publicArtistProfile'
+
+export type AgencyCatalogArtist = { id: string; name: string; slug: string; city: string | null; genres: string[]; catalogVisible: boolean; eligible: boolean; acceptingRequests: boolean; imageUrl?: string | null; coverUrl?: string | null; imagePath?: string | null; coverPath?: string | null; profile?: PublicArtistProfile }
 export type AgencyCatalog = { coverPath?: string | null; logoPath?: string | null; name: string; slug: string; published: boolean; tagline: string | null; bio: string | null; coverUrl: string | null; logoUrl: string | null; contactEmail: string | null; city: string | null; instagramUrl: string | null; websiteUrl: string | null; artists: AgencyCatalogArtist[] }
 export function safeAgencyImage(value: string | null | undefined) {
  if (!value) return undefined
