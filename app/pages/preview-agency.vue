@@ -140,6 +140,37 @@ function openAgencyProfileEditor(section: ArtistProfileSection) {
   agencyGenreDraft.value = [...agencyArtistProfile.value.primaryGenres, ...agencyArtistProfile.value.secondaryGenres].join(', ')
   agencyFormatDraft.value = agencyArtistProfile.value.performanceFormats.join(', ')
 }
+const agencyProfileFileNotice = ref('')
+
+function chooseAgencyProfileImage(event: Event, target: 'portrait' | 'cover') {
+  const input = event.currentTarget as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
+
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    agencyProfileFileNotice.value = locale.value === 'es' ? 'Elige una imagen JPG, PNG o WebP.' : 'Choose a JPG, PNG or WebP image.'
+    return
+  }
+  if (file.size > 8 * 1024 * 1024) {
+    agencyProfileFileNotice.value = locale.value === 'es' ? 'La imagen debe ocupar menos de 8 MB.' : 'The image must be under 8 MB.'
+    return
+  }
+
+  const url = URL.createObjectURL(file)
+  const previous = target === 'portrait' ? agencyArtistProfile.value.artistImageUrl : agencyArtistProfile.value.coverUrl
+  if (previous?.startsWith('blob:')) URL.revokeObjectURL(previous)
+  if (target === 'portrait') {
+    agencyArtistProfile.value.artistImageUrl = url
+    agencyArtistProfile.value.artistCutoutUrl = null
+  } else {
+    agencyArtistProfile.value.coverUrl = url
+  }
+  agencyProfileFileNotice.value = locale.value === 'es'
+    ? 'Vista previa actualizada. La imagen solo se conserva mientras esta demo siga abierta.'
+    : 'Preview updated. The image stays available only while this demo remains open.'
+}
+
 function saveAgencyProfileEditor() {
   if (profileEditorSection.value === 'sound') {
     agencyArtistProfile.value.primaryGenres = agencyGenreDraft.value.split(',').map(value => value.trim()).filter(Boolean)
@@ -306,7 +337,18 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
           <div v-else-if="profileEditorSection === 'booking'" class="agency-preview__profile-fields"><label class="agency-preview__profile-check"><input v-model="agencyArtistProfile.acceptingRequests" type="checkbox">{{ locale === 'es' ? 'Aceptar solicitudes desde el perfil público' : 'Accept enquiries through the public profile' }}</label></div>
           <div v-else-if="profileEditorSection === 'passport'" class="agency-preview__profile-fields"><label class="agency-preview__profile-check"><input v-model="agencyPassportPublic" type="checkbox">{{ locale === 'es' ? 'Mostrar el CUE Passport en el perfil' : 'Show CUE Passport on profile' }}</label></div>
           <div v-else-if="profileEditorSection === 'distribution'" class="agency-preview__profile-fields agency-preview__share-status"><p>{{ locale === 'es' ? 'Aquí puedes comprobar el estado de publicación de la ficha y si acepta solicitudes. La preview usa datos ficticios y no crea un enlace público real.' : 'Check the profile publication and enquiry status here. This preview uses fictional data and does not create a real public link.' }}</p><div><span>{{ locale === 'es' ? 'Perfil' : 'Profile' }}</span><strong>{{ agencyProfilePublished ? (locale === 'es' ? 'Publicado' : 'Published') : (locale === 'es' ? 'Borrador' : 'Draft') }}</strong></div><div><span>{{ locale === 'es' ? 'Solicitudes' : 'Enquiries' }}</span><strong>{{ agencyArtistProfile.acceptingRequests ? (locale === 'es' ? 'Abiertas' : 'Open') : (locale === 'es' ? 'Cerradas' : 'Closed') }}</strong></div><div class="agency-preview__share-url"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1M14 11a5 5 0 0 0-7.1 0l-2 2A5 5 0 0 0 12 20l1.1-1.1" /></svg><span>{{ locale === 'es' ? 'Enlace público' : 'Public link' }}<strong>{{ locale === 'es' ? 'Disponible al publicar el perfil real' : 'Available after publishing the live profile' }}</strong><small>{{ locale === 'es' ? 'Esta preview no genera URL compartible.' : 'This preview does not generate a shareable URL.' }}</small></span><button type="button" disabled>{{ locale === 'es' ? 'Copiar enlace' : 'Copy link' }}</button></div></div>
-          <p v-else class="agency-preview__profile-editor-note">{{ locale === 'es' ? 'La imagen y la portada se editan directamente desde los controles visuales del perfil. Esta preview no guarda cambios de archivos.' : 'Edit the image and cover directly from the profile visual controls. This preview does not save file changes.' }}</p>
+          <div v-else-if="profileEditorSection === 'portrait'" class="agency-preview__profile-fields agency-preview__profile-image-editor">
+            <label>{{ locale === 'es' ? 'Imagen del artista' : 'Artist image' }}<input type="file" accept="image/jpeg,image/png,image/webp" @change="chooseAgencyProfileImage($event, 'portrait')"></label>
+            <img v-if="agencyArtistProfile.artistImageUrl" :src="agencyArtistProfile.artistImageUrl" :alt="locale === 'es' ? 'Vista previa de la imagen del artista' : 'Artist image preview'">
+            <p v-if="agencyProfileFileNotice" role="status">{{ agencyProfileFileNotice }}</p>
+            <p v-else class="agency-preview__profile-editor-note">{{ locale === 'es' ? 'Elige una imagen de tu biblioteca o haz una foto. Se verá en la ficha durante esta demo.' : 'Choose an image from your library or take a photo. It will appear on the profile during this demo.' }}</p>
+          </div>
+          <div v-else-if="profileEditorSection === 'image'" class="agency-preview__profile-fields agency-preview__profile-image-editor">
+            <label>{{ locale === 'es' ? 'Imagen de portada' : 'Cover image' }}<input type="file" accept="image/jpeg,image/png,image/webp" @change="chooseAgencyProfileImage($event, 'cover')"></label>
+            <img v-if="agencyArtistProfile.coverUrl" :src="agencyArtistProfile.coverUrl" :alt="locale === 'es' ? 'Vista previa de la portada' : 'Cover preview'">
+            <p v-if="agencyProfileFileNotice" role="status">{{ agencyProfileFileNotice }}</p>
+            <p v-else class="agency-preview__profile-editor-note">{{ locale === 'es' ? 'Elige una imagen de tu biblioteca o haz una foto. Se verá en la ficha durante esta demo.' : 'Choose an image from your library or take a photo. It will appear on the profile during this demo.' }}</p>
+          </div>
           <footer v-if="profileEditorSection !== 'distribution' && profileEditorSection !== 'image' && profileEditorSection !== 'portrait'"><button type="button" @click="profileEditorSection = null">{{ locale === 'es' ? 'Cancelar' : 'Cancel' }}</button><button type="button" class="agency-preview__profile-save" @click="saveAgencyProfileEditor">{{ locale === 'es' ? 'Guardar cambios' : 'Save changes' }}</button></footer>
         </section>
       </section>
@@ -753,4 +795,34 @@ useHead({ title: 'Agency preview | Cuebooker', meta: [{ name: 'robots', content:
 .agency-preview__share-status{display:grid;grid-template-columns:1fr 1fr;gap:12px}.agency-preview__share-status>p{grid-column:1/-1;margin:0;color:var(--cue-muted);line-height:1.6}.agency-preview__share-status>div{display:grid;gap:8px;padding:14px;border:1px solid var(--cue-border);border-radius:12px;background:var(--cue-bg)}.agency-preview__share-status>div span{font:800 10px/1.3 monospace;letter-spacing:.1em;color:var(--cue-muted);text-transform:uppercase}.agency-preview__share-status>div strong{color:var(--cue-accent)}@media(max-width:560px){.agency-preview__share-status{grid-template-columns:1fr}.agency-preview__share-status>p{grid-column:auto}}
 
 .agency-preview__public-artist-overlay{position:fixed;z-index:220;inset:0;overflow:auto;background:#050505;color:#f2f0eb;overscroll-behavior:contain}.agency-preview__public-artist-close{position:fixed;z-index:225;top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));min-height:42px;padding:0 14px;border:1px solid #444;border-radius:999px;background:#111;color:#f2f0eb;font:700 12px/1 monospace;cursor:pointer}.agency-preview__public-artist-close:focus-visible{outline:2px solid var(--cue-accent);outline-offset:3px}
+</style>
+
+<style scoped>
+.agency-preview__profile-image-editor>label {
+  display:grid;
+  gap:10px;
+  padding:14px;
+  border:1px dashed var(--cue-border);
+  border-radius:12px;
+  color:var(--cue-text);
+}
+.agency-preview__profile-image-editor input[type=file] {
+  max-width:100%;
+  color:var(--cue-muted);
+  font:inherit;
+}
+.agency-preview__profile-image-editor img {
+  display:block;
+  width:min(100%,320px);
+  max-height:260px;
+  object-fit:cover;
+  border:1px solid var(--cue-border);
+  border-radius:12px;
+}
+.agency-preview__profile-image-editor>p {
+  margin:0;
+  color:var(--cue-muted);
+  font-size:13px;
+  line-height:1.5;
+}
 </style>
