@@ -13,6 +13,9 @@ const props = withDefaults(defineProps<{
   bookingReference?: string
   bookingError?: string
   preview?: boolean
+  agencyManaged?: boolean
+  agencyHref?: string
+  agencyName?: string
 }>(), {
   locale: 'es',
   bookingFocused: false,
@@ -21,7 +24,10 @@ const props = withDefaults(defineProps<{
   bookingConfirmationSent: null,
   bookingReference: '',
   bookingError: '',
-  preview: false
+  preview: false,
+  agencyManaged: false,
+  agencyHref: '/',
+  agencyName: ''
 })
 
 const analytics = useAnalytics()
@@ -30,11 +36,11 @@ const emit = defineEmits<{
   submitBooking: [payload: BookingFormSubmission]
 }>()
 
-const requestOpen = ref(props.bookingFocused)
+const requestOpen = ref(props.bookingFocused && !props.agencyManaged)
 const bookingModal = ref<HTMLElement | null>(null)
 
 watch(() => props.bookingFocused, value => {
-  if (value) requestOpen.value = true
+  if (value && !props.agencyManaged) requestOpen.value = true
 })
 
 const copy = computed(() => props.locale === 'es' ? {
@@ -45,7 +51,10 @@ const copy = computed(() => props.locale === 'es' ? {
   links: 'Escuchar / seguir',
   based: 'Base',
   years: 'Años en activo',
-  preview: 'Vista previa del perfil público'
+  preview: 'Vista previa del perfil público',
+  backAgency: 'Volver a la agencia',
+  contactAgency: 'Consultar con la agencia',
+  agencyBooking: 'Booking gestionado por la agencia.'
 } : {
   booking: 'Request booking',
   bookingClosed: 'Booking currently unavailable',
@@ -54,7 +63,10 @@ const copy = computed(() => props.locale === 'es' ? {
   links: 'Listen / follow',
   based: 'Based in',
   years: 'Years active',
-  preview: 'Public profile preview'
+  preview: 'Public profile preview',
+  backAgency: 'Back to agency',
+  contactAgency: 'Contact the agency',
+  agencyBooking: 'Booking managed by the agency.'
 })
 
 const genres = computed(() => [...props.profile.primaryGenres, ...props.profile.secondaryGenres].filter(Boolean).slice(0, 7))
@@ -124,6 +136,7 @@ onBeforeUnmount(() => {
     <header class="public-artist-profile__topbar">
       <NuxtLink to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink>
       <span v-if="preview">{{ copy.preview }}</span>
+      <NuxtLink v-else-if="agencyManaged" class="public-artist-profile__agency-return" :to="agencyHref">← {{ copy.backAgency }} · {{ agencyName }}</NuxtLink>
     </header>
 
     <section class="public-artist-profile__hero">
@@ -166,7 +179,11 @@ onBeforeUnmount(() => {
           <div v-if="genres.length" class="public-artist-profile__genres">
             <span v-for="(genre, index) in genres.slice(0, 4)" :key="genre"><small>0{{ index + 1 }}</small>{{ genre }}</span>
           </div>
+          <NuxtLink v-if="agencyManaged" class="public-artist-profile__booking-cta" :to="agencyHref">
+            {{ copy.contactAgency }} <span class="arrow arrow--ne" aria-hidden="true" />
+          </NuxtLink>
           <button
+            v-else
             class="public-artist-profile__booking-cta"
             type="button"
             :disabled="!profile.acceptingRequests && !preview"
@@ -252,13 +269,15 @@ onBeforeUnmount(() => {
       <div class="public-artist-profile__section-index" aria-hidden="true">05</div>
       <div>
         <span>BOOKING</span>
-        <h2>{{ profile.acceptingRequests || preview ? (locale === 'es' ? 'SOLICITAR FECHA.' : 'REQUEST A DATE.') : (locale === 'es' ? 'BOOKING PAUSADO.' : 'BOOKING PAUSED.') }}</h2>
+        <h2>{{ agencyManaged ? (locale === 'es' ? 'REPRESENTADO POR LA AGENCIA.' : 'REPRESENTED BY THE AGENCY.') : (profile.acceptingRequests || preview ? (locale === 'es' ? 'SOLICITAR FECHA.' : 'REQUEST A DATE.') : (locale === 'es' ? 'BOOKING PAUSADO.' : 'BOOKING PAUSED.')) }}</h2>
         <p>{{ locale === 'es'
-          ? 'Una fecha empieza con una conversación. Cuéntame qué tienes en mente.'
-          : 'Every date starts with a conversation. Tell me what you have in mind.' }}</p>
+          ? (agencyManaged ? 'Esta ficha forma parte del catálogo de la agencia. Las consultas se envían a su equipo.' : 'Una fecha empieza con una conversación. Cuéntame qué tienes en mente.')
+          : (agencyManaged ? 'This portfolio belongs to the agency catalogue. Enquiries go to its team.' : 'Every date starts with a conversation. Tell me what you have in mind.') }}</p>
         <p v-if="profile.bookingManagedBy" class="public-artist-profile__booking-agent">{{ locale === 'es' ? 'Booking gestionado por' : 'Booking managed by' }} {{ profile.bookingManagedBy }}</p>
       </div>
+      <NuxtLink v-if="agencyManaged" class="public-artist-profile__agency-contact" :to="agencyHref">{{ copy.contactAgency }} ↗</NuxtLink>
       <button
+        v-else
         type="button"
         :disabled="!profile.acceptingRequests && !preview"
         @click="openBooking"
@@ -273,7 +292,7 @@ onBeforeUnmount(() => {
 
     <Teleport to="body">
       <div
-        v-if="requestOpen"
+        v-if="requestOpen && !agencyManaged"
         class="public-artist-profile__booking-backdrop"
         role="presentation"
         @click.self="closeBooking"
@@ -322,6 +341,8 @@ onBeforeUnmount(() => {
 <style scoped>
 :global(body) { margin: 0; background: var(--cue-bg, #080808); }
 .public-artist-profile { min-height: 100vh; background: var(--cue-bg, #080808); color: var(--cue-text, #f2f0eb); font-family: Arial, Helvetica, sans-serif; }
+.public-artist-profile__agency-return { color:var(--cue-accent,#e8ff2f); font:700 10px/1.3 monospace; text-align:right; text-decoration:none; text-transform:uppercase; letter-spacing:.06em; }
+.public-artist-profile__agency-contact { display:grid; place-items:center; min-height:64px; padding:0 24px; border:1px solid var(--cue-accent,#e8ff2f); color:#111; background:var(--cue-accent,#e8ff2f); font:800 13px/1 Arial,sans-serif; text-align:center; text-decoration:none; text-transform:uppercase; }
 .public-artist-profile__topbar { position: relative; z-index: 4; display: flex; justify-content: space-between; align-items: center; min-height: 64px; padding: 0 clamp(18px, 4vw, 48px); border-bottom: 1px solid var(--cue-border, #2c2c2c); }
 .public-artist-profile__topbar a { color: inherit; text-decoration: none; }
 .public-artist-profile__topbar > span { color: var(--cue-muted, #999); font: 700 9px/1.2 monospace; letter-spacing: .1em; text-transform: uppercase; }
