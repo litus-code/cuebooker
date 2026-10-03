@@ -24,6 +24,12 @@ async function publicRequest<T>(url: string, init?: RequestInit): Promise<T> {
   return payload as T
 }
 
+export function getPublicAgencyProfile(supabaseUrl: string, slug: string) {
+  const url = new URL(functionUrl(supabaseUrl, 'get-public-artist-profile'))
+  url.searchParams.set('agency', slug)
+  return publicRequest<{ agency: import('../domain/agencyCatalog').AgencyCatalog }>(url.toString()).then(result => result.agency)
+}
+
 export function getPublicArtistProfile(supabaseUrl: string, slug: string) {
   const url = new URL(functionUrl(supabaseUrl, 'get-public-artist-profile'))
   url.searchParams.set('slug', slug)
