@@ -5,6 +5,21 @@ import {mailboxMessage} from '../supabase/functions/_shared/mailboxMessage.ts';
 const config={clientId:'test-client',clientSecret:'private-client-secret',encryptionKey:base64url(new Uint8Array(32).fill(8)),callbackUri:'https://test.invalid/functions/v1/connected-mailbox'};
 const token=()=>({accessToken:'private-access',refreshToken:'private-refresh',expiresAt:Date.now()+3600000,reauthAt:Date.now()+7*86400000});
 const mock=(fn:(url:string,options:RequestInit)=>Promise<Response>)=>fn as typeof fetch;
+test('RFC lookup verifies exact Message-ID metadata before admitting provider results',async()=>{
+ const urls:string[]=[];
+ const provider=createGmailMailbox(config,{read:async()=>token(),write:async()=>{},reauth:async()=>{}},mock(async url=>{
+  urls.push(url);const endpoint=new URL(url);
+  if(endpoint.pathname.endsWith('/messages')){assert.equal(endpoint.searchParams.get('q'),'rfc822msgid:<parent@example.invalid>');assert.equal(endpoint.searchParams.get('maxResults'),'5');return Response.json({messages:[{id:'saved'},{id:'wrong'}]});}
+  assert.equal(endpoint.searchParams.get('format'),'metadata');
+  return Response.json({payload:{headers:[{name:'Message-ID',value:endpoint.pathname.endsWith('/saved')?'<parent@example.invalid>':'<different@example.invalid>'}]}});
+ }));
+ assert.deepEqual(await provider.referencedMessages('<parent@example.invalid>'),['saved']);assert.equal(urls.length,3);
+ await assert.rejects(provider.referencedMessages('<parent@example.invalid> OR in:anywhere'),{message:'invalid_message'});assert.equal(urls.length,3);
+});
+test('RFC lookup refuses pagination ambiguity rather than selecting a partial parent list',async()=>{
+ const provider=createGmailMailbox(config,{read:async()=>token(),write:async()=>{},reauth:async()=>{}},mock(async()=>Response.json({messages:[{id:'one'}],nextPageToken:'more'})));
+ await assert.rejects(provider.referencedMessages('<parent@example.invalid>'),{message:'ambiguous_mailbox_reference'});
+});
 test('Gmail credentials authenticate both ciphertext and tenant context',async()=>{
  const cipher=await sealGmail(token(),config.encryptionKey,'workspace:user:email');assert.equal(cipher.includes('private'),false);
  assert.equal((await openGmail<any>(cipher,config.encryptionKey,'workspace:user:email')).refreshToken,'private-refresh');

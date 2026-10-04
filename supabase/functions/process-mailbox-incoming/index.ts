@@ -5,6 +5,7 @@ import {classifyBookingMail} from '../_shared/mailboxClassifier.ts';
 import {withMailboxAnalysisBudget} from '../_shared/mailboxAnalysisBudget.ts';
 import {withMailboxAnalysisCache} from '../_shared/mailboxAnalysisCache.ts';
 import {automaticMailboxDraft} from '../_shared/automaticMailboxDraft.ts';
+import {resolveMailboxReply,savedReplyBooking} from '../_shared/mailboxReplyLink.ts';
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
 Deno.serve(async(request:Request)=>{
  if(request.method!=='POST')return json({error:'method_not_allowed'},405);
@@ -22,7 +23,22 @@ Deno.serve(async(request:Request)=>{
   const outcome=await processMailboxIncoming(job,{
    authorize:()=>rpc<boolean>('authorize_mailbox_incoming',{target_job:job.id}),
    message:()=>provider.message(job.grantId,job.messageId),inbox:()=>provider.inboxFolders(job.grantId),
-   linkedBooking:async()=>{const rows=await db<any[]>(`mailbox_booking_threads?connection_id=eq.${job.connectionId}&workspace_id=eq.${job.workspaceId}&thread_id=eq.${encodeURIComponent(job.threadId)}&select=booking_id&limit=1`);return rows[0]?.booking_id||null;},
+   linkedBooking:async raw=>{
+    const rows=await db<any[]>(`mailbox_booking_threads?connection_id=eq.${job.connectionId}&workspace_id=eq.${job.workspaceId}&thread_id=eq.${encodeURIComponent(job.threadId)}&select=booking_id&limit=1`);
+    if(rows[0])return rows[0].booking_id;
+    if(!('referencedMessages' in provider))return null;
+    return resolveMailboxReply(raw,{
+     authorize:()=>rpc<boolean>('authorize_mailbox_incoming',{target_job:job.id}),
+     find:reference=>provider.referencedMessages(reference),
+     savedBooking:async id=>{
+      // Existing ingest stores connection-scoped IDs under this namespace for
+      // both transports. Never match another mailbox or workspace's messages.
+      const saved=await db<any[]>(`email_messages?workspace_id=eq.${job.workspaceId}&provider=eq.${encodeURIComponent('nylas:'+job.connectionId)}&provider_message_id=eq.${encodeURIComponent(id)}&select=booking_id,direction,from_email,to_email&limit=2`);
+      const sender=String(raw.from?.[0]?.email||'').trim().toLowerCase();
+      return savedReplyBooking(saved,sender);
+     }
+    });
+   },
    sync:(bookingId,message)=>rpc('ingest_mailbox_thread',{target_connection:job.connectionId,target_actor:job.actorId,target_thread:job.threadId,target_messages:[message],target_artist:null,target_booking:bookingId}),
    classify:async message=>{
     const context={target_workspace:job.workspaceId,target_actor:job.actorId,target_connection:job.connectionId,target_request:job.requestId};

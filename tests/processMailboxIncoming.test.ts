@@ -16,3 +16,19 @@ test('withdrawal while model runs prevents automatic capture',async()=>{let chec
 test('missing extraction fails closed instead of creating empty or invented data',async()=>{const {calls,options}=setup({classify:async()=>({id:'mail',kind:'booking',reason:'Consulta'})});assert.equal(await processMailboxIncoming(job,options),'failed');assert.equal(calls.includes('create'),false)});
 test('permission withdrawn during provider read prevents AI and sync',async()=>{let check=0;const {calls,options}=setup({authorize:async()=>++check===1});assert.equal(await processMailboxIncoming(job,options),'ignored');assert.equal(calls.includes('ai'),false)});
 test('provider/model uncertainty is marked failed without retry',async()=>{let attempts=0;const {calls,options}=setup({classify:async()=>{attempts++;throw new Error('provider failure')}});assert.equal(await processMailboxIncoming(job,options),'failed');assert.equal(attempts,1);assert.equal(calls.at(-1),'failed')});
+test('automated unlinked mail is saved for review without AI or a new booking',async()=>{
+ let saved:any;const {calls,options}=setup({message:async()=>({...raw,automation:{autoSubmitted:'auto-replied'}}),complete:async(state:string,value:any)=>{saved=value;calls.push(state)}});
+ assert.equal(await processMailboxIncoming(job,options),'filtered');assert.equal(saved.kind,'review');assert.equal(calls.includes('ai'),false);assert.equal(calls.includes('create'),false);assert.equal(calls.at(-1),'completed');
+});
+test('linked automatic replies sync before filtering without losing the conversation',async()=>{
+ const {calls,options}=setup({message:async()=>({...raw,automation:{autoSubmitted:'auto-replied'}}),linkedBooking:async()=>'booking'});
+ assert.equal(await processMailboxIncoming(job,options),'synced');assert.equal(calls.includes('sync'),true);assert.equal(calls.includes('ai'),false);
+});
+test('withdrawn consent prevents deterministic filter completion',async()=>{
+ let checks=0;const {calls,options}=setup({message:async()=>({...raw,automation:{autoSubmitted:'auto-replied'}}),authorize:async()=>++checks===1});
+ assert.equal(await processMailboxIncoming(job,options),'ignored');assert.equal(calls.includes('completed'),false);
+});
+test('ambiguous reply references stay reviewable without AI or a duplicate request',async()=>{
+ let saved:any;const {calls,options}=setup({linkedBooking:async()=>({review:true}),complete:async(state:string,value:any)=>{saved=value;calls.push(state)}});
+ assert.equal(await processMailboxIncoming(job,options),'review');assert.equal(saved.kind,'review');assert.equal(calls.includes('ai'),false);assert.equal(calls.includes('create'),false);
+});

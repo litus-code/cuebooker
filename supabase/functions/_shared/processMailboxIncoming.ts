@@ -1,7 +1,9 @@
 import {mailboxMessage} from './mailboxMessage.ts';
 import type {BookingMailClassification} from './mailboxClassifier.ts';
+import {mailboxPreFilter} from './mailboxPreFilter.ts';
+import type {MailboxReplyLink} from './mailboxReplyLink.ts';
 type Job={id:string;connectionId:string;workspaceId:string;actorId:string;grantId:string;email:string;messageId:string;threadId:string;since:string};
-export async function processMailboxIncoming(job:Job,options:{authorize:()=>Promise<boolean>;message:()=>Promise<any>;inbox:()=>Promise<{inbox:string[];excluded:string[]}>;linkedBooking:()=>Promise<string|null>;sync:(bookingId:string,message:ReturnType<typeof mailboxMessage>)=>Promise<unknown>;classify:(message:ReturnType<typeof mailboxMessage>)=>Promise<BookingMailClassification>;create:(message:ReturnType<typeof mailboxMessage>,classification:BookingMailClassification)=>Promise<unknown>;complete:(state:'completed'|'ignored'|'failed',classification?:BookingMailClassification)=>Promise<unknown>}){
+export async function processMailboxIncoming(job:Job,options:{authorize:()=>Promise<boolean>;message:()=>Promise<any>;inbox:()=>Promise<{inbox:string[];excluded:string[]}>;linkedBooking:(raw:any)=>Promise<MailboxReplyLink>;sync:(bookingId:string,message:ReturnType<typeof mailboxMessage>)=>Promise<unknown>;classify:(message:ReturnType<typeof mailboxMessage>)=>Promise<BookingMailClassification>;create:(message:ReturnType<typeof mailboxMessage>,classification:BookingMailClassification)=>Promise<unknown>;complete:(state:'completed'|'ignored'|'failed',classification?:BookingMailClassification)=>Promise<unknown>}){
  try{
   if(!await options.authorize()){await options.complete('ignored');return 'ignored';}
   const raw=await options.message(),message=mailboxMessage(raw,job.email);
@@ -9,9 +11,12 @@ export async function processMailboxIncoming(job:Job,options:{authorize:()=>Prom
   // Provider folder IDs are opaque. Accept only a resolved inbox, never guess IDs/names.
   const folders=await options.inbox();
   if(!Array.isArray(raw.folders)||!folders.inbox.length||raw.folders.some((id:unknown)=>typeof id==='string'&&folders.excluded.includes(id))||!raw.folders.some((id:unknown)=>typeof id==='string'&&folders.inbox.includes(id))){await options.complete('ignored');return 'ignored';}
-  const bookingId=await options.linkedBooking();
+  const bookingId=await options.linkedBooking(raw);
   if(!await options.authorize()){await options.complete('ignored');return 'ignored';}
-  if(bookingId){await options.sync(bookingId,message);await options.complete('ignored');return 'synced';}
+  if(typeof bookingId==='string'){await options.sync(bookingId,message);await options.complete('ignored');return 'synced';}
+  if(bookingId?.review){await options.complete('completed',{id:message.id,kind:'review',reason:'Respuesta sin una relación única con una solicitud guardada. Revisa la conversación.'});return 'review';}
+  const filtered=mailboxPreFilter(raw,message.id);
+  if(filtered){await options.complete('completed',filtered);return 'filtered';}
   const classification=await options.classify(message);
   if(!await options.authorize()){await options.complete('ignored');return 'ignored';}
   if(classification.kind==='booking'){

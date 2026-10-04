@@ -1,3 +1,15 @@
+## 2026-10-04 — Task3 conservative filtering and RFC reply fallback prepared
+
+Branch feature/agency-multi-artist-beta / PR96, remote parent f1b4158c3b1acce087509a9d21c7054fab99b9cf; local HEAD remains 35a1194 with preserved earlier dirty work. This commit publishes only the reviewed Task3 files and updated handoff. Candidate stays Beta 0.0.2, no stable web/production release in this block.
+
+Background processing synchronizes known threads before deterministic prefiltering. Auto-Replied and distribution-list metadata persist review without AI; delivery-status reports persist other. Short or keyword-free messages, generic senders and auto-generated booking forms retain classification. Manual analysis remains available. Gmail automation/RFC metadata stays server-side and outside normalized UI/model payloads.
+
+If Gmail assigns a different threadId, bounded exact In-Reply-To/References searches verify returned RFC Message-ID metadata, then require an already saved message in the same workspace/connection and the same counterparty. Existing ingest atomically attaches the new thread alias to the saved booking. No schema migration or persisted RFC header store is introduced. Multiple bookings, unknown/invalid/excessive references stay reviewable; provider uncertainty fails without automatic retry or creating a duplicate. Current matching accepts a conservative RFC ID subset; unusual valid IDs require manual review. Existing Nylas behavior stays unchanged. Consent is checked before lookups and again before synchronization.
+
+Validation: 514 local tests pass; Deno checks process-mailbox-incoming and connected-mailbox; static generation previously passed for the same unchanged UI (40 routes). No real mailbox/model calls or authenticated mobile proof. Deployment and CI status are recorded by the next verification entry after actual results, not assumed here.
+
+Google Cloud credentials page still returns Site Unavailable in this cloud browser. No credentials, login, settings or permissions changed. Private staging OAuth/PubSub/Vault setup and real own-account connection/read/import/reply/received reply/reconnection remain the blocker. Then verify mobile, repeat isolated 29-migration release rehearsal/backend alignment, and promote the same reviewed version/SHA to stable staging and production. Owner intends the private beta in production; code tests do not satisfy the live-mail acceptance gate.
+
 ## 2026-10-04 16:10 Europe/Madrid — Gmail direct beta Task 2 implemented; private Google setup pending
 
 Implementation commit b83a5291c807a5c9de9d9bdbdd87c95e93d8ca65: CI2074/run37208516356 passed; PR preview2548/run37208516339 passed, stable staging job skipped. These validate the code revision, not live Gmail authorization or production.

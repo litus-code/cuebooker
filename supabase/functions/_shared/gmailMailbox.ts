@@ -56,7 +56,7 @@ function plainBody(part:any,depth=0):string{
 export function gmailMessage(message:any){
  if(typeof message.id!=='string'||typeof message.threadId!=='string'||!Number.isFinite(Number(message.internalDate)))throw new Error('invalid_provider_response');
  const body=plainBody(message.payload)||String(message.snippet||'');
- return {id:message.id,thread_id:message.threadId,from:addresses(header(message,'From')),to:addresses(header(message,'To')),subject:header(message,'Subject'),date:Math.floor(Number(message.internalDate)/1000),body:body.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'),folders:Array.isArray(message.labelIds)?message.labelIds:[]};
+ return {id:message.id,thread_id:message.threadId,from:addresses(header(message,'From')),to:addresses(header(message,'To')),subject:header(message,'Subject'),date:Math.floor(Number(message.internalDate)/1000),body:body.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'),folders:Array.isArray(message.labelIds)?message.labelIds:[],automation:{autoSubmitted:header(message,'Auto-Submitted'),contentType:header(message,'Content-Type'),listId:header(message,'List-ID'),listUnsubscribe:header(message,'List-Unsubscribe'),precedence:header(message,'Precedence')},threading:{inReplyTo:header(message,'In-Reply-To'),references:header(message,'References')}};
 }
 export function createGmailMailbox(c:GmailConfig,store:{email?:string;read:()=>Promise<GmailTokens>;write:(tokens:GmailTokens)=>Promise<void>;reauth:()=>Promise<void>},request:typeof fetch=fetch){
  async function access(){let t=await store.read();if(t.reauthAt<=Date.now()){await store.reauth();throw new Error('mailbox_reconnect_required');}
@@ -80,6 +80,21 @@ export function createGmailMailbox(c:GmailConfig,store:{email?:string;read:()=>P
    return {messages,nextCursor:typeof r.nextPageToken==='string'?r.nextPageToken:null};
   },
   async inboxFolders(_id:string){return {inbox:['INBOX'],excluded:['SPAM','TRASH','SENT','DRAFT']};},
+  async referencedMessages(reference:string){
+   if(!/^<[A-Za-z0-9._+-]+@[A-Za-z0-9.-]+>$/.test(reference)||reference.length>512)throw new Error('invalid_message');
+   const q=new URLSearchParams({q:`rfc822msgid:${reference}`,maxResults:'5'});
+   const result=await call(`/messages?${q}`);
+   if(result.nextPageToken)throw new Error('ambiguous_mailbox_reference');
+   if(result.messages!==undefined&&!Array.isArray(result.messages))throw new Error('invalid_provider_response');
+   if(result.messages?.length>5)throw new Error('ambiguous_mailbox_reference');
+   const ids:string[]=[];
+   for(const item of result.messages||[]){
+    if(typeof item.id!=='string'||!item.id||item.id.length>512)throw new Error('invalid_provider_response');
+    const message=await call(`/messages/${encodeURIComponent(item.id)}?format=metadata&metadataHeaders=Message-ID`);
+    if(header(message,'Message-ID').trim()===reference)ids.push(item.id);
+   }
+   return ids;
+  },
   async send(_id:string,input:{to:string;subject:string;bodyText:string;replyToMessageId?:string}){
    const to=normalizeMailboxEmail(input.to);if(/[\r\n]/.test(to+input.subject))throw new Error('invalid_message');
    let threadId:string|undefined,subject=input.subject,references='',reply='';

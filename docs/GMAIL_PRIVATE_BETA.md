@@ -1,6 +1,6 @@
 # Gmail directo: beta privada, Tarea 2
 
-4 de octubre de 2026. Destino acordado: beta privada en producción, después de comprobarla en staging. Esta implementación no activa conexiones sin configuración ni sustituye los datos de Nylas. Tarea 3 (filtro anterior a IA) sigue separada.
+4 de octubre de 2026. Destino acordado: beta privada en producción, después de comprobarla en staging. Esta implementación no activa conexiones sin configuración ni sustituye los datos de Nylas. Tarea 3 añade el filtro anterior a IA y el fallback RFC descritos al final de este documento.
 
 ## Contrato y seguridad
 
@@ -66,3 +66,11 @@ Documentación primaria:
 - https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.history/list
 - https://docs.cloud.google.com/pubsub/docs/authenticate-push-subscriptions
 - https://support.google.com/cloud/answer/15549945
+
+## Tarea 3: filtro y continuación por referencias RFC
+
+El worker da prioridad a los hilos vinculados. El filtro determinista conserva mensajes automáticos/listas para revisión sin consumir análisis; reconoce informes MIME de entrega. Los remitentes genéricos, mensajes cortos, falta de keywords y formularios automáticos no causan descarte. El análisis manual mantiene su contrato.
+
+Para respuestas con otro threadId, Gmail busca IDs RFC de In-Reply-To/References (máximo diez referencias de sintaxis conservadora, cinco resultados por referencia) y verifica el Message-ID de cada resultado. El servidor exige que el ID de proveedor ya exista en email_messages de la misma conexión y workspace, y que el remitente corresponda al interlocutor del mensaje guardado. El namespace de persistencia heredado nylas:connection_id identifica ambas rutas y no debe reinterpretarse como el transporte actual. Una relación única se guarda con el ingest existente y su control de acceso/archivo. Conflictos, referencias no reconocidas o límites excedidos requieren revisión, nunca crean otra solicitud por ese camino. No se guarda un índice de headers RFC ni se migran hilos Nylas.
+
+Pruebas sintéticas no sustituyen la comprobación real de entrega y respuesta. Ver HANDOFF.md para SHA/CI/despliegue efectivamente verificados. Fuente API: https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages/list

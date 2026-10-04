@@ -31,3 +31,11 @@ Cada prueba registra entorno, SHA/versiones Edge, resultado y evidencia sin corr
 Precio y alcance final del proveedor alternativo; consentimiento del nuevo procesador; cuenta/condiciones y credenciales privadas; contenido/destinatarios de nuevos envíos si no están autorizados. No se ha autorizado gasto recurrente. El usuario ha aprobado la dirección de beta privada, no una migración concreta ni el abandono del perfil individual.
 
 Fuentes: https://support.nylas.com/hc/en-us/articles/28841692494877-Nylas-Sandbox-vs-Production-Applications-Understanding-Limitations ; https://developer.nylas.com/docs/provider-guides/google/shared-gcp-app/ ; planes de cuenta Nylas observados en https://dashboard.nylas.com/organization/settings/billing/plans ; https://www.unipile.com/pricing-api/ ; https://www.unipile.com/integrating-google-oauth-2-0-user-authentication-into-your-app/ ; https://developers.google.com/workspace/gmail/api/auth/scopes
+
+## Tarea 3, implementación del 4 de octubre
+
+El worker sincroniza hilos conocidos antes del filtro. Respuestas automáticas y listas con metadatos combinados quedan en revisión; informes MIME de entrega quedan como otros. No se rechaza por remitente genérico, texto corto ni ausencia de palabras de booking. Los formularios auto-generated mantienen el análisis normal y el análisis manual sigue disponible.
+
+Si Gmail cambia el threadId, se comprueban In-Reply-To/References mediante búsquedas exactas y metadatos RFC. Sólo se enlaza una solicitud si existe un mensaje guardado de la misma conexión/workspace y coincide el interlocutor. Las referencias ambiguas, desconocidas, inválidas o demasiado largas quedan para revisión. No se añaden tablas ni permisos; el ingest existente guarda la relación con el hilo nuevo. Nylas conserva su comportamiento. 514 pruebas y comprobación Deno pasan. Publicación/despliegue y limitaciones vigentes se registran en HANDOFF.md.
+
+La configuración privada Google y el recorrido real siguen pendientes. El navegador devuelve Site Unavailable en Google Cloud. La implementación de la Tarea 3 no equivale a aceptación completa de la beta en producción.
