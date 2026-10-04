@@ -1,3 +1,13 @@
+## 2026-10-04 11:19 Europe/Madrid — Production callback secrets saved; read-only provider audit closed
+
+- Owner saved CUEBOOKER_INBOUND_WEBHOOK_SECRET and BREVO_TRANSACTIONAL_WEBHOOK_SECRET at09:07:42UTC. Verified names/timestamps only, never values. Supabase browser sign-in restored through secure GitHub authentication.
+- Created manual scripts/brevo-provider-preflight.ts and five meaningful Node tests. Diagnostic permits only exact legacy service bearer or current Supabase platform secret apikey; denies users/publishable/anonymous before provider work. Fixed GET-only Brevo URLs, redirect rejection, timeouts, secret/body/error redaction, response no-store; no DB calls, messages, webhook mutation or credentials returned.
+- Deployed temporary production email-provider-preflight v1 with JWT verification; default dashboard request denied by handler401. Modern Dashboard adds current platform secret apikey internally; v2-4 used custom exact administrative key authorization, verify_jwt false per official current Supabase guidance. Credential value never inspected. Unauthenticated live request rejected401; local tests reject all client roles before fetch.
+- Authenticated live audit ultimately returned read_only=true with document_not_found for both /v3/webhooks?type=inbound and ?type=transactional. Earlier400 was that safe not-found provider code, not an IP block or proven invalid credential. Do not overstate it as proof old webhook2191448 was deleted; provider/account context needs sender identity confirmation before registering replacements.
+- Diagnostic immediately closed after audit: production v5 ACTIVE with verify_jwt=true, handler always410 preflight_closed, no environment/provider reads. Closed bundle digest7ea18ef8c016f6105d2b7f866f37d0c8531f7a49a25fde0e8df1b604a1855e06. Retained audit source is manual-only under scripts, not automatic product function deployment.
+- Legacy app-smtp.brevo.com/webhook returned Cloudflare525 host TLS error; no bypass attempted. New Brevo webhook draft previously discarded, no callback changed.
+- Remaining: secure Nylas dashboard access and production-eligible application/region/credential review without purchases or automatic consent. Then exact reviewed backend rollout, authenticated Brevo callback registrations after endpoint readiness, live sender/reply acceptance, stable staging and same reviewed Beta0.0.2 production promotion. No hosted migration, product Edge rollout, stable staging/prod app release or paid provider activation occurred in this block.
+
 ## 2026-10-04 10:55 Europe/Madrid — Brevo sender and delivery configuration saved; reply callbacks still pending
 
 - Based on feature HEAD f2b6e0fbc4bdbf17d92f33ba7bc26bc949dbfb6d; Beta0.0.2 remains the unreleased candidate.
