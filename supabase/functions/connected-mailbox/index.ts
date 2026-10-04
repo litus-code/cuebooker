@@ -1,3 +1,4 @@
+import {mailboxDetectionState} from '../_shared/mailboxDetectionState.ts';
 import {gmailConfig,gmailCredentialContext,mailboxTransport} from '../_shared/mailboxTransport.ts';
 import {gmailConfigured,gmailAuthorization,exchangeGmail,sealGmail,openGmail,createGmailMailbox} from '../_shared/gmailMailbox.ts';
 import { classifyBookingMail } from '../_shared/mailboxClassifier.ts';
@@ -11,7 +12,7 @@ import { mailboxReturnUrl, mailboxBrowserOrigin } from '../_shared/mailboxReturn
 import { dispatchMailboxBetaNotification } from '../_shared/mailboxBetaNotifications.ts';
 const uuid=(value:unknown)=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 async function hash(value:string){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value))),v=>v.toString(16).padStart(2,'0')).join('');}
-type Connection={transport?:'nylas'|'gmail';workspace_id:string;user_id:string;id:string;email:string;provider:MailboxProvider;grant_id:string;status:string;connected_at:string;background_analysis_enabled?:boolean;background_analysis_processor?:string|null;background_analysis_since?:string|null};
+type Connection={transport?:'nylas'|'gmail';workspace_id:string;user_id:string;id:string;email:string;provider:MailboxProvider;grant_id:string;status:string;connected_at:string;background_analysis_enabled?:boolean;background_analysis_processor?:string|null;background_analysis_since?:string|null;background_analysis_revision?:string|null};
 Deno.serve(async(request:Request)=>{
  const supabaseUrl=Deno.env.get('SUPABASE_URL')||'',serviceKey=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||'',anonKey=Deno.env.get('SUPABASE_ANON_KEY')||'';
  const returnUrl=Deno.env.get('CUEBOOKER_MAILBOX_RETURN_URL')||'';
@@ -82,24 +83,41 @@ Deno.serve(async(request:Request)=>{
    return json({waitlisted:result.waitlisted,status:result.status,requestedEmail:result.requestedEmail,...notification});
   }
   // Operator gate stays off until webhook/scheduler and model evaluation are verified.
-  const backgroundAvailable=configured&&Deno.env.get('CUEBOOKER_MAILBOX_BACKGROUND_ENABLED')==='true'&&Boolean((newTransport==='gmail'?(Deno.env.get('GMAIL_PUBSUB_TOPIC')&&Deno.env.get('GMAIL_PUSH_SERVICE_ACCOUNT')):Deno.env.get('NYLAS_WEBHOOK_SECRET'))&&Deno.env.get('MAILBOX_WORKER_SECRET')&&Deno.env.get('GROQ_API_KEY')),backgroundProcessor='groq-gpt-oss-20b-v1';
+  const backgroundAvailable=configured&&Deno.env.get('CUEBOOKER_MAILBOX_BACKGROUND_ENABLED')==='true'&&Boolean((newTransport==='gmail'?(Deno.env.get('GMAIL_PUBSUB_TOPIC')&&Deno.env.get('GMAIL_PUBSUB_SUBSCRIPTION')&&Deno.env.get('GMAIL_PUSH_SERVICE_ACCOUNT')):Deno.env.get('NYLAS_WEBHOOK_SECRET'))&&Deno.env.get('MAILBOX_WORKER_SECRET')&&Deno.env.get('GROQ_API_KEY')),backgroundProcessor='groq-gpt-oss-20b-v1';
+  async function enableDetection(connectionId:string){
+   if(!backgroundAvailable)throw new Error('mailbox_background_unavailable');
+   const rows=await db<Connection[]>(`${path}&id=eq.${connectionId}&select=id,status,email,transport,workspace_id,user_id,background_analysis_enabled&limit=1`);
+   const row=rows[0];if(!row)throw new Error('connection_not_found');
+   if(row.transport==='gmail'){
+    const provider=mailboxTransport(row,n=>Deno.env.get(n),db);
+    if(!('watch' in provider))throw new Error('mailbox_background_unavailable');
+    const registration=await provider.watch(Deno.env.get('GMAIL_PUBSUB_TOPIC')||'');
+    return await db('rpc/start_gmail_mailbox_detection',{method:'POST',body:JSON.stringify({target_workspace:workspace,target_actor:userId,target_connection:connectionId,target_history:registration.historyId,target_expires:registration.expiresAt})});
+   }
+   return await db('rpc/set_mailbox_background_analysis',{method:'POST',body:JSON.stringify({target_workspace:workspace,target_actor:userId,target_connection:connectionId,target_enabled:true,target_processor:backgroundProcessor})});
+  }
   if(input.action==='background'){
    if(!uuid(input.connectionId))return json({error:'invalid_connection'},400);
    if(typeof input.enabled!=='boolean'||(input.enabled&&input.processor!==backgroundProcessor))return json({error:'mailbox_background_consent_required'},400);
    if(input.enabled&&!backgroundAvailable)return json({error:'mailbox_background_unavailable'},409);
    const rows=await db<Connection[]>(`${path}&id=eq.${input.connectionId}&select=id,status,email,transport,workspace_id,user_id&limit=1`);
    if(!rows[0])return json({error:'connection_not_found'},404);
-   const preference=await db('rpc/set_mailbox_background_analysis',{method:'POST',body:JSON.stringify({target_workspace:workspace,target_actor:userId,target_connection:input.connectionId,target_enabled:input.enabled,target_processor:input.enabled?backgroundProcessor:null})});
+   const preference=input.enabled?await enableDetection(input.connectionId):await db('rpc/set_mailbox_background_analysis',{method:'POST',body:JSON.stringify({target_workspace:workspace,target_actor:userId,target_connection:input.connectionId,target_enabled:false,target_processor:null})});
    if(!input.enabled&&rows[0].transport==='gmail'){try{const transport=mailboxTransport(rows[0],n=>Deno.env.get(n),db);if('stop' in transport)await transport.stop();}catch{}}
    return json({background:preference});
   }
   if(input.action==='status'){
-   const connections=await db<Connection[]>(`${path}&status=eq.connected&select=id,email,provider,grant_id,status,connected_at,transport,workspace_id,user_id,background_analysis_enabled,background_analysis_processor,background_analysis_since&order=connected_at.desc&limit=5`);
+   const connections=await db<Connection[]>(`${path}&status=eq.connected&select=id,email,provider,grant_id,status,connected_at,transport,workspace_id,user_id,background_analysis_enabled,background_analysis_processor,background_analysis_since,background_analysis_revision&order=connected_at.desc&limit=5`);
    const safe=await Promise.all(connections.map(async(row)=>{
     let status='unknown';
     if(Deno.env.get('CUEBOOKER_MAILBOX_ENABLED')==='true'){try{const grant=await mailboxTransport(row,n=>Deno.env.get(n),db).grant(row.grant_id);status=grant.status==='valid'?'connected':'reconnect_required';}catch(error){if(['mailbox_reconnect_required','mailbox_not_found'].includes((error as Error).message))status='reconnect_required';}}
-    let syncState:string|null=null;if(row.transport==='gmail'){const watches=await db<Array<{state:string}>>(`gmail_mailbox_watches?connection_id=eq.${row.id}&select=state&limit=1`);syncState=watches[0]?.state||null;}
-    return {id:row.id,email:row.email,provider:row.provider,transport:row.transport,status,connectedAt:row.connected_at,background:{syncState,enabled:row.background_analysis_enabled===true,processor:row.background_analysis_processor||null,since:row.background_analysis_since||null}};
+    let watch:any=null;
+    if(row.transport==='gmail'){const watches=await db<any[]>(`gmail_mailbox_watches?connection_id=eq.${row.id}&select=state,consent_revision,history_id,watch_expires_at,updated_at&limit=1`);watch=watches[0]||null;}
+    const jobs=row.background_analysis_revision?await db<Array<{state:string;created_at:string;processing_started_at?:string;retry_reason?:string|null}>>(`mailbox_incoming_jobs?connection_id=eq.${row.id}&consent_revision=eq.${row.background_analysis_revision}&state=in.(pending,processing,failed)&select=state,created_at,processing_started_at,retry_reason&limit=1001`):[];
+    const pending=jobs.filter(j=>j.state!=='failed').length,failed=jobs.filter(j=>j.state==='failed').length;
+    const stalled=jobs.some(j=>j.state==='processing'&&Date.parse(j.processing_started_at||j.created_at)<Date.now()-10*60000);
+    const detection=mailboxDetectionState({available:backgroundAvailable,status,enabled:row.background_analysis_enabled===true,revision:row.background_analysis_revision,watch,failed,stalled,delayed:jobs.some(j=>j.retry_reason==='rate_limit'),transport:row.transport});
+    return {id:row.id,email:row.email,provider:row.provider,transport:row.transport,status,connectedAt:row.connected_at,background:{state:detection,pending,failed,retrying:jobs.some(j=>j.retry_reason==='rate_limit'),syncState:watch?.state||null,enabled:row.background_analysis_enabled===true,processor:row.background_analysis_processor||null,since:row.background_analysis_since||null}};
    }));
    let linkedConnectionIds:string[]=[];
    let hasLinkedThread=false;
@@ -118,13 +136,16 @@ Deno.serve(async(request:Request)=>{
    const stateHash=await hash(state),pending=await beta('claim',{target_state:stateHash});
    if(pending.error)return json({error:pending.error},400);
    if(pending.transport==='gmail'){
-    const verifier=await openGmail<string>(pending.verifier_ciphertext,gmail.encryptionKey,`oauth:${stateHash}`);
+    const stored=await openGmail<string|{verifier:string;backgroundProcessor:string}>(pending.verifier_ciphertext,gmail.encryptionKey,`oauth:${stateHash}`);
+    const verifier=typeof stored==='string'?stored:stored.verifier;
+    const automaticConsent=typeof stored==='object'&&stored.backgroundProcessor===backgroundProcessor;
     const tokens=await exchangeGmail(gmail,code,verifier);
     const temporary=createGmailMailbox(gmail,{read:async()=>tokens,write:async()=>{},reauth:async()=>{}});
     const grant=await temporary.grant('');
     if(grant.email!==pending.expected_email)return json({error:'account_mismatch'},400);
     await member(workspace,userId);
-    const result=await db('rpc/complete_gmail_mailbox',{method:'POST',body:JSON.stringify({target_workspace:workspace,target_actor:userId,target_state:stateHash,target_email:grant.email,target_ciphertext:await sealGmail(tokens,gmail.encryptionKey,gmailCredentialContext({workspace_id:workspace,user_id:userId,email:grant.email})),target_access_expires:new Date(tokens.expiresAt).toISOString(),target_reauth_at:new Date(tokens.reauthAt).toISOString()})});
+    const result=await db<{connected:boolean;connectionId:string}>('rpc/complete_gmail_mailbox',{method:'POST',body:JSON.stringify({target_workspace:workspace,target_actor:userId,target_state:stateHash,target_email:grant.email,target_ciphertext:await sealGmail(tokens,gmail.encryptionKey,gmailCredentialContext({workspace_id:workspace,user_id:userId,email:grant.email})),target_access_expires:new Date(tokens.expiresAt).toISOString(),target_reauth_at:new Date(tokens.reauthAt).toISOString()})});
+    if(automaticConsent){try{await enableDetection(result.connectionId)}catch{console.warn('mailbox_detection_start_pending');return json({...result,detectionPending:true})}}
     return json(result);
    }
    const provider=createNylasMailbox(config),grantId=await provider.exchange(code),grant=await provider.grant(grantId);
@@ -266,6 +287,7 @@ Deno.serve(async(request:Request)=>{
   }
   if(input.action==='connect'){
    const email=normalizeMailboxEmail(input.email),selection=input.provider||'auto';
+   if(input.backgroundProcessor!==undefined&&(newTransport!=='gmail'||input.backgroundProcessor!==backgroundProcessor||!backgroundAvailable))return json({error:'mailbox_background_unavailable'},409);
    if(!['auto','google','microsoft','imap'].includes(selection))return json({error:'invalid_provider'},400);
    if(newTransport==='gmail'&&!['auto','google'].includes(selection))return json({error:'invalid_provider'},400);
    let provider:MailboxProvider=newTransport==='gmail'?'google':selection==='auto'?(knownMailboxProvider(email)||'imap'):selection;
@@ -277,7 +299,7 @@ Deno.serve(async(request:Request)=>{
    try{
     if(newTransport==='gmail'){
      const auth=await gmailAuthorization(gmail,email,state);
-     await db(`mailbox_oauth_states?state_hash=eq.${stateHash}&workspace_id=eq.${workspace}&user_id=eq.${userId}`,{method:'PATCH',body:JSON.stringify({transport:'gmail',verifier_ciphertext:await sealGmail(auth.verifier,gmail.encryptionKey,`oauth:${stateHash}`)})});
+     await db(`mailbox_oauth_states?state_hash=eq.${stateHash}&workspace_id=eq.${workspace}&user_id=eq.${userId}`,{method:'PATCH',body:JSON.stringify({transport:'gmail',verifier_ciphertext:await sealGmail(input.backgroundProcessor?{verifier:auth.verifier,backgroundProcessor}:auth.verifier,gmail.encryptionKey,`oauth:${stateHash}`)})});
      return json({authorizationUrl:auth.url});
     }
     if(selection==='auto'&&!knownMailboxProvider(email)){
@@ -307,7 +329,7 @@ Deno.serve(async(request:Request)=>{
   return json({error:'invalid_action'},400);
  }catch(error){
   const name=(error as Error).name==='TimeoutError'?'mailbox_request_timeout':(error as Error).message;
-  const allowed=['mailbox_provider_selection_required','mailbox_beta_full','workspace_access_denied','invalid_email','invalid_provider','invalid_provider_configuration','invalid_callback','invalid_return_url','mailbox_reconnect_required','mailbox_not_found','mailbox_provider_unavailable','mailbox_not_configured','invalid_oauth_state','account_mismatch','connection_not_found','invalid_message','artist_required','archived_booking_read_only','mailbox_analysis_consent_required','mailbox_ai_not_configured','mailbox_ai_unavailable','invalid_classification','mailbox_analysis_rate_limit'];
+  const allowed=['mailbox_provider_selection_required','mailbox_beta_full','workspace_access_denied','invalid_email','invalid_provider','invalid_provider_configuration','invalid_callback','invalid_return_url','mailbox_reconnect_required','mailbox_not_found','mailbox_provider_unavailable','mailbox_not_configured','invalid_oauth_state','account_mismatch','connection_not_found','invalid_message','artist_required','archived_booking_read_only','mailbox_analysis_consent_required','mailbox_ai_not_configured','mailbox_ai_unavailable','invalid_classification','mailbox_analysis_rate_limit','mailbox_ai_rate_limit','mailbox_ai_quota_exhausted','mailbox_background_unavailable'];
   allowed.push('mailbox_request_timeout','mailbox_storage_timeout','mailbox_provider_timeout','mailbox_ai_quota_exhausted','mailbox_ai_rate_limit','invalid_booking_draft','booking_time_requires_date','booking_currency_required','booking_review_stale','invalid_booking','booking_not_found','thread_mailbox_required');
   allowed.push('mailbox_ai_budget_exhausted','mailbox_analysis_already_attempted');
   allowed.push('mailbox_scopes_required','mailbox_credentials_unavailable');

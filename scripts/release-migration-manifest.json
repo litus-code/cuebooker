@@ -114,5 +114,9 @@
   {
     "path": "supabase/migrations/20261004140619_gmail_direct_mailbox.sql",
     "sha256": "423999fbfee926db461478bf58a8a77d56386a2543048a6829d35bc9a257833a"
+  },
+  {
+    "path": "supabase/migrations/20261004173627_mailbox_detection_start_and_retry.sql",
+    "sha256": "328282d1cc23e5c66bb9239309de367d6e7dc74d498bfa02ca905223f0883f65"
   }
 ]

@@ -42,3 +42,25 @@ test('Google account mismatch cannot complete a connection even after a valid to
  globalThis.fetch=(async(url:any)=>{if(url.includes('/auth/v1/user'))return Response.json({id:user});if(url.includes('workspace_members'))return Response.json([{role:'owner'}]);if(url.includes('rpc/mailbox_beta_command'))return Response.json({transport:'gmail',expected_email:email,provider:'google',verifier_ciphertext:cipher});if(url.includes('/token'))return Response.json({access_token:'private-access',refresh_token:'private-refresh',expires_in:3600,scope:GMAIL_SCOPES.join(' ')});if(url.includes('/profile'))return Response.json({emailAddress:'other@example.invalid'});writes++;throw new Error('unexpected connection write');}) as typeof fetch;
  try{const response=await handler(req('complete',{state,code:'fictional-code'}));assert.equal(response.status,400);assert.equal((await response.json()).error,'account_mismatch');assert.equal(writes,0);}finally{globalThis.fetch=original;}
 });
+
+test('automatic detection consent survives OAuth encrypted and cannot be added during completion',async()=>{
+ const previous={...env};Object.assign(env,{CUEBOOKER_MAILBOX_BACKGROUND_ENABLED:'true',GMAIL_PUBSUB_TOPIC:'projects/fictional-project/topics/mail',GMAIL_PUBSUB_SUBSCRIPTION:'mail-push',GMAIL_PUSH_SERVICE_ACCOUNT:'push@example.invalid',MAILBOX_WORKER_SECRET:'fictional-worker',GROQ_API_KEY:'fictional-model'});
+ const {sealGmail,GMAIL_SCOPES}=await import('../supabase/functions/_shared/gmailMailbox.ts');
+ const state='c'.repeat(64),hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(state))),b=>b.toString(16).padStart(2,'0')).join('');
+ try{for(const consent of [false,true]){
+  const cipher=await sealGmail(consent?{verifier:'verifier',backgroundProcessor:'groq-gpt-oss-20b-v1'}:'verifier',env.GMAIL_TOKEN_ENCRYPTION_KEY,`oauth:${hash}`);let tokenCipher='',started=0,watches=0;
+  globalThis.fetch=(async(url:any,init:any)=>{
+   if(url.includes('/auth/v1/user'))return Response.json({id:user});if(url.includes('workspace_members'))return Response.json([{role:'owner'}]);
+   if(url.includes('rpc/mailbox_beta_command'))return Response.json({transport:'gmail',expected_email:email,provider:'google',verifier_ciphertext:cipher});
+   if(url==='https://oauth2.googleapis.com/token')return Response.json({access_token:'access',refresh_token:'refresh',expires_in:3600,scope:GMAIL_SCOPES.join(' ')});
+   if(url.includes('/users/me/profile'))return Response.json({emailAddress:email,historyId:'123'});
+   if(url.includes('rpc/complete_gmail_mailbox')){tokenCipher=JSON.parse(init.body).target_ciphertext;return Response.json({connected:true,connectionId:'saved'});}
+   if(url.includes('/mailbox_connections?'))return Response.json([{id:'saved',transport:'gmail',workspace_id:workspace,user_id:user,email,status:'connected'}]);
+   if(url.includes('/gmail_mailbox_credentials?'))return Response.json([{token_ciphertext:tokenCipher,reauth_required:false}]);
+   if(url.includes('/users/me/watch')){watches++;return Response.json({historyId:'124',expiration:String(Date.now()+86400000)});}
+   if(url.includes('rpc/start_gmail_mailbox_detection')){started++;const body=JSON.parse(init.body);assert.equal(body.target_history,'124');assert.equal(body.target_actor,user);return Response.json({enabled:true});}
+   throw new Error('unexpected access');
+  }) as typeof fetch;
+  const response=await handler(req('complete',{state,code:'code',backgroundProcessor:'groq-gpt-oss-20b-v1'}));assert.equal(response.status,200);assert.equal((await response.json()).detectionPending,undefined);assert.equal(started,consent?1:0);assert.equal(watches,consent?1:0);
+ }}finally{for(const key of Object.keys(env))delete env[key];Object.assign(env,previous);globalThis.fetch=original;}
+});

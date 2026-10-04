@@ -49,6 +49,7 @@ Deno.serve(async(request:Request)=>{
     });return values[0];
    },
    create:(message,value)=>rpc('create_automatic_mailbox_request',{target_job:job.id,target_message:message,target_classification:{...value,draft:automaticMailboxDraft(value.draft!)}}),
+   retry:()=>rpc<boolean>('defer_mailbox_incoming',{target_job:job.id}),
    complete:(state,value)=>rpc('complete_mailbox_incoming',{target_job:job.id,target_state:state,target_kind:value?.kind||null,target_reason:value?.reason||null})
   });
   return json({processed:1,outcome});

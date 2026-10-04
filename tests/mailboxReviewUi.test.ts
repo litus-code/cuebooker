@@ -73,27 +73,25 @@ test('mailbox refresh does not analyze, failed detection preserves manual intake
  const app=renderer.createApp({setup(){state=module.default.setup(props,{expose:()=>{},emit:()=>{}});return()=>h('span')}})
  try{
   app.mount({});await nextTick();await nextTick();await nextTick()
-  await state.detectRequests();assert.equal(calls.filter(c=>c[0]==='classify').length,0)
-  state.analysisConsent.value=true;await state.detectRequests()
-  assert.equal(state.shownMessages.value.length,1)
-  await state.load()
-  assert.equal(calls.filter(c=>c[0]==='classify').length,1,'Refresh must only read mail')
-  assert.equal(state.shownMessages.value.length,1,'Refresh retains a readable inbox')
-  failure='mailbox_ai_quota_exhausted';await state.detectRequests()
-  assert.match(state.error.value,/agotado su cuota/)
-  assert.equal(state.shownMessages.value[0].id,'message')
-  state.selected.value=state.shownMessages.value[0];await nextTick();await state.importMessage()
-  assert.equal(imports.length,1,'Manual import remains available after AI failure')
-  assert.equal(calls.filter(c=>c[0]==='classify').length,2,'Import must not repeat analysis')
-  state.connectionId.value='two';state.changeMailbox();await nextTick();await nextTick();await nextTick()
-  assert.equal(state.analysisConsent.value,false)
-  assert.equal(state.selectedConsent.value,false)
-  await state.detectRequests();assert.equal(calls.filter(c=>c[0]==='classify').length,2)
-  failure='pending';state.analysisConsent.value=true
-  const pending=state.detectRequests();await nextTick()
-  props.workspaceId='another-workspace';await nextTick();await nextTick();await nextTick()
-  resolveAnalysis!({messages:[{...mail,id:'old-workspace'}],hasMore:false});await pending
-  assert.equal(state.messages.value[0].id,'message','Old analysis cannot repopulate a changed workspace')
-  assert.equal(state.analysisConsent.value,false)
+  assert.equal(calls.filter(c=>c[0]==='recent').length,0,'Opening Reservations must not read historical mail');
+  await state.manualReviewChanged({target:{open:true}});
+  assert.equal(calls.filter(c=>c[0]==='recent').length,1);
+  state.selected.value=state.messages.value[0];await nextTick();
+  await state.analyzeSelected();assert.equal(calls.filter(c=>c[0]==='classify').length,0);
+  state.selectedConsent.value=true;await state.analyzeSelected();
+  assert.equal(calls.filter(c=>c[0]==='classify').length,1);
+  failure='mailbox_ai_quota_exhausted';state.selectedConsent.value=true;await state.analyzeSelected();
+  assert.match(state.error.value,/agotado su cuota/);
+  await state.importMessage();assert.equal(imports.length,1);
+  state.connectionId.value='two';state.changeMailbox();await nextTick();await nextTick();await nextTick();
+  assert.equal(state.selectedConsent.value,false);
+  assert.equal(state.messages.value.length,0);
+  await state.manualReviewChanged({target:{open:true}});state.selected.value=state.messages.value[0];await nextTick();
+  failure='pending';state.selectedConsent.value=true;
+  const pending=state.analyzeSelected();await nextTick();
+  props.workspaceId='another-workspace';await nextTick();await nextTick();await nextTick();
+  resolveAnalysis!({messages:[{...mail,id:'old-workspace'}],hasMore:false});await pending;
+  assert.equal(state.messages.value.length,0,'Old analysis cannot repopulate a changed workspace');
+  assert.equal(state.selectedConsent.value,false);
  }finally{app.unmount();for(const key of Object.keys(globals))delete (globalThis as any)[key]}
 })

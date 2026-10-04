@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import {processGmailHistory} from '../supabase/functions/_shared/processGmailHistory.ts';
 const connection={id:'c',grant_id:'gmail:grant',email:'dj@example.invalid',background_analysis_since:'2026-10-01T00:00:00Z',background_analysis_revision:'revision'};
 const message={id:'m',thread_id:'t',folders:['INBOX'],from:[{email:'promoter@example.invalid'}],date:1790849100};
-test('first watch sets baseline without replaying older mailbox messages',async()=>{
+test('missing saved baseline requires repair instead of losing mail since consent',async()=>{
  let saved:any;const result=await processGmailHistory({connection,watch:{},topic:'topic'},{authorized:async()=>true,provider:{watch:async()=>({historyId:'100',expiresAt:'2026-10-10T00:00:00Z'})},enqueue:async()=>{throw new Error('must not replay');},save:async patch=>{saved=patch;}});
- assert.equal(result,'watch_started');assert.equal(saved.history_id,'100');
+ assert.equal(result,'resync_required');assert.deepEqual(saved,{state:'resync_required'});
 });
 test('history fetch uses Gmail message IDs, queues unique entries and advances only final cursor',async()=>{
  const enqueued:any[]=[],saved:any[]=[],pages:any[]=[];

@@ -3,7 +3,7 @@ import type {BookingMailClassification} from './mailboxClassifier.ts';
 import {mailboxPreFilter} from './mailboxPreFilter.ts';
 import type {MailboxReplyLink} from './mailboxReplyLink.ts';
 type Job={id:string;connectionId:string;workspaceId:string;actorId:string;grantId:string;email:string;messageId:string;threadId:string;since:string};
-export async function processMailboxIncoming(job:Job,options:{authorize:()=>Promise<boolean>;message:()=>Promise<any>;inbox:()=>Promise<{inbox:string[];excluded:string[]}>;linkedBooking:(raw:any)=>Promise<MailboxReplyLink>;sync:(bookingId:string,message:ReturnType<typeof mailboxMessage>)=>Promise<unknown>;classify:(message:ReturnType<typeof mailboxMessage>)=>Promise<BookingMailClassification>;create:(message:ReturnType<typeof mailboxMessage>,classification:BookingMailClassification)=>Promise<unknown>;complete:(state:'completed'|'ignored'|'failed',classification?:BookingMailClassification)=>Promise<unknown>}){
+export async function processMailboxIncoming(job:Job,options:{authorize:()=>Promise<boolean>;message:()=>Promise<any>;inbox:()=>Promise<{inbox:string[];excluded:string[]}>;linkedBooking:(raw:any)=>Promise<MailboxReplyLink>;sync:(bookingId:string,message:ReturnType<typeof mailboxMessage>)=>Promise<unknown>;classify:(message:ReturnType<typeof mailboxMessage>)=>Promise<BookingMailClassification>;create:(message:ReturnType<typeof mailboxMessage>,classification:BookingMailClassification)=>Promise<unknown>;retry?:()=>Promise<boolean>;complete:(state:'completed'|'ignored'|'failed',classification?:BookingMailClassification)=>Promise<unknown>}){
  try{
   if(!await options.authorize()){await options.complete('ignored');return 'ignored';}
   const raw=await options.message(),message=mailboxMessage(raw,job.email);
@@ -24,7 +24,8 @@ export async function processMailboxIncoming(job:Job,options:{authorize:()=>Prom
    await options.create(message,classification);return 'created';
   }
   await options.complete('completed',classification);return 'classified';
- }catch{
+ }catch(error){
+  if(error instanceof Error&&error.message==='mailbox_ai_rate_limit'&&options.retry&&await options.retry())return 'deferred';
   // No automatic retry after an uncertain AI/provider attempt. Operator review is required.
   await options.complete('failed');return 'failed';
  }

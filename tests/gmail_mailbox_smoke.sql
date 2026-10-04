@@ -11,7 +11,7 @@ insert into public.workspace_members(workspace_id,user_id,role) select workspace
 grant select on beta_access_fixture to service_role;
 set local role service_role;
 do $$
-declare f record; result jsonb; notice uuid; email text; gmail_connection uuid; revision uuid; lease uuid;
+declare f record; result jsonb; notice uuid; email text; gmail_connection uuid; revision uuid; lease uuid; queued_job uuid; original_attempt uuid;
 begin
  select * into f from beta_access_fixture; email:='mailbox-'||f.user_id||'@example.invalid';
  if has_table_privilege('anon','public.mailbox_beta_notifications','SELECT') or has_table_privilege('authenticated','public.mailbox_beta_waitlist','UPDATE') or has_function_privilege('authenticated','public.review_mailbox_beta_access(uuid,uuid,text,boolean)','EXECUTE') or has_function_privilege('anon','public.request_mailbox_beta_access(uuid,uuid,text,text)','EXECUTE') then raise exception 'client_privileges_exposed'; end if;
@@ -56,7 +56,17 @@ begin
  gmail_connection:=(result->>'connectionId')::uuid;
  if (select count(*) from public.mailbox_connections where workspace_id=f.workspace_id and user_id=f.user_id)<>2 then raise exception 'nylas_connection_overwritten';end if;
  if not exists(select 1 from public.mailbox_connections where workspace_id=f.workspace_id and transport='nylas' and grant_id='fictional-beta-grant-'||f.user_id) then raise exception 'nylas_grant_changed';end if;
- perform public.set_mailbox_background_analysis(f.workspace_id,f.user_id,gmail_connection,true,'groq-gpt-oss-20b-v1');
+ if has_function_privilege('authenticated','public.start_gmail_mailbox_detection(uuid,uuid,uuid,text,timestamptz)','EXECUTE') or has_function_privilege('anon','public.defer_mailbox_incoming(uuid)','EXECUTE') then raise exception 'detection_rpc_client_exposed';end if;
+ begin perform public.start_gmail_mailbox_detection(f.workspace_id,f.other_id,gmail_connection,'100',now()+interval '7 days');raise exception 'foreign_detection_allowed';exception when others then if SQLERRM<>'workspace_access_denied' then raise;end if;end;
+ perform public.start_gmail_mailbox_detection(f.workspace_id,f.user_id,gmail_connection,'100',now()+interval '7 days');
+ perform public.start_gmail_mailbox_detection(f.workspace_id,f.user_id,gmail_connection,'110',now()+interval '7 days');
+ if (select history_id from public.gmail_mailbox_watches where connection_id=gmail_connection)<>'100' then raise exception 'detection_baseline_replaced';end if;
+ perform public.enqueue_mailbox_incoming((select grant_id from public.mailbox_connections where id=gmail_connection),'fictional-event','fictional-message','fictional-thread',clock_timestamp());
+ update public.mailbox_incoming_jobs set state='processing',analysis_attempts=1,processing_started_at=now() where connection_id=gmail_connection and message_id='fictional-message' returning id,analysis_request_id into queued_job,original_attempt;
+ if not public.defer_mailbox_incoming(queued_job) then raise exception 'rate_limit_not_deferred';end if;
+ if not exists(select 1 from public.mailbox_incoming_jobs where id=queued_job and state='pending' and next_attempt_at>now() and retry_reason='rate_limit' and analysis_request_id<>original_attempt and processing_started_at is null) then raise exception 'rate_limit_pending_not_preserved';end if;
+ if public.defer_mailbox_incoming(queued_job) then raise exception 'defer_pending_allowed';end if;
+
  select background_analysis_revision into revision from public.mailbox_connections where id=gmail_connection;
  perform public.enqueue_gmail_history(email,'123');
  result:=public.claim_gmail_watch();lease:=(result->'watch'->>'lease_token')::uuid;

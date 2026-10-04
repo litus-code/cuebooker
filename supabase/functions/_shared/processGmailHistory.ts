@@ -3,11 +3,9 @@ export async function processGmailHistory(input:{connection:any;watch:any;topic:
  if(!await deps.authorized())return 'revoked';
  try{
   let current=watch.history_id;
-  if(!current){
-   const registration=await deps.provider.watch(input.topic);
-   if(!await deps.authorized())return 'revoked';
-   await deps.save({history_id:registration.historyId,watch_expires_at:registration.expiresAt,consent_revision:connection.background_analysis_revision});return 'watch_started';
-  }
+  // Consent starts with an atomically saved cursor. An absent cursor must be
+  // repaired explicitly; registering now would silently lose intervening mail.
+  if(!current){await deps.save({state:'resync_required'});return 'resync_required';}
   // Drain to the final history page before moving the saved cursor. Retries use
   // message IDs to deduplicate against the existing incoming-job table.
   let pageToken:string|undefined,last=current;

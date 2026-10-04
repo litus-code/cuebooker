@@ -32,3 +32,12 @@ test('ambiguous reply references stay reviewable without AI or a duplicate reque
  let saved:any;const {calls,options}=setup({linkedBooking:async()=>({review:true}),complete:async(state:string,value:any)=>{saved=value;calls.push(state)}});
  assert.equal(await processMailboxIncoming(job,options),'review');assert.equal(saved.kind,'review');assert.equal(calls.includes('ai'),false);assert.equal(calls.includes('create'),false);
 });
+
+test('explicit AI rate limit defers a retained job, uncertain errors never request a retry',async()=>{
+ let retries=0,completed=0;
+ const base={authorize:async()=>true,message:async()=>raw,inbox:async()=>({inbox:['opaque-inbox'],excluded:[]}),linkedBooking:async()=>null,sync:async()=>{},create:async()=>{},complete:async()=>{completed++},retry:async()=>{retries++;return true}};
+ assert.equal(await processMailboxIncoming(job,{...base,classify:async()=>{throw new Error('mailbox_ai_rate_limit')}}),'deferred');
+ assert.equal(retries,1);assert.equal(completed,0);
+ assert.equal(await processMailboxIncoming(job,{...base,classify:async()=>{throw new Error('mailbox_ai_unavailable')}}),'failed');
+ assert.equal(retries,1);assert.equal(completed,1);
+});

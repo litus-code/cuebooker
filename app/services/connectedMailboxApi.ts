@@ -1,4 +1,4 @@
-export type ConnectedMailbox = {id:string;email:string;provider:string;transport?:'gmail'|'nylas';status:'connected'|'reconnect_required'|'unknown';connectedAt:string;background?:{syncState?:string|null;enabled:boolean;processor:string|null;since:string|null}}
+export type ConnectedMailbox = {id:string;email:string;provider:string;transport?:'gmail'|'nylas';status:'connected'|'reconnect_required'|'unknown';connectedAt:string;background?:{state?:'inactive'|'unavailable'|'starting'|'active'|'paused'|'reconnect_required';pending?:number;failed?:number;retrying?:boolean;syncState?:string|null;enabled:boolean;processor:string|null;since:string|null}}
 export type MailboxBetaAccess={available:boolean;waitlisted:boolean;approvalRequired:boolean;status:'not_requested'|'pending'|'approved'|'rejected';requestedEmail:string|null}
 import type {MailboxBookingDraft,ReviewedMailboxDraft} from '../../supabase/functions/_shared/mailboxBookingDraft'
 export type MailboxExistingBooking={id:string;artist_id:string;status:string;event_date:string|null;start_time:string|null;end_time:string|null;venue_name:string|null;city:string|null;offer_amount_minor:number|null;currency:string|null;event_timezone:string|null;updated_at:string}
@@ -14,7 +14,7 @@ export function createConnectedMailboxApi(options:{baseUrl:string;publishableKey
   pauseBackground:(workspaceId:string,connectionId:string)=>call({action:'background',workspaceId,connectionId,enabled:false}),
   authorizeBackground:(workspaceId:string,connectionId:string,processor:string)=>call({action:'background',workspaceId,connectionId,enabled:true,processor}),
   waitlist:(workspaceId:string,email:string,locale:'es'|'en')=>call({action:'waitlist',workspaceId,email,locale}) as Promise<{waitlisted:boolean;status:MailboxBetaAccess['status'];requestedEmail:string;notification:string}>,
-  connect:(workspaceId:string,email:string,provider:string='auto')=>call({action:'connect',workspaceId,email,provider}) as Promise<{authorizationUrl:string}>,
+  connect:(workspaceId:string,email:string,provider:string='auto',backgroundProcessor?:string)=>call({action:'connect',workspaceId,email,provider,backgroundProcessor}) as Promise<{authorizationUrl:string}>,
   complete:(workspaceId:string,state:string,code:string)=>call({action:'complete',workspaceId,state,code}),
   recent:(workspaceId:string,connectionId:string)=>call({action:'recent',workspaceId,connectionId}) as Promise<{messages:MailboxMessage[];hasMore:boolean}>,
   thread:(workspaceId:string,connectionId:string,bookingId:string)=>call({action:'thread',workspaceId,connectionId,bookingId}) as Promise<{messages:MailboxMessage[];hasMore:boolean}>,

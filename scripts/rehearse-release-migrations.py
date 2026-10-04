@@ -12,7 +12,7 @@ spec.loader.exec_module(restore)
 
 def load_migrations(root, manifest):
     entries = json.loads(Path(manifest).read_text())
-    if len(entries) != 29 or len({e['path'] for e in entries}) != 29:
+    if len(entries) != 30 or len({e['path'] for e in entries}) != 30:
         raise RuntimeError('Unexpected candidate migration manifest.')
     if [e['path'] for e in entries] != sorted(e['path'] for e in entries):
         raise RuntimeError('Candidate migrations are out of order.')
@@ -55,7 +55,7 @@ def rehearse():
         for role in ('anon','authenticated'):
             if restore.psql(f"SELECT has_table_privilege('{role}','{table}','SELECT,INSERT,UPDATE,DELETE');") == 't':
                 raise RuntimeError('Candidate service table is exposed to clients.')
-    print('Candidate migration rehearsal passed: 29 exact files, preserved protected counts, foreign keys, service-table denial and both paused schedulers. No hosted database changed.')
+    print('Candidate migration rehearsal passed: 30 exact files, preserved protected counts, foreign keys, service-table denial and both paused schedulers. No hosted database changed.')
 
 
 if __name__ == '__main__':
