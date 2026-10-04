@@ -1,3 +1,13 @@
+## 2026-10-04 04:32 Europe/Madrid — Isolated production backup restoration VERIFIED
+
+- Backup run 37169429138 attempt 2 succeeded. Exact encrypted artifact 11290844352 (expires 2026-10-11) was restored ONLY in a disposable PostgreSQL 17 Docker database with its networks disconnected before decryption.
+- Restore run 37171137469, job 111344159054, main SHA 4cd745d5fe3de1c76613b5f53fe8b90f461c02d7: SUCCESS. Verified authored log marker for import, every COPY row count, foreign keys, RLS, and unidentified-caller denial. Disposable cleanup completed; no plaintext artifact or private rows logged.
+- First attempts failed safely (local connection; SQLSTATE 42703 with outdated managed-schema bootstrap). Updated only disposable bootstrap CLI to official 2.119.0; backup manifest remains original 2.79.0. Third attempt passed.
+- Infrastructure PRs 104/105/106 merged with skip-ci squash titles after normal CI. No stable staging/prod application deployment, hosted restore, or hosted migration performed.
+- This is logical DB restore verification; it does not prove Storage bytes, provider/Auth flows, Vault decryptability, or full tenant isolation. Private long-term retention of the encrypted backup and separate passphrase still not confirmed.
+- Next: complete backend migration/function alignment and production mailbox/Nylas configuration review before staging then prod promotion. PR96 remains draft, Beta0.0.2 candidate; preserve approved product changes and bump policy.
+- Synced restoration workflow/script/tests/docs from main into this feature tree without replacing application files.
+
 ## 2026-10-04 / Production logical backup exported and ciphertext verified
 
 Owner supplied actual production DB password privately in GitHub and requested retry. Main backup implementation 03a3db2f68ca4179d4c3bbe8fc6c74e58a876458. Protected run 37169429138 attempt 2 / job 111340440980 SUCCESS: roles/schema/data dump, AES256 encryption, decryption round-trip and encrypted-only artifact upload passed. Artifact 11290844352 named cuebooker-production-db-37169429138-2, 43998 bytes, created 2026-10-04T02:05:41Z, expires 2026-10-11T02:05:40Z. Downloaded ciphertext ZIP to transient scratch and verified GitHub ZIP digest b056bafbf437e62a4a2418bcd4ec840b622535f5a7460c88c0fdb3444780a3a2, exact two encrypted/checksum members and inner ciphertext SHA256. No password/passphrase read; no agent-side decryption, SQL inspection or restore. User password creation/reset handled privately; do not infer its exact action from chat.

@@ -1,0 +1,42 @@
+name: Isolated Backup Restore Drill
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type cuebooker-isolated-restore to test the approved encrypted backup locally
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: cuebooker-isolated-restore
+  cancel-in-progress: false
+
+jobs:
+  restore:
+    if: ${{ github.ref == 'refs/heads/main' && inputs.confirm == 'cuebooker-isolated-restore' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: production
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359
+        with:
+          version: 2.119.0
+      - name: Download exact encrypted backup
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: cuebooker-production-db-37169429138-2
+          run-id: 37169429138
+          github-token: ${{ github.token }}
+          path: restore-input
+      - name: Restore and verify only in disposable disconnected database
+        env:
+          CUEBOOKER_BACKUP_PASSPHRASE: ${{ secrets.CUEBOOKER_BACKUP_PASSPHRASE }}
+        run: python3 scripts/restore-backup-drill.py
