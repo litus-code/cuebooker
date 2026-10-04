@@ -7,6 +7,22 @@ import { pathToFileURL } from 'node:url'
 
 export const PRODUCTION_PROJECT = 'qlocooqfdzehogbwcbhr'
 
+// Return only authored categories, never provider text, URLs, passwords or data.
+export function classifyBackupFailure(result) {
+  const details = `${result.stderr || ''}\n${result.stdout || ''}\n${result.error?.message || ''}`
+  if (/password authentication failed|authentication failed|SASL authentication/i.test(details)) return 'database authentication rejected'
+  if (/tenant or user not found/i.test(details)) return 'pooler tenant or user not found'
+  if (/could not translate host name|no such host|ENOTFOUND|name resolution/i.test(details)) return 'database host lookup failed'
+  if (/connection timed out|timeout expired|connection refused|network is unreachable/i.test(details)) return 'database connection unavailable'
+  if (/certificate verify failed|SSL error|TLS handshake|certificate signed by unknown authority/i.test(details)) return 'database TLS verification failed'
+  if (/server version mismatch|aborting because of server version mismatch/i.test(details)) return 'database dump version mismatch'
+  if (/permission denied|must be superuser/i.test(details)) return 'database export permission denied'
+  if (/Cannot connect to the Docker daemon|docker.*not found/i.test(details)) return 'backup container runtime unavailable'
+  if (/failed to pull|pull access denied|manifest unknown|error response from daemon/i.test(details)) return 'backup container image unavailable'
+  if (result.signal) return 'backup command terminated'
+  return 'unclassified failure'
+}
+
 export function validateBackupInputs(dbUrl, passphrase) {
   let url
   try { url = new URL(dbUrl) } catch { throw new Error('Missing or invalid backup database connection.') }
@@ -42,7 +58,12 @@ export function backupProduction({ dbUrl, passphrase, outputDir, run = spawnSync
   const execute = (command, args, options = {}) => {
     const result = run(command, args, { env: childEnv, encoding: 'utf8', maxBuffer: 1024 * 1024, ...options })
     // Suppress command output and errors: providers/tools may echo connection credentials.
-    if (result.error || result.signal || result.status !== 0) throw new Error(`Backup operation failed (${command}). No database details were logged.`)
+    if (result.error || result.signal || result.status !== 0) {
+      const stage = command === 'supabase'
+        ? (args[0] === '--version' ? 'CLI version' : args.includes('--role-only') ? 'roles export' : args.includes('--data-only') ? 'data export' : 'schema export')
+        : command
+      throw new Error(`Backup operation failed (${stage}): ${classifyBackupFailure(result)}. No database details were logged.`)
+    }
     return result.stdout || ''
   }
   let encryptedPath
