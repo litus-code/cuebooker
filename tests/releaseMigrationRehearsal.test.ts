@@ -13,7 +13,7 @@ with tempfile.TemporaryDirectory() as t:
  root=pathlib.Path(t)
  entries=[]
  for i in range(30):
-  name=f'supabase/migrations/{20261004000000+i}_fictional.sql'
+  name=f'supabase/migrations/{20301004000000+i}_fictional.sql'
   file=root/name;file.parent.mkdir(parents=True,exist_ok=True);file.write_text('select 1;')
   entries.append(dict(path=name,sha256=hashlib.sha256(file.read_bytes()).hexdigest()))
  p=pathlib.Path(t)/'manifest.json'
