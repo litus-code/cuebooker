@@ -29,7 +29,7 @@ jobs:
       - name: Checkout exact reviewed candidate migrations
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: 375ee4bdef4a28c361c922621f4968f8ec6eb400
+          ref: 83774ef4722d859b80654be13cebc53b60aebcd9
           path: release-candidate
           persist-credentials: false
       - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359

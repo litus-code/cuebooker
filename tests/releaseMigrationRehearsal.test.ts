@@ -30,7 +30,7 @@ with tempfile.TemporaryDirectory() as t:
 
 test('rehearsal has only exact disconnected restore destination and no hosted credentials', () => {
   const workflow = readFileSync('.github/workflows/rehearse-release-migrations.yml', 'utf8')
-  assert.match(workflow, /ref: 375ee4bdef4a28c361c922621f4968f8ec6eb400/)
+  assert.match(workflow, /ref: 83774ef4722d859b80654be13cebc53b60aebcd9/)
   assert.match(workflow, /inputs.confirm == 'cuebooker-isolated-release'/)
   assert.match(workflow, /persist-credentials: false/)
   assert.doesNotMatch(workflow, /BACKUP_DB_URL|SERVICE_ROLE|upload-artifact|schedule:|push:|pull_request:/)

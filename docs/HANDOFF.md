@@ -1,3 +1,5 @@
+Implementation object 83774ef4722d859b80654be13cebc53b60aebcd9 contains all30 candidate migrations. Rehearsal workflow pin now targets this exact object, pending bounded installation in main and real isolated rehearsal. Staging unauthenticated probes: connected-mailbox401; process-gmail-history401; incoming503 background-unavailable with operator gate off. These probes do not test authenticated processing or real mail. Source feature-branch publication/preview pending CI below.
+
 ## 2026-10-04 — Compact mail flow and new-mail retry installed in staging
 
 User authorized simpler, clearly clickable UI, colored status notices, new-mail-only automation and honest privacy explanation. Implemented compact connected state, collapsed beta/privacy details, one-time automatic-analysis consent before OAuth (legacy connections explicitly activate separately), optional button-like old-mail review and no account-wide read when opening Reservations. Dedicated colored notices communicate actual detection health and pending rate-limited work. Existing manual per-message consent/import and booking threading remain. Candidate label Beta0.0.3.
