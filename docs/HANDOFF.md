@@ -1,3 +1,7 @@
+## 2026-10-04 — Main infrastructure reconciled into release branch
+
+Merged main ee623d796680888ada26c2a871d44715fd9be0e5 into feature after isolated review. Only conflicts were HANDOFF and ISOLATED_RESTORE_DRILL docs; retained newer feature histories. Sole incoming extra file BACKUP_RUN_STATUS is marked historical. No application overwrite or hosted deployment. Full local451 tests passed before this documentation-only merge. CI/preview must run against resulting merge SHA. Production secrets remain missing, owner configuration required.
+
 ## 2026-10-04 04:46 Europe/Madrid — Release migration rehearsal passed; mailbox origin corrected; production credentials BLOCKED
 
 - PR107 infrastructure-only merge ee623d796680888ada26c2a871d44715fd9be0e5 after successful CI37171657731, skip-ci squash avoids stable web deployment.
