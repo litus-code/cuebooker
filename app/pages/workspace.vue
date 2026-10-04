@@ -7,6 +7,7 @@ import { toPublicCueIdConfig, type PublicArtistProfile } from '../domain/publicA
 import { createBookingQrSvg } from '../services/bookingQr'
 import { agencyGlobalQuery, agencyViewForArtist, canOperateAgency as hasAgencyOperationAccess } from '../domain/agencyContext'
 import { resolveAgencyArtist } from '../domain/agencyRoster'
+import { APP_RELEASE_LABEL } from '../domain/appRelease'
 
 const auth = useCueAuth()
 const availability = useAvailability()
@@ -544,7 +545,9 @@ const profileCompletion = computed(() => {
   return Math.round(fields.filter(value => String(value || '').trim()).length / fields.length * 100)
 })
 const firstRunActivation = computed(() =>
-  bookingSurfaceReady.value
+  !isAgency.value
+  && Boolean(bookingCoreWorkspaceId.value)
+  && !cueCoreLoading.value
   && realBookings.value.length === 0
 )
 
@@ -588,39 +591,6 @@ const profileGuideSteps = computed(() => {
 
 const profileGuideComplete = computed(() => profileGuideSteps.value.every(step => step.done))
 
-const activationSteps = computed(() => {
-  const es = preferences.locale.value === 'es'
-  return [
-    {
-      id: 'profile',
-      index: '01',
-      title: es ? 'Completa tu perfil público' : 'Complete your public profile',
-      body: es ? 'Añade la información esencial que verá un promoter cuando llegue a tu enlace.' : 'Add the essential information a promoter will see when they open your link.',
-      done: profileCompletion.value >= 70,
-      action: es ? 'Completar perfil' : 'Complete profile'
-    },
-    {
-      id: 'share',
-      index: '02',
-      title: es ? 'Publica y comparte tu booking' : 'Publish and share your booking',
-      body: es ? 'Activa tu perfil público y comparte el enlace para empezar a recibir solicitudes.' : 'Publish your profile and share the link to start receiving enquiries.',
-      done: publicProfilePublished.value,
-      action: publicProfilePublished.value
-        ? (es ? 'Copiar enlace' : 'Copy link')
-        : (es ? 'Configurar publicación' : 'Set up publishing')
-    },
-    {
-      id: 'booking',
-      index: '03',
-      title: es ? 'Registra tu primera solicitud' : 'Capture your first enquiry',
-      body: es ? '¿Ya tienes una conversación por WhatsApp, email o Instagram? Conviértela en booking.' : 'Already have a WhatsApp, email or Instagram conversation? Turn it into a booking.',
-      done: realBookings.value.length > 0,
-      action: es ? 'Crear primer booking' : 'Create first booking'
-    }
-  ]
-})
-
-
 async function runProfileGuideStep(id: string) {
   profileGuideActive.value = true
 
@@ -662,22 +632,27 @@ async function runProfileGuideStep(id: string) {
 }
 
 async function runActivationStep(id: string) {
-  if (id === 'profile') {
-    profileGuideActive.value = true
-    await changeView('profile')
-    await nextTick()
-    await runProfileGuideStep('complete')
+  if (id === 'mailbox') {
+    await openAgencySetupSettings('mailbox')
     return
   }
-  if (id === 'share') {
-    if (publicProfilePublished.value && publicBookingUrl.value) {
+  if (id === 'profile') {
+    profileGuideActive.value = false
+    await changeView('profile')
+    await nextTick()
+    if (profileEditSection.value !== 'identity') await toggleProfileEditSection('identity')
+    return
+  }
+  if (id === 'share' || id === 'form') {
+    if (id === 'share' && publicProfilePublished.value && publicProfileAcceptingRequests.value && publicBookingUrl.value) {
       await copyProfileValue(preferences.locale.value === 'es' ? 'Enlace de booking' : 'Booking link', publicBookingUrl.value, 'booking_link')
       return
     }
     profileGuideActive.value = true
     await changeView('profile')
     await nextTick()
-    await runProfileGuideStep(publicProfilePublished.value ? 'booking' : 'publish')
+    // Open the existing publication controls; never publish or opt in from onboarding.
+    if (publicProfilePublished.value && profileEditSection.value !== 'booking') await toggleProfileEditSection('booking')
     return
   }
   if (id === 'booking') {
@@ -2433,29 +2408,17 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <div v-else-if="!isAgency" class="artist-identity"><span>{{ copy.artist }}</span><small>{{ copy.role }}</small><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 14h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2Z"/></svg>{{ selectedArtist?.stage_name }}</strong></div>
         </div>
 
-        <section v-if="firstRunActivation" class="activation-panel">
-          <div class="activation-panel__intro">
-            <p class="eyebrow">{{ preferences.locale.value === 'es' ? 'PRIMEROS PASOS / ACTIVACIÓN' : 'FIRST STEPS / ACTIVATION' }}</p>
-            <h2>{{ preferences.locale.value === 'es' ? 'TU WORKSPACE ESTÁ LISTO.' : 'YOUR WORKSPACE IS READY.' }}</h2>
-            <p>{{ preferences.locale.value === 'es'
-              ? 'Todavía no hay solicitudes que mostrar. Activa estas tres piezas y Cuebooker empezará a trabajar contigo.'
-              : 'There are no enquiries to show yet. Activate these three pieces and Cuebooker will start working with you.' }}</p>
-          </div>
-          <div class="activation-panel__steps">
-            <article v-for="step in activationSteps" :key="step.id" class="activation-step" :class="{ 'activation-step--done': step.done }">
-              <span class="activation-step__index">{{ step.done ? '✓' : step.index }}</span>
-              <div>
-                <h3>{{ step.title }}</h3>
-                <p>{{ step.body }}</p>
-              </div>
-              <button type="button" @click="runActivationStep(step.id)">{{ step.done && step.id !== 'share' ? (preferences.locale.value === 'es' ? 'Revisar' : 'Review') : step.action }}</button>
-            </article>
-          </div>
-          <div class="activation-panel__footer">
-            <span>{{ preferences.locale.value === 'es' ? 'Tu enlace de booking' : 'Your booking link' }}</span>
-            <code>{{ publicBookingUrl || 'cuebooker.com/tu-artista?booking=1' }}</code>
-          </div>
-        </section>
+        <IndividualSetupPanel
+          v-if="firstRunActivation"
+          :workspace-id="bookingCoreWorkspaceId"
+          :locale="preferences.locale.value"
+          :revision="bookingCoreOperationsRevision + (settingsOpen ? 1 : 0)"
+          :profile-ready="profileCompletion >= 70"
+          :published="publicProfilePublished"
+          :accepting-requests="publicProfileAcceptingRequests"
+          :booking-url="publicBookingUrl"
+          @action="runActivationStep"
+        />
 
         <template v-else>
           <div class="summary-grid">
@@ -3270,6 +3233,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <section class="settings-group"><span>{{ copy.language }}</span><div class="settings-options"><button :class="{ active: preferences.locale.value === 'es' }" type="button" @click="preferences.setLocale('es')">ES</button><button :class="{ active: preferences.locale.value === 'en' }" type="button" @click="preferences.setLocale('en')">EN</button></div></section>
           <section class="settings-group"><span>{{ copy.appearance }}</span><div class="settings-options"><button :class="{ active: preferences.theme.value === 'dark' }" type="button" @click="preferences.setTheme('dark')">{{ copy.dark }}</button><button :class="{ active: preferences.theme.value === 'light' }" type="button" @click="preferences.setTheme('light')">{{ copy.light }}</button></div></section>
         </section>
+        <p class="settings-release">Cuebooker · {{ APP_RELEASE_LABEL }}</p>
       </aside>
     </div>
 
@@ -3311,6 +3275,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 </template>
 
 <style scoped>
+.settings-release { margin:24px 0 0; padding-top:16px; border-top:1px solid var(--cue-border); color:var(--cue-muted); font:600 12px/1.5 monospace; }
 :global(body) { margin: 0; background: var(--cue-bg); }
 button, select, input, textarea { font: inherit; }
 button, a, select { -webkit-tap-highlight-color: transparent; }

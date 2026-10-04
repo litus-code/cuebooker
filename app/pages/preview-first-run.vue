@@ -1,247 +1,43 @@
 <script setup lang="ts">
-const route = useRoute()
+import type { ConnectedMailbox } from '../services/connectedMailboxApi'
+const config = useRuntimeConfig()
 const { locale } = useCuePreferences()
-
-const copy = computed(() => locale.value === 'es'
-  ? {
-      eyebrow: 'PRIMEROS PASOS / ACTIVACIÓN',
-      title: 'TU WORKSPACE ESTÁ LISTO.',
-      intro: 'Todavía no hay solicitudes que mostrar. Activa estas tres piezas y Cuebooker empezará a trabajar contigo.',
-      bookingLink: 'Tu enlace de booking',
-      previewNote: 'Preview visual. Esta ruta no inicia sesión ni escribe datos.',
-      steps: [
-        {
-          index: '01',
-          title: 'Completa tu perfil público',
-          body: 'Añade la información esencial que verá un promoter cuando llegue a tu enlace.',
-          action: 'Completar perfil'
-        },
-        {
-          index: '02',
-          title: 'Publica y comparte tu booking',
-          body: 'Activa tu perfil público y comparte el enlace para empezar a recibir solicitudes.',
-          action: 'Configurar publicación'
-        },
-        {
-          index: '03',
-          title: 'Registra tu primera solicitud',
-          body: '¿Ya tienes una conversación por WhatsApp, email o Instagram? Conviértela en booking.',
-          action: 'Crear primer booking'
-        }
-      ]
-    }
-  : {
-      eyebrow: 'FIRST STEPS / ACTIVATION',
-      title: 'YOUR WORKSPACE IS READY.',
-      intro: 'There are no enquiries to show yet. Activate these three pieces and Cuebooker will start working with you.',
-      bookingLink: 'Your booking link',
-      previewNote: 'Visual preview. This route does not sign in or write data.',
-      steps: [
-        {
-          index: '01',
-          title: 'Complete your public profile',
-          body: 'Add the essential information a promoter will see when they open your link.',
-          action: 'Complete profile'
-        },
-        {
-          index: '02',
-          title: 'Publish and share your booking',
-          body: 'Publish your profile and share the link to start receiving enquiries.',
-          action: 'Set up publishing'
-        },
-        {
-          index: '03',
-          title: 'Capture your first enquiry',
-          body: 'Already have a WhatsApp, email or Instagram conversation? Turn it into a booking.',
-          action: 'Create first booking'
-        }
-      ]
-    })
-
-const allowed = ref(true)
-
-onMounted(async () => {
-  const hostname = window.location.hostname.toLowerCase()
-  if (hostname === 'cuebooker.com' || hostname === 'www.cuebooker.com') {
-    allowed.value = false
-    await navigateTo('/')
-  }
+const allowed = ref(config.public.appEnv === 'staging')
+const scenario = ref<'new' | 'connected' | 'email' | 'form' | 'received'>('new')
+const notice = ref('')
+const es = computed(() => locale.value === 'es')
+const demoConnections = computed<ConnectedMailbox[]>(() => ['connected', 'email'].includes(scenario.value) ? [{ id: 'fictional', email: 'dj@example.invalid', provider: 'demo', status: 'connected', connectedAt: '', background: { enabled: scenario.value === 'email', processor: 'demo', since: null } }] : [])
+function simulateAction(id: string) {
+  const destinations: Record<string, string> = es.value
+    ? { profile: 'Abriría la edición del perfil.', mailbox: 'Abriría Ajustes en Tu correo en Cuebooker.', form: 'Abriría los controles de publicación y booking del perfil.', share: 'Copiaría el enlace de booking.', booking: 'Abriría el formulario de primera solicitud.' }
+    : { profile: 'Would open the profile editor.', mailbox: 'Would open Your email in Cuebooker in Settings.', form: 'Would open profile publishing and booking controls.', share: 'Would copy the booking link.', booking: 'Would open the first enquiry form.' }
+  notice.value = destinations[id] || ''
+}
+onMounted(() => {
+  allowed.value = config.public.appEnv === 'staging' && (window.location.hostname.startsWith('pr-') || ['localhost', '127.0.0.1', 'staging.cuebooker.com'].includes(window.location.hostname))
 })
-
-useHead(() => ({
-  title: 'First-run preview | Cuebooker',
-  meta: [{ name: 'robots', content: 'noindex,nofollow' }]
-}))
+useHead({ title: 'DJ setup preview | Cuebooker', meta: [{ name: 'robots', content: 'noindex,nofollow' }] })
 </script>
 
 <template>
   <main v-if="allowed" class="preview-page">
-    <section class="preview-shell">
-      <div class="preview-bar">
-        <span>PR #98 · preview/first-run-activation</span>
-        <small>{{ copy.previewNote }}</small>
-      </div>
-
-      <section class="activation-panel">
-        <div class="activation-panel__intro">
-          <p class="eyebrow">{{ copy.eyebrow }}</p>
-          <h1>{{ copy.title }}</h1>
-          <p>{{ copy.intro }}</p>
-        </div>
-
-        <div class="activation-panel__steps">
-          <article v-for="step in copy.steps" :key="step.index" class="activation-step">
-            <span class="activation-step__index">{{ step.index }}</span>
-            <div>
-              <h2>{{ step.title }}</h2>
-              <p>{{ step.body }}</p>
-            </div>
-            <button type="button">{{ step.action }}</button>
-          </article>
-        </div>
-
-        <div class="activation-panel__footer">
-          <span>{{ copy.bookingLink }}</span>
-          <code>cuebooker.com/tu-artista?booking=1</code>
-        </div>
-      </section>
-    </section>
+    <header><CueBrand /><CuePreferencesControl compact /></header>
+    <p class="preview-notice">{{ es ? 'PREVIEW / SIMULACIÓN. No guarda datos, conecta buzones ni crea solicitudes reales.' : 'PREVIEW / SIMULATION. Does not save data, connect mailboxes or create real enquiries.' }}</p>
+    <nav :aria-label="es ? 'Escenarios de preparación' : 'Setup scenarios'">
+      <button v-for="item in ([{id:'new',es:'Nuevo DJ',en:'New DJ'},{id:'connected',es:'Correo sin detección',en:'Email without detection'},{id:'email',es:'Correo preparado',en:'Email ready'},{id:'form',es:'Formulario público',en:'Public form'},{id:'received',es:'Primera solicitud',en:'First enquiry'}] as const)" :key="item.id" type="button" :aria-pressed="scenario === item.id" @click="scenario = item.id; notice = ''">{{ es ? item.es : item.en }}</button>
+    </nav>
+    <IndividualSetupPanel v-if="scenario !== 'received'" workspace-id="preview-only" :locale="locale" :revision="0" :profile-ready="scenario !== 'new'" :published="scenario === 'form'" :accepting-requests="scenario === 'form'" booking-url="https://example.invalid/dj?booking=1" :demo-connections="demoConnections" @action="simulateAction" />
+    <p v-else>{{ es ? 'La primera solicitud ya existe: el workspace muestra su resumen habitual sin onboarding.' : 'The first enquiry exists: the workspace shows its normal overview without onboarding.' }}</p>
+    <p v-if="notice" role="status">{{ notice }}</p>
   </main>
 </template>
 
 <style scoped>
-.preview-page{
-  min-height:100vh;
-  padding:clamp(16px,3vw,34px);
-  background:var(--cue-bg);
-  color:var(--cue-text);
-}
-.preview-shell{
-  width:min(1320px,100%);
-  margin:0 auto;
-}
-.preview-bar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:18px;
-  margin-bottom:14px;
-  padding:12px 14px;
-  border:1px solid var(--cue-border);
-  background:var(--cue-surface);
-  color:var(--cue-muted);
-  font:700 10px/1.3 monospace;
-  letter-spacing:.06em;
-  text-transform:uppercase;
-}
-.preview-bar small{
-  color:var(--cue-muted);
-  font:600 10px/1.3 monospace;
-  text-transform:none;
-  letter-spacing:0;
-}
-.activation-panel{
-  overflow:hidden;
-  border:1px solid var(--cue-border);
-  background:
-    radial-gradient(circle at 82% 0%,color-mix(in srgb,var(--cue-accent) 12%,transparent),transparent 34%),
-    var(--cue-surface);
-  box-shadow:0 28px 90px var(--cue-shadow);
-}
-.activation-panel__intro{
-  max-width:820px;
-  padding:clamp(28px,5vw,58px);
-}
-.eyebrow{
-  margin:0;
-  color:var(--cue-accent);
-  font:800 10px/1.2 monospace;
-  letter-spacing:.12em;
-}
-.activation-panel__intro h1{
-  max-width:760px;
-  margin:8px 0 16px;
-  font-size:clamp(2.6rem,6vw,5.5rem);
-  line-height:.88;
-  letter-spacing:-.055em;
-}
-.activation-panel__intro>p:last-child{
-  max-width:640px;
-  margin:0;
-  color:var(--cue-muted);
-  font-size:15px;
-  line-height:1.6;
-}
-.activation-panel__steps{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  border-top:1px solid var(--cue-border);
-}
-.activation-step{
-  min-width:0;
-  padding:26px;
-  border-right:1px solid var(--cue-border);
-}
-.activation-step:last-child{border-right:0}
-.activation-step__index{
-  display:grid;
-  width:34px;
-  height:34px;
-  margin-bottom:28px;
-  place-items:center;
-  border:1px solid var(--cue-border);
-  color:var(--cue-accent);
-  font:800 11px/1 monospace;
-}
-.activation-step h2{
-  margin:0 0 9px;
-  font-size:1.05rem;
-}
-.activation-step p{
-  min-height:66px;
-  margin:0 0 22px;
-  color:var(--cue-muted);
-  font-size:12px;
-  line-height:1.55;
-}
-.activation-step button{
-  min-height:42px;
-  padding:0 15px;
-  border:1px solid var(--cue-border);
-  background:transparent;
-  color:var(--cue-text);
-  font:800 10px/1 monospace;
-  letter-spacing:.05em;
-  text-transform:uppercase;
-  cursor:default;
-}
-.activation-panel__footer{
-  display:flex;
-  align-items:center;
-  gap:18px;
-  padding:18px 26px;
-  border-top:1px solid var(--cue-border);
-  background:color-mix(in srgb,var(--cue-bg) 70%,transparent);
-}
-.activation-panel__footer span{
-  color:var(--cue-muted);
-  font:800 9px/1 monospace;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-}
-.activation-panel__footer code{
-  overflow:hidden;
-  color:var(--cue-text);
-  font-size:11px;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-@media(max-width:900px){
-  .preview-bar{align-items:flex-start;flex-direction:column}
-  .activation-panel__steps{grid-template-columns:1fr}
-  .activation-step{border-right:0;border-bottom:1px solid var(--cue-border)}
-  .activation-step:last-child{border-bottom:0}
-  .activation-step p{min-height:0}
-  .activation-panel__footer{align-items:flex-start;flex-direction:column;gap:7px}
-}
+.preview-page{box-sizing:border-box;max-width:1000px;margin:auto;padding:24px 16px;color:var(--cue-text)}
+.preview-page header{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.preview-notice{padding:16px;border-left:3px solid var(--cue-accent);background:var(--cue-surface);color:var(--cue-muted);font:700 12px/1.5 monospace}
+.preview-page nav{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0}
+.preview-page nav button{min-height:44px;padding:10px 14px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control,8px);background:var(--cue-surface);color:var(--cue-text);font:inherit;cursor:pointer}
+.preview-page nav button[aria-pressed="true"]{border-color:var(--cue-accent)}
+.preview-page button:focus-visible{outline:2px solid var(--cue-accent);outline-offset:3px}
 </style>
