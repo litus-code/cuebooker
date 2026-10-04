@@ -1,5 +1,6 @@
 import {processMailboxIncoming} from '../_shared/processMailboxIncoming.ts';
-import {createNylasMailbox} from '../_shared/nylasMailbox.ts';
+import {mailboxTransport,gmailConfig} from '../_shared/mailboxTransport.ts';
+import {gmailConfigured} from '../_shared/gmailMailbox.ts';
 import {classifyBookingMail} from '../_shared/mailboxClassifier.ts';
 import {withMailboxAnalysisBudget} from '../_shared/mailboxAnalysisBudget.ts';
 import {withMailboxAnalysisCache} from '../_shared/mailboxAnalysisCache.ts';
@@ -8,14 +9,16 @@ const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,
 Deno.serve(async(request:Request)=>{
  if(request.method!=='POST')return json({error:'method_not_allowed'},405);
  const secret=Deno.env.get('MAILBOX_WORKER_SECRET')||'';
- if(Deno.env.get('CUEBOOKER_MAILBOX_ENABLED')!=='true'||Deno.env.get('CUEBOOKER_MAILBOX_BACKGROUND_ENABLED')!=='true'||!secret||!Deno.env.get('NYLAS_WEBHOOK_SECRET')||!Deno.env.get('NYLAS_API_KEY')||!Deno.env.get('NYLAS_CLIENT_ID')||!Deno.env.get('GROQ_API_KEY'))return json({error:'mailbox_background_unavailable'},503);
+ if(Deno.env.get('CUEBOOKER_MAILBOX_ENABLED')!=='true'||Deno.env.get('CUEBOOKER_MAILBOX_BACKGROUND_ENABLED')!=='true'||!secret||!(gmailConfigured(gmailConfig(n=>Deno.env.get(n)))||(Deno.env.get('NYLAS_WEBHOOK_SECRET')&&Deno.env.get('NYLAS_API_KEY')&&Deno.env.get('NYLAS_CLIENT_ID')))||!Deno.env.get('GROQ_API_KEY'))return json({error:'mailbox_background_unavailable'},503);
  const actual=request.headers.get('authorization')||'',expected=`Bearer ${secret}`;let difference=actual.length^expected.length;for(let i=0;i<expected.length;i++)difference|=(actual.charCodeAt(i)||0)^expected.charCodeAt(i);if(difference)return json({error:'unauthorized'},401);
  const base=Deno.env.get('SUPABASE_URL')||'',key=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||'';
  async function db<T>(path:string,init:RequestInit={}):Promise<T>{const response=await fetch(`${base}/rest/v1/${path}`,{...init,headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':'application/json',Prefer:'return=representation',...(init.headers||{})},signal:AbortSignal.timeout(8000)});if(!response.ok)throw new Error('mailbox_storage_failed');const text=await response.text();return (text?JSON.parse(text):null) as T;}
  const rpc=<T>(name:string,payload:unknown={})=>db<T>(`rpc/${name}`,{method:'POST',body:JSON.stringify(payload)});
  try{
   const job=await rpc<any>('claim_mailbox_incoming');if(!job)return json({processed:0});
-  const provider=createNylasMailbox({apiUri:Deno.env.get('NYLAS_API_URI')||'https://api.us.nylas.com',apiKey:Deno.env.get('NYLAS_API_KEY')||'',clientId:Deno.env.get('NYLAS_CLIENT_ID')||'',callbackUri:`${base}/functions/v1/connected-mailbox`});
+  const connections=await db<any[]>(`mailbox_connections?id=eq.${job.connectionId}&workspace_id=eq.${job.workspaceId}&user_id=eq.${job.actorId}&status=eq.connected&select=id,email,workspace_id,user_id,transport&limit=1`);
+  if(!connections[0])throw new Error('connection_not_found');
+  const provider=mailboxTransport(connections[0],n=>Deno.env.get(n),db);
   const outcome=await processMailboxIncoming(job,{
    authorize:()=>rpc<boolean>('authorize_mailbox_incoming',{target_job:job.id}),
    message:()=>provider.message(job.grantId,job.messageId),inbox:()=>provider.inboxFolders(job.grantId),

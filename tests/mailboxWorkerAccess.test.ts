@@ -20,6 +20,7 @@ test('authenticated worker syncs an owned linked-thread reply without AI reserva
  const job={id:'job',connectionId:'connection',workspaceId:'workspace',actorId:'actor',grantId:'grant',email:'dj@example.invalid',messageId:'mail',threadId:'thread',since:'2026-10-01T10:00:00Z'};
  globalThis.fetch=(async(url:any,init:any)=>{
   assert.equal(String(url).includes('/send'),false);assert.equal(String(url).includes('groq.com'),false);assert.equal(String(url).includes('reserve_mailbox_analysis'),false);
+  if(url.includes('/mailbox_connections?'))return Response.json([{id:job.connectionId,email:job.email,workspace_id:job.workspaceId,user_id:job.actorId,transport:'nylas'}]);
   if(url.includes('rpc/claim_mailbox_incoming'))return Response.json(job);
   if(url.includes('rpc/authorize_mailbox_incoming'))return Response.json(true);
   if(url.includes('/messages/mail'))return Response.json({data:{id:'mail',thread_id:'thread',date:1790849100,from:[{email:'promoter@example.invalid'}],to:[{email:job.email}],folders:['opaque-inbox'],body:'Respuesta'}});

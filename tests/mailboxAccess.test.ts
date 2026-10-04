@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import {mailboxAnalysisKey} from '../supabase/functions/_shared/mailboxAnalysisCache.ts'
 let handler:(request:Request)=>Promise<Response>
 const workspace='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',user='bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',connection='cccccccc-cccc-cccc-cccc-cccccccccccc',booking='dddddddd-dddd-dddd-dddd-dddddddddddd'
-const env:Record<string,string>={SUPABASE_URL:'https://lycprjeuuynfzwskycwv.supabase.co',SUPABASE_ANON_KEY:'anon',SUPABASE_SERVICE_ROLE_KEY:'service',NYLAS_API_KEY:'private',NYLAS_CLIENT_ID:'client',CUEBOOKER_MAILBOX_ENABLED:'true',CUEBOOKER_MAILBOX_RETURN_URL:'https://pr-96.cuebooker-staging.pages.dev/workspace/'}
+const env:Record<string,string>={SUPABASE_URL:'https://lycprjeuuynfzwskycwv.supabase.co',SUPABASE_ANON_KEY:'anon',SUPABASE_SERVICE_ROLE_KEY:'service',NYLAS_API_KEY:'private',NYLAS_CLIENT_ID:'client',CUEBOOKER_MAILBOX_TRANSPORT:'nylas',CUEBOOKER_MAILBOX_ENABLED:'true',CUEBOOKER_MAILBOX_RETURN_URL:'https://pr-96.cuebooker-staging.pages.dev/workspace/'}
 ;(globalThis as any).Deno={env:{get:(key:string)=>env[key]},serve:(fn:any)=>{handler=fn}}
 await import('../supabase/functions/connected-mailbox/index.ts')
 const originalFetch=globalThis.fetch
