@@ -53,3 +53,9 @@ test('service-only drain is bounded and dispatches only queued database IDs',asy
  assert.deepEqual(await response.json(),{processed:1,outcomes:[{notification:'queued'}]});
  assert.equal(paths.length,1);assert.match(paths[0],/state=eq.queued&select=id&order=created_at.asc&limit=10$/);
 });
+test('notification configuration tolerates surrounding whitespace from saved values',async()=>{
+ let sends=0;
+ const db:any=async(path:string)=>path.startsWith('rpc/')?notice:null;
+ const result=await dispatchMailboxBetaNotification(id,n=>['BREVO_API_KEY','CUEBOOKER_FROM_EMAIL','CUEBOOKER_BETA_ADMIN_EMAIL'].includes(n)?` ${getEnv(n)}\n`:getEnv(n),db,'https://cuebooker.com/workspace/',(async(_url:any,init:any)=>{sends++;const body=JSON.parse(init.body);assert.equal(body.sender.email,env.CUEBOOKER_FROM_EMAIL);assert.equal(init.headers['api-key'],env.BREVO_API_KEY);return Response.json({messageId:'fictional'},{status:201});}) as typeof fetch);
+ assert.equal(result.notification,'sent');assert.equal(sends,1);
+});

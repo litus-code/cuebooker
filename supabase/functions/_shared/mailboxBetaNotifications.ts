@@ -20,7 +20,7 @@ export function betaNotificationText(notice:Notice,workspaceUrl:string){
 // Saved outbox, atomic claim before delivery. An uncertain attempt is never
 // retried automatically, even beyond Brevo's short idempotency window.
 export async function dispatchMailboxBetaNotification(id:string|undefined,getEnv:Env,db:Database,workspaceUrl:string|undefined,fetcher:typeof fetch=fetch){
- const api=getEnv('BREVO_API_KEY')||'',sender=getEnv('CUEBOOKER_FROM_EMAIL')||'',admin=getEnv('CUEBOOKER_BETA_ADMIN_EMAIL')||'';
+ const api=getEnv('BREVO_API_KEY')?.trim()||'',sender=getEnv('CUEBOOKER_FROM_EMAIL')?.trim()||'',admin=getEnv('CUEBOOKER_BETA_ADMIN_EMAIL')?.trim()||'';
  if(!id||getEnv('CUEBOOKER_BETA_NOTIFICATIONS_ENABLED')!=='true'||!api||!validEmail(sender)||!validEmail(admin)||!workspaceUrl)return {notification:'queued' as const};
  const notice=await db<Notice>('rpc/claim_mailbox_beta_notification',{method:'POST',body:JSON.stringify({target_notification:id})});
  if(!notice.claimed)return {notification:'unchanged' as const};
