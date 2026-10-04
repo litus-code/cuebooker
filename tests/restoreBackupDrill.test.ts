@@ -31,6 +31,8 @@ test('restore targets only fixed disposable container, disconnects before decryp
   assert.ok(script.indexOf("'network', 'disconnect'") < script.indexOf("'--decrypt'"))
   assert.match(script, /finally:[\s\S]*'stop', '--no-backup'/)
   assert.match(script, /'--file', '-'/)
+  assert.match(script, /'PGPASSWORD=postgres'/)
+  assert.match(script, /'psql', '-h', '127.0.0.1'/)
   assert.match(script, /SET session_replication_role = replica/)
   assert.doesNotMatch(script, /db push|db reset|--linked|--db-url|service_role_key|extractall/)
   const workflow = readFileSync('.github/workflows/restore-backup-drill.yml', 'utf8')

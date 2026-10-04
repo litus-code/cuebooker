@@ -46,12 +46,19 @@ def command(args, stage, *, cwd=None, input=None):
         # Never disclose tool output: it can contain rows, SQL or credentials.
         state = re.search(rb'ERROR:\s+([0-9A-Z]{5})(?:\s|:|$)', result.stderr)
         suffix = f' (SQLSTATE {state[1].decode()})' if state else ''
+        if not suffix:
+            for pattern, category in [(rb'No such file or directory', 'local socket unavailable'),
+                                      (rb'password authentication failed', 'local authentication rejected'),
+                                      (rb'connection refused', 'local database unavailable')]:
+                if re.search(pattern, result.stderr, re.I):
+                    suffix = f' ({category})'
+                    break
         raise RuntimeError(f'Restore drill failed during {stage}{suffix}.')
     return result.stdout
 
 
 def psql(sql, stage='verification'):
-    return command(['docker', 'exec', '-i', CONTAINER, 'psql', '-X', '-qAt',
+    return command(['docker', 'exec', '-i', '-e', 'PGPASSWORD=postgres', CONTAINER, 'psql', '-h', '127.0.0.1', '-X', '-qAt',
                     '-U', 'supabase_admin', '-d', 'postgres',
                     '--set', 'ON_ERROR_STOP=1', '--set', 'VERBOSITY=sqlstate'],
                    stage, input=sql.encode()).decode().strip()
@@ -112,7 +119,7 @@ def main():
             info = json.loads(command(['docker', 'inspect', CONTAINER], 'local isolation check'))[0]
             if info['NetworkSettings']['Networks']:
                 raise RuntimeError('Local database remains network-connected.')
-            if psql("SHOW server_version_num;")[:2] != '17':
+            if psql("SHOW server_version_num;", 'local version verification')[:2] != '17':
                 raise RuntimeError('Restore target must be local PostgreSQL 17.')
             # Decrypt only after proving the target has no network connectivity.
             clear = work / 'database.tar.gz'
@@ -137,7 +144,7 @@ def main():
                 baseline[table] = int(psql(f'SELECT count(*) FROM {table};')) if exists else 0
             # psql -1 with stdin wraps the complete import in one transaction.
             sql = files['roles.sql'] + files['schema.sql'] + b'\nSET session_replication_role = replica;\n' + files['data.sql']
-            command(['docker', 'exec', '-i', CONTAINER, 'psql', '-X', '-q', '-1',
+            command(['docker', 'exec', '-i', '-e', 'PGPASSWORD=postgres', CONTAINER, 'psql', '-h', '127.0.0.1', '-X', '-q', '-1',
                      '-U', 'supabase_admin', '-d', 'postgres', '--set', 'ON_ERROR_STOP=1',
                      '--set', 'VERBOSITY=sqlstate', '--file', '-'], 'roles/schema/data import', input=sql)
             for table, count in counts.items():
