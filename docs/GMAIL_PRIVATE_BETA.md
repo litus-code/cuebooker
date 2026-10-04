@@ -55,7 +55,7 @@ El cron `cuebooker-gmail-history` se instala **pausado**. Antes de activarlo, cr
 
 Pruebas ficticias cubren cifrado/tenant, PKCE y permisos parciales, caducidad y refresh, MIME, headers/hilos, envío ambiguo, JWT firmado/firma alterada/cuenta-audiencia incorrectas, paginación, duplicados, revocación y errores de cola/historial. SQL smoke transaccional verifica permisos, aprobación, conexión Gmail separada de Nylas, token del lease y retirada de consentimiento; siempre rollback, sin envíos ni buzones reales.
 
-Pendiente para declarar funcional: configuración privada GCP; primera conexión autorizada real; recepción del aviso push; renovación watch; recorrido leer/importar/responder/recibir respuesta dentro del mismo booking; reconexión y móvil. No solicitar suscripciones ni compras para ocultar esas comprobaciones. Producción sigue separada: repetir rehearsal del manifiesto completo de 29 migraciones, desplegar backend/configuración y promover la misma revisión/version Beta revisada sólo tras estos controles.
+El recorrido real de staging pasó el 4 de octubre de 2026; ver la evidencia siguiente. Quedan por comprobar renovación real del watch, caducidad de Testing, recuperación de límites del proveedor y capacidad con más usuarios. Producción sigue separada: rehearsal aislado del manifiesto completo de 30 migraciones, backend/configuración y promoción de la misma revisión/version Beta revisada tras los controles de lanzamiento.
 
 Documentación primaria:
 
@@ -85,4 +85,27 @@ Explicit Groq 429 rejection retains the incoming job for a paced automatic retry
 
 Before beta invitations: configure Google app identity, verified domain and privacy/terms URLs so consent no longer relies on the technical Supabase hostname. Confirm provider DPAs, purposes, retention, deletion handling, international transfer safeguards and actual Groq data handling/training terms. The public privacy text describes implemented access, but does not certify RGPD compliance. Google grants mailbox reading and user-directed sending: never claim Cuebooker has no mailbox access. Groq receives only the subject and up to 2,500 body characters, no attachment downloads. Authorized workspace members see saved booking conversations. Disconnect removes local credentials and attempts Google revocation; saved booking records remain. AI cache entries expire after 24 hours and are removed during subsequent analysis operations.
 
-Remaining activation acceptance: install authenticated Pub/Sub push and exact subscription secret, Vault worker secret and history scheduler, then turn on the operator gate and obtain the user's new explicit consent. Verify a real newly received enquiry is captured once without clicking Analyze, unrelated mail creates no booking, paused/revoked consent stops processing, model rate limits recover, and user-requested replies/reconnection work. Do not invite users or promote production before this proof and the isolated 30-migration rehearsal.
+Activation acceptance completed in staging as recorded below. Provider rate-limit recovery under real load, time-based renewal/expiry and the isolated 30-migration rehearsal remain outstanding. Invitations require the privacy/Google checks above; production has not been changed.
+
+
+## Aceptación real de staging: 4 de octubre de 2026
+
+Pruebas del propietario con su cuenta autorizada, desde iPhone en PR96/Beta0.0.3. Horas Europe/Madrid. No se publican cuerpos, tokens ni direcciones de interlocutores. Capturas del propietario y comprobaciones de estado/cola en staging respaldan estos resultados.
+
+| Prueba | Evidencia | Resultado |
+| --- | --- | --- |
+| Activación 21:55:53 | Watch listo, cursor base y revisión del consentimiento coincidentes | Nuevos mensajes desde activación |
+| Propuesta nueva | Cola 21:59:01, finalización 22:00:01; clasificación booking y Booking creado; contador 6 a 7 | Automático sin pulsar analizar |
+| Correo sin propuesta | Cola 22:08:01, finalización 22:09:01; clasificación other sin Booking | Ignorado para reservas |
+| Respuesta del usuario | Salida sent 22:18:23; receptor confirma entrega | Envío solicitado funciona |
+| Respuesta del interlocutor | Recibida 22:21:19, sincronizada 22:23:01 en Booking original | Sin Booking duplicado |
+| Pausa y correo nuevo 22:26 | Consentimiento retirado; ningún trabajo Gmail nuevo durante la pausa | No analizado |
+| Reactivación 22:27:19 | Nuevo cursor base/revisión; sin trabajo del correo de la pausa | Reinicio desde nuevos mensajes |
+| Desconexión 22:29 | Estado disconnected, análisis apagado, credenciales locales ausentes | Confirmado; quedan metadatos watch |
+| Reconexión 22:30:15 | connected, consentimiento activo y watch listo; propietario confirma | Funciona |
+
+Pub/Sub autenticado activo: topic `projects/cuebooker/topics/cuebooker-gmail-staging`, suscripción `projects/cuebooker/subscriptions/cuebooker-gmail-staging-push`, cuenta `cuebooker-gmail-push-staging@cuebooker.iam.gserviceaccount.com`. Captura Google confirma endpoint y audience exactos de staging y envoltorio JSON. Publisher y Token Creator fueron guardados por el propietario; no se consultó la política completa mediante API autenticada Google.
+
+Gate background activado sólo en staging. Cron `cuebooker-mailbox-incoming` y `cuebooker-gmail-history` activos cada minuto, con URLs Vault del mismo entorno. POST sin firma al webhook devuelve 401. Esto no demuestra por sí solo el flujo autenticado; la recepción real registrada arriba sí completa esa aceptación. Los bundles Edge mantienen los hashes revisados; cambios de secretos incrementaron las versiones observadas a connected-mailbox47, incoming24, history12 y events11.
+
+No se verificó el resultado externo de revocación Google ni una renovación/expiración después de siete días. Producción permanece sin cambios. [Procedimiento repetible de configuración Google](GMAIL_PUSH_SETUP.md).

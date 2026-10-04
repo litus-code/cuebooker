@@ -1,3 +1,23 @@
+## 2026-10-04 22:31 Europe/Madrid — Gmail staging acceptance complete; repeatable Google setup
+
+Branch feature/agency-multi-artist-beta; local HEAD35a11942586cc6542221d6f0306c617ad77bc589 remains behind connector-published feature head1ccfca80aa52a491a749b7f1e67ffbe4ac30f339. Preserve unrelated dirty work. PR96 preview Beta0.0.3 is the tested surface, not stable staging.
+
+Owner-operated own-account acceptance passed: new enquiry captured automatically once, unrelated message classified other without booking, outbound response delivered, inbound reply synchronized to original booking without duplicate, pause blocks processing, reactivation establishes a new baseline without ingesting the pause message, disconnect removes local credentials and reconnect establishes current consent/watch. Details/timestamps in GMAIL_PRIVATE_BETA.md. iPhone captures establish tested connected/active and Reservations states, not exhaustive mobile QA.
+
+Google topic/authenticated OIDC subscription configured by owner in cuebooker (number573163160991). Screenshot confirms endpoint/audience/account/wrapped payload; IAM grants owner-confirmed, not authenticated Google API inventory. Staging gate true; both history and incoming minute crons active, Vault URLs verified. Unsigned event POST401. Functions observed connected47/incoming24/history12/events11 with unchanged reviewed bundle hashes after secret updates. New migration not introduced in this block. Production untouched.
+
+Added scripts/configure-gmail-push.py and docs/GMAIL_PUSH_SETUP.md: offline plan by default, explicit --apply, fixed project/environment/ref pairing, conditional creation and compatible update, topic-only publisher and account-only token creator, exact audience/wrapped-payload verification. Does not create private keys, set OAuth/Edge secrets, activate cron/user consent, deploy or promote production. Seven mocked tests and offline production plan passed. No authenticated gcloud apply performed. Production uses prod resource suffix within service-account ID limits.
+
+Remaining: isolated 30-migration rehearsal; production backend/config parity; Google branded consent/privacy/terms and provider/retention/transfer review before invitations. Actual time-based watch renewal/Testing expiry and load/rate-limit recovery are not yet accepted. No claim of RGPD certification or no mailbox access. Next implementation block: install/run the bounded isolated rehearsal before deciding production promotion. Script/docs publication status recorded separately when completed; infrastructure/documentation work does not change the released product version.
+
+## 2026-10-04 19:55 Europe/Madrid — Google project identity supplied
+
+Owner supplied project number573163160991 and project IDcuebooker. Values are owner-provided, not independently verified against authenticated GCP. Next guided action: create topic cuebooker-gmail-staging in this OAuth project, no default pull subscription; then topic-scoped Gmail publisher, dedicated authenticated OIDC push account/subscription and private Edge/Vault configuration. Background remains disabled and production unchanged.
+
+## Verification: preview published 2026-10-04
+
+Feature head1ccfca80aa52a491a749b7f1e67ffbe4ac30f339 published. CI2078/run37221849007 SUCCESS; Deploy Staging2552/run37221849045 SUCCESS: PR preview job111493606812 success, stable staging job111493607501 skipped. Review https://pr-96.cuebooker-staging.pages.dev/workspace/. 520 local tests and40-route generation pass; SQL rollback and three entrypoint Deno checks pass. Authenticated mobile/layout QA not yet proven: local screenshot harness could render the component but Playwright browser binary was absent; no browser download or fake product data added. Google project ID/PubSub/OIDC/history activation and actual new-mail automatic classification remain the next blocker; no user consent auto-enabled, no production release.
+
 Implementation object 83774ef4722d859b80654be13cebc53b60aebcd9 contains all30 candidate migrations. Rehearsal workflow pin now targets this exact object, pending bounded installation in main and real isolated rehearsal. Staging unauthenticated probes: connected-mailbox401; process-gmail-history401; incoming503 background-unavailable with operator gate off. These probes do not test authenticated processing or real mail. Source feature-branch publication/preview pending CI below.
 
 ## 2026-10-04 — Compact mail flow and new-mail retry installed in staging
