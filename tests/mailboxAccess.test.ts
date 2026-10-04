@@ -3,10 +3,23 @@ import assert from 'node:assert/strict'
 import {mailboxAnalysisKey} from '../supabase/functions/_shared/mailboxAnalysisCache.ts'
 let handler:(request:Request)=>Promise<Response>
 const workspace='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',user='bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',connection='cccccccc-cccc-cccc-cccc-cccccccccccc',booking='dddddddd-dddd-dddd-dddd-dddddddddddd'
-const env:Record<string,string>={SUPABASE_URL:'https://db.invalid',SUPABASE_ANON_KEY:'anon',SUPABASE_SERVICE_ROLE_KEY:'service',NYLAS_API_KEY:'private',NYLAS_CLIENT_ID:'client',CUEBOOKER_MAILBOX_ENABLED:'true',CUEBOOKER_MAILBOX_RETURN_URL:'https://pr-96.cuebooker-staging.pages.dev/workspace/'}
+const env:Record<string,string>={SUPABASE_URL:'https://lycprjeuuynfzwskycwv.supabase.co',SUPABASE_ANON_KEY:'anon',SUPABASE_SERVICE_ROLE_KEY:'service',NYLAS_API_KEY:'private',NYLAS_CLIENT_ID:'client',CUEBOOKER_MAILBOX_ENABLED:'true',CUEBOOKER_MAILBOX_RETURN_URL:'https://pr-96.cuebooker-staging.pages.dev/workspace/'}
 ;(globalThis as any).Deno={env:{get:(key:string)=>env[key]},serve:(fn:any)=>{handler=fn}}
 await import('../supabase/functions/connected-mailbox/index.ts')
 const originalFetch=globalThis.fetch
+test('production callback and preflight use production URL without provider or database calls',async()=>{
+ const saved={...env};let calls=0;env.SUPABASE_URL='https://qlocooqfdzehogbwcbhr.supabase.co';env.CUEBOOKER_MAILBOX_RETURN_URL='https://cuebooker.com/workspace/'
+ globalThis.fetch=(async()=>{calls++;throw new Error('Unexpected access')}) as typeof fetch
+ try{
+  const preflight=await handler(new Request('https://edge.invalid',{method:'OPTIONS',headers:{Origin:'https://cuebooker.com'}}));assert.equal(preflight.status,200);assert.equal(preflight.headers.get('Access-Control-Allow-Origin'),'https://cuebooker.com');assert.equal(preflight.headers.get('Vary'),'Origin')
+  const denied=await handler(new Request('https://edge.invalid',{method:'OPTIONS',headers:{Origin:'https://pr-96.cuebooker-staging.pages.dev'}}));assert.equal(denied.status,403)
+  const callback=await handler(new Request('https://edge.invalid?state='+ 'a'.repeat(64)+'&code=fictional'))
+  assert.equal(callback.status,303);assert.match(callback.headers.get('Location')||'',/^https:\/\/cuebooker.com\/workspace\/\?mailbox=authorize#mailbox_code=fictional&mailbox_state=/)
+  env.CUEBOOKER_MAILBOX_RETURN_URL='https://evil.invalid/workspace/'
+  const invalid=await handler(new Request('https://edge.invalid?state='+ 'a'.repeat(64)+'&code=fictional'));assert.equal(invalid.status,503);assert.equal(invalid.headers.get('Location'),null)
+  assert.equal(calls,0)
+ }finally{globalThis.fetch=originalFetch;Object.assign(env,saved)}
+})
 test('recent inbox displays completed owned detection without invoking AI or writing data',async()=>{
  globalThis.fetch=(async(url:any,init:any)=>{
   assert.notEqual(init?.method,'PATCH');assert.notEqual(init?.method,'POST');

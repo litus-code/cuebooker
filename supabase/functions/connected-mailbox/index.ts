@@ -5,17 +5,22 @@ import { validateReviewedMailboxDraft } from '../_shared/mailboxBookingDraft.ts'
 import { mailboxMessage } from '../_shared/mailboxMessage.ts';
 import { createNylasMailbox, mailboxAuthorizationUrl, normalizeMailboxEmail, knownMailboxProvider } from '../_shared/nylasMailbox.ts';
 import type { MailboxProvider, NylasConfig } from '../_shared/nylasMailbox.ts';
-const headers={'Access-Control-Allow-Origin':'https://pr-96.cuebooker-staging.pages.dev','Access-Control-Allow-Headers':'authorization, apikey, content-type','Access-Control-Allow-Methods':'POST, GET, OPTIONS','Cache-Control':'no-store','Referrer-Policy':'no-referrer'};
-const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...headers,'Content-Type':'application/json'}});
+import { mailboxReturnUrl, mailboxBrowserOrigin } from '../_shared/mailboxReturnUrl.ts';
 const uuid=(value:unknown)=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 async function hash(value:string){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value))),v=>v.toString(16).padStart(2,'0')).join('');}
 type Connection={id:string;email:string;provider:MailboxProvider;grant_id:string;status:string;connected_at:string;background_analysis_enabled?:boolean;background_analysis_processor?:string|null;background_analysis_since?:string|null};
 Deno.serve(async(request:Request)=>{
- if(request.method==='OPTIONS')return new Response('ok',{headers});
  const supabaseUrl=Deno.env.get('SUPABASE_URL')||'',serviceKey=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||'',anonKey=Deno.env.get('SUPABASE_ANON_KEY')||'';
- const config:NylasConfig={apiUri:Deno.env.get('NYLAS_API_URI')||'https://api.us.nylas.com',apiKey:Deno.env.get('NYLAS_API_KEY')||'',clientId:Deno.env.get('NYLAS_CLIENT_ID')||'',callbackUri:`${supabaseUrl}/functions/v1/connected-mailbox`};
  const returnUrl=Deno.env.get('CUEBOOKER_MAILBOX_RETURN_URL')||'';
- const configured=Deno.env.get('CUEBOOKER_MAILBOX_ENABLED')==='true'&&Boolean(config.apiKey&&config.clientId&&returnUrl);
+ const targetReturnUrl=mailboxReturnUrl(supabaseUrl,returnUrl);
+ const browserOrigin=mailboxBrowserOrigin(supabaseUrl,returnUrl);
+ const headers={'Access-Control-Allow-Headers':'authorization, apikey, content-type','Access-Control-Allow-Methods':'POST, GET, OPTIONS','Cache-Control':'no-store','Referrer-Policy':'no-referrer','Vary':'Origin',...(browserOrigin?{'Access-Control-Allow-Origin':browserOrigin}:{})};
+ const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...headers,'Content-Type':'application/json'}});
+ const origin=request.headers.get('Origin');
+ if(origin&&origin!==browserOrigin)return json({error:'origin_not_allowed'},403);
+ if(request.method==='OPTIONS')return new Response('ok',{headers});
+ const config:NylasConfig={apiUri:Deno.env.get('NYLAS_API_URI')||'https://api.us.nylas.com',apiKey:Deno.env.get('NYLAS_API_KEY')||'',clientId:Deno.env.get('NYLAS_CLIENT_ID')||'',callbackUri:`${supabaseUrl}/functions/v1/connected-mailbox`};
+ const configured=Deno.env.get('CUEBOOKER_MAILBOX_ENABLED')==='true'&&Boolean(config.apiKey&&config.clientId&&targetReturnUrl);
  let action='authentication';
  async function db<T>(path:string,init:RequestInit={}):Promise<T>{
   let response:Response;
@@ -29,8 +34,8 @@ Deno.serve(async(request:Request)=>{
   if(!rows[0]||!['owner','admin','manager','editor'].includes(rows[0].role))throw new Error('workspace_access_denied');
  }
  function back(status:string){
-  const target=new URL(returnUrl);
-  if(target.origin!=='https://pr-96.cuebooker-staging.pages.dev'||target.pathname!=='/workspace/'||target.search||target.hash)throw new Error('invalid_return_url');
+  if(!targetReturnUrl)throw new Error('invalid_return_url');
+  const target=new URL(targetReturnUrl.href);
   target.searchParams.set('mailbox',status);
   return new Response(null,{status:303,headers:{...headers,Location:target.href}});
  }

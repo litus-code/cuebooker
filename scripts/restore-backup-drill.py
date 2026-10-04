@@ -89,7 +89,7 @@ END $$;
 """
 
 
-def main():
+def main(after_restore=None):
     phrase = os.environ.get('CUEBOOKER_BACKUP_PASSPHRASE', '')
     if len(phrase) < 32 or any(c in phrase for c in '\r\n\0'):
         raise RuntimeError('Missing valid backup decryption passphrase.')
@@ -163,6 +163,8 @@ def main():
                     if allowed and psql(f"BEGIN; SET LOCAL ROLE {role}; SELECT set_config('request.jwt.claims','{{}}',true); SELECT count(*) FROM {table}; ROLLBACK;").splitlines()[-1] != '0':
                         raise RuntimeError('Unidentified caller can read private restored records.')
             print('Isolated logical restore passed: import, all COPY row counts, foreign keys, RLS and unidentified-caller denial. No private data logged.')
+            if after_restore is not None:
+                after_restore()
         finally:
             if started:
                 command(['supabase', 'stop', '--no-backup'], 'disposable database cleanup', cwd=work)
