@@ -17,7 +17,7 @@ TABLE = rf'{IDENT}\.{IDENT}'
 def copy_counts(sql):
     counts = {}
     current = None
-    for line in sql.splitlines():
+    for line in sql.split('\n'):
         if current is not None:
             if line == r'\.':
                 current = None
@@ -102,7 +102,7 @@ def main():
         work = Path(tmp)
         started = False
         try:
-            if command(['supabase', '--version'], 'CLI version').strip() != b'2.79.0':
+            if command(['supabase', '--version'], 'CLI version').strip() != b'2.119.0':
                 raise RuntimeError('Unexpected CLI version.')
             command(['supabase', 'init'], 'local initialization', cwd=work)
             config = work / 'supabase/config.toml'

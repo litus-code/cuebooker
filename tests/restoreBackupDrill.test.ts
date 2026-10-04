@@ -9,6 +9,7 @@ import importlib.util, subprocess
 spec=importlib.util.spec_from_file_location('drill','scripts/restore-backup-drill.py')
 m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
 assert m.copy_counts('COPY public.a (id) FROM stdin;\n1\n2\n\\.\nCOPY "auth"."b" (id) FROM stdin;\n\\.\n') == {'public.a':2,'"auth"."b"':0}
+assert m.copy_counts('COPY public.a (value) FROM stdin;\ntext\u2028inside\n\\.\n') == {'public.a':1}
 for bad in ['COPY public.a (id) FROM stdin;\n1', 'COPY public.a (id) FROM stdin;\n\\.\nCOPY public.a (id) FROM stdin;\n\\.','COPY public.a;evil (id) FROM stdin;','-- no data']:
  try: m.copy_counts(bad)
  except RuntimeError: pass
