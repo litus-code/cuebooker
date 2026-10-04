@@ -12,13 +12,13 @@ entries=json.loads(pathlib.Path('scripts/release-migration-manifest.json').read_
 with tempfile.TemporaryDirectory() as t:
  root=pathlib.Path(t)
  entries=[]
- for i in range(26):
-  name=f'supabase/migrations/{20261004000000+i}_fictional.sql'
+ for i in range(30):
+  name=f'supabase/migrations/{20301004000000+i}_fictional.sql'
   file=root/name;file.parent.mkdir(parents=True,exist_ok=True);file.write_text('select 1;')
   entries.append(dict(path=name,sha256=hashlib.sha256(file.read_bytes()).hexdigest()))
  p=pathlib.Path(t)/'manifest.json'
  p.write_text(json.dumps(entries))
- assert len(m.load_migrations(root,p))==26
+ assert len(m.load_migrations(root,p))==30
  for bad in [entries[::-1],entries[:-1],[dict(e,sha256='0'*64) for e in entries],[dict(e,path='../../secret') for e in entries]]:
   p.write_text(json.dumps(bad))
   try:m.load_migrations(root,p)
@@ -30,7 +30,7 @@ with tempfile.TemporaryDirectory() as t:
 
 test('rehearsal has only exact disconnected restore destination and no hosted credentials', () => {
   const workflow = readFileSync('.github/workflows/rehearse-release-migrations.yml', 'utf8')
-  assert.match(workflow, /ref: c949e0e9a2ec392478d067a52d0caec3844e8f8e/)
+  assert.match(workflow, /ref: 83774ef4722d859b80654be13cebc53b60aebcd9/)
   assert.match(workflow, /inputs.confirm == 'cuebooker-isolated-release'/)
   assert.match(workflow, /persist-credentials: false/)
   assert.doesNotMatch(workflow, /BACKUP_DB_URL|SERVICE_ROLE|upload-artifact|schedule:|push:|pull_request:/)
