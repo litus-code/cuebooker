@@ -1,5 +1,7 @@
 ## 2026-10-04 16:10 Europe/Madrid — Gmail direct beta Task 2 implemented; private Google setup pending
 
+Implementation commit b83a5291c807a5c9de9d9bdbdd87c95e93d8ca65: CI2074/run37208516356 passed; PR preview2548/run37208516339 passed, stable staging job skipped. These validate the code revision, not live Gmail authorization or production.
+
 Branch feature/agency-multi-artist-beta / PR96, remote base 0c4bccdf07827efb8137e05a123cafa1ca1160ed. This entry is included in the implementation commit; its resulting SHA is in Git history. Owner authorized continuing the MD, with eventual private beta in production. Do not treat this staging installation as a production release. Candidate remains Beta 0.0.2, same unreleased revision policy.
 
 Added direct Gmail REST adapter: offline OAuth/PKCE, AES-256-GCM tokens bound to actor/workspace/email, exact approved-email and granted-scope checks, seven-day Testing reauth, MIME text and RFC thread replies. Explicit transport preserves Nylas IDs/Booking links; Gmail and Nylas same-address connections stay separate. New connections default to Gmail and fail closed without Google configuration; legacy route requires explicit operator selection, no silent provider fallback. Existing Nylas operations remain usable. Existing consent, analysis budgets, cache and send-attempt ledger are preserved. Task3 deterministic pre-AI filter is not implemented in this block.
