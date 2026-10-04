@@ -1,4 +1,5 @@
 export type ConnectedMailbox = {id:string;email:string;provider:string;status:'connected'|'reconnect_required'|'unknown';connectedAt:string;background?:{enabled:boolean;processor:string|null;since:string|null}}
+export type MailboxBetaAccess={available:boolean;waitlisted:boolean;approvalRequired:boolean;status:'not_requested'|'pending'|'approved'|'rejected';requestedEmail:string|null}
 import type {MailboxBookingDraft,ReviewedMailboxDraft} from '../../supabase/functions/_shared/mailboxBookingDraft'
 export type MailboxExistingBooking={id:string;artist_id:string;status:string;event_date:string|null;start_time:string|null;end_time:string|null;venue_name:string|null;city:string|null;offer_amount_minor:number|null;currency:string|null;event_timezone:string|null;updated_at:string}
 export type MailboxMessage = {id:string;threadId:string;from:string;to:string;senderName:string;subject:string;body:string;date:string;bookingId?:string|null;existingBooking?:MailboxExistingBooking|null;classification?:{id:string;kind:'booking'|'review'|'other';reason:string;draft?:MailboxBookingDraft}}
@@ -9,10 +10,10 @@ export function createConnectedMailboxApi(options:{baseUrl:string;publishableKey
   const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.error||'mailbox_operation_failed');return result;
  }
  return {
-  status:(workspaceId:string,bookingId?:string)=>call({action:'status',workspaceId,bookingId}) as Promise<{configured:boolean;ai?:{provider:string;model:string;configured:boolean};background?:{available:boolean;processor:string};connections:ConnectedMailbox[];linkedConnectionIds:string[];hasLinkedThread:boolean;beta:{available:boolean;waitlisted:boolean}}>,
+  status:(workspaceId:string,bookingId?:string)=>call({action:'status',workspaceId,bookingId}) as Promise<{configured:boolean;ai?:{provider:string;model:string;configured:boolean};background?:{available:boolean;processor:string};connections:ConnectedMailbox[];linkedConnectionIds:string[];hasLinkedThread:boolean;beta:MailboxBetaAccess}>,
   pauseBackground:(workspaceId:string,connectionId:string)=>call({action:'background',workspaceId,connectionId,enabled:false}),
   authorizeBackground:(workspaceId:string,connectionId:string,processor:string)=>call({action:'background',workspaceId,connectionId,enabled:true,processor}),
-  waitlist:(workspaceId:string)=>call({action:'waitlist',workspaceId}) as Promise<{waitlisted:boolean}>,
+  waitlist:(workspaceId:string,email:string,locale:'es'|'en')=>call({action:'waitlist',workspaceId,email,locale}) as Promise<{waitlisted:boolean;status:MailboxBetaAccess['status'];requestedEmail:string;notification:string}>,
   connect:(workspaceId:string,email:string,provider:string='auto')=>call({action:'connect',workspaceId,email,provider}) as Promise<{authorizationUrl:string}>,
   complete:(workspaceId:string,state:string,code:string)=>call({action:'complete',workspaceId,state,code}),
   recent:(workspaceId:string,connectionId:string)=>call({action:'recent',workspaceId,connectionId}) as Promise<{messages:MailboxMessage[];hasMore:boolean}>,

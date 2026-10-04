@@ -6,6 +6,7 @@ import { mailboxMessage } from '../_shared/mailboxMessage.ts';
 import { createNylasMailbox, mailboxAuthorizationUrl, normalizeMailboxEmail, knownMailboxProvider } from '../_shared/nylasMailbox.ts';
 import type { MailboxProvider, NylasConfig } from '../_shared/nylasMailbox.ts';
 import { mailboxReturnUrl, mailboxBrowserOrigin } from '../_shared/mailboxReturnUrl.ts';
+import { dispatchMailboxBetaNotification } from '../_shared/mailboxBetaNotifications.ts';
 const uuid=(value:unknown)=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 async function hash(value:string){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value))),v=>v.toString(16).padStart(2,'0')).join('');}
 type Connection={id:string;email:string;provider:MailboxProvider;grant_id:string;status:string;connected_at:string;background_analysis_enabled?:boolean;background_analysis_processor?:string|null;background_analysis_since?:string|null};
@@ -26,7 +27,7 @@ Deno.serve(async(request:Request)=>{
   let response:Response;
   try{response=await fetch(`${supabaseUrl}/rest/v1/${path}`,{...init,headers:{apikey:serviceKey,Authorization:`Bearer ${serviceKey}`,'Content-Type':'application/json',Prefer:'return=representation',...(init.headers||{})},signal:AbortSignal.timeout(10000)});}
   catch(error){if((error as Error).name==='TimeoutError')throw new Error('mailbox_storage_timeout');throw error;}
-  if(!response.ok){if(path==='rpc/ingest_mailbox_thread'){const failure=await response.json().catch(()=>null);if(['booking_review_stale','archived_booking_read_only','invalid_booking_draft'].includes(failure?.message))throw new Error(failure.message);}throw new Error('mailbox_storage_failed');}
+  if(!response.ok){if(['rpc/ingest_mailbox_thread','rpc/request_mailbox_beta_access'].includes(path)){const failure=await response.json().catch(()=>null);if(['booking_review_stale','archived_booking_read_only','invalid_booking_draft','verified_email_required','beta_request_email_locked','invalid_beta_request'].includes(failure?.message))throw new Error(failure.message);}throw new Error('mailbox_storage_failed');}
   const text=await response.text();return (text?JSON.parse(text):null) as T;
  }
  async function member(workspace:string,user:string){
@@ -69,7 +70,14 @@ Deno.serve(async(request:Request)=>{
   async function beta(action:string,extra:Record<string,unknown>={}){
    return await db<any>('rpc/mailbox_beta_command',{method:'POST',body:JSON.stringify({target_action:action,target_workspace:workspace,target_actor:userId,...extra})});
   }
-  if(input.action==='waitlist')return json(await beta('waitlist'));
+  if(input.action==='waitlist'){
+   const email=normalizeMailboxEmail(input.email||user.email),locale=input.locale==='en'?'en':'es';
+   const result=await db<any>('rpc/request_mailbox_beta_access',{method:'POST',body:JSON.stringify({target_workspace:workspace,target_actor:userId,target_email:email,target_locale:locale})});
+   // Request survives a delivery outage. Only saved recipients are dispatched.
+   let notification:any={notification:'queued'};
+   try{notification=await dispatchMailboxBetaNotification(result.notificationId,n=>Deno.env.get(n),db,targetReturnUrl?.href);}catch{}
+   return json({waitlisted:result.waitlisted,status:result.status,requestedEmail:result.requestedEmail,...notification});
+  }
   // Operator gate stays off until webhook/scheduler and model evaluation are verified.
   const backgroundAvailable=configured&&Deno.env.get('CUEBOOKER_MAILBOX_BACKGROUND_ENABLED')==='true'&&Boolean(Deno.env.get('NYLAS_WEBHOOK_SECRET')&&Deno.env.get('MAILBOX_WORKER_SECRET')&&Deno.env.get('GROQ_API_KEY')),backgroundProcessor='groq-gpt-oss-20b-v1';
   if(input.action==='background'){
@@ -280,6 +288,7 @@ Deno.serve(async(request:Request)=>{
   const allowed=['mailbox_provider_selection_required','mailbox_beta_full','workspace_access_denied','invalid_email','invalid_provider','invalid_provider_configuration','invalid_callback','invalid_return_url','mailbox_reconnect_required','mailbox_not_found','mailbox_provider_unavailable','mailbox_not_configured','invalid_oauth_state','account_mismatch','connection_not_found','invalid_message','artist_required','archived_booking_read_only','mailbox_analysis_consent_required','mailbox_ai_not_configured','mailbox_ai_unavailable','invalid_classification','mailbox_analysis_rate_limit'];
   allowed.push('mailbox_request_timeout','mailbox_storage_timeout','mailbox_provider_timeout','mailbox_ai_quota_exhausted','mailbox_ai_rate_limit','invalid_booking_draft','booking_time_requires_date','booking_currency_required','booking_review_stale','invalid_booking','booking_not_found','thread_mailbox_required');
   allowed.push('mailbox_ai_budget_exhausted','mailbox_analysis_already_attempted');
+  allowed.push('verified_email_required','beta_request_email_locked','invalid_beta_request','mailbox_beta_approval_required','mailbox_beta_email_not_approved');
   console.warn('connected_mailbox_error',allowed.includes(name)?name:'mailbox_operation_failed',action);
   return json({error:allowed.includes(name)?name:'mailbox_operation_failed'},name==='workspace_access_denied'?403:name==='mailbox_analysis_rate_limit'?429:400);
  }

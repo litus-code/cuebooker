@@ -102,5 +102,13 @@
   {
     "path": "supabase/migrations/20261003200000_agency_managed_catalog_artists.sql",
     "sha256": "e663a0aa68df59c815d7a8569c3782ca88a1207e6672b7189f601878160f2697"
+  },
+  {
+    "path": "supabase/migrations/20261004111828_mailbox_beta_access_approval.sql",
+    "sha256": "6f64d812caa0bc54599e7ca7fcf4d85102ec520426fde9be8d4a135f38669545"
+  },
+  {
+    "path": "supabase/migrations/20261004112859_mailbox_beta_verified_account_read.sql",
+    "sha256": "2a33ae8d82c1d91decb7972b36fe23c2a1efde6f1974bad86fd6e5f59b7fa89f"
   }
 ]

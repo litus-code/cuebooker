@@ -289,14 +289,14 @@ test('undetected custom domain releases its reservation and asks for a service',
  try{const response=await handler(req('connect',{email:'test@custom.invalid'}));assert.equal((await response.json()).error,'mailbox_provider_selection_required');assert.equal(released,true)}finally{globalThis.fetch=originalFetch}
 })
 
-test('waitlist uses authenticated membership without provider access',async()=>{
+test('beta request uses authenticated membership and persists intended address without provider access',async()=>{
  globalThis.fetch=(async(url:any,init:any)=>{
   if(url.endsWith('/auth/v1/user'))return Response.json({id:user})
   if(url.includes('workspace_members'))return Response.json([{role:'owner'}])
-  if(url.includes('rpc/mailbox_beta_command')){assert.equal(JSON.parse(init.body).target_action,'waitlist');return Response.json({waitlisted:true})}
+  if(url.includes('rpc/request_mailbox_beta_access')){assert.deepEqual(JSON.parse(init.body),{target_workspace:workspace,target_actor:user,target_email:'pilot@example.invalid',target_locale:'en'});return Response.json({waitlisted:true,status:'pending',requestedEmail:'pilot@example.invalid'})}
   throw new Error('Unexpected access')
  }) as typeof fetch
- try{const response=await handler(req('waitlist'));assert.equal(response.status,200);assert.equal((await response.json()).waitlisted,true)}finally{globalThis.fetch=originalFetch}
+ try{const response=await handler(req('waitlist',{email:'pilot@example.invalid',locale:'en'}));assert.equal(response.status,200);const result=await response.json();assert.equal(result.waitlisted,true);assert.equal(result.status,'pending');assert.equal(result.notificationId,undefined)}finally{globalThis.fetch=originalFetch}
 })
 
 test('replayed completion is rejected before exchanging a provider code',async()=>{
@@ -308,3 +308,27 @@ test('replayed completion is rejected before exchanging a provider code',async()
  }) as typeof fetch
  try{const response=await handler(req('complete',{state:'a'.repeat(64),code:'used'}));assert.equal(response.status,400);assert.equal((await response.json()).error,'invalid_oauth_state')}finally{globalThis.fetch=originalFetch}
 })
+
+test('unapproved beta and another address reject authorization before provider detection',async()=>{
+ for(const error of ['mailbox_beta_approval_required','mailbox_beta_email_not_approved']){
+  let providerCalls=0;
+  globalThis.fetch=(async(url:any,init:any)=>{
+   if(url.endsWith('/auth/v1/user'))return Response.json({id:user});
+   if(url.includes('workspace_members'))return Response.json([{role:'owner'}]);
+   if(url.includes('mailbox_connections'))return Response.json([]);
+   if(url.includes('rpc/mailbox_beta_command')){assert.equal(JSON.parse(init.body).target_action,'reserve');return Response.json({error});}
+   providerCalls++;throw new Error('Unexpected provider request');
+  }) as typeof fetch;
+  try{const response=await handler(req('connect',{email:'booking@example.invalid',provider:'auto'}));assert.equal(response.status,409);assert.equal((await response.json()).error,error);assert.equal(providerCalls,0)}finally{globalThis.fetch=originalFetch}
+ }
+});
+test('approval lost during callback blocks code exchange',async()=>{
+ let providerCalls=0;
+ globalThis.fetch=(async(url:any,init:any)=>{
+  if(url.endsWith('/auth/v1/user'))return Response.json({id:user});
+  if(url.includes('workspace_members'))return Response.json([{role:'owner'}]);
+  if(url.includes('rpc/mailbox_beta_command')){assert.equal(JSON.parse(init.body).target_action,'claim');return Response.json({error:'mailbox_beta_approval_required'});}
+  providerCalls++;throw new Error('Unexpected provider request');
+ }) as typeof fetch;
+ try{const response=await handler(req('complete',{state:'a'.repeat(64),code:'fictional-code'}));assert.equal(response.status,400);assert.equal((await response.json()).error,'mailbox_beta_approval_required');assert.equal(providerCalls,0)}finally{globalThis.fetch=originalFetch}
+});

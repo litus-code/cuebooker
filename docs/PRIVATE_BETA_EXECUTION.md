@@ -1,4 +1,6 @@
 # Beta privada con correo real
+Actualización aceptada el 4 de octubre: desarrollar Gmail directo en modo Testing para una cohorte de prueba admitida manualmente. Tarea 1 implementa solicitud/aprobación; Tarea 2 implementará OAuth, hilos, caducidad y eventos; Tarea 3 revisará el filtro anterior a la IA. Esta dirección sustituye la prioridad anterior de evaluar Unipile. Testing tiene un límite de usuarios y autorización de siete días; no es una exención permanente para operar un producto comercial. Ver `MAILBOX_BETA_ACCESS.md` para despliegue, operación y pendientes. La integración Gmail aún no está implementada y no se ha contratado ningún proveedor.
+
 Fecha: 4 de octubre de 2026. Decisión del propietario: preparar una beta privada que permita probar el valor completo de Cuebooker.
 
 ## Alcance aceptado
