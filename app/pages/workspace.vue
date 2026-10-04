@@ -1101,6 +1101,12 @@ async function closeSettings() {
   if (trigger?.isConnected) trigger.focus({ preventScroll: true })
 }
 
+async function openAgencySetupSettings(section: 'agency' | 'mailbox') {
+  await openSettings()
+  await nextTick()
+  document.querySelector<HTMLElement>(section === 'mailbox' ? '.settings-panel .mailbox-panel' : '.settings-panel .agency-catalog-editor')?.scrollIntoView({ block: 'start', behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+}
+
 function scheduleTourPosition(delay = 280) {
   if (!import.meta.client) return
   if (tourPositionTimer) window.clearTimeout(tourPositionTimer)
@@ -2396,6 +2402,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
       :artists="artists" :selected-artist-id="selectedArtistId" :context-artist-name="selectedArtist?.stage_name" :view="activeView as 'overview' | 'bookings' | 'calendar' | 'history' | 'roster'"
       :locale="preferences.locale.value" :can-manage-roster="Boolean(manageableAgency)" :revision="rosterRevision"
       :create-artist="addRosterArtist" :can-capture="canOperateAgency"
+      :setup-revision="bookingCoreOperationsRevision + (settingsOpen ? 1 : 0)" @setup-settings="openAgencySetupSettings"
       @capture="openCueCapture" @filter-artist="chooseArtist($event)"
       @select-artist="(id, view) => chooseArtist(id, view)" @open-booking="openAgencyBooking"
       @retire-artist="id => setArtistRosterActive(id, false)"

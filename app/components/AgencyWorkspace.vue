@@ -25,6 +25,7 @@ const props = withDefaults(defineProps<{
   canCapture?: boolean
   createArtist: (name: string, slug: string, city: string) => Promise<boolean>
   revision?: number
+  setupRevision?: number
   demoData?: AgencyDemoData
   initialMonth?: string
   selectedArtistId?: string
@@ -39,6 +40,7 @@ const emit = defineEmits<{
   contextChanged: [state: { filterArtist: string; calendarArtists: string[]; month: string; selectedDay: string }]
   filterArtist: [artistId: string]
   capture: []
+  setupSettings: [section: 'agency' | 'mailbox']
   navigate: [view: 'roster' | 'bookings' | 'calendar']
 }>()
 const route = useRoute()
@@ -279,6 +281,7 @@ function retirePendingArtist() {
 <template>
   <section class="agency" :class="{ 'agency--roster': view === 'roster', 'agency--overview': view === 'overview' }" :aria-busy="loading">
     <div class="agency-heading"><div><h1>{{ title }}</h1></div><div class="agency-heading-actions"><div v-if="view === 'roster'" class="agency-roster-heading-tools"><button v-if="canManageRoster" type="button" @click="showAdd = true">{{ isEs ? '+ Artista' : '+ Artist' }}</button></div><template v-else><button v-if="canCapture !== false && activeArtists.length && ['overview','bookings'].includes(view)" type="button" class="agency-primary" @click="emit('capture')">+ CUE</button><button v-if="canManageRoster && view === 'overview'" type="button" @click="showAdd = true">{{ isEs ? '+ Artista' : '+ Artist' }}</button><button v-if="view === 'overview'" type="button" @click="emit('navigate', 'roster')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>Roster</button></template></div></div>
+    <AgencySetupPanel v-if="view === 'overview' && canManageRoster && !demoData" :workspace-id="workspaceId" :artists="artists" :locale="locale" :revision="(revision || 0) + (setupRevision || 0) + attentionRevision" :can-capture="canCapture" @settings="emit('setupSettings', $event)" @add-artist="showAdd = true" @edit-artist="emit('selectArtist', $event, 'profile')" @capture="emit('capture')" />
     <p v-if="error" role="alert" class="agency-error">{{ error }} <button type="button" @click="load">{{ isEs ? 'Reintentar' : 'Retry' }}</button></p>
     <div v-if="!activeArtists.length" class="agency-empty"><span>00 / ROSTER</span><h2>{{ isEs ? 'Tu roster todavía está vacío.' : 'Your roster is still empty.' }}</h2><p>{{ isEs ? 'Añade tu primer artista para empezar a gestionar fechas y bookings.' : 'Add your first artist to manage dates and bookings.' }}</p><button v-if="canManageRoster" type="button" @click="showAdd = true">{{ isEs ? 'Añadir primer artista' : 'Add first artist' }}</button></div>
     <template v-else>

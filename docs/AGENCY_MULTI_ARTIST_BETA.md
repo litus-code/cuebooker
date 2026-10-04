@@ -2,6 +2,12 @@
 
 Status: PR preview implementation, 28 September 2026. Production untouched.
 
+## 4 October 2026: agency preparation
+
+Owner/admin Agency Overview shows a three-step preparation module until the first persisted Booking exists in the workspace. Completion derives from saved agency bio/contact email, the first active artist's name/bio/city/genres, and an optional incoming channel. The public channel means a published agency catalogue with at least one selected eligible artist, following the agency-only sharing/intake contract. A connected personal mailbox is the alternative. Agencies can stay private and register enquiries manually as soon as they have an active artist; publication and mailbox connection never block CUE capture.
+
+Any saved workspace Booking hides the module, including archived/unassigned/retired-artist bookings. Progress is recomputed after existing edits and refreshes without a separate onboarding table or browser completion flag. An API failure shows retry, not a false completion/new-workspace state. The standalone staging-only `/preview-agency-setup/` is explicitly simulated and has no persistent writes.
+
 ## Anonymous visual review
 
 PR #96 exposes `/preview-agency` on its Cloudflare preview branch. It uses the real `AgencyWorkspace` global component with an in-memory demo roster, bookings, holds, contacts and activity. Opening a booking now enters the same `BookingCoreInbox` layout used by DJ, with the selected artist, conversation, next action, hold and decision controls. These preview actions change local fixture data only; no Supabase reads or writes run from this route. Reviewers can switch global/artist context, navigate the roster, filter bookings and calendar, and simulate adding or retiring an artist. Demo navigation and filters reset on reload. The individual Profile, Passport and CUE ID tabs show navigation context with a visible read-only notice; they do not pretend to be the live editor. The page is gated to the staging build and the PR preview hostname, and has `noindex,nofollow`. Authenticated `/workspace`, RLS and production are unchanged.
