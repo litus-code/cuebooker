@@ -1,3 +1,11 @@
+## 2026-10-04 / Manual encrypted production backup infrastructure
+
+Owner approved a no-subscription manual GitHub Actions database backup while on a phone and securely entered CUEBOOKER_BACKUP_DB_URL and CUEBOOKER_BACKUP_PASSPHRASE into the production environment. Browser verified only their names. Existing required reviewer litus-code, main-only deployment rule and no admin bypass remain unchanged. No credential values were accessed.
+
+Infrastructure-only PR102, branch chore/manual-production-backup, initial implementation b8426998608d36b1e8aef31bbcdc3f6ff2093188, based on main 2f434db69761f09b932bf93b4de126a2677cfc9b. Adds main/manual-only backup workflow, exact production/SSL checks, roles/schema/data logical dumps, independent GPG AES256 encryption with round-trip verification, encrypted-only seven-day artifact and private-temp cleanup. Four focused tests passed locally; CI must pass before merging. To register the workflow without redeploying unchanged application code, use an infrastructure-only squash title containing [skip ci] after normal PR validation. Do not merge PR96 application changes to enable this backup. Product release/version remains separate.
+
+Production server version 17.6 verified read-only. No export, restore, migration, provider activation, production web or stable staging deployment has run. Backup needs actual protected dispatch, successful export, private durable artifact retention and an isolated restore exercise before being called recoverable. See docs/PRODUCTION_BACKUP.md for required recovery scope and Storage/provider/Vault exclusions. PR96 application remains in feature/agency-multi-artist-beta; latest prep commit 36947c890210a1f21ecfe51f8c60c4a9468c69fb, candidate Beta 0.0.2. Next: complete infrastructure CI/registration, owner-approved export and recovery checks, then remaining backend release gates.
+
 Warning: truncated output (original token count: 80606)
 Total output lines: 10325
 

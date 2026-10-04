@@ -1,0 +1,53 @@
+name: Backup Production Database
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_project:
+        description: Type cuebooker-production to confirm the read-only database export
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup-production-database
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    if: ${{ github.ref == 'refs/heads/main' && inputs.confirm_project == 'cuebooker-production' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - name: Checkout reviewed backup implementation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Install pinned Supabase CLI
+        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3
+        with:
+          version: 2.79.0
+
+      - name: Inspect installed dump command
+        run: supabase db dump --help
+
+      - name: Export, encrypt and verify database archive
+        env:
+          CUEBOOKER_BACKUP_DB_URL: ${{ secrets.CUEBOOKER_BACKUP_DB_URL }}
+          CUEBOOKER_BACKUP_PASSPHRASE: ${{ secrets.CUEBOOKER_BACKUP_PASSPHRASE }}
+        run: node scripts/backup-production.mjs
+
+      - name: Upload encrypted archive only
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cuebooker-production-db-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            backup-output/database.tar.gz.gpg
+            backup-output/database.tar.gz.gpg.sha256
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
