@@ -1,3 +1,9 @@
+## 2026-10-04 / Saved onboarding completion checks
+
+PR96, branch `feature/agency-multi-artist-beta`, base `2dd249fcb2cccfcda5240e37d294e32f9b1d743f`. Owner requested a visible check on completed onboarding steps. Shared SetupStepMarker replaces the step number with an accent SVG circle/check for saved completed steps in both DJ and Agency panels. Pending/optional steps retain their number and translated status text; the icon is decorative/aria-hidden. Existing buttons stay usable for review. DJ profile and incoming-channel checks use the existing readiness values; link sharing deliberately has no completion check because copying/visiting cannot prove external sharing. No completion flags, backend, schema, permissions or onboarding exit changes. This remains the same Beta 0.0.2 release candidate, not a new stable staging/production delivery.
+
+Validation: render tests cover SVG vs pending number and accessible decoration; panel source tests verify saved-state bindings and no emoji markers. 440 tests and static staging generation of 41 routes pass; diff checks clean. Authenticated browser/mobile visual review remains pending. Production untouched; next step remains release preflight and backend alignment before stable promotion.
+
 ## 2026-10-04 / Individual DJ onboarding with connected email and release label
 
 Owner follow-up: the release version must be incremented before each new staging/production delivery without reminders. Canonical policy is now in AGENTS.md and AGENT_WORKFLOW.md: default patch bump, same reviewed version on both environments, no bump on retry, record deployed SHA/version/environment. Current candidate label remains Beta 0.0.2; individual setup implementation commit is `e70b811250ebe93c1f193370f6dfee80702b4727`.

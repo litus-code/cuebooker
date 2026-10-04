@@ -89,7 +89,7 @@ function act(step: string) {
     <template v-else-if="progress">
       <ol>
         <li v-for="(step, index) in steps" :key="step.id" :class="{ 'is-complete': step.done }">
-          <span class="agency-setup__number" aria-hidden="true">{{ String(index + 1).padStart(2, '0') }}</span>
+          <SetupStepMarker :complete="Boolean(step.done)" :index="String(index + 1).padStart(2, '0')" />
           <div><span class="agency-setup__status">{{ step.done ? (es ? 'Completado' : 'Complete') : step.id === 'receiving' ? (es ? 'Opcional' : 'Optional') : (es ? 'Pendiente' : 'Pending') }}</span><h3>{{ step.title }}</h3><p>{{ step.body }}</p>
             <div class="agency-setup__actions"><button type="button" @click="act(step.id)">{{ step.action }}</button><button v-if="step.id === 'receiving'" type="button" @click="emit('settings', 'mailbox')">{{ es ? 'Conectar correo' : 'Connect email' }}</button></div>
           </div>
