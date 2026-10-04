@@ -1,3 +1,14 @@
+## 2026-10-04 10:55 Europe/Madrid — Brevo sender and delivery configuration saved; reply callbacks still pending
+
+- Based on feature HEAD f2b6e0fbc4bdbf17d92f33ba7bc26bc949dbfb6d; Beta0.0.2 remains the unreleased candidate.
+- Owner created/saved BREVO_API_KEY directly in production Supabase; verified its stored name/update timestamp without reading the value. Agent saved only public configuration: CUEBOOKER_FROM_EMAIL=bookings@cuebooker.com, CUEBOOKER_FROM_NAME=Cuebooker, CUEBOOKER_REPLY_DOMAIN=reply.cuebooker.com, CUEBOOKER_APP_ORIGIN=https://cuebooker.com. All four saved names confirmed in UI.
+- Brevo account Cuebooker: added sender Cuebooker <bookings@cuebooker.com>; visibly verified, DKIM cuebooker.com and DMARC configured. Existing sender left intact. Both cuebooker.com and reply.cuebooker.com authenticated. Live public DNS reply.cuebooker.com MX resolves to inbound1.sendinblue.com priority10 and inbound2.sendinblue.com priority20.
+- Legacy inbound parsing is separate from the new UI's inbound-webhook product; official Brevo docs manage parsing via /v3/webhooks type=inbound, event=inboundEmailProcessed. New outgoing webhook UI showed no entries; this does NOT prove no legacy API callbacks exist. Inspected a new-webhook draft only, then discarded it: no callback registered/changed, no event-data transmission or activation.
+- Production callback secrets still pending, starting with CUEBOOKER_INBOUND_WEBHOOK_SECRET and BREVO_TRANSACTIONAL_WEBHOOK_SECRET. Owner must enter them privately; do not extract staging/header values. Verify legacy callback2191448/domain routing before changing it; maintain separate environments.
+- Morning browser session resumed Brevo successfully but Supabase browser session now requires sign-in. Credentials/OTP must use browserAuth, never chat.
+- Earlier browser operation stopped at usage-limit approval review, so no sender screenshot/callback action occurred then. New inspection reconfirmed sender. No hosted migrations, production Edge functions, stable staging/frontend production deployment or paid provider activation.
+- Next: secure Supabase sign-in + direct owner callback credential entry; exact authenticated provider registration and appropriate Nylas/Groq production configuration. Keep background scheduler/flags off until live acceptance; backup durable retention still unconfirmed.
+
 ## 2026-10-04 04:53 Europe/Madrid — Candidate CI/preview and staging mailbox v30 verified
 
 - Code revision d67fa0d37d6bb8ca06fc5f51d201b1091649ce1e: CI37172146329 SUCCESS (tests + generation); PR preview37172146335 SUCCESS. Stable staging job SKIPPED, production remains untouched. PR96 mergeable true after documentation-only conflict resolution, still draft.

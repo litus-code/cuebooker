@@ -1,8 +1,8 @@
 # Production email setup, release gate
 
-4 October 2026. Production backend qlocooqfdzehogbwcbhr currently has no custom Edge secrets. Do not copy sandbox provider grants, mailbox contents or staging worker credentials into production. Supabase Auth SMTP settings are separate from Edge delivery.
+4 October 2026. Production backend qlocooqfdzehogbwcbhr now has owner-entered BREVO_API_KEY and the four reviewed sender/domain/origin settings (saved 4 October 2026, verified by name and timestamp only). Do not copy sandbox provider grants, mailbox contents or staging worker credentials into production. Supabase Auth SMTP settings are separate from Edge delivery.
 
-Owner enters provider credentials directly in Supabase production Edge Functions > Secrets, never chat/source/logs. The first concrete step is BREVO_API_KEY, an existing authorized Brevo API credential for Cuebooker transactional delivery. Agent does not invent, extract, rotate or paste credentials.
+Owner enters provider credentials directly in Supabase production Edge Functions > Secrets, never chat/source/logs. Owner created a credential named Cuebooker producción in Brevo and saved BREVO_API_KEY directly; the agent verified saved metadata only. Next private-entry step is production webhook authentication, starting with CUEBOOKER_INBOUND_WEBHOOK_SECRET. Agent does not invent, extract, rotate or paste credentials.
 
 | Capability | Server configuration | Review before enabling |
 | --- | --- | --- |
