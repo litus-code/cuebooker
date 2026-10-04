@@ -1,3 +1,9 @@
+## 2026-10-04 — Mailbox provider decision study; no purchase or migration
+
+- User requested thorough comparative research before selecting a production plan. Saved Spanish study in docs/MAILBOX_PROVIDER_STUDY_2026-10-04.md: primary sources, costs at 5/10/25/50/100/500 accounts, Gmail authorization, alternatives, privacy, migration coupling, acceptance checks and conditional recommendation.
+- Correct earlier advice: Nylas Essentials base 15 USD does not establish production Gmail eligibility. Shared Google App guide specifies annual Pro + Accelerator; pricing/guide differ on inclusion, actual total remains unconfirmed. Aurinko email FAQ lists 1.50 USD non-IMAP and 2 USD including IMAP; the generic 1 USD headline is not our confirmed email price. Aurinko explicitly provides no shared verified Google app.
+- Retain Nylas pilot; do not purchase annual or migrate on headline savings. Nango shared app exact production scopes need confirmation; Unipile monthly is a fallback candidate if Nylas requires unsuitable commitment. Direct integrations/self-hosted EmailEngine are not recommended first for current stage. No alternative accounts created, private data sent, service subscribed, backend modified or release performed. Recommendation is not owner approval to disable/promote features; production release checks remain pending.
+
 ## 2026-10-04 11:32 Europe/Madrid — Nylas dashboard access verified; production environment unavailable on Free
 
 - Owner completed secure Google sign-in with mobile device approval. Fresh Nylas target page visibly confirms authenticated Litulandio organization; no credentials or private inbox messages read.
