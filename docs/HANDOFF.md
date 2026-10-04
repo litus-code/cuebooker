@@ -1,3 +1,11 @@
+## 2026-10-04 12:24 Europe/Madrid — Owner approves private beta with real connected email
+- Owner approved proceeding toward a functional private beta after rejecting a trial without connected email. Keep both profiles and all approved product work; no agency-only pivot approved.
+- Read current remote handoff and existing pilot evidence. Integration already has live staging partial acceptance; recent full inbound/detection/review/send/delivery/background-reply/calendar/DJ/mobile acceptance remains required. Do not restart implementation or overclaim completion.
+- Inspected signed-in Nylas Plans read-only: annual Pro 516 USD/12-month term; Accelerator explicitly optional paid add-on 2400 USD/year, including shared Google OAuth. Base route totals2916 USD/year excluding taxes/extras. Resolves earlier unconfirmed add-on price; no purchase/application creation or payment details entered.
+- Updated study with observed account pricing and added docs/PRIVATE_BETA_EXECUTION.md. Nylas Sandbox retained for authorized technical testing, not an inferred external-beta production entitlement. First alternative to validate is Unipile monthly published49EUR/up10, account/scope/production route unconfirmed. Commercial scope statements conflict with official Google docs; do not inherit their exemption claims.
+- No mailbox access, AI calls, emails, provider migration, new account/consent, hosted backend changes or deployment in this block. Next: verify existing controlled roundtrip and resolve eligible monthly provider route before external invitations. Explicit new processor/contract/spend authorization is still needed at the concrete action.
+- Beta0.0.2 remains unreleased; no version bump for this decision/documentation checkpoint.
+
 ## 2026-10-04 — Mailbox provider decision study; no purchase or migration
 
 - User requested thorough comparative research before selecting a production plan. Saved Spanish study in docs/MAILBOX_PROVIDER_STUDY_2026-10-04.md: primary sources, costs at 5/10/25/50/100/500 accounts, Gmail authorization, alternatives, privacy, migration coupling, acceptance checks and conditional recommendation.

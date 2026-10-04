@@ -1,3 +1,5 @@
+> Actualización 4 octubre 2026, cuenta Nylas inspeccionada: Pro anual figura a 516 USD/año; Accelerator figura como complemento opcional de 2400 USD/año e incluye Google Shared OAuth App. Total base de esa ruta: 2916 USD/año, antes de impuestos/extras. Esto resuelve la incertidumbre de inclusión/precio descrita en el estudio original. No se ha contratado. El propietario aprueba avanzar hacia una beta privada con correo real, conservando ambos perfiles. Ver PRIVATE_BETA_EXECUTION.md. La primera alternativa mensual a comprobar es Unipile; su alcance real en nuestra cuenta sigue sin validarse.
+
 # Estudio de conexión de correo para Cuebooker
 
 Fecha: 4 de octubre de 2026, Europe/Madrid. Investigación documental y revisión del código existente; no prueba comparativa de rendimiento ni contratación. Precios publicados, sujetos a impuestos, condiciones de cuenta y confirmación comercial. Recomendaciones del agente, pendientes de decisión del propietario.
