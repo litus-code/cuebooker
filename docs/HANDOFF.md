@@ -1,3 +1,12 @@
+## 2026-10-04 04:53 Europe/Madrid — Candidate CI/preview and staging mailbox v30 verified
+
+- Code revision d67fa0d37d6bb8ca06fc5f51d201b1091649ce1e: CI37172146329 SUCCESS (tests + generation); PR preview37172146335 SUCCESS. Stable staging job SKIPPED, production remains untouched. PR96 mergeable true after documentation-only conflict resolution, still draft.
+- Staging connected-mailbox v30 ACTIVE, verify_jwt false unchanged with custom verified Auth/membership/owner checks. Exact local dependency bundle deployed, new environment-bound return helper included.
+- Live HTTP smoke: allowed PR96 preflight200 with exact CORS, production-origin preflight403, unauthenticated POST401. No identity/private mailbox/provider calls in smoke. Configured preview return remains unchanged.
+- Current concrete blocker is production provider/server credential configuration: Supabase production Edge Secrets visibly shows no custom secrets. Owner must enter credentials directly, never in chat; no agent extraction/copy is authorized. Existing Supabase Auth SMTP is separate. Setup checklist in docs/PRODUCTION_EMAIL_SETUP.md.
+- No hosted migration/production Edge/web deployment, provider activation, paid subscription or new mailbox consent. Backup private durable retention remains unconfirmed.
+- Next: owner enters/verifies production Brevo and appropriate Nylas/Groq configuration; confirm callbacks/webhook routing and provider production eligibility. Then controlled backend rollout with job paused, actual staged/live acceptance and same Beta0.0.2 SHA stable staging/prod promotion.
+
 ## 2026-10-04 — Main infrastructure reconciled into release branch
 
 Merged main ee623d796680888ada26c2a871d44715fd9be0e5 into feature after isolated review. Only conflicts were HANDOFF and ISOLATED_RESTORE_DRILL docs; retained newer feature histories. Sole incoming extra file BACKUP_RUN_STATUS is marked historical. No application overwrite or hosted deployment. Full local451 tests passed before this documentation-only merge. CI/preview must run against resulting merge SHA. Production secrets remain missing, owner configuration required.
