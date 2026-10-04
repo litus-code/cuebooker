@@ -1,3 +1,29 @@
+## 2026-10-04 23:31 Europe/Madrid — Beta0.0.4 archive/admission preview candidate
+
+Owner authorized publishing UI adjustments to PR96 preview only and reviewing solo/agency. Changes are bounded to archive dialog/button, admission/capacity copy, tests, release label and current execution/handoff docs. No merge, stable staging, production, schema, secrets or admission capacity change. Await candidate CI/preview and visual checks. Previous acceptance and isolated30-migration run remain separate evidence.
+
+## 2026-10-04 23:26 Europe/Madrid — Archive UI prepared; admission and profile audit
+
+Local branch feature/agency-multi-artist-beta HEAD35a11942586cc6542221d6f0306c617ad77bc589, remote feature52033f3b117da3654f59f83717bfbad0769b6897. Preserve unrelated dirty changes. BookingCoreInbox archive/restore now opens branded native dialog with focus containment, Escape/backdrop cancellation, safe default Cancel, explicit command, booking/workspace binding, busy guard and inline failure/retry. Visible44px archive button has border/background/SVG/focus state. Same component serves solo and agency booking detail. ConnectedMailboxPanel pending copy now correctly identifies verified Cuebooker account as approval recipient and adds approved/full-capacity notices. Local only, not published/deployed, no version promotion.
+
+Archive/UI tests pass; full suite522/522 passed before the additional admission-copy test, that test also passed separately. npm run generate passes; diff check passes. No live mobile/desktop visual validation yet. Staging read-only capacity query returned5; no capacity/config/schema/user mutations. Server inspected: global connected plus reserved mailbox cap; Google100 test users is a different limit. Solo automatic capture binds its one active artist; agency captures unassigned for human assignment. Shared Gmail components do not prove both real profile acceptance journeys. PRIVATE_BETA_EXECUTION.md now records current evidence and outstanding Google/privacy/production/time-based/profile checks. Operator review remains privileged mailbox-beta-admin after Google test-user addition; no product admin panel or periodic notification drain. Next: reviewed publication of this UI patch,390px/desktop checks and remaining release gates. Production untouched.
+
+## 2026-10-04 23:19 Europe/Madrid — Isolated 30-migration rehearsal passed
+
+Owner completed the protected environment approval. Run37235093978 / job111532505083 completed SUCCESS at21:18Z on main bbdf29122f704039b353fa4eed788bfdfef5aaa7. Logs explicitly confirm logical restore/import, all COPY row counts, foreign keys, RLS and unidentified-caller denial; then all30 exact candidate migrations, preserved protected counts, service-table denial and both paused schedulers. No hosted database changed. Runner cleanup is in finally and its command fails the job on failure; job completed successfully. PR96 remains unmerged. No application/Edge/hosted migration production deployment authorized or executed. Next: review backend promotion and outstanding privacy/Google production prerequisites separately; this rehearsal alone does not establish launch readiness.
+
+## 2026-10-04 23:11 Europe/Madrid — PR108 merged; rehearsal waiting for environment review
+
+Owner explicitly authorized merging PR108 and browser fallback for manual dispatch. Squash merged only PR108 into main at bbdf29122f704039b353fa4eed788bfdfef5aaa7. Existing feature/PR96 remains separate; no hosted migrations, Edge or application production deployment.
+
+After owner completed browser GitHub sign-in, dispatched Isolated Release Migration Rehearsal on main with confirmation cuebooker-isolated-release. Run37235093978, job111532505083, state WAITING for the production environment reviewer. The environment supplies only the existing backup decryption passphrase. Do not bypass/approve protected workflow without owner action/direction. Full 30-migration database rehearsal has NOT started. Next: owner reviews this exact run, then monitor restore/import/checks/cleanup and record evidence. No authentication credentials inspected or recorded.
+
+## 2026-10-04 22:47 Europe/Madrid — Bounded 30-migration rehearsal PR prepared
+
+Owner requested execution of the isolated migration rehearsal. Main ee623d796680888ada26c2a871d44715fd9be0e5 already registers the workflow but pins the older 26-migration candidate. Prepared infrastructure-only PR108, chore/rehearse-gmail-30-migrations, head5a1f48cece1b3fe92e09b701d4e21ecec0f67187. Six files: workflow pin, rehearsal runner, 30-entry manifest, synthetic tests, CI main-push exclusion and a status document. No application or hosted schema changes. Candidate remains83774ef4722d859b80654be13cebc53b60aebcd9; encrypted backup37169429138/attempt2 unchanged.
+
+Five feature hash/parser/security checks and two main-based synthetic tests pass. All six infrastructure paths excluded from main push CI to avoid an incidental stable-staging deployment; PR CI remains enabled. GitHub CI2080/run37233441784, job111527755020 completed SUCCESS including tests and static build. Preview2554/run37233441782, job111527754861 completed SUCCESS; stable staging job111527755631 skipped. PR108 description records this evidence. No Docker/gh in this executor; connector lacks workflow-dispatch. Full database rehearsal NOT executed. No merge or production changes. AGENTS.md requires explicit merge intent; obtain bounded PR108 approval and browser fallback approval to run GitHub Actions after checks pass. Do not mergePR96 for this prerequisite.
+
 ## 2026-10-04 22:31 Europe/Madrid — Gmail staging acceptance complete; repeatable Google setup
 
 Branch feature/agency-multi-artist-beta; local HEAD35a11942586cc6542221d6f0306c617ad77bc589 remains behind connector-published feature head1ccfca80aa52a491a749b7f1e67ffbe4ac30f339. Preserve unrelated dirty work. PR96 preview Beta0.0.3 is the tested surface, not stable staging.

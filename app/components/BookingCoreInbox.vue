@@ -37,6 +37,9 @@ const pendingDecision = ref<Extract<CoreBookingStatus, 'confirmed' | 'rejected' 
 const decisionError = ref('')
 const selectedBookingHasConflict = ref(false)
 const archiving = ref(false)
+const archiveDialog = ref<HTMLDialogElement | null>(null)
+const pendingArchive = ref<{ id: string; workspaceId: string; archived: boolean } | null>(null)
+const archiveError = ref('')
 const archiveView = ref<'inbox' | 'archived'>('inbox')
 const realSearch = ref('')
 const realStatusFilter = ref<'all' | CoreBookingStatus>('all')
@@ -457,25 +460,45 @@ async function confirmDecision() {
 }
 
 async function toggleArchive() {
-  if (!props.canOperate) return
-  if (!selectedBooking.value) return
-  const nextArchived = !selectedBooking.value.archived_at
+  if (!props.canOperate || archiving.value || !selectedBooking.value) return
+  pendingArchive.value = { id: selectedBooking.value.id, workspaceId: props.workspaceId, archived: !selectedBooking.value.archived_at }
+  archiveError.value = ''
+  await nextTick()
+  archiveDialog.value?.showModal()
+}
+
+function closeArchiveModal() {
+  if (archiving.value) return
+  archiveDialog.value?.close()
+  pendingArchive.value = null
+  archiveError.value = ''
+}
+
+watch(() => [props.workspaceId, selectedBooking.value?.id], () => {
+  if (!archiving.value) closeArchiveModal()
+})
+
+async function confirmArchive() {
+  const target = pendingArchive.value
+  if (!props.canOperate || archiving.value || !target || target.workspaceId !== props.workspaceId || target.id !== selectedBooking.value?.id) return
+  const nextArchived = target.archived
   if (props.demoData) {
     selectedBooking.value.archived_at = nextArchived ? new Date().toISOString() : null
+    closeArchiveModal()
     archiveView.value = nextArchived ? 'archived' : 'inbox'
     return
   }
-  if (nextArchived && !window.confirm(props.locale === 'es'
-    ? 'Se archivará el booking y se cerrarán su Next Move y Holds activos. La Activity se conserva.'
-    : 'This booking will be archived and its active Next Move and Holds will be closed. Activity is preserved.')) return
   archiving.value = true
+  archiveError.value = ''
   try {
-    await bookingCore.setBookingArchived(props.workspaceId, selectedBooking.value.id, nextArchived)
+    await bookingCore.setBookingArchived(target.workspaceId, target.id, nextArchived)
     await loadActivity()
     emit('operationsChanged')
+    archiveDialog.value?.close()
+    pendingArchive.value = null
     archiveView.value = nextArchived ? 'archived' : 'inbox'
-  } catch (error: any) {
-    window.alert(error?.message || 'Booking archive could not be updated.')
+  } catch {
+    archiveError.value = props.locale === 'es' ? 'No hemos podido guardar el cambio. Inténtalo de nuevo.' : 'We could not save the change. Try again.'
   } finally {
     archiving.value = false
   }
@@ -671,7 +694,7 @@ async function selectBooking(bookingId: string) {
             <h3>{{ bookingTitle(selectedBooking) }}</h3>
             <p>{{ selectedBooking.event_name || selectedBooking.city || '—' }}</p>
           </div>
-          <button v-if="canOperate" class="core-inbox__archive" type="button" :disabled="archiving" @click="toggleArchive">{{ selectedBooking.archived_at ? copy.restore : copy.archive }}</button>
+          <button v-if="canOperate" class="core-inbox__archive" type="button" :disabled="archiving" @click="toggleArchive"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v5H3zM5 8v13h14V8M9 12h6" /></svg>{{ selectedBooking.archived_at ? copy.restore : copy.archive }}</button>
         </header>
 
         <aside v-if="selectedBooking.capture_method === 'ai_capture'" class="core-inbox__mailbox-review" aria-label="Datos por revisar">
@@ -839,6 +862,15 @@ async function selectBooking(bookingId: string) {
     </div>
   </section>
 
+  <dialog ref="archiveDialog" class="core-archive-modal" aria-labelledby="core-archive-title" aria-describedby="core-archive-description" @cancel.prevent="closeArchiveModal" @click.self="closeArchiveModal">
+    <template v-if="pendingArchive">
+      <header><h3 id="core-archive-title">{{ pendingArchive.archived ? (locale === 'es' ? 'Archivar booking' : 'Archive booking') : (locale === 'es' ? 'Restaurar booking' : 'Restore booking') }}</h3><button type="button" class="core-archive-modal__close" :aria-label="locale === 'es' ? 'Cerrar' : 'Close'" :disabled="archiving" @click="closeArchiveModal">×</button></header>
+      <p id="core-archive-description">{{ pendingArchive.archived ? (locale === 'es' ? 'Lo moveremos a Archivados y cerraremos sus próximas acciones y reservas provisionales. La conversación y el historial se conservan. Puedes restaurarlo después.' : 'We will move it to Archived and close its next actions and active holds. Conversation and history are kept. You can restore it later.') : (locale === 'es' ? 'Volverá a Inbox. Las acciones y reservas provisionales cerradas no se reactivan.' : 'It will return to Inbox. Closed actions and holds are not reactivated.') }}</p>
+      <p v-if="archiveError" class="core-decision-modal__error" role="alert">{{ archiveError }}</p>
+      <footer><button type="button" class="core-decision-modal__secondary" :disabled="archiving" autofocus @click="closeArchiveModal">{{ locale === 'es' ? 'Cancelar' : 'Cancel' }}</button><button type="button" class="core-decision-modal__primary" :disabled="archiving" @click="confirmArchive">{{ archiving ? (locale === 'es' ? 'Guardando…' : 'Saving…') : pendingArchive.archived ? copy.archive : copy.restore }}</button></footer>
+    </template>
+  </dialog>
+
   <div v-if="pendingDecision" class="core-decision-modal" @click.self="closeDecisionModal">
     <article
       ref="decisionModal"
@@ -982,8 +1014,11 @@ async function selectBooking(bookingId: string) {
 .core-inbox__detail > header span { color:var(--cue-accent); font:700 9px monospace; text-transform:uppercase; letter-spacing:.1em; }
 .core-inbox__detail h3 { margin:4px 0 3px; font-size:clamp(28px,2.4vw,36px); line-height:.96; letter-spacing:-.03em; }
 .core-inbox__detail header p { margin:0; color:var(--cue-muted); font-size:12px; }
-.core-inbox__archive { align-self:start; min-height:var(--cue-button-sm); padding:0 var(--cue-space-3); border:0; border-radius:var(--cue-radius-control); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; text-transform:uppercase; }
-.core-inbox__archive:hover { color:var(--cue-accent); }
+.core-inbox__archive { align-self:start; display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:0 14px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-control); background:var(--cue-raised); color:var(--cue-text); cursor:pointer; font:700 11px monospace; text-transform:uppercase; }
+.core-inbox__archive svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.7; }
+.core-inbox__archive:hover { color:var(--cue-accent); border-color:var(--cue-accent); }
+.core-inbox__archive:focus-visible { outline:2px solid var(--cue-accent); outline-offset:3px; }
+.core-inbox__archive:disabled { opacity:.5; cursor:not-allowed; }
 .core-inbox__decision-strip { display:grid; grid-template-columns:minmax(150px,.45fr) minmax(0,1fr); align-items:center; gap:var(--cue-space-3); padding:var(--cue-space-3) 0; border-bottom:1px solid var(--cue-border); }
 .core-inbox__status { display:grid; gap:2px; align-self:center; min-width:132px; padding:2px 0 2px 9px; border:0; border-left:2px solid var(--status-color,var(--cue-border)); background:transparent; }
 .core-inbox__status > span { color:var(--cue-muted); font:700 7px monospace; letter-spacing:.08em; text-transform:uppercase; }
@@ -1079,7 +1114,7 @@ async function selectBooking(bookingId: string) {
   .core-inbox__filters:not(.core-inbox__filters--archive) button { width:auto; min-height:var(--cue-control-standard); white-space:nowrap; }
   .core-inbox__filters--archive { width:max-content; max-width:100%; }
   .core-inbox__detail > header { grid-template-columns:minmax(0,1fr) auto; gap:10px; padding-bottom:12px; }
-  .core-inbox__archive { min-height:32px; padding-inline:0; }
+  .core-inbox__archive { min-height:44px; padding-inline:14px; }
   .core-inbox__decision-strip { display:grid; grid-template-columns:1fr; gap:10px; padding:12px 0 14px; }
   .core-inbox__status { min-width:0; margin:0; padding:7px 0 7px 10px; }
   .core-inbox__decisions { width:100%; }
@@ -1117,6 +1152,16 @@ async function selectBooking(bookingId: string) {
 .core-decision-modal__primary { border:1px solid var(--cue-accent); background:var(--cue-primary); color:var(--cue-primary-ink); }
 .core-decision-modal__primary.danger { border-color:var(--cue-status-rejected); background:var(--cue-status-rejected); }
 .core-decision-modal button:disabled { opacity:.45; cursor:not-allowed; }
+.core-archive-modal { width:min(520px,calc(100% - 32px)); box-sizing:border-box; padding:24px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-panel); background:var(--cue-surface); color:var(--cue-text); box-shadow:0 28px 90px rgba(0,0,0,.55); }
+.core-archive-modal::backdrop { background:rgba(0,0,0,.76); backdrop-filter:blur(7px); }
+.core-archive-modal header { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.core-archive-modal h3 { margin:0; font-size:24px; line-height:1.2; }
+.core-archive-modal p { margin:18px 0 0; font-size:14px; line-height:1.6; color:var(--cue-muted); }
+.core-archive-modal footer { display:flex; justify-content:flex-end; gap:12px; margin-top:24px; }
+.core-archive-modal button { min-height:44px; padding:0 16px; border-radius:var(--cue-radius-control); cursor:pointer; font:700 12px monospace; }
+.core-archive-modal .core-archive-modal__close { width:44px; padding:0; border:1px solid var(--cue-border); border-radius:50%; background:var(--cue-raised); color:var(--cue-text); font-size:24px; flex-shrink:0; }
+.core-archive-modal button:focus-visible { outline:2px solid var(--cue-accent); outline-offset:3px; }
+.core-archive-modal button:disabled { opacity:.45; cursor:not-allowed; }
 @media (max-width:560px) {
   .core-decision-modal { align-items:end; padding:0; }
   .core-decision-modal article { width:100%; box-sizing:border-box; border-right:0; border-bottom:0; border-left:0; }
