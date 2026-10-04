@@ -4,7 +4,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync, readdirSy
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
-import { backupProduction, validateBackupInputs } from '../scripts/backup-production.mjs'
+import { backupProduction, classifyBackupFailure, validateBackupInputs } from '../scripts/backup-production.mjs'
 
 const url = 'postgresql://postgres.qlocooqfdzehogbwcbhr:fictional-password@aws-0-eu-west-1.pooler.supabase.com:5432/postgres'
 const phrase = 'fictional-encryption-passphrase-for-tests-only'
@@ -57,10 +57,30 @@ test('failed export suppresses credential-bearing errors and removes plaintext',
       temporaryDir = file.slice(0, file.lastIndexOf('/'))
       writeFileSync(file, 'fictional partial dump')
       return { status: 1, stderr: url, error: new Error(url) }
-    } }), error => error.message === 'Backup operation failed (supabase). No database details were logged.')
+    } }), error => error.message === 'Backup operation failed (roles export): unclassified failure. No database details were logged.')
     assert.equal(existsSync(temporaryDir), false)
     assert.equal(existsSync(join(dir, 'output')), false)
   } finally { rmSync(dir, { recursive: true, force: true }) }
+})
+
+test('failure diagnostics classify known causes without returning private provider content', () => {
+  const examples = [
+    ['password authentication failed', 'database authentication rejected'],
+    ['Tenant or user not found', 'pooler tenant or user not found'],
+    ['could not translate host name', 'database host lookup failed'],
+    ['connection timed out', 'database connection unavailable'],
+    ['certificate verify failed', 'database TLS verification failed'],
+    ['server version mismatch', 'database dump version mismatch'],
+    ['permission denied', 'database export permission denied'],
+    ['Cannot connect to the Docker daemon', 'backup container runtime unavailable'],
+    ['failed to pull image', 'backup container image unavailable'],
+    ['unexpected provider message', 'unclassified failure'],
+  ]
+  for (const [cause, category] of examples) {
+    const result = classifyBackupFailure({ stderr: `${cause} ${url} ${phrase}` })
+    assert.equal(result, category)
+    assert.ok(!result.includes(url) && !result.includes(phrase))
+  }
 })
 
 test('workflow is manual, protected and uploads no SQL/source/plaintext', () => {
