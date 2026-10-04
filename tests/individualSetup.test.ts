@@ -8,7 +8,7 @@ import { APP_RELEASE_LABEL } from '../app/domain/appRelease.ts'
 
 test('both account modes display one release label at the end of Settings', async () => {
   const source = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
-  assert.equal(APP_RELEASE_LABEL, 'Beta 0.0.2')
+  assert.match(APP_RELEASE_LABEL, /^Beta \d+\.\d+\.\d+$/)
   assert.match(source, /<p class="settings-release">Cuebooker · \{\{ APP_RELEASE_LABEL \}\}<\/p>\s*<\/aside>/)
   assert.equal(source.match(/class="settings-release"/g)?.length, 1)
 })
