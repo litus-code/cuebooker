@@ -2452,10 +2452,10 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
 
         <template v-else>
           <div class="summary-grid">
-            <article class="summary-card summary-card--pending"><span>{{ copy.realBookings }}</span><strong>{{ cueCoreLoading ? '…' : realBookings.filter(item => !item.archived_at).length }}</strong><p>{{ bookingCoreWorkspaceId ? (preferences.locale.value === 'es' ? 'Bookings guardados en tu workspace.' : 'Bookings saved in your workspace.') : copy.realBookingsBody }}</p></article>
-            <article class="summary-card"><span>{{ copy.holdsMonth }} · {{ monthLabel }}</span><strong>{{ holdCount }}</strong><p>{{ copy.holdsBody }}</p></article>
-            <article class="summary-card"><span>{{ copy.confirmed }} · {{ monthLabel }}</span><strong>{{ confirmedCount }}</strong><p>{{ copy.confirmedBody }}</p></article>
-            <article class="summary-card"><span>{{ copy.occupiedDays }} · {{ monthLabel }}</span><strong>{{ occupiedDays }}</strong><p>{{ copy.occupiedBody }}</p></article>
+            <article class="summary-card summary-card--pending"><SummaryMetricLabel :label="copy.realBookings" /><strong>{{ cueCoreLoading ? '…' : realBookings.filter(item => !item.archived_at).length }}</strong><p>{{ bookingCoreWorkspaceId ? (preferences.locale.value === 'es' ? 'Bookings guardados en tu workspace.' : 'Bookings saved in your workspace.') : copy.realBookingsBody }}</p></article>
+            <article class="summary-card"><SummaryMetricLabel :label="`${copy.holdsMonth} · ${monthLabel}`" /><strong>{{ holdCount }}</strong><p>{{ copy.holdsBody }}</p></article>
+            <article class="summary-card"><SummaryMetricLabel :label="`${copy.confirmed} · ${monthLabel}`" /><strong>{{ confirmedCount }}</strong><p>{{ copy.confirmedBody }}</p></article>
+            <article class="summary-card"><SummaryMetricLabel :label="`${copy.occupiedDays} · ${monthLabel}`" /><strong>{{ occupiedDays }}</strong><p>{{ copy.occupiedBody }}</p></article>
             <button class="summary-card summary-card--profile" type="button" @click="activeView = 'profile'"><span>{{ copy.profileCard }}</span><strong>{{ profileCompletion }}%</strong><p>{{ copy.profileCardBody }} →</p></button>
           </div>
 

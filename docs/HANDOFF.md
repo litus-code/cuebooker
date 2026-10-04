@@ -1,3 +1,7 @@
+## 2026-10-04 / Overview first-word accents
+
+PR96, branch `feature/agency-multi-artist-beta`, base `865f3d740eec8c11e7093d99a752021069726797`. Owner requested accenting the first word of the four circled individual Overview metrics. SummaryMetricLabel now splits the translated label reactively and colors only its first word using the existing theme accent (lime in dark, existing light-theme accent in light). Remainder, month, numbers, descriptions and Public profile card remain unchanged. No data, agency, auth or production changes. Validation: compiled component tests cover ES/EN, month suffixes, single-word and empty labels; staging static generation and full suite run before publishing. Visual device verification remains pending.
+
 ## 2026-10-04 / Individual settings removals and onboarding avatar choice
 
 PR96, branch `feature/agency-multi-artist-beta`, base `66c13a39a2316b89433b95c40ddd623816d87762`. Owner confirmed removal of both Demo plan and Change password from individual DJ Settings. Agency settings remain unchanged; password recovery remains available from Access. Existing underlying auth commands are not deleted.
