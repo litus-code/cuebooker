@@ -1,3 +1,10 @@
+## 2026-10-04 11:32 Europe/Madrid — Nylas dashboard access verified; production environment unavailable on Free
+
+- Owner completed secure Google sign-in with mobile device approval. Fresh Nylas target page visibly confirms authenticated Litulandio organization; no credentials or private inbox messages read.
+- Application selector lists only existing Sandbox (US). Inspected Create new application modal without submitting. It explicitly restricts Free users to Sandbox and requires plan upgrade for Development/Staging/Production; confirm control disabled. No application, grant, subscription, connector or provider configuration created/changed.
+- Existing Sandbox and staging credentials preserved. Production mailbox connection remains gated; do not use Sandbox credentials as production configuration or purchase a plan without owner authorization. Next decision: defer production connected mailboxes or obtain explicit production service approval. Brevo callbacks, Groq configuration, durable backup retention and hosted backend/app promotion remain pending as recorded below.
+- Reviewed Beta 0.0.2 is still unreleased to stable staging/prod; no version bump for this diagnostic/account review. Preserve dirty local work and all remote PR96 changes.
+
 ## 2026-10-04 11:19 Europe/Madrid — Production callback secrets saved; read-only provider audit closed
 
 - Owner saved CUEBOOKER_INBOUND_WEBHOOK_SECRET and BREVO_TRANSACTIONAL_WEBHOOK_SECRET at09:07:42UTC. Verified names/timestamps only, never values. Supabase browser sign-in restored through secure GitHub authentication.
