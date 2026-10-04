@@ -340,6 +340,30 @@ export function useCueAuth() {
     return true
   }
 
+  async function updateAvatarBodyPreference(body: 'male' | 'female') {
+    if (body !== 'male' && body !== 'female') throw new Error('invalid_avatar_body')
+    const current = await ensureFreshSession()
+    if (!current) throw new Error('authentication_required')
+    const payload = await $fetch<{ user?: CueUser } | CueUser>(`${supabaseUrl.value}/auth/v1/user`, {
+      method: 'PUT',
+      headers: baseHeaders(true),
+      body: { data: { ...(current.user.user_metadata || {}), cuebooker_avatar_body: body } }
+    })
+    const updatedUser = 'user' in payload && payload.user ? payload.user : payload as CueUser
+    saveSession({
+      ...current,
+      user: {
+        ...current.user,
+        ...updatedUser,
+        user_metadata: {
+          ...(current.user.user_metadata || {}),
+          ...(updatedUser.user_metadata || {}),
+          cuebooker_avatar_body: body
+        }
+      }
+    })
+  }
+
   function captureReferral(code: string | null | undefined, landingPath: string) {
     if (!import.meta.client || !code) return
     if (localStorage.getItem(REFERRAL_KEY)) return
@@ -396,9 +420,12 @@ export function useCueAuth() {
     displayName: string
     entityName: string
     entitySlug: string
+    avatarBody?: 'male' | 'female'
   }) {
     const current = await ensureFreshSession()
     if (!current) throw new Error('authentication_required')
+
+    if (input.accountType === 'dj' && input.avatarBody) await updateAvatarBodyPreference(input.avatarBody)
 
     const result = await $fetch(`${supabaseUrl.value}/rest/v1/rpc/complete_onboarding`, {
       method: 'POST',

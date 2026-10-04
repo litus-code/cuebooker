@@ -3236,7 +3236,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <AgencyCatalogEditor v-if="isAgency && agencyWorkspaceId" :workspace-id="agencyWorkspaceId" :role="agencyWorkspaceRole" :locale="preferences.locale.value" @edit-artist="id => { closeSettings(); chooseArtist(id, 'profile') }" />
         <AgencyTeamPanel v-if="isAgency && agencyWorkspaceId" :workspace-id="agencyWorkspaceId" :role="agencyWorkspaceRole" :user-id="auth.session.value?.user.id || ''" :locale="preferences.locale.value" />
         <ConnectedMailboxPanel v-if="auth.session.value && bookingCoreWorkspaceId && (!isAgency || canOperateAgency)" :workspace-id="bookingCoreWorkspaceId" :locale="preferences.locale.value" />
-        <section v-if="demoOverrideEnabled" class="settings-group settings-group--demo">
+        <section v-if="isAgency && demoOverrideEnabled" class="settings-group settings-group--demo">
           <span>DEMO PLAN / {{ currentPlan.toUpperCase().replace('_', ' ') }}</span>
           <div class="settings-options settings-options--three">
             <button :class="{ active: currentPlan === 'free' }" type="button" @click="setDemoPlan('free')">FREE</button>
@@ -3245,7 +3245,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           </div>
           <small>{{ preferences.locale.value === 'es' ? 'Solo staging/demo. No modifica billing.' : 'Staging/demo only. Billing is unchanged.' }}</small>
         </section>
-        <form class="password-form" @submit.prevent="savePassword">
+        <form v-if="isAgency" class="password-form" @submit.prevent="savePassword">
           <p class="eyebrow">{{ copy.password }}</p>
           <label><span>{{ copy.currentPassword }}</span><input v-model="passwordCurrent" type="password" autocomplete="current-password" required></label>
           <label><span>{{ copy.newPassword }}</span><input v-model="passwordNew" type="password" minlength="8" autocomplete="new-password" required></label>

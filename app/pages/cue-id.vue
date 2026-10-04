@@ -10,6 +10,7 @@ import {
 import { CUE_ID_WORKSPACE_SECTIONS, type CueIdWorkspaceSection } from '../domain/cueIdWorkspace'
 
 const preferences = useCuePreferences()
+const auth = useCueAuth()
 const route = useRoute()
 const router = useRouter()
 const fromOnboarding = computed(() => route.query.from === 'onboarding')
@@ -25,6 +26,8 @@ const cueIdConfig = ref(cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_
 const savedConfig = ref(cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG))
 const saveState = ref<'idle' | 'saved' | 'reset' | 'invalid' | 'storage-error'>('idle')
 const LAB_DRAFT_KEY = 'cuebooker:cue-id:stylized-v1:lab-draft'
+let labDraftKey = LAB_DRAFT_KEY
+const creatorReady = ref(false)
 const leaveDialogOpen = ref(false)
 const pendingLeaveTarget = ref('')
 let allowNextRouteLeave = false
@@ -88,16 +91,24 @@ function handleBeforeUnload(event: BeforeUnloadEvent) {
   event.returnValue = ''
 }
 
-onMounted(() => {
+onMounted(async () => {
+  try { await auth.initialize() } catch { saveState.value = 'storage-error' }
+  const user = auth.session.value?.user
+  labDraftKey = user ? `${LAB_DRAFT_KEY}:${user.id}` : LAB_DRAFT_KEY
+  const initial = cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG)
+  initial.body = user?.user_metadata?.cuebooker_avatar_body === 'female' ? 'female' : 'male'
+  cueIdConfig.value = initial
+  savedConfig.value = cloneCueIdStylizedCreatorConfig(initial)
   try {
-    const raw = window.localStorage.getItem(LAB_DRAFT_KEY)
+    const raw = window.localStorage.getItem(labDraftKey)
     if (raw) {
       const restored = parseCueIdStylizedCreatorConfigV1(raw)
       if (restored) {
+        if (fromOnboarding.value) restored.body = initial.body
         cueIdConfig.value = restored
         savedConfig.value = cloneCueIdStylizedCreatorConfig(restored)
       } else {
-        window.localStorage.removeItem(LAB_DRAFT_KEY)
+        window.localStorage.removeItem(labDraftKey)
       }
     }
   } catch {
@@ -105,6 +116,7 @@ onMounted(() => {
   }
 
   window.addEventListener('beforeunload', handleBeforeUnload)
+  creatorReady.value = true
 })
 
 onBeforeUnmount(() => {
@@ -122,7 +134,7 @@ function saveLabDraft(value: CueIdStylizedCreatorConfigV1) {
   }
 
   try {
-    window.localStorage.setItem(LAB_DRAFT_KEY, JSON.stringify(saved))
+    window.localStorage.setItem(labDraftKey, JSON.stringify(saved))
     savedConfig.value = saved
     saveState.value = 'saved'
   } catch {
@@ -138,11 +150,12 @@ function resetLabDraft() {
   if (!window.confirm(copy.value.resetConfirm)) return
 
   const initial = cloneCueIdStylizedCreatorConfig(DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG)
+  initial.body = auth.session.value?.user.user_metadata?.cuebooker_avatar_body === 'female' ? 'female' : 'male'
   cueIdConfig.value = initial
   savedConfig.value = cloneCueIdStylizedCreatorConfig(initial)
 
   try {
-    window.localStorage.removeItem(LAB_DRAFT_KEY)
+    window.localStorage.removeItem(labDraftKey)
     saveState.value = 'reset'
   } catch {
     saveState.value = 'storage-error'
@@ -218,7 +231,12 @@ useHead(() => ({
       </div>
     </header>
 
+    <div v-if="!creatorReady" class="cue-id-page__loading" role="status" aria-live="polite">
+      <CueBrand decorative />
+      <span>{{ preferences.locale.value === 'es' ? 'Cargando CUE ID…' : 'Loading CUE ID…' }}</span>
+    </div>
     <CueIdStylizedWorkspace
+      v-else
       v-model="cueIdConfig"
       :locale="preferences.locale.value"
       :dirty="dirty"
@@ -253,6 +271,7 @@ useHead(() => ({
 </template>
 
 <style scoped>
+.cue-id-page__loading { min-height:240px; display:grid; align-content:center; justify-items:center; gap:18px; color:var(--cue-muted); }
 :global(body){margin:0;background:var(--cue-bg)}
 .cue-id-page{min-height:100vh;padding:0 28px 54px;background:var(--cue-bg);color:var(--cue-text);font-family:Arial,Helvetica,sans-serif}
 .cue-id-page__header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;min-height:68px;border-bottom:1px solid var(--cue-border)}

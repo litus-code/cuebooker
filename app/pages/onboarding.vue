@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import type { CueIdStylizedBodyId } from '../domain/cueIdStylizedCreator'
 const auth = useCueAuth()
 const analytics = useAnalytics()
 const billingIntent = useBillingIntent()
 const { locale } = useCuePreferences()
 const accountType = ref<'dj' | 'agency'>('dj')
 const cueIdNextStep = ref<'now' | 'later'>('later')
+const cueIdBody = ref<CueIdStylizedBodyId>('male')
 const displayName = ref('')
 const entityName = ref('')
 const entitySlug = ref('')
@@ -79,6 +81,7 @@ onMounted(async () => {
     return
   }
   displayName.value = auth.profile.value?.display_name || ''
+  cueIdBody.value = auth.session.value?.user.user_metadata?.cuebooker_avatar_body === 'female' ? 'female' : 'male'
 })
 
 function friendlyOnboardingError(error: any) {
@@ -115,7 +118,8 @@ async function submit() {
       accountType: accountType.value,
       displayName: displayName.value,
       entityName: entityName.value,
-      entitySlug: entitySlug.value
+      entitySlug: entitySlug.value,
+      avatarBody: accountType.value === 'dj' ? cueIdBody.value : undefined
     })
     analytics.track('onboarding_completed', {
       account_type: accountType.value,
@@ -159,7 +163,7 @@ useHead(() => ({ title: copy.value.pageTitle, htmlAttrs: { lang: locale.value } 
       </div>
 
       <template v-if="accountType === 'dj'">
-        <CueIdTeaser :artist-name="entityName" compact />
+        <CueIdTeaser v-model:body="cueIdBody" :artist-name="entityName" compact body-selectable preview-href="" />
         <section class="cue-id-choice" aria-labelledby="cue-id-choice-title">
           <div class="cue-id-choice__heading">
             <p id="cue-id-choice-title">{{ copy.cueIdTitle }}</p>
