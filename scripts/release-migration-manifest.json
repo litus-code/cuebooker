@@ -1,0 +1,106 @@
+[
+  {
+    "path": "supabase/migrations/20260928202754_agency_roster_beta.sql",
+    "sha256": "d2bcea21d8403bfb83803a507492101f5ba0fc3439a95e671c74ceb733bb9a9c"
+  },
+  {
+    "path": "supabase/migrations/20260928204843_agency_roster_access.sql",
+    "sha256": "1fb0d9cd120fbb5225c3dbdd4d1b0b774033ee551bd866c55d93fbc30f64f4ec"
+  },
+  {
+    "path": "supabase/migrations/20260929103000_agency_booking_route_contract.sql",
+    "sha256": "dd324189c3d733f49482b4d3f1664281b43345a7962164b5ee17a0985f896ffa"
+  },
+  {
+    "path": "supabase/migrations/20260930094140_agency_team_beta.sql",
+    "sha256": "c9a97fbbceb1cd885068f8dc62ab7fd47fbfec033eaca9b405e32c78021ba09e"
+  },
+  {
+    "path": "supabase/migrations/20260930094451_agency_team_invitation_index.sql",
+    "sha256": "6c8aeaea4bc0a9e7a69b3fdbb9b095817155d9b5b8d64b7ace363eb84502325e"
+  },
+  {
+    "path": "supabase/migrations/20260930113404_agency_public_catalog.sql",
+    "sha256": "42e741e9508e196eba76b35b8b185c8b39ff00814eef484ab35b7c238bc74fc8"
+  },
+  {
+    "path": "supabase/migrations/20260930113750_agency_catalog_service_access.sql",
+    "sha256": "1d416310cfe414caf4782e4b592bff033512e0fba67c3fb6a000d7812fde13e0"
+  },
+  {
+    "path": "supabase/migrations/20260930124323_agency_catalog_media.sql",
+    "sha256": "a6759bc8077960f571323317c7d7729cdf7ae831bfeeb4c33cacfd928480a360"
+  },
+  {
+    "path": "supabase/migrations/20260930124636_qualify_agency_media_object_name.sql",
+    "sha256": "90e4599f648ae4cbeb5d597322d4f534c973dd19035adcb79a722e782ee30ee2"
+  },
+  {
+    "path": "supabase/migrations/20260930151101_connected_mailbox_auth.sql",
+    "sha256": "38cf40ee7146166a664fd437880bdc18b77ba5ee7353b91233f5af61298f888d"
+  },
+  {
+    "path": "supabase/migrations/20260930180438_mailbox_booking_threads.sql",
+    "sha256": "66a3d567cfe9fc8eb489c392fcd62923b0dcfed4434658decf247802cfed8e75"
+  },
+  {
+    "path": "supabase/migrations/20260930184019_mailbox_analysis_rate_limit.sql",
+    "sha256": "9096e257db3dea1b96e6a143dd6ad87ce6ce6a88d992fd702bf1ad4122af24c1"
+  },
+  {
+    "path": "supabase/migrations/20260930225159_mailbox_beta_capacity.sql",
+    "sha256": "32f71e1520c1272fb766b51af0229b6d464f3094c5d20ad5bd364bdaef497a5f"
+  },
+  {
+    "path": "supabase/migrations/20261001022812_agency_team_email_result_type.sql",
+    "sha256": "59fba7eae2e89640ea64f22002baa8a49ab705d659ddc44ed8fc1ecc9d5569b5"
+  },
+  {
+    "path": "supabase/migrations/20261001073006_mailbox_reviewed_details.sql",
+    "sha256": "ffccfe48c3b6f0ae57f6e2c4cc8f219afaa250f6093d4385f53aa980c3d17a17"
+  },
+  {
+    "path": "supabase/migrations/20261001075121_mailbox_existing_review.sql",
+    "sha256": "78ec557f2fe38abdab609704174bbc45d8a83f4b5605682d14bd5aaae7663c01"
+  },
+  {
+    "path": "supabase/migrations/20261001103606_mailbox_ai_monthly_budget.sql",
+    "sha256": "4485a4835abdd2f98d17ecc5172a8f9e31a154dc54feacf6edd641aea6bb3372"
+  },
+  {
+    "path": "supabase/migrations/20261001120319_mailbox_ai_result_cache.sql",
+    "sha256": "2f18327bc6a73e24238136d8326f609cb2d6436f202cccdbf501f7a681d8b345"
+  },
+  {
+    "path": "supabase/migrations/20261001131151_mailbox_background_consent.sql",
+    "sha256": "f03e86020fd04d8e47022eb464007f7ab40ea0d2b5581b348fe1c1285c42ff1f"
+  },
+  {
+    "path": "supabase/migrations/20261001132957_mailbox_incoming_queue.sql",
+    "sha256": "d6be1a0eaba88cc001790d498b98a0e706e0a72dd57ef442e50bf9a2c3139fe9"
+  },
+  {
+    "path": "supabase/migrations/20261001133744_mailbox_incoming_processing.sql",
+    "sha256": "5d2bb1b13a344459740d4bf2db09a8637776f16b9bc709410313ef762dec8e2c"
+  },
+  {
+    "path": "supabase/migrations/20261001153215_mailbox_worker_schedule.sql",
+    "sha256": "d45137a506447b4d6863078e83e88b1192e7869549ddef57bce6e1b36432bf83"
+  },
+  {
+    "path": "supabase/migrations/20261001181132_mailbox_automatic_requests.sql",
+    "sha256": "99a92ba9a97b3cc45b2c74cc889c07674c40c1b513bcb86632e3538c8c514450"
+  },
+  {
+    "path": "supabase/migrations/20261001182316_mailbox_initial_capture.sql",
+    "sha256": "1311a14a4e386ef5562b804d7d2b4f0872ad73158bced0596849cacc910ad993"
+  },
+  {
+    "path": "supabase/migrations/20261002214500_add_public_agency_enquiries.sql",
+    "sha256": "3599908833c0eba8eed4b4e04b35d34735556a83cb2ca70468038840dad250e5"
+  },
+  {
+    "path": "supabase/migrations/20261003200000_agency_managed_catalog_artists.sql",
+    "sha256": "e663a0aa68df59c815d7a8569c3782ca88a1207e6672b7189f601878160f2697"
+  }
+]
