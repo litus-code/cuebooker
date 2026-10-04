@@ -112,6 +112,8 @@ function act(step: string) {
 .agency-setup__number { color:var(--cue-muted); font:800 16px/1.3 monospace; }
 .agency-setup .is-complete .agency-setup__number { color:var(--cue-accent); }
 .agency-setup h3 { margin:6px 0; font-size:18px; line-height:1.3; }
+.agency-setup .is-complete h3 { color:var(--cue-muted); }
+.agency-setup .is-complete .agency-setup__status { opacity:.75; }
 .agency-setup li p,.agency-setup footer p,.agency-setup__hint { color:var(--cue-muted); font-size:14px; line-height:1.5; }
 .agency-setup__actions { display:flex; flex-wrap:wrap; gap:8px; }
 .agency-setup button { min-height:44px; padding:10px 14px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-control,8px); background:transparent; color:var(--cue-text); font:inherit; font-weight:800; cursor:pointer; }
