@@ -66,3 +66,24 @@
 .cl-identity-art-head{position:absolute;top:20%;left:50%;transform:translateX(-50%);height:80px;width:64px;border-radius:45% 45% 38% 38%;background:linear-gradient(100deg,#1c2b1b,#8cab74,#293a26)}
 .cl-identity-art-shoulders{position:absolute;left:50%;bottom:-50px;transform:translateX(-50%);width:185px;height:137px;border-radius:47% 47% 0 0;background:linear-gradient(90deg,#121915,#3d4d37 55%,#111812);border:1px solid #5e7454}
 @media(max-width:900px){.cl-email-showcase{grid-template-columns:1fr;gap:18px}.cl-email-demo-inbox,.cl-email-demo-request{transform:none}.cl-email-demo-bridge{flex-direction:row}.cl-email-demo-bridge svg{transform:rotate(90deg)}}
+
+
+/* Landing review: polished feature stage shared by DJ and Agency. */
+.cl-email-feature .cl-section{max-width:1360px}
+.cl-email-feature .cl-email-intro{max-width:920px}
+.cl-email-feature .cl-email-intro h2{font-size:clamp(38px,4.8vw,70px);max-width:900px;line-height:1.02;letter-spacing:-.055em}
+.cl-email-feature .cl-email-intro .cl-lead{font-size:clamp(16px,1.5vw,20px)}
+.cl-email-showcase{position:relative;grid-template-columns:minmax(0,0.88fr) 82px minmax(0,1.1fr);margin-top:72px;isolation:isolate}
+.cl-email-showcase:before{content:"";position:absolute;inset:5% 14% 10%;z-index:-1;background:radial-gradient(ellipse at 62% 50%,color-mix(in srgb,var(--cl-acid) 22%,transparent),transparent 64%);filter:blur(32px);pointer-events:none}
+.cl-email-demo-inbox,.cl-email-demo-request{position:relative;overflow:hidden;border-radius:17px;backdrop-filter:blur(16px);border-color:color-mix(in srgb,var(--cl-line) 72%,transparent)}
+.cl-email-demo-inbox{background:linear-gradient(140deg,#202921,#0d110f 70%);padding:30px;min-height:430px}
+.cl-email-demo-request{background:linear-gradient(145deg,#252e20,#101611 68%);border-color:color-mix(in srgb,var(--cl-acid) 56%,#344132);padding:30px;min-height:485px}
+.cl-email-demo-request:after{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,transparent,var(--cl-acid),transparent);opacity:.55}
+.cl-email-demo-message{padding-block:40px}
+.cl-email-demo-message h3{font-size:clamp(24px,2.2vw,32px)}
+.cl-email-demo-bridge{gap:16px;white-space:normal}
+.cl-email-demo-bridge svg{width:64px;height:64px}
+.cl-email-request-attachments>div>span{border-color:color-mix(in srgb,var(--cl-acid) 29%,var(--cl-line))}
+.cl-profile .cl-form-frame:has(.public-booking-form__details:not([open])){max-height:none}
+.cl-profile .public-booking-form__details:not([open]){margin-bottom:0}
+@media(max-width:900px){.cl-email-showcase{grid-template-columns:1fr;margin-top:38px}.cl-email-demo-inbox,.cl-email-demo-request{min-height:0;padding:24px;transform:none}.cl-email-demo-bridge{padding:14px}.cl-email-demo-bridge svg{width:42px;height:42px}}
