@@ -1,0 +1,176 @@
+{
+  "home": "Inicio",
+  "login": "Acceder",
+  "how": "Cómo funciona",
+  "skip": "Saltar al contenido",
+  "example": "Ejemplo ilustrativo · datos ficticios · sin acciones reales",
+  "photo": "Escena editorial ilustrativa",
+  "privacy": "Privacidad",
+  "legal": "Aviso legal",
+  "cookies": "Cookies",
+  "contact": "Contacto",
+  "distributionTitle": "UN ENLACE. MUCHAS FORMAS DE RECIBIR BOOKINGS.",
+  "distributionBody": "Tu ficha pública y su formulario, donde ya te encuentran. El promotor puede enviar una solicitud sin registrarse.",
+  "channels": [
+    [
+      "Instagram",
+      "Enlaza tu perfil desde la bio o compártelo por mensaje directo."
+    ],
+    [
+      "WhatsApp Business",
+      "Configura el enlace en mensajes de bienvenida, ausencia o respuestas preparadas."
+    ],
+    [
+      "Tu web",
+      "Inserta el widget de booking o enlaza directamente al formulario."
+    ],
+    [
+      "QR",
+      "Lleva tu ficha a carteles, EPK y otros soportes físicos o digitales."
+    ],
+    [
+      "Enlace directo",
+      "Compártelo por correo, mensaje o cualquier otro medio."
+    ]
+  ],
+  "manual": "Instagram y WhatsApp no se conectan automáticamente. Tú configuras y distribuyes el enlace en cada plataforma.",
+  "profileName": "Tu nombre artístico",
+  "publicProfile": "PERFIL PÚBLICO",
+  "linkExample": "Estructura de enlace de ejemplo; no es un perfil publicado.",
+  "journeyTitle": "DE LA SOLICITUD AL BOOKING.",
+  "journeyBody": "Una oportunidad conserva su conversación, sus condiciones y la próxima acción. Un hold no equivale a una confirmación.",
+  "steps": [
+    "Formulario",
+    "Solicitud",
+    "Conversación",
+    "Hold",
+    "Confirmación",
+    "Calendario"
+  ],
+  "stepBodies": [
+    "El promotor envía los datos desde tu perfil público.",
+    "Revisa el contacto, la fecha y la propuesta antes de continuar.",
+    "Registra mensajes y acuerdos en el mismo booking.",
+    "Marca la disponibilidad provisional y su vencimiento.",
+    "Confirma las condiciones cuando la decisión esté acordada.",
+    "Consulta las fechas y distingue holds de confirmaciones."
+  ],
+  "emailTitle": "EL CORREO LLEGA. EL CONTEXTO SE QUEDA.",
+  "emailBody": "La beta privada contempla analizar un buzón autorizado para detectar posibles ofertas y preparar información para revisión. No está disponible de forma general en esta versión.",
+  "emailStatus": "BETA PRIVADA / AUTORIZACIÓN Y CONFIGURACIÓN REQUERIDAS",
+  "emailStages": [
+    [
+      "Detección",
+      "Identificar una posible propuesta de contratación."
+    ],
+    [
+      "Extracción",
+      "Preparar contacto, artista, fecha, venue y condiciones si constan."
+    ],
+    [
+      "Revisión",
+      "El usuario comprueba los datos y decide el siguiente paso."
+    ]
+  ],
+  "emailNote": "Sujeto a admisión y configuración de la beta. Esta página no activa un buzón ni envía o confirma bookings automáticamente.",
+  "ecosystemTitle": "MÁS QUE UNA FICHA.",
+  "ecosystem": [
+    [
+      "Perfil público",
+      "Tu presentación profesional y la puerta de entrada a solicitudes.",
+      "Entrada pública"
+    ],
+    [
+      "CUE Passport",
+      "Una trayectoria conectada con la actividad real de booking.",
+      "Concepto en desarrollo"
+    ],
+    [
+      "CUE ID",
+      "Una identidad visual propia dentro del universo Cuebooker.",
+      "En desarrollo"
+    ]
+  ],
+  "rosterTitle": "TU ROSTER, ORGANIZADO.",
+  "rosterBody": "Artistas, solicitudes y fechas dentro de una misma operación. Conserva el contexto del artista implicado sin multiplicar una propuesta de agencia.",
+  "rosterStatus": "WORKSPACE MULTIARTISTA / BETA",
+  "artist": "Artista",
+  "requests": "Solicitud",
+  "status": "Estado",
+  "date": "Próxima fecha",
+  "rosterRows": [
+    [
+      "Tu artista 01",
+      "Propuesta A",
+      "En conversación",
+      "Por definir"
+    ],
+    [
+      "Tu artista 02",
+      "Propuesta B",
+      "Hold",
+      "Fecha provisional"
+    ],
+    [
+      "Tu artista 03",
+      "—",
+      "Sin solicitud",
+      "—"
+    ]
+  ],
+  "contextTitle": "CADA PROPUESTA CONSERVA SU CONTEXTO.",
+  "contextBody": "Una solicitud dirigida a la agencia mantiene el contacto y la conversación. Asigna el artista implicado en ese mismo contexto; no se convierte en una copia por cada artista.",
+  "context": [
+    [
+      "Contacto",
+      "Promotor de ejemplo"
+    ],
+    [
+      "Artista implicado",
+      "Tu artista 01"
+    ],
+    [
+      "Fecha y venue",
+      "Por acordar · venue de ejemplo"
+    ],
+    [
+      "Conversación",
+      "Consultar disponibilidad y formato del evento"
+    ],
+    [
+      "Condiciones",
+      "Caché y producción pendientes de negociación"
+    ],
+    [
+      "Próximo paso",
+      "Revisar la propuesta y responder al contacto"
+    ]
+  ],
+  "agencyJourney": "DEL CONTACTO A LA CONFIRMACIÓN.",
+  "agencyDistribution": "LOS PERFILES DE TU ROSTER, EN TODAS PARTES.",
+  "dj": {
+    "tag": "CUEBOOKER / FOR DJs",
+    "top": "TU PERFIL.",
+    "accent": "TU BOOKING.",
+    "lead": "Comparte tu perfil, recibe propuestas y gestiona tus fechas desde un solo lugar.",
+    "create": "CREAR MI PERFIL",
+    "see": "DESCUBRIR CÓMO FUNCIONA",
+    "closing": "TU PRÓXIMA SOLICITUD EMPIEZA AQUÍ.",
+    "other": "También para managers y agencias",
+    "otherPath": "/agency",
+    "alt": "Escena editorial ilustrativa de un DJ vestido junto a una cabina en un backstage industrial."
+  },
+  "agency": {
+    "tag": "CUEBOOKER / FOR AGENCIES",
+    "top": "TODOS TUS ARTISTAS.",
+    "accent": "UN SOLO CONTROL.",
+    "lead": "Organiza las solicitudes, negociaciones y fechas de tu roster sin perder el contexto de cada artista.",
+    "create": "CREAR ESPACIO DE AGENCIA",
+    "see": "VER CÓMO FUNCIONA",
+    "closing": "TU ROSTER. TUS BOOKINGS. TODO CONECTADO.",
+    "other": "También para DJs independientes",
+    "otherPath": "/dj",
+    "alt": "Escena editorial ilustrativa de una profesional de booking en una mesa de trabajo de un estudio industrial."
+  },
+  "cookiePreferences": "Preferencias de cookies"
+}

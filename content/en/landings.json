@@ -1,0 +1,176 @@
+{
+  "home": "Home",
+  "login": "Sign in",
+  "how": "How it works",
+  "skip": "Skip to content",
+  "example": "Illustrative example · fictional details · no real actions",
+  "photo": "Illustrative editorial scene",
+  "privacy": "Privacy",
+  "legal": "Legal notice",
+  "cookies": "Cookies",
+  "contact": "Contact",
+  "distributionTitle": "ONE LINK. MANY WAYS TO RECEIVE BOOKINGS.",
+  "distributionBody": "Your public profile and enquiry form, where people already find you. Promoters can send a request without creating an account.",
+  "channels": [
+    [
+      "Instagram",
+      "Link your profile in your bio or share it in direct messages."
+    ],
+    [
+      "WhatsApp Business",
+      "Configure the link in greeting, away or prepared messages."
+    ],
+    [
+      "Your website",
+      "Embed the booking widget or link directly to the form."
+    ],
+    [
+      "QR",
+      "Put your profile on posters, EPKs and other physical or digital materials."
+    ],
+    [
+      "Direct link",
+      "Share it by email, message or any other channel."
+    ]
+  ],
+  "manual": "Instagram and WhatsApp are not automatically connected. You configure and share the link on each platform.",
+  "profileName": "Your artist name",
+  "publicProfile": "PUBLIC PROFILE",
+  "linkExample": "Example link structure; this is not a published profile.",
+  "journeyTitle": "FROM REQUEST TO BOOKING.",
+  "journeyBody": "One opportunity keeps its conversation, terms and next action together. A hold is not a confirmation.",
+  "steps": [
+    "Form",
+    "Request",
+    "Conversation",
+    "Hold",
+    "Confirmation",
+    "Calendar"
+  ],
+  "stepBodies": [
+    "The promoter submits details from your public profile.",
+    "Review the contact, date and proposal before proceeding.",
+    "Record messages and agreements in the same booking.",
+    "Mark provisional availability and its expiry.",
+    "Confirm the terms once the decision is agreed.",
+    "Check dates and distinguish holds from confirmations."
+  ],
+  "emailTitle": "EMAIL ARRIVES. CONTEXT STAYS.",
+  "emailBody": "The private beta supports analysing an authorised inbox to identify possible offers and prepare information for review. It is not generally available in this version.",
+  "emailStatus": "PRIVATE BETA / AUTHORISATION AND CONFIGURATION REQUIRED",
+  "emailStages": [
+    [
+      "Detection",
+      "Identify a possible booking proposal."
+    ],
+    [
+      "Extraction",
+      "Prepare contact, artist, date, venue and terms when provided."
+    ],
+    [
+      "Review",
+      "The user checks the details and decides what happens next."
+    ]
+  ],
+  "emailNote": "Subject to beta admission and configuration. This page does not activate an inbox or automatically send or confirm bookings.",
+  "ecosystemTitle": "MORE THAN A PROFILE.",
+  "ecosystem": [
+    [
+      "Public profile",
+      "Your professional introduction and entry point for requests.",
+      "Public entry"
+    ],
+    [
+      "CUE Passport",
+      "A career connected to real booking activity.",
+      "Concept in development"
+    ],
+    [
+      "CUE ID",
+      "Your own visual identity within the Cuebooker universe.",
+      "In development"
+    ]
+  ],
+  "rosterTitle": "YOUR ROSTER, ORGANISED.",
+  "rosterBody": "Artists, requests and dates in one operation. Keep the relevant artist context without multiplying an agency proposal.",
+  "rosterStatus": "MULTI-ARTIST WORKSPACE / BETA",
+  "artist": "Artist",
+  "requests": "Request",
+  "status": "Status",
+  "date": "Next date",
+  "rosterRows": [
+    [
+      "Your artist 01",
+      "Proposal A",
+      "In conversation",
+      "To be agreed"
+    ],
+    [
+      "Your artist 02",
+      "Proposal B",
+      "Hold",
+      "Provisional date"
+    ],
+    [
+      "Your artist 03",
+      "—",
+      "No request",
+      "—"
+    ]
+  ],
+  "contextTitle": "EVERY PROPOSAL KEEPS ITS CONTEXT.",
+  "contextBody": "An enquiry addressed to the agency retains its contact and conversation. Assign the relevant artist in that same context; it does not become a separate copy for every artist.",
+  "context": [
+    [
+      "Contact",
+      "Example promoter"
+    ],
+    [
+      "Relevant artist",
+      "Your artist 01"
+    ],
+    [
+      "Date and venue",
+      "To be agreed · example venue"
+    ],
+    [
+      "Conversation",
+      "Check availability and event format"
+    ],
+    [
+      "Terms",
+      "Fee and production pending negotiation"
+    ],
+    [
+      "Next action",
+      "Review the proposal and reply to the contact"
+    ]
+  ],
+  "agencyJourney": "FROM CONTACT TO CONFIRMATION.",
+  "agencyDistribution": "YOUR ROSTER’S PROFILES, EVERYWHERE.",
+  "dj": {
+    "tag": "CUEBOOKER / FOR DJs",
+    "top": "YOUR PROFILE.",
+    "accent": "YOUR BOOKING.",
+    "lead": "Share your profile, receive proposals and manage your dates in one place.",
+    "create": "CREATE MY PROFILE",
+    "see": "DISCOVER HOW IT WORKS",
+    "closing": "YOUR NEXT REQUEST STARTS HERE.",
+    "other": "Also for managers and agencies",
+    "otherPath": "/agency",
+    "alt": "Illustrative editorial scene of a fully clothed DJ beside a booth in an industrial backstage."
+  },
+  "agency": {
+    "tag": "CUEBOOKER / FOR AGENCIES",
+    "top": "ALL YOUR ARTISTS.",
+    "accent": "ONE CONTROL CENTRE.",
+    "lead": "Organise requests, negotiations and dates across your roster without losing each artist’s context.",
+    "create": "CREATE AGENCY WORKSPACE",
+    "see": "SEE HOW IT WORKS",
+    "closing": "YOUR ROSTER. YOUR BOOKINGS. ALL CONNECTED.",
+    "other": "Also for independent DJs",
+    "otherPath": "/dj",
+    "alt": "Illustrative editorial scene of a booking professional at a worktable in an industrial music studio."
+  },
+  "cookiePreferences": "Cookie preferences"
+}
