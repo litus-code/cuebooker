@@ -689,6 +689,12 @@ async function selectBooking(bookingId: string) {
             </article>
           </div>
 
+          <div v-if="emailAttachments.some(file => !file.email_message_id)" class="thread-item__attachments" aria-label="Documentos de la solicitud">
+            <strong>{{ locale === 'es' ? 'Documentos de la solicitud' : 'Booking documents' }}</strong>
+            <button v-for="file in emailAttachments.filter(file => !file.email_message_id)" :key="file.id" type="button" class="thread-item__attachment" @click="openEmailAttachment(file.id)">
+              <span aria-hidden="true">↗</span> {{ file.file_name }} <small>({{ Math.ceil(file.byte_size / 1024) }} KB)</small>
+            </button>
+          </div>
           <p v-if="attachmentError" role="alert" class="core-inbox__empty">{{ attachmentError }}</p>
           <BookingActivityComposer
             id="core-inbox-activity-composer"
