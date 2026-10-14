@@ -49,6 +49,38 @@ Deno.serve(async(request:Request)=>{
     });return values[0];
    },
    create:(message,value)=>rpc('create_automatic_mailbox_request',{target_job:job.id,target_message:message,target_classification:{...value,draft:automaticMailboxDraft(value.draft!)}}),
+   saveAttachments:async(raw,bookingId)=>{
+    if(Deno.env.get('CUEBOOKER_CONNECTED_ATTACHMENTS_ENABLED')!=='true'||connections[0].transport!=='gmail'||!('attachment' in provider))return;
+    const items=Array.isArray(raw.attachments)?raw.attachments.slice(0,10):[];
+    const validType=(bytes:Uint8Array)=>{
+      if(bytes.length>=5&&String.fromCharCode(...bytes.slice(0,5))==='%PDF-')return 'application/pdf';
+      if(bytes.length>=8&&bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71&&bytes[4]===13&&bytes[5]===10)return 'image/png';
+      if(bytes.length>=3&&bytes[0]===255&&bytes[1]===216&&bytes[2]===255)return 'image/jpeg';
+      return '';
+    };
+    for(const [index,item] of items.entries()){
+      if(!item||typeof item.id!=='string'||!Number.isInteger(item.size)||item.size<1||item.size>5242880)continue;
+      const prior=await db<Array<{id:string}>>(`booking_email_attachments?mailbox_connection_id=eq.${job.connectionId}&provider_message_id=eq.${encodeURIComponent(job.messageId)}&attachment_index=eq.${index}&select=id&limit=1`);
+      if(prior.length)continue;
+      try{
+        if(!await rpc<boolean>('authorize_mailbox_incoming',{target_job:job.id}))break;
+        const bytes=await provider.attachment(job.grantId,job.messageId,item.id);
+        const mime=validType(bytes);
+        if(!mime||mime!==item.mime||!bytes.length||bytes.length>5242880)continue;
+        const path=`${job.workspaceId}/${job.connectionId}/${encodeURIComponent(job.messageId)}/${index}`;
+        const response=await fetch(`${base}/storage/v1/object/booking-email-attachments/${path}`,{
+          method:'POST',headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':mime,'x-upsert':'true'},body:bytes
+        });
+        if(!response.ok)throw new Error('mailbox_attachment_upload_failed');
+        await db('booking_email_attachments?on_conflict=mailbox_connection_id,provider_message_id,attachment_index',{
+          method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=minimal'},
+          body:JSON.stringify({workspace_id:job.workspaceId,booking_id:bookingId,mailbox_connection_id:job.connectionId,
+            provider_message_id:job.messageId,attachment_index:index,file_name:String(item.name||'Archivo').replace(/[\\/\x00-\x1f]/g,'_').slice(0,200),
+            content_type:mime,byte_size:bytes.length,storage_path:path})
+        });
+      }catch{console.warn('mailbox_attachment_item_failed');}
+    }
+   },
    retry:()=>rpc<boolean>('defer_mailbox_incoming',{target_job:job.id}),
    complete:(state,value)=>rpc('complete_mailbox_incoming',{target_job:job.id,target_state:state,target_kind:value?.kind||null,target_reason:value?.reason||null})
   });
