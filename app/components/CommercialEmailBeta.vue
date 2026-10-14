@@ -21,12 +21,13 @@ const spanish = computed(() => locale.value !== 'en')
             <span class="cl-email-demo-label">{{ spanish ? 'ASUNTO' : 'SUBJECT' }}</span>
             <h3>Booking request · Barcelona</h3>
             <p>{{ spanish ? 'Hola, nos gustaría contar con tu proyecto para un evento el 21 de noviembre en Barcelona. ¿Podemos hablar de condiciones?' : 'Hello, we would love to book your act for an event on November 21 in Barcelona. Could we discuss the terms?' }}</p>
+            <div class="cl-email-attachments"><span>{{ spanish ? 'ARCHIVOS DEL CORREO' : 'EMAIL ATTACHMENTS' }}</span><div><span><b>PDF</b> Tech Rider.pdf</span><span><b>JPG</b> Lineup.jpg</span></div></div>
           </div>
           <p class="cl-email-demo-footnote">{{ copy.example }}</p>
         </article>
 
         <div class="cl-email-demo-bridge" aria-hidden="true">
-          <span>{{ spanish ? 'DETECCIÓN · EXTRACCIÓN' : 'DETECT · EXTRACT' }}</span>
+          <span>{{ spanish ? 'CUEBOOKER ANALIZA' : 'CUEBOOKER ANALYSES' }}</span>
           <svg viewBox="0 0 48 48" fill="none"><path d="M6 24h34m-12-12 12 12-12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
 
@@ -39,16 +40,10 @@ const spanish = computed(() => locale.value !== 'en')
             <div><dt>{{ spanish ? 'Artista' : 'Artist' }}</dt><dd>{{ spanish ? 'Por determinar' : 'To be confirmed' }}</dd></div>
             <div><dt>{{ spanish ? 'Caché' : 'Fee' }}</dt><dd>{{ spanish ? 'No indicado' : 'Not provided' }}</dd></div>
           </dl>
+          <div class="cl-email-attachments cl-email-request-attachments"><span>{{ spanish ? 'DOCUMENTOS ASOCIADOS · DEMO CONCEPTUAL' : 'LINKED DOCUMENTS · CONCEPT DEMO' }}</span><div><span><b>PDF</b> Tech Rider.pdf</span><span><b>JPG</b> Lineup.jpg</span></div></div>
           <div class="cl-email-review"><span class="cl-email-demo-dot" />{{ spanish ? 'Lista para revisar · Tú decides' : 'Ready for review · You decide' }}</div>
           <p class="cl-email-demo-footnote">{{ copy.example }}</p>
         </article>
-      </div>
-      <div class="cl-email-details">
-        <div v-for="(stage, i) in copy.emailStages" :key="stage[0]">
-          <span class="cl-index">0{{ i + 1 }}</span>
-          <strong>{{ stage[0] }}</strong>
-          <p>{{ stage[1] }}</p>
-        </div>
       </div>
       <p class="cl-note cl-email-availability">{{ copy.emailNote }}</p>
     </div>
