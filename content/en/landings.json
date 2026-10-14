@@ -56,7 +56,7 @@
     "Check dates and distinguish holds from confirmations."
   ],
   "emailTitle": "AN OFFER ARRIVES. CUEBOOKER PUTS IT IN ORDER.",
-  "emailBody": "Connect an authorised inbox. Cuebooker identifies possible booking offers, extracts details from the message and prepares a request for review. Automatic attachment handling is planned and still needs validation.",
+  "emailBody": "Cuebooker detects possible booking offers in an authorised inbox and prepares a request from the available details. You review and decide.",
   "emailStatus": "SMART EMAIL CAPTURE",
   "emailStages": [
     [
