@@ -1,12 +1,14 @@
 {
   "hero": {
     "eyebrow": "BOOKING MANAGEMENT FOR DJs & AGENCIES",
-    "title": "MENOS MENSAJES.",
-    "accent": "MÁS BOOKINGS.",
+    "title": "TU BOOKING.",
+    "accent": "BAJO CONTROL.",
     "body": "Reúne solicitudes, conversaciones y fechas en un solo lugar. Aunque el contacto empiece fuera de Cuebooker.",
     "primary": "Crear mi perfil",
     "secondary": "Ver cómo funciona",
-    "note": "Para DJs independientes, managers y agencias."
+    "note": "Para DJs independientes, managers y agencias.",
+    "visual": "Que la música siga avanzando.",
+    "visualNote": "EL BOOKING YA ESTÁ OCURRIENDO."
   },
   "problem": {
     "label": "EL PROBLEMA",
@@ -87,7 +89,7 @@
     "label": "Información legal y contacto"
   },
   "seo": {
-    "title": "Cuebooker | Menos mensajes. Más bookings.",
+    "title": "Cuebooker | Tu booking. Bajo control.",
     "description": "Organiza solicitudes, conversaciones, seguimiento y fechas en un solo lugar. Un espacio de booking para DJs independientes, managers y agencias."
   },
   "nav": {

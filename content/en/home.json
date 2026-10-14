@@ -1,12 +1,14 @@
 {
   "hero": {
     "eyebrow": "BOOKING MANAGEMENT FOR DJs & AGENCIES",
-    "title": "FEWER MESSAGES.",
-    "accent": "MORE BOOKINGS.",
+    "title": "YOUR BOOKING.",
+    "accent": "UNDER CONTROL.",
     "body": "Bring requests, conversations and dates together in one place. Even when the first contact happens outside Cuebooker.",
     "primary": "Create my profile",
     "secondary": "See how it works",
-    "note": "For independent DJs, managers and agencies."
+    "note": "For independent DJs, managers and agencies.",
+    "visual": "Keep the music moving.",
+    "visualNote": "THE BOOKING IS ALREADY HAPPENING."
   },
   "problem": {
     "label": "THE PROBLEM",
@@ -87,7 +89,7 @@
     "label": "Legal information and contact"
   },
   "seo": {
-    "title": "Cuebooker | Fewer messages. More bookings.",
+    "title": "Cuebooker | Your booking. Under control.",
     "description": "Organise requests, conversations, follow-ups and dates in one place. A booking workspace for independent DJs, managers and agencies."
   },
   "nav": {
