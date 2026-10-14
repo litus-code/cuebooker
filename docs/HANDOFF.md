@@ -1,3 +1,24 @@
+## 2026-10-14 / Home 2.0 — PR1 commercial hierarchy
+
+Branch: `feat/home-2-commercial-pr1`, based on `main` at `bbdf29122f704039b353fa4eed788bfdfef5aaa7`. Implementation HEAD: `6f6456f741e988f34aa6916d4dfbae32e6ddf21c` (before this handoff-only commit).
+
+Implemented the user-requested PR1 from `CUEBOOKER_HOME_2_0_CODEX_SPEC.md`: acquisition hierarchy for independent DJs and managers/agencies, while keeping the existing club hero asset, CueBrand, preferences, visual tokens and real access routes. Order: hero, fragmented-booking problem, illustrative four-step demo, three product capabilities, DJ/agency segmentation, compact public-profile/Passport/CUE ID block, final signup CTA and existing legal/contact links. All signup CTAs use `/access?mode=signup`; no fictional `/dj` or `/agency` routes. Home copy and translated SEO now have one source per locale in `content/es/home.json` and `content/en/home.json`; removed the competing inline copy, hidden pricing and obsolete home CSS overrides. Demo uses fictional data, requires manual interaction, supports keyboard tabs, and explicitly does not send messages or create bookings. No promises of automatic channel import, AI or voice reliability. CUE ID remains labelled in development; agency capabilities are described as evolving.
+
+Validated in the isolated Codex cloud environment with Node 22.23.3 / npm 10.9.3:
+
+- `npm test`: 321 passed, 0 failed/skipped.
+- `npm run build` and `npm run generate`: passed, 34 routes prerendered in each final run.
+- `git diff --check`: passed.
+- Chromium/Playwright: ES and EN at 1440, 1280, 390 and 320 px; one H1, translated title/description/Open Graph metadata, no horizontal overflow, mobile hero signup CTA above the fold, four demo steps with arrow/Home/End keys and next/restart, modal menu focus trap/Escape/focus restoration, section anchor offset, mobile-to-desktop resize focus and signup navigation all passed. No browser console errors or uncaught page errors in these runs.
+- Additional desktop/390 px checks: live ES/EN switch, both theme modes, cookie preferences and sign-in navigation passed. Axe WCAG 2 A/AA + 2.1 AA checks found no automated violations in the home in dark/light modes. Adjusted small accent text locally in light mode to meet contrast; shared tokens/components remain unchanged. Automated checks do not replace comprehensive assistive-technology review.
+- Desktop and 390 px screenshots captured and visually reviewed locally; artifacts and smoke runners are outside the checkout at `/workspace/home2-review`. The published PR preview still needs review after its workflow completes.
+- `npm audit --omit=dev --audit-level=high`: failed with 20 existing dependency vulnerabilities (1 low, 16 high, 3 critical). Dependency declarations and lockfile are unchanged; resolve in a separate dependency task.
+- The repository exposes no lint or typecheck script; neither is claimed as passed.
+
+Scope: only `app/pages/index.vue`, the two home JSON files and this handoff. No Booking Core, authentication, Supabase, workspace logic, migrations, Edge Functions, dependency or workflow changes. Access navigation was checked; real signup/login requests were not submitted and backend behaviour is not claimed as validated. No merge or production deployment performed. The PR workflow may build a separate Cloudflare PR preview; it is not stable staging or production.
+
+Next: review PR1 visually on its PR preview, then handle PR2 separately (authorised spot asset and a product-faithful demonstration; verify integration claims against the target environment). PR3 acquisition landings/attribution remain separate. Do not introduce those features or modify private booking/auth flows in this branch.
+
 ## 2026-10-04 / Manual encrypted production backup infrastructure
 
 Owner approved a no-subscription manual GitHub Actions database backup while on a phone and securely entered CUEBOOKER_BACKUP_DB_URL and CUEBOOKER_BACKUP_PASSPHRASE into the production environment. Browser verified only their names. Existing required reviewer litus-code, main-only deployment rule and no admin bypass remain unchanged. No credential values were accessed.
