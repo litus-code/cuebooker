@@ -1,3 +1,25 @@
+## 2026-10-14 / Home 2.1 — editorial art direction
+
+Branch: `feature/home-2-1-art-direction`. Implementation HEAD: `c869c62ba0c53fbbc6eb4c3355c3f2f2c7d91e16` (before this handoff-only commit). Based on the current Home 2.0 review at `b84d3b706190be04bf1e42ec0a43bfa3ce680709` from PR #109; `main` remains `bbdf29122f704039b353fa4eed788bfdfef5aaa7`. PR #109 is unchanged. The new draft targets main so the existing PR-preview workflow runs; it includes the Home 2.0 foundation because that PR has not merged.
+
+Applied the user-supplied Home 2.1 brief, retained in `docs/HOME_2_1_ART_DIRECTION.md`. Four supplied captures were treated as the current state, not final designs. Hero: one cinematic composition, ES `TU BOOKING. / BAJO CONTROL.`, EN `YOUR BOOKINGS. / UNDER CONTROL.`, original club photo, real signup/scroll CTAs, four-step strip and a small editorial signature; removed the dominant C/ and CUE/001 block. Problem: replaced floating chips/arrows with named channels and microcontext, a single CSS connector and a labelled illustrative booking record (request/contact/date/status/next action). Explicit manual-capture language avoids claiming native Instagram/WhatsApp/call imports. Roles: identical panel dimensions and heading/body/CTA offsets in every tested viewport, with the supplied copy and actual signup route. Ecosystem: wide public-profile composition using the existing official cover, followed by Passport concept and a static capture of the real CUE ID lab model labelled in development. Final acid CTA uses the supplied next-booking direction and a natural English equivalent. No guarantee of gigs or new integration claims.
+
+Two home-only components own the complex static visuals: `HomeBookingContext.vue` and `HomeEcosystem.vue`. Shared brand/preferences/tracking, demo interaction, auth routes, visual tokens and legal/cookie links are retained. No dependency, framework, schema, Booking Core, Supabase, email/voice, payment, workspace, onboarding or workflow changes. No `/dj` or `/agency` pages or tracking pixels added.
+
+Validation in the isolated cloud environment, Node 22.23.3 / npm 10.9.3:
+
+- `npm test`: 321 passed, no failures/skips.
+- `npm run build` and `npm run generate`: passed; 34 routes prerendered in each.
+- `git diff --check`: passed.
+- Chromium/Playwright on both development and the compiled static output: ES/EN at 1440, 1280, 768, 390 and 320 px; no horizontal overflow; mobile CTA above fold; identical role sizes and title/body/CTA alignment; translated SEO; image loading; example/development labels; keyboard demo, menu trap/Escape/focus/resize, anchor offsets and actual signup navigation/required-field validation passed. No console errors or uncaught page errors in these checks.
+- Extra desktop/390 px checks: live language switch, dark/light themes, cookie preferences and sign-in navigation passed. Axe WCAG 2 A/AA and 2.1 AA reported no automatic home violations in either theme. Mobile CLS observed as 0 on compiled first load and after lazy showcase image loading; this is a local measurement, not a general performance guarantee.
+- Before/after desktop and mobile screenshots were captured and visually reviewed. They are committed in `docs/reviews/home-2-1/` for GitHub review. Screenshots are not private artist data. Review the separate new PR preview after its workflow completes; it is not stable staging.
+- No lint/typecheck scripts exist. The unchanged lockfile has the previously documented audit findings (20 vulnerabilities); no dependency updates are bundled here.
+
+Assets/caveats: `public/images/home21/cue-id-lab-preview.jpg` is a 32 KB JPEG captured from the existing lab renderer and actual `cueid-male-body-bald-master-v2.glb`; provenance/hashes are recorded beside it. The homepage does not mount 3D or download the 15 MB model/decoder. No actual published artist profile or trajectory screenshot was available without supplying artist data, so public-profile and Passport compositions are explicitly illustrative, with no fabricated performance numbers. The app does not support a signup query for DJ/agency selection; both role CTAs use the real signup route and selection remains in the existing onboarding. Signup navigation and the real form's native required-field checks were tested; no account was created, confirmation email was not exercised, and auth/backend behaviour is not claimed as newly validated. No final/licensed video was included in the package: the hero retains the club background, with its spot replacement point documented and no inactive video button.
+
+Production status: no merge, stable-staging deployment or production deployment. Next: review the draft PR and its preview at desktop/tablet/mobile, then provide the final licensed spot if video integration is to proceed. Keep internal booking/auth functionality outside this visual task.
+
 ## 2026-10-14 / Home 2.0 PR1 — booking control and stronger industrial composition
 
 Branch: `feat/home-2-commercial-pr1`; implementation HEAD `bfac6318775c9d8194baa91a23a7cadfcb1d0e12` (before this handoff-only commit). Continues PR #109, based on `main` at `bbdf29122f704039b353fa4eed788bfdfef5aaa7`.
