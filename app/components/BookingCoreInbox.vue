@@ -234,7 +234,7 @@ async function openEmailAttachment(id: string) {
   attachmentError.value = ''
   try {
     const url = await bookingCore.getBookingEmailAttachmentUrl(id)
-    window.open(url, '_blank', 'noopener,noreferrer')
+    window.location.assign(url)
   } catch {
     attachmentError.value = props.locale === 'es'
       ? 'No se ha podido abrir el archivo. Vuelve a intentarlo.'
