@@ -87,3 +87,22 @@
 .cl-profile .cl-form-frame:has(.public-booking-form__details:not([open])){max-height:none}
 .cl-profile .public-booking-form__details:not([open]){margin-bottom:0}
 @media(max-width:900px){.cl-email-showcase{grid-template-columns:1fr;margin-top:38px}.cl-email-demo-inbox,.cl-email-demo-request{min-height:0;padding:24px;transform:none}.cl-email-demo-bridge{padding:14px}.cl-email-demo-bridge svg{width:42px;height:42px}}
+
+
+/* Mail capture editorial stage v3: asymmetrical, one dominant product surface. */
+.cl-email-feature{background:radial-gradient(ellipse at 52% 55%,color-mix(in srgb,var(--cl-acid) 10%,transparent),transparent 53%),#111611}
+.cl-email-feature .cl-email-intro{text-align:left;max-width:1100px;margin-inline:0}
+.cl-email-feature .cl-email-intro h2{max-width:860px;margin:16px 0 22px;font-size:clamp(40px,5.25vw,76px);letter-spacing:-.06em;line-height:1.02}
+.cl-email-feature .cl-email-intro .cl-lead{max-width:650px;margin:0;font-size:18px}
+.cl-email-showcase{position:relative;display:grid;grid-template-columns:40% minmax(0,1fr);align-items:center;gap:0;min-height:560px;margin-top:46px;padding:40px 0 38px;isolation:isolate}
+.cl-email-showcase:before{content:"";position:absolute;inset:5% 8% 4% 24%;z-index:-1;background:radial-gradient(ellipse at center,color-mix(in srgb,var(--cl-acid) 21%,transparent),transparent 63%);filter:blur(44px)}
+.cl-email-demo-inbox{position:relative;z-index:2;transform:translateX(28px) translateY(-43px) rotate(-3deg);min-height:345px;border-radius:15px;padding:25px;background:#1d241f;box-shadow:0 35px 65px #0009;border:1px solid #525e4b}
+.cl-email-demo-request{position:relative;z-index:1;transform:none;min-height:520px;margin-left:-38px;padding:36px 40px 30px 96px;border:1px solid color-mix(in srgb,var(--cl-acid) 45%,#47573c);border-radius:22px;background:linear-gradient(125deg,#293521,#121a14 56%,#0d140e);box-shadow:0 35px 100px #000a}
+.cl-email-demo-request h3{font-size:clamp(24px,2.6vw,37px);max-width:470px}
+.cl-email-demo-bridge{position:absolute;z-index:3;top:46%;left:38.3%;transform:translate(-50%,-50%);padding:17px;background:#1b2b17;border:1px solid var(--cl-acid);border-radius:999px;box-shadow:0 0 0 9px #121912,0 0 40px color-mix(in srgb,var(--cl-acid) 35%,transparent)}
+.cl-email-demo-bridge span{position:absolute;left:50%;top:calc(100% + 20px);transform:translateX(-50%);white-space:nowrap;font-size:9px;letter-spacing:.14em}
+.cl-email-demo-bridge svg{width:38px;height:38px}
+.cl-email-review{margin-top:20px;padding:12px 14px;border-radius:8px;background:color-mix(in srgb,var(--cl-acid) 12%,transparent)}
+.cl-email-availability{max-width:670px;margin:0 auto!important}
+.cl-dj .cl-profile .public-booking-form__details:not([open])>.public-booking-form__details-grid{display:none!important}
+@media(max-width:900px){.cl-email-feature .cl-email-intro{text-align:center;margin-inline:auto}.cl-email-feature .cl-email-intro h2,.cl-email-feature .cl-email-intro .cl-lead{margin-inline:auto}.cl-email-showcase{display:flex;flex-direction:column;min-height:0;gap:18px;margin-top:34px;padding:0}.cl-email-demo-inbox,.cl-email-demo-request{width:100%;min-height:0;margin:0;transform:none;padding:24px;border-radius:14px}.cl-email-demo-bridge{position:relative;top:auto;left:auto;transform:none;padding:11px}.cl-email-demo-bridge span{position:static;transform:none;margin-left:8px}.cl-email-demo-bridge svg{width:28px;height:28px;transform:rotate(90deg)}}
