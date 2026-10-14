@@ -55,8 +55,8 @@
     "Confirm the terms once the decision is agreed.",
     "Check dates and distinguish holds from confirmations."
   ],
-  "emailTitle": "FROM EMAIL TO BOOKING. NO COPY-PASTE.",
-  "emailBody": "A booking proposal lands in your inbox. Cuebooker identifies it, extracts the available details and prepares a request for you to review.",
+  "emailTitle": "AN OFFER ARRIVES. CUEBOOKER PUTS IT IN ORDER.",
+  "emailBody": "Connect an authorised inbox. Cuebooker identifies possible booking offers, extracts details from the message and prepares a request for review. Automatic attachment handling is planned and still needs validation.",
   "emailStatus": "SMART EMAIL CAPTURE",
   "emailStages": [
     [
@@ -72,7 +72,7 @@
       "Prepares a request using available information so you can check it and decide the next step."
     ]
   ],
-  "emailNote": "Early access with an authorised, configured inbox. You review and decide; Cuebooker does not confirm bookings automatically.",
+  "emailNote": "Private beta with authorised activation. The attachments in this demonstration illustrate a feature in development, not yet confirmed in production.",
   "ecosystemTitle": "MORE THAN A PROFILE.",
   "ecosystem": [
     [
