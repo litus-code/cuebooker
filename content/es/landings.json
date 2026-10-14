@@ -55,24 +55,24 @@
     "Confirma las condiciones cuando la decisión esté acordada.",
     "Consulta las fechas y distingue holds de confirmaciones."
   ],
-  "emailTitle": "EL CORREO LLEGA. EL CONTEXTO SE QUEDA.",
-  "emailBody": "La beta privada contempla analizar un buzón autorizado para detectar posibles ofertas y preparar información para revisión. No está disponible de forma general en esta versión.",
-  "emailStatus": "BETA PRIVADA / AUTORIZACIÓN Y CONFIGURACIÓN REQUERIDAS",
+  "emailTitle": "TU CORREO RECIBE OFERTAS. CUEBOOKER PREPARA LAS SOLICITUDES.",
+  "emailBody": "Con Smart Email Capture, Cuebooker analiza los mensajes de un buzón autorizado, identifica posibles propuestas de contratación, extrae los datos disponibles y prepara solicitudes para que las revises. Tú decides cómo continuar cada booking.",
+  "emailStatus": "SMART EMAIL CAPTURE / ACCESO ANTICIPADO",
   "emailStages": [
     [
       "Detección",
-      "Identificar una posible propuesta de contratación."
+      "Distingue posibles propuestas de booking de otros correos."
     ],
     [
       "Extracción",
-      "Preparar contacto, artista, fecha, venue y condiciones si constan."
+      "Recoge contacto, artista, fecha, venue y condiciones cuando aparecen en el mensaje."
     ],
     [
-      "Revisión",
-      "El usuario comprueba los datos y decide el siguiente paso."
+      "Solicitud y revisión",
+      "Prepara una solicitud con los datos disponibles para que la compruebes y decidas el siguiente paso."
     ]
   ],
-  "emailNote": "Sujeto a admisión y configuración de la beta. Esta página no activa un buzón ni envía o confirma bookings automáticamente.",
+  "emailNote": "La conexión de correo se habilita durante la beta privada para participantes admitidos, previa autorización y configuración. No responde ni confirma contrataciones por tu cuenta.",
   "ecosystemTitle": "MÁS QUE UNA FICHA.",
   "ecosystem": [
     [
