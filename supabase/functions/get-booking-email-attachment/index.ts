@@ -11,7 +11,7 @@ Deno.serve(async (request) => {
   if (request.method !== "POST") return respond({ error: "method_not_allowed" }, 405);
   const jwt = request.headers.get("authorization")?.match(/^Bearer (.+)$/i)?.[1];
   if (!jwt) return respond({ error: "unauthorized" }, 401);
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")?.replace(/\\/$/, "");
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")?.replace(/\/$/, "");
   const publicKey = Deno.env.get("SUPABASE_ANON_KEY");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!supabaseUrl || !publicKey || !serviceKey) return respond({ error: "not_configured" }, 503);
