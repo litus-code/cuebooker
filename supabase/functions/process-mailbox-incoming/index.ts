@@ -63,7 +63,10 @@ Deno.serve(async(request:Request)=>{
       const prior=await db<Array<{id:string}>>(`booking_email_attachments?mailbox_connection_id=eq.${job.connectionId}&provider_message_id=eq.${encodeURIComponent(job.messageId)}&attachment_index=eq.${index}&select=id&limit=1`);
       if(prior.length)continue;
       try{
-        if(!await rpc<boolean>('authorize_mailbox_incoming',{target_job:job.id}))break;
+        // The booking RPC completes the job; authorize_mailbox_incoming only permits 'processing'.
+        // Re-check the connected mailbox's current consent and the job's booking before file access.
+        const current=await db<Array<{id:string}>>(`mailbox_connections?id=eq.${job.connectionId}&workspace_id=eq.${job.workspaceId}&user_id=eq.${job.actorId}&status=eq.connected&background_analysis_enabled=eq.true&background_analysis_revision=eq.${job.consentRevision}&select=id&limit=1`);
+        if(!current.length)break;
         const bytes=await provider.attachment(job.grantId,job.messageId,item.id);
         const mime=validType(bytes);
         if(!mime||mime!==item.mime||!bytes.length||bytes.length>5242880)continue;
