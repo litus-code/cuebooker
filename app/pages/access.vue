@@ -87,10 +87,14 @@ async function submit() {
       message.value = copy.value.resetConfirmation
       return
     }
-    analytics.track('signup_started', { surface: 'access' })
+    const acquisitionSource = route.query.source === 'dj' || route.query.source === 'agency'
+      ? route.query.source
+      : 'other'
+    const acquisition = { surface: 'access', acquisition_landing: acquisitionSource }
+    analytics.track('signup_started', acquisition)
     const result = await auth.signUp(email.value, password.value, displayName.value)
     analytics.track('signup_completed', {
-      surface: 'access',
+      ...acquisition,
       email_confirmation_required: result.emailConfirmationRequired
     })
     if (result.emailConfirmationRequired) {
