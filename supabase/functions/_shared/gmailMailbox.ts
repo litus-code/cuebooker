@@ -79,6 +79,14 @@ export function createGmailMailbox(c:GmailConfig,store:{email?:string;read:()=>P
    const messages=await Promise.all((r.messages||[]).map(async(m:any)=>gmailMessage(await call(`/messages/${encodeURIComponent(m.id)}?format=full`))));
    return {messages,nextCursor:typeof r.nextPageToken==='string'?r.nextPageToken:null};
   },
+  async attachment(_grantId:string,messageId:string,attachmentId:string) {
+   if(!/^[A-Za-z0-9_-]{1,512}$/.test(messageId)||!/^[A-Za-z0-9_-]{1,1024}$/.test(attachmentId))throw new Error('invalid_attachment_reference');
+   const result=await call(`/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(attachmentId)}`);
+   if(typeof result?.data!=='string'||result.data.length>7500000)throw new Error('invalid_attachment_payload');
+   const binary=atob(result.data.replace(/-/g,'+').replace(/_/g,'/'));
+   if(binary.length>5242880)throw new Error('attachment_too_large');
+   return Uint8Array.from(binary,c=>c.charCodeAt(0));
+  },
   async inboxFolders(_id:string){return {inbox:['INBOX'],excluded:['SPAM','TRASH','SENT','DRAFT']};},
   async referencedMessages(reference:string){
    if(!/^<[A-Za-z0-9._+-]+@[A-Za-z0-9.-]+>$/.test(reference)||reference.length>512)throw new Error('invalid_message');
