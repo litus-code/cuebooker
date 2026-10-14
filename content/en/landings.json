@@ -55,24 +55,24 @@
     "Confirm the terms once the decision is agreed.",
     "Check dates and distinguish holds from confirmations."
   ],
-  "emailTitle": "EMAIL ARRIVES. CONTEXT STAYS.",
-  "emailBody": "The private beta supports analysing an authorised inbox to identify possible offers and prepare information for review. It is not generally available in this version.",
-  "emailStatus": "PRIVATE BETA / AUTHORISATION AND CONFIGURATION REQUIRED",
+  "emailTitle": "BOOKING OFFERS ARRIVE BY EMAIL. CUEBOOKER PREPARES THE REQUESTS.",
+  "emailBody": "With Smart Email Capture, Cuebooker analyses messages in an authorised inbox, identifies possible booking enquiries, extracts available details and prepares requests for your review. You decide what happens next.",
+  "emailStatus": "SMART EMAIL CAPTURE / EARLY ACCESS",
   "emailStages": [
     [
       "Detection",
-      "Identify a possible booking proposal."
+      "Distinguishes possible booking offers from unrelated messages."
     ],
     [
       "Extraction",
-      "Prepare contact, artist, date, venue and terms when provided."
+      "Captures contact, artist, date, venue and terms when mentioned."
     ],
     [
-      "Review",
-      "The user checks the details and decides what happens next."
+      "Request and review",
+      "Prepares a request using available information so you can check it and decide the next step."
     ]
   ],
-  "emailNote": "Subject to beta admission and configuration. This page does not activate an inbox or automatically send or confirm bookings.",
+  "emailNote": "Email connection is enabled during the private beta for admitted participants, after authorisation and setup. It does not reply to offers or confirm bookings on your behalf.",
   "ecosystemTitle": "MORE THAN A PROFILE.",
   "ecosystem": [
     [
