@@ -27,6 +27,32 @@ export function useCommercialLanding(audience: 'dj' | 'agency') {
     captureOrigin()
     analytics.track('signup_click', { placement: `landing_${audience}_${area}`, audience })
   }
-  useHead(() => ({ htmlAttrs: { lang: locale.value }, title: `${audience === 'dj' ? 'DJ' : 'Agency'} | Cuebooker`, meta: [{ name: 'description', content: copy.value[audience].lead }, { property: 'og:description', content: copy.value[audience].lead }] }))
+  const seo = computed(() => audience === 'dj' ? (locale.value === 'es' ? {
+    title: 'Gestión de bookings para DJs | Cuebooker',
+    description: 'Organiza solicitudes de contratación, conversaciones y fechas. Comparte tu perfil profesional DJ y recibe propuestas con tu formulario de booking.'
+  } : {
+    title: 'DJ Booking Management Software | Cuebooker',
+    description: 'Manage DJ booking requests, conversations and dates. Share your professional DJ profile and receive enquiries through your booking form.'
+  }) : (locale.value === 'es' ? {
+    title: 'Software de booking para agencias | Cuebooker',
+    description: 'Gestiona artistas, solicitudes de contratación, negociaciones y fechas desde un mismo espacio para agencias de booking y managers musicales.'
+  } : {
+    title: 'Booking Software for Music Agencies | Cuebooker',
+    description: 'Manage artist rosters, booking enquiries, negotiations and dates in one workspace built for music booking agencies and managers.'
+  }))
+  const canonical = `https://cuebooker.com/${audience}`
+  useHead(() => ({
+    htmlAttrs: { lang: locale.value },
+    title: seo.value.title,
+    link: [{ rel: 'canonical', href: canonical }],
+    meta: [
+      { name: 'description', content: seo.value.description },
+      { property: 'og:title', content: seo.value.title },
+      { property: 'og:description', content: seo.value.description },
+      { property: 'og:url', content: canonical },
+      { name: 'twitter:title', content: seo.value.title },
+      { name: 'twitter:description', content: seo.value.description }
+    ]
+  }))
   return { copy, locale, signupTo, trackSignup }
 }
