@@ -1,3 +1,15 @@
+## 2026-10-14 / Home 2.0 PR1 — booking control and stronger industrial composition
+
+Branch: `feat/home-2-commercial-pr1`; implementation HEAD `bfac6318775c9d8194baa91a23a7cadfcb1d0e12` (before this handoff-only commit). Continues PR #109, based on `main` at `bbdf29122f704039b353fa4eed788bfdfef5aaa7`.
+
+The current approved hero direction is **TU BOOKING. BAJO CONTROL.** / **YOUR BOOKING. UNDER CONTROL.**, including translated SEO. It replaces the earlier acquisition slogan: the product organises existing opportunities rather than promising to generate gigs. Stronger visual rhythm preserves the existing club asset and visual tokens: large editorial headline, outlined C/ artwork and artist message, indexed four-step hero strip, scattered-channel convergence diagram, selected-step treatment and technical console, SVG capability illustrations with a neon lead card and staggered desktop layout, differentiated DJ/agency cards and neon closing section. No new assets, libraries, automated effects or internal product changes.
+
+Validation in the isolated cloud environment (Node 22.23.3 / npm 10.9.3): 321 tests passed; `npm run build` and `npm run generate` passed with 34 routes each; `git diff --check` passed. Chromium/Playwright passed in ES/EN at 1440, 1280, 390 and 320 px, including no horizontal overflow, mobile CTA visibility, translated SEO, demo keyboard navigation, menu focus/Escape/resize, anchors and signup route. Additional desktop/390 px locale/theme/cookie/sign-in checks and automated Axe WCAG A/AA checks passed in dark/light modes. Desktop and 390 px screenshots reviewed locally. The previous published PR preview was also inspected before this revision; inspect the new preview once the next run completes. Existing audit findings and lack of lint/typecheck scripts remain as documented below.
+
+Video status: the spot is not integrated. No MP4, MOV or WebM exists in the checkout or available attachments; the user has been asked for the original file/location. The intended PR2 direction is an authorised MP4/H.264 widescreen export, preferably 16:9, preserving composition rather than stretching a vertical source, with poster and accessible playback controls. Encoding and playback cannot be validated until the source is available. Do not substitute an invented spot or claim the video is included.
+
+Scope remains the home, its ES/EN JSON and this handoff. Booking Core, authentication, Supabase, workspace, dependencies and workflows are unchanged. No real login/signup submissions, merge or production deployment. Next: visual review of the updated PR #109, then locate/inspect the original spot and implement the separately scoped video phase.
+
 ## 2026-10-14 / Home 2.0 — PR1 commercial hierarchy
 
 Branch: `feat/home-2-commercial-pr1`, based on `main` at `bbdf29122f704039b353fa4eed788bfdfef5aaa7`. Implementation HEAD: `6f6456f741e988f34aa6916d4dfbae32e6ddf21c` (before this handoff-only commit).
