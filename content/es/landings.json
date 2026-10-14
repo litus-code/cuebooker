@@ -55,8 +55,8 @@
     "Confirma las condiciones cuando la decisión esté acordada.",
     "Consulta las fechas y distingue holds de confirmaciones."
   ],
-  "emailTitle": "DEL EMAIL AL BOOKING. SIN COPIAR NI UN DATO.",
-  "emailBody": "Recibes una propuesta por correo. Cuebooker detecta la oferta, recoge los detalles disponibles y prepara una solicitud para que tú decidas.",
+  "emailTitle": "UNA OFERTA ENTRA. CUEBOOKER LA PONE EN ORDEN.",
+  "emailBody": "Conecta un buzón autorizado. Cuebooker identifica posibles ofertas, extrae los datos del mensaje y prepara una solicitud para revisar. La conservación automática de adjuntos está prevista y pendiente de validación.",
   "emailStatus": "SMART EMAIL CAPTURE",
   "emailStages": [
     [
@@ -72,7 +72,7 @@
       "Prepara una solicitud con los datos disponibles para que la compruebes y decidas el siguiente paso."
     ]
   ],
-  "emailNote": "Acceso anticipado mediante buzón autorizado y configurado. Tú revisas y decides; Cuebooker no confirma bookings automáticamente.",
+  "emailNote": "Beta privada con activación autorizada. Los adjuntos de esta demostración ilustran una función en desarrollo, todavía no confirmada en producción.",
   "ecosystemTitle": "MÁS QUE UNA FICHA.",
   "ecosystem": [
     [
