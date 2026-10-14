@@ -1,3 +1,13 @@
+## 2026-10-14 — Beta0.0.5 published to PR96; Groq staging backend verified
+
+Owner-authorized code revision d4cb3ce428fb8e70f83613b66bc33c04616757aa published on feature/agency-multi-artist-beta. Local533/533 tests,40-route static generation and diff check pass. GitHub CI2082/run38542167347/job115779336457 SUCCESS. Preview2556/run38542167829/job115779338094 SUCCESS; logs confirm exact code SHA and deployment39452999 at https://pr-96.cuebooker-staging.pages.dev (immutable https://39452999.cuebooker-staging.pages.dev). Stable-staging job115779341943 SKIPPED. PR96 remains draft and unmerged; production untouched.
+
+Staging lycprjeuuynfzwskycwv smart-capturev27 ACTIVE, verify_jwt=true retained. Both deployed files match the published candidate source exactly. Bundle SHA256d55348329439c3fb8f436518961504ef1613ecc8bba8795487088b7bbed81e00. Unauthenticated livePOST returns401. No hosted schema, quota, secrets, billing tier, real email/audio/provider calls or production changes. Previousv26 source retrieved before replacement for rollback.
+
+Groq Whisper transcription and GPT OSS20B extraction are now configured by code; existing private GROQ_API_KEY is reused without reading or changing it. Successful transcription survives extraction429/invalid output/timeouts and local parsing makes no further AI call. Transcription429 needs available browser dictation; without it the UI reports failure. This backend inspection/auth check is not a live Groq or microphone acceptance proof.
+
+Next exact block: owner Safari/iPhone CUE stop→transcript→review (venue/date/fee), then agency artist assignment→reply thread→confirmation→calendar and public catalogue. Before production still resolve historical backend parity, Google/privacy/provider/time-based and release gates. Do not equate preview publication with production readiness. This subsequent handoff-only commit does not change Beta0.0.5 application sources.
+
 ## 2026-10-14 — Beta0.0.5 CUE voice/Groq and agency parity candidate
 
 Owner authorized publication to PR96 preview and staging smart-capture. Base feature88dc8234d74cc6a265a320037bf5e9f3b41a61c4, mainbbdf29122f704039b353fa4eed788bfdfef5aaa7. No merge, stable-staging or production promotion authorized by this block.
