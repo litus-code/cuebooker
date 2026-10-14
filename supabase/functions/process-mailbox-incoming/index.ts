@@ -72,8 +72,8 @@ Deno.serve(async(request:Request)=>{
           method:'POST',headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':mime,'x-upsert':'true'},body:bytes
         });
         if(!response.ok)throw new Error('mailbox_attachment_upload_failed');
-        await db('booking_email_attachments?on_conflict=mailbox_connection_id,provider_message_id,attachment_index',{
-          method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=minimal'},
+        await db('booking_email_attachments',{
+          method:'POST',headers:{Prefer:'return=minimal'},
           body:JSON.stringify({workspace_id:job.workspaceId,booking_id:bookingId,mailbox_connection_id:job.connectionId,
             provider_message_id:job.messageId,attachment_index:index,file_name:String(item.name||'Archivo').replace(/[\\/\x00-\x1f]/g,'_').slice(0,200),
             content_type:mime,byte_size:bytes.length,storage_path:path})
