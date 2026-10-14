@@ -53,10 +53,18 @@ function plainBody(part:any,depth=0):string{
  if(part.mimeType==='text/html'&&typeof part.body?.data==='string'&&part.body.data.length<=200000)return new TextDecoder().decode(unbase64(part.body.data)).replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi,'').replace(/<br\s*\/?\s*>|<\/p>|<\/div>/gi,'\n').replace(/<[^>]*>/g,'');
  return '';
 }
+function gmailAttachmentRefs(part:any,depth=0):Array<{id:string;name:string;mime:string;size:number}> {
+ if(depth>12)return [];
+ const children=Array.isArray(part?.parts)?part.parts.flatMap((child:any)=>gmailAttachmentRefs(child,depth+1)):[];
+ const name=typeof part?.filename==='string'?part.filename.trim():'';
+ const id=part?.body?.attachmentId;
+ if(name&&typeof id==='string'&&id.length<=1024&&name.length<=200)children.push({id,name,mime:String(part.mimeType||''),size:Number(part.body?.size||0)});
+ return children.slice(0,10);
+}
 export function gmailMessage(message:any){
  if(typeof message.id!=='string'||typeof message.threadId!=='string'||!Number.isFinite(Number(message.internalDate)))throw new Error('invalid_provider_response');
  const body=plainBody(message.payload)||String(message.snippet||'');
- return {id:message.id,thread_id:message.threadId,from:addresses(header(message,'From')),to:addresses(header(message,'To')),subject:header(message,'Subject'),date:Math.floor(Number(message.internalDate)/1000),body:body.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'),folders:Array.isArray(message.labelIds)?message.labelIds:[],automation:{autoSubmitted:header(message,'Auto-Submitted'),contentType:header(message,'Content-Type'),listId:header(message,'List-ID'),listUnsubscribe:header(message,'List-Unsubscribe'),precedence:header(message,'Precedence')},threading:{inReplyTo:header(message,'In-Reply-To'),references:header(message,'References')}};
+ return {id:message.id,thread_id:message.threadId,from:addresses(header(message,'From')),to:addresses(header(message,'To')),subject:header(message,'Subject'),date:Math.floor(Number(message.internalDate)/1000),body:body.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'),folders:Array.isArray(message.labelIds)?message.labelIds:[],automation:{autoSubmitted:header(message,'Auto-Submitted'),contentType:header(message,'Content-Type'),listId:header(message,'List-ID'),listUnsubscribe:header(message,'List-Unsubscribe'),precedence:header(message,'Precedence')},threading:{inReplyTo:header(message,'In-Reply-To'),references:header(message,'References')},attachments:gmailAttachmentRefs(message.payload)};
 }
 export function createGmailMailbox(c:GmailConfig,store:{email?:string;read:()=>Promise<GmailTokens>;write:(tokens:GmailTokens)=>Promise<void>;reauth:()=>Promise<void>},request:typeof fetch=fetch){
  async function access(){let t=await store.read();if(t.reauthAt<=Date.now()){await store.reauth();throw new Error('mailbox_reconnect_required');}
