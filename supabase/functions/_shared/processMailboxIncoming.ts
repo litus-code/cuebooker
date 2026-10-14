@@ -3,7 +3,7 @@ import type {BookingMailClassification} from './mailboxClassifier.ts';
 import {mailboxPreFilter} from './mailboxPreFilter.ts';
 import type {MailboxReplyLink} from './mailboxReplyLink.ts';
 type Job={id:string;connectionId:string;workspaceId:string;actorId:string;grantId:string;email:string;messageId:string;threadId:string;since:string};
-export async function processMailboxIncoming(job:Job,options:{authorize:()=>Promise<boolean>;message:()=>Promise<any>;inbox:()=>Promise<{inbox:string[];excluded:string[]}>;linkedBooking:(raw:any)=>Promise<MailboxReplyLink>;sync:(bookingId:string,message:ReturnType<typeof mailboxMessage>)=>Promise<unknown>;classify:(message:ReturnType<typeof mailboxMessage>)=>Promise<BookingMailClassification>;create:(message:ReturnType<typeof mailboxMessage>,classification:BookingMailClassification)=>Promise<unknown>;retry?:()=>Promise<boolean>;complete:(state:'completed'|'ignored'|'failed',classification?:BookingMailClassification)=>Promise<unknown>}){
+export async function processMailboxIncoming(job:Job,options:{authorize:()=>Promise<boolean>;message:()=>Promise<any>;inbox:()=>Promise<{inbox:string[];excluded:string[]}>;linkedBooking:(raw:any)=>Promise<MailboxReplyLink>;sync:(bookingId:string,message:ReturnType<typeof mailboxMessage>)=>Promise<unknown>;classify:(message:ReturnType<typeof mailboxMessage>)=>Promise<BookingMailClassification>;create:(message:ReturnType<typeof mailboxMessage>,classification:BookingMailClassification)=>Promise<unknown>;saveAttachments?:(raw:any,bookingId:string)=>Promise<void>;retry?:()=>Promise<boolean>;complete:(state:'completed'|'ignored'|'failed',classification?:BookingMailClassification)=>Promise<unknown>}){
  try{
   if(!await options.authorize()){await options.complete('ignored');return 'ignored';}
   const raw=await options.message(),message=mailboxMessage(raw,job.email);
@@ -21,7 +21,11 @@ export async function processMailboxIncoming(job:Job,options:{authorize:()=>Prom
   if(!await options.authorize()){await options.complete('ignored');return 'ignored';}
   if(classification.kind==='booking'){
    if(!classification.draft)throw new Error('missing_booking_draft');
-   await options.create(message,classification);return 'created';
+   const created=await options.create(message,classification);
+   if(typeof created==='string'&&options.saveAttachments){
+    try{await options.saveAttachments(raw,created);}catch{console.warn('mailbox_attachment_processing_failed');}
+   }
+   return 'created';
   }
   await options.complete('completed',classification);return 'classified';
  }catch(error){
