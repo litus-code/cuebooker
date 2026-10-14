@@ -296,7 +296,7 @@ function submit() {
         <small v-if="fieldErrors.initialMessage" id="booking-message-error" class="public-booking-form__field-error">{{ fieldErrors.initialMessage }}</small>
       </label>
 
-      <details ref="detailsRoot" class="public-booking-form__details" :open="preview ? true : undefined">
+      <details ref="detailsRoot" class="public-booking-form__details" >
         <summary>{{ copy.details }}</summary>
         <div class="public-booking-form__details-grid">
           <label><span>{{ copy.organization }}</span><input v-model="form.organizationName" maxlength="180"></label>
