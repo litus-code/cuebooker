@@ -21,12 +21,10 @@ const workspaceBilling = useWorkspaceBilling()
 const preferences = useCuePreferences()
 const {
   currentPlan,
-  demoOverrideEnabled,
   can: canEntitlement,
   capacity: cueCapacity,
   limit: entitlementLimit,
-  setBasePlan,
-  setDemoPlan
+  setBasePlan
 } = useCueEntitlements()
 const route = useRoute()
 const router = useRouter()
@@ -141,11 +139,6 @@ const tourStep = ref(-1)
 const settingsOpen = ref(false)
 watch(() => route.query.mailbox, value => { if (value) settingsOpen.value = true }, { immediate: true })
 const settingsTrigger = ref<HTMLElement | null>(null)
-const passwordCurrent = ref('')
-const passwordNew = ref('')
-const passwordConfirm = ref('')
-const passwordSaving = ref(false)
-const passwordMessage = ref('')
 const profileForm = ref<ArtistProfileForm>(emptyProfileForm())
 const profileEditorFormSnapshot = ref<ArtistProfileForm | null>(null)
 const profileLoading = ref(false)
@@ -2306,23 +2299,7 @@ function closeTour() {
 }
 function statusLabel(status: AvailabilityStatus) { return status === 'confirmed' ? copy.value.confirmedStatus : status === 'hold' ? 'Hold' : copy.value.unavailable }
 async function logout() { await auth.signOut(); await navigateTo('/access') }
-async function savePassword() {
-  passwordMessage.value = ''
-  if (passwordNew.value.length < 8) { passwordMessage.value = copy.value.passwordLength; return }
-  if (passwordNew.value !== passwordConfirm.value) { passwordMessage.value = copy.value.passwordMismatch; return }
-  passwordSaving.value = true
-  try {
-    await auth.updatePassword(passwordCurrent.value, passwordNew.value)
-    passwordCurrent.value = ''
-    passwordNew.value = ''
-    passwordConfirm.value = ''
-    passwordMessage.value = copy.value.passwordSaved
-  } catch (error: any) {
-    passwordMessage.value = error?.data?.msg || error?.data?.message || error?.message || (preferences.locale.value === 'es' ? 'No se pudo actualizar la contraseña.' : 'The password could not be updated.')
-  } finally {
-    passwordSaving.value = false
-  }
-}
+
 useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.locale.value } }))
 </script>
 
@@ -3206,32 +3183,10 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <AgencyCatalogEditor v-if="isAgency && agencyWorkspaceId" :workspace-id="agencyWorkspaceId" :role="agencyWorkspaceRole" :locale="preferences.locale.value" @edit-artist="id => { closeSettings(); chooseArtist(id, 'profile') }" />
         <AgencyTeamPanel v-if="isAgency && agencyWorkspaceId" :workspace-id="agencyWorkspaceId" :role="agencyWorkspaceRole" :user-id="auth.session.value?.user.id || ''" :locale="preferences.locale.value" />
         <ConnectedMailboxPanel v-if="auth.session.value && bookingCoreWorkspaceId && (!isAgency || canOperateAgency)" :workspace-id="bookingCoreWorkspaceId" :locale="preferences.locale.value" />
-        <section v-if="isAgency && demoOverrideEnabled" class="settings-group settings-group--demo">
-          <span>DEMO PLAN / {{ currentPlan.toUpperCase().replace('_', ' ') }}</span>
-          <div class="settings-options settings-options--three">
-            <button :class="{ active: currentPlan === 'free' }" type="button" @click="setDemoPlan('free')">FREE</button>
-            <button :class="{ active: currentPlan === 'artist_pro' }" type="button" @click="setDemoPlan('artist_pro')">ARTIST PRO</button>
-            <button :class="{ active: currentPlan === 'agency' }" type="button" @click="setDemoPlan('agency')">AGENCY</button>
-          </div>
-          <small>{{ preferences.locale.value === 'es' ? 'Solo staging/demo. No modifica billing.' : 'Staging/demo only. Billing is unchanged.' }}</small>
-        </section>
-        <form v-if="isAgency" class="password-form" @submit.prevent="savePassword">
-          <p class="eyebrow">{{ copy.password }}</p>
-          <label><span>{{ copy.currentPassword }}</span><input v-model="passwordCurrent" type="password" autocomplete="current-password" required></label>
-          <label><span>{{ copy.newPassword }}</span><input v-model="passwordNew" type="password" minlength="8" autocomplete="new-password" required></label>
-          <label><span>{{ copy.confirmPassword }}</span><input v-model="passwordConfirm" type="password" minlength="8" autocomplete="new-password" required></label>
-          <p v-if="passwordMessage" class="form-hint" :class="{ 'form-hint--success': passwordMessage === copy.passwordSaved, 'form-hint--error': passwordMessage !== copy.passwordSaved }">{{ passwordMessage }}</p>
-          <button class="primary-button" type="submit" :disabled="passwordSaving">{{ passwordSaving ? '…' : copy.savePassword }}</button>
-        </form>
-        <section v-if="!isAgency" class="settings-preferences settings-preferences--individual" aria-labelledby="individual-preferences-title">
+        <section class="settings-preferences" :class="{ 'settings-preferences--individual': !isAgency }" aria-labelledby="settings-preferences-title">
           <p class="eyebrow">{{ preferences.locale.value === 'es' ? 'PREFERENCIAS' : 'PREFERENCES' }}</p>
-          <h3 id="individual-preferences-title">{{ preferences.locale.value === 'es' ? 'Idioma y apariencia' : 'Language and appearance' }}</h3>
+          <h3 id="settings-preferences-title">{{ preferences.locale.value === 'es' ? 'Idioma y apariencia' : 'Language and appearance' }}</h3>
           <CuePreferencesControl compact labels />
-        </section>
-        <section v-else class="settings-preferences" aria-label="Preferencias">
-          <p class="eyebrow">{{ preferences.locale.value === 'es' ? 'PREFERENCIAS' : 'PREFERENCES' }}</p>
-          <section class="settings-group"><span>{{ copy.language }}</span><div class="settings-options"><button :class="{ active: preferences.locale.value === 'es' }" type="button" @click="preferences.setLocale('es')">ES</button><button :class="{ active: preferences.locale.value === 'en' }" type="button" @click="preferences.setLocale('en')">EN</button></div></section>
-          <section class="settings-group"><span>{{ copy.appearance }}</span><div class="settings-options"><button :class="{ active: preferences.theme.value === 'dark' }" type="button" @click="preferences.setTheme('dark')">{{ copy.dark }}</button><button :class="{ active: preferences.theme.value === 'light' }" type="button" @click="preferences.setTheme('light')">{{ copy.light }}</button></div></section>
         </section>
         <p class="settings-release">Cuebooker · {{ APP_RELEASE_LABEL }}</p>
       </aside>
@@ -3621,6 +3576,7 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .settings-panel { display: block; }
 .settings-preferences { display:grid; gap:4px; margin-top:20px; padding:16px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-panel); background:var(--cue-bg); }
 .settings-preferences > .eyebrow { margin:0 0 2px; }
+.settings-preferences > h3 { margin:0; font-size:18px; line-height:1.3; }
 .settings-preferences .settings-group { padding:12px 0 0; border-top:1px solid var(--cue-border); }
 .settings-preferences .settings-group + .settings-group { margin-top:2px; }
 .settings-panel > .editor-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:-26px -26px 18px; padding:20px 26px 16px; border-bottom:1px solid var(--cue-border); background:var(--cue-surface); }

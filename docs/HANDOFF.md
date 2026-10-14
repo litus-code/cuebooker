@@ -1,3 +1,13 @@
+## 2026-10-14 — Beta0.0.5 CUE voice/Groq and agency parity candidate
+
+Owner authorized publication to PR96 preview and staging smart-capture. Base feature88dc8234d74cc6a265a320037bf5e9f3b41a61c4, mainbbdf29122f704039b353fa4eed788bfdfef5aaa7. No merge, stable-staging or production promotion authorized by this block.
+
+Reproduced voice stop sending audio before final browser dictation and unmount submitting audio. Corrected bounded final-result collection, interim fallback, duplicate-stop guard and microphone/cancellation cleanup. Reproduced date/time punctuation joining a fee; corrected local numeric capture. Groq adapter uses Whisper Turbo and the existing mailbox-model family GPT OSS20B, strict schema validation and bounded one-call-per-stage requests. Extraction errors preserve server text;429 uses local parsing without further AI requests. Transcription429 uses available browser dictation, otherwise explicit failure/typed input. Existing authentication and quota remain. No schema/secret/billing changes or real mail/audio/provider calls in local tests.
+
+Agency settings now shares the individual preference toggles and removes demo-plan/password blocks. Catalogue external arrow uses SVG. Release labelBeta0.0.5 prepared for this single candidate. Reconstructed publication candidate passes533/533 tests and static generation40 routes; diff check passes. Staging smart-capturev26 was retrieved as the rollback baseline, ACTIVE and verify_jwt=true. See CUE_VOICE_GROQ.md for configuration, quotas, failure truth and rollback.
+
+Next: verify exact published revision/CI/preview and staging backend, record deployment evidence, then owner Safari/iPhone capture plus agency assignment→reply thread→confirmation→calendar and saved public catalogue checks. All historical production/privacy/provider/time-based gates remain open. No live microphone/Groq accuracy claim.
+
 ## 2026-10-04 23:31 Europe/Madrid — Beta0.0.4 archive/admission preview candidate
 
 Owner authorized publishing UI adjustments to PR96 preview only and reviewing solo/agency. Changes are bounded to archive dialog/button, admission/capacity copy, tests, release label and current execution/handoff docs. No merge, stable staging, production, schema, secrets or admission capacity change. Await candidate CI/preview and visual checks. Previous acceptance and isolated30-migration run remain separate evidence.

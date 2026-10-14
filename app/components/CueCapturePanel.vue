@@ -3,7 +3,7 @@ import type { BookingSource, CoreBooking, CounterpartyKind, CreateManualBookingI
 import type { SmartCaptureResult } from '../domain/smartCapture'
 
 import { interpretCueText } from '../services/cueInterpreter'
-import { localInterpretationToSmartCapture } from '../services/captureEngine'
+import { captureFailure, localInterpretationToSmartCapture } from '../services/captureEngine'
 
 const props = defineProps<{
   open: boolean
@@ -329,7 +329,7 @@ async function onVoiceCaptured(value: string) {
 }
 
 async function onAudioCaptured(audio: Blob, filename: string, fallbackTranscript = '') {
-  if (analyzing.value) return
+  if (analyzing.value) { voiceInput.value?.setProcessing(false); return }
   analytics.track('smart_capture_start', {
     mode: 'audio',
     audio_bytes: audio.size,
@@ -378,10 +378,10 @@ async function onAudioCaptured(audio: Blob, filename: string, fallbackTranscript
       missing_fields: analysis.result.missingFields.length,
       warnings: analysis.result.warnings.length
     }, props.workspaceId)
-  } catch {
-    interpretationMessage.value = props.locale === 'es'
-      ? 'No he podido transcribir este audio. Inténtalo de nuevo o escríbelo.'
-      : 'I could not transcribe this audio. Try again or type it.'
+  } catch (error) {
+    interpretationMessage.value = captureFailure(error).rateLimited
+      ? (props.locale === 'es' ? 'El servicio de voz ha alcanzado su límite y el navegador no ha recuperado un dictado. Puedes escribir la solicitud o intentarlo más tarde.' : 'The voice service has reached its limit and browser dictation was unavailable. You can type the request or try later.')
+      : (props.locale === 'es' ? 'No he podido transcribir este audio. Inténtalo de nuevo o escríbelo.' : 'I could not transcribe this audio. Try again or type it.')
     analytics.track('smart_capture_result', {
       mode: 'audio',
       success: false,

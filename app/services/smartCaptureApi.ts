@@ -26,6 +26,8 @@ export function createSmartCaptureApi(options: SmartCaptureApiOptions) {
   async function analyzeText(input: SmartCaptureTextInput) {
     return $fetch<SmartCaptureResult>(`${baseUrl}/functions/v1/smart-capture`, {
       method: 'POST',
+      retry: 0,
+      timeout: 90000,
       headers: headers('application/json'),
       body: {
         mode: 'text',
@@ -47,6 +49,8 @@ export function createSmartCaptureApi(options: SmartCaptureApiOptions) {
 
     return $fetch<SmartCaptureResult>(`${baseUrl}/functions/v1/smart-capture`, {
       method: 'POST',
+      retry: 0,
+      timeout: 90000,
       headers: headers(),
       body: form
     })

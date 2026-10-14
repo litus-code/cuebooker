@@ -2,12 +2,12 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 
-test('individual settings reuse the shared language and appearance controls', async () => {
+test('artist and agency settings reuse the shared language and appearance controls', async () => {
   const page = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
   assert.match(page, /isAgency \? 'settings-panel--agency' : 'settings-panel--individual'/)
-  const module = page.match(/<section v-if="!isAgency" class="settings-preferences settings-preferences--individual"[\s\S]*?<\/section>/)?.[0]
+  const module = page.match(/<section class="settings-preferences"[\s\S]*?<\/section>/)?.[0]
   assert.ok(module)
-  assert.match(module, /aria-labelledby="individual-preferences-title"/)
+  assert.match(module, /aria-labelledby="settings-preferences-title"/)
   assert.match(module, /<CuePreferencesControl compact labels \/>/)
   assert.doesNotMatch(module, /settings-options/)
 })

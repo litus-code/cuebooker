@@ -91,12 +91,12 @@ test('actual teaser updates the 3D preview body reactively and emits the avatar 
   } finally { app.unmount(); delete (globalThis as any).computed; delete (globalThis as any).useCuePreferences }
 })
 
-test('individual settings omit both removed blocks and the creator restores a user-scoped draft', async () => {
+test('artist and agency settings omit both removed blocks and the creator restores a user-scoped draft', async () => {
   const workspace = await readFile(new URL('../app/pages/workspace.vue', import.meta.url), 'utf8')
   const onboarding = await readFile(new URL('../app/pages/onboarding.vue', import.meta.url), 'utf8')
   const creator = await readFile(new URL('../app/pages/cue-id.vue', import.meta.url), 'utf8')
-  assert.match(workspace, /v-if="isAgency && demoOverrideEnabled" class="settings-group settings-group--demo"/)
-  assert.match(workspace, /<form v-if="isAgency" class="password-form"/)
+  assert.doesNotMatch(workspace, /class="settings-group settings-group--demo"/)
+  assert.doesNotMatch(workspace, /class="password-form"/)
   assert.match(onboarding, /v-model:body="cueIdBody"/)
   assert.match(onboarding, /avatarBody: accountType.value === 'dj' \? cueIdBody.value : undefined/)
   assert.match(creator, /labDraftKey = user \? `\$\{LAB_DRAFT_KEY\}:\$\{user.id\}` : LAB_DRAFT_KEY/)

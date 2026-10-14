@@ -28,6 +28,9 @@ let fallbackCommitted = ''
 let fallbackStopped = false
 let shadowRecognition: any = null
 let shadowTranscript = ''
+let shadowInterim = ''
+let shadowStop: Promise<string> | null = null
+let disposed = false
 
 const copy = computed(() => props.locale === 'es' ? {
   start: 'Contarlo por voz',
@@ -87,13 +90,16 @@ function createShadowRecognition() {
   const instance = new Recognition()
   instance.lang = props.locale === 'es' ? 'es-ES' : 'en-US'
   instance.continuous = true
-  instance.interimResults = false
+  instance.interimResults = true
   instance.onresult = (event: any) => {
+    const interim: string[] = []
     for (let index = event.resultIndex; index < event.results.length; index += 1) {
-      if (!event.results[index].isFinal) continue
       const transcript = String(event.results[index][0]?.transcript || '').trim()
-      if (transcript) shadowTranscript = [shadowTranscript, transcript].filter(Boolean).join(' ')
+      if (!transcript) continue
+      if (event.results[index].isFinal) shadowTranscript = [shadowTranscript, transcript].filter(Boolean).join(' ')
+      else interim.push(transcript)
     }
+    shadowInterim = interim.join(' ')
   }
   instance.onerror = () => {}
   instance.onend = () => {
@@ -106,14 +112,36 @@ function createShadowRecognition() {
 
 function startShadowRecognition() {
   shadowTranscript = ''
+  shadowInterim = ''
+  shadowStop = null
   shadowRecognition = createShadowRecognition()
   try { shadowRecognition?.start?.() } catch { shadowRecognition = null }
 }
 
-function stopShadowRecognition() {
+function stopShadowRecognition(): Promise<string> {
+  if (shadowStop) return shadowStop
   const instance = shadowRecognition
   shadowRecognition = null
-  try { instance?.stop?.() } catch {}
+  const transcript = () => [shadowTranscript, shadowInterim].filter(Boolean).join(' ').trim()
+  if (!instance) return Promise.resolve(transcript())
+  shadowStop = new Promise(resolve => {
+    let finished = false
+    const finish = () => {
+      if (finished) return
+      finished = true
+      window.clearTimeout(timeout)
+      instance.onresult = null
+      instance.onend = null
+      instance.onerror = null
+      resolve(transcript())
+    }
+    // Wait for final dictation after stop(), without waiting indefinitely.
+    const timeout = window.setTimeout(finish, 1500)
+    instance.onend = finish
+    instance.onerror = finish
+    try { instance.stop() } catch { finish() }
+  })
+  return shadowStop
 }
 
 function stopTracks() {
@@ -127,7 +155,7 @@ function clearTimer() {
 }
 
 async function startRecorder() {
-  if (recording.value || processing.value) return
+  if (disposed || recording.value || processing.value) return
   errorMessage.value = ''
   chunks = []
   elapsed.value = 0
@@ -141,6 +169,7 @@ async function startRecorder() {
       }
     })
 
+    if (disposed) { stopTracks(); return }
     const mimeType = preferredMimeType()
     recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream)
 
@@ -159,11 +188,12 @@ async function startRecorder() {
       recorder = null
     }
 
-    recorder.onstop = () => {
+    recorder.onstop = async () => {
       recording.value = false
       clearTimer()
-      stopShadowRecognition()
+      const fallbackTranscript = await stopShadowRecognition()
       stopTracks()
+      if (disposed) return
 
       const finalType = recorder?.mimeType || mimeType || 'audio/webm'
       const audio = new Blob(chunks, { type: finalType })
@@ -181,7 +211,7 @@ async function startRecorder() {
         : finalType.includes('ogg') ? 'ogg'
           : finalType.includes('mpeg') ? 'mp3'
             : 'webm'
-      emit('audioCaptured', audio, `cuebooker-capture.${extension}`, shadowTranscript.trim())
+      emit('audioCaptured', audio, `cuebooker-capture.${extension}`, fallbackTranscript)
     }
 
     recorder.start(1000)
@@ -202,8 +232,9 @@ async function startRecorder() {
 
 function stopRecorder() {
   if (!recording.value || !recorder) return
+  recording.value = false
   processing.value = true
-  stopShadowRecognition()
+  clearTimer()
   recorder.stop()
 }
 
@@ -297,12 +328,20 @@ function setProcessing(value: boolean) {
 defineExpose({ setProcessing })
 
 onBeforeUnmount(() => {
+  disposed = true
+  recording.value = false
   clearTimer()
   fallbackStopped = true
   recognition?.abort?.()
   try { shadowRecognition?.abort?.() } catch {}
   shadowRecognition = null
-  if (recorder && recorder.state !== 'inactive') recorder.stop()
+  if (recorder) {
+    recorder.ondataavailable = null
+    recorder.onstop = null
+    recorder.onerror = null
+    if (recorder.state !== 'inactive') recorder.stop()
+  }
+  chunks = []
   stopTracks()
 })
 </script>

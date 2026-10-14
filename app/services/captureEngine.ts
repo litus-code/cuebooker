@@ -16,6 +16,7 @@ export type CaptureEngineMethod =
 export type CaptureEngineAnalysis = {
   result: SmartCaptureResult
   method: CaptureEngineMethod
+  fallbackReason?: 'rate_limit' | 'provider_error'
 }
 
 type CaptureEngineDependencies = {
@@ -26,6 +27,24 @@ type CaptureEngineDependencies = {
 
 export type CaptureEngineAudioInput = SmartCaptureAudioInput & {
   fallbackTranscript?: string
+}
+
+export function captureFailure(error: unknown) {
+  const failure = error as { status?: number; statusCode?: number; data?: { error?: string; transcript?: unknown }; response?: { status?: number } } | null
+  const code = failure?.data?.error
+  const rateLimited = (failure?.statusCode || failure?.status || failure?.response?.status) === 429
+    || code === 'smart_capture_rate_limited' || code === 'smart_capture_monthly_limit_reached'
+  const transcript = typeof failure?.data?.transcript === 'string' && failure.data.transcript.length <= 20000 ? failure.data.transcript.trim() : ''
+  return { rateLimited, transcript }
+}
+
+function localAnalysis(dependencies: CaptureEngineDependencies, text: string, locale: 'es' | 'en', rateLimited = false): CaptureEngineAnalysis {
+  const result = localInterpretationToSmartCapture(text, locale, dependencies.interpretText(text, locale))
+  if (rateLimited) {
+    result.summary = locale === 'es' ? 'IA no disponible · detección básica' : 'AI unavailable · basic detection'
+    result.warnings.unshift(locale === 'es' ? 'La IA ha alcanzado el límite de uso. He conservado el texto y usado la detección básica. Revisa los datos.' : 'AI has reached its usage limit. Your text is preserved and basic detection was used. Review the details.')
+  }
+  return { result, method: 'local_parser', fallbackReason: rateLimited ? 'rate_limit' : 'provider_error' }
 }
 
 function field<T>(value: T | null, confidence: SmartCaptureConfidence = 'medium'): SmartCaptureField<T> {
@@ -92,15 +111,8 @@ export function createCaptureEngine(dependencies: CaptureEngineDependencies) {
         result: await dependencies.analyzeText(input),
         method: 'smart_text'
       }
-    } catch {
-      return {
-        result: localInterpretationToSmartCapture(
-          input.text,
-          input.locale,
-          dependencies.interpretText(input.text, input.locale)
-        ),
-        method: 'local_parser'
-      }
+    } catch (error) {
+      return localAnalysis(dependencies, input.text, input.locale, captureFailure(error).rateLimited)
     }
   }
 
@@ -111,8 +123,11 @@ export function createCaptureEngine(dependencies: CaptureEngineDependencies) {
         method: 'smart_audio'
       }
     } catch (audioError) {
-      const fallbackTranscript = input.fallbackTranscript?.trim() || ''
+      const failure = captureFailure(audioError)
+      const fallbackTranscript = failure.transcript || input.fallbackTranscript?.trim() || ''
       if (!fallbackTranscript) throw audioError
+      // Preserve server text and never repeat extraction after a 429.
+      if (failure.transcript || failure.rateLimited) return localAnalysis(dependencies, fallbackTranscript, input.locale, failure.rateLimited)
 
       try {
         return {
@@ -124,15 +139,8 @@ export function createCaptureEngine(dependencies: CaptureEngineDependencies) {
           }),
           method: 'browser_transcript'
         }
-      } catch {
-        return {
-          result: localInterpretationToSmartCapture(
-            fallbackTranscript,
-            input.locale,
-            dependencies.interpretText(fallbackTranscript, input.locale)
-          ),
-          method: 'local_parser'
-        }
+      } catch (textError) {
+        return localAnalysis(dependencies, fallbackTranscript, input.locale, captureFailure(textError).rateLimited)
       }
     }
   }
