@@ -515,6 +515,14 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     })
   }
 
+  async function listBookingEmailAttachments(workspaceId: string, bookingId: string) {
+    return $fetch<Array<{ id: string; email_message_id: string; file_name: string; content_type: string; byte_size: number }>>(`${baseUrl}/rest/v1/booking_email_attachments`, {
+      headers: authHeaders(),
+      query: { workspace_id: `eq.${workspaceId}`, booking_id: `eq.${bookingId}`,
+        select: 'id,email_message_id,file_name,content_type,byte_size', order: 'created_at.asc', limit: '100' }
+    })
+  }
+
   async function listBookingEmailMessages(workspaceId: string, bookingId: string) {
     return $fetch<BookingEmailMessage[]>(`${baseUrl}/rest/v1/email_messages`, {
       headers: authHeaders(),
@@ -817,6 +825,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     setBookingArchived,
     listActivities,
     listBookingEmailMessages,
+    listBookingEmailAttachments,
     listWorkspaceBookingEmailMessages,
     listArtistWorkspaceBookingEmailMessages,
     listWorkspaceActivities,
