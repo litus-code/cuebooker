@@ -56,7 +56,7 @@
     "Consulta las fechas y distingue holds de confirmaciones."
   ],
   "emailTitle": "UNA OFERTA ENTRA. CUEBOOKER LA PONE EN ORDEN.",
-  "emailBody": "Conecta un buzón autorizado. Cuebooker identifica posibles ofertas, extrae los datos del mensaje y prepara una solicitud para revisar. La conservación automática de adjuntos está prevista y pendiente de validación.",
+  "emailBody": "Cuebooker detecta posibles propuestas en un buzón autorizado y prepara una solicitud con los datos disponibles. Tú revisas y decides.",
   "emailStatus": "SMART EMAIL CAPTURE",
   "emailStages": [
     [
