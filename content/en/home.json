@@ -1,38 +1,68 @@
 {
   "hero": {
     "eyebrow": "BOOKING MANAGEMENT FOR DJs & AGENCIES",
-    "title": "YOUR BOOKING.",
+    "title": "YOUR BOOKINGS.",
     "accent": "UNDER CONTROL.",
     "body": "Bring requests, conversations and dates together in one place. Even when the first contact happens outside Cuebooker.",
     "primary": "Create my profile",
     "secondary": "See how it works",
     "note": "For independent DJs, managers and agencies.",
-    "visual": "Keep the music moving.",
-    "visualNote": "THE BOOKING IS ALREADY HAPPENING."
+    "signature": "Keep the music moving. The booking is already happening."
   },
   "problem": {
     "label": "THE PROBLEM",
     "title": "Your bookings are everywhere.",
-    "body": "A date change on WhatsApp. Terms over email. A proposal on Instagram. Between calls and notes, the next step can get lost.",
-    "before": [
-      "Instagram",
-      "WhatsApp",
-      "Email",
-      "Phone call",
-      "Calendar",
-      "Notes"
+    "body": "A date changes on WhatsApp. Terms arrive by email. Cuebooker keeps the proposal and its follow-ups in one workspace.",
+    "outside": "THE CONVERSATION STARTS ELSEWHERE",
+    "inside": "THE CONTEXT STAYS WITH YOU",
+    "entries": [
+      {
+        "channel": "Instagram",
+        "context": "A proposal"
+      },
+      {
+        "channel": "WhatsApp",
+        "context": "A date change"
+      },
+      {
+        "channel": "Email",
+        "context": "The terms"
+      },
+      {
+        "channel": "Phone call",
+        "context": "A first contact"
+      },
+      {
+        "channel": "Notes / calendar",
+        "context": "What you don’t want to forget"
+      }
     ],
-    "after": "One booking workflow",
-    "productMeta": [
-      "Request",
-      "Conversation",
-      "Date",
-      "Status"
+    "panel": "One request. All its context.",
+    "fields": [
+      {
+        "label": "Request",
+        "value": "Proposal for a set"
+      },
+      {
+        "label": "Contact",
+        "value": "Example promoter"
+      },
+      {
+        "label": "Date",
+        "value": "18 October · Example"
+      },
+      {
+        "label": "Status",
+        "value": "To review"
+      },
+      {
+        "label": "Next action",
+        "value": "Review terms"
+      }
     ],
-    "solution": "Every request keeps its context, conversation, date and status in one place. You still make the decisions; Cuebooker keeps the process organised.",
-    "concept": "WORKFLOW CONCEPT · NO AUTOMATIC IMPORT",
-    "hub": "ONE PLACE",
-    "difference": "THE DIFFERENCE"
+    "example": "ILLUSTRATIVE EXAMPLE · NO REAL DATA",
+    "capture": "You capture the opportunity. Cuebooker keeps the thread.",
+    "note": "Instagram, WhatsApp and phone conversations are not imported automatically."
   },
   "work": {
     "label": "01 / HOW IT WORKS",
@@ -89,7 +119,7 @@
     "label": "Legal information and contact"
   },
   "seo": {
-    "title": "Cuebooker | Your booking. Under control.",
+    "title": "Cuebooker | Your bookings. Under control.",
     "description": "Organise requests, conversations, follow-ups and dates in one place. A booking workspace for independent DJs, managers and agencies."
   },
   "nav": {
@@ -127,43 +157,67 @@
     "title": "Your project. Your way of working.",
     "items": [
       {
-        "title": "I’m a DJ",
-        "text": "Manage proposals, conversations and dates without relying on memory. Share your profile when you’re ready.",
+        "title": "I’M A DJ",
+        "text": "My proposals, conversations and dates, in one place.",
         "cta": "Create my profile"
       },
       {
-        "title": "I’m a manager/agency",
-        "text": "Keep each artist’s context and coordinate follow-ups on opportunities from one workspace.",
+        "title": "I’M A MANAGER / AGENCY",
+        "text": "Coordinate follow-ups on your artists’ opportunities from one workspace.",
         "cta": "Create my workspace"
       }
     ],
     "note": "Choose how you work after signing up. Agency capabilities are still evolving."
   },
   "extensions": {
-    "label": "04 / BEYOND BOOKING",
-    "title": "A space for what represents you.",
-    "items": [
-      {
-        "title": "Public profile",
-        "text": "Your introduction and an entry point for requests. Promoters don’t need an account.",
-        "status": "YOU CHOOSE WHAT TO SHARE"
-      },
-      {
-        "title": "CUE Passport",
-        "text": "A view of your journey, connected to your booking activity.",
-        "status": "BOOKING EXTENSION"
-      },
-      {
-        "title": "CUE ID",
-        "text": "A visual identity for your artistic project. The character creator is still in development.",
-        "status": "IN DEVELOPMENT"
-      }
-    ]
+    "label": "04 / YOUR ECOSYSTEM",
+    "title": "Your identity has a place, too.",
+    "profile": {
+      "name": "Public profile",
+      "title": "Your identity. Your booking entry point.",
+      "body": "Present your project and share an entry point for proposals. Promoters don’t need an account.",
+      "status": "PUBLIC PROFILE · AVAILABLE",
+      "cta": "Create my profile",
+      "example": "EXAMPLE COMPOSITION · NOT A PUBLISHED PROFILE",
+      "stageName": "Your artist name",
+      "tagline": "Your sound. Your journey.",
+      "sections": [
+        "BIO",
+        "SOUND",
+        "BOOKING"
+      ],
+      "request": "Propose a date",
+      "coverAlt": "Profile cover included in Cuebooker"
+    },
+    "passport": {
+      "name": "CUE Passport",
+      "title": "Every date leaves a mark.",
+      "body": "A view of your journey connected to booking activity. Explore the dates and places that shape your story.",
+      "concept": "JOURNEY CONCEPT · NO REAL ACTIVITY",
+      "steps": [
+        "BOOKING",
+        "EVENT",
+        "JOURNEY"
+      ],
+      "nodes": [
+        "Date",
+        "Venue",
+        "City"
+      ]
+    },
+    "identity": {
+      "name": "CUE ID",
+      "title": "An identity of your own.",
+      "body": "A visual representation for your artistic project. The creator is still in development.",
+      "status": "IN DEVELOPMENT",
+      "caption": "BASE 3D MODEL · CUE ID LAB",
+      "alt": "Render of the actual base 3D model from the CUE ID lab, in development"
+    }
   },
   "closing": {
-    "title": "DON’T LET A DATE SLIP AWAY.",
-    "body": "Give every proposal a place. Keep control of what happens next.",
-    "cta": "Create my profile",
+    "title": "BE READY FOR THE NEXT BOOKING.",
+    "body": "Prepare your workspace to receive proposals, organise them and follow them through to confirmation.",
+    "cta": "Create my workspace",
     "footer": "Made for the people behind the sound."
   }
 }

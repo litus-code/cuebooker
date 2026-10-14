@@ -7,32 +7,62 @@
     "primary": "Crear mi perfil",
     "secondary": "Ver cómo funciona",
     "note": "Para DJs independientes, managers y agencias.",
-    "visual": "Que la música siga avanzando.",
-    "visualNote": "EL BOOKING YA ESTÁ OCURRIENDO."
+    "signature": "Que la música siga avanzando. El booking ya está ocurriendo."
   },
   "problem": {
     "label": "EL PROBLEMA",
     "title": "Tus bookings están por todas partes.",
-    "body": "Un cambio de fecha en WhatsApp. Condiciones por email. Una propuesta en Instagram. Entre llamadas y notas, es fácil perder el siguiente paso.",
-    "before": [
-      "Instagram",
-      "WhatsApp",
-      "Email",
-      "Llamada",
-      "Calendario",
-      "Notas"
+    "body": "Una fecha cambia por WhatsApp. Las condiciones llegan por email. Cuebooker mantiene el seguimiento de la propuesta en un solo espacio.",
+    "outside": "LA CONVERSACIÓN EMPIEZA FUERA",
+    "inside": "EL CONTEXTO SE QUEDA CONTIGO",
+    "entries": [
+      {
+        "channel": "Instagram",
+        "context": "Una propuesta"
+      },
+      {
+        "channel": "WhatsApp",
+        "context": "Un cambio de fecha"
+      },
+      {
+        "channel": "Email",
+        "context": "Las condiciones"
+      },
+      {
+        "channel": "Llamada",
+        "context": "Un primer contacto"
+      },
+      {
+        "channel": "Notas / calendario",
+        "context": "Lo que no quieres olvidar"
+      }
     ],
-    "after": "Un solo flujo de booking",
-    "productMeta": [
-      "Solicitud",
-      "Conversación",
-      "Fecha",
-      "Estado"
+    "panel": "Una solicitud. Todo su contexto.",
+    "fields": [
+      {
+        "label": "Solicitud",
+        "value": "Propuesta para una sesión"
+      },
+      {
+        "label": "Contacto",
+        "value": "Promotor de ejemplo"
+      },
+      {
+        "label": "Fecha",
+        "value": "18 octubre · Ejemplo"
+      },
+      {
+        "label": "Estado",
+        "value": "Por revisar"
+      },
+      {
+        "label": "Siguiente acción",
+        "value": "Revisar condiciones"
+      }
     ],
-    "solution": "Cada solicitud mantiene su contexto, conversación, fecha y estado en un solo lugar. Tú sigues tomando las decisiones; Cuebooker mantiene el proceso ordenado.",
-    "concept": "CONCEPTO DE FLUJO · SIN IMPORTACIÓN AUTOMÁTICA",
-    "hub": "UN SOLO LUGAR",
-    "difference": "LA DIFERENCIA"
+    "example": "EJEMPLO ILUSTRATIVO · SIN DATOS REALES",
+    "capture": "Tú capturas la oportunidad. Cuebooker conserva el hilo.",
+    "note": "Las conversaciones de Instagram, WhatsApp y llamadas no se importan automáticamente."
   },
   "work": {
     "label": "01 / CÓMO FUNCIONA",
@@ -127,43 +157,67 @@
     "title": "Tu proyecto. Tu forma de trabajar.",
     "items": [
       {
-        "title": "Soy DJ",
-        "text": "Lleva tus propuestas, conversaciones y fechas sin depender de la memoria. Comparte tu perfil cuando estés listo.",
+        "title": "SOY DJ",
+        "text": "Mis propuestas, conversaciones y fechas, en un solo lugar.",
         "cta": "Crear mi perfil"
       },
       {
-        "title": "Soy manager/agencia",
-        "text": "Mantén el contexto de cada artista y coordina el seguimiento de las oportunidades desde un mismo espacio.",
+        "title": "SOY MANAGER / AGENCIA",
+        "text": "Coordina el seguimiento de las oportunidades de tus artistas desde un mismo espacio.",
         "cta": "Crear mi espacio"
       }
     ],
     "note": "Al registrarte podrás elegir cómo trabajas. Las capacidades de agencia siguen evolucionando."
   },
   "extensions": {
-    "label": "04 / MÁS ALLÁ DEL BOOKING",
-    "title": "Un espacio para lo que te representa.",
-    "items": [
-      {
-        "title": "Perfil público",
-        "text": "Tu presentación y un punto de entrada para solicitudes. El promotor no necesita una cuenta.",
-        "status": "TÚ DECIDES QUÉ COMPARTES"
-      },
-      {
-        "title": "CUE Passport",
-        "text": "Una lectura de tu trayectoria, conectada a tu actividad de booking.",
-        "status": "EXTENSIÓN DEL BOOKING"
-      },
-      {
-        "title": "CUE ID",
-        "text": "Una identidad visual para tu proyecto artístico. El creador de personajes sigue en desarrollo.",
-        "status": "EN DESARROLLO"
-      }
-    ]
+    "label": "04 / TU ECOSISTEMA",
+    "title": "Tu identidad también tiene su espacio.",
+    "profile": {
+      "name": "Perfil público",
+      "title": "Tu identidad. Tu entrada de bookings.",
+      "body": "Presenta tu proyecto y comparte un punto de entrada para propuestas. El promotor no necesita una cuenta.",
+      "status": "PERFIL PÚBLICO · DISPONIBLE",
+      "cta": "Crear mi perfil",
+      "example": "COMPOSICIÓN DE EJEMPLO · NO ES UN PERFIL PUBLICADO",
+      "stageName": "Tu nombre artístico",
+      "tagline": "Tu sonido. Tu recorrido.",
+      "sections": [
+        "BIO",
+        "SONIDO",
+        "BOOKING"
+      ],
+      "request": "Proponer una fecha",
+      "coverAlt": "Portada de perfil incluida en Cuebooker"
+    },
+    "passport": {
+      "name": "CUE Passport",
+      "title": "Cada fecha deja huella.",
+      "body": "Una lectura de tu trayectoria conectada a tu actividad de booking. Explora las fechas y los lugares que forman parte de tu recorrido.",
+      "concept": "CONCEPTO DE TRAYECTORIA · SIN ACTIVIDAD REAL",
+      "steps": [
+        "BOOKING",
+        "EVENTO",
+        "TRAYECTORIA"
+      ],
+      "nodes": [
+        "Fecha",
+        "Venue",
+        "Ciudad"
+      ]
+    },
+    "identity": {
+      "name": "CUE ID",
+      "title": "Una identidad propia.",
+      "body": "Una representación visual para tu proyecto artístico. El creador sigue en desarrollo.",
+      "status": "EN DESARROLLO",
+      "caption": "MODELO BASE 3D · LABORATORIO CUE ID",
+      "alt": "Render del modelo base 3D real del laboratorio CUE ID, en desarrollo"
+    }
   },
   "closing": {
-    "title": "QUE NINGUNA FECHA SE PIERDA.",
-    "body": "Dale un lugar a cada propuesta. Mantén el control de lo que viene después.",
-    "cta": "Crear mi perfil",
+    "title": "EL PRÓXIMO BOOKING YA ESTÁ EN CAMINO.",
+    "body": "Prepara tu espacio para recibir propuestas, organizarlas y seguirlas hasta la confirmación.",
+    "cta": "Crear mi espacio",
     "footer": "Hecho para las personas detrás del sonido."
   }
 }
