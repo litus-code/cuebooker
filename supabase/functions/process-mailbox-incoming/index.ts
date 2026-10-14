@@ -81,7 +81,7 @@ Deno.serve(async(request:Request)=>{
             provider_message_id:job.messageId,attachment_index:index,file_name:String(item.name||'Archivo').replace(/[\\/\x00-\x1f]/g,'_').slice(0,200),
             content_type:mime,byte_size:bytes.length,storage_path:path})
         });
-      }catch{console.warn('mailbox_attachment_item_failed');}
+      }catch(error){const kind=error instanceof Error ? error.message : 'unknown';console.warn('mailbox_attachment_item_failed', {stage:kind==='mailbox_attachment_upload_failed'?'storage':kind==='mailbox_storage_failed'?'metadata':kind==='mailbox_provider_unavailable'?'provider':kind==='mailbox_reconnect_required'?'authorization':kind==='invalid_attachment_payload'?'payload':kind==='attachment_too_large'?'size':'other', index});}
     }
    },
    retry:()=>rpc<boolean>('defer_mailbox_incoming',{target_job:job.id}),
