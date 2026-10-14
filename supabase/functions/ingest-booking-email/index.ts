@@ -110,7 +110,6 @@ async function limitedBytes(response: Response) {
 
 async function persistAttachments(
   item: Record<string, unknown>,
-  messageId: string,
   emailMessageId: string,
   workspaceId: string,
   bookingId: string,
@@ -345,7 +344,7 @@ Deno.serve(async (request) => {
 
       const result = rows[0];
       if (result?.email_message_id) {
-        await persistAttachments(item, messageId, result.email_message_id, thread.workspace_id, thread.booking_id, supabaseUrl, serviceKey, requestId);
+        await persistAttachments(item, result.email_message_id, thread.workspace_id, thread.booking_id, supabaseUrl, serviceKey, requestId);
       }
       if (result?.email_created || result?.activity_created) {
         accepted += 1;
