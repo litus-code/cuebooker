@@ -55,9 +55,9 @@
     "Confirma las condiciones cuando la decisión esté acordada.",
     "Consulta las fechas y distingue holds de confirmaciones."
   ],
-  "emailTitle": "TU CORREO RECIBE OFERTAS. CUEBOOKER PREPARA LAS SOLICITUDES.",
-  "emailBody": "Con Smart Email Capture, Cuebooker analiza los mensajes de un buzón autorizado, identifica posibles propuestas de contratación, extrae los datos disponibles y prepara solicitudes para que las revises. Tú decides cómo continuar cada booking.",
-  "emailStatus": "SMART EMAIL CAPTURE / ACCESO ANTICIPADO",
+  "emailTitle": "DEL EMAIL AL BOOKING. SIN COPIAR NI UN DATO.",
+  "emailBody": "Recibes una propuesta por correo. Cuebooker detecta la oferta, recoge los detalles disponibles y prepara una solicitud para que tú decidas.",
+  "emailStatus": "SMART EMAIL CAPTURE",
   "emailStages": [
     [
       "Detección",
@@ -72,7 +72,7 @@
       "Prepara una solicitud con los datos disponibles para que la compruebes y decidas el siguiente paso."
     ]
   ],
-  "emailNote": "La conexión de correo se habilita durante la beta privada para participantes admitidos, previa autorización y configuración. No responde ni confirma contrataciones por tu cuenta.",
+  "emailNote": "Acceso anticipado mediante buzón autorizado y configurado. Tú revisas y decides; Cuebooker no confirma bookings automáticamente.",
   "ecosystemTitle": "MÁS QUE UNA FICHA.",
   "ecosystem": [
     [
