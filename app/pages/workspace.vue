@@ -5004,8 +5004,8 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   text-transform:none!important;
   letter-spacing:normal!important;
 }
-.workspace-navigation-notifications {width:100%; min-width:0; padding:0!important; margin:0!important; position:static!important; transform:none!important;}
-.workspace-navigation-notifications :deep(.notification-center) {width:100%; min-width:0;}
+.workspace-navigation-notifications {display:contents!important; padding:0!important; margin:0!important; position:static!important; transform:none!important;}
+
 .workspace-navigation-notifications :deep(.notification-trigger) {color:var(--cue-muted);}
 .workspace-navigation-notifications :deep(.notification-badge) {grid-column:3;position:static!important;justify-self:end;margin:0!important;border:0;}
 </style>
