@@ -81,3 +81,9 @@ Application `4bdd26141ab62db4af65e6d14316d0beb6406f0a`: landing surfaces/text/ac
 | DJ/dark | [Capture](palette-dj-dark-1440.jpg) | [Capture](palette-dj-dark-390.jpg) |
 | Agency/light | [Capture](palette-agency-light-1440.jpg) | [Capture](palette-agency-light-390.jpg) |
 | Agency/dark | [Capture](palette-agency-dark-1440.jpg) | [Capture](palette-agency-dark-390.jpg) |
+
+## Paired avatar concepts and mobile header scroll
+
+Application `3bba504dc9378864266b03f637cf67e6a414bfe1` shows the male/female styled CUE ID concepts together ([desktop1440](avatars-pair-1440.jpg), [mobile390](avatars-pair-390.jpg)). Both remain illustrative/in development, with hair/streetwear and matching industrial framing. No laboratory/editor change.
+
+The existing scroll plugin now recognizes replacement public headers. New headers use1100px breakpoint; legacy headers retain720px. Tests cover downward hide, accumulated small upward movement, top/menu/route/desktop reveal.584 tests/44-route build pass. Compiled browser verifies actual header geometry and modal state on Home/DJ/Agency/signup/sign-in, and the loaded pair at390/1440 without overflow. Access uses500px viewport height for scroll coverage; no forms submitted.
