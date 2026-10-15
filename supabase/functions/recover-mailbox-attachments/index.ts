@@ -53,6 +53,10 @@ Deno.serve(async (request: Request) => {
       `bookings?id=eq.${job.booking_id}&workspace_id=eq.${connection.workspace_id}&select=id&limit=1`
     );
     if (!bookings.length) return json({ error: "booking_unavailable" }, 404);
+    const members = await db<Array<{user_id:string}>>(
+      `workspace_members?workspace_id=eq.${connection.workspace_id}&user_id=eq.${connection.user_id}&role=in.(owner,admin,manager,editor)&select=user_id&limit=1`
+    );
+    if (!members.length) return json({ error: "member_access_revoked" }, 403);
     if (Deno.env.get("CUEBOOKER_CONNECTED_ATTACHMENTS_ENABLED") !== "true" ||
         !gmailConfigured(gmailConfig(name => Deno.env.get(name)))) {
       return json({ error: "attachment_recovery_disabled" }, 503);
