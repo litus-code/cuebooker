@@ -92,3 +92,19 @@ test('unclassified mail never downloads attachments',async()=>{
  assert.equal(await processMailboxIncoming(job,options),'classified');
  assert.equal(attachments,0);
 });
+
+test('classification failure logs only a known category and keeps the database failure phase',async()=>{
+ let stage='';
+ const {options}=setup({
+  classify:async()=>{throw new Error('mailbox_ai_unavailable')},
+  complete:async(_state:string,_value:unknown,reason?:string)=>{stage=reason||''}
+ });
+ const previous=console.warn;
+ const entries:unknown[][]=[];
+ console.warn=(...items:unknown[])=>{entries.push(items)};
+ try{
+  assert.equal(await processMailboxIncoming(job,options),'failed');
+  assert.equal(stage,'classification');
+  assert.deepEqual(entries[0],['mailbox_classification_failure_category','mailbox_ai_unavailable']);
+ }finally{console.warn=previous}
+});
