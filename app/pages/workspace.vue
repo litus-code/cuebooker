@@ -2316,15 +2316,15 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         </button>
       </div>
       <nav id="workspace-navigation" aria-label="Workspace">
-        <button :title="copy.overview" data-workspace-view="overview" :aria-current="workspaceBootResolved && activeView === 'overview' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('overview')">{{ copy.overview }}</button>
-        <button :title="copy.bookings" data-workspace-view="bookings" :aria-current="workspaceBootResolved && activeView === 'bookings' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
-        <button :title="copy.calendar" data-workspace-view="calendar" :aria-current="workspaceBootResolved && activeView === 'calendar' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
-        <button :title="copy.history" data-workspace-view="history" :aria-current="workspaceBootResolved && activeView === 'history' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('history')">{{ copy.history }}</button>
-        <button v-if="isAgency" title="Artistas" data-workspace-view="roster" :aria-current="workspaceBootResolved && ['roster', 'profile', 'passport', 'cue-id'].includes(activeView) && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('roster')">{{ preferences.locale.value === 'es' ? 'Artistas' : 'Artists' }}</button>
-        <button v-if="!isAgency" :title="copy.profile" data-workspace-view="profile" :aria-current="workspaceBootResolved && activeView === 'profile' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
-        <button v-if="!isAgency" :title="copy.passport" data-workspace-view="passport" :aria-current="workspaceBootResolved && activeView === 'passport' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('passport')">{{ copy.passport }}</button>
-        <button v-if="!isAgency" :title="copy.cueId" data-workspace-view="cue-id" :aria-current="workspaceBootResolved && activeView === 'cue-id' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('cue-id')">{{ copy.cueId }}</button>
-        <button :title="copy.settings" data-workspace-view="settings" :aria-current="workspaceBootResolved && settingsOpen ? 'page' : undefined" type="button" @click="openSettings"><svg class="workspace-settings-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8 14.1 4l2.4-.5 1.2 2.1 2.3.9v2.5l1.7 1.8-1.1 2.3.3 2.5-2.2 1.2-.9 2.3-2.5-.1-1.8 1.7-2.3-1.1-2.5.3-1.2-2.2-2.3-.9.1-2.5-1.7-1.8 1.1-2.3-.3-2.5 2.2-1.2.9-2.3 2.5.1z" transform="translate(0 0) scale(.96) translate(.5 .5)"/><circle cx="12" cy="12" r="3"/></svg><span>{{ copy.settings }}</span></button>
+        <button :title="copy.overview" data-workspace-view="overview" :aria-current="workspaceBootResolved && activeView === 'overview' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('overview')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span class="workspace-nav-label">{{ copy.overview }}</span></button>
+        <button :title="copy.bookings" data-workspace-view="bookings" :aria-current="workspaceBootResolved && activeView === 'bookings' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('bookings')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="15" rx="2"/><path d="M7 19v2M17 19v2M7 9h10M7 13h6"/></svg><span class="workspace-nav-label">{{ copy.bookings }}</span></button>
+        <button :title="copy.calendar" data-workspace-view="calendar" :aria-current="workspaceBootResolved && activeView === 'calendar' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('calendar')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></svg><span class="workspace-nav-label">{{ copy.calendar }}</span></button>
+        <button :title="copy.history" data-workspace-view="history" :aria-current="workspaceBootResolved && activeView === 'history' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('history')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg><span class="workspace-nav-label">{{ copy.history }}</span></button>
+        <button v-if="isAgency" title="Artistas" data-workspace-view="roster" :aria-current="workspaceBootResolved && ['roster', 'profile', 'passport', 'cue-id'].includes(activeView) && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('roster')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M16 16a4 4 0 0 1 5 4v1"/></svg><span class="workspace-nav-label">{{ preferences.locale.value === 'es' ? 'Artistas' : 'Artists' }}</span></button>
+        <button v-if="!isAgency" :title="copy.profile" data-workspace-view="profile" :aria-current="workspaceBootResolved && activeView === 'profile' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('profile')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg><span class="workspace-nav-label">{{ copy.profile }}</span></button>
+        <button v-if="!isAgency" :title="copy.passport" data-workspace-view="passport" :aria-current="workspaceBootResolved && activeView === 'passport' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('passport')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M8 17h8"/></svg><span class="workspace-nav-label">{{ copy.passport }}</span></button>
+        <button v-if="!isAgency" :title="copy.cueId" data-workspace-view="cue-id" :aria-current="workspaceBootResolved && activeView === 'cue-id' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('cue-id')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M14 10h4M14 14h4M7 17h11"/></svg><span class="workspace-nav-label">{{ copy.cueId }}</span></button>
+        <button :title="copy.settings" data-workspace-view="settings" :aria-current="workspaceBootResolved && settingsOpen ? 'page' : undefined" type="button" @click="openSettings"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2h4l.6 2.2 2 .9 2-.9 2.8 2.8-.9 2 .9 2L23 12l-1.6 2 .9 2-.9 2-2.8 2.8-2-.9-2 .9L14 23h-4l-.6-2.2-2-.9-2 .9-2.8-2.8.9-2-.9-2L1 12l1.6-2-.9-2 .9-2L5.4 3.2l2 .9 2-.9z"/><circle cx="12" cy="12" r="3"/></svg><span class="workspace-nav-label">{{ copy.settings }}</span></button>
       <div class="workspace-navigation-notifications">
         <WorkspaceNotifications :locale="preferences.locale.value" @open-booking="openNotificationBooking" />
       </div>
@@ -4954,43 +4954,58 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   }
 }
 
-/* Settings and Notifications: one consistent icon/label grid.
-   The parent navigation already supplies the sidebar row positioning. */
-.workspace #workspace-navigation > button[data-workspace-view="settings"] {
-  display:grid!important;
-  grid-template-columns:28px minmax(0,1fr);
-  align-items:center;
-  column-gap:14px!important;
-  padding-inline:14px!important;
-  min-width:0;
-  left:auto!important;
-  transform:none!important;
-}
-.workspace #workspace-navigation > button[data-workspace-view="settings"]::before,
-.workspace #workspace-navigation > button[data-workspace-view="settings"]::after {display:none!important;content:none!important}
-.workspace #workspace-navigation .workspace-settings-icon {width:22px;height:22px;display:block;justify-self:center}
-.workspace-navigation-notifications {display:block;min-width:0;width:100%;padding:0!important;margin:0!important;left:auto!important;transform:none!important}
-.workspace-navigation-notifications :deep(.notification-center) {width:100%;min-width:0}
+/* Single navigation row contract, shared by every menu item. */
+.workspace #workspace-navigation > button[data-workspace-view],
 .workspace-navigation-notifications :deep(.notification-trigger) {
+  box-sizing:border-box!important;
   display:grid!important;
-  grid-template-columns:28px minmax(0,1fr) auto;
-  align-items:center;
-  column-gap:14px;
+  grid-template-columns:28px minmax(0,1fr) auto!important;
+  align-items:center!important;
+  column-gap:14px!important;
+  min-width:0;
   width:100%;
-  min-height:34px;
-  padding-inline:14px!important;
-  border:0;
-  border-radius:0;
-  background:transparent;
-  color:var(--cue-muted);
-  font:700 12px/1.2 Arial,Helvetica,sans-serif;
-  text-align:left;
+  padding:0 14px!important;
+  margin:0!important;
+  left:auto!important;
+  right:auto!important;
+  transform:none!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  background-image:none!important;
+  text-align:left!important;
+  font:700 12px/1.2 Arial,Helvetica,sans-serif!important;
+  text-transform:none!important;
+  letter-spacing:normal!important;
 }
-.workspace-navigation-notifications :deep(.notification-trigger::before),
-.workspace-navigation-notifications :deep(.notification-trigger::after),
+.workspace #workspace-navigation > button[data-workspace-view]::before,
+.workspace #workspace-navigation > button[data-workspace-view]::after,
 .workspace-navigation-notifications::before,
-.workspace-navigation-notifications::after {display:none!important;content:none!important}
-.workspace-navigation-notifications :deep(.notification-trigger svg) {width:22px;height:22px;justify-self:center;display:block}
-.workspace-navigation-notifications :deep(.notification-trigger__label) {font:inherit;text-transform:none;letter-spacing:normal;min-width:0}
-.workspace-navigation-notifications :deep(.notification-badge) {position:static;min-width:18px;margin:0;border:0;justify-self:end}
+.workspace-navigation-notifications::after,
+.workspace-navigation-notifications :deep(.notification-trigger::before),
+.workspace-navigation-notifications :deep(.notification-trigger::after) {
+  display:none!important;
+  content:none!important;
+}
+.workspace #workspace-navigation .workspace-nav-icon,
+.workspace-navigation-notifications :deep(.notification-trigger > svg) {
+  grid-column:1;
+  width:22px!important;
+  height:22px!important;
+  justify-self:center;
+  display:block!important;
+  flex:none;
+}
+.workspace #workspace-navigation .workspace-nav-label,
+.workspace-navigation-notifications :deep(.notification-trigger__label) {
+  grid-column:2;
+  min-width:0;
+  font:inherit!important;
+  text-transform:none!important;
+  letter-spacing:normal!important;
+}
+.workspace-navigation-notifications {width:100%; min-width:0; padding:0!important; margin:0!important; position:static!important; transform:none!important;}
+.workspace-navigation-notifications :deep(.notification-center) {width:100%; min-width:0;}
+.workspace-navigation-notifications :deep(.notification-trigger) {color:var(--cue-muted);}
+.workspace-navigation-notifications :deep(.notification-badge) {grid-column:3;position:static!important;justify-self:end;margin:0!important;border:0;}
 </style>
