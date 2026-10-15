@@ -257,6 +257,31 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .notification-center { position: relative; }
+/* The notifications trigger participates as a normal workspace navigation row. */
+:global(.workspace-navigation-notifications) .notification-center { display:contents; }
+:global(.workspace-navigation-notifications) .notification-trigger {
+  position:relative;
+  box-sizing:border-box;
+  display:grid;
+  grid-template-columns:28px minmax(0,1fr) auto;
+  align-items:center;
+  column-gap:14px;
+  flex:0 0 100%;
+  width:100%;
+  min-width:0;
+  min-height:40px;
+  padding:0 14px;
+  margin:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--cue-muted);
+  text-align:left;
+}
+:global(.workspace-navigation-notifications) .notification-trigger svg {grid-column:1;width:22px;height:22px;justify-self:center;}
+:global(.workspace-navigation-notifications) .notification-trigger__label {grid-column:2;min-width:0;overflow:hidden;text-overflow:ellipsis;font:700 12px/1.2 Arial,Helvetica,sans-serif;letter-spacing:normal;text-transform:none;}
+:global(.workspace-navigation-notifications) .notification-badge {grid-column:3;position:static;justify-self:end;margin:0;border:0;flex:none;}
+
 .notification-trigger { position:relative; display:flex; align-items:center; gap:8px; min-height:36px; padding:7px 11px; border:1px solid var(--cue-border); border-radius:999px; background:transparent; color:var(--cue-muted); cursor:pointer; }
 .notification-trigger__label { font:700 10px/1 monospace; text-transform:uppercase; letter-spacing:.06em; }
 .notification-trigger:hover, .notification-trigger:focus-visible { border-color: var(--cue-accent); color: var(--cue-text); outline: none; }
