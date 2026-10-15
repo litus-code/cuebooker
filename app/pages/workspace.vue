@@ -4978,16 +4978,22 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .workspace #workspace-navigation > button[data-workspace-view="settings"]::before,
 .workspace #workspace-navigation > button[data-workspace-view="settings"]::after { content:none!important; display:none!important; }
 
-/* Align Settings and Notifications with the icon column used by other sidebar entries. */
+/* All sidebar entries share one icon and one label column. */
 @media (min-width:961px) {
   .workspace #workspace-navigation > button[data-workspace-view="settings"],
   .workspace #workspace-navigation > .workspace-navigation-notifications {
-    position:relative;
-    left:-48px;
+    left:auto!important;
+    transform:none!important;
+    margin-left:0!important;
+    padding-left:14px!important;
+    box-sizing:border-box;
   }
-  .workspace #workspace-navigation > button[data-workspace-view="settings"],
+  .workspace #workspace-navigation > button[data-workspace-view="settings"] {
+    gap:12px;
+  }
   .workspace-navigation-notifications :deep(.notification-trigger) {
-    gap:2px;
+    padding-left:0!important;
+    gap:12px;
   }
 }
 </style>
