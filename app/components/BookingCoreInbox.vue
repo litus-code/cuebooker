@@ -27,6 +27,9 @@ const contacts = ref<Contact[]>([])
 const counterparties = ref<Counterparty[]>([])
 const activities = ref<Activity[]>([])
 const emailMessages = ref<BookingEmailMessage[]>([])
+const bookingAttachments = ref<Array<{id:string;email_message_id:string|null;file_name:string;byte_size:number}>>([])
+const attachmentBusy = ref(false)
+const attachmentNotice = ref('')
 const conversationThread = ref<HTMLElement | null>(null)
 const decisionModal = ref<HTMLElement | null>(null)
 const decisionTrigger = ref<HTMLElement | null>(null)
@@ -260,11 +263,43 @@ async function scrollThreadToLatest() {
   if (element) element.scrollTop = element.scrollHeight
 }
 
+async function recoverDocuments() {
+  const id = selectedBooking.value?.id
+  if (!id || props.demoData || !props.canOperate || attachmentBusy.value) return
+  attachmentBusy.value = true
+  attachmentNotice.value = ''
+  try {
+    const result = await bookingCore.recoverBookingAttachments(id)
+    if (selectedBooking.value?.id !== id) return
+    await loadActivity()
+    const stored = result.attachments.filter(file => ['stored','already_stored'].includes(file.status)).length
+    const missing = result.attachments.length - stored
+    attachmentNotice.value = props.locale === 'es'
+      ? `Documentos disponibles: ${stored}. ${missing ? `Pendientes: ${missing}.` : ''}`
+      : `Documents available: ${stored}. ${missing ? `Pending: ${missing}.` : ''}`
+  } catch {
+    attachmentNotice.value = props.locale === 'es'
+      ? 'No se han podido recuperar los documentos. Revisa la conexión e inténtalo de nuevo.'
+      : 'Could not recover documents. Check the mailbox connection and retry.'
+  } finally {
+    attachmentBusy.value = false
+  }
+}
+async function openBookingDocument(id:string) {
+  try {
+    const url = await bookingCore.getBookingEmailAttachmentUrl(id)
+    window.location.assign(url)
+  } catch {
+    attachmentNotice.value = props.locale === 'es' ? 'No se ha podido abrir el documento.' : 'Could not open document.'
+  }
+}
+
 async function loadActivity(options: { silent?: boolean } = {}) {
   const bookingId = selectedBooking.value?.id
   if (props.demoData) {
     activities.value = demoActivities.value.filter(item => item.booking_id === bookingId)
     emailMessages.value = []
+    bookingAttachments.value = []
     return
   }
   const keepPinnedToLatest = !options.silent || threadIsNearBottom()
@@ -274,6 +309,7 @@ async function loadActivity(options: { silent?: boolean } = {}) {
   if (!options.silent) {
     activities.value = []
     emailMessages.value = []
+    bookingAttachments.value = []
   }
   if (!bookingId || !props.workspaceId) return
   if (!options.silent) loadingActivity.value = true
@@ -299,6 +335,7 @@ async function loadActivity(options: { silent?: boolean } = {}) {
 
     activities.value = activityRows
     emailMessages.value = emailRows
+    bookingAttachments.value = await bookingCore.listBookingEmailAttachments(props.workspaceId, bookingId).catch(() => [])
     if (keepPinnedToLatest) await scrollThreadToLatest()
     if (externalChange) emit('operationsChanged')
   } finally {
@@ -803,6 +840,17 @@ async function selectBooking(bookingId: string) {
               </details>
             </article>
           </div>
+
+          <section v-if="!demoData && selectedBooking.source === 'email'" class="thread-item__attachments">
+            <strong>{{ locale === 'es' ? 'Documentos del booking' : 'Booking documents' }}</strong>
+            <button v-for="file in bookingAttachments" :key="file.id" type="button" @click="openBookingDocument(file.id)">
+              {{ file.file_name }} ({{ Math.ceil(file.byte_size / 1024) }} KB)
+            </button>
+            <button v-if="canOperate" type="button" :disabled="attachmentBusy" @click="recoverDocuments">
+              {{ attachmentBusy ? (locale === 'es' ? 'Recuperando…' : 'Recovering…') : (locale === 'es' ? 'Recuperar documentos del correo' : 'Recover email documents') }}
+            </button>
+            <p v-if="attachmentNotice" role="status">{{ attachmentNotice }}</p>
+          </section>
 
           <form v-if="canOperate && demoData && !selectedBooking.archived_at" class="core-inbox__demo-composer" @submit.prevent="saveDemoNote">
             <label>{{ locale === 'es' ? 'Registrar interacción' : 'Log an interaction' }}
