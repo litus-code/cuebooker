@@ -22,6 +22,8 @@ const activities = ref<Activity[]>([])
 const emailMessages = ref<BookingEmailMessage[]>([])
 const emailAttachments = ref<Array<{ id: string; email_message_id: string; file_name: string; content_type: string; byte_size: number }>>([])
 const attachmentError = ref('')
+const recoveringAttachments = ref(false)
+const attachmentNotice = ref('')
 const conversationThread = ref<HTMLElement | null>(null)
 const decisionModal = ref<HTMLElement | null>(null)
 const decisionTrigger = ref<HTMLElement | null>(null)
@@ -227,6 +229,31 @@ async function loadActivity(options: { silent?: boolean } = {}) {
     if (externalChange) emit('operationsChanged')
   } finally {
     if (!options.silent) loadingActivity.value = false
+  }
+}
+
+async function recoverSelectedAttachments() {
+  const id = selectedBooking.value?.id
+  if (!id || recoveringAttachments.value) return
+  recoveringAttachments.value = true
+  attachmentError.value = ''
+  attachmentNotice.value = ''
+  try {
+    const result = await bookingCore.recoverBookingAttachments(id)
+    if (selectedBooking.value?.id !== id) return
+    await loadActivity()
+    const saved = result.attachments.filter(item => item.status === 'stored').length
+    const present = result.attachments.filter(item => item.status === 'already_stored').length
+    const failed = result.attachments.length - saved - present
+    attachmentNotice.value = props.locale === 'es'
+      ? `Archivos recuperados: ${saved + present}. ${failed ? `Sin recuperar: ${failed}.` : ''}`
+      : `Files available: ${saved + present}. ${failed ? `Failed: ${failed}.` : ''}`
+  } catch {
+    attachmentError.value = props.locale === 'es'
+      ? 'No se han podido recuperar los documentos. Revisa la conexión de correo e inténtalo de nuevo.'
+      : 'Could not recover documents. Check the email connection and try again.'
+  } finally {
+    recoveringAttachments.value = false
   }
 }
 
@@ -695,6 +722,12 @@ async function selectBooking(bookingId: string) {
               <span aria-hidden="true">↗</span> {{ file.file_name }} <small>({{ Math.ceil(file.byte_size / 1024) }} KB)</small>
             </button>
           </div>
+          <div v-if="selectedBooking.source === 'email'" class="thread-item__attachments">
+            <button type="button" class="thread-item__attachment" :disabled="recoveringAttachments" @click="recoverSelectedAttachments">
+              {{ recoveringAttachments ? (locale === 'es' ? 'Recuperando documentos…' : 'Recovering documents…') : (locale === 'es' ? 'Recuperar documentos del correo' : 'Recover email documents') }}
+            </button>
+          </div>
+          <p v-if="attachmentNotice" role="status" class="core-inbox__empty">{{ attachmentNotice }}</p>
           <p v-if="attachmentError" role="alert" class="core-inbox__empty">{{ attachmentError }}</p>
           <BookingActivityComposer
             id="core-inbox-activity-composer"
