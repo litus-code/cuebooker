@@ -95,7 +95,7 @@ Deno.serve(async(request:Request)=>{
     }
    },
    retry:()=>rpc<boolean>('defer_mailbox_incoming',{target_job:job.id}),
-   complete:(state,value)=>rpc('complete_mailbox_incoming',{target_job:job.id,target_state:state,target_kind:value?.kind||null,target_reason:value?.reason||null})
+   complete:(state,value,failureStage)=>rpc('complete_mailbox_incoming',{target_job:job.id,target_state:state,target_kind:value?.kind||null,target_reason:value?.reason||failureStage||null})
   });
   return json({processed:1,outcome});
  }catch{console.warn('mailbox_incoming_processing_failed');return json({error:'mailbox_processing_unavailable'},503);}
