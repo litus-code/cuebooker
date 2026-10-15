@@ -12,10 +12,16 @@ const json = (body: unknown, status = 200) =>
 
 Deno.serve(async (request: Request) => {
   if (request.method !== "POST") return json({ error: "method_not_allowed" }, 405);
-  const secret = Deno.env.get("MAILBOX_WORKER_SECRET");
-  if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
-    return json({ error: "unauthorized" }, 401);
-  }
+  const baseAuth = Deno.env.get("SUPABASE_URL") || "";
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
+  const jwt = request.headers.get("authorization")?.match(/^Bearer (.+)$/i)?.[1];
+  if (!jwt || !baseAuth || !anonKey) return json({ error: "unauthorized" }, 401);
+  const response = await fetch(`${baseAuth}/auth/v1/user`, {
+    headers: { apikey: anonKey, Authorization: `Bearer ${jwt}` }
+  }).catch(() => null);
+  if (!response?.ok) return json({ error: "unauthorized" }, 401);
+  const user = await response.json() as { id?: string };
+  if (!user.id) return json({ error: "unauthorized" }, 401);
   const base = Deno.env.get("SUPABASE_URL") || "";
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
   if (!base || !serviceKey) return json({ error: "not_configured" }, 503);
@@ -57,6 +63,8 @@ Deno.serve(async (request: Request) => {
       `workspace_members?workspace_id=eq.${connection.workspace_id}&user_id=eq.${connection.user_id}&role=in.(owner,admin,manager,editor)&select=user_id&limit=1`
     );
     if (!members.length) return json({ error: "member_access_revoked" }, 403);
+    const requester = await db<Array<{user_id:string}>>(`workspace_members?workspace_id=eq.${connection.workspace_id}&user_id=eq.${user.id}&role=in.(owner,admin,manager,editor)&select=user_id&limit=1`);
+    if (!requester.length) return json({ error: "forbidden" }, 403);
     if (Deno.env.get("CUEBOOKER_CONNECTED_ATTACHMENTS_ENABLED") !== "true" ||
         !gmailConfigured(gmailConfig(name => Deno.env.get(name)))) {
       return json({ error: "attachment_recovery_disabled" }, 503);
