@@ -61,3 +61,34 @@ test('classification failure stage is distinguishable from booking creation',asy
  assert.equal(await processMailboxIncoming(job,options),'failed');
  assert.equal(failureStage,'classification');
 });
+
+test('attachments are stored only after the original booking is created',async()=>{
+ const events:string[]=[];
+ const {options}=setup({
+  create:async()=>{events.push('created');return 'booking-id'},
+  saveAttachments:async(_raw:any,id:string)=>{assert.equal(id,'booking-id');events.push('attachments')}
+ });
+ assert.equal(await processMailboxIncoming(job,options),'created');
+ assert.deepEqual(events,['created','attachments']);
+});
+test('attachment failure never creates another booking or retries AI',async()=>{
+ let creates=0,uploads=0,retries=0;
+ const {options}=setup({
+  create:async()=>{creates++;return 'booking-id'},
+  saveAttachments:async()=>{uploads++;throw new Error('storage unavailable')},
+  retry:async()=>{retries++;return true}
+ });
+ assert.equal(await processMailboxIncoming(job,options),'created');
+ assert.equal(creates,1);
+ assert.equal(uploads,1);
+ assert.equal(retries,0);
+});
+test('unclassified mail never downloads attachments',async()=>{
+ let attachments=0;
+ const {options}=setup({
+  classify:async()=>({id:'mail',kind:'other' as const,reason:'not a booking'}),
+  saveAttachments:async()=>{attachments++}
+ });
+ assert.equal(await processMailboxIncoming(job,options),'classified');
+ assert.equal(attachments,0);
+});
