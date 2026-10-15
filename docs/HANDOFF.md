@@ -1,3 +1,11 @@
+## 2026-10-15 / Owner starts branch consolidation — P0 merged into PR96 only
+
+The owner approved moving on to joining branches after accepting P0. Integrated PR113 into its intended base feature/agency-multi-artist-beta with a normal merge commit `49de54da1513ca7300687a43026c7ff168a44ab3`, matching the exact reviewed head `e7758590edda9b32766c5fc17aa02dc3a2418a50` and unchanged base `fe75fd5c096c3392a376b24a02ef4f63067cd66e`. PR113 is merged; PR96 remains open/draft. Existing source CI38807345114 passed579 tests/40-route generation and P0 compiled browser checks remain valid. Beta0.0.11 is unchanged; this consolidation is the same reviewed version. Resulting PR96 CI/preview evidence is recorded in its description after completion.
+
+Only P0→private-beta integration performed. No main, commercial branch, backend, Supabase, migration, secret, stable staging or production mutation. Local feature branch fast-forwarded to the remote merge without rewriting history. P1 remains prepared, not executed.
+
+Next integration decision: commercial dependency is111→110;109 is already an ancestor of110,112 is a preview-only alternative of111 and must not be merged as a second feature. Before combining the commercial family with the private beta, agree the target review branch. Do not merge main casually: push to main automatically publishes GitHub Pages and successful main CI triggers stable staging. Production workflow is manual. Earlier no-merge statements below describe the completed P0 implementation phase; this later owner instruction authorizes the specific PR113 merge recorded here.
+
 ## 2026-10-15 / Agency Settings P0 UX only — Beta 0.0.11 candidate
 
 Branch `fix/agency-settings-p0`; implementation HEAD `be767f8083b36fb7bc179f3346d53719895dc453`, based on PR96 `fe75fd5c096c3392a376b24a02ef4f63067cd66e` (Beta0.0.10, CI/preview successful). The initial local checkout was clean at the older3251d03; fetched current PR96 before creating this isolated branch. No merge/rewrite or change to the PR96/commercial branches. New PR targets feature/agency-multi-artist-beta so its diff contains only this P0 block; CI is dispatched on this branch because existing automatic PR workflows target main. Publication/check evidence is recorded in the PR body.
