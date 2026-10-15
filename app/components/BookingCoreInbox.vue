@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {conversationAttachmentWarnings} from '../domain/attachmentWarnings'
+import {groupConversationAttachments} from '../domain/conversationAttachments'
 import type { Activity, Contact, CoreBooking, Counterparty, CoreBookingStatus, Hold } from '../domain/bookingCore'
 import type { BookingEmailMessage, WorkspaceActivityHistoryRow } from '../services/bookingCoreApi'
 import { buildFollowUpDraft, shouldSuggestFollowUp } from '../services/followUpDraft'
@@ -29,7 +29,7 @@ const counterparties = ref<Counterparty[]>([])
 const activities = ref<Activity[]>([])
 const emailMessages = ref<BookingEmailMessage[]>([])
 const bookingAttachments = ref<Array<{id:string;email_message_id:string|null;attachment_index?:number;file_name:string;byte_size:number}>>([])
-const attachmentWarnings = computed(()=>conversationAttachmentWarnings(emailMessages.value,bookingAttachments.value,props.locale))
+const groupedAttachments = computed(()=>groupConversationAttachments(activities.value,emailMessages.value,bookingAttachments.value,props.locale))
 const attachmentBusy = ref(false)
 const attachmentNotice = ref('')
 const conversationThread = ref<HTMLElement | null>(null)
@@ -187,10 +187,14 @@ const suggestedFollowUp = computed(() => {
   return buildFollowUpDraft(booking, contact, activities.value, props.locale)
 })
 
-const conversationActivities = computed(() => activities.value.filter(activity =>
-  Boolean(activity.body?.trim())
+const conversationActivities = computed(() => activities.value.map(activity=>({
+  ...activity,
+  documents:groupedAttachments.value.byActivity.get(activity.id) || {files:[],warnings:[]},
+  presentation:activity.type==='email'?emailReplyPresentation(activity.body||''):{body:activity.body,quotedBody:''}
+})).filter(activity =>
+  (Boolean(activity.body?.trim()) || activity.documents.files.length || activity.documents.warnings.length)
   && !['status_change', 'system', 'hold_created', 'hold_converted', 'hold_released', 'next_move_created', 'next_move_completed'].includes(activity.type)
-).map(activity=>({ ...activity, presentation:activity.type==='email'?emailReplyPresentation(activity.body||''):{body:activity.body,quotedBody:''} })))
+))
 
 watch(() => props.bookings, value => {
   if (!value.length) selectedBookingId.value = ''
@@ -865,23 +869,13 @@ async function selectBooking(bookingId: string) {
                 <summary>{{ locale === 'es' ? 'Ver historial citado' : 'View quoted history' }}</summary>
                 <p>{{ activity.presentation.quotedBody }}</p>
               </details>
+              <BookingMessageAttachments v-if="!demoData" :files="activity.documents.files" :warnings="activity.documents.warnings" :locale="locale" @open="openBookingDocument" />
             </article>
-          <section v-if="!demoData && (bookingAttachments.length || attachmentWarnings.length)" class="core-inbox__documents thread-item thread-item--inbound" :aria-label="locale === 'es' ? 'Archivos adjuntos' : 'Attachments'">
-            <div class="core-inbox__documents-head">
-              <strong>{{ locale === 'es' ? 'Archivos adjuntos' : 'Attachments' }}</strong>
-              <AttachmentLimitsInfo :locale="locale" :max-files="10" per-file /><small>{{ bookingAttachments.length }}</small>
-            </div>
-            <ul v-if="attachmentWarnings.length" class="core-inbox__attachment-warnings" role="status" aria-live="polite"><li v-for="warning in attachmentWarnings" :key="warning.id">{{ warning.text }}</li></ul>
-            <div class="core-inbox__documents-list">
-              <button v-for="file in bookingAttachments" :key="file.id" type="button" class="core-inbox__document" @click="openBookingDocument(file.id)">
-                <span class="core-inbox__document-type" aria-hidden="true">{{ /pdf$/i.test(file.file_name) ? 'PDF' : 'IMG' }}</span>
-                <span class="core-inbox__document-name">{{ file.file_name }}</span>
-                <small>{{ Math.ceil(file.byte_size / 1024) }} KB</small>
-                <span aria-hidden="true">↗</span>
-              </button>
-            </div>
-            <p v-if="attachmentNotice" role="status">{{ attachmentNotice }}</p>
+          <section v-if="!demoData && (groupedAttachments.unassigned.files.length || groupedAttachments.unassigned.warnings.length)" class="core-inbox__unassigned-documents">
+            <p>{{ locale === 'es' ? 'Archivos sin mensaje asociado' : 'Files without a linked message' }}</p>
+            <BookingMessageAttachments :files="groupedAttachments.unassigned.files" :warnings="groupedAttachments.unassigned.warnings" :locale="locale" @open="openBookingDocument" />
           </section>
+          <p v-if="attachmentNotice" role="status">{{ attachmentNotice }}</p>
 
           </div>
 
@@ -1003,17 +997,7 @@ async function selectBooking(bookingId: string) {
 </template>
 
 <style scoped>
-.core-inbox__attachment-warnings {display:grid;gap:6px;margin:0;padding:10px 12px 10px 28px;border-left:3px solid #d99b25;border-radius:8px;background:color-mix(in srgb,#d99b25 12%,var(--cue-surface));color:var(--cue-text);font-size:12px;line-height:1.5;overflow-wrap:anywhere}
-.core-inbox__documents { display:grid; gap:10px; margin:8px 0 12px; padding:12px 14px; min-width:0; width:min(100%,720px); max-width:100%; align-self:flex-start; border:1px solid var(--cue-border); border-left:3px solid var(--cue-accent); border-radius:10px; background:var(--cue-surface); }
-.core-inbox__documents-head { position:relative; display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; }
-.core-inbox__documents-head strong { flex:1; }
-.core-inbox__documents-head small { background:var(--cue-border); border-radius:20px; padding:2px 7px; }
-.core-inbox__documents-list { display:grid; gap:6px; }
-.core-inbox__documents .core-inbox__document { display:flex; width:100%; min-width:0; align-items:center; gap:10px; text-align:left; border:1px solid var(--cue-border); border-radius:9px; background:color-mix(in srgb,var(--cue-surface) 90%,var(--cue-accent) 10%); color:var(--cue-text); padding:10px 12px; cursor:pointer; font:inherit; box-shadow:none; }
-.core-inbox__document:hover { border-color:var(--cue-accent); }
-.core-inbox__document-type { flex:none; font:700 10px/1.2 monospace; padding:7px 6px; border-radius:5px; background:color-mix(in srgb,var(--cue-accent) 12%,transparent); color:var(--cue-accent); }
-.core-inbox__document-name { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; }
-.core-inbox__document small { flex:none; color:var(--cue-muted); font-size:10px; }
+.core-inbox__unassigned-documents {padding:12px;border:1px solid var(--cue-border);border-radius:10px;font-size:12px;color:var(--cue-muted)}
 
 .core-inbox__mailbox-review{margin:14px 0;padding:14px 16px;border:1px solid var(--cue-border);border-left:3px solid var(--cue-status-new);border-radius:var(--cue-radius-panel);font-size:13px;line-height:1.5}.core-inbox__mailbox-review p{color:var(--cue-muted);margin:8px 0 0}
 .core-inbox__email-review{margin:16px 0;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);overflow:hidden}

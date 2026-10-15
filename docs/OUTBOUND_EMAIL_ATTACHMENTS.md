@@ -1,6 +1,6 @@
 # Attach documents when replying from Cuebooker
 
-15 October 2026. PR96, Beta0.0.8. Staging only. Current implementation/evidence in HANDOFF.md; earlier rollout records below are historical.
+15 October 2026. PR96, Beta0.0.9. Staging only. Current implementation/evidence in HANDOFF.md; earlier rollout records below are historical.
 
 ## User flow
 
@@ -55,3 +55,7 @@ Owner's real Cuebooker outgoing reply stored a1654338-byte PNG on the original b
 571 tests,40-route build,3 affected Deno entrypoints and bounded-column rollback SQL passed. Incoming43/connected55/recovery5 source/dependencies and retained JWT flags verified; all three unauthenticated POSTs return401. No stable frontend promotion, production or merge.
 
 Implementation CI2204/run38786592560 and PR preview2678/run38786592747 SUCCESS. PR preview https://pr-96.cuebooker-staging.pages.dev; stable frontend deployment skipped. This evidence-only documentation revision does not change application sources or the Beta0.0.8 version.
+
+## Beta0.0.9 message placement
+
+Documents and rejection notices now render beneath the originating email, using the exact activity metadata email_message_id and file email_message_id. The accumulated conversation-wide list is removed. Attachment-only messages remain visible. Historical unlinked documents stay available under an explicit Files without a linked message fallback; no filename/date guessing. Downloads use the existing private endpoint; composer info/limits remain.573 tests and40-route build pass. Frontend-only release: staging backend/schema/Storage/AI/provider behavior unchanged. Owner's supported PNG reply capture/storage acceptance passed; browser signed-download and mobile/Safari acceptance remain open.
