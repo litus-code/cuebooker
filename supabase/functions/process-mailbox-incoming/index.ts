@@ -65,7 +65,10 @@ Deno.serve(async(request:Request)=>{
       try{
         // The booking RPC completes the job; authorize_mailbox_incoming only permits 'processing'.
         // Re-check the connected mailbox's current consent and the job's booking before file access.
-        const consentResponse=await fetch(`${base}/rest/v1/mailbox_connections?id=eq.${job.connectionId}&workspace_id=eq.${job.workspaceId}&user_id=eq.${job.actorId}&status=eq.connected&background_analysis_enabled=eq.true&background_analysis_revision=eq.${job.consentRevision}&select=id&limit=1`,{headers:{apikey:key,Authorization:`Bearer ${key}`,'Accept':'application/json'}});
+        const savedJobs=await db<Array<{consent_revision:string;booking_id:string;connection_id:string}>>(`mailbox_incoming_jobs?id=eq.${job.id}&state=eq.completed&booking_id=eq.${bookingId}&select=consent_revision,booking_id,connection_id&limit=1`);
+        const savedJob=savedJobs[0];
+        if(!savedJob||savedJob.connection_id!==job.connectionId)break;
+        const consentResponse=await fetch(`${base}/rest/v1/mailbox_connections?id=eq.${job.connectionId}&workspace_id=eq.${job.workspaceId}&user_id=eq.${job.actorId}&status=eq.connected&background_analysis_enabled=eq.true&background_analysis_revision=eq.${savedJob.consent_revision}&select=id&limit=1`,{headers:{apikey:key,Authorization:`Bearer ${key}`,'Accept':'application/json'}});
         if(!consentResponse.ok){console.warn('mailbox_attachment_consent_lookup_failed',{status:consentResponse.status,index});throw new Error('mailbox_attachment_consent_lookup_failed');}
         const current=await consentResponse.json() as Array<{id:string}>;
         if(!current.length)break;
