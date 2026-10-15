@@ -114,7 +114,10 @@ Deno.serve(async(request:Request)=>{
     let watch:any=null;
     if(row.transport==='gmail'){const watches=await db<any[]>(`gmail_mailbox_watches?connection_id=eq.${row.id}&select=state,consent_revision,history_id,watch_expires_at,updated_at&limit=1`);watch=watches[0]||null;}
     const jobs=row.background_analysis_revision?await db<Array<{state:string;created_at:string;processing_started_at?:string;retry_reason?:string|null}>>(`mailbox_incoming_jobs?connection_id=eq.${row.id}&consent_revision=eq.${row.background_analysis_revision}&state=in.(pending,processing,failed)&select=state,created_at,processing_started_at,retry_reason&limit=1001`):[];
-    const pending=jobs.filter(j=>j.state!=='failed').length,failed=jobs.filter(j=>j.state==='failed').length;
+    const pending=jobs.filter(j=>j.state!=='failed').length;
+    // Historical failures remain available for diagnostics but must not keep a healthy connection in warning forever.
+    const recentFailureCutoff=Date.now()-2*60*60*1000;
+    const failed=jobs.filter(j=>j.state==='failed'&&Number.isFinite(Date.parse(j.created_at))&&Date.parse(j.created_at)>=recentFailureCutoff).length;
     const stalled=jobs.some(j=>j.state==='processing'&&Date.parse(j.processing_started_at||j.created_at)<Date.now()-10*60000);
     const detection=mailboxDetectionState({available:backgroundAvailable,status,enabled:row.background_analysis_enabled===true,revision:row.background_analysis_revision,watch,failed,stalled,delayed:jobs.some(j=>j.retry_reason==='rate_limit'),transport:row.transport});
     return {id:row.id,email:row.email,provider:row.provider,transport:row.transport,status,connectedAt:row.connected_at,background:{state:detection,pending,failed,retrying:jobs.some(j=>j.retry_reason==='rate_limit'),syncState:watch?.state||null,enabled:row.background_analysis_enabled===true,processor:row.background_analysis_processor||null,since:row.background_analysis_since||null}};
