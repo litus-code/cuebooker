@@ -54,3 +54,9 @@ Public images are editorial/illustrative; workspace data is artificial local fix
 A new main-based **draft PR is for combined preview/review only**, not permission to merge. Existing workflows publish only its PR preview; do not manually dispatch stable staging/production. Main CI would trigger stable staging and a main push would trigger GitHub Pages, so those remain separate later decisions. No Supabase deployment, migration, secret, scheduler, paid service, invitation or real email operation occurred. P1 stays prepared in AGENCY_P1_ACCEPTANCE_PLAN.md, not executed. This merge does not establish release/security/backend parity readiness.
 
 Rollback before any later promotion: close the joint review PR or discard its branch. The already merged #113/#111 history remains in their intended feature families; no database rollback is needed. CI and deployed preview evidence for the published candidate are recorded in the PR description.
+
+## Mobile landing navigation follow-up
+
+Application `4a6b72357bc5cd719540eb2815b5e10ee6be1c43`: below768px the shared landing header has only logo and hamburger; links and language/theme controls are inside a native modal. Compiled Chromium checks cover both routes/locales at390px, keyboard wrapping, Escape/trigger focus restoration, How target focus, scroll unlock and desktop1024 transition. Zero Axe WCAG2/2.1 A/AA violations in the open menu. 581 tests and44-route build pass.
+
+[Agency menu390](agency-menu-390.jpg) · [DJ menu390](dj-menu-390.jpg). Earlier closed-header landing captures predate this follow-up.

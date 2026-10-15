@@ -1,3 +1,9 @@
+## 2026-10-15 / Landing mobile hamburger navigation
+
+Branch `integration/beta-home21-review`, application HEAD `4a6b72357bc5cd719540eb2815b5e10ee6be1c43`, draft PR114. Owner requested that mobile landing header links/preferences move inside a hamburger menu. Both DJ and Agency share the corrected header: below768px only logo/toggle, native modal with Home/How/Sign-in and reused language/theme control. Desktop navigation remains inline. Native Escape/close restores trigger focus, Tab/Shift+Tab stay inside, How closes and focuses its section, document scroll unlocks on close/unmount and switching to desktop closes the modal. ES/EN accessible labels added.
+
+Local compiled Chromium checks on both pages/locales at390px: hidden inline links/preferences, open/close, keyboard wrap, Escape/focus restore, How target focus, desktop1024 transition and Axe WCAG2/2.1 A/AA (zero violations) passed. 581 tests pass;44-route build and whitespace check pass. New menu captures in docs/reviews/integration-beta-home21. No real signup/backend operations. Published follow-up checks are recorded in PR114. Same Beta0.0.12 review candidate. Main/Supabase/production unchanged. Next: owner reviews PR114 preview; P1 remains unexecuted and main merge remains unauthorized.
+
 ## 2026-10-15 / Joint preview routing and home discovery follow-up
 
 Branch `integration/beta-home21-review`, application HEAD `0a1fd63` (routing entry separation at `3c3cfda`), baseline `e910d9f542b541a1260a9fe1a8f432c91468575a`, draft PR114. Owner approved visible DJ/Agency discovery links and the same avatar direction with clothing/hair. Explicit ES/EN links supplement audience headings while signup CTAs/events remain. The home uses an AI-assisted styled marketing concept with short hair/black streetwear, labelled as a concept in development; actual CUE ID model/controls remain unchanged.
