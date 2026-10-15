@@ -143,7 +143,7 @@ async function select(item: CueNotification) {
 
 function handleDocumentClick(event: MouseEvent) {
   if (!open.value || !root.value) return
-  if (!root.value.contains(event.target as Node) && !panel.value?.contains(event.target as Node)) open.value = false
+  if (!(event.target as Element)?.closest?.('[data-notification-trigger]') && !panel.value?.contains(event.target as Node)) open.value = false
 }
 
 function handleKeydown(event: KeyboardEvent) {
@@ -188,23 +188,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="root" class="notification-center">
-    <button
-      class="notification-trigger"
-      type="button"
-      :aria-label="copy.label"
-      :title="copy.label"
-      :aria-expanded="open"
-      aria-haspopup="dialog"
-      @click.stop="toggle"
-    >
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" />
-      </svg>
+  <slot name="trigger" :toggle="toggle" :unread="unread" :label="copy.label">
+    <button ref="root" class="notification-trigger" type="button" :aria-label="copy.label" :aria-expanded="open" aria-haspopup="dialog" @click.stop="toggle">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
       <span class="notification-trigger__label">{{ copy.label }}</span>
-      <span v-if="unread" class="notification-badge" :aria-label="`${unread} ${copy.new}`">{{ unread > 9 ? '9+' : unread }}</span>
+      <span v-if="unread" class="notification-badge">{{ unread > 9 ? '9+' : unread }}</span>
     </button>
-
+  </slot>
     <Teleport to="body">
     <div v-if="open" class="notification-backdrop" aria-hidden="true" @click="open = false" />
     <section
@@ -252,7 +242,6 @@ onBeforeUnmount(() => {
       </div>
     </section>
     </Teleport>
-  </div>
 </template>
 
 <style scoped>
