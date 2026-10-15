@@ -4,10 +4,11 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 // Return a 60-second signed URL only after a workspace-scoped RLS read.
 function respond(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
-    status, headers: { "content-type": "application/json", "cache-control": "no-store" }
+    status, headers: { "content-type": "application/json", "cache-control": "no-store", "access-control-allow-origin": "*", "access-control-allow-headers": "authorization, apikey, content-type", "access-control-allow-methods": "POST, OPTIONS" }
   });
 }
 Deno.serve(async (request) => {
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "authorization, apikey, content-type", "access-control-allow-methods": "POST, OPTIONS" } });
   if (request.method !== "POST") return respond({ error: "method_not_allowed" }, 405);
   const jwt = request.headers.get("authorization")?.match(/^Bearer (.+)$/i)?.[1];
   if (!jwt) return respond({ error: "unauthorized" }, 401);
