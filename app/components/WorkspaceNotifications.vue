@@ -80,12 +80,11 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    const [nextItems, nextUnread] = await Promise.all([
-      notifications.list(40),
-      notifications.unreadCount()
-    ])
+    const nextItems = await notifications.list(40)
     items.value = nextItems
-    unread.value = nextUnread
+    // Count refresh must not hide a successfully loaded notification list.
+    try { unread.value = await notifications.unreadCount() }
+    catch { unread.value = nextItems.filter(item => !item.read_at).length }
   } catch {
     error.value = copy.value.retry
   } finally {
@@ -97,7 +96,6 @@ async function toggle() {
   open.value = !open.value
   if (open.value) {
     await load()
-    await markAll()
   }
 }
 
@@ -109,7 +107,9 @@ async function markAll() {
     items.value = items.value.map(item => item.read_at ? item : { ...item, read_at: readAt })
     unread.value = 0
   } catch {
-    error.value = copy.value.retry
+    error.value = props.locale === 'es'
+      ? 'No se pudieron marcar como leídas. Los avisos siguen disponibles.'
+      : 'Could not mark notifications as read. Your alerts are still available.'
   }
 }
 
@@ -214,10 +214,10 @@ onBeforeUnmount(() => {
       </div>
 
       <p v-if="loading" class="notification-state">…</p>
-      <p v-else-if="error" class="notification-state notification-state--error">{{ error }}</p>
-      <p v-else-if="!items.length" class="notification-state">{{ copy.empty }}</p>
+      <p v-if="error" class="notification-state notification-state--error">{{ error }} <button type="button" @click="load">{{ locale === 'es' ? 'Reintentar' : 'Retry' }}</button></p>
+      <p v-if="!loading && !error && !items.length" class="notification-state">{{ copy.empty }}</p>
 
-      <div v-else class="notification-list">
+      <div v-if="!loading && items.length" class="notification-list">
         <button
           v-for="item in items"
           :key="item.id"
