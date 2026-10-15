@@ -85,6 +85,19 @@ async function load() {
     // Count refresh must not hide a successfully loaded notification list.
     try { unread.value = await notifications.unreadCount() }
     catch { unread.value = nextItems.filter(item => !item.read_at).length }
+    // Reading succeeds only after the visible list has loaded.
+    // Avoid resetting a newer notification that arrived after this snapshot.
+    if (open.value && nextItems.some(item => !item.read_at)) {
+      const unreadSnapshot = nextItems.filter(item => !item.read_at)
+      const results = await Promise.allSettled(unreadSnapshot.map(item => notifications.markRead(item.id)))
+      const readIds = new Set(unreadSnapshot.filter((_, index) => results[index].status === 'fulfilled').map(item => item.id))
+      const readAt = new Date().toISOString()
+      items.value = items.value.map(item => readIds.has(item.id) ? { ...item, read_at: readAt } : item)
+      await refreshCount()
+      if (results.some(result => result.status === 'rejected')) {
+        error.value = props.locale === 'es' ? 'Algunos avisos no pudieron marcarse como leídos.' : 'Some alerts could not be marked as read.'
+      }
+    }
   } catch {
     error.value = copy.value.retry
   } finally {
