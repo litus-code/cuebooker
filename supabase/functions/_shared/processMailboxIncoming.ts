@@ -39,6 +39,9 @@ export async function processMailboxIncoming(job:Job,options:{authorize:()=>Prom
   if(error instanceof Error&&error.message==='mailbox_ai_rate_limit'&&options.retry&&await options.retry())return 'deferred';
   // No automatic retry after an uncertain AI/provider attempt. Operator review is required.
   // Store only a fixed phase name; never persist raw provider errors or email contents.
-  await options.complete('failed',undefined,stage);return 'failed';
+  const safeClassifyCodes=['mailbox_ai_quota_exhausted','mailbox_ai_unavailable','mailbox_ai_not_configured','invalid_classification','missing_booking_draft','mailbox_ai_request_too_large','mailbox_ai_rate_limit'];
+  const code=error instanceof Error?error.message:'';
+  const diagnostic=stage==='classification'&&safeClassifyCodes.includes(code)?code:stage;
+  await options.complete('failed',undefined,diagnostic);return 'failed';
  }
 }
