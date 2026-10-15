@@ -1,9 +1,15 @@
+import type {MailboxAttachmentReport} from './saveMailboxAttachments.ts';
 import {mailboxMessage} from './mailboxMessage.ts';
 import type {BookingMailClassification} from './mailboxClassifier.ts';
 import {mailboxPreFilter} from './mailboxPreFilter.ts';
 import type {MailboxReplyLink} from './mailboxReplyLink.ts';
 type Job={id:string;connectionId:string;workspaceId:string;actorId:string;grantId:string;email:string;messageId:string;threadId:string;since:string};
-export async function processMailboxIncoming(job:Job,options:{authorize:()=>Promise<boolean>;message:()=>Promise<any>;inbox:()=>Promise<{inbox:string[];excluded:string[]}>;linkedBooking:(raw:any)=>Promise<MailboxReplyLink>;sync:(bookingId:string,message:ReturnType<typeof mailboxMessage>)=>Promise<unknown>;classify:(message:ReturnType<typeof mailboxMessage>)=>Promise<BookingMailClassification>;create:(message:ReturnType<typeof mailboxMessage>,classification:BookingMailClassification)=>Promise<unknown>;saveAttachments?:(raw:any,bookingId:string)=>Promise<void>;retry?:()=>Promise<boolean>;complete:(state:'completed'|'ignored'|'failed',classification?:BookingMailClassification,failureStage?:string)=>Promise<unknown>}){
+export async function processMailboxIncoming(job:Job,options:{authorize:()=>Promise<boolean>;message:()=>Promise<any>;inbox:()=>Promise<{inbox:string[];excluded:string[]}>;linkedBooking:(raw:any)=>Promise<MailboxReplyLink>;sync:(bookingId:string,message:ReturnType<typeof mailboxMessage>)=>Promise<unknown>;classify:(message:ReturnType<typeof mailboxMessage>)=>Promise<BookingMailClassification>;create:(message:ReturnType<typeof mailboxMessage>,classification:BookingMailClassification)=>Promise<unknown>;saveAttachments?:(raw:any,bookingId:string)=>Promise<void|MailboxAttachmentReport>;retry?:()=>Promise<boolean>;complete:(state:'completed'|'ignored'|'failed',classification?:BookingMailClassification,failureStage?:string)=>Promise<unknown>}){
+ async function attachments(raw:any,bookingId:string){
+  if(!options.saveAttachments)return false;
+  try{const result=await options.saveAttachments(raw,bookingId);return Boolean(result&&(result.failed||result.blocked));}
+  catch{console.warn('mailbox_attachment_processing_failed');return true;}
+ }
  let stage='authorization';
  try{
   if(!await options.authorize()){await options.complete('ignored');return 'ignored';}
@@ -17,7 +23,7 @@ export async function processMailboxIncoming(job:Job,options:{authorize:()=>Prom
   stage='reply_matching';
   const bookingId=await options.linkedBooking(raw);
   if(!await options.authorize()){await options.complete('ignored');return 'ignored';}
-  if(typeof bookingId==='string'){stage='conversation_sync';await options.sync(bookingId,message);await options.complete('ignored');return 'synced';}
+  if(typeof bookingId==='string'){stage='conversation_sync';await options.sync(bookingId,message);const pending=await attachments(raw,bookingId);await options.complete('ignored');return pending?'synced_attachments_pending':'synced';}
   if(bookingId?.review){await options.complete('completed',{id:message.id,kind:'review',reason:'Respuesta sin una relación única con una solicitud guardada. Revisa la conversación.'});return 'review';}
   const filtered=mailboxPreFilter(raw,message.id);
   if(filtered){await options.complete('completed',filtered);return 'filtered';}
@@ -28,10 +34,8 @@ export async function processMailboxIncoming(job:Job,options:{authorize:()=>Prom
    if(!classification.draft)throw new Error('missing_booking_draft');
    stage='booking_creation';
    const created=await options.create(message,classification);
-   if(typeof created==='string'&&options.saveAttachments){
-    try{await options.saveAttachments(raw,created);}catch{console.warn('mailbox_attachment_processing_failed');}
-   }
-   return 'created';
+   const pending=typeof created==='string'&&await attachments(raw,created);
+   return pending?'created_attachments_pending':'created';
   }
   stage='completion';
   await options.complete('completed',classification);return 'classified';
@@ -41,7 +45,7 @@ export async function processMailboxIncoming(job:Job,options:{authorize:()=>Prom
   // Store only a fixed phase name; never persist raw provider errors or email contents.
   if(stage==='classification'){
     const category=error instanceof Error?error.message:'';
-    const known=['mailbox_ai_quota_exhausted','mailbox_ai_unavailable','mailbox_ai_not_configured','invalid_classification','missing_booking_draft','mailbox_ai_request_too_large','mailbox_ai_rate_limit'];
+    const known=['mailbox_ai_quota_exhausted','mailbox_ai_bad_request','mailbox_ai_unavailable','mailbox_ai_not_configured','invalid_classification','missing_booking_draft','mailbox_ai_request_too_large','mailbox_ai_rate_limit'];
     console.warn('mailbox_classification_failure_category',known.includes(category)?category:'unknown');
   }
   const diagnostic=stage;

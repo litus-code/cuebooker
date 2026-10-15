@@ -64,3 +64,22 @@ test('ambiguous send is attempted once, and header injection is rejected before 
  await assert.rejects(api.send('',{to:'contact@example.invalid',subject:'test',bodyText:'reply'}),{message:'mailbox_provider_unavailable'});assert.equal(calls,1);
  await assert.rejects(api.send('',{to:'contact@example.invalid',subject:'test\r\nBcc: evil@example.invalid',bodyText:'reply'}));assert.equal(calls,1);
 });
+
+test('nested Gmail MIME exposes both remote and inline PDF/image references without injecting content into AI text',async()=>{
+ const bytes=Uint8Array.from([137,80,78,71,13,10,26,10,0]);
+ const fixture={...message,payload:{...message.payload,mimeType:'multipart/mixed',parts:[message.payload.parts[0],{mimeType:'multipart/related',parts:[{mimeType:'application/pdf',filename:'offer.pdf',body:{attachmentId:'remote-pdf',size:12}},{mimeType:'image/png',filename:'stage.png',body:{data:base64url(bytes),size:bytes.length}}]}]}};
+ const mapped=gmailMessage(fixture);assert.deepEqual(mapped.attachments,[{id:'remote-pdf',name:'offer.pdf',mime:'application/pdf',size:12},{id:'inline:1.1',name:'stage.png',mime:'image/png',size:bytes.length}]);assert.doesNotMatch(mailboxMessage(mapped,'dj@example.invalid').body,/stage.png|offer.pdf/);
+ const paths:string[]=[];const api=createGmailMailbox(config,{read:async()=>token(),write:async()=>{},reauth:async()=>{}},mock(async(url)=>{paths.push(url);return Response.json(url.includes('/attachments/')?{data:base64url(bytes),size:bytes.length}:fixture)}));
+ assert.deepEqual(await api.attachment('',message.id,'inline:1.1'),bytes);assert.match(paths[0],/format=full/);
+ assert.deepEqual(await api.attachment('',message.id,'remote-pdf'),bytes);assert.match(paths[1],/attachments\/remote-pdf$/);
+ await assert.rejects(api.attachment('',message.id,'inline:99.1'),{message:'invalid_attachment_payload'});
+});
+test('attachment payload validation rejects invalid references, size, base64 and wrong message identity',async()=>{
+ for(const value of [{data:'not#base64',size:3},{data:base64url(new Uint8Array([1,2,3])),size:4}]){
+  const api=createGmailMailbox(config,{read:async()=>token(),write:async()=>{},reauth:async()=>{}},mock(async()=>Response.json(value)));
+  await assert.rejects(api.attachment('','m1','remote'),{message:'invalid_attachment_payload'});
+ }
+ let calls=0;const api=createGmailMailbox(config,{read:async()=>token(),write:async()=>{},reauth:async()=>{}},mock(async()=>{calls++;return Response.json({...message,id:'different'})}));
+ await assert.rejects(api.attachment('','m1','../private'),{message:'invalid_attachment_reference'});assert.equal(calls,0);
+ await assert.rejects(api.attachment('','m1','inline:root'),{message:'invalid_attachment_payload'});
+});

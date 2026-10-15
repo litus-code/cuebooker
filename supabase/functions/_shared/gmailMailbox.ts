@@ -53,14 +53,26 @@ function plainBody(part:any,depth=0):string{
  if(part.mimeType==='text/html'&&typeof part.body?.data==='string'&&part.body.data.length<=200000)return new TextDecoder().decode(unbase64(part.body.data)).replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi,'').replace(/<br\s*\/?\s*>|<\/p>|<\/div>/gi,'\n').replace(/<[^>]*>/g,'');
  return '';
 }
-function gmailAttachmentRefs(part:any,depth=0):Array<{id:string;name:string;mime:string;size:number}> {
+function gmailAttachmentRefs(part:any,depth=0,path='root'):Array<{id:string;name:string;mime:string;size:number}> {
  if(depth>12)return [];
- const children=Array.isArray(part?.parts)?part.parts.flatMap((child:any)=>gmailAttachmentRefs(child,depth+1)):[];
+ const children=Array.isArray(part?.parts)?part.parts.flatMap((child:any,index:number)=>gmailAttachmentRefs(child,depth+1,path==='root'?String(index):`${path}.${index}`)):[];
  const name=typeof part?.filename==='string'?part.filename.trim():'';
  const id=part?.body?.attachmentId;
- if(name&&typeof id==='string'&&id.length<=1024&&name.length<=200)children.push({id,name,mime:String(part.mimeType||''),size:Number(part.body?.size||0)});
+ if(name&&name.length<=200){
+  if(typeof id==='string'&&/^[A-Za-z0-9_-]{1,1024}$/.test(id))children.push({id,name,mime:String(part.mimeType||''),size:Number(part.body?.size||0)});
+  else if(typeof part?.body?.data==='string')children.push({id:`inline:${path}`,name,mime:String(part.mimeType||''),size:Number(part.body?.size||0)});
+ }
  return children.slice(0,10);
 }
+function gmailAttachmentBytes(result:any){
+ if(typeof result?.data!=='string'||result.data.length>6990508||!/^[A-Za-z0-9_-]*={0,2}$/.test(result.data))throw new Error('invalid_attachment_payload');
+ let binary:string;
+ try{binary=atob(result.data.replace(/-/g,'+').replace(/_/g,'/'));}catch{throw new Error('invalid_attachment_payload');}
+ if(!binary.length||binary.length>5242880)throw new Error('attachment_too_large');
+ if(!Number.isSafeInteger(result.size)||result.size!==binary.length)throw new Error('invalid_attachment_payload');
+ return Uint8Array.from(binary,c=>c.charCodeAt(0));
+}
+
 export function gmailMessage(message:any){
  if(typeof message.id!=='string'||typeof message.threadId!=='string'||!Number.isFinite(Number(message.internalDate)))throw new Error('invalid_provider_response');
  const body=plainBody(message.payload)||String(message.snippet||'');
@@ -88,12 +100,17 @@ export function createGmailMailbox(c:GmailConfig,store:{email?:string;read:()=>P
    return {messages,nextCursor:typeof r.nextPageToken==='string'?r.nextPageToken:null};
   },
   async attachment(_grantId:string,messageId:string,attachmentId:string) {
-   if(!/^[A-Za-z0-9_-]{1,512}$/.test(messageId)||!/^[A-Za-z0-9_-]{1,1024}$/.test(attachmentId))throw new Error('invalid_attachment_reference');
-   const result=await call(`/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(attachmentId)}`);
-   if(typeof result?.data!=='string'||result.data.length>7500000)throw new Error('invalid_attachment_payload');
-   const binary=atob(result.data.replace(/-/g,'+').replace(/_/g,'/'));
-   if(binary.length>5242880)throw new Error('attachment_too_large');
-   return Uint8Array.from(binary,c=>c.charCodeAt(0));
+   if(!/^[A-Za-z0-9_-]{1,512}$/.test(messageId))throw new Error('invalid_attachment_reference');
+   if(/^inline:(?:root|[0-9]+(?:\.[0-9]+){0,11})$/.test(attachmentId)){
+    const message=await call(`/messages/${encodeURIComponent(messageId)}?format=full`);
+    if(message.id!==messageId)throw new Error('invalid_attachment_payload');
+    let part=message.payload;
+    if(attachmentId!=='inline:root')for(const index of attachmentId.slice(7).split('.'))part=part?.parts?.[Number(index)];
+    if(!part?.filename||part.body?.attachmentId)throw new Error('invalid_attachment_payload');
+    return gmailAttachmentBytes(part.body);
+   }
+   if(!/^[A-Za-z0-9_-]{1,1024}$/.test(attachmentId))throw new Error('invalid_attachment_reference');
+   return gmailAttachmentBytes(await call(`/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(attachmentId)}`));
   },
   async inboxFolders(_id:string){return {inbox:['INBOX'],excluded:['SPAM','TRASH','SENT','DRAFT']};},
   async referencedMessages(reference:string){

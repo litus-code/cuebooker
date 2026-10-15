@@ -59,7 +59,7 @@ test('Groq repeated HTTP 400 fails after one format fallback',async()=>{
   let calls=0;
   await assert.rejects(classifyBookingMail([{id:'one',subject:'Oferta',body:'Hola'}],'key',(async()=>{
    calls++;
-   return Response.json({error:{message:'sensitive provider validation details'}},{status:400});
+   return Response.json({error:{code:'invalid_json_schema',message:'sensitive provider validation details'}},{status:400});
   }) as typeof fetch,true),{message:'mailbox_ai_bad_request'});
   assert.equal(calls,2);
   assert.deepEqual(logs.at(-1),['mailbox_classifier_http_status',400,'mailbox_ai_bad_request']);
@@ -89,4 +89,42 @@ test('strict JSON rejection falls back once to JSON object with identical valida
  }) as typeof fetch,true);
  assert.deepEqual(modes,['json_schema','json_object']);
  assert.equal(output[0].kind,'other');
+});
+
+test('generic 400, unsupported model, failed generation and malformed rejection never trigger fallback',async()=>{
+ for(const failure of [{error:{code:'invalid_request_error',param:'temperature'}},{error:{code:'model_not_supported'}},{error:{code:'json_validate_failed',failed_generation:'private generated content'}},{error:{message:'json_schema not accepted? private message'}},null]){
+  let calls=0;
+  await assert.rejects(classifyBookingMail([{id:'one',subject:'Consulta',body:'Hola'}],'key',(async()=>{calls++;return Response.json(failure,{status:400})}) as typeof fetch,true),{message:'mailbox_ai_bad_request'});
+  assert.equal(calls,1);
+ }
+});
+test('object mode includes the full output contract and preserves extracted booking validation and usage',async()=>{
+ const requests:any[]=[],usage:any[]=[];
+ const draft={eventDate:'2027-03-15',startTime:'23:00',endTime:'01:00',venue:'Club de ejemplo',city:null,offerAmountMinor:120000,currency:'EUR',artistName:null,contactPhone:null,warnings:[]};
+ const output=await classifyBookingMail([{id:'one',subject:'Disponibilidad 15 marzo 2027',body:'Oferta 1200 EUR'}],'key',(async(_url:any,init:any)=>{
+  const body=JSON.parse(init.body);requests.push(body);
+  if(requests.length===1)return Response.json({error:{code:'invalid_json_schema'}},{status:400});
+  assert.match(body.messages[0].content,/Return only a JSON object/);
+  assert.ok(body.messages[0].content.includes(JSON.stringify(requests[0].response_format.json_schema.schema)));
+  assert.equal(body.messages[1].content,requests[0].messages[1].content);
+  return Response.json({usage:{prompt_tokens:123,completion_tokens:45},choices:[{finish_reason:'stop',message:{content:JSON.stringify({messages:[{id:'one',kind:'booking',reason:'Pide disponibilidad',draft}]})}}]});
+ }) as typeof fetch,true,value=>usage.push(value));
+ assert.equal(requests.length,2);assert.equal(output[0].draft?.offerAmountMinor,120000);assert.deepEqual(usage.at(-1),{inputTokens:123,outputTokens:45});
+});
+test('fallback cannot bypass local IDs, field, date, money, draft or truncated-output checks',async()=>{
+ const draft={eventDate:null,startTime:null,endTime:null,venue:null,city:null,offerAmountMinor:null,currency:null,artistName:null,contactPhone:null,warnings:[]};
+ const valid={id:'one',kind:'booking',reason:'Consulta',draft};
+ const invalid=[{messages:[{...valid,id:'foreign'}]},{messages:[valid,valid]},{messages:[{...valid,sendNow:true}]},{messages:[{...valid,draft:{...draft,offerAmountMinor:1.2}}]},{messages:[{...valid,draft:{...draft,eventDate:'2027-02-30'}}]},{messages:[{id:'one',kind:'booking',reason:'Consulta'}]},{messages:[{...valid,draft:null}]},{messages:[valid],action:'send'},null];
+ for(const result of invalid){let calls=0;
+  await assert.rejects(classifyBookingMail([{id:'one',subject:'Oferta',body:'Hola'}],'key',(async()=>++calls===1?Response.json({error:{code:'invalid_json_schema'}},{status:400}):Response.json({choices:[{finish_reason:'stop',message:{content:JSON.stringify(result)}}]})) as typeof fetch,true),{message:'invalid_classification'});
+  assert.equal(calls,2);
+ }
+ for(const finish_reason of ['length']){let calls=0;
+  await assert.rejects(classifyBookingMail([{id:'one',subject:'Oferta',body:'Hola'}],'key',(async()=>++calls===1?Response.json({error:{code:'invalid_json_schema'}},{status:400}):Response.json({choices:[{finish_reason,message:{content:JSON.stringify({messages:[valid]})}}]})) as typeof fetch,true),{message:'invalid_classification'});assert.equal(calls,2);
+ }
+});
+test('quota, rate and transport errors during fallback are terminal and retain their category',async()=>{
+ for(const [code,expected] of [['rate_limit_exceeded','mailbox_ai_rate_limit'],['insufficient_quota','mailbox_ai_quota_exhausted'],['network','private network failure']]){let calls=0;
+  await assert.rejects(classifyBookingMail([{id:'one',subject:'Oferta',body:'Hola'}],'key',(async()=>{calls++;if(calls===1)return Response.json({error:{code:'invalid_json_schema'}},{status:400});if(code==='network')throw new Error('private network failure');return Response.json({error:{code}},{status:429})}) as typeof fetch,true),{message:expected});assert.equal(calls,2);
+ }
 });

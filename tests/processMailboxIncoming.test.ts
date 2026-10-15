@@ -78,7 +78,7 @@ test('attachment failure never creates another booking or retries AI',async()=>{
   saveAttachments:async()=>{uploads++;throw new Error('storage unavailable')},
   retry:async()=>{retries++;return true}
  });
- assert.equal(await processMailboxIncoming(job,options),'created');
+ assert.equal(await processMailboxIncoming(job,options),'created_attachments_pending');
  assert.equal(creates,1);
  assert.equal(uploads,1);
  assert.equal(retries,0);
@@ -107,4 +107,13 @@ test('classification failure logs only a known category and keeps the database f
   assert.equal(stage,'classification');
   assert.deepEqual(entries[0],['mailbox_classification_failure_category','mailbox_ai_unavailable']);
  }finally{console.warn=previous}
+});
+
+test('linked replies save documents onto the original booking without AI or creation',async()=>{
+ const order:string[]=[];
+ const {calls,options}=setup({linkedBooking:async()=>'original-booking',sync:async()=>{order.push('sync')},saveAttachments:async(_raw:any,id:string)=>{assert.equal(id,'original-booking');order.push('files')}});
+ assert.equal(await processMailboxIncoming(job,options),'synced');assert.deepEqual(order,['sync','files']);assert.equal(calls.includes('ai'),false);assert.equal(calls.includes('create'),false);
+});
+test('partial file failure remains visible without marking a committed booking failed or replaying classification',async()=>{
+ for(const linked of [false,true]){const {calls,options}=setup({linkedBooking:async()=>linked?'original-booking':null,create:async()=>{calls.push('create');return 'original-booking'},saveAttachments:async()=>({stored:1,alreadyStored:0,skipped:0,failed:1,blocked:false})});assert.equal(await processMailboxIncoming(job,options),linked?'synced_attachments_pending':'created_attachments_pending');assert.equal(calls.includes('failed'),false);assert.equal(calls.filter(c=>c==='create').length,linked?0:1)}
 });

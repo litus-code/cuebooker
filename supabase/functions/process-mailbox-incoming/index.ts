@@ -1,3 +1,4 @@
+import {saveMailboxAttachments} from '../_shared/saveMailboxAttachments.ts';
 import {processMailboxIncoming} from '../_shared/processMailboxIncoming.ts';
 import {mailboxTransport,gmailConfig} from '../_shared/mailboxTransport.ts';
 import {gmailConfigured} from '../_shared/gmailMailbox.ts';
@@ -51,48 +52,41 @@ Deno.serve(async(request:Request)=>{
    create:(message,value)=>rpc('create_automatic_mailbox_request',{target_job:job.id,target_message:message,target_classification:{...value,draft:automaticMailboxDraft(value.draft!)}}),
    saveAttachments:async(raw,bookingId)=>{
     if(Deno.env.get('CUEBOOKER_CONNECTED_ATTACHMENTS_ENABLED')!=='true'||connections[0].transport!=='gmail'||!('attachment' in provider))return;
-    const fresh=await provider.message('',job.messageId);
-    if(fresh.id!==job.messageId)return;
-    const items=Array.isArray(fresh.attachments)?fresh.attachments.slice(0,10):[];
-    const validType=(bytes:Uint8Array)=>{
-      if(bytes.length>=5&&String.fromCharCode(...bytes.slice(0,5))==='%PDF-')return 'application/pdf';
-      if(bytes.length>=8&&bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71&&bytes[4]===13&&bytes[5]===10)return 'image/png';
-      if(bytes.length>=3&&bytes[0]===255&&bytes[1]===216&&bytes[2]===255)return 'image/jpeg';
-      return '';
+    // Use the already authorized message; re-fetching it loses inline MIME data
+    // and adds another provider failure after a booking has already committed.
+    if(raw.id!==job.messageId||raw.thread_id!==job.threadId)throw new Error('invalid_attachment_message');
+    const attachmentProvider=provider;
+    const path=(index:number)=>`${job.workspaceId}/${job.connectionId}/${encodeURIComponent(job.messageId)}/${index}`;
+    let emailMessageId:string|null=null;
+    const authorize=async()=>{
+     const jobs=await db<Array<{consent_revision:string;booking_id:string|null;connection_id:string;state:string;message_date:string}>>(`mailbox_incoming_jobs?id=eq.${job.id}&message_id=eq.${encodeURIComponent(job.messageId)}&thread_id=eq.${encodeURIComponent(job.threadId)}&state=in.(completed,processing)&select=consent_revision,booking_id,connection_id,state,message_date&limit=1`);
+     const saved=jobs[0];
+     if(!saved||saved.connection_id!==job.connectionId||(saved.state==='completed'&&saved.booking_id!==bookingId))return false;
+     const current=await db<Array<{id:string;background_analysis_since:string}>>(`mailbox_connections?id=eq.${job.connectionId}&workspace_id=eq.${job.workspaceId}&user_id=eq.${job.actorId}&status=eq.connected&background_analysis_enabled=eq.true&background_analysis_processor=eq.groq-gpt-oss-20b-v1&background_analysis_revision=eq.${saved.consent_revision}&select=id,background_analysis_since&limit=1`);
+     if(!current[0]||!(Date.parse(saved.message_date)>=Date.parse(current[0].background_analysis_since)))return false;
+     const members=await db<Array<{user_id:string}>>(`workspace_members?workspace_id=eq.${job.workspaceId}&user_id=eq.${job.actorId}&role=in.(owner,admin,manager,editor)&select=user_id&limit=1`);
+     if(!members.length)return false;
+     // Also prove that this exact message was ingested into this booking. This
+     // binds reply attachments even though a synced reply has no new booking_id.
+     const messages=await db<Array<{id:string}>>(`email_messages?workspace_id=eq.${job.workspaceId}&booking_id=eq.${bookingId}&provider=eq.${encodeURIComponent('nylas:'+job.connectionId)}&provider_message_id=eq.${encodeURIComponent(job.messageId)}&direction=eq.inbound&select=id&limit=1`);
+     emailMessageId=messages[0]?.id||null;
+     return Boolean(emailMessageId);
     };
-    for(const [index,item] of items.entries()){
-      if(!item||typeof item.id!=='string'||!Number.isInteger(item.size)||item.size<1||item.size>5242880)continue;
-      try{
-        // The booking RPC completes the job; authorize_mailbox_incoming only permits 'processing'.
-        // Re-check the connected mailbox's current consent and the job's booking before file access.
-        const savedJobs=await db<Array<{consent_revision:string;booking_id:string;connection_id:string}>>(`mailbox_incoming_jobs?id=eq.${job.id}&state=eq.completed&booking_id=eq.${bookingId}&select=consent_revision,booking_id,connection_id&limit=1`);
-        const savedJob=savedJobs[0];
-        if(!savedJob||savedJob.connection_id!==job.connectionId)break;
-        const consentResponse=await fetch(`${base}/rest/v1/mailbox_connections?id=eq.${job.connectionId}&workspace_id=eq.${job.workspaceId}&user_id=eq.${job.actorId}&status=eq.connected&background_analysis_enabled=eq.true&background_analysis_revision=eq.${savedJob.consent_revision}&select=id&limit=1`,{headers:{apikey:key,Authorization:`Bearer ${key}`,'Accept':'application/json'}});
-        if(!consentResponse.ok){console.warn('mailbox_attachment_consent_lookup_failed',{status:consentResponse.status,index});throw new Error('mailbox_attachment_consent_lookup_failed');}
-        const current=await consentResponse.json() as Array<{id:string}>;
-        if(!current.length)break;
-        const bytes=await provider.attachment('',job.messageId,item.id);
-        const mime=validType(bytes);
-        if(!mime||mime!==item.mime||!bytes.length||bytes.length>5242880)continue;
-        const path=`${job.workspaceId}/${job.connectionId}/${encodeURIComponent(job.messageId)}/${index}`;
-        const response=await fetch(`${base}/storage/v1/object/booking-email-attachments/${path}`,{
-          method:'POST',headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':mime,'x-upsert':'true'},body:bytes
-        });
-        if(!response.ok)throw new Error('mailbox_attachment_upload_failed');
-        const metadata=await fetch(`${base}/rest/v1/booking_email_attachments`,{
-          method:'POST',
-          headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':'application/json',Prefer:'return=minimal,resolution=ignore-duplicates'},
-          body:JSON.stringify({workspace_id:job.workspaceId,booking_id:bookingId,mailbox_connection_id:job.connectionId,
-            provider_message_id:job.messageId,attachment_index:index,file_name:String(item.name||'Archivo').replace(/[\\/\x00-\x1f]/g,'_').slice(0,200),
-            content_type:mime,byte_size:bytes.length,storage_path:path})
-        });
-        if(!metadata.ok){
-          console.warn('mailbox_attachment_metadata_failed',{index,status:metadata.status});
-          throw new Error('mailbox_attachment_metadata_failed');
-        }
-      }catch(error){const kind=error instanceof Error ? error.message : 'unknown';console.warn('mailbox_attachment_item_failed', {stage:kind==='mailbox_attachment_consent_lookup_failed'?'consent_lookup':kind==='mailbox_attachment_upload_failed'?'storage':(kind==='mailbox_storage_failed'||kind==='mailbox_attachment_metadata_failed')?'metadata':kind==='mailbox_provider_unavailable'?'provider':kind==='mailbox_reconnect_required'?'authorization':kind==='invalid_attachment_payload'?'payload':kind==='attachment_too_large'?'size':'other', index});}
-    }
+    return saveMailboxAttachments({
+     attachments:raw.attachments,authorize,
+     existing:async index=>{
+      const rows=await db<Array<{id:string}>>(`booking_email_attachments?workspace_id=eq.${job.workspaceId}&booking_id=eq.${bookingId}&mailbox_connection_id=eq.${job.connectionId}&provider_message_id=eq.${encodeURIComponent(job.messageId)}&attachment_index=eq.${index}&select=id&limit=1`);
+      return rows.length===1;
+     },
+     download:item=>attachmentProvider.attachment('',job.messageId,item.id),
+     upload:async(index,item,bytes)=>{
+      const response=await fetch(`${base}/storage/v1/object/booking-email-attachments/${path(index)}`,{method:'POST',headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':item.mime,'x-upsert':'true'},body:Uint8Array.from(bytes).buffer,signal:AbortSignal.timeout(15000)});
+      if(!response.ok)throw new Error('mailbox_attachment_upload_failed');
+     },
+     record:async(index,item,bytes)=>{
+      await db('booking_email_attachments',{method:'POST',headers:{Prefer:'return=minimal,resolution=ignore-duplicates'},body:JSON.stringify({workspace_id:job.workspaceId,booking_id:bookingId,mailbox_connection_id:job.connectionId,email_message_id:emailMessageId,provider_message_id:job.messageId,attachment_index:index,file_name:String(item.name||'Archivo').replace(/[\\/\x00-\x1f]/g,'_').slice(0,200),content_type:item.mime,byte_size:bytes.length,storage_path:path(index)})});
+     }
+    });
    },
    retry:()=>rpc<boolean>('defer_mailbox_incoming',{target_job:job.id}),
    complete:(state,value,failureStage)=>rpc('complete_mailbox_incoming',{target_job:job.id,target_state:state,target_kind:value?.kind||null,target_reason:value?.reason||failureStage||null})
