@@ -4937,7 +4937,9 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 }
 .settings-preferences--individual { min-width:0; box-sizing:border-box; gap:14px; }
 .settings-preferences--individual h3 { margin:0; font-size:18px; line-height:1.3; }
-.settings-panel--individual > .editor-heading > div { min-width:0; max-width:100%; }
+.settings-panel--individual > .editor-heading > div { min-width:0; max-width:100%; box-sizing:border-box; padding-inline-start:clamp(24px,2.5vw,40px); }
+.settings-panel--individual > .editor-heading { overflow:visible; }
+.settings-panel--individual > .editor-heading h2 { max-width:100%; line-height:1.1; }
 @media(max-width:680px) {
   .workspace .settings-panel--individual > .editor-heading {
     position:static!important;
