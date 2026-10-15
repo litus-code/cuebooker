@@ -523,6 +523,12 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     })
   }
 
+  async function recoverBookingAttachments(bookingId: string) {
+    return $fetch<{ booking_id: string; attachments: Array<{index:number;status:string}> }>(`${baseUrl}/functions/v1/recover-mailbox-attachments`, {
+      method: 'POST', headers: authHeaders(), body: { booking_id: bookingId }
+    })
+  }
+
   async function getBookingEmailAttachmentUrl(attachmentId: string) {
     const result = await $fetch<{ url: string; expires_in: number }>(`${baseUrl}/functions/v1/get-booking-email-attachment`, {
       method: 'POST', headers: authHeaders(), body: { attachment_id: attachmentId }
@@ -834,6 +840,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
     listBookingEmailMessages,
     listBookingEmailAttachments,
     getBookingEmailAttachmentUrl,
+    recoverBookingAttachments,
     listWorkspaceBookingEmailMessages,
     listArtistWorkspaceBookingEmailMessages,
     listWorkspaceActivities,
