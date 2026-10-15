@@ -50,3 +50,19 @@ test('splitting stops at a single rejected message and never retries rate limits
  }) as typeof fetch,false,value=>usage.push(value)),{message:'mailbox_ai_rate_limit'});
  assert.equal(calls,3);assert.deepEqual(usage.at(-1),{inputTokens:100,outputTokens:20});
 });
+
+test('Groq HTTP 400 is a non-retryable request error, never presented as outage',async()=>{
+ const warn=console.warn;
+ const logs:unknown[][]=[];
+ console.warn=(...parts:unknown[])=>{logs.push(parts)};
+ try{
+  let calls=0;
+  await assert.rejects(classifyBookingMail([{id:'one',subject:'Oferta',body:'Hola'}],'key',(async()=>{
+   calls++;
+   return Response.json({error:{message:'sensitive provider validation details'}},{status:400});
+  }) as typeof fetch,true),{message:'mailbox_ai_bad_request'});
+  assert.equal(calls,1);
+  assert.deepEqual(logs.at(-1),['mailbox_classifier_http_status',400,'mailbox_ai_bad_request']);
+  assert.doesNotMatch(JSON.stringify(logs),/sensitive provider validation details/);
+ }finally{console.warn=warn}
+});
