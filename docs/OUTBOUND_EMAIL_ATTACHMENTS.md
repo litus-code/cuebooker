@@ -1,6 +1,6 @@
 # Attach documents when replying from Cuebooker
 
-15 October 2026. PR96, Beta0.0.9. Staging only. Current implementation/evidence in HANDOFF.md; earlier rollout records below are historical.
+15 October 2026. PR96, Beta0.0.10. Staging only. Current implementation/evidence in HANDOFF.md; earlier rollout records below are historical.
 
 ## User flow
 
@@ -59,3 +59,7 @@ Implementation CI2204/run38786592560 and PR preview2678/run38786592747 SUCCESS. 
 ## Beta0.0.9 message placement
 
 Documents and rejection notices now render beneath the originating email, using the exact activity metadata email_message_id and file email_message_id. The accumulated conversation-wide list is removed. Attachment-only messages remain visible. Historical unlinked documents stay available under an explicit Files without a linked message fallback; no filename/date guessing. Downloads use the existing private endpoint; composer info/limits remain.573 tests and40-route build pass. Frontend-only release: staging backend/schema/Storage/AI/provider behavior unchanged. Owner's supported PNG reply capture/storage acceptance passed; browser signed-download and mobile/Safari acceptance remain open.
+
+## Beta0.0.10 download action
+
+Clicking a message attachment now fetches its existing authorized signed URL and triggers a local browser download with the stored original filename. It no longer navigates to the file. Browser/user settings decide where it is saved and whether an external viewer opens automatically. Blob URL and DOM link cleanup are covered by regressions; expired/failed fetch reports a localized download error.575 tests and40-route build pass. No backend/schema/Storage/RLS changes. Real browser download/mobile/Safari acceptance remains open until owner confirmation.

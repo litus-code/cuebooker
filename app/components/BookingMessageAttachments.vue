@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import type {ConversationAttachment} from '../domain/conversationAttachments'
 defineProps<{files:ConversationAttachment[];warnings:Array<{id:string;text:string}>;locale:'es'|'en'}>()
-const emit=defineEmits<{open:[id:string]}>()
+const emit=defineEmits<{download:[id:string]}>()
 </script>
 <template>
   <section v-if="files.length || warnings.length" class="message-documents" :aria-label="locale==='es'?'Adjuntos de este mensaje':'Attachments for this message'">
     <strong>{{ locale==='es'?'Archivos adjuntos':'Attachments' }}</strong>
     <ul v-if="warnings.length" class="message-documents__warnings" role="status" aria-live="polite"><li v-for="warning in warnings" :key="warning.id">{{ warning.text }}</li></ul>
     <div class="message-documents__files">
-      <button v-for="file in files" :key="file.id" type="button" @click="emit('open',file.id)">
+      <button v-for="file in files" :key="file.id" type="button" @click="emit('download',file.id)" :aria-label="`${locale==='es'?'Descargar':'Download'} ${file.file_name}`">
         <span class="message-documents__type" aria-hidden="true">{{ /pdf$/i.test(file.file_name)?'PDF':'IMG' }}</span>
         <span class="message-documents__name">{{ file.file_name }}</span>
         <small>{{ Math.ceil(file.byte_size/1024) }} KB</small>

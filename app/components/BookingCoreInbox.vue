@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {groupConversationAttachments} from '../domain/conversationAttachments'
+import {downloadBookingAttachment} from '../services/downloadBookingAttachment'
 import type { Activity, Contact, CoreBooking, Counterparty, CoreBookingStatus, Hold } from '../domain/bookingCore'
 import type { BookingEmailMessage, WorkspaceActivityHistoryRow } from '../services/bookingCoreApi'
 import { buildFollowUpDraft, shouldSuggestFollowUp } from '../services/followUpDraft'
@@ -291,12 +292,15 @@ async function recoverDocuments() {
     attachmentBusy.value = false
   }
 }
-async function openBookingDocument(id:string) {
+async function downloadBookingDocument(id:string) {
+  const file=bookingAttachments.value.find(item=>item.id===id)
+  if(!file)return
+  attachmentNotice.value=''
   try {
     const url = await bookingCore.getBookingEmailAttachmentUrl(id)
-    window.location.assign(url)
+    await downloadBookingAttachment(url,file.file_name)
   } catch {
-    attachmentNotice.value = props.locale === 'es' ? 'No se ha podido abrir el documento.' : 'Could not open document.'
+    attachmentNotice.value = props.locale === 'es' ? 'No se ha podido descargar el documento.' : 'Could not download document.'
   }
 }
 
@@ -869,11 +873,11 @@ async function selectBooking(bookingId: string) {
                 <summary>{{ locale === 'es' ? 'Ver historial citado' : 'View quoted history' }}</summary>
                 <p>{{ activity.presentation.quotedBody }}</p>
               </details>
-              <BookingMessageAttachments v-if="!demoData" :files="activity.documents.files" :warnings="activity.documents.warnings" :locale="locale" @open="openBookingDocument" />
+              <BookingMessageAttachments v-if="!demoData" :files="activity.documents.files" :warnings="activity.documents.warnings" :locale="locale" @download="downloadBookingDocument" />
             </article>
           <section v-if="!demoData && (groupedAttachments.unassigned.files.length || groupedAttachments.unassigned.warnings.length)" class="core-inbox__unassigned-documents">
             <p>{{ locale === 'es' ? 'Archivos sin mensaje asociado' : 'Files without a linked message' }}</p>
-            <BookingMessageAttachments :files="groupedAttachments.unassigned.files" :warnings="groupedAttachments.unassigned.warnings" :locale="locale" @open="openBookingDocument" />
+            <BookingMessageAttachments :files="groupedAttachments.unassigned.files" :warnings="groupedAttachments.unassigned.warnings" :locale="locale" @download="downloadBookingDocument" />
           </section>
           <p v-if="attachmentNotice" role="status">{{ attachmentNotice }}</p>
 
