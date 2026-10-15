@@ -1,12 +1,12 @@
 # Attach documents when replying from Cuebooker
 
-15 October 2026. PR96, Beta0.0.7. Staging only; owner prioritizes this operational path before another inbound-reply test.
+15 October 2026. PR96, Beta0.0.8. Staging only. Current implementation/evidence in HANDOFF.md; earlier rollout records below are historical.
 
 ## User flow
 
 Open the booking conversation, write the reply, select **Adjuntar archivos / Attach files**, review the chosen files and remove any unwanted file, then explicitly select **Enviar email / Send email**. Sent documents appear in the booking's existing private attachment list after the conversation refresh. Selection alone performs no upload or send. Files stay in memory and reset when the workspace/booking changes, on successful delivery or when the component is unmounted. An uncertain delivery retains the selection and blocks another send until the user checks their mailbox.
 
-PDF, PNG and JPG/JPEG only. Maximum5 files and5MiB aggregate for Gmail/Brevo; legacy Nylas JSON transport is limited to2MiB aggregate so its encoded request remains below3MB. Client and server enforce file extension/MIME agreement, exact declared/decoded byte count, full PDF/PNG/JPEG signature, canonical base64, safe filename and aggregate/count caps. Actual JSON request streams are capped at8MiB. No URLs or arbitrary Storage paths accepted from the client. No attachment data goes to Groq, analytics or logs.
+An accessible clickable info icon beside Attach files lists supported formats and the selected transport’s actual limits. It works with touch and keyboard; Escape closes it and restores focus. PDF, PNG and JPG/JPEG only. Maximum5 files and5MiB aggregate for Gmail/Brevo; legacy Nylas JSON transport is limited to2MiB aggregate so its encoded request remains below3MB. Client and server enforce file extension/MIME agreement, exact declared/decoded byte count, full PDF/PNG/JPEG signature, canonical base64, safe filename and aggregate/count caps. Actual JSON request streams are capped at8MiB. No URLs or arbitrary Storage paths accepted from the client. No attachment data goes to Groq, analytics or logs.
 
 Gmail sends multipart/mixed MIME with encoded file names and unchanged original subject, threadId, In-Reply-To and References. Brevo receives its documented attachment array; Nylas receives filename/content_type/content. The original mailbox remains mandatory for existing connected-mailbox threads, including server enforcement on the platform fallback.
 
@@ -45,3 +45,13 @@ Implementation SHA `4ac10b0c58edd6a0539e4dae42c8bea458c87af1`. GitHub CI2202/run
 - recover-mailbox-attachments: v4, verify_jwt=true, bundle SHA256 de4213c67518dc9d2ada34847799a8bc42f4bfdeba3969799370eab4f48cd103.
 
 Migration20261015172641 is present in staging history. Inbound/outbound fixture metadata, wrong-booking rejection, uniqueness and outsider metadata/Storage denial passed in a rolled-back transaction. Existing security advisor findings unchanged. Live outgoing delivery/recipient-open and visual mobile/Safari remain pending owner acceptance. There was no agent-originated real send or paid-service/secret/limit/consent/cron/production change. This evidence-only revision keeps Beta0.0.7 and does not change deployed sources.
+
+## Beta0.0.8 notices and owner acceptance
+
+Implementation `f7e193aa5f86728d04d56b2b5ef7df2dcf34a607` adds persistent inbound attachment diagnostics via staging migration20261015183107. Unsupported formats, oversized files, invalid bytes and save failures appear in the conversation even with no saved documents; successful exact-index recovery hides the resolved warning. Only fixed codes/index/optional WebP label are stored, with repeated authorization and exact message/workspace/booking/account binding. Worker and manual sync record these warnings without reclassification or new bookings. This is best-effort diagnostics, not durable recovery. Received help describes ten files per message,5MiB per file. No WebP support or size-limit increase was added.
+
+Owner's real Cuebooker outgoing reply stored a1654338-byte PNG on the original booking at17:46:44Z and was reported working. Incoming WebP reply synced to that same booking, skipped one unsupported file and completed18:21:03Z with no new booking/additional AI usage. Its confirmed negative-format test now has the corresponding persistent notice. No provider fetch, email sending or job replay was used for this notice. Recipient-open/signed-download detail, supported-file inbound reply and mobile/Safari visual acceptance remain open.
+
+571 tests,40-route build,3 affected Deno entrypoints and bounded-column rollback SQL passed. Incoming43/connected55/recovery5 source/dependencies and retained JWT flags verified; all three unauthenticated POSTs return401. No stable frontend promotion, production or merge.
+
+Implementation CI2204/run38786592560 and PR preview2678/run38786592747 SUCCESS. PR preview https://pr-96.cuebooker-staging.pages.dev; stable frontend deployment skipped. This evidence-only documentation revision does not change application sources or the Beta0.0.8 version.
