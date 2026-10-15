@@ -65,7 +65,9 @@ Deno.serve(async(request:Request)=>{
       try{
         // The booking RPC completes the job; authorize_mailbox_incoming only permits 'processing'.
         // Re-check the connected mailbox's current consent and the job's booking before file access.
-        const current=await db<Array<{id:string}>>(`mailbox_connections?id=eq.${job.connectionId}&workspace_id=eq.${job.workspaceId}&user_id=eq.${job.actorId}&status=eq.connected&background_analysis_enabled=eq.true&background_analysis_revision=eq.${job.consentRevision}&select=id&limit=1`);
+        const consentResponse=await fetch(`${base}/rest/v1/mailbox_connections?id=eq.${job.connectionId}&workspace_id=eq.${job.workspaceId}&user_id=eq.${job.actorId}&status=eq.connected&background_analysis_enabled=eq.true&background_analysis_revision=eq.${job.consentRevision}&select=id&limit=1`,{headers:{apikey:key,Authorization:`Bearer ${key}`,'Accept':'application/json'}});
+        if(!consentResponse.ok){console.warn('mailbox_attachment_consent_lookup_failed',{status:consentResponse.status,index});throw new Error('mailbox_attachment_consent_lookup_failed');}
+        const current=await consentResponse.json() as Array<{id:string}>;
         if(!current.length)break;
         const bytes=await provider.attachment('',job.messageId,item.id);
         const mime=validType(bytes);
@@ -86,7 +88,7 @@ Deno.serve(async(request:Request)=>{
           console.warn('mailbox_attachment_metadata_failed',{index,status:metadata.status});
           throw new Error('mailbox_attachment_metadata_failed');
         }
-      }catch(error){const kind=error instanceof Error ? error.message : 'unknown';console.warn('mailbox_attachment_item_failed', {stage:kind==='mailbox_attachment_upload_failed'?'storage':(kind==='mailbox_storage_failed'||kind==='mailbox_attachment_metadata_failed')?'metadata':kind==='mailbox_provider_unavailable'?'provider':kind==='mailbox_reconnect_required'?'authorization':kind==='invalid_attachment_payload'?'payload':kind==='attachment_too_large'?'size':'other', index});}
+      }catch(error){const kind=error instanceof Error ? error.message : 'unknown';console.warn('mailbox_attachment_item_failed', {stage:kind==='mailbox_attachment_consent_lookup_failed'?'consent_lookup':kind==='mailbox_attachment_upload_failed'?'storage':(kind==='mailbox_storage_failed'||kind==='mailbox_attachment_metadata_failed')?'metadata':kind==='mailbox_provider_unavailable'?'provider':kind==='mailbox_reconnect_required'?'authorization':kind==='invalid_attachment_payload'?'payload':kind==='attachment_too_large'?'size':'other', index});}
     }
    },
    retry:()=>rpc<boolean>('defer_mailbox_incoming',{target_job:job.id}),
