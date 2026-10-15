@@ -3,1314 +3,310 @@ import es from '../../content/es/home.json'
 import en from '../../content/en/home.json'
 
 const { locale } = useCuePreferences()
-const baseCopy = computed(() => locale.value === 'es' ? es : en)
-const menuOpen = ref(false)
-const navHidden = ref(false)
-const backToTopVisible = ref(false)
-const lastScrollY = ref(0)
-let restoreMenuFocus = true
-let scrollDirection = 0
-let scrollDistance = 0
-const heroImage = `${useRuntimeConfig().app.baseURL}club-hero.webp`
-const demoStep = ref(0)
-const shareTab = ref(0)
-const router = useRouter()
+const p = computed(() => locale.value === 'es' ? es : en)
 const analytics = useAnalytics()
-const showPricing = false
-
-const p = computed(() => locale.value === 'es' ? {
-  "nav": {
-    "system": "Cómo funciona",
-    "distribution": "Comparte tu perfil",
-    "passport": "CUE Passport",
-    "identity": "CUE ID",
-    "login": "Iniciar sesión",
-    "signup": "Crear cuenta"
-  },
-  "hero": {
-    "eyebrow": "PARA QUIEN MUEVE LA NOCHE",
-    "title": "Todo tu booking, bajo control.",
-    "accent": "Que la música siga avanzando. El booking ya está ocurriendo.",
-    "body": "Reúne propuestas, conversaciones y fechas en un solo lugar. Aunque el contacto empiece por Instagram, WhatsApp, email o una llamada.",
-    "primary": "Crear mi espacio",
-    "secondary": "Ver cómo funciona",
-    "note": "Hecho para DJs, managers y quienes hacen posible cada noche."
-  },
-  "problem": {
-    "label": "EL PROBLEMA",
-    "title": "Tu booking no debería estar repartido por todas partes.",
-    "body": "Una propuesta puede empezar en Instagram, WhatsApp, email o una llamada y acabar dependiendo de que recuerdes mirar el calendario o una nota. Ahí se pierde contexto, seguimiento y oportunidades.",
-    "before": ["Instagram", "WhatsApp", "Email", "Llamada", "Calendario", "Notas"],
-    "after": "Un solo flujo de booking",
-    "productMeta": ["Solicitud", "Conversación", "Fecha", "Estado"],
-    "solution": "Cada solicitud mantiene su contexto, conversación, fecha y estado en un solo lugar. Tú sigues tomando las decisiones; Cuebooker mantiene el proceso ordenado."
-  },
-  "work": {
-    "label": "01 / DETRÁS DEL SET",
-    "title": "Hay mucho que no se ve.",
-    "intro": "Preparar música. Cuidar tu sonido. Encontrar tu sitio.",
-    "body": "Y, entre todo eso, responder propuestas y cuadrar fechas. Cuebooker te ayuda con el booking para que puedas dedicarle tiempo a lo que te mueve.",
-    "steps": [
-      "La propuesta",
-      "La fecha",
-      "Tu decisión"
-    ],
-    "descriptions": [
-      "Fecha, lugar, caché y contacto. Empieza con el contexto que necesitas.",
-      "Consulta tu calendario antes de comprometerte. Cada fecha, en su sitio.",
-      "Revisa la propuesta y decide cómo seguir. La última palabra es tuya."
-    ],
-    "demo": "Demo interactiva · Datos ficticios",
-    "workspace": "TU ESPACIO DE TRABAJO",
-    "request": "Solicitud de booking",
-    "status": [
-      "Por revisar",
-      "Disponibilidad",
-      "Pendiente de tu decisión"
-    ],
-    "venue": "Sala de ejemplo / Barcelona",
-    "date": "18 OCT",
-    "fee": "Caché propuesto",
-    "amount": "1.200 €",
-    "set": "Horario",
-    "time": "01:00 — 03:00",
-    "contact": "Contacto",
-    "promoter": "Promotor de ejemplo",
-    "month": "OCTUBRE / EJEMPLO",
-    "available": "18 oct · Sin reservas en este ejemplo",
-    "decision": "Tú eliges el siguiente paso.",
-    "options": [
-      "Responder",
-      "Proponer otra fecha",
-      "Rechazar"
-    ],
-    "note": "Esta vista explica el proceso. No envía mensajes ni crea reservas.",
-    "next": "Siguiente paso",
-    "restart": "Volver a la propuesta"
-  },
-  "circuit": {
-    "label": "02 / EL CIRCUITO",
-    "title": "De la primera señal a una fecha que cuenta.",
-    "body": "Cuebooker mantiene unido todo el proceso. Tú decides cuándo avanzar.",
-    "steps": [
-      { "title": "Solicitud", "text": "Llega desde tu perfil, tu web, un enlace o un QR." },
-      { "title": "Conversación", "text": "Mensajes y contexto permanecen unidos a la propuesta." },
-      { "title": "Hold", "text": "Reserva provisionalmente la fecha sin confirmarla." },
-      { "title": "Decisión", "text": "Revisa condiciones y elige cómo seguir." },
-      { "title": "Booking", "text": "Confirma cuando todo encaja." },
-      { "title": "Evento", "text": "La fecha pasa al calendario y al historial." },
-      { "title": "Passport", "text": "La ciudad, el venue y tu recorrido crecen con actividad real." }
-    ],
-    "closing": "Una oportunidad deja de ser un mensaje suelto y pasa a formar parte de tu trayectoria."
-  },
-  "share": {
-    "label": "03 / COMPARTE TU PERFIL",
-    "title": "Tu web, tu bio o una pegatina en la cabina.",
-    "body": "Que sepan dónde encontrarte. Y cómo proponerte una fecha.",
-    "tabs": [
-      "Tu perfil",
-      "En tu web",
-      "Tu QR"
-    ],
-    "titles": [
-      "Un enlace que habla de ti.",
-      "Tu web sigue siendo tuya.",
-      "De la cabina a tu próxima fecha."
-    ],
-    "descriptions": [
-      "Compártelo en Instagram, WhatsApp o donde compartas tu música. Tu perfil reúne tu presentación y el formulario de booking.",
-      "Incrusta el formulario con un iframe. El promotor te envía la propuesta sin salir de tu página.",
-      "Pon tu QR en una tarjeta, un flyer o una pegatina. Quien lo escanee llegará a tu enlace de booking."
-    ],
-    "privacy": "Público o privado. Tú decides cuándo compartir tu perfil.",
-    "preview": "VISTA PREVIA ILUSTRATIVA",
-    "artist": "Tu nombre artístico",
-    "sound": "Tu música. Tu recorrido.",
-    "form": "Proponer una fecha",
-    "embed": "TU WEB / BOOKING",
-    "fields": [
-      "Fecha del evento",
-      "Sala o evento",
-      "Email de contacto"
-    ],
-    "qr": "TU QR DE BOOKING",
-    "qrNote": "Tu enlace, también fuera de la pantalla.",
-    "cta": "Crear mi perfil"
-  },
-  "control": {
-    "label": "04 / A TU MANERA",
-    "title": "Tu sonido tiene criterio.\nTus decisiones también.",
-    "body": "Hay propuestas que encajan contigo y otras que no. Eso lo decides tú.",
-    "support": "Cuebooker te ayuda a mantener el seguimiento y el contexto de cada conversación.",
-    "left": "Tu espacio reúne",
-    "right": "Tú decides",
-    "tasks": [
-      "Solicitudes y conversaciones",
-      "Fechas y disponibilidad",
-      "Historial de cada propuesta"
-    ],
-    "decisions": [
-      "Qué propuesta encaja contigo",
-      "Qué condiciones aceptar",
-      "Cuándo confirmar una fecha"
-    ]
-  },
-  "passport": {
-    "label": "05 / CUE PASSPORT",
-    "title": "Cada fecha deja huella.",
-    "body": "Cuebooker convierte bookings confirmados en ciudades, venues, hitos y recuerdos de tu recorrido.",
-    "features": [
-      { "title": "Constelación", "text": "Explora países, ciudades, venues y fechas conectadas." },
-      { "title": "Stickers", "text": "Los hitos se consiguen con actividad real, no se rellenan a mano." },
-      { "title": "Timeline", "text": "Tu recorrido crece en orden y conserva el contexto de cada etapa." }
-    ],
-    "note": "El Passport básico está incluido. La media de eventos, los exports y los recaps avanzados forman parte de Artist Pro.",
-    "visual": "BOOKING → EVENTO → TRAYECTORIA"
-  },
-  "identity": {
-    "label": "06 / CUE ID",
-    "title": "Tu sonido ya tiene identidad.\nAhora puede tener cuerpo.",
-    "body": "Crea tu personaje 3D y convierte tu identidad artística en algo reconocible.",
-    "beta": "BETA · EN EVOLUCIÓN",
-    "detail": "Estamos construyendo el creador de personajes de CUE ID: personaliza su apariencia, su estilo y su actitud para representar quién eres detrás del sonido.",
-    "visual": "CREA TU\nPERSONAJE 3D.",
-    "caption": "Creador de personajes en desarrollo"
-  },
-  "roadmap": {
-    "label": "05 / AHORA Y DESPUÉS",
-    "title": "Todo lo que ocurre detrás de una fecha.",
-    "body": "Cuebooker empieza con el booking. Y crece alrededor de tu carrera.",
-    "available": "DISPONIBLE",
-    "evolving": "EN EVOLUCIÓN",
-    "next": "PRÓXIMAMENTE",
-    "availableItems": [
-      "Solicitudes de booking en un único espacio",
-      "Conversaciones, seguimiento e historial",
-      "Calendario y control de disponibilidad",
-      "Perfil público o privado",
-      "Enlace compartible, QR y formulario para tu web"
-    ],
-    "evolvingItems": [
-      "Gestión de varios artistas para managers y agentes",
-      "Automatización de seguimientos y tareas repetitivas",
-      "CUE ID y creador de personajes 3D",
-      "Mayor personalización del perfil artístico"
-    ],
-    "nextItems": [
-      "Buscador de DJs por estilo, ubicación y disponibilidad",
-      "Visibilidad siempre controlada por el artista",
-      "Perfiles profesionales para agencias y equipos"
-    ],
-    "closing": "Tú decides qué compartes. Cuebooker se encarga de que pueda encontrarse."
-  },
-  "pricing": {
-    "label": "07 / PLANES",
-    "title": "Empieza gratis. Crece cuando el trabajo lo pida.",
-    "body": "Free incluye hasta 3 bookings confirmados al mes. Las solicitudes y conversaciones siguen entrando siempre.",
-    "plans": [
-      {
-        "name": "FREE",
-        "price": "0 €",
-        "description": "Para vivir el circuito real desde el primer día.",
-        "items": ["Hasta 3 bookings confirmados al mes", "Solicitudes y conversaciones sin límite", "Perfil, formulario y calendario básico", "CUE Passport y CUE ID básicos"],
-        "cta": "Crear cuenta"
-      },
-      {
-        "name": "ARTIST PRO",
-        "badge": "FOUNDING ARTIST · PRIMEROS 100",
-        "originalPrice": "9,99 € / mes",
-        "price": "7,99 € / mes",
-        "annual": "79 € / año",
-        "foundingNote": "Conserva este precio mientras mantengas activa tu suscripción.",
-        "description": "Para artistas con actividad recurrente.",
-        "items": ["Bookings sin límite e historial completo", "Smart Capture y automatizaciones", "Passport avanzado · próximamente", "Analytics y exports · próximamente"],
-        "cta": "Quiero ser Founding Artist"
-      },
-      {
-        "name": "AGENCY",
-        "status": "PRÓXIMAMENTE",
-        "price": "39 € / mes",
-        "description": "Para managers y equipos que coordinan varios artistas.",
-        "items": ["Workspace multiartista", "Equipo, roles y permisos", "Inbox y calendario de roster", "Reporting y plantillas de agencia"],
-        "cta": "Conocer Agency"
-      }
-    ]
-  },
-  "closing": {
-    "title": "Hay mucho trabajo detrás de lo que haces.",
-    "accent": "Dale su espacio.",
-    "cta": "Crear mi espacio",
-    "footer": "Hecho para las personas que están detrás del sonido."
-  },
-  "legal": {
-    "contact": "Contacto",
-    "privacy": "Privacidad",
-    "cookies": "Cookies",
-    "notice": "Aviso legal",
-    "settings": "Configurar cookies"
-  }
-} : {
-  "nav": {
-    "system": "How it works",
-    "distribution": "Share your profile",
-    "passport": "CUE Passport",
-    "identity": "CUE ID",
-    "login": "Sign in",
-    "signup": "Create account"
-  },
-  "hero": {
-    "eyebrow": "FOR THE PEOPLE WHO MOVE THE NIGHT",
-    "title": "Your bookings, under control.",
-    "accent": "Let the music keep moving. Booking is already happening.",
-    "body": "Bring enquiries, conversations and dates together in one place. Even when the first contact comes through Instagram, WhatsApp, email or a phone call.",
-    "primary": "Create my workspace",
-    "secondary": "See how it works",
-    "note": "Made for DJs, managers and the people who make every night happen."
-  },
-  "problem": {
-    "label": "THE PROBLEM",
-    "title": "Your bookings should not be scattered everywhere.",
-    "body": "A proposal can start on Instagram, WhatsApp, email or a phone call and still depend on you remembering to check a calendar or note. That is where context, follow-up and opportunities get lost.",
-    "before": ["Instagram", "WhatsApp", "Email", "Phone call", "Calendar", "Notes"],
-    "after": "One booking workflow",
-    "productMeta": ["Request", "Conversation", "Date", "Status"],
-    "solution": "Every request keeps its context, conversation, date and status in one place. You still make the decisions; Cuebooker keeps the process organised."
-  },
-  "work": {
-    "label": "01 / BEHIND THE SET",
-    "title": "There is a lot you do not see.",
-    "intro": "Preparing music. Shaping your sound. Finding your place.",
-    "body": "And in between, answering proposals and arranging dates. Cuebooker helps with booking so you can spend time on what moves you.",
-    "steps": [
-      "The proposal",
-      "The date",
-      "Your decision"
-    ],
-    "descriptions": [
-      "Date, venue, fee and contact. Start with the context you need.",
-      "Check your calendar before committing. Every date in its place.",
-      "Review the proposal and decide what comes next. The final say is yours."
-    ],
-    "demo": "Interactive demo · Fictional data",
-    "workspace": "YOUR WORKSPACE",
-    "request": "Booking request",
-    "status": [
-      "To review",
-      "Availability",
-      "Waiting for your decision"
-    ],
-    "venue": "Example venue / Barcelona",
-    "date": "18 OCT",
-    "fee": "Proposed fee",
-    "amount": "€1,200",
-    "set": "Time",
-    "time": "01:00 — 03:00",
-    "contact": "Contact",
-    "promoter": "Example promoter",
-    "month": "OCTOBER / EXAMPLE",
-    "available": "18 Oct · No bookings in this example",
-    "decision": "You choose the next step.",
-    "options": [
-      "Reply",
-      "Suggest another date",
-      "Decline"
-    ],
-    "note": "This view explains the process. It does not send messages or create bookings.",
-    "next": "Next step",
-    "restart": "Back to the proposal"
-  },
-  "circuit": {
-    "label": "02 / THE FLOW",
-    "title": "From the first signal to a date that matters.",
-    "body": "Cuebooker keeps the whole process connected. You decide when it moves forward.",
-    "steps": [
-      { "title": "Request", "text": "It arrives through your profile, website, link or QR." },
-      { "title": "Conversation", "text": "Messages and context stay attached to the proposal." },
-      { "title": "Hold", "text": "Reserve the date provisionally without confirming it." },
-      { "title": "Decision", "text": "Review the terms and choose what happens next." },
-      { "title": "Booking", "text": "Confirm when everything fits." },
-      { "title": "Event", "text": "The date moves into your calendar and history." },
-      { "title": "Passport", "text": "The city, venue and your trajectory grow from real activity." }
-    ],
-    "closing": "An opportunity stops being a loose message and becomes part of your trajectory."
-  },
-  "share": {
-    "label": "03 / SHARE YOUR PROFILE",
-    "title": "Your website, your bio or a sticker in the booth.",
-    "body": "Let them find you. And propose a date.",
-    "tabs": [
-      "Your profile",
-      "Your website",
-      "Your QR"
-    ],
-    "titles": [
-      "A link that speaks for you.",
-      "Your website stays yours.",
-      "From the booth to your next date."
-    ],
-    "descriptions": [
-      "Share it on Instagram, WhatsApp or wherever you share your music. Your profile brings your introduction and booking form together.",
-      "Embed the form with an iframe. A promoter can send a proposal without leaving your website.",
-      "Put your QR on a card, flyer or sticker. Scanning it takes people to your booking link."
-    ],
-    "privacy": "Public or private. You decide when to share your profile.",
-    "preview": "ILLUSTRATIVE PREVIEW",
-    "artist": "Your artist name",
-    "sound": "Your music. Your story.",
-    "form": "Propose a date",
-    "embed": "YOUR WEBSITE / BOOKING",
-    "fields": [
-      "Event date",
-      "Venue or event",
-      "Contact email"
-    ],
-    "qr": "YOUR BOOKING QR",
-    "qrNote": "Your link, beyond the screen.",
-    "cta": "Create my profile"
-  },
-  "control": {
-    "label": "04 / YOUR WAY",
-    "title": "Your sound has a point of view.\nSo do your decisions.",
-    "body": "Some proposals fit you. Others do not. You decide.",
-    "support": "Cuebooker helps you keep track of every conversation and its context.",
-    "left": "Your workspace brings together",
-    "right": "You decide",
-    "tasks": [
-      "Requests and conversations",
-      "Dates and availability",
-      "The history of each proposal"
-    ],
-    "decisions": [
-      "Which proposal fits you",
-      "Which terms to accept",
-      "When to confirm a date"
-    ]
-  },
-  "passport": {
-    "label": "05 / CUE PASSPORT",
-    "title": "Every date leaves a mark.",
-    "body": "Cuebooker turns confirmed bookings into cities, venues, milestones and memories from your trajectory.",
-    "features": [
-      { "title": "Constellation", "text": "Explore connected countries, cities, venues and dates." },
-      { "title": "Stickers", "text": "Milestones come from real activity. They are not filled in manually." },
-      { "title": "Timeline", "text": "Your trajectory grows in order and keeps the context of every stage." }
-    ],
-    "note": "Basic Passport is included. Event media, exports and advanced recaps are part of Artist Pro.",
-    "visual": "BOOKING → EVENT → TRAJECTORY"
-  },
-  "identity": {
-    "label": "06 / CUE ID",
-    "title": "Your sound already has an identity.\nNow it can take shape.",
-    "body": "Create your 3D character and turn your artistic identity into something recognisable.",
-    "beta": "BETA · EVOLVING",
-    "detail": "We are building the CUE ID character creator: shape its appearance, style and attitude to represent who you are behind the sound.",
-    "visual": "CREATE YOUR\n3D CHARACTER.",
-    "caption": "Character creator in development"
-  },
-  "roadmap": {
-    "label": "05 / NOW AND NEXT",
-    "title": "Everything that happens behind a date.",
-    "body": "Cuebooker starts with booking. And grows around your career.",
-    "available": "AVAILABLE",
-    "evolving": "EVOLVING",
-    "next": "COMING NEXT",
-    "availableItems": [
-      "Booking requests in one workspace",
-      "Conversations, follow-up and history",
-      "Calendar and availability control",
-      "A public or private profile",
-      "Shareable link, QR and a form for your website"
-    ],
-    "evolvingItems": [
-      "Multi-artist management for managers and agents",
-      "Automated follow-ups and repetitive tasks",
-      "CUE ID and the 3D character creator",
-      "More ways to personalise your artist profile"
-    ],
-    "nextItems": [
-      "DJ discovery by style, location and availability",
-      "Visibility always controlled by the artist",
-      "Professional profiles for agencies and teams"
-    ],
-    "closing": "You decide what to share. Cuebooker makes sure it can be found."
-  },
-  "pricing": {
-    "label": "07 / PLANS",
-    "title": "Start free. Grow when the work demands it.",
-    "body": "Free includes up to 3 confirmed bookings per month. Requests and conversations always keep coming in.",
-    "plans": [
-      {
-        "name": "FREE",
-        "price": "€0",
-        "description": "Experience the real flow from day one.",
-        "items": ["Up to 3 confirmed bookings per month", "Unlimited requests and conversations", "Profile, form and basic calendar", "Basic CUE Passport and CUE ID"],
-        "cta": "Create account"
-      },
-      {
-        "name": "ARTIST PRO",
-        "badge": "FOUNDING ARTIST · FIRST 100",
-        "originalPrice": "€9.99 / month",
-        "price": "€7.99 / month",
-        "annual": "€79 / year",
-        "foundingNote": "Keep this price while your subscription remains active.",
-        "description": "For artists managing recurring activity.",
-        "items": ["Unlimited bookings and full history", "Smart Capture and automation", "Advanced Passport · coming soon", "Analytics and exports · coming soon"],
-        "cta": "Become a Founding Artist"
-      },
-      {
-        "name": "AGENCY",
-        "status": "COMING SOON",
-        "price": "€39 / month",
-        "description": "For managers and teams coordinating several artists.",
-        "items": ["Multi-artist workspace", "Team roles and permissions", "Shared inbox and roster calendar", "Reporting and agency templates"],
-        "cta": "Explore Agency"
-      }
-    ]
-  },
-  "closing": {
-    "title": "There is a lot of work behind what you do.",
-    "accent": "Give it space.",
-    "cta": "Create my workspace",
-    "footer": "Made for the people behind the sound."
-  },
-  "legal": {
-    "contact": "Contact",
-    "privacy": "Privacy",
-    "cookies": "Cookies",
-    "notice": "Legal notice",
-    "settings": "Cookie settings"
-  }
-})
-
-
-type SlideGroup = 'booking' | 'sharing'
-const playback = reactive({
-  booking: { stopped: false, visible: false, progress: 0 },
-  sharing: { stopped: false, visible: false, progress: 0 }
-})
+const heroImage = `${useRuntimeConfig().app.baseURL}club-hero.webp`
+const menuOpen = ref(false)
+const demoStep = ref(0)
+const menuButton = ref<HTMLButtonElement>()
+const mobileMenu = ref<HTMLElement>()
 const reducedMotion = ref(true)
-let slideObserver: IntersectionObserver | undefined
-let slideTimer: ReturnType<typeof setInterval> | undefined
 let motionQuery: MediaQueryList | undefined
-function stopSlides(group: SlideGroup) {
-  playback[group].stopped = true
-  playback[group].progress = 0
-}
-function playSlides(group: SlideGroup) {
-  playback[group].stopped = false
-  playback[group].progress = 0
-}
-function selectSlide(group: SlideGroup, index: number) {
-  stopSlides(group)
-  if (group === 'booking') demoStep.value = index
-  else shareTab.value = index
-}
-function slideKeys(event: KeyboardEvent, group: SlideGroup, index: number) {
-  const vertical = group === 'booking'
-  let next = index
-  if (event.key === 'Home') next = 0
-  else if (event.key === 'End') next = 2
-  else if (event.key === 'ArrowRight' || (vertical && event.key === 'ArrowDown')) next = (index + 1) % 3
-  else if (event.key === 'ArrowLeft' || (vertical && event.key === 'ArrowUp')) next = (index + 2) % 3
-  else return
-  event.preventDefault()
-  selectSlide(group, next)
-  nextTick(() => document.getElementById((group === 'booking' ? 'step-' : 'share-') + next)?.focus())
+let previousOverflow = ''
+
+function trackSignup(placement: string) {
+  analytics.track('signup_click', { placement })
 }
 function updateMotion() {
   reducedMotion.value = motionQuery?.matches ?? true
-  if (reducedMotion.value) {
-    stopSlides('booking')
-    stopSlides('sharing')
-  }
 }
-function onMenuKey(event: KeyboardEvent) {
-  if (event.key === 'Escape') { event.preventDefault(); menuOpen.value = false; return }
-  if (event.key !== 'Tab') return
-  const items = Array.from(document.querySelectorAll<HTMLElement>('#cp-mobile-menu a, #cp-mobile-menu button'))
-  const first = items[0], last = items[items.length - 1]
-  if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() }
-  else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus() }
-}
-function handleResize() {
-  if (window.innerWidth > 850) menuOpen.value = false
-}
-onMounted(() => {
-  motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
-  updateMotion()
-  motionQuery.addEventListener('change', updateMotion)
-  slideObserver = new IntersectionObserver(entries => {
-    for (const entry of entries) {
-      const group = (entry.target as HTMLElement).dataset.slideGroup as SlideGroup
-      playback[group].visible = entry.isIntersecting
-      playback[group].progress = 0
-    }
-  }, { threshold: 0.3 })
-  document.querySelectorAll('[data-slide-group]').forEach(el => slideObserver?.observe(el))
-  let previous = performance.now()
-  slideTimer = setInterval(() => {
-    const now = performance.now()
-    const elapsed = Math.min(now - previous, 250)
-    previous = now
-    for (const group of ['booking', 'sharing'] as const) {
-      const state = playback[group]
-      if (document.hidden || menuOpen.value || !state.visible || state.stopped) continue
-      state.progress += elapsed / 3000
-      if (state.progress >= 1) {
-        state.progress = 0
-        if (group === 'booking') demoStep.value = (demoStep.value + 1) % 3
-        else shareTab.value = (shareTab.value + 1) % 3
-      }
-    }
-  }, 100)
-  window.addEventListener('resize', handleResize)
-})
-onBeforeUnmount(() => {
-  if (slideTimer) clearInterval(slideTimer)
-  slideObserver?.disconnect()
-  motionQuery?.removeEventListener('change', updateMotion)
-  window.removeEventListener('resize', handleResize)
-})
-
-function toggleMenu() {
-  restoreMenuFocus = true
-  navHidden.value = false
-  menuOpen.value = !menuOpen.value
+function closeMenu(restoreFocus = true) {
+  menuOpen.value = false
+  if (restoreFocus) nextTick(() => menuButton.value?.focus())
 }
 function scrollTo(id: string) {
-  restoreMenuFocus = false
-  menuOpen.value = false
+  closeMenu(false)
   nextTick(() => {
-    const target = document.querySelector<HTMLElement>(id)
+    const target = document.getElementById(id)
     target?.focus({ preventScroll: true })
     target?.scrollIntoView({ behavior: reducedMotion.value ? 'auto' : 'smooth' })
   })
 }
-function auth(mode: 'signin' | 'signup', placement: string) {
-  analytics.track(mode === 'signup' ? 'signup_click' : 'login_click', { placement })
-  router.push('/access?mode=' + mode)
-}
-function openApp(placement: string) {
-  analytics.track('cta_click', { cta_name: 'workspace', placement, destination: '/app' })
-  router.push('/app')
-}
-function closeMenuOnEscape(event: KeyboardEvent) {
-  if (event.key === 'Escape') menuOpen.value = false
-}
-function handleScroll() {
-  // Clamp Safari overscroll before comparing direction.
-  const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight)
-  const currentY = Math.min(maxY, Math.max(0, window.scrollY))
-  const delta = currentY - lastScrollY.value
-  lastScrollY.value = currentY
-  backToTopVisible.value = currentY > 520
-  if (menuOpen.value || currentY < 80) {
-    navHidden.value = false
-    scrollDistance = 0
-    scrollDirection = 0
+function onMenuKey(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    closeMenu()
     return
   }
-  if (delta === 0) return
-  const direction = Math.sign(delta)
-  if (direction !== scrollDirection) scrollDistance = 0
-  scrollDirection = direction
-  scrollDistance += Math.abs(delta)
-  // Keep the current state through tiny events, including momentum scrolling.
-  if (scrollDistance >= (direction > 0 ? 24 : 12)) {
-    navHidden.value = direction > 0
-    scrollDistance = 0
+  if (event.key !== 'Tab') return
+  const items = mobileMenu.value?.querySelectorAll<HTMLElement>('a, button')
+  const first = items?.[0]
+  const last = items?.[items.length - 1]
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault()
+    last?.focus()
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault()
+    first?.focus()
+  }
+}
+function selectStep(index: number) {
+  demoStep.value = index
+}
+function stepKeys(event: KeyboardEvent, index: number) {
+  const count = p.value.work.steps.length
+  let next = index
+  if (event.key === 'Home') next = 0
+  else if (event.key === 'End') next = count - 1
+  else if (event.key === 'ArrowDown' || event.key === 'ArrowRight') next = (index + 1) % count
+  else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') next = (index + count - 1) % count
+  else return
+  event.preventDefault()
+  selectStep(next)
+  nextTick(() => document.getElementById(`step-${next}`)?.focus())
+}
+function handleResize() {
+  if (window.innerWidth > 1100 && menuOpen.value) {
+    closeMenu(false)
+    nextTick(() => document.querySelector<HTMLElement>('.home-nav-links a')?.focus())
   }
 }
 watch(menuOpen, async open => {
-  if (import.meta.client) document.documentElement.classList.toggle('mobile-menu-open', open)
-  navHidden.value = false
-  scrollDirection = 0
-  scrollDistance = 0
-  if (import.meta.client) {
-    lastScrollY.value = Math.max(0, window.scrollY)
+  if (!import.meta.client) return
+  if (open) {
+    previousOverflow = document.documentElement.style.overflow
+    document.documentElement.style.overflow = 'hidden'
     await nextTick()
-    if (open) document.querySelector<HTMLElement>('#cp-mobile-menu a')?.focus()
-    else if (restoreMenuFocus) document.querySelector<HTMLElement>('.cp-menu')?.focus({ preventScroll: true })
+    mobileMenu.value?.querySelector<HTMLElement>('button')?.focus()
+  } else {
+    document.documentElement.style.overflow = previousOverflow
   }
 })
 onMounted(() => {
-  lastScrollY.value = window.scrollY
-  handleScroll()
-  window.addEventListener('keydown', closeMenuOnEscape)
-  window.addEventListener('scroll', handleScroll, { passive: true })
+  motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+  updateMotion()
+  motionQuery.addEventListener('change', updateMotion)
+  window.addEventListener('resize', handleResize)
 })
 onBeforeUnmount(() => {
-  window.removeEventListener('keydown', closeMenuOnEscape)
-  window.removeEventListener('scroll', handleScroll)
-  document.documentElement.classList.remove('mobile-menu-open')
+  motionQuery?.removeEventListener('change', updateMotion)
+  window.removeEventListener('resize', handleResize)
+  if (menuOpen.value) document.documentElement.style.overflow = previousOverflow
 })
-useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.title, meta: [{ name: 'description', content: baseCopy.value.seo.description }] }))
+useHead(() => ({
+  htmlAttrs: { lang: locale.value },
+  title: p.value.seo.title,
+  link: [{ rel: 'canonical', href: 'https://cuebooker.com/' }],
+  meta: [
+    { name: 'description', content: p.value.seo.description },
+    { property: 'og:title', content: p.value.seo.title },
+    { property: 'og:description', content: p.value.seo.description },
+    { property: 'og:url', content: 'https://cuebooker.com/' },
+    { name: 'twitter:title', content: p.value.seo.title },
+    { name: 'twitter:description', content: p.value.seo.description }
+  ]
+}))
 </script>
 
 <template>
-  <main class="commercial-home">
-    <a class="ed-skip" href="#top" @click.prevent="scrollTo('#top')">{{ locale === 'es' ? 'Saltar al contenido' : 'Skip to content' }}</a>
-    <nav :aria-label="locale === 'es' ? 'Navegación principal' : 'Main navigation'" class="cp-nav" :class="{ 'cp-nav--hidden': navHidden }">
-      <div class="cp-wrap cp-nav-inner">
-        <NuxtLink class="cp-brand" to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink>
-        <div class="cp-nav-links">
-          <a href="#system" @click.prevent="scrollTo('#system')">{{ p.nav.system }}</a>
-          <a href="#distribution" @click.prevent="scrollTo('#distribution')">{{ p.nav.distribution }}</a>
-          <a href="#passport" @click.prevent="scrollTo('#passport')">{{ p.nav.passport }}</a>
-          <a href="#cue-id" @click.prevent="scrollTo('#cue-id')">{{ p.nav.identity }}</a>
+  <div class="commercial-home home-v2">
+    <a class="home-skip" href="#top" @click.prevent="scrollTo('top')">{{ p.nav.skip }}</a>
+    <header class="home-header">
+      <nav class="cp-wrap home-navigation" :aria-label="p.nav.label">
+        <NuxtLink class="home-brand" to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink>
+        <div class="home-nav-links">
+          <a href="#product" @click.prevent="scrollTo('product')">{{ p.nav.product }}</a>
+          <a href="#audience" @click.prevent="scrollTo('audience')">{{ p.nav.audience }}</a>
+          <a href="#system" @click.prevent="scrollTo('system')">{{ p.nav.system }}</a>
         </div>
-        <div class="cp-nav-actions">
-          <CuePreferencesControl compact />
-          <NuxtLink class="cp-login" to="/access?mode=signin" @click="analytics.track('login_click', { placement: 'header' })">{{ p.nav.login }}</NuxtLink>
-          <NuxtLink class="cp-cta cp-cta--nav" to="/access?mode=signup" @click="analytics.track('signup_click', { placement: 'header' })">{{ p.nav.signup }}</NuxtLink>
-          <button class="cp-menu" :class="{ 'is-open': menuOpen }" type="button" :aria-label="locale === 'es' ? (menuOpen ? 'Cerrar menú' : 'Abrir menú') : (menuOpen ? 'Close menu' : 'Open menu')" :aria-expanded="menuOpen" aria-controls="cp-mobile-menu" @click="toggleMenu"><span /><span /></button>
+        <div class="home-nav-actions">
+          <div class="home-desktop-preferences"><CuePreferencesControl compact /></div>
+          <NuxtLink class="home-login" to="/access?mode=signin" @click="analytics.track('login_click', { placement: 'header' })">{{ p.nav.login }}</NuxtLink>
+          <NuxtLink class="cp-cta home-nav-signup" to="/access?mode=signup" @click="trackSignup('header')">{{ p.nav.signup }}</NuxtLink>
+          <button ref="menuButton" class="home-menu-toggle" type="button" :aria-label="p.nav.open" :aria-expanded="menuOpen" aria-controls="home-mobile-menu" @click="menuOpen = true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18M3 17h18" /></svg>
+          </button>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </header>
     <Teleport to="body">
-      <div v-if="menuOpen" role="dialog" aria-modal="true" :aria-label="locale === 'es' ? 'Menú de navegación' : 'Navigation menu'" @keydown="onMenuKey" id="cp-mobile-menu" class="cp-mobile-menu cp-mobile-menu--portal" :class="{ open: menuOpen }">
-        <div class="cp-mobile-nav-links">
-          <a href="#system" @click.prevent="scrollTo('#system')">{{ p.nav.system }}</a>
-          <a href="#distribution" @click.prevent="scrollTo('#distribution')">{{ p.nav.distribution }}</a>
-          <a href="#passport" @click.prevent="scrollTo('#passport')">{{ p.nav.passport }}</a>
-          <a href="#cue-id" @click.prevent="scrollTo('#cue-id')">{{ p.nav.identity }}</a>
+      <div v-if="menuOpen" id="home-mobile-menu" ref="mobileMenu" class="home-mobile-menu" role="dialog" aria-modal="true" :aria-label="p.nav.label" @keydown="onMenuKey">
+        <div class="home-mobile-tools">
+          <CuePreferencesControl />
+          <button type="button" :aria-label="p.nav.close" @click="closeMenu()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 5 14 14M19 5 5 19" /></svg></button>
         </div>
-        <div class="cp-mobile-auth">
-          <NuxtLink class="cp-mobile-login" to="/access?mode=signin" @click="menuOpen = false">{{ p.nav.login }}</NuxtLink>
-          <NuxtLink class="cp-cta cp-mobile-signup" to="/access?mode=signup" @click="menuOpen = false">{{ p.nav.signup }}</NuxtLink>
-        </div>
+        <nav :aria-label="p.nav.label">
+          <a href="#product" @click.prevent="scrollTo('product')">{{ p.nav.product }}</a>
+          <a href="#audience" @click.prevent="scrollTo('audience')">{{ p.nav.audience }}</a>
+          <a href="#system" @click.prevent="scrollTo('system')">{{ p.nav.system }}</a>
+          <NuxtLink to="/access?mode=signin" @click="closeMenu(false)">{{ p.nav.login }}</NuxtLink>
+          <NuxtLink class="home-mobile-signup" to="/access?mode=signup" @click="closeMenu(false); trackSignup('mobile-menu')">{{ p.nav.signup }}</NuxtLink>
+        </nav>
       </div>
     </Teleport>
 
-    <section tabindex="-1" id="top" class="cp-hero" :style="{ '--hero-image': `url(${heroImage})` }">
-      <div class="cp-hero-overlay" />
-      <div class="cp-wrap cp-hero-content">
-        <p class="cp-eyebrow">{{ p.hero.eyebrow }}</p>
-        <h1>{{ p.hero.title }}</h1>
-        <p class="cp-hero-lead">{{ p.hero.body }}</p>
-        <div class="cp-hero-actions">
-          <button class="cp-cta" type="button" @click="auth('signup', 'hero')">{{ p.hero.primary }} <span class="cp-arrow" aria-hidden="true" /></button>
-          <button class="cp-cta cp-cta--ghost" type="button" @click="scrollTo('#system')">{{ p.hero.secondary }}</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="cp-problem cp-wrap" aria-labelledby="problem-title">
-      <div class="cp-problem-copy">
-        <p class="cp-kicker">{{ p.problem.label }}</p>
-        <h2 id="problem-title">{{ p.problem.title }}</h2>
-        <p>{{ p.problem.body }}</p>
-      </div>
-      <div class="cp-problem-flow" :aria-label="locale === 'es' ? 'Canales dispersos que convergen en un único flujo de booking en Cuebooker' : 'Scattered channels converging into one booking workflow in Cuebooker'">
-        <div class="cp-problem-fragmented">
-          <span v-for="(channel, index) in p.problem.before" :key="channel" :style="{ '--signal-index': index }"><i aria-hidden="true" />{{ channel }}</span>
-        </div>
-        <div class="cp-problem-connector" aria-hidden="true"><i /><i /><i /><span /></div>
-        <div class="cp-problem-product">
-          <div class="cp-problem-product__orbit" aria-hidden="true"><i /><i /><i /></div>
-          <span class="cp-problem-product__eyebrow">{{ locale === 'es' ? 'TODO CONVERGE AQUÍ' : 'EVERYTHING CONVERGES HERE' }}</span>
-          <CueBrand />
-          <strong>{{ p.problem.after }}</strong>
-          <div class="cp-problem-product__meta">
-            <span v-for="item in p.problem.productMeta" :key="item">{{ item }}</span>
-          </div>
-        </div>
-      </div>
-      <div class="cp-problem-solution">
-        <span>{{ locale === 'es' ? 'LA DIFERENCIA' : 'THE DIFFERENCE' }}</span>
-        <p>{{ p.problem.solution }}</p>
-      </div>
-    </section>
-
-
-    <section tabindex="-1" id="system" class="ed-section cp-wrap">
-      <div class="ed-intro"><p class="cp-kicker">{{ p.work.label }}</p><h2>{{ p.work.title }}</h2><p class="ed-deck">{{ p.work.intro }}</p><p>{{ p.work.body }}</p></div>
-      <div class="ed-carousel" data-slide-group="booking" @pointerdown="stopSlides('booking')" @focusin="stopSlides('booking')">
-<div class="ed-playback">
-  <div class="ed-slide-badges" :aria-label="locale === 'es' ? 'Pasos de la demo' : 'Demo steps'">
-    <button v-for="(step, i) in p.work.steps" :key="step" type="button" :class="{ active: demoStep === i }" :aria-label="step + ', ' + (i + 1) + (locale === 'es' ? ' de 3' : ' of 3')" :aria-current="demoStep === i ? 'step' : undefined" @click="selectSlide('booking', i)"><span aria-hidden="true" /></button>
-  </div>
-  <button class="ed-playback-toggle" type="button" :aria-label="playback.booking.stopped ? (locale === 'es' ? 'Reanudar pase automático' : 'Resume automatic slides') : (locale === 'es' ? 'Pausar pase automático' : 'Pause automatic slides')" @pointerdown.stop @focusin.stop @click="playback.booking.stopped ? playSlides('booking') : stopSlides('booking')">
-    <svg v-if="playback.booking.stopped" class="ed-play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z" /></svg>
-    <svg v-else viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v14M17 5v14" /></svg>
-  </button>
-</div>
-<div class="ed-work">
-        <div class="ed-steps" role="tablist" aria-orientation="vertical" :aria-label="p.nav.system">
-          <button v-for="(step, i) in p.work.steps" :id="'step-'+i" :key="step" role="tab" :tabindex="demoStep === i ? 0 : -1" :aria-label="step + ', ' + (i + 1) + (locale === 'es' ? ' de 3' : ' of 3')" @keydown="slideKeys($event, 'booking', i)" :aria-selected="demoStep === i" aria-controls="booking-demo" :class="{ selected: demoStep === i }" @click="selectSlide('booking', i)"><span class="ed-index">0{{ i + 1 }}</span><span><strong>{{ step }}</strong><small>{{ p.work.descriptions[i] }}</small></span><span class="cp-arrow" aria-hidden="true" /></button>
-        </div>
-        <div id="booking-demo" tabindex="0" aria-live="off" class="ed-console" role="tabpanel" :aria-labelledby="'step-'+demoStep">
-          <div class="ed-console-bar"><span class="ed-indicator" />{{ p.work.workspace }}<span class="ed-demo-tag">DEMO</span></div>
-          <div class="ed-console-body">
-            <div class="ed-console-heading"><span>{{ p.work.request }}</span><span class="ed-status">{{ p.work.status[demoStep] }}</span></div>
-            <h3>{{ p.work.venue }}</h3>
-            <div v-if="demoStep === 0" class="ed-request-data"><div class="ed-date"><b>18</b><span>OCT</span></div><dl><div><dt>{{ p.work.fee }}</dt><dd>{{ p.work.amount }}</dd></div><div><dt>{{ p.work.set }}</dt><dd>{{ p.work.time }}</dd></div><div><dt>{{ p.work.contact }}</dt><dd>{{ p.work.promoter }}</dd></div></dl></div>
-            <div v-else-if="demoStep === 1" class="ed-calendar"><p class="ed-mono">{{ p.work.month }}</p><div class="ed-days"><span v-for="day in 31" :key="day" :class="{ chosen: day === 18 }">{{ day }}</span></div><p class="ed-available">{{ p.work.available }}</p></div>
-            <div v-else class="ed-decision"><p>{{ p.work.decision }}</p><div v-for="option in p.work.options" :key="option" class="ed-option">{{ option }}<span class="cp-arrow" aria-hidden="true" /></div><small>{{ p.work.note }}</small></div>
-          </div>
-          <p class="ed-demo-foot">{{ p.work.demo }}</p>
-        </div>
-      </div></div>
-    </section>
-
-
-    <section class="ed-section ed-circuit cp-wrap" aria-labelledby="circuit-title">
-      <div class="ed-circuit-intro">
-        <p class="cp-kicker">{{ p.circuit.label }}</p>
-        <h2 id="circuit-title">{{ p.circuit.title }}</h2>
-        <p class="ed-deck">{{ p.circuit.body }}</p>
-      </div>
-      <ol class="ed-circuit-flow">
-        <li v-for="(step, i) in p.circuit.steps" :key="step.title">
-          <span class="ed-circuit-index">0{{ i + 1 }}</span>
-          <div><strong>{{ step.title }}</strong><p>{{ step.text }}</p></div>
-        </li>
-      </ol>
-      <p class="ed-circuit-closing">{{ p.circuit.closing }}</p>
-    </section>
-
-    <section tabindex="-1" id="distribution" class="ed-share ed-section">
-      <div class="cp-wrap"><p class="cp-kicker">{{ p.share.label }}</p><h2>{{ p.share.title }}</h2><p class="ed-deck">{{ p.share.body }}</p>
-        <div class="ed-carousel" data-slide-group="sharing" @pointerdown="stopSlides('sharing')" @focusin="stopSlides('sharing')">
-<div class="ed-playback">
-  <div class="ed-slide-badges" :aria-label="locale === 'es' ? 'Formas de compartir' : 'Ways to share'">
-    <button v-for="(label, i) in p.share.tabs" :key="label" type="button" :class="{ active: shareTab === i }" :aria-label="label + ', ' + (i + 1) + (locale === 'es' ? ' de 3' : ' of 3')" :aria-current="shareTab === i ? 'step' : undefined" @click="selectSlide('sharing', i)"><span aria-hidden="true" /></button>
-  </div>
-  <button class="ed-playback-toggle" type="button" :aria-label="playback.sharing.stopped ? (locale === 'es' ? 'Reanudar pase automático' : 'Resume automatic slides') : (locale === 'es' ? 'Pausar pase automático' : 'Pause automatic slides')" @pointerdown.stop @focusin.stop @click="playback.sharing.stopped ? playSlides('sharing') : stopSlides('sharing')">
-    <svg v-if="playback.sharing.stopped" class="ed-play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z" /></svg>
-    <svg v-else viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v14M17 5v14" /></svg>
-  </button>
-</div>
-<div class="ed-share-layout">
-          <div><div class="ed-tabs" role="tablist" :aria-label="p.nav.distribution"><button v-for="(label,i) in p.share.tabs" :id="'share-'+i" :key="label" role="tab" :tabindex="shareTab === i ? 0 : -1" :aria-label="label + ', ' + (i + 1) + (locale === 'es' ? ' de 3' : ' of 3')" @keydown="slideKeys($event, 'sharing', i)" :aria-selected="shareTab === i" aria-controls="share-preview" :class="{selected: shareTab === i}" @click="selectSlide('sharing', i)">{{ label }}</button></div>
-            <h3>{{ p.share.titles[shareTab] }}</h3><p>{{ p.share.descriptions[shareTab] }}</p><p class="ed-privacy"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>{{ p.share.privacy }}</p><button class="cp-cta" @click="auth('signup', 'share')">{{ p.share.cta }}<span class="cp-arrow" aria-hidden="true" /></button>
-          </div>
-          <div id="share-preview" tabindex="0" aria-live="off" class="ed-share-preview" role="tabpanel" :aria-labelledby="'share-'+shareTab">
-            <span class="ed-mono">{{ p.share.preview }}</span>
-            <div v-if="shareTab === 0" class="ed-profile"><div class="ed-profile-cover"><span>CUE / ARTIST</span><svg viewBox="0 0 320 70" aria-hidden="true"><path d="M0 35h20l5-12 8 25 8-34 8 42 9-55 9 62 8-40 9 23 9-12h24l8-18 8 42 8-50 8 58 8-35 8 19 8-25 8 18h22l8-25 8 45 8-62 8 70 8-43 8 28 8-18h34"/></svg></div><h4>{{ p.share.artist }}</h4><p>{{ p.share.sound }}</p><div class="ed-form-button">{{ p.share.form }}<span class="cp-arrow" aria-hidden="true" /></div></div>
-            <div v-else-if="shareTab === 1" class="ed-embed"><div class="ed-browser-bar"><i /><i /><i /><span>{{ p.share.embed }}</span></div><h4>{{ p.share.form }}</h4><div v-for="field in p.share.fields" :key="field" class="ed-field">{{ field }}</div><div class="ed-code">&lt;iframe … /&gt;</div></div>
-            <div v-else class="ed-sticker"><span class="ed-mono">CUEBOOKER / BOOKING</span><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M28 8H8v20M72 8h20v20M8 72v20h20M92 72v20H72M30 50h40M56 36l14 14-14 14"/></svg><h4>{{ p.share.qr }}</h4><p>{{ p.share.qrNote }}</p><small>{{ locale === 'es' ? 'Concepto de soporte · No es un QR escaneable' : 'Display concept · Not a scannable QR' }}</small></div>
-          </div>
-        </div>
-      </div></div>
-    </section>
-
-    <section class="ed-section cp-wrap ed-control"><p class="cp-kicker">{{ p.control.label }}</p><h2>{{ p.control.title }}</h2><div class="ed-control-intro"><p class="ed-deck">{{ p.control.body }}</p><p>{{ p.control.support }}</p></div><div class="ed-responsibility"><div><h3>{{ p.control.left }}</h3><p v-for="item in p.control.tasks" :key="item">{{ item }}</p></div><div><h3>{{ p.control.right }}</h3><p v-for="item in p.control.decisions" :key="item">{{ item }}</p></div></div></section>
-
-
-    <section tabindex="-1" id="passport" class="ed-section ed-passport cp-wrap">
-      <div class="ed-passport-copy">
-        <p class="cp-kicker">{{ p.passport.label }}</p>
-        <h2>{{ p.passport.title }}</h2>
-        <p class="ed-deck">{{ p.passport.body }}</p>
-        <div class="ed-passport-features">
-          <article v-for="(feature, i) in p.passport.features" :key="feature.title">
-            <span>0{{ i + 1 }}</span>
-            <div><h3>{{ feature.title }}</h3><p>{{ feature.text }}</p></div>
-          </article>
-        </div>
-        <p class="ed-passport-note">{{ p.passport.note }}</p>
-      </div>
-      <div class="ed-passport-visual" aria-hidden="true">
-        <span class="ed-mono">CUE PASSPORT / ACTIVITY ENGINE</span>
-        <div class="ed-passport-orbit ed-passport-orbit--one" />
-        <div class="ed-passport-orbit ed-passport-orbit--two" />
-        <i class="ed-passport-node ed-passport-node--world">WORLD</i>
-        <i class="ed-passport-node ed-passport-node--city">CITY</i>
-        <i class="ed-passport-node ed-passport-node--venue">VENUE</i>
-        <i class="ed-passport-node ed-passport-node--event">EVENT</i>
-        <strong>{{ p.passport.visual }}</strong>
-      </div>
-    </section>
-
-    <section tabindex="-1" id="cue-id" class="ed-section ed-identity cp-wrap"><div><p class="cp-kicker">{{ p.identity.label }}</p><h2>{{ p.identity.title }}</h2><p class="ed-deck">{{ p.identity.body }}</p><p>{{ p.identity.detail }}</p><span class="cp-beta-note">{{ p.identity.beta }}</span></div><div class="ed-identity-poster"><span class="ed-mono">CUE ID / ARTIST PROFILE</span><strong>{{ p.identity.visual }}</strong><span>{{ p.identity.caption }}</span><span class="ed-poster-corner" aria-hidden="true">C /</span></div></section>
-
-    <div class="cp-wrap"><MailboxBetaNotice :locale="locale" /></div>
-
-    <section v-if="showPricing" id="pricing" class="ed-section ed-pricing cp-wrap" aria-labelledby="pricing-title">
-      <div class="ed-pricing-intro">
-        <p class="cp-kicker">{{ p.pricing.label }}</p>
-        <h2 id="pricing-title">{{ p.pricing.title }}</h2>
-        <p class="ed-deck">{{ p.pricing.body }}</p>
-      </div>
-      <div class="ed-pricing-grid">
-        <article v-for="(plan, i) in p.pricing.plans" :key="plan.name" class="ed-price-card" :class="{ 'ed-price-card--featured': i === 1 }">
-          <header>
-            <div class="ed-price-card-heading">
-              <span>{{ plan.name }}</span>
-              <em v-if="plan.status">{{ plan.status }}</em>
+    <main>
+      <section id="top" tabindex="-1" class="home-hero" aria-labelledby="hero-title" :style="{ '--hero-image': `url(${heroImage})` }">
+        <div class="home-hero-overlay" aria-hidden="true" />
+        <div class="cp-wrap home-hero-layout">
+          <div class="home-hero-content">
+            <p class="cp-eyebrow">{{ p.hero.eyebrow }}</p>
+            <h1 id="hero-title">{{ p.hero.title }} <em>{{ p.hero.accent }}</em></h1>
+            <p class="home-lead">{{ p.hero.body }}</p>
+            <div class="home-actions">
+              <NuxtLink class="cp-cta" to="/access?mode=signup" @click="trackSignup('hero')">{{ p.hero.primary }}<span class="cp-arrow" aria-hidden="true" /></NuxtLink>
+              <a class="cp-cta cp-cta--ghost" href="#system" @click.prevent="scrollTo('system')">{{ p.hero.secondary }}</a>
             </div>
-            <span v-if="plan.badge" class="ed-founding-badge">{{ plan.badge }}</span>
-            <div class="ed-price-value">
-              <del v-if="plan.originalPrice">{{ plan.originalPrice }}</del>
-              <strong>{{ plan.price }}</strong>
-              <small v-if="plan.annual">{{ locale === 'es' ? 'o ' : 'or ' }}{{ plan.annual }}</small>
-            </div>
-            <p v-if="plan.foundingNote" class="ed-founding-note">{{ plan.foundingNote }}</p>
-          </header>
-          <p>{{ plan.description }}</p>
-          <ul><li v-for="item in plan.items" :key="item">{{ item }}</li></ul>
-          <button class="cp-cta" :class="{ 'cp-cta--ghost': i !== 1 }" type="button" @click="auth('signup', 'pricing-' + plan.name.toLowerCase().replace(' ', '-'))">{{ plan.cta }}<span class="cp-arrow" aria-hidden="true" /></button>
-        </article>
-      </div>
-    </section>
+            <p class="home-hero-note">{{ p.hero.note }}</p>
+          </div>
+        <!-- Replace this signature with a verified spot player when the licensed final asset is available. -->
+        <p class="home-hero-signature">{{ p.hero.signature }}</p>
+        <ol class="home-hero-route" :aria-label="p.work.title"><li v-for="(step, i) in p.work.steps" :key="step"><span>0{{ i + 1 }}</span>{{ step }}</li></ol>
+        </div>
+      </section>
 
-    <section class="ed-closing"><div class="cp-wrap"><p>{{ p.closing.title }}</p><h2>{{ p.closing.accent }}</h2><button class="cp-cta" @click="auth('signup','closing')">{{ p.closing.cta }}<span class="cp-arrow" aria-hidden="true" /></button></div></section>
-    <Transition name="cp-float"><button v-if="backToTopVisible && !menuOpen" class="cp-back-top" type="button" :aria-label="locale === 'es' ? 'Volver arriba' : 'Back to top'" @click="scrollTo('#top')"><span class="cp-up-arrow" aria-hidden="true" /></button></Transition>
-    <footer class="cp-footer">
-      <div class="cp-wrap cp-footer-layout">
-        <div class="cp-footer-brand"><span class="cp-brand"><CueBrand /></span><span>{{ p.closing.footer }}</span></div>
-        <nav class="cp-footer-links" :aria-label="locale === 'es' ? 'Información legal y contacto' : 'Legal information and contact'">
-          <a href="mailto:contacto@cuebooker.com">{{ p.legal.contact }}: contacto@cuebooker.com</a>
-          <NuxtLink to="/privacidad">{{ p.legal.privacy }}</NuxtLink>
-          <NuxtLink to="/cookies">{{ p.legal.cookies }}</NuxtLink>
-          <NuxtLink to="/aviso-legal">{{ p.legal.notice }}</NuxtLink>
-          <button type="button" @click="analytics.openPreferences">{{ p.legal.settings }}</button>
-        </nav>
-        <span>© 2026 Cuebooker</span>
-      </div>
+      <section class="home-section cp-wrap" aria-labelledby="problem-title">
+        <div class="home-section-intro"><p class="cp-kicker">{{ p.problem.label }}</p><h2 id="problem-title">{{ p.problem.title }}</h2><p class="home-lead">{{ p.problem.body }}</p></div>
+        <HomeBookingContext :copy="p.problem" />
+      </section>
+
+      <section id="system" tabindex="-1" class="home-section cp-wrap" aria-labelledby="system-title">
+        <div class="home-section-intro"><p class="cp-kicker">{{ p.work.label }}</p><h2 id="system-title">{{ p.work.title }}</h2><p class="home-lead">{{ p.work.body }}</p></div>
+        <div class="ed-work">
+          <div class="ed-steps" role="tablist" aria-orientation="vertical" :aria-label="p.nav.system">
+            <button v-for="(step, i) in p.work.steps" :id="`step-${i}`" :key="step" type="button" role="tab" :tabindex="demoStep === i ? 0 : -1" :aria-selected="demoStep === i" aria-controls="booking-demo" :class="{ selected: demoStep === i }" @keydown="stepKeys($event, i)" @click="selectStep(i)"><span class="ed-index">0{{ i + 1 }}</span><span><strong>{{ step }}</strong><small>{{ p.work.descriptions[i] }}</small></span><span class="cp-arrow" aria-hidden="true" /></button>
+          </div>
+          <div id="booking-demo" class="ed-console" role="tabpanel" tabindex="0" :aria-labelledby="`step-${demoStep}`" aria-describedby="demo-disclaimer">
+            <div class="ed-console-bar"><span class="ed-indicator" aria-hidden="true" />{{ p.work.workspace }}<span class="ed-demo-tag">DEMO</span></div>
+            <div class="ed-console-body">
+              <div class="ed-console-heading"><span>{{ p.work.request }}</span><span class="ed-status">{{ p.work.status[demoStep] }}</span></div>
+              <h3>{{ p.work.venue }}</h3>
+              <div v-if="demoStep === 0" class="ed-request-data"><div class="ed-date"><b>18</b><span>OCT</span></div><dl><div><dt>{{ p.work.fee }}</dt><dd>{{ p.work.amount }}</dd></div><div><dt>{{ p.work.set }}</dt><dd>{{ p.work.time }}</dd></div><div><dt>{{ p.work.contact }}</dt><dd>{{ p.work.promoter }}</dd></div></dl></div>
+              <div v-else-if="demoStep === 1" class="home-demo-review"><p>{{ p.work.review }}</p><ul><li v-for="item in p.work.reviewItems" :key="item">{{ item }}</li></ul></div>
+              <div v-else-if="demoStep === 2" class="home-demo-followup"><p>{{ p.work.followUp }}</p><p>{{ p.work.hold }}</p></div>
+              <div v-else class="ed-calendar"><p class="ed-mono">{{ p.work.month }}</p><div class="ed-days"><span v-for="day in 31" :key="day" :class="{ chosen: day === 18 }">{{ day }}</span></div><p class="ed-available">{{ p.work.confirmed }}</p></div>
+              <button class="ed-next" type="button" @click="selectStep((demoStep + 1) % p.work.steps.length)">{{ demoStep === p.work.steps.length - 1 ? p.work.restart : p.work.next }}<span class="cp-arrow" aria-hidden="true" /></button>
+            </div>
+            <div id="demo-disclaimer" class="ed-demo-foot"><strong>{{ p.work.demo }}</strong><p>{{ p.work.note }}</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="product" tabindex="-1" class="home-section home-product" aria-labelledby="product-title">
+        <div class="cp-wrap"><p class="cp-kicker">{{ p.features.label }}</p><h2 id="product-title">{{ p.features.title }}</h2><p class="home-lead">{{ p.features.body }}</p>
+          <div class="home-card-grid"><article v-for="(feature, i) in p.features.items" :key="feature.title" class="home-card home-feature-card"><span class="home-mono">0{{ i + 1 }}</span><div class="home-feature-symbol" aria-hidden="true"><svg v-if="i === 0" viewBox="0 0 120 90"><rect x="10" y="10" width="100" height="70" rx="5"/><path d="M10 27h100M26 44h12m9 0h45M26 60h12m9 0h30"/></svg><svg v-else-if="i === 1" viewBox="0 0 120 90"><circle cx="25" cy="45" r="12"/><circle cx="95" cy="45" r="12"/><path d="M37 45h46m-9-8 9 8-9 8M25 33V12h70v21"/></svg><svg v-else viewBox="0 0 120 90"><rect x="15" y="15" width="90" height="65" rx="5"/><path d="M15 32h90M35 8v14m50-14v14M35 46h10m10 0h10m10 0h10M35 62h10m10 0h10"/><rect x="72" y="56" width="16" height="14" rx="2"/></svg></div><h3>{{ feature.title }}</h3><p>{{ feature.text }}</p></article></div>
+        </div>
+      </section>
+
+      <section id="audience" tabindex="-1" class="home-section cp-wrap" aria-labelledby="audience-title">
+        <p class="cp-kicker">{{ p.audience.label }}</p><h2 id="audience-title">{{ p.audience.title }}</h2>
+        <div class="home-card-grid home-audience-grid"><article v-for="(role, i) in p.audience.items" :key="role.title" class="home-card"><span class="home-mono">{{ i === 0 ? 'DJ / SOLO' : 'MANAGER / AGENCY' }}</span><h3><NuxtLink :to="i === 0 ? '/dj' : '/agency'">{{ role.title }}</NuxtLink></h3><p>{{ role.text }}</p><NuxtLink class="cp-cta" :class="{ 'cp-cta--ghost': i === 1 }" to="/access?mode=signup" @click="trackSignup(i === 0 ? 'audience-dj' : 'audience-agency')">{{ role.cta }}<span class="cp-arrow" aria-hidden="true" /></NuxtLink></article></div>
+        <p class="home-audience-note">{{ p.audience.note }}</p>
+      </section>
+
+      <section class="home-section cp-wrap home-extensions" aria-labelledby="extensions-title">
+        <p class="cp-kicker">{{ p.extensions.label }}</p><h2 id="extensions-title">{{ p.extensions.title }}</h2>
+        <HomeEcosystem :copy="p.extensions" @signup="trackSignup('ecosystem-profile')" />
+      </section>
+
+      <section class="home-closing" aria-labelledby="closing-title"><div class="cp-wrap"><p class="cp-kicker">CUEBOOKER / BOOKING WORKSPACE</p><h2 id="closing-title">{{ p.closing.title }}</h2><p>{{ p.closing.body }}</p><NuxtLink class="cp-cta" to="/access?mode=signup" @click="trackSignup('closing')">{{ p.closing.cta }}<span class="cp-arrow" aria-hidden="true" /></NuxtLink></div></section>
+    </main>
+    <footer class="home-footer cp-wrap">
+      <div><span class="home-brand"><CueBrand /></span><p>{{ p.closing.footer }}</p></div>
+      <nav :aria-label="p.legal.label"><a href="mailto:contacto@cuebooker.com">{{ p.legal.contact }}</a><NuxtLink to="/privacidad">{{ p.legal.privacy }}</NuxtLink><NuxtLink to="/cookies">{{ p.legal.cookies }}</NuxtLink><NuxtLink to="/aviso-legal">{{ p.legal.notice }}</NuxtLink><button type="button" @click="analytics.openPreferences">{{ p.legal.settings }}</button></nav>
+      <span>© 2026 Cuebooker</span>
     </footer>
-  </main>
+  </div>
 </template>
 
 <style scoped>
-
-.cp-footer-layout {
-  display:grid;
-  grid-template-columns:minmax(230px,1fr) auto auto;
-  gap:28px;
-  align-items:center;
+.home-v2 { overflow-wrap: break-word; }
+html[data-theme='light'] .home-v2 :is(.cp-kicker, .cp-eyebrow, .home-mono, .selected .ed-index, .ed-status, .ed-next, .ed-available) {
+  color: color-mix(in srgb, var(--cp-lime) 85%, var(--cp-paper));
 }
-.cp-footer-brand {
-  display:flex;
-  align-items:center;
-  gap:18px;
-}
-.cp-footer-brand .cp-brand {
-  flex:0 0 auto;
-}
-.cp-footer-links {
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center;
-  gap:10px 18px;
-}
-.cp-footer-links a,
-.cp-footer-links button {
-  padding:0;
-  border:0;
-  background:transparent;
-  color:var(--cp-muted);
-  font:inherit;
-  font-size:11px;
-  text-decoration:none;
-  cursor:pointer;
-}
-.cp-footer-links a:hover,
-.cp-footer-links button:hover {
-  color:var(--cp-lime);
-}
-@media(max-width:900px) {
-  .cp-footer-layout {
-    grid-template-columns:1fr;
-    justify-items:start;
-  }
-  .cp-footer-brand {
-    align-items:flex-start;
-    flex-direction:column;
-  }
-  .cp-footer-links {
-    justify-content:flex-start;
-  }
-}
-
-/* Booking signals converge into one operational hub. */
-.cp-problem {
-  position:relative;
-  isolation:isolate;
-  display:grid;
-  grid-template-columns:minmax(0,.78fr) minmax(0,1.22fr);
-  gap:clamp(38px,5vw,78px);
-  align-items:center;
-  padding-top:clamp(70px,8vw,130px);
-  padding-bottom:clamp(66px,7vw,110px);
-  border-bottom:1px solid var(--cp-line);
-}
-.cp-problem::before {
-  content:"";
-  position:absolute;
-  z-index:-1;
-  inset:9% -4% 14% 32%;
-  pointer-events:none;
-  background:radial-gradient(ellipse at 83% 48%,color-mix(in srgb,var(--cp-lime) 9%,transparent),transparent 57%);
-}
-.cp-problem-copy { align-self:center; }
-.cp-problem-copy h2 {
-  max-width:570px;
-  margin:20px 0 27px;
-  font-size:clamp(2.8rem,4.1vw,5rem);
-  line-height:1.02;
-  letter-spacing:-.052em;
-  text-wrap:balance;
-}
-.cp-problem-copy > p:last-child {
-  max-width:520px;
-  margin:0;
-  color:color-mix(in srgb,var(--cp-paper) 78%,var(--cp-muted));
-  font-size:clamp(1rem,1.22vw,1.14rem);
-  line-height:1.7;
-}
-.cp-problem-flow {
-  position:relative;
-  display:grid;
-  grid-template-columns:minmax(190px,.9fr) minmax(70px,.3fr) minmax(240px,1fr);
-  align-items:center;
-  min-height:410px;
-}
-.cp-problem-fragmented {
-  position:relative;
-  height:355px;
-  min-width:0;
-}
-.cp-problem-fragmented span {
-  position:absolute;
-  z-index:1;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  width:max-content;
-  max-width:74%;
-  min-height:39px;
-  padding:9px 14px;
-  border:1px solid color-mix(in srgb,var(--cp-line) 80%,transparent);
-  border-radius:5px;
-  background:linear-gradient(130deg,color-mix(in srgb,var(--cp-panel) 97%,var(--cp-paper) 3%),var(--cp-panel));
-  box-shadow:0 12px 28px rgba(0,0,0,.13);
-  color:color-mix(in srgb,var(--cp-paper) 80%,var(--cp-muted));
-  font:700 10px/1.2 ui-monospace,monospace;
-  letter-spacing:.055em;
-  text-transform:uppercase;
-  white-space:nowrap;
-  transform:translateY(0);
-  animation:cp-signal-float 7s ease-in-out infinite alternate;
-  animation-delay:calc(var(--signal-index) * -.83s);
-}
-.cp-problem-fragmented span i {
-  flex:none;
-  width:5px;
-  height:5px;
-  border-radius:50%;
-  background:var(--cp-lime);
-  opacity:.72;
-  box-shadow:0 0 11px color-mix(in srgb,var(--cp-lime) 55%,transparent);
-}
-.cp-problem-fragmented span:nth-child(1) { top:3%;left:3%; }
-.cp-problem-fragmented span:nth-child(2) { top:19%;right:1%; }
-.cp-problem-fragmented span:nth-child(3) { top:37%;left:14%; }
-.cp-problem-fragmented span:nth-child(4) { top:53%;right:5%; }
-.cp-problem-fragmented span:nth-child(5) { top:70%;left:0; }
-.cp-problem-fragmented span:nth-child(6) { top:86%;right:12%; }
-.cp-problem-fragmented::after {
-  content:"";
-  position:absolute;
-  inset:3% 0;
-  pointer-events:none;
-  background:repeating-linear-gradient(0deg,transparent 0 54px,color-mix(in srgb,var(--cp-line) 30%,transparent) 55px 56px);
-  mask-image:linear-gradient(90deg,transparent,#000 35%,transparent);
-}
-.cp-problem-connector {
-  position:relative;
-  height:275px;
-  min-width:0;
-  overflow:visible;
-}
-.cp-problem-connector i {
-  position:absolute;
-  left:-35%;
-  width:160%;
-  height:1px;
-  top:50%;
-  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--cp-lime) 38%,var(--cp-line)),var(--cp-lime));
-  transform-origin:100% 50%;
-  opacity:.65;
-}
-.cp-problem-connector i:nth-child(1) { transform:rotate(31deg); }
-.cp-problem-connector i:nth-child(2) { transform:rotate(-31deg); }
-.cp-problem-connector i:nth-child(3) { transform:rotate(0); }
-.cp-problem-connector span {
-  position:absolute;
-  top:calc(50% - 5px);
-  right:-5px;
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  background:var(--cp-lime);
-  box-shadow:0 0 0 7px color-mix(in srgb,var(--cp-lime) 10%,transparent),0 0 28px var(--cp-lime);
-}
-.cp-problem-product {
-  position:relative;
-  isolation:isolate;
-  display:grid;
-  justify-items:start;
-  align-content:center;
-  gap:20px;
-  min-height:315px;
-  min-width:0;
-  padding:clamp(24px,2.4vw,38px);
-  border:1px solid color-mix(in srgb,var(--cp-lime) 57%,var(--cp-line));
-  border-radius:8px;
-  background:
-    linear-gradient(115deg,color-mix(in srgb,var(--cp-lime) 8%,transparent),transparent 45%),
-    repeating-linear-gradient(90deg,transparent 0 39px,color-mix(in srgb,var(--cp-line) 25%,transparent) 40px 41px),
-    var(--cp-panel);
-  box-shadow:0 30px 90px rgba(0,0,0,.27),0 0 70px color-mix(in srgb,var(--cp-lime) 9%,transparent),inset 0 1px color-mix(in srgb,var(--cp-paper) 9%,transparent);
-}
-.cp-problem-product::before {
-  content:"";
-  position:absolute;
-  z-index:-1;
-  inset:-17px;
-  border:1px solid color-mix(in srgb,var(--cp-lime) 15%,transparent);
-  border-radius:16px;
-  pointer-events:none;
-}
-.cp-problem-product__orbit {
-  position:absolute;
-  top:20px;
-  right:20px;
-  display:flex;
-  gap:5px;
-}
-.cp-problem-product__orbit i { width:4px;height:4px;border-radius:50%;background:var(--cp-lime);opacity:.62; }
-.cp-problem-product__eyebrow {
-  color:var(--cp-lime);
-  font:700 9px/1.3 ui-monospace,monospace;
-  letter-spacing:.15em;
-}
-.cp-problem-product :deep(svg) { width:min(190px,100%);height:auto; }
-.cp-problem-product > strong {
-  color:var(--cp-paper);
-  font-size:clamp(1.25rem,1.7vw,1.75rem);
-  line-height:1.15;
-  letter-spacing:-.035em;
-  text-wrap:balance;
-}
-.cp-problem-product__meta { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;width:100%;border-top:1px solid var(--cp-line); }
-.cp-problem-product__meta span {
-  padding:12px 4px 0 0;
-  color:color-mix(in srgb,var(--cp-paper) 75%,var(--cp-muted));
-  font:700 9px/1.2 ui-monospace,monospace;
-  letter-spacing:.07em;
-  text-transform:uppercase;
-}
-.cp-problem-product__meta span::before { content:"/";color:var(--cp-lime);margin-right:7px; }
-.cp-problem-solution {
-  grid-column:1 / -1;
-  display:grid;
-  grid-template-columns:minmax(140px,.25fr) minmax(0,1fr);
-  align-items:start;
-  gap:30px;
-  margin-top:16px;
-  padding:26px 0 0;
-  border-top:1px solid color-mix(in srgb,var(--cp-lime) 32%,var(--cp-line));
-}
-.cp-problem-solution > span { color:var(--cp-lime);font:700 9px/1.3 ui-monospace,monospace;letter-spacing:.13em; }
-.cp-problem-solution p { max-width:920px;margin:0;color:var(--cp-paper);font-size:clamp(1.05rem,1.5vw,1.35rem);line-height:1.55; }
-@keyframes cp-signal-float { to { transform:translateY(-5px); } }
-@media(max-width:1100px) {
-  .cp-problem { grid-template-columns:1fr;gap:34px; }
-  .cp-problem-copy h2 { max-width:720px; }
-  .cp-problem-flow { max-width:820px;width:100%;margin-inline:auto; }
-}
-@media(max-width:620px) {
-  .cp-problem { padding-top:54px;padding-bottom:56px;gap:28px; }
-  .cp-problem-copy h2 { font-size:clamp(2.5rem,10.5vw,3.8rem); }
-  .cp-problem-flow { grid-template-columns:1fr;min-height:0;gap:0; }
-  .cp-problem-fragmented { width:100%;height:250px; }
-  .cp-problem-fragmented span { max-width:48%;min-height:35px;padding:7px 10px;font-size:9px; }
-  .cp-problem-fragmented span:nth-child(1) { top:3%;left:4%; }
-  .cp-problem-fragmented span:nth-child(2) { top:9%;right:5%; }
-  .cp-problem-fragmented span:nth-child(3) { top:34%;left:12%; }
-  .cp-problem-fragmented span:nth-child(4) { top:43%;right:2%; }
-  .cp-problem-fragmented span:nth-child(5) { top:71%;left:2%; }
-  .cp-problem-fragmented span:nth-child(6) { top:78%;right:10%; }
-  .cp-problem-connector { height:65px;width:70%;margin-inline:auto; }
-  .cp-problem-connector i { top:0;left:50%;width:1px;height:100%;transform-origin:50% 100%;background:linear-gradient(180deg,transparent,var(--cp-lime)); }
-  .cp-problem-connector i:nth-child(1) { transform:rotate(32deg); }
-  .cp-problem-connector i:nth-child(2) { transform:rotate(-32deg); }
-  .cp-problem-connector i:nth-child(3) { transform:none; }
-  .cp-problem-connector span { top:auto;bottom:-4px;left:calc(50% - 5px);right:auto; }
-  .cp-problem-product { width:calc(100% - 20px);min-height:275px;margin:10px auto 0;padding:25px; }
-  .cp-problem-solution { grid-template-columns:1fr;gap:12px;margin-top:20px; }
-}
-@media(prefers-reduced-motion:reduce) { .cp-problem-fragmented span { animation:none; } }
-
-/* Landing-only composition. Keep workspace styles untouched. */
-.commercial-home .cp-hero {
-  min-height: min(820px, 100svh);
-  align-items: center;
-  background: var(--cp-black);
-}
-.commercial-home .cp-hero::before {
-  background: var(--hero-image) 68% center / cover no-repeat;
-  opacity: 1;
-}
-.commercial-home .cp-hero::after { display: none; }
-.cp-hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, var(--cp-black) 0%, color-mix(in srgb, var(--cp-black) 90%, transparent) 26%, color-mix(in srgb, var(--cp-black) 45%, transparent) 48%, transparent 72%), linear-gradient(0deg, var(--cp-black), transparent 28%);
-}
-.commercial-home .cp-hero-content { padding: 110px 0 54px; }
-.commercial-home .cp-hero h1 {
-  max-width: 710px;
-  margin: 22px 0 25px;
-  font-size: clamp(58px, 6vw, 86px);
-  line-height: 1.02;
-  letter-spacing: -.055em;
-  text-wrap: balance;
-}
-.cp-hero-accent {
-  max-width: 650px;
-  margin: 0 0 20px;
-  color: var(--cp-lime);
-  font-size: clamp(23px, 2.4vw, 34px);
-  font-weight: 750;
-  line-height: 1.2;
-  letter-spacing: -.025em;
-}
-.commercial-home .cp-hero-lead { max-width: 590px; font-size: 19px; line-height: 1.55; }
-.commercial-home .cp-hero-actions { margin-top: 29px; }
-.commercial-home .cp-hero-note { max-width: 430px; margin-top: 25px; line-height: 1.5; }
-.commercial-home .cp-cta { min-height: 48px; box-shadow: 0 4px 0 color-mix(in srgb, var(--cp-lime) 45%, black), 0 14px 30px color-mix(in srgb, var(--cp-lime) 12%, transparent); }
-.commercial-home .cp-cta--ghost { background: color-mix(in srgb, var(--cp-black) 78%, transparent); box-shadow: none; }
-.commercial-home .cp-cta:active { transform: translateY(2px); }
-.commercial-home .cp-section { scroll-margin-top: 88px; }
-.commercial-home .cp-signal-card { border-radius: 16px; }
-.commercial-home .cp-channel-card { padding-right: 28px; }
-.commercial-home .cp-channel-icon { position: relative; inset: auto; margin: 20px 0; width: 58px; }
-.commercial-home .cp-channel-card h3 { max-width: none; padding-right: 0; }
-.commercial-home .cp-channel-card .cp-signal-number { padding-right: 0; }
-.cp-booking-proof { padding: 28px 0; margin-bottom: 35px; border-block: 1px solid var(--cp-line); }
-.commercial-home .cp-booking-proof .cp-hero-flow { max-width: 820px; border: 0; background: none; box-shadow: none; margin: 22px 0 14px; padding: 0; }
-.commercial-home .cp-booking-proof .cp-hero-signals span { font-size: 11px; padding: 12px; }
-.commercial-home .cp-booking-proof .cp-hero-request-head span,
-.commercial-home .cp-booking-proof .cp-hero-request small { font-size: 10px; }
-.commercial-home .cp-booking-proof .cp-hero-request-head b { font-size: 9px; }
-.cp-demo-caption { color: var(--cp-muted); font-size: 11px; }
-.commercial-home .cp-nav:has(:focus-visible) { transform: none; }
-.cp-menu span { transition: transform .2s; }
-.cp-menu.is-open span:first-child { transform: translateY(4px) rotate(45deg); }
-.cp-menu.is-open span:last-child { transform: translateY(-4px) rotate(-45deg); }
-.cp-mobile-menu--portal .cp-mobile-nav-links a { text-decoration: none; }
-.cp-mobile-menu--portal { overscroll-behavior: contain; padding-bottom: max(24px, env(safe-area-inset-bottom)); }
-:global(html.mobile-menu-open), :global(html.mobile-menu-open body) { overflow: hidden; }
-:global(html[data-theme='light'] .commercial-home .cp-hero::before) { opacity: .34; }
-@media (max-width: 1100px) and (min-width: 851px) {
-  .commercial-home .cp-hero h1 { max-width: 60%; font-size: 64px; }
-  .cp-hero-accent { max-width: 55%; }
-}
-@media (max-width: 850px) {
-  .commercial-home .cp-hero {
-    min-height: min(880px, 100svh);
-    align-items: stretch;
-    overflow: hidden;
-  }
-  .commercial-home .cp-hero::before {
-    background: var(--hero-image) 72% 32% / cover no-repeat;
-    opacity: .72;
-  }
-  .commercial-home .cp-hero-overlay {
-    background:
-      linear-gradient(180deg, color-mix(in srgb, var(--cp-black) 18%, transparent) 0%, color-mix(in srgb, var(--cp-black) 44%, transparent) 32%, color-mix(in srgb, var(--cp-black) 88%, transparent) 62%, var(--cp-black) 100%),
-      linear-gradient(90deg, color-mix(in srgb, var(--cp-black) 62%, transparent) 0%, color-mix(in srgb, var(--cp-black) 12%, transparent) 72%);
-  }
-  .commercial-home .cp-hero-content {
-    display:flex;
-    flex-direction:column;
-    justify-content:flex-end;
-    min-height:min(880px, 100svh);
-    box-sizing:border-box;
-    padding:150px 0 44px;
-  }
-  .commercial-home .cp-hero h1 { max-width: 650px; font-size: clamp(48px, 9vw, 72px); }
-  .cp-mobile-menu--portal { min-height: 0; }
-}
-@media (max-width: 520px) {
-  .commercial-home .cp-hero { min-height: max(690px, 92svh); }
-  .commercial-home .cp-hero::before { background-position: 70% 22%; opacity:.78; }
-  .commercial-home .cp-hero-content {
-    min-height:max(690px, 92svh);
-    padding:160px 0 30px;
-  }
-  .commercial-home .cp-hero h1 {
-    max-width: 355px;
-    margin: 18px 0 16px;
-    font-size: clamp(44px, 12.2vw, 56px);
-    line-height:.98;
-  }
-  .commercial-home .cp-hero .cp-eyebrow { font-size:10px; letter-spacing:.16em; }
-  .cp-hero-accent { font-size: 25px; max-width: 320px; }
-  .commercial-home .cp-hero-lead {
-    max-width:350px;
-    margin-bottom:0;
-    font-size:16px;
-    line-height:1.48;
-  }
-  .commercial-home .cp-hero-actions {
-    display:grid;
-    grid-template-columns:1fr;
-    gap:10px;
-    width:100%;
-    margin-top:22px;
-  }
-  .commercial-home .cp-hero-actions .cp-cta {
-    width:100%;
-    min-height:54px;
-  }
-  .commercial-home .cp-hero-actions .cp-cta--ghost { min-height:48px; }
-  .commercial-home .cp-hero-note { display:none; }
-  .commercial-home .cp-hero-note { font-size: 12px; }
-  .commercial-home .cp-booking-proof .cp-hero-flow { grid-template-columns: 1fr; gap: 18px; }
-  .commercial-home .cp-booking-proof .cp-hero-signals { grid-template-columns: repeat(3, 1fr); }
-  .commercial-home .cp-booking-proof .cp-hero-signals span { font-size: 10px; transform: none; padding: 10px 7px; line-height: 1.4; }
-  .cp-booking-proof .cp-hero-flow-line { display: none; }
-  .commercial-home .cp-booking-proof .cp-hero-request strong { font-size: 20px; line-height: 1.25; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .commercial-home .cp-nav, .commercial-home .cp-cta, .cp-menu span { transition: none; }
-  .cp-ticker-track { animation: none; }
-}
-</style>
-
-<style scoped>
-.ed-section { padding-top: 100px; padding-bottom: 100px; scroll-margin-top: 76px; }
-.ed-section h2 { max-width: 920px; margin: 20px 0 28px; font-size: clamp(36px, 4.8vw, 68px); line-height: 1.04; letter-spacing: -.045em; text-wrap: balance; white-space: pre-line; }
-.ed-section h3 { font-size: clamp(24px, 2.5vw, 34px); line-height: 1.16; letter-spacing: -.03em; }
-.ed-section p { color: var(--cp-muted); font-size: 17px; line-height: 1.65; }
-.ed-section .cp-kicker { color: var(--cp-lime); font-size: 10px; }
-.ed-section .ed-deck { color: var(--cp-paper); font-size: clamp(20px, 2vw, 26px); line-height: 1.5; }
-.ed-intro { max-width: 780px; }
-.ed-intro > p:last-child { max-width: 640px; }
-.ed-work { display: grid; grid-template-columns: .8fr 1.2fr; gap: 60px; align-items: center; margin-top: 54px; }
+.home-v2 :deep(:is(a, button, [tabindex='0']):focus-visible),
+.home-mobile-menu :is(a, button):focus-visible { outline: 2px solid var(--cue-accent); outline-offset: 5px; }
+.home-v2 section[tabindex='-1'] { scroll-margin-top: 100px; }
+.home-skip { position: fixed; top: 8px; left: 16px; z-index: 200; padding: 14px 18px; background: var(--cp-lime); color: var(--cue-accent-ink); transform: translateY(-160%); }
+.home-skip:focus { transform: none; }
+.home-header { position: fixed; inset: 0 0 auto; z-index: 40; border-bottom: 1px solid var(--cp-line); background: color-mix(in srgb, var(--cp-black) 94%, transparent); backdrop-filter: blur(16px); }
+.home-navigation { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 84px; }
+.home-brand { display: inline-flex; color: var(--cp-lime); flex-shrink: 0; }
+.home-brand :deep(.cue-brand) { width: 150px; }
+.home-nav-links, .home-nav-actions { display: flex; align-items: center; gap: 20px; }
+.home-nav-links a, .home-login { font-size: 12px; white-space: nowrap; }
+.home-nav-links a:hover, .home-login:hover { color: var(--cp-lime); }
+.home-nav-signup { font-size: 10px; }
+.home-menu-toggle { display: none; }
+.home-menu-toggle, .home-mobile-tools > button { width: 44px; height: 44px; padding: 10px; border: 1px solid var(--cue-border); border-radius: 50%; background: var(--cue-surface); color: var(--cue-text); cursor: pointer; }
+.home-menu-toggle svg, .home-mobile-tools svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+.home-mobile-menu { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; gap: 28px; padding: 24px; overflow-y: auto; background: var(--cue-bg); color: var(--cue-text); }
+.home-mobile-tools { display: flex; align-items: center; justify-content: space-between; }
+.home-mobile-menu nav { display: grid; }
+.home-mobile-menu nav a { display: flex; align-items: center; min-height: 64px; padding: 14px 8px; border-bottom: 1px solid var(--cue-border); color: var(--cue-text); text-decoration: none; font-size: 22px; font-weight: 700; }
+.home-mobile-menu nav .home-mobile-signup { justify-content: center; margin-top: 24px; border-radius: 999px; background: var(--cue-accent); color: var(--cue-accent-ink); font-size: 16px; }
+.home-hero { position: relative; isolation: isolate; min-height: min(880px, 100svh); display: grid; align-items: center; background: var(--cp-black); border-bottom: 1px solid var(--cp-lime); }
+.home-hero::before { position: absolute; inset: 0; z-index: -2; content: ''; background: var(--hero-image) 74% center / cover no-repeat; }
+.home-hero-overlay { position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, var(--cp-black), color-mix(in srgb, var(--cp-black) 90%, transparent) 30%, color-mix(in srgb, var(--cp-black) 20%, transparent) 72%), linear-gradient(0deg, var(--cp-black), transparent 40%); }
+.home-hero-content { min-width: 0; padding-block: 152px 62px; }
+.home-hero-signature { position: absolute; right: 0; bottom: 114px; max-width: 310px; margin: 0; color: var(--cp-paper); font-size: 14px; line-height: 1.65; text-align: right; }
+.home-hero h1 { max-width: 1100px; margin: 26px 0; font-size: clamp(64px, 7.1vw, 102px); line-height: .9; letter-spacing: -.065em; }
+.home-hero h1 em { display: block; color: var(--cp-lime); font-style: normal; }
+.home-lead { max-width: 640px; color: var(--cp-muted); font-size: clamp(17px, 1.6vw, 21px); line-height: 1.6; }
+.home-hero .home-lead { max-width: 530px; color: var(--cp-paper); }
+.home-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.home-actions .cp-cta--ghost { background: var(--cp-black); }
+.home-hero-note { color: var(--cp-muted); font-size: 13px; margin-top: 24px; }
+.home-section { padding-block: 88px; border-bottom: 1px solid var(--cp-line); }
+.home-section h2 { max-width: 850px; margin: 20px 0 24px; font-size: clamp(36px, 4.4vw, 64px); line-height: 1.04; letter-spacing: -.045em; text-wrap: balance; }
+.home-section-intro { max-width: 780px; }
+.home-mono { color: var(--cp-lime); font: 11px/1.5 ui-monospace, monospace; letter-spacing: .08em; }
+.home-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; margin-top: 40px; }
+.home-card { position: relative; display: flex; flex-direction: column; align-items: start; padding: 32px; border: 1px solid var(--cp-line); border-radius: 8px; background: var(--cp-panel); }
+.home-card h3 { margin: 24px 0 12px; font-size: 27px; line-height: 1.15; letter-spacing: -.03em; }
+.home-card p { color: var(--cp-muted); font-size: 16px; line-height: 1.65; margin: 0; }
+.home-card .cp-cta { margin-top: 28px; }
+.home-product { background: repeating-linear-gradient(90deg, transparent 0 119px, color-mix(in srgb, var(--cp-line) 20%, transparent) 120px 121px), var(--cp-panel); }
+.home-audience-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.home-audience-grid h3 a { color:inherit; text-decoration:none; }
+.home-audience-grid h3 { margin: 0; min-height: 106px; font-size: clamp(30px, 3.2vw, 44px); line-height: 1.12; max-width: 480px; }
+.home-audience-grid p { margin: 0; max-width: 440px; }
+.home-audience-grid .home-mono { align-self: start; }
+.home-audience-grid .cp-cta { align-self: end; margin: 0; justify-self: start; }
+.home-audience-note { max-width: 760px; margin-top: 24px; color: var(--cp-muted); font-size: 14px; line-height: 1.6; }
+.home-extensions { padding-block: 80px; }
+.home-extensions h2 { font-size: clamp(36px, 4.4vw, 64px); }
+.home-closing { position: relative; overflow: hidden; padding-block: 100px; background: var(--cp-lime); color: var(--cue-accent-ink); }
+.home-closing h2 { position: relative; max-width: 980px; font-size: clamp(46px, 7vw, 100px); line-height: .92; letter-spacing: -.055em; margin: 28px 0; }
+.home-closing p:not(.cp-kicker) { position: relative; max-width: 620px; color: inherit; font-size: 18px; line-height: 1.6; margin-bottom: 30px; }
+.home-footer { display: grid; gap: 28px; padding-block: 44px; color: var(--cp-muted); font-size: 12px; }
+.home-footer p { line-height: 1.6; }
+.home-footer nav { display: flex; flex-wrap: wrap; gap: 12px 24px; }
+.home-footer nav a, .home-footer nav button { display: inline-flex; align-items: center; min-height: 44px; }
+.home-footer button { padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+.home-demo-review, .home-demo-followup { min-height: 210px; color: var(--cp-paper); font-size: 16px; line-height: 1.6; }
+.home-demo-review ul { padding-left: 20px; }
+.home-demo-review li { padding-block: 6px; }
+.home-demo-followup p { padding: 18px; border: 1px solid var(--cp-line); border-left: 2px solid var(--cp-lime); border-radius: 6px; }
+.ed-work { display: grid; grid-template-columns: .8fr 1.2fr; gap: 60px; align-items: start; margin-top: 54px; }
 .ed-steps { display: grid; }
-.ed-steps button { display: grid; grid-template-columns: 32px 1fr 10px; gap: 18px; padding: 26px 0; border: 0; border-top: 1px solid var(--cp-line); background: none; color: var(--cp-muted); text-align: left; cursor: pointer; }
+.ed-steps button { display: grid; grid-template-columns: 32px 1fr 10px; gap: 18px; padding: 24px 16px; border: 0; border-top: 1px solid var(--cp-line); border-left: 2px solid transparent; background: none; color: var(--cp-muted); text-align: left; cursor: pointer; }
 .ed-steps button:last-child { border-bottom: 1px solid var(--cp-line); }
-.ed-steps button.selected { color: var(--cp-paper); }
+.ed-steps button.selected { border-left-color: var(--cp-lime); background: linear-gradient(90deg, color-mix(in srgb, var(--cp-lime) 9%, transparent), transparent); color: var(--cp-paper); }
 .ed-index { font: 12px ui-monospace, monospace; padding-top: 5px; }
 .selected .ed-index { color: var(--cp-lime); }
 .ed-steps strong { display: block; font-size: 24px; font-weight: 700; letter-spacing: -.025em; }
 .ed-steps small { display: block; margin-top: 10px; line-height: 1.6; font-size: 14px; }
 .ed-steps .cp-arrow { margin-top: 10px; opacity: 0; }
 .ed-steps .selected .cp-arrow { opacity: 1; color: var(--cp-lime); }
-.ed-console { border: 1px solid var(--cp-line); border-radius: 18px; background: var(--cp-panel); box-shadow: 0 28px 70px var(--cue-shadow); overflow: hidden; }
+.ed-console { border: 1px solid var(--cp-line); border-top: 3px solid var(--cp-lime); border-radius: 8px; background: var(--cp-panel); box-shadow: 0 28px 70px var(--cue-shadow), 0 0 60px color-mix(in srgb, var(--cp-lime) 5%, transparent); overflow: hidden; }
 .ed-console-bar { display: flex; gap: 10px; align-items: center; padding: 18px 24px; border-bottom: 1px solid var(--cp-line); font: 10px ui-monospace, monospace; letter-spacing: .09em; }
 .ed-indicator { width: 7px; height: 7px; border-radius: 50%; background: var(--cp-lime); }
 .ed-demo-tag { margin-left: auto; color: var(--cp-muted); }
 .ed-console-body { padding: 26px; min-height: 395px; }
-.ed-console-heading { display: flex; justify-content: space-between; gap: 15px; font-size: 12px; color: var(--cp-muted); }
+.ed-console-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 15px; font-size: 12px; color: var(--cp-muted); }
 .ed-status { color: var(--cp-lime); text-align: right; }
-.ed-console h3 { margin: 24px 0; font-size: 28px; }
+.ed-console h3 { margin: 24px 0; font-size: 28px; line-height: 1.2; letter-spacing: -.03em; }
 .ed-request-data { display: flex; gap: 24px; align-items: flex-start; min-height: 210px; }
 .ed-date { display: grid; place-items: center; width: 94px; min-height: 108px; background: var(--cp-lime); color: var(--cue-accent-ink); border-radius: 10px; padding: 12px; flex-shrink: 0; }
 .ed-date b { font-size: 44px; letter-spacing: -.05em; }
@@ -1319,979 +315,99 @@ useHead(() => ({ htmlAttrs: { lang: locale.value }, title: baseCopy.value.seo.ti
 .ed-request-data dl div { display: flex; justify-content: space-between; gap: 15px; border-bottom: 1px solid var(--cp-line); padding: 13px 0; font-size: 12px; }
 .ed-request-data dt { color: var(--cp-muted); }
 .ed-request-data dd { margin: 0; text-align: right; }
-.ed-next { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 16px 0 0; border: 0; border-top: 1px solid var(--cp-line); background: none; color: var(--cp-lime); cursor: pointer; font-size: 13px; }
-.ed-console .ed-demo-foot { padding: 14px 26px; margin: 0; font-size: 10px; background: var(--cp-black); }
+.ed-next { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 16px 0 0; border: 0; border-top: 1px solid var(--cp-line); background: none; color: var(--cp-lime); cursor: pointer; font-size: 13px; min-height: 48px; }
+.ed-console .ed-demo-foot { padding: 18px 26px; margin: 0; font-size: 12px; line-height: 1.5; background: var(--cp-black); color: var(--cp-muted); }
 .ed-calendar { min-height: 210px; }
 .ed-calendar .ed-mono { font-size: 10px; margin: 0 0 10px; }
 .ed-days { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
-.ed-days span { display: grid; place-items: center; min-height: 24px; font: 11px ui-monospace,monospace; color: var(--cp-muted); }
+.ed-days span { display: grid; place-items: center; min-height: 28px; font: 11px ui-monospace,monospace; color: var(--cp-muted); }
 .ed-days .chosen { background: var(--cp-lime); color: var(--cue-accent-ink); border-radius: 5px; }
 .ed-calendar .ed-available { color: var(--cp-lime); font-size: 11px; }
-.ed-decision { min-height: 210px; }
-.ed-decision > p { font-size: 14px; }
-.ed-option { padding: 10px 0; display: flex; justify-content: space-between; border-bottom: 1px solid var(--cp-line); font-size: 13px; }
-.ed-option .cp-arrow { width: 6px; height: 6px; }
-.ed-decision small { display: block; color: var(--cp-muted); font-size: 10px; line-height: 1.4; margin: 12px 0; }
-.ed-share { border-block: 1px solid var(--cp-line); background: var(--cp-panel); }
-.ed-share h2 { max-width: 810px; }
-.ed-share-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 90px; align-items: center; margin-top: 50px; }
-.ed-tabs { display: flex; border-bottom: 1px solid var(--cp-line); gap: 22px; margin-bottom: 32px; }
-.ed-tabs button { min-height: 44px; padding: 0 0 12px; border: 0; border-bottom: 2px solid transparent; color: var(--cp-muted); background: none; font-size: 13px; cursor: pointer; }
-.ed-tabs button.selected { color: var(--cp-lime); border-bottom-color: var(--cp-lime); }
-.ed-share-layout h3 { margin: 0 0 18px; }
-.ed-share-layout .ed-privacy { display: flex; align-items: flex-start; gap: 10px; padding: 18px 0; font-size: 13px; }
-.ed-privacy svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 3px; fill: none; stroke: var(--cp-lime); stroke-width: 1.5; }
-.ed-share-preview { min-height: 420px; padding: 26px; background: var(--cp-black); border: 1px solid var(--cp-line); border-radius: 16px; }
-.ed-mono { color: var(--cp-muted); font: 10px ui-monospace, monospace; letter-spacing: .1em; }
-.ed-profile-cover { margin-top: 25px; height: 120px; padding: 20px; background: linear-gradient(130deg, color-mix(in srgb,var(--cp-lime) 15%,var(--cp-black)),var(--cp-black)); border-bottom: 1px solid var(--cp-lime); overflow: hidden; }
-.ed-profile-cover span { color: var(--cp-lime); font: 10px ui-monospace,monospace; letter-spacing: .14em; }
-.ed-profile-cover svg { width: 100%; height: 65px; fill: none; stroke: var(--cp-lime); stroke-width: 1; margin-top: 12px; }
-.ed-share-preview h4 { font-size: 28px; margin: 24px 0 8px; letter-spacing: -.025em; }
-.ed-share-preview p { margin-top: 0; font-size: 14px; }
-.ed-form-button { display: flex; align-items: center; justify-content: space-between; padding: 16px; margin-top: 24px; background: var(--cp-lime); color: var(--cue-accent-ink); border-radius: 6px; font-size: 13px; }
-.ed-browser-bar { display: flex; align-items: center; gap: 5px; border-bottom: 1px solid var(--cp-line); padding: 24px 0 14px; }
-.ed-browser-bar i { width: 5px; height: 5px; border-radius: 50%; background: var(--cp-muted); }
-.ed-browser-bar span { font: 9px ui-monospace,monospace; margin-left: 12px; color: var(--cp-muted); }
-.ed-field { border: 1px solid var(--cp-line); border-radius: 5px; padding: 13px; margin-top: 10px; color: var(--cp-muted); font-size: 12px; }
-.ed-code { margin-top: 16px; color: var(--cp-lime); font: 12px ui-monospace,monospace; }
-.ed-sticker { text-align: center; padding: 26px 10px; }
-.ed-sticker svg { display: block; width: 110px; margin: 24px auto; stroke: var(--cp-lime); fill: none; stroke-width: 3; }
-.ed-sticker small { color: var(--cp-muted); font-size: 10px; }
-.ed-control-intro { display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 80px; max-width: 1000px; }\n.ed-control-intro > p { margin-top: 0; }
-.ed-responsibility { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-top: 40px; }
-.ed-responsibility > div { border-top: 2px solid var(--cp-line); padding-top: 22px; }
-.ed-responsibility > div:last-child { border-color: var(--cp-lime); }
-.ed-responsibility h3 { font-size: 18px; }
-.ed-responsibility p { padding: 13px 0; margin: 0; border-bottom: 1px solid var(--cp-line); font-size: 15px; }
-.ed-identity { display: grid; grid-template-columns: 1.1fr .9fr; gap: 100px; align-items: center; border-top: 1px solid var(--cp-line); }
-.ed-identity-poster { position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 45px; min-height: 350px; padding: 32px; border: 1px solid var(--cp-line); border-left: 3px solid var(--cp-red); overflow: hidden; }
-.ed-identity-poster strong { max-width: 290px; font-size: clamp(28px,3vw,44px); line-height: 1.05; letter-spacing: -.03em; white-space: pre-line; position: relative; z-index: 1; }
-.ed-identity-poster > span:not(.ed-poster-corner) { font-size: 10px; color: var(--cp-muted); }
-.ed-poster-corner { position: absolute; right: -12px; bottom: 35px; font-size: 130px; font-weight: 900; color: color-mix(in srgb,var(--cp-lime) 9%,transparent); }
-.ed-roadmap { border-top: 1px solid var(--cp-line); }
-.ed-roadmap-intro { max-width: 850px; }
-.ed-roadmap-intro .ed-deck { max-width: 680px; }
-.ed-roadmap-grid { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 18px; margin-top: 50px; }
-.ed-roadmap-column { padding: 26px; border: 1px solid var(--cp-line); border-radius: 14px; background: var(--cp-panel); }
-.ed-roadmap-column header { display: flex; align-items: center; gap: 10px; min-height: 28px; color: var(--cp-paper); font: 700 10px ui-monospace,monospace; letter-spacing: .12em; }
-.ed-roadmap-status { width: 8px; height: 8px; border-radius: 50%; background: var(--cp-muted); }
-.ed-roadmap-column--available { border-top-color: var(--cp-lime); }
-.ed-roadmap-column--available .ed-roadmap-status { background: var(--cp-lime); box-shadow: 0 0 14px color-mix(in srgb,var(--cp-lime) 55%,transparent); }
-.ed-roadmap-column--evolving .ed-roadmap-status { background: var(--cp-red); }
-.ed-roadmap-column ul { list-style: none; padding: 0; margin: 22px 0 0; }
-.ed-roadmap-column li { position: relative; padding: 14px 0 14px 20px; border-top: 1px solid var(--cp-line); color: var(--cp-muted); font-size: 14px; line-height: 1.45; }
-.ed-roadmap-column li::before { position: absolute; top: 20px; left: 1px; width: 7px; height: 7px; border: 1px solid currentColor; border-radius: 50%; content: ''; }
-.ed-roadmap-column--available li::before { border-color: var(--cp-lime); background: var(--cp-lime); }
-.ed-roadmap-closing { max-width: 900px; margin: 50px 0 0; padding-top: 30px; border-top: 1px solid var(--cp-line); color: var(--cp-paper)!important; font-size: clamp(22px,2.4vw,32px)!important; line-height: 1.35!important; }
-.ed-closing { padding: 90px 0; background: color-mix(in srgb,var(--cp-lime) 5%,var(--cp-black)); border-top: 1px solid var(--cp-line); }
-.ed-closing p { max-width: 600px; color: var(--cp-muted); font-size: clamp(20px,2.5vw,32px); }
-.ed-closing h2 { margin: 18px 0 35px; font-size: clamp(52px,8vw,110px); line-height: 1; letter-spacing: -.055em; }
-button:focus-visible, a:focus-visible { outline: 2px solid var(--cp-lime); outline-offset: 5px; }
-@media (max-width: 850px) {
- .ed-section { padding-top: 60px; padding-bottom: 60px; }
- .ed-work,.ed-share-layout,.ed-identity { grid-template-columns: 1fr; gap: 30px; }
- .ed-control-intro,.ed-responsibility { gap: 30px; }
- .ed-work { margin-top: 30px; }
- .ed-share-layout { margin-top: 30px; }
- .ed-identity-poster { min-height: 280px; }
- .ed-roadmap-grid { grid-template-columns: 1fr; margin-top: 30px; }
- .ed-roadmap-closing { margin-top: 30px; }
- .ed-closing { padding: 60px 0; }
+.ed-console, .ed-work > * { min-width: 0; }
+.ed-demo-foot strong { color: var(--cp-paper); font-weight: 500; }
+.ed-demo-foot p { margin: 6px 0 0; }
+/* Editorial rhythm and the existing technical/neon visual language. */
+.home-hero-layout { position: relative; display: grid; grid-template-columns: 1fr; }
+.home-hero-route { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; margin: 0; padding: 24px 0 28px; border-top: 1px solid color-mix(in srgb, var(--cp-lime) 45%, var(--cp-line)); list-style: none; }
+.home-hero-route li { display: flex; align-items: center; gap: 14px; color: var(--cp-paper); font-size: 13px; }
+.home-hero-route span { color: var(--cp-lime); font: 11px ui-monospace, monospace; }
+.home-feature-symbol { width: 100%; margin: 26px 0 10px; }
+.home-feature-symbol svg { width: 120px; height: 90px; fill: none; stroke: var(--cp-lime); stroke-width: 1.5; }
+.home-feature-card:first-child { background: var(--cp-lime); border-color: var(--cp-lime); color: var(--cue-accent-ink); }
+.home-feature-card:first-child :is(p, .home-mono) { color: inherit; }
+.home-feature-card:first-child svg { stroke: currentColor; }
+.home-feature-card h3 { max-width: 310px; }
+.home-feature-card:nth-child(2) { margin-top: 36px; }
+.home-feature-card:nth-child(3) { margin-top: 72px; }
+.home-audience-grid .home-card { display: grid; grid-template-rows: 18px 106px 1fr 48px; gap: 24px; min-height: 370px; padding: 32px; border-top: 2px solid var(--cp-line); }
+.home-audience-grid .home-card:first-child { border-top: 2px solid var(--cp-lime); background: radial-gradient(ellipse at 90% 0, color-mix(in srgb, var(--cp-lime) 12%, transparent), transparent 60%), var(--cp-panel); }
+.home-audience-grid .home-card:last-child { border-top: 2px solid var(--cp-muted); }
+.home-closing::before { content: ''; position: absolute; width: 520px; height: 520px; right: -200px; top: -130px; border: 1px solid currentColor; border-radius: 50%; box-shadow: 0 0 0 40px color-mix(in srgb, var(--cue-accent-ink) 6%, transparent), 0 0 0 80px color-mix(in srgb, var(--cue-accent-ink) 5%, transparent); opacity: .4; }
+.home-closing .cp-kicker { position: relative; color: inherit; }
+.home-closing .cp-cta { position: relative; background: var(--cue-accent-ink); color: var(--cp-lime) !important; border-color: var(--cue-accent-ink); }
+html[data-theme='light'] .home-v2 .home-feature-card:first-child .home-mono,
+html[data-theme='light'] .home-v2 .home-closing .cp-kicker { color: var(--cue-accent-ink); }
+html[data-theme='light'] .home-hero-route span { color: color-mix(in srgb, var(--cp-lime) 85%, var(--cp-paper)); }
+@media (max-width: 1100px) {
+  .home-nav-links, .home-desktop-preferences, .home-login { display: none; }
+  .home-menu-toggle { display: inline-flex; }
+  .home-nav-actions { gap: 12px; }
+  .home-hero h1 { font-size: clamp(60px, 7.4vw, 82px); }
+  .home-hero-signature { bottom: 104px; max-width: 260px; font-size: 12px; }
+  .ed-work { gap: 28px; }
 }
-@media (max-width: 520px) {
- .ed-section h2 { font-size: 37px; }
- .ed-section p { font-size: 15px; }
- .ed-section .ed-deck { font-size: 20px; }
- .ed-steps button { gap: 12px; padding: 20px 0; }
- .ed-steps strong { font-size: 22px; }
- .ed-console-body { padding: 20px; }
- .ed-console-heading { font-size: 10px; }
- .ed-console h3 { font-size: 24px; }
- .ed-request-data { gap: 14px; }
- .ed-date { width: 68px; }
- .ed-request-data dl div { display: block; padding: 8px 0; }
- .ed-request-data dd { text-align: left; margin-top: 5px; }
- .ed-console .ed-demo-foot { padding: 14px 20px; }
- .ed-share-preview { padding: 20px; }
- .ed-control-intro,.ed-responsibility { grid-template-columns: 1fr; gap: 20px; }
- .ed-control-intro > p { margin-top: 0; }
- .ed-tabs { gap: 22px; }
-}
-</style>
-<style scoped>
-.ed-skip { position:fixed; top:8px; left:12px; z-index:200; padding:14px 20px; background:var(--cue-accent); color:var(--cue-accent-ink); transform:translateY(-160%); }
-.ed-skip:focus { transform:none; }
-.ed-playback { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-top:32px; }
-.ed-playback button { min-height:44px; padding:10px 18px; border:1px solid var(--cue-border); border-radius:6px; background:var(--cue-bg); color:var(--cue-text); cursor:pointer; font-size:14px; }
-.ed-playback button:disabled { opacity:.55; cursor:default; }
-.ed-playback > span { color:var(--cp-muted); font-size:13px; }
-.ed-slide-badges { display:flex; align-items:center; gap:2px; }
-.ed-slide-badges button { display:grid; place-items:center; width:44px; height:44px; padding:0; border:0; background:transparent; cursor:pointer; }
-.ed-slide-badges button span { width:10px; height:10px; border:1px solid var(--cp-muted); border-radius:50%; background:transparent; transition:background .2s,width .2s,border-color .2s; }
-.ed-slide-badges button.active span { width:22px; border-radius:10px; border-color:var(--cp-lime); background:var(--cp-lime); }
-.ed-playback-toggle { display:grid; place-items:center; width:44px; height:44px; padding:0!important; border-radius:50%!important; }
-.ed-playback-toggle svg { width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
-.ed-playback-toggle .ed-play-icon { fill:currentColor; stroke:none; }
-.ed-slide-badges button:focus-visible,.ed-playback-toggle:focus-visible { outline:2px solid var(--cp-lime); outline-offset:2px; }
-.cp-mobile-menu--portal { grid-template-rows:1fr auto; }
-.cp-mobile-menu--portal a:focus-visible { outline:2px solid var(--cue-accent); outline-offset:4px; }
-.commercial-home .cp-locale button,.commercial-home .cp-theme,.commercial-home .cp-menu { min-width:44px; min-height:44px; }
-.ed-next,.ed-tabs button { min-height:44px; }
-.ed-demo-foot,.ed-console .ed-demo-foot,.ed-demo-caption,.ed-mono { font-size:12px; }
-section:focus { outline:none; }
-@media(max-width:520px) {
- .commercial-home .cp-brand { min-width:85px; max-width:105px; }
- .commercial-home .cp-nav-actions { gap:3px; }
-}
-@media(prefers-reduced-motion:reduce) {
- *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
-}
-</style>
+@media (max-width: 800px) {
+  .home-navigation { min-height: 72px; gap: 12px; }
+  .home-brand :deep(.cue-brand) { width: 120px; }
+  .home-nav-signup { min-height: 44px; padding: 10px 14px; font-size: 10px; letter-spacing: .02em; }
+  .home-hero { min-height: 0; }
+  .home-hero-signature { position: static; max-width: 360px; padding-bottom: 24px; font-size: 12px; text-align: left; }
+  .home-hero-layout { grid-template-columns: 1fr; gap: 0; }
+  .home-hero-route { gap: 10px; padding-block: 20px; }
+  .home-hero-route li { flex-direction: column; align-items: start; gap: 8px; font-size: 11px; }
+  .home-hero::before { background-position: 68% center; }
+  .home-hero-overlay { background: linear-gradient(90deg, color-mix(in srgb, var(--cp-black) 94%, transparent), color-mix(in srgb, var(--cp-black) 65%, transparent)), linear-gradient(0deg, var(--cp-black), transparent); }
+  .home-hero-content { padding-block: 120px 20px; }
+  .home-hero h1 { font-size: clamp(36px, 9.7vw, 72px); margin-block: 22px; max-width: none; }
+  .home-hero .cp-eyebrow { max-width: 290px; font-size: 10px; line-height: 1.6; letter-spacing: .08em; }
+  .home-hero .cp-eyebrow::before { flex-shrink: 0; width: 16px; }
+  .home-lead { font-size: 17px; }
+  .home-actions { gap: 10px; }
+  .home-actions .cp-cta { min-height: 48px; font-size: 11px; }
+  .home-section { padding-block: 56px; }
+  .home-section h2 { font-size: clamp(34px, 8.6vw, 52px); }
+  .home-card-grid, .home-audience-grid { grid-template-columns: 1fr; margin-top: 28px; }
+  .home-card { padding: 24px; }
+  .home-feature-card:nth-child(n) { margin-top: 0; }
+  .home-feature-symbol { margin-block: 18px 0; }
+  .home-audience-grid .home-card { min-height: 390px; padding: 24px; grid-template-rows: 18px 90px 1fr 48px; gap: 20px; }
+  .home-audience-grid h3 { min-height: 90px; font-size: 32px; }
+  .ed-work { grid-template-columns: 1fr; margin-top: 28px; gap: 28px; }
+  .ed-steps button { padding-block: 18px; gap: 12px; }
+  .ed-steps strong { font-size: 22px; }
+  .ed-steps small { margin-top: 6px; }
+  .ed-console-body { padding: 20px; min-height: 390px; }
+  .ed-request-data { gap: 14px; }
+  .ed-request-data dl div { display: block; padding-block: 8px; }
+  .ed-request-data dd { margin-top: 4px; text-align: left; }
+  .ed-date { width: 78px; }
+  .ed-console h3 { font-size: 24px; }
+  .home-closing { padding-block: 64px; }
 
-<style scoped>
-:global(html[data-theme='light'] .commercial-home) { --cp-lime:#5526cc; }
-@media (max-width:520px) {
- .commercial-home .cp-nav-inner { gap:8px; }
- .commercial-home .cp-brand { min-width:80px; max-width:90px; }
- .ed-section h2,.ed-closing h2,.cp-hero h1 { overflow-wrap:anywhere; }
- .ed-console-heading { flex-wrap:wrap; }
- .ed-console,.ed-share-preview,.ed-work,.ed-share-layout > div { min-width:0; }
 }
-</style>
-
-
-<style scoped>
-/* Mobile art direction: keep the desktop composition intact. */
-@media (max-width: 850px) {
-  .commercial-home .cp-hero {
-    min-height: 0 !important;
-    overflow: hidden;
-    isolation: isolate;
-    border-bottom: 1px solid var(--cp-line);
-  }
-  .commercial-home .cp-hero::before {
-    display: block;
-    background-image: var(--hero-image);
-    background-position: 69% bottom;
-    background-size: auto 58%;
-    background-repeat: no-repeat;
-    opacity: .72;
-    transform: scale(1.03);
-    transform-origin: right bottom;
-  }
-  .commercial-home .cp-hero-overlay {
-    background:
-      linear-gradient(180deg,
-        var(--cp-black) 0%,
-        color-mix(in srgb, var(--cp-black) 96%, transparent) 38%,
-        color-mix(in srgb, var(--cp-black) 66%, transparent) 68%,
-        color-mix(in srgb, var(--cp-black) 88%, transparent) 100%),
-      linear-gradient(90deg, var(--cp-black) 0%, color-mix(in srgb, var(--cp-black) 76%, transparent) 58%, transparent 100%);
-  }
-  .commercial-home .cp-hero-content {
-    min-height: 0 !important;
-    padding: 94px 0 30px !important;
-  }
-  .commercial-home .cp-hero h1 {
-    margin: 20px 0 16px;
-  }
-  .commercial-home .cp-hero-lead {
-    max-width: 520px;
-    margin-bottom: 0;
-  }
-  .commercial-home .cp-hero-actions {
-    margin-top: 22px;
-    gap: 10px;
-  }
-  .commercial-home .cp-hero-note {
-    max-width: 520px;
-    margin-top: 20px;
-    margin-bottom: 0;
-  }
-
-  #system.ed-section {
-    padding-top: 54px;
-  }
-  #system .ed-intro {
-    max-width: 680px;
-  }
-  #system .ed-carousel {
-    margin-top: 26px;
-  }
-  #system .ed-playback {
-    justify-content: space-between;
-    margin-top: 0;
-    margin-bottom: 12px;
-  }
-  #system .ed-work {
-    display: grid;
-    gap: 14px;
-    margin-top: 0;
-  }
-  #system .ed-steps button {
-    display: none;
-  }
-  #system .ed-steps button.selected {
-    display: grid;
-    padding: 18px;
-    border: 1px solid var(--cp-line);
-    border-top-color: var(--cp-lime);
-    border-radius: 12px;
-    background: color-mix(in srgb, var(--cp-panel) 88%, transparent);
-  }
-  #system .ed-steps small {
-    max-width: 560px;
-    margin-top: 7px;
-  }
-  #system .ed-console {
-    margin-top: 0;
-  }
-  #system .ed-console-body {
-    min-height: 310px;
-  }
-  #system .ed-request-data,
-  #system .ed-calendar,
-  #system .ed-decision {
-    min-height: 170px;
-  }
-}
-
-@media (max-width: 520px) {
-  .commercial-home .cp-hero::before {
-    background-position: 67% bottom;
-    background-size: auto 52%;
-    opacity: .68;
-  }
-  .commercial-home .cp-hero-overlay {
-    background:
-      linear-gradient(180deg,
-        var(--cp-black) 0%,
-        color-mix(in srgb, var(--cp-black) 97%, transparent) 40%,
-        color-mix(in srgb, var(--cp-black) 63%, transparent) 72%,
-        color-mix(in srgb, var(--cp-black) 90%, transparent) 100%),
-      linear-gradient(90deg, var(--cp-black) 0%, color-mix(in srgb, var(--cp-black) 72%, transparent) 72%, transparent 100%);
-  }
-  .commercial-home .cp-hero-content {
-    padding: 88px 0 24px !important;
-  }
-  .commercial-home .cp-hero h1 {
-    font-size: clamp(42px, 11vw, 54px);
-    line-height: .99;
-  }
-  .cp-hero-accent {
-    margin-bottom: 16px;
-    font-size: 24px;
-  }
-  .commercial-home .cp-hero-actions {
-    margin-top: 20px;
-  }
-  .commercial-home .cp-hero-note {
-    max-width: 330px;
-    margin-top: 18px;
-    padding-right: 12px;
-  }
-  #system.ed-section {
-    padding-top: 48px;
-  }
-  #system .ed-intro > p:last-child {
-    margin-bottom: 0;
-  }
-  #system .ed-carousel {
-    margin-top: 22px;
-  }
-  #system .ed-steps button.selected {
-    grid-template-columns: 28px 1fr 9px;
-    gap: 10px;
-    padding: 16px;
-  }
-  #system .ed-steps strong {
-    font-size: 21px;
-  }
-  #system .ed-steps small {
-    font-size: 13px;
-    line-height: 1.5;
-  }
-  #system .ed-console-bar {
-    padding: 15px 18px;
-  }
-  #system .ed-console-body {
-    min-height: 280px;
-    padding: 18px;
-  }
-  #system .ed-console h3 {
-    margin: 18px 0;
-  }
-  #system .ed-request-data,
-  #system .ed-calendar,
-  #system .ed-decision {
-    min-height: 150px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) and (max-width: 850px) {
-  .commercial-home .cp-hero::before {
-    transform: none;
-  }
-}
-</style>
-
-
-<style scoped>
-/* Stronger mobile cover composition and working menu close control. */
-@media (max-width: 850px) {
-  .commercial-home .cp-hero {
-    min-height: 100svh !important;
-  }
-  .commercial-home .cp-hero::before {
-    inset: 0;
-    background-image: var(--hero-image);
-    background-position: 68% center;
-    background-size: cover;
-    opacity: 1;
-    transform: none;
-  }
-  .commercial-home .cp-hero-overlay {
-    background:
-      linear-gradient(180deg,
-        color-mix(in srgb, var(--cp-black) 95%, transparent) 0%,
-        color-mix(in srgb, var(--cp-black) 88%, transparent) 30%,
-        color-mix(in srgb, var(--cp-black) 62%, transparent) 63%,
-        color-mix(in srgb, var(--cp-black) 78%, transparent) 100%),
-      linear-gradient(90deg,
-        color-mix(in srgb, var(--cp-black) 88%, transparent) 0%,
-        color-mix(in srgb, var(--cp-black) 48%, transparent) 72%,
-        transparent 100%);
-  }
-  .commercial-home .cp-hero-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: 100svh !important;
-    padding: 104px 0 34px !important;
-  }
-  .commercial-home .cp-hero-actions {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: min(100%, 520px);
-  }
-  .commercial-home .cp-hero-actions .cp-cta {
-    width: 100%;
-    padding-inline: 12px;
-    font-size: clamp(10px, 2.8vw, 12px);
-    white-space: nowrap;
-  }
-  .commercial-home .cp-hero-actions .cp-cta--ghost {
-    border-color: color-mix(in srgb, var(--cp-paper) 34%, transparent);
-    background: color-mix(in srgb, var(--cp-black) 66%, transparent);
-    backdrop-filter: blur(8px);
-  }
-  .commercial-home .cp-hero-note {
-    color: color-mix(in srgb, var(--cp-paper) 76%, transparent);
-  }
-}
-
-@media (max-width: 520px) {
-  .commercial-home .cp-hero {
-    min-height: 100svh !important;
-  }
-  .commercial-home .cp-hero::before {
-    background-position: 66% center;
-    background-size: cover;
-    opacity: 1;
-  }
-  .commercial-home .cp-hero-overlay {
-    background:
-      linear-gradient(180deg,
-        color-mix(in srgb, var(--cp-black) 97%, transparent) 0%,
-        color-mix(in srgb, var(--cp-black) 90%, transparent) 32%,
-        color-mix(in srgb, var(--cp-black) 58%, transparent) 66%,
-        color-mix(in srgb, var(--cp-black) 82%, transparent) 100%),
-      linear-gradient(90deg,
-        color-mix(in srgb, var(--cp-black) 90%, transparent) 0%,
-        color-mix(in srgb, var(--cp-black) 54%, transparent) 78%,
-        transparent 100%);
-  }
-  .commercial-home .cp-hero-content {
-    justify-content: flex-start;
-    min-height: 100svh !important;
-    padding: 92px 0 26px !important;
-  }
-  .commercial-home .cp-hero h1 {
-    max-width: 355px;
-    margin-top: 18px;
-    font-size: clamp(40px, 10.6vw, 50px);
-  }
-  .cp-hero-accent {
-    max-width: 300px;
-    font-size: 23px;
-  }
-  .commercial-home .cp-hero-lead {
-    max-width: 350px;
-    font-size: 15px;
-    line-height: 1.48;
-  }
-  .commercial-home .cp-hero-actions {
-    gap: 11px;
-    margin-top: 18px;
-  }
-  .commercial-home .cp-hero-actions .cp-cta {
-    min-height: 54px;
-  }
-  .commercial-home .cp-hero-note {
-    max-width: 315px;
-    margin-top: 18px;
-    padding: 12px 14px;
-    border-left: 2px solid var(--cp-red);
-    background: color-mix(in srgb, var(--cp-black) 64%, transparent);
-    backdrop-filter: blur(7px);
-  }
-  .commercial-home .cp-hero-note .cp-live-dot {
-    display: none;
-  }
-}
-
-@media (max-width: 340px) {
-  .commercial-home .cp-hero-actions {
-    grid-template-columns: 1fr;
-  }
-  .commercial-home .cp-hero-actions .cp-cta {
-    font-size: 11px;
-  }
-}
-
-@media (max-width: 380px), (max-height: 720px) and (max-width: 520px) {
-  .commercial-home .cp-hero {
-    min-height: auto !important;
-  }
-  .commercial-home .cp-hero-content {
-    min-height: auto !important;
-    padding-bottom: 24px !important;
-  }
-}
-</style>
-
-
-<style scoped>
-/* Product circuit, Passport and commercial plans, aligned with the V1 launch model. */
-.ed-circuit {
-  border-top: 1px solid var(--cp-line);
-}
-.ed-circuit-intro {
-  max-width: 830px;
-}
-.ed-circuit-flow {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0;
-  margin: 54px 0 0;
-  padding: 0;
-  list-style: none;
-}
-.ed-circuit-flow::before {
-  position: absolute;
-  top: 26px;
-  left: 4%;
-  right: 4%;
-  height: 1px;
-  background: linear-gradient(90deg, var(--cp-red), var(--cp-lime));
-  content: '';
-}
-.ed-circuit-flow li {
-  position: relative;
-  min-width: 0;
-  padding: 0 12px;
-}
-.ed-circuit-index {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  width: 52px;
-  height: 52px;
-  margin-bottom: 22px;
-  border: 1px solid var(--cp-line);
-  border-radius: 50%;
-  background: var(--cp-black);
-  color: var(--cp-muted);
-  font: 11px ui-monospace, monospace;
-}
-.ed-circuit-flow li:first-child .ed-circuit-index {
-  border-color: var(--cp-red);
-}
-.ed-circuit-flow li:last-child .ed-circuit-index {
-  border-color: var(--cp-lime);
-  background: var(--cp-lime);
-  color: var(--cue-accent-ink);
-}
-.ed-circuit-flow strong {
-  display: block;
-  min-height: 44px;
-  color: var(--cp-paper);
-  font-size: 16px;
-  line-height: 1.25;
-}
-.ed-circuit-flow p {
-  margin: 8px 0 0;
-  font-size: 12px;
-  line-height: 1.5;
-}
-.ed-circuit-closing {
-  max-width: 900px;
-  margin: 48px 0 0;
-  padding: 28px 0 0;
-  border-top: 1px solid var(--cp-line);
-  color: var(--cp-paper) !important;
-  font-size: clamp(21px, 2.2vw, 30px) !important;
-  line-height: 1.35 !important;
-}
-
-.ed-passport {
-  display: grid;
-  grid-template-columns: 1.05fr .95fr;
-  gap: 90px;
-  align-items: center;
-  border-top: 1px solid var(--cp-line);
-}
-.ed-passport-copy {
-  min-width: 0;
-}
-.ed-passport-features {
-  margin-top: 32px;
-  border-top: 1px solid var(--cp-line);
-}
-.ed-passport-features article {
-  display: grid;
-  grid-template-columns: 34px 1fr;
-  gap: 16px;
-  padding: 18px 0;
-  border-bottom: 1px solid var(--cp-line);
-}
-.ed-passport-features article > span {
-  padding-top: 4px;
-  color: var(--cp-lime);
-  font: 11px ui-monospace, monospace;
-}
-.ed-passport-features h3 {
-  margin: 0 0 5px;
-  font-size: 18px;
-}
-.ed-passport-features p {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.5;
-}
-.ed-passport-note {
-  margin: 24px 0 0;
-  padding-left: 16px;
-  border-left: 2px solid var(--cp-lime);
-  font-size: 13px !important;
-}
-.ed-passport-visual {
-  position: relative;
-  min-height: 460px;
-  overflow: hidden;
-  border: 1px solid var(--cp-line);
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at 58% 46%, color-mix(in srgb, var(--cp-lime) 12%, transparent), transparent 33%),
-    linear-gradient(145deg, var(--cp-panel), var(--cp-black));
-  box-shadow: 0 28px 70px var(--cue-shadow);
-}
-.ed-passport-visual > .ed-mono {
-  position: absolute;
-  top: 24px;
-  left: 24px;
-}
-.ed-passport-orbit {
-  position: absolute;
-  top: 50%;
-  left: 54%;
-  border: 1px solid color-mix(in srgb, var(--cp-lime) 28%, transparent);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-}
-.ed-passport-orbit--one {
-  width: 210px;
-  height: 210px;
-}
-.ed-passport-orbit--two {
-  width: 340px;
-  height: 340px;
-  border-color: color-mix(in srgb, var(--cp-line) 80%, transparent);
-}
-.ed-passport-node {
-  position: absolute;
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  min-width: 52px;
-  min-height: 52px;
-  padding: 8px;
-  border: 1px solid var(--cp-line);
-  border-radius: 50%;
-  background: var(--cp-black);
-  color: var(--cp-muted);
-  font: normal 9px ui-monospace, monospace;
-}
-.ed-passport-node--world {
-  top: 50%;
-  left: 54%;
-  border-color: var(--cp-lime);
-  color: var(--cp-lime);
-  transform: translate(-50%, -50%);
-}
-.ed-passport-node--city {
-  top: 22%;
-  left: 54%;
-}
-.ed-passport-node--venue {
-  top: 52%;
-  right: 8%;
-}
-.ed-passport-node--event {
-  bottom: 12%;
-  left: 18%;
-  border-color: var(--cp-red);
-}
-.ed-passport-visual > strong {
-  position: absolute;
-  left: 24px;
-  right: 24px;
-  bottom: 24px;
-  padding-top: 16px;
-  border-top: 1px solid var(--cp-line);
-  color: var(--cp-paper);
-  font: 700 11px ui-monospace, monospace;
-  letter-spacing: .08em;
-}
-
-.ed-pricing {
-  border-top: 1px solid var(--cp-line);
-}
-.ed-pricing-intro {
-  max-width: 850px;
-}
-.ed-pricing-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
-  margin-top: 48px;
-}
-.ed-price-card {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  padding: 28px;
-  border: 1px solid var(--cp-line);
-  border-radius: 14px;
-  background: var(--cp-panel);
-}
-.ed-price-card--featured {
-  border-top: 3px solid var(--cp-lime);
-  box-shadow: 0 24px 65px color-mix(in srgb, var(--cp-lime) 8%, transparent);
-}
-.ed-price-card header {
-  display: grid;
-  gap: 14px;
-  padding-bottom: 22px;
-  border-bottom: 1px solid var(--cp-line);
-}
-.ed-price-card-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.ed-price-card-heading > span {
-  color: var(--cp-lime);
-  font: 700 11px ui-monospace, monospace;
-  letter-spacing: .12em;
-}
-.ed-price-card-heading > em {
-  padding: 6px 8px;
-  border: 1px solid var(--cp-line);
-  border-radius: 999px;
-  color: var(--cp-muted);
-  font: normal 9px ui-monospace, monospace;
-  letter-spacing: .1em;
-}
-.ed-founding-badge {
-  width: fit-content;
-  padding: 8px 10px;
-  border: 1px solid var(--cp-lime);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--cp-lime) 11%, transparent);
-  color: var(--cp-lime);
-  font: 700 10px ui-monospace, monospace;
-  letter-spacing: .1em;
-}
-.ed-price-value {
-  display: grid;
-  gap: 4px;
-}
-.ed-price-value del {
-  color: var(--cp-muted);
-  font-size: 13px;
-}
-.ed-price-value strong {
-  color: var(--cp-paper);
-  font-size: clamp(29px, 2.7vw, 40px);
-  letter-spacing: -.04em;
-}
-.ed-price-value small {
-  color: var(--cp-lime);
-  font: 700 12px ui-monospace, monospace;
-}
-.ed-founding-note {
-  margin: 4px 0 0;
-  padding-left: 12px;
-  border-left: 2px solid var(--cp-red);
-  color: var(--cp-paper);
-  font-size: 12px;
-  line-height: 1.5;
-}
-.ed-price-card > p {
-  min-height: 86px;
-  margin: 22px 0 0;
-  font-size: 14px;
-}
-.ed-price-card ul {
-  flex: 1;
-  margin: 0 0 28px;
-  padding: 0;
-  list-style: none;
-}
-.ed-price-card li {
-  position: relative;
-  padding: 12px 0 12px 20px;
-  border-top: 1px solid var(--cp-line);
-  color: var(--cp-muted);
-  font-size: 13px;
-  line-height: 1.45;
-}
-.ed-price-card li::before {
-  position: absolute;
-  top: 18px;
-  left: 1px;
-  width: 7px;
-  height: 7px;
-  border: 1px solid var(--cp-lime);
-  border-radius: 50%;
-  content: '';
-}
-.ed-price-card .cp-cta {
-  width: 100%;
-}
-
-@media (max-width: 1050px) and (min-width: 851px) {
-  .ed-circuit-flow {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 28px 0;
-  }
-  .ed-circuit-flow::before {
-    display: none;
-  }
-  .ed-passport {
-    gap: 50px;
-  }
-}
-
-@media (max-width: 850px) {
-  .ed-circuit-flow {
-    grid-template-columns: 1fr;
-    margin-top: 34px;
-    padding-left: 18px;
-  }
-  .ed-circuit-flow::before {
-    top: 16px;
-    bottom: 16px;
-    left: 25px;
-    width: 1px;
-    height: auto;
-    background: linear-gradient(180deg, var(--cp-red), var(--cp-lime));
-  }
-  .ed-circuit-flow li {
-    display: grid;
-    grid-template-columns: 52px 1fr;
-    gap: 18px;
-    padding: 0 0 22px;
-  }
-  .ed-circuit-index {
-    width: 16px;
-    height: 16px;
-    margin: 4px 0 0;
-    border-width: 2px;
-    font-size: 0;
-  }
-  .ed-circuit-flow strong {
-    min-height: 0;
-    font-size: 18px;
-  }
-  .ed-circuit-flow p {
-    margin-top: 5px;
-    font-size: 14px;
-  }
-  .ed-circuit-closing {
-    margin-top: 18px;
-  }
-  .ed-passport {
-    grid-template-columns: 1fr;
-    gap: 34px;
-  }
-  .ed-passport-visual {
-    min-height: 390px;
-  }
-  .ed-pricing-grid {
-    grid-template-columns: 1fr;
-    margin-top: 32px;
-  }
-  .ed-price-card > p {
-    min-height: 0;
-  }
-}
-
-@media (max-width: 520px) {
-  .ed-circuit-flow {
-    padding-left: 8px;
-  }
-  .ed-circuit-flow::before {
-    left: 15px;
-  }
-  .ed-circuit-flow li {
-    grid-template-columns: 34px 1fr;
-    gap: 12px;
-    padding-bottom: 18px;
-  }
-  .ed-passport-visual {
-    min-height: 340px;
-    border-radius: 14px;
-  }
-  .ed-passport-orbit--one {
-    width: 155px;
-    height: 155px;
-  }
-  .ed-passport-orbit--two {
-    width: 260px;
-    height: 260px;
-  }
-  .ed-passport-node {
-    min-width: 44px;
-    min-height: 44px;
-    font-size: 8px;
-  }
-  .ed-passport-node--venue {
-    right: 5%;
-  }
-  .ed-price-card {
-    padding: 22px;
-  }
-}
-</style>
-
-
-<style scoped>
-/* Preview-only mobile hero v3: tighter mobile composition. Kept last to win the legacy cascade. */
-@media (max-width: 520px) {
-  .commercial-home .cp-hero {
-    position: relative;
-    min-height: auto !important;
-    padding: 0 !important;
-    overflow: hidden;
-    background: var(--cp-black);
-    border-bottom: 1px solid var(--cp-line);
-  }
-
-  .commercial-home .cp-hero::before {
-    display: block !important;
-    inset: 0 0 auto 0 !important;
-    width: 100%;
-    height: 41svh;
-    min-height: 315px;
-    max-height: 405px;
-    background-image: var(--hero-image) !important;
-    background-position: 72% 34% !important;
-    background-size: cover !important;
-    background-repeat: no-repeat !important;
-    opacity: .92 !important;
-    transform: none !important;
-  }
-
-  .commercial-home .cp-hero-overlay {
-    inset: 0 !important;
-    background:
-      linear-gradient(180deg,
-        color-mix(in srgb, var(--cp-black) 8%, transparent) 0%,
-        color-mix(in srgb, var(--cp-black) 18%, transparent) 24%,
-        color-mix(in srgb, var(--cp-black) 60%, transparent) 39%,
-        var(--cp-black) 47%,
-        var(--cp-black) 100%) !important;
-  }
-
-  .commercial-home .cp-hero-content {
-    position: relative;
-    z-index: 2;
-    display: block !important;
-    min-height: 0 !important;
-    padding: calc(min(41svh, 405px) - 42px) 0 28px !important;
-  }
-
-  .commercial-home .cp-hero .cp-eyebrow {
-    margin: 0 0 12px;
-    font-size: 10px;
-    letter-spacing: .16em;
-  }
-
-  .commercial-home .cp-hero h1 {
-    max-width: 350px;
-    margin: 0 0 14px !important;
-    font-size: clamp(44px, 12vw, 56px) !important;
-    line-height: .94 !important;
-    letter-spacing: -.055em;
-  }
-
-  .commercial-home .cp-hero-lead {
-    max-width: 345px;
-    margin: 0 !important;
-    font-size: 15.5px !important;
-    line-height: 1.46 !important;
-  }
-
-  .commercial-home .cp-hero-actions {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr) !important;
-    gap: 10px !important;
-    width: 100% !important;
-    margin-top: 20px !important;
-  }
-
-  .commercial-home .cp-hero-actions .cp-cta {
-    width: 100% !important;
-    min-width: 0 !important;
-    min-height: 49px !important;
-    padding-inline: 12px !important;
-    font-size: 10.5px !important;
-    letter-spacing: .045em;
-    white-space: nowrap;
-  }
-
-  .commercial-home .cp-hero-actions .cp-cta--ghost {
-    min-height: 49px !important;
-    border-color: color-mix(in srgb, var(--cp-paper) 26%, transparent) !important;
-    background: color-mix(in srgb, var(--cp-black) 50%, transparent) !important;
-  }
-
-  .commercial-home .cp-hero-note {
-    display: none !important;
-  }
-}
-
 @media (max-width: 365px) {
-  .commercial-home .cp-hero-actions {
-    grid-template-columns: 1fr !important;
-  }
-  .commercial-home .cp-hero-actions .cp-cta {
-    font-size: 11px !important;
-  }
+  .home-v2 .cp-wrap { width: calc(100% - 32px); }
+  .home-brand :deep(.cue-brand) { width: 100px; }
+  .home-nav-actions { gap: 6px; }
+  .home-nav-signup { padding-inline: 10px; font-size: 9px; }
+  .home-hero { min-height: 0; }
+  .home-hero h1 { font-size: 33px; }
+  .home-actions { display: grid; justify-items: start; }
+  .home-actions .cp-cta { min-height: 44px; }
+  .ed-console-heading { font-size: 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-v2 .cp-cta { transition: none; }
+  .home-v2 .cp-cta:hover { transform: none; }
 }
 </style>
