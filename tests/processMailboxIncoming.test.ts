@@ -41,3 +41,23 @@ test('explicit AI rate limit defers a retained job, uncertain errors never reque
  assert.equal(await processMailboxIncoming(job,{...base,classify:async()=>{throw new Error('mailbox_ai_unavailable')}}),'failed');
  assert.equal(retries,1);assert.equal(completed,1);
 });
+
+test('failed processing records a safe phase, without persisting provider error details',async()=>{
+ let failureStage='';
+ const {options}=setup({
+  message:async()=>{throw new Error('private provider token and email contents')},
+  complete:async(state:string,_value:unknown,stage?:string)=>{assert.equal(state,'failed');failureStage=stage||''}
+ });
+ assert.equal(await processMailboxIncoming(job,options),'failed');
+ assert.equal(failureStage,'provider_read');
+ assert.equal(failureStage.includes('token'),false);
+});
+test('classification failure stage is distinguishable from booking creation',async()=>{
+ let failureStage='';
+ const {options}=setup({
+  classify:async()=>{throw new Error('provider failure')},
+  complete:async(_state:string,_value:unknown,stage?:string)=>{failureStage=stage||''}
+ });
+ assert.equal(await processMailboxIncoming(job,options),'failed');
+ assert.equal(failureStage,'classification');
+});
