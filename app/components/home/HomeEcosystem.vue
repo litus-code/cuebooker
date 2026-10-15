@@ -7,7 +7,7 @@ defineProps<{ copy: {
 defineEmits<{ signup: [] }>()
 const baseURL = useRuntimeConfig().app.baseURL
 const profileCover = `${baseURL}images/profile/cuebooker-default-cover.webp`
-const identityImage = `${baseURL}images/home21/cue-id-lab-preview.jpg`
+const identityImage = `${baseURL}images/home21/cue-id-style-concept.jpg`
 </script>
 
 <template>
@@ -26,7 +26,7 @@ const identityImage = `${baseURL}images/home21/cue-id-lab-preview.jpg`
       </article>
       <article class="ecosystem__identity">
         <div class="ecosystem__copy"><span class="ecosystem__status">{{ copy.identity.status }}</span><h3>{{ copy.identity.name }}</h3><p class="ecosystem__claim">{{ copy.identity.title }}</p><p>{{ copy.identity.body }}</p></div>
-        <figure class="identity-preview"><img :src="identityImage" :alt="copy.identity.alt" width="607" height="600" loading="lazy" decoding="async"><figcaption>{{ copy.identity.caption }}</figcaption></figure>
+        <figure class="identity-preview"><img :src="identityImage" :alt="copy.identity.alt" width="640" height="640" loading="lazy" decoding="async"><figcaption>{{ copy.identity.caption }}</figcaption></figure>
       </article>
     </div>
   </div>

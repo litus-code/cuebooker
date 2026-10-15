@@ -159,12 +159,14 @@
       {
         "title": "SOY DJ",
         "text": "Mis propuestas, conversaciones y fechas, en un solo lugar.",
-        "cta": "Crear mi perfil"
+        "cta": "Crear mi perfil",
+        "discover": "Descubrir Cuebooker para DJs"
       },
       {
         "title": "SOY MANAGER / AGENCIA",
         "text": "Coordina el seguimiento de las oportunidades de tus artistas desde un mismo espacio.",
-        "cta": "Crear mi espacio"
+        "cta": "Crear mi espacio",
+        "discover": "Descubrir Cuebooker para agencias"
       }
     ],
     "note": "Al registrarte podrás elegir cómo trabajas. Las capacidades de agencia siguen evolucionando."
@@ -210,8 +212,8 @@
       "title": "Una identidad propia.",
       "body": "Una representación visual para tu proyecto artístico. El creador sigue en desarrollo.",
       "status": "EN DESARROLLO",
-      "caption": "MODELO BASE 3D · LABORATORIO CUE ID",
-      "alt": "Render del modelo base 3D real del laboratorio CUE ID, en desarrollo"
+      "caption": "CONCEPTO VISUAL · CUE ID EN DESARROLLO",
+      "alt": "Concepto del avatar CUE ID con pelo y ropa negra en un garaje industrial"
     }
   },
   "closing": {

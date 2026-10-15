@@ -19,20 +19,26 @@ The commercial branch also contained older email/attachment implementations and 
 
 - Takes the reviewed Home 2.1 page/components, DJ/Agency pages, commercial shared components/composable, ES/EN home/landing copy, commercial CSS, images, art-direction documentation and sitemap from the consolidated commercial family.
 - Retains the current beta's complete `supabase/`, services, authentication/access route, Booking Core components, workspace/P0, shared form/preferences components, tests, dependency files, runtime config and workflows. Incoming older attachment migrations/implementation notes were not reintroduced. No hosted backend or schema change.
-- Adds links from the home role headings to `/dj` and `/agency`, while preserving the primary signup CTAs and their existing signup-click events. Landing signup retains the existing source/ref/UTM behaviour.
+- Adds explicit ES/EN discovery links as well as links from the home role headings to `/dj` and `/agency`, while preserving the primary signup CTAs and their existing signup-click events. Landing signup retains the existing source/ref/UTM behaviour.
 - Identifies this distinct combined review candidate as Beta0.0.12. This is not a production or stable-staging release; promotion must use the same reviewed version/SHA.
 
 Protected-path check against the beta source before merge commit: `git diff --cached --quiet -- supabase app/services app/pages/access.vue app/pages/workspace.vue app/components/BookingCoreInbox.vue app/composables/useCueAuth.ts .github` returned zero. Final candidate can be compared to `8f4113ff2f81625fc8150521828b5453c53850c0` on those paths. History is preserved with a merge commit, without force pushes.
 
 ## Verification
 
-- `npm test`: **579 passed**, 0 failed/skipped.
+- `npm test`: **581 passed**, 0 failed/skipped.
 - `npm run build`: passed, **44 routes** (beta plus the two public landings and payloads).
 - `git diff --check`: passed; all merge conflicts resolved.
 - Actual compiled public pages: Home, DJ and Agency in ES/EN at390/768/1024/1440 (24 combinations). No horizontal overflow or page exceptions; loaded imagery, demo/channel keyboard controls, disabled real form preview, home role links and real signup navigation/native empty-field validation passed. No account was submitted.
 - Axe WCAG2 A/AA and2.1 AA at390/1440 in both locales and both themes: zero automatic violations. Checks wait for client locale/theme application to settle rather than inspecting a partially applied theme.
 - Current workspace/P0 rendered with intercepted local fixtures at1440/390: Beta0.0.12, management-before-preferences, collapsed labels and no document overflow verified. The current beta's underlying workspace source is unchanged. These are fixture-based visual checks, not P1 membership/security or real mailbox acceptance.
 - Existing referral/campaign filtering, prior referral preservation, live locale and cookie preferences checked on the combined landing routes. No real Gmail/DJ flow was repeated.
+
+The home now includes explicit discovery links in both audience cards (ES/EN), retaining signup CTAs. The CUE ID image is a styled visual concept with hair/clothing derived from the original preview, clearly labelled as a concept in development; the laboratory model is unchanged.
+
+## Preview routing correction
+
+Published smoke checks found that the old `/agency/*` fallback swallowed the new landing. The fallback now matches only a nonempty slug (with/without trailing slash), rewriting to clean `/200` without an HTML canonical redirect. The landing is a sibling `app/pages/agency/index.vue` of `[slug].vue`, so it no longer shadows the public catalogue as a parent page. Two regression tests cover route separation and fallback boundaries. A compiled browser check renders a catalogue fixture through the actual dynamic page, intercepting its provider request; no backend or form submission is involved.
 
 ## Compiled captures
 

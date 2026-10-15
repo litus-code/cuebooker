@@ -1,3 +1,11 @@
+## 2026-10-15 / Joint preview routing and home discovery follow-up
+
+Branch `integration/beta-home21-review`, baseline HEAD `e910d9f542b541a1260a9fe1a8f432c91468575a`, draft PR114. Owner approved visible DJ/Agency discovery links and the same avatar direction with clothing/hair. Explicit ES/EN links supplement audience headings while signup CTAs/events remain. The home uses an AI-assisted styled marketing concept with short hair/black streetwear, labelled as a concept in development; actual CUE ID model/controls remain unchanged.
+
+Published preview exposed `/agency/*` swallowing the new landing and the landing parent shadowing the catalogue. Landing moved to sibling `agency/index.vue`; fallbacks match only nonempty slugs, use clean `/200`, and retain the original requested URL. Two routing regressions added. Local verification: 581 tests pass, build44 routes, whitespace clean; compiled Home/Agency ES/EN at390/768/1024/1440, zero overflow/page exceptions and zero Axe violations at390/1440 in both themes/locales. Explicit discovery navigation passes. Existing public catalogue renders through its actual dynamic route with intercepted fixture provider response, without backend traffic/submissions. Updated home/agency captures under docs/reviews/integration-beta-home21. Published correction CI/preview verification follows this commit; do not claim that deployment from local evidence alone.
+
+Protected-path diff against beta8f4113f is empty. Main remains bbdf29122f704039b353fa4eed788bfdfef5aaa7. Same review candidate Beta0.0.12; no Supabase, stable staging, production or P1 operations. Next: confirm PR114 CI/preview and review the joint candidate; no authorization to merge main.
+
 ## 2026-10-15 / Joint Beta0.0.12 + Home2.1 candidate — review only, main untouched
 
 Owner explicitly chose consolidating/reviewing without touching main. Branch `integration/beta-home21-review`, application merge HEAD `94565c0281b0f4cdc0769f976e62e0ed42ec0faf`, parents are beta `8f4113ff2f81625fc8150521828b5453c53850c0` and consolidated commercial `4594f268d416df330ab1785c394ea346b36f639b`. First merged113→96 at49de54d (CI38807901707/preview38807902118 success), then111→110 at4594f26 (CI/preview success).109 already precedes110;112 is preview-only history, not another feature. main remains bbdf29122f704039b353fa4eed788bfdfef5aaa7. No force push.

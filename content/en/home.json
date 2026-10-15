@@ -159,12 +159,14 @@
       {
         "title": "I’M A DJ",
         "text": "My proposals, conversations and dates, in one place.",
-        "cta": "Create my profile"
+        "cta": "Create my profile",
+        "discover": "Explore Cuebooker for DJs"
       },
       {
         "title": "I’M A MANAGER / AGENCY",
         "text": "Coordinate follow-ups on your artists’ opportunities from one workspace.",
-        "cta": "Create my workspace"
+        "cta": "Create my workspace",
+        "discover": "Explore Cuebooker for agencies"
       }
     ],
     "note": "Choose how you work after signing up. Agency capabilities are still evolving."
@@ -210,8 +212,8 @@
       "title": "An identity of your own.",
       "body": "A visual representation for your artistic project. The creator is still in development.",
       "status": "IN DEVELOPMENT",
-      "caption": "BASE 3D MODEL · CUE ID LAB",
-      "alt": "Render of the actual base 3D model from the CUE ID lab, in development"
+      "caption": "VISUAL CONCEPT · CUE ID IN DEVELOPMENT",
+      "alt": "CUE ID avatar concept with hair and black clothing in an industrial garage"
     }
   },
   "closing": {

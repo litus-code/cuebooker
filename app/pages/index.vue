@@ -200,7 +200,7 @@ useHead(() => ({
 
       <section id="audience" tabindex="-1" class="home-section cp-wrap" aria-labelledby="audience-title">
         <p class="cp-kicker">{{ p.audience.label }}</p><h2 id="audience-title">{{ p.audience.title }}</h2>
-        <div class="home-card-grid home-audience-grid"><article v-for="(role, i) in p.audience.items" :key="role.title" class="home-card"><span class="home-mono">{{ i === 0 ? 'DJ / SOLO' : 'MANAGER / AGENCY' }}</span><h3><NuxtLink :to="i === 0 ? '/dj' : '/agency'">{{ role.title }}</NuxtLink></h3><p>{{ role.text }}</p><NuxtLink class="cp-cta" :class="{ 'cp-cta--ghost': i === 1 }" to="/access?mode=signup" @click="trackSignup(i === 0 ? 'audience-dj' : 'audience-agency')">{{ role.cta }}<span class="cp-arrow" aria-hidden="true" /></NuxtLink></article></div>
+        <div class="home-card-grid home-audience-grid"><article v-for="(role, i) in p.audience.items" :key="role.title" class="home-card"><span class="home-mono">{{ i === 0 ? 'DJ / SOLO' : 'MANAGER / AGENCY' }}</span><h3><NuxtLink :to="i === 0 ? '/dj' : '/agency'">{{ role.title }}</NuxtLink></h3><p>{{ role.text }}<NuxtLink class="home-audience-discover" :to="i === 0 ? '/dj' : '/agency'">{{ role.discover }}<span class="cp-arrow" aria-hidden="true" /></NuxtLink></p><NuxtLink class="cp-cta" :class="{ 'cp-cta--ghost': i === 1 }" to="/access?mode=signup" @click="trackSignup(i === 0 ? 'audience-dj' : 'audience-agency')">{{ role.cta }}<span class="cp-arrow" aria-hidden="true" /></NuxtLink></article></div>
         <p class="home-audience-note">{{ p.audience.note }}</p>
       </section>
 
@@ -268,6 +268,7 @@ html[data-theme='light'] .home-v2 :is(.cp-kicker, .cp-eyebrow, .home-mono, .sele
 .home-card .cp-cta { margin-top: 28px; }
 .home-product { background: repeating-linear-gradient(90deg, transparent 0 119px, color-mix(in srgb, var(--cp-line) 20%, transparent) 120px 121px), var(--cp-panel); }
 .home-audience-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.home-audience-discover { display: flex; align-items: center; gap: 12px; width: fit-content; margin-top: 18px; color: var(--cp-paper); text-decoration: underline; text-underline-offset: 5px; font-size: 14px; line-height: 1.6; }
 .home-audience-grid h3 a { color:inherit; text-decoration:none; }
 .home-audience-grid h3 { margin: 0; min-height: 106px; font-size: clamp(30px, 3.2vw, 44px); line-height: 1.12; max-width: 480px; }
 .home-audience-grid p { margin: 0; max-width: 440px; }
