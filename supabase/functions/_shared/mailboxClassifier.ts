@@ -28,7 +28,7 @@ JSON.stringify(messages.slice(0,20).map(m=>mailboxClassifierInput(m,extractDraft
   response_format:{type:'json_schema',json_schema:{name:'booking_mail_classification',strict:true,schema:{type:'object',additionalProperties:false,required:['messages'],properties:{messages:{type:'array',items:{type:'object',additionalProperties:false,required:extractDraft?['id','kind','reason','draft']:['id','kind','reason'],properties:{id:{type:'string'},kind:{type:'string',enum:['booking','review','other']},reason:{type:'string'},...(extractDraft?{draft:mailboxDraftSchema}:{})}}}}}}}
  })});
  if(!response.ok){
-  let category=response.status===413?'mailbox_ai_request_too_large':'mailbox_ai_unavailable';
+  let category=response.status===413?'mailbox_ai_request_too_large':response.status===400?'mailbox_ai_bad_request':'mailbox_ai_unavailable';
   if(response.status===429){
    const failure=await response.json().catch(()=>null);
    if(failure?.error?.code==='insufficient_quota')category='mailbox_ai_quota_exhausted';
