@@ -1,3 +1,9 @@
+## 2026-10-15 / Live supported-file reply acceptance passed in staging
+
+Branch `feature/agency-multi-artist-beta`, baseline HEAD `d5ebf8382d45be476e341792c7a9e0f7d5f328bc`, Beta0.0.8. Baseline CI2205/run38786904819 and PR preview2679/run38786904942 independently confirmed SUCCESS. Owner sent a new reply on the existing test thread at approximately18:44Z. Read-only staging checks show one job admitted18:45:03Z and completed18:46:05Z as ignored (normal linked-reply outcome), no classification and no new booking. Exactly one inbound email is bound to the original booking, with one PNG1593372-byte attachment at index0, matching private Storage object and no attachment warnings. Monthly connection AI attempts remain103, with zero attempts since18:44Z. This closes live supported-file inbound reply capture/storage acceptance, not browser signed-download acceptance.
+
+Next: owner reloads the existing booking and opens/downloads the new PNG. Mobile/Safari visual QA, broader DJ/agency journey and durable recovery/orphan gates remain open. No code, schema, function, secret, quota, consent, cron, paid-service, email sending, historical replay, stable frontend, production or merge changes in this read-only acceptance block. Documentation-only publication keeps Beta0.0.8 and the existing application sources.
+
 ## 2026-10-15 / Beta0.0.8 attachment limits help and persistent notices
 
 PR96 branch `feature/agency-multi-artist-beta`, baseline HEAD `67d0c639d7fe1577f6e2b8c7c5600faeaa99aca1`. Owner authorizes PR96/staging only. The attachment action now has a native keyboard/touch info disclosure with PDF/PNG/JPG formats and actual transport limits: five files/5MiB aggregate for Gmail/Brevo, legacy Nylas2MiB. Received-document help describes ten files/5MiB per file. Escape closes the help and restores focus. Rejection messages remain visible in the conversation even with no saved files; successful recovery suppresses the exact resolved index.
