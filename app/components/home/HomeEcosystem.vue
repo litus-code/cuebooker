@@ -2,11 +2,12 @@
 defineProps<{ copy: {
   profile: { name: string; title: string; body: string; status: string; cta: string; example: string; stageName: string; tagline: string; sections: string[]; request: string; coverAlt: string }
   passport: { name: string; title: string; body: string; concept: string; steps: string[]; nodes: string[] }
-  identity: { name: string; title: string; body: string; status: string; caption: string; alt: string }
+  identity: { name: string; title: string; body: string; status: string; caption: string; alt: string; femaleAlt: string }
 } }>()
 defineEmits<{ signup: [] }>()
 const baseURL = useRuntimeConfig().app.baseURL
 const profileCover = `${baseURL}images/profile/cuebooker-default-cover.webp`
+const femaleIdentityImage = `${baseURL}images/home21/cue-id-female-style-concept.jpg`
 const identityImage = `${baseURL}images/home21/cue-id-style-concept.jpg`
 </script>
 
@@ -26,7 +27,7 @@ const identityImage = `${baseURL}images/home21/cue-id-style-concept.jpg`
       </article>
       <article class="ecosystem__identity">
         <div class="ecosystem__copy"><span class="ecosystem__status">{{ copy.identity.status }}</span><h3>{{ copy.identity.name }}</h3><p class="ecosystem__claim">{{ copy.identity.title }}</p><p>{{ copy.identity.body }}</p></div>
-        <figure class="identity-preview"><img :src="identityImage" :alt="copy.identity.alt" width="640" height="640" loading="lazy" decoding="async"><figcaption>{{ copy.identity.caption }}</figcaption></figure>
+        <figure class="identity-preview"><div class="identity-preview__avatars"><img :src="identityImage" :alt="copy.identity.alt" width="640" height="640" loading="lazy" decoding="async"><img :src="femaleIdentityImage" :alt="copy.identity.femaleAlt" width="640" height="640" loading="lazy" decoding="async"></div><figcaption>{{ copy.identity.caption }}</figcaption></figure>
       </article>
     </div>
   </div>
@@ -73,7 +74,8 @@ const identityImage = `${baseURL}images/home21/cue-id-style-concept.jpg`
 .passport-concept__steps { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 16px 20px; border-top: 1px solid var(--cp-line); font: 10px ui-monospace, monospace; color: var(--cp-paper); }
 .passport-concept figcaption { padding: 12px 20px; border-top: 1px solid var(--cp-line); }
 .identity-preview { display: flex; flex-direction: column; justify-content: end; overflow: hidden; background: #0a0b0a; border: 1px solid var(--cp-line); }
-.identity-preview > img { display: block; width: 100%; height: 330px; object-fit: contain; object-position: center; }
+.identity-preview__avatars { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+.identity-preview__avatars > img { display: block; width: 100%; height: auto; aspect-ratio: 3/4; object-fit: cover; }
 .identity-preview figcaption { color: #b3b3ac; padding: 16px 20px; border-top: 1px solid #34342f; }
 @media (max-width: 800px) {
   .ecosystem__profile { grid-template-columns: 1fr; gap: 32px; padding-top: 28px; }
@@ -81,7 +83,7 @@ const identityImage = `${baseURL}images/home21/cue-id-style-concept.jpg`
   .ecosystem__secondary > article { gap: 24px; }
   .ecosystem__passport .ecosystem__copy { padding-top: 0; }
   .ecosystem__secondary h3 { margin-top: 0; }
-  .identity-preview > img { height: auto; max-height: 430px; object-fit: contain; }
+
 }
 @media (max-width: 365px) {
   .profile-composition__body { padding: 20px; }

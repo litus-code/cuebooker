@@ -10,7 +10,7 @@ const emit = defineEmits<{ signup: [area: string] }>()
 <template>
   <div class="commercial-audience" :class="`cl-${audience}`">
     <a class="cl-skip" href="#main">{{ copy.skip }}</a>
-    <header class="cl-nav"><div class="cl-shell cl-nav-inner">
+    <header class="cl-nav" data-public-header><div class="cl-shell cl-nav-inner">
       <NuxtLink to="/" :aria-label="copy.home" class="cl-brand"><CueBrand /></NuxtLink>
       <nav class="cl-desktop-nav" :aria-label="copy.menu.label"><NuxtLink to="/">{{ copy.home }}</NuxtLink><a href="#how">{{ copy.how }}</a><NuxtLink to="/access?mode=signin">{{ copy.login }}</NuxtLink></nav>
       <div class="cl-desktop-preferences"><CuePreferencesControl compact /></div>

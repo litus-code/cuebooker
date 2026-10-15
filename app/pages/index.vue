@@ -64,7 +64,7 @@ useHead(() => ({
 <template>
   <div class="commercial-home home-v2">
     <a class="home-skip" href="#top" @click.prevent="scrollTo('top')">{{ p.nav.skip }}</a>
-    <header class="home-header">
+    <header class="home-header" data-public-header>
       <nav class="cp-wrap home-navigation" :aria-label="p.nav.label">
         <NuxtLink class="home-brand" to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink>
         <div class="home-nav-links">

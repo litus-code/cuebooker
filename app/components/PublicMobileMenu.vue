@@ -23,11 +23,13 @@ function show() {
   previousOverflow = document.documentElement.style.overflow
   dialog.value?.showModal()
   open.value = true
+  document.documentElement.classList.add('mobile-menu-open')
   document.documentElement.style.overflow = 'hidden'
 }
 function closed() {
   if (!open.value) return
   open.value = false
+  document.documentElement.classList.remove('mobile-menu-open')
   document.documentElement.style.overflow = previousOverflow
 }
 function close() { dialog.value?.close(); closed() }

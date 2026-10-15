@@ -9,7 +9,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     }
 
     const updateHeader = () => {
-      const header = document.querySelector<HTMLElement>('.site-header')
+      const header = document.querySelector<HTMLElement>('.site-header, [data-public-header]')
 
       if (!header) {
         lastScrollY = window.scrollY
@@ -20,7 +20,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       syncHeaderHeight(header)
 
       const scrollY = window.scrollY
-      const isMobile = window.matchMedia('(max-width: 720px)').matches
+      const isMobile = window.matchMedia(header.hasAttribute('data-public-header') ? '(max-width: 1100px)' : '(max-width: 720px)').matches
       const menuOpen = document.documentElement.classList.contains('mobile-menu-open')
       const delta = scrollY - lastScrollY
 
@@ -37,7 +37,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         header.classList.add('site-header--hidden')
       }
 
-      lastScrollY = scrollY
+      if (Math.abs(delta) > 6 || scrollY <= 24 || !isMobile) lastScrollY = scrollY
       ticking = false
     }
 
@@ -50,7 +50,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
     const syncMenuState = () => {
       const menuOpen = document.documentElement.classList.contains('mobile-menu-open')
-      const header = document.querySelector<HTMLElement>('.site-header')
+      const header = document.querySelector<HTMLElement>('.site-header, [data-public-header]')
 
       syncHeaderHeight(header)
 
@@ -66,6 +66,15 @@ export default defineNuxtPlugin((nuxtApp) => {
     menuObserver.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['class']
+    })
+
+    nuxtApp.hook('page:finish', () => {
+      document.querySelector<HTMLElement>('.site-header, [data-public-header]')?.classList.remove('site-header--hidden')
+      lastScrollY = window.scrollY
+      updateHeader()
+    })
+    document.addEventListener('focusin', event => {
+      if (event.target instanceof Element) event.target.closest('[data-public-header]')?.classList.remove('site-header--hidden')
     })
 
     window.addEventListener('scroll', onScroll, { passive: true })

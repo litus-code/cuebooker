@@ -5,7 +5,7 @@ const showGlobalHeader = computed(() => ['/access', '/onboarding'].includes(norm
 </script>
 
 <template>
-  <header v-if="showGlobalHeader" class="global-brand-preferences">
+  <header v-if="showGlobalHeader" class="global-brand-preferences" :data-public-header="normalizedPath === '/access' ? '' : undefined">
     <div class="global-brand-preferences__inner">
       <NuxtLink class="global-brand-preferences__brand" to="/" aria-label="Cuebooker">
         <CueBrand />
@@ -35,4 +35,10 @@ const showGlobalHeader = computed(() => ['/access', '/onboarding'].includes(norm
   .global-brand-preferences__brand { width:145px; }
   .workspace-header .brand { width:145px; min-height:38px; }
 }
+@media(max-width:1100px){
+  .cl-nav[data-public-header],.global-brand-preferences[data-public-header]{position:sticky;top:0;z-index:40;background:var(--cue-bg)}
+  [data-public-header]{transition:transform .2s ease}
+  [data-public-header].site-header--hidden{transform:translateY(-110%);pointer-events:none}
+}
+@media(prefers-reduced-motion:reduce){[data-public-header]{transition:none}}
 </style>

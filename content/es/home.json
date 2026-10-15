@@ -213,7 +213,8 @@
       "body": "Una representación visual para tu proyecto artístico. El creador sigue en desarrollo.",
       "status": "EN DESARROLLO",
       "caption": "CONCEPTO VISUAL · CUE ID EN DESARROLLO",
-      "alt": "Concepto del avatar CUE ID con pelo y ropa negra en un garaje industrial"
+      "alt": "Concepto del avatar CUE ID con pelo y ropa negra en un garaje industrial",
+      "femaleAlt": "Concepto del avatar femenino CUE ID con pelo y ropa negra en un garaje industrial"
     }
   },
   "closing": {
