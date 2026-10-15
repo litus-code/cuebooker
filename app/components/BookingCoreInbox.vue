@@ -294,7 +294,7 @@ async function openBookingDocument(id:string) {
   }
 }
 
-async function loadActivity(options: { silent?: boolean } = {}) {
+async function loadActivity(options: { silent?: boolean; skipSync?: boolean } = {}) {
   const bookingId = selectedBooking.value?.id
   if (props.demoData) {
     activities.value = demoActivities.value.filter(item => item.booking_id === bookingId)
@@ -314,14 +314,6 @@ async function loadActivity(options: { silent?: boolean } = {}) {
   if (!bookingId || !props.workspaceId) return
   if (!options.silent) loadingActivity.value = true
   try {
-    // Only the connection owner can synchronize a personal mailbox. Existing
-    // shared Booking history remains readable to other authorized members.
-    const status=await mailboxApi.status(props.workspaceId,bookingId).catch(()=>null)
-    mailboxSyncNotice.value=''
-    for(const id of status?.linkedConnectionIds||[]){
-     try {const result=await mailboxApi.sync(props.workspaceId,id,bookingId);if(result.partial)mailboxSyncNotice.value=props.locale==='es'?'Este hilo es largo; se muestran hasta 100 mensajes.':'This is a long thread; up to 100 messages are displayed.'}
-     catch{mailboxSyncNotice.value=props.locale==='es'?'No se pudo actualizar el correo. El historial guardado sigue disponible.':'Email could not be refreshed. Saved history remains available.'}
-    }
     const [activityRows, emailRows] = await Promise.all([
       bookingCore.listActivities(props.workspaceId, bookingId),
       bookingCore.listBookingEmailMessages(props.workspaceId, bookingId)
@@ -338,6 +330,37 @@ async function loadActivity(options: { silent?: boolean } = {}) {
     bookingAttachments.value = await bookingCore.listBookingEmailAttachments(props.workspaceId, bookingId).catch(() => [])
     if (keepPinnedToLatest) await scrollThreadToLatest()
     if (externalChange) emit('operationsChanged')
+    // The saved history is the source of truth for the initial render.
+    // Gmail refreshes asynchronously and never blocks opening a booking.
+    if (!options.skipSync) {
+      const workspaceId = props.workspaceId
+      void (async () => {
+        const status = await mailboxApi.status(workspaceId, bookingId).catch(() => null)
+        if (selectedBooking.value?.id !== bookingId) return
+        mailboxSyncNotice.value = ''
+        let synced = false
+        for (const id of status?.linkedConnectionIds || []) {
+          try {
+            const result = await mailboxApi.sync(workspaceId, id, bookingId)
+            synced = true
+            if (result.partial && selectedBooking.value?.id === bookingId) {
+              mailboxSyncNotice.value = props.locale === 'es'
+                ? 'Este hilo es largo; se muestran hasta 100 mensajes.'
+                : 'This is a long thread; up to 100 messages are displayed.'
+            }
+          } catch {
+            if (selectedBooking.value?.id === bookingId) {
+              mailboxSyncNotice.value = props.locale === 'es'
+                ? 'No se pudo actualizar el correo. El historial guardado sigue disponible.'
+                : 'Email could not be refreshed. Saved history remains available.'
+            }
+          }
+        }
+        if (synced && selectedBooking.value?.id === bookingId && props.workspaceId === workspaceId) {
+          await loadActivity({ silent: true, skipSync: true })
+        }
+      })()
+    }
   } finally {
     if (!options.silent) loadingActivity.value = false
   }
