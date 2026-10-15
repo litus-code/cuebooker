@@ -2325,9 +2325,15 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <button v-if="!isAgency" :title="copy.passport" data-workspace-view="passport" :aria-current="workspaceBootResolved && activeView === 'passport' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('passport')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M8 17h8"/></svg><span class="workspace-nav-label">{{ copy.passport }}</span></button>
         <button v-if="!isAgency" :title="copy.cueId" data-workspace-view="cue-id" :aria-current="workspaceBootResolved && activeView === 'cue-id' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('cue-id')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M14 10h4M14 14h4M7 17h11"/></svg><span class="workspace-nav-label">{{ copy.cueId }}</span></button>
         <button :title="copy.settings" data-workspace-view="settings" :aria-current="workspaceBootResolved && settingsOpen ? 'page' : undefined" type="button" @click="openSettings"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2h4l.6 2.2 2 .9 2-.9 2.8 2.8-.9 2 .9 2L23 12l-1.6 2 .9 2-.9 2-2.8 2.8-2-.9-2 .9L14 23h-4l-.6-2.2-2-.9-2 .9-2.8-2.8.9-2-.9-2L1 12l1.6-2-.9-2 .9-2L5.4 3.2l2 .9 2-.9z"/><circle cx="12" cy="12" r="3"/></svg><span class="workspace-nav-label">{{ copy.settings }}</span></button>
-      <div class="workspace-navigation-notifications">
-        <WorkspaceNotifications :locale="preferences.locale.value" @open-booking="openNotificationBooking" />
-      </div>
+        <WorkspaceNotifications :locale="preferences.locale.value" @open-booking="openNotificationBooking">
+          <template #trigger="{ toggle, unread }">
+            <button type="button" class="workspace-notification-nav" data-workspace-view="notifications" data-notification-trigger :title="preferences.locale.value === 'es' ? 'Notificaciones' : 'Notifications'" :aria-label="preferences.locale.value === 'es' ? 'Notificaciones' : 'Notifications'" aria-haspopup="dialog" @click.stop="toggle">
+              <svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+              <span class="workspace-nav-label">{{ preferences.locale.value === 'es' ? 'Notificaciones' : 'Notifications' }}</span>
+              <span v-if="unread" class="workspace-nav-count">{{ unread > 9 ? '9+' : unread }}</span>
+            </button>
+          </template>
+        </WorkspaceNotifications>
       </nav>
       <div class="account-actions">
         <CuePreferencesControl compact />
@@ -5008,4 +5014,22 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 
 .workspace-navigation-notifications :deep(.notification-trigger) {color:var(--cue-muted);}
 .workspace-navigation-notifications :deep(.notification-badge) {grid-column:3;position:static!important;justify-self:end;margin:0!important;border:0;}
+
+/* Notifications is a direct navigation button; no nested trigger styling. */
+.workspace #workspace-navigation > button.workspace-notification-nav {
+  grid-template-columns:28px minmax(0,1fr) auto!important;
+}
+.workspace #workspace-navigation .workspace-nav-count {
+  grid-column:3;
+  display:grid;
+  place-items:center;
+  min-width:20px;
+  height:20px;
+  padding:0 5px;
+  border-radius:999px;
+  background:var(--cue-accent);
+  color:var(--cue-accent-ink,#090909);
+  font:800 11px/1 Arial,Helvetica,sans-serif;
+  justify-self:end;
+}
 </style>
