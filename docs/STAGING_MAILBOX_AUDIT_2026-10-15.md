@@ -36,3 +36,18 @@ A live PDF/image enquiry and document-bearing reply must still prove one booking
 Partial failures produce explicit worker outcomes and safe logs, not a durable retry queue/UI incident state. Private orphan reconciliation remains a release gate even though none existed at audit. Signed URLs already issued remain usable until their 60-second expiry. Revocation checks around external writes are not one atomic transaction.
 
 Rollback: restore the retrieved prior dependency-complete bundles with their original JWT settings if needed. Leave the additive compatibility/security migration in place, as old sources accept it. Reinstating the XOR constraint would reject newly dual-bound rows and requires a separate reviewed data migration. Preserve new documents. Do not deploy or merge to production from this audit.
+
+
+## Published and deployed evidence
+
+Implementation revision `a3a78419ebfb607d4e133b97ca70164818f560cb` is published on PR96. GitHub CI2199/run38770594439 and PR preview2673/run38770594520 completed successfully. PR remains draft and unmerged. Beta0.0.6 is the reviewed candidate; stable staging frontend and production were not promoted.
+
+All five staging bundles were retrieved again after deployment and match the published entrypoints and transitive dependencies (Supabase normalizes path prefixes in download bundles). Original JWT settings were retained:
+
+- process-mailbox-incoming: v41, verify_jwt=false, bundle SHA256 5aa3c55b203751a2fcf17e9609ee98ded9be65c2a0ee92f5f98689b11683b3cc.
+- connected-mailbox: v53, verify_jwt=false, bundle SHA256 d5783186bff8660ca1d978511e27d8b20932c6e42819ad615faa8be9f0d2c282.
+- process-gmail-history: v16, verify_jwt=false, bundle SHA256 68723f996d9910e193dd7675347ce3c59213cc7455b1ff06fa7a91c62ed0851c.
+- recover-mailbox-attachments: v3, verify_jwt=true, bundle SHA256 83c7e599b1d27507466a95b51590dec0454a2491326a5cdeaf6cf0682dc127b2.
+- get-booking-email-attachment: v5, verify_jwt=true, bundle SHA256 4cc1b91ded80df6903b1e46df435de01f5c8a83f40b780bd6b899f8ba02d6907.
+
+Unauthenticated live POST probes returned401 for every entrypoint. Member SQL role can read its attachment metadata; an outsider role reads neither metadata nor private storage objects. Security advisor findings are unchanged after the migration. This evidence does not constitute live Gmail/PDF/image acceptance or remedy the100-attempt internal budget/expired-watch blockers.

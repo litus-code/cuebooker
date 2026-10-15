@@ -1,3 +1,11 @@
+## 2026-10-15 / PR96 Beta0.0.6 staging backend verified
+
+Implementation SHA `a3a78419ebfb607d4e133b97ca70164818f560cb` published on PR96. CI2199/run38770594439 and preview2673/run38770594520 passed. Full local suite559/559,40-route build, five Deno entrypoint checks and whitespace checks pass. Original CI/preview on3251d03 independently verified before work.
+
+Staging `lycprjeuuynfzwskycwv`: incoming41, connected53, history16, recovery3, download5 ACTIVE. All retrieved files/dependencies match the published sources; JWT settings retained. All five unauthenticated livePOSTs return401. Migration20261015163315 applied; dual-bound message/booking validation, duplicate rejection, member metadata access, outsider metadata/storage denial and client grant restriction verified. Advisor findings unchanged. Exact hashes and caveats: STAGING_MAILBOX_AUDIT_2026-10-15.md.
+
+Next: resolve the exhausted internal100/month connection budget and expired watch through a separate explicit operational decision, then run one new Gmail enquiry with PDF+image and one document-bearing reply in DJ/agency workflows. No historical retry, automatic sending, secret/limit/cron/consent change, stable frontend promotion, production or merge occurred. Durable reply-attachment recovery/orphan handling and all broader beta launch gates remain open. This evidence-only documentation commit does not change the deployed application sources.
+
 ## 2026-10-15 / Staging audit and PR96 reconciliation, Beta 0.0.6 candidate
 
 Owner authorizes PR96 and staging only. Baseline HEAD `3251d035d2ad65c2ca1a60ee3af9da77a43f5ee7`; CI/preview independently confirmed green and 556 baseline tests passed. Authenticated connector recovered. Incoming v40 already exactly matches Codex; connected v52/history v15 contain older shared modules. Retrieved all five complete bundles/JWT settings before changes.
