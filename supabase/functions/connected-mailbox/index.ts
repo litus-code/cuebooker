@@ -119,7 +119,7 @@ Deno.serve(async(request:Request)=>{
     const recentFailureCutoff=Date.now()-2*60*60*1000;
     const failed=jobs.filter(j=>j.state==='failed'&&Number.isFinite(Date.parse(j.created_at))&&Date.parse(j.created_at)>=recentFailureCutoff).length;
     const stalled=jobs.some(j=>j.state==='processing'&&Date.parse(j.processing_started_at||j.created_at)<Date.now()-10*60000);
-    const detection=mailboxDetectionState({available:backgroundAvailable,status,enabled:row.background_analysis_enabled===true,revision:row.background_analysis_revision,watch,failed,stalled,delayed:jobs.some(j=>j.retry_reason==='rate_limit'),transport:row.transport});
+    const detection=mailboxDetectionState({available:backgroundAvailable,status,enabled:row.background_analysis_enabled===true,revision:row.background_analysis_revision,watch,failed:0,stalled,delayed:jobs.some(j=>j.retry_reason==='rate_limit'),transport:row.transport});
     return {id:row.id,email:row.email,provider:row.provider,transport:row.transport,status,connectedAt:row.connected_at,background:{state:detection,pending,failed,retrying:jobs.some(j=>j.retry_reason==='rate_limit'),syncState:watch?.state||null,enabled:row.background_analysis_enabled===true,processor:row.background_analysis_processor||null,since:row.background_analysis_since||null}};
    }));
    let linkedConnectionIds:string[]=[];
