@@ -66,3 +66,15 @@ test('Groq HTTP 400 is a non-retryable request error, never presented as outage'
   assert.doesNotMatch(JSON.stringify(logs),/sensitive provider validation details/);
  }finally{console.warn=warn}
 });
+
+test('Groq 400 reports only allowlisted rejection code',async()=>{
+ const old=console.warn,logs:unknown[][]=[];
+ console.warn=(...args:unknown[])=>{logs.push(args)};
+ try{
+  await assert.rejects(classifyBookingMail([{id:'one',subject:'Consulta',body:'Hola'}],'key',(async()=>
+   Response.json({error:{code:'invalid_json_schema',message:'sensitive validation content'}},{status:400})
+  ) as typeof fetch,true),{message:'mailbox_ai_bad_request'});
+  assert.deepEqual(logs[0],['mailbox_classifier_rejected_request',{kind:'invalid_json_schema'}]);
+  assert.doesNotMatch(JSON.stringify(logs),/sensitive validation content/);
+ }finally{console.warn=old}
+});
