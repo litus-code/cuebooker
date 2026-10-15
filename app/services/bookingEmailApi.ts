@@ -1,3 +1,4 @@
+import type {EmailAttachment} from '../domain/emailAttachments'
 type BookingEmailApiOptions = {
   baseUrl: string
   publishableKey: string
@@ -10,6 +11,8 @@ export type SendBookingEmailInput = {
   contactId?: string | null
   subject: string
   bodyText: string
+  requestId?: string
+  attachments?: EmailAttachment[]
 }
 
 export type SentBookingEmail = {
@@ -17,6 +20,7 @@ export type SentBookingEmail = {
   status: 'sent'
   to: string
   providerMessageId: string | null
+  attachmentStatus?: {stored:number;pending:number}
 }
 
 export function createBookingEmailApi(options: BookingEmailApiOptions) {
@@ -26,7 +30,8 @@ export function createBookingEmailApi(options: BookingEmailApiOptions) {
     const token = options.accessToken()
     if (!token) throw new Error('authentication_required')
 
-    const response = await fetch(`${baseUrl}/functions/v1/send-booking-email`, {
+    let response:Response
+    try{response = await fetch(`${baseUrl}/functions/v1/send-booking-email`, {
       method: 'POST',
       headers: {
         apikey: options.publishableKey,
@@ -38,12 +43,16 @@ export function createBookingEmailApi(options: BookingEmailApiOptions) {
         bookingId: input.bookingId,
         contactId: input.contactId || undefined,
         subject: input.subject.trim(),
-        bodyText: input.bodyText.trim()
+        bodyText: input.bodyText.trim(),
+        requestId: input.requestId,
+        attachments: input.attachments
       })
-    })
+    })}catch{throw new Error('email_send_uncertain')}
 
-    const payload = await response.json().catch(() => ({})) as SentBookingEmail & { error?: string }
-    if (!response.ok) throw new Error(payload.error || 'email_send_failed')
+    const payload = await response.json().catch(() => null) as SentBookingEmail & { error?: string }
+    if(!payload)throw new Error('email_send_uncertain')
+    if (!response.ok) throw new Error(payload.error || 'email_send_uncertain')
+    if(payload.status!=='sent')throw new Error('email_send_uncertain')
     return payload as SentBookingEmail
   }
 

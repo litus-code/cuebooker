@@ -1,3 +1,6 @@
+import {gmailMime} from './gmailMime.ts';
+import {validateEmailAttachments} from '../../../app/domain/emailAttachments.ts';
+import type {EmailAttachment} from '../../../app/domain/emailAttachments.ts';
 import {normalizeMailboxEmail} from './nylasMailbox.ts';
 export const GMAIL_SCOPES=['https://www.googleapis.com/auth/gmail.readonly','https://www.googleapis.com/auth/gmail.send'];
 export type GmailConfig={clientId:string;clientSecret:string;callbackUri:string;encryptionKey:string};
@@ -128,14 +131,15 @@ export function createGmailMailbox(c:GmailConfig,store:{email?:string;read:()=>P
    }
    return ids;
   },
-  async send(_id:string,input:{to:string;subject:string;bodyText:string;replyToMessageId?:string}){
+  async send(_id:string,input:{to:string;subject:string;bodyText:string;replyToMessageId?:string;attachments?:EmailAttachment[]}){
+   const attachments=validateEmailAttachments(input.attachments);
    const to=normalizeMailboxEmail(input.to);if(/[\r\n]/.test(to+input.subject))throw new Error('invalid_message');
    let threadId:string|undefined,subject=input.subject,references='',reply='';
    if(input.replyToMessageId){const parent=await call(`/messages/${encodeURIComponent(input.replyToMessageId)}?format=metadata&metadataHeaders=Message-ID&metadataHeaders=References&metadataHeaders=Subject`);threadId=parent.threadId;subject=header(parent,'Subject');reply=header(parent,'Message-ID');references=header(parent,'References');if(!/^<[^\s<>]+>$/.test(reply)||/[\r\n]/.test(subject+references)||references.length>4096)throw new Error('invalid_message');}
    let chunk='',words:string[]=[];for(const char of subject){if(new TextEncoder().encode(chunk+char).length>42){words.push(chunk);chunk='';}chunk+=char;}if(chunk||!words.length)words.push(chunk);
    const encodedSubject=words.map(word=>'=?UTF-8?B?'+btoa(Array.from(new TextEncoder().encode(word),b=>String.fromCharCode(b)).join(''))+'?=').join('\r\n ');
    const from=normalizeMailboxEmail(store.email||(await call('/profile')).emailAddress);
-   const content=[`From: ${from}`,`To: ${to}`,`Subject: ${encodedSubject}`,'MIME-Version: 1.0','Content-Type: text/plain; charset=UTF-8','Content-Transfer-Encoding: base64',...(reply?[`In-Reply-To: ${reply}`,`References: ${references?references+' ':''}${reply}`]:[]),'',btoa(Array.from(new TextEncoder().encode(input.bodyText),b=>String.fromCharCode(b)).join('')).match(/.{1,76}/g)?.join('\r\n')||''].join('\r\n');
+   const content=gmailMime([`From: ${from}`,`To: ${to}`,`Subject: ${encodedSubject}`,'MIME-Version: 1.0',...(reply?[`In-Reply-To: ${reply}`,`References: ${references?references+' ':''}${reply}`]:[])],input.bodyText,attachments);
    // Never retry a send after an ambiguous response. Existing send-attempt ledger owns deduplication.
    const r=await call('/messages/send',{method:'POST',body:JSON.stringify({raw:base64url(new TextEncoder().encode(content)),...(threadId?{threadId}:{})})});
    if(!r?.id||!r.threadId)throw new Error('invalid_provider_response');

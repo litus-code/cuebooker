@@ -1,3 +1,4 @@
+import type {EmailAttachment} from '../domain/emailAttachments'
 export type ConnectedMailbox = {id:string;email:string;provider:string;transport?:'gmail'|'nylas';status:'connected'|'reconnect_required'|'unknown';connectedAt:string;background?:{state?:'inactive'|'unavailable'|'starting'|'active'|'paused'|'reconnect_required';pending?:number;failed?:number;retrying?:boolean;syncState?:string|null;enabled:boolean;processor:string|null;since:string|null}}
 export type MailboxBetaAccess={available:boolean;waitlisted:boolean;approvalRequired:boolean;status:'not_requested'|'pending'|'approved'|'rejected';requestedEmail:string|null}
 import type {MailboxBookingDraft,ReviewedMailboxDraft} from '../../supabase/functions/_shared/mailboxBookingDraft'
@@ -6,8 +7,14 @@ export type MailboxMessage = {id:string;threadId:string;from:string;to:string;se
 export function createConnectedMailboxApi(options:{baseUrl:string;publishableKey:string;accessToken:()=>string|null|undefined}) {
  async function call(payload:Record<string,unknown>) {
   const token=options.accessToken();if(!token)throw new Error('authentication_required');
-  const response=await fetch(`${options.baseUrl.replace(/\/$/,'')}/functions/v1/connected-mailbox`,{method:'POST',headers:{apikey:options.publishableKey,Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify(payload)});
-  const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.error||'mailbox_operation_failed');return result;
+  let response:Response
+  try{response=await fetch(`${options.baseUrl.replace(/\/$/,'')}/functions/v1/connected-mailbox`,{method:'POST',headers:{apikey:options.publishableKey,Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify(payload)})}
+  catch{throw new Error(payload.action==='send'?'email_send_uncertain':'mailbox_operation_failed')}
+  const result=await response.json().catch(()=>null)
+  if(!result)throw new Error(payload.action==='send'?'email_send_uncertain':'mailbox_operation_failed')
+  if(!response.ok)throw new Error(result.error||(payload.action==='send'?'email_send_uncertain':'mailbox_operation_failed'))
+  if(payload.action==='send'&&result.status!=='sent')throw new Error('email_send_uncertain')
+  return result;
  }
  return {
   status:(workspaceId:string,bookingId?:string)=>call({action:'status',workspaceId,bookingId}) as Promise<{configured:boolean;transport?:'gmail'|'nylas';ai?:{provider:string;model:string;configured:boolean};background?:{available:boolean;processor:string};connections:ConnectedMailbox[];linkedConnectionIds:string[];hasLinkedThread:boolean;beta:MailboxBetaAccess}>,
@@ -21,7 +28,7 @@ export function createConnectedMailboxApi(options:{baseUrl:string;publishableKey
   classify:(workspaceId:string,connectionId:string,messageId?:string,bookingId?:string)=>call({action:'classify',workspaceId,connectionId,messageId,bookingId,analysisConsent:true,analysisProvider:'groq'}) as Promise<{messages:MailboxMessage[];hasMore:boolean}>,
   importMessage:(workspaceId:string,connectionId:string,messageId:string,artistId:string,bookingId?:string,reviewedDraft?:ReviewedMailboxDraft,applyReviewedToExisting=false,expectedUpdatedAt?:string)=>call({action:'import',workspaceId,connectionId,messageId,artistId,bookingId,reviewedDraft,applyReviewedToExisting,expectedUpdatedAt}) as Promise<{bookingId:string}>,
   sync:(workspaceId:string,connectionId:string,bookingId:string,cursor?:string)=>call({action:'sync',workspaceId,connectionId,bookingId,cursor}) as Promise<{synced:boolean;partial:boolean}>,
-  send:(input:{workspaceId:string;connectionId:string;bookingId:string;subject:string;bodyText:string;requestId:string})=>call({action:'send',...input}),
+  send:(input:{workspaceId:string;connectionId:string;bookingId:string;subject:string;bodyText:string;requestId:string;attachments?:EmailAttachment[]})=>call({action:'send',...input}),
   disconnect:(workspaceId:string,connectionId:string)=>call({action:'disconnect',workspaceId,connectionId})
  };
 }

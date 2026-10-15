@@ -1,3 +1,13 @@
+## 2026-10-15 / Outgoing reply attachments implemented, Beta0.0.7 candidate
+
+Owner explicitly prioritizes attaching a document when replying from Cuebooker; previous live inbound-reply acceptance is deferred. Baseline PR96 HEADaa773720ec689b761e91fe6af7973d93d7a08dde. Connected53/send39 staging sources match baseline; incoming41/history16/recovery3 bundles retrieved before changes. Work stays on PR96 and staging, no production or merge.
+
+Composer adds accessible rounded attach/remove controls, selected filenames/sizes, ES/EN validation and in-memory File handling. PDF/PNG/JPG,5 files/5MiB aggregate (legacy Nylas2MiB). Shared server validator verifies canonical base64, actual size/signature/MIME/name and bounded8MiB stream. Gmail multipart preserves thread/RFC headers; Brevo/Nylas receive attachment bodies. Platform fallback now respects connected-thread ownership and claims a unique request UUID before delivery. Both APIs flag network uncertainty; no automatic send retry. Server rechecks access before sending, saves private outgoing copies against exact outbound email/booking/workspace after acknowledgement, and reports partial history persistence without resending. Context change during file read prevents sending under another booking.
+
+Compatible staging migration20261015172641 extends the existing private invoker metadata trigger to inbound/outbound, preserving binding/RLS/unique/private bucket/client grant restrictions. Rollback SQL covers both directions, invalid booking, duplicate index and outsider metadata/Storage denial. Security advisors unchanged.567 tests pass,40-route build and five affected Deno checks pass. Real-handler/provider mocks are not live delivery. Chromium visual QA was attempted but browser download failed with truncated archives; compiled Vue interaction tests passed. No actual email sent by the agent. See OUTBOUND_EMAIL_ATTACHMENTS.md.
+
+Next: publish reviewed code to PR96, deploy only dependency-complete staging functions retaining JWT settings, verify source/401/CI/preview, then owner sends one reply with an attachment directly from Cuebooker. Real recipient delivery/download, mobile/Safari, durable orphan/recovery and broader launch gates stay open. This block does not alter limits, secrets, user consent, crons or paid plans. Publication/deployment evidence must be recorded after completion.
+
 ## 2026-10-15 / First live Gmail PDF+PNG acceptance passed
 
 Owner explicitly authorized raising staging's internal monthly per-connection analysis cap100→150; changed only that setting, app cap1000 retained. Verified active account had50 attempts available, valid credential/watch/consent revision. No production, secrets, scheduler, paid service or historical replay changed.

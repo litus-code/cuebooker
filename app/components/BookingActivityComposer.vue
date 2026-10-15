@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import {emailAttachmentMetadata,prepareEmailAttachments,EMAIL_ATTACHMENT_MAX_BYTES,NYLAS_ATTACHMENT_MAX_BYTES} from '../domain/emailAttachments'
 import type { ActivityDirection, ActivityType, CoreBooking } from '../domain/bookingCore'
 
 const props = defineProps<{
@@ -14,8 +15,22 @@ const emit = defineEmits<{ created: [] }>()
 const bookingCore = useBookingCore()
 const bookingEmail = useBookingEmail()
 const mailboxApi = useConnectedMailbox()
-const mailboxes = ref<Array<{id:string;email:string;status:string}>>([])
+const mailboxes = ref<Array<{id:string;email:string;status:string;transport?:string}>>([])
 const senderId = ref('')
+const selectedFiles=ref<File[]>([])
+const fileInput=ref<HTMLInputElement|null>(null)
+const attachmentMax=computed(()=>mailboxes.value.find(m=>m.id===senderId.value)?.transport==='nylas'?NYLAS_ATTACHMENT_MAX_BYTES:EMAIL_ATTACHMENT_MAX_BYTES)
+let composerActive=true
+onBeforeUnmount(()=>{composerActive=false})
+function selectFiles(event:Event){
+ const input=event.target as HTMLInputElement
+ const incoming=Array.from(input.files||[])
+ const files=[...selectedFiles.value,...incoming.filter(file=>!selectedFiles.value.some(saved=>saved.name===file.name&&saved.size===file.size&&saved.lastModified===file.lastModified))]
+ input.value=''
+ try{emailAttachmentMetadata(files,attachmentMax.value);selectedFiles.value=files;errorMessage.value=''}catch(error){errorMessage.value=localEmailError((error as Error).message)}
+}
+function removeFile(index:number){selectedFiles.value=selectedFiles.value.filter((_,i)=>i!==index)}
+function fileSize(size:number){return size>=1048576?`${(size/1048576).toFixed(1)} MiB`:`${Math.ceil(size/1024)} KiB`}
 const senderLoading = ref(false)
 const senderError = ref(false)
 const sendUncertain = ref(false)
@@ -46,7 +61,11 @@ watch(() => [props.workspaceId,props.booking.id], async ([workspace,booking]) =>
  catch {if(generation===mailboxGeneration){senderError.value=true;errorMessage.value=props.locale==='es'?'No se pudo comprobar tu correo. Recarga antes de enviar.':'Could not check your mailbox. Reload before sending.'}}
  finally {if(generation===mailboxGeneration)senderLoading.value=false}
 },{immediate:true})
-watch(() => props.booking.id,()=>{sendRequestId='';sendUncertain.value=false;subject.value='';body.value=''})
+watch(() => [props.workspaceId,props.booking.id],()=>{
+ sendRequestId='';sendUncertain.value=false;subject.value=props.initialSubject?(/^re:/i.test(props.initialSubject)?props.initialSubject:`Re: ${props.initialSubject}`):'';body.value='';selectedFiles.value=[]
+ for(const channel of Object.keys(channelDrafts) as Array<keyof typeof channelDrafts>)channelDrafts[channel]=''
+ successMessage.value='';errorMessage.value=''
+})
 
 
 const copy = computed(() => props.locale === 'es' ? {
@@ -141,6 +160,13 @@ function applySuggestedRetry() {
 }
 
 function localEmailError(code: string) {
+ const es=props.locale==='es'
+ if(code==='email_attachment_count')return es?'Puedes adjuntar hasta 5 archivos.':'You can attach up to 5 files.'
+ if(code==='email_attachment_type')return es?'Adjunta archivos PDF, PNG o JPG.':'Attach PDF, PNG or JPG files.'
+ if(code==='email_attachment_name')return es?'El nombre de uno de los archivos no es válido o es demasiado largo.':'A filename is invalid or too long.'
+ if(['email_attachment_size','email_request_too_large'].includes(code))return es?`Los adjuntos deben sumar como máximo ${attachmentMax.value/1048576} MiB.`:`Attachments must total no more than ${attachmentMax.value/1048576} MiB.`
+ if(code==='email_attachment_invalid')return es?'No se ha podido validar un archivo. Revisa su formato y vuelve a adjuntarlo.':'A file could not be validated. Check its format and attach it again.'
+ if(code==='email_context_changed')return es?'La solicitud cambió antes del envío. Revisa el mensaje.':'The booking changed before sending. Review the message.'
   if (code === 'thread_mailbox_required') return props.locale==='es'?'Responde desde el buzón conectado a esta conversación.':'Reply from the mailbox linked to this conversation.'
   if (code === 'contact_email_required' || code === 'booking_contact_required') return copy.value.noContactEmail
   if (code === 'email_provider_not_configured') return copy.value.providerMissing
@@ -151,6 +177,8 @@ function localEmailError(code: string) {
 async function submit() {
   if (saving.value) return
 
+  const context={workspaceId:props.workspaceId,bookingId:props.booking.id,contactId:props.booking.primary_contact_id,connectionId:senderId.value,files:[...selectedFiles.value]}
+  const contextCurrent=()=>composerActive&&props.workspaceId===context.workspaceId&&props.booking.id===context.bookingId
   const submittedType = type.value
   const submittedDirection: ActivityDirection = submittedType === 'note' ? 'internal' : direction.value
   const submittedSubject = subject.value.trim()
@@ -166,21 +194,20 @@ async function submit() {
   try {
     if (submittedAsEmail) {
       if(senderLoading.value||senderError.value||sendUncertain.value) return
-      if(senderId.value){
-       sendRequestId ||= crypto.randomUUID()
-       await mailboxApi.send({workspaceId:props.workspaceId,bookingId:props.booking.id,connectionId:senderId.value,subject:submittedSubject,bodyText:text,requestId:sendRequestId})
-       sendRequestId=''
-      } else await bookingEmail.sendBookingEmail({
-        workspaceId: props.workspaceId,
-        bookingId: props.booking.id,
-        contactId: props.booking.primary_contact_id,
-        subject: submittedSubject,
-        bodyText: text
-      })
+      const attachments=await prepareEmailAttachments(context.files,attachmentMax.value)
+      if(!contextCurrent())throw new Error('email_context_changed')
+      sendRequestId ||= crypto.randomUUID()
+      const result=context.connectionId
+       ? await mailboxApi.send({workspaceId:context.workspaceId,bookingId:context.bookingId,connectionId:context.connectionId,subject:submittedSubject,bodyText:text,requestId:sendRequestId,attachments})
+       : await bookingEmail.sendBookingEmail({workspaceId:context.workspaceId,bookingId:context.bookingId,contactId:context.contactId,subject:submittedSubject,bodyText:text,requestId:sendRequestId,attachments})
+      if(!contextCurrent()){emit('created');return}
+      sendRequestId=''
+      selectedFiles.value=[]
       subject.value = ''
       body.value = ''
       channelDrafts.email = ''
       successMessage.value = senderId.value ? (props.locale==='es'?'Email enviado desde tu correo y guardado en la conversación.':'Email sent from your mailbox and saved in the conversation.') : copy.value.sent
+      if(result.attachmentStatus?.pending){successMessage.value=props.locale==='es'?'Email enviado con los adjuntos. Algunos documentos no se han guardado en la conversación. Comprueba Enviados en tu correo; evita reenviar el mensaje.':'Email sent with attachments. Some documents could not be saved in the conversation. Check Sent in your mailbox; avoid resending the message.'}
       analytics.track('booking_response_sent', { channel: 'email' })
       emit('created')
       return
@@ -199,6 +226,7 @@ async function submit() {
     successMessage.value = copy.value.saved
     emit('created')
   } catch (error: any) {
+    if(!contextCurrent())return
     if(['email_send_uncertain','email_send_already_attempted'].includes(error?.message)){
      sendUncertain.value=true
      errorMessage.value=props.locale==='es'?'No podemos confirmar el envío. Comprueba Enviados en tu correo antes de volver a enviar.':'Delivery could not be confirmed. Check Sent in your mailbox before sending again.'
@@ -249,7 +277,18 @@ async function submit() {
       <input v-if="sendsRealEmail" v-model="subject" class="activity-composer__subject" :aria-label="copy.subject" :placeholder="copy.subjectPlaceholder" maxlength="300" :disabled="saving">
       <textarea v-model="body" rows="2" :placeholder="sendsRealEmail ? copy.emailPlaceholder : copy.placeholder" :disabled="saving" />
       <select v-if="type !== 'note' && type !== 'email'" v-model="direction" :aria-label="locale === 'es' ? 'Dirección' : 'Direction'" :disabled="saving"><option value="inbound">{{ copy.inbound }}</option><option value="outbound">{{ copy.outbound }}</option></select>
-      <div v-else-if="type === 'email'" class="activity-composer__email-route">{{ locale === 'es' ? 'Tú → contacto' : 'You → contact' }}</div>
+      <div v-if="sendsRealEmail" class="activity-composer__attachments">
+        <input ref="fileInput" class="activity-composer__file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" multiple :disabled="saving || sendUncertain" @change="selectFiles">
+        <button class="activity-composer__attach" type="button" :disabled="saving || sendUncertain" @click="fileInput?.click()">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m8 12 6-6a3 3 0 0 1 4 4l-8 8a5 5 0 0 1-7-7l9-9"/><path d="m6 14 8-8"/></svg>
+          {{ locale === 'es' ? 'Adjuntar archivos' : 'Attach files' }}
+        </button>
+        <small>{{ locale === 'es' ? `PDF, PNG o JPG · hasta 5 archivos y ${attachmentMax / 1048576} MiB en total` : `PDF, PNG or JPG · up to 5 files and ${attachmentMax / 1048576} MiB total` }}</small>
+        <ul v-if="selectedFiles.length" :aria-label="locale === 'es' ? 'Archivos adjuntos' : 'Attachments'">
+          <li v-for="(file,index) in selectedFiles" :key="index"><span>{{ file.name }} <small>{{ fileSize(file.size) }}</small></span><button type="button" :aria-label="`${locale === 'es' ? 'Quitar' : 'Remove'} ${file.name}`" :disabled="saving || sendUncertain" @click="removeFile(index)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></li>
+        </ul>
+      </div>
+      <div v-if="type === 'email'" class="activity-composer__email-route">{{ locale === 'es' ? 'Tú → contacto' : 'You → contact' }}</div>
       <button class="activity-composer__save" type="submit" :disabled="saving || (sendsRealEmail && (senderLoading || senderError || sendUncertain))">{{ saving ? (sendsRealEmail ? copy.sending : copy.saving) : (sendsRealEmail ? copy.sendEmail : copy.save) }}</button>
     </div>
     <p v-if="sendsRealEmail&&!senderLoading&&!senderError&&!mailboxes.length" class="activity-composer__fallback">{{locale==='es'?'Envías desde el correo de Cuebooker. No necesitas conectar tu buzón; las respuestas se guardan en esta conversación.':'You send from Cuebooker’s email. No connected mailbox is needed; replies are saved in this conversation.'}}</p>
@@ -259,6 +298,16 @@ async function submit() {
 </template>
 
 <style scoped>
+.activity-composer__attachments {grid-column:1 / -1;display:grid;gap:8px;min-width:0}
+.activity-composer__file-input {display:none}
+.activity-composer__attach {display:inline-flex;align-items:center;justify-self:start;gap:8px;min-height:44px;padding:0 14px;border:1px solid var(--cue-border);border-radius:999px;color:var(--cue-text);background:var(--cue-surface);cursor:pointer;font-size:12px}
+.activity-composer__attachments > small {font-size:11px;color:var(--cue-muted)}
+.activity-composer__attachments ul {display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.activity-composer__attachments li {display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 4px 2px 12px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control);font-size:12px;min-width:0}
+.activity-composer__attachments li > span {min-width:0;overflow-wrap:anywhere}
+.activity-composer__attachments li small {color:var(--cue-muted);white-space:nowrap}
+.activity-composer__attachments li button {flex-shrink:0;display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:50%;color:var(--cue-text);background:transparent;cursor:pointer}
+.activity-composer__attachments button:focus-visible {outline:2px solid var(--cue-accent);outline-offset:2px}
 .activity-composer__sender {grid-column:1 / -1;display:grid;gap:6px;font-size:11px;color:var(--cue-muted)}
 .activity-composer details summary {cursor:pointer;font-size:10px;padding:8px}
 .activity-composer { border-radius:var(--cue-radius-panel); margin-top:16px; border:1px solid var(--cue-border); background:var(--cue-raised); }
@@ -285,6 +334,9 @@ async function submit() {
 .activity-composer__suggestion button { min-height:var(--cue-button-sm); padding:0 12px; border:1px solid var(--cue-accent); border-radius:var(--cue-radius-control); background:transparent; color:var(--cue-accent); cursor:pointer; font:800 8px monospace; text-transform:uppercase; }
 .activity-composer__body { display:grid; grid-template-columns:minmax(0,1fr) 130px max-content; gap:14px; align-items:end; padding:14px 16px 16px; }
 .activity-composer__body--email { grid-template-columns:minmax(0,1fr) 130px max-content; }
+.activity-composer__body--email textarea {grid-column:1 / -1}
+.activity-composer__body--email .activity-composer__email-route {grid-column:1 / 3;justify-self:start}
+.activity-composer__body--email .activity-composer__save {grid-column:3}
 .activity-composer__subject { grid-column:1 / -1; min-height:36px; }
 .activity-composer textarea, .activity-composer select, .activity-composer__subject { box-sizing:border-box; border:1px solid var(--cue-border); border-radius:var(--cue-radius-control); background:var(--cue-surface); color:var(--cue-text); padding:8px 10px; font-size:11px; }
 .activity-composer__email-route { display:grid; place-items:center; min-height:var(--cue-button-md); padding:0 10px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-control); color:var(--cue-muted); font:800 8px monospace; text-transform:uppercase; }
@@ -302,7 +354,10 @@ async function submit() {
   .activity-composer__save { min-height:var(--cue-button-sm); }
   .activity-composer__types { width:100%; justify-content:flex-start; }
   .activity-composer__body, .activity-composer__body--email { grid-template-columns:1fr; }
-  .activity-composer__subject { grid-column:1; }
+  .activity-composer__body--email textarea {grid-column:1 / -1}
+.activity-composer__body--email .activity-composer__email-route {grid-column:1 / 3;justify-self:start}
+.activity-composer__body--email .activity-composer__save {grid-column:3}
+.activity-composer__subject { grid-column:1; }
   .activity-composer__save { width:auto; min-width:0; justify-self:start; }
 }
 </style>

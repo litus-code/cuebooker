@@ -1,3 +1,6 @@
+import {validateEmailAttachments,EMAIL_ATTACHMENT_MAX_BYTES,NYLAS_ATTACHMENT_MAX_BYTES} from '../../../app/domain/emailAttachments.ts';
+import {emailRequestJson} from '../_shared/emailAttachmentRequest.ts';
+import {persistSentAttachments} from '../_shared/persistSentAttachments.ts';
 import {mailboxDetectionState} from '../_shared/mailboxDetectionState.ts';
 import {gmailConfig,gmailCredentialContext,mailboxTransport} from '../_shared/mailboxTransport.ts';
 import {gmailConfigured,gmailAuthorization,exchangeGmail,sealGmail,openGmail,createGmailMailbox} from '../_shared/gmailMailbox.ts';
@@ -65,7 +68,7 @@ Deno.serve(async(request:Request)=>{
   const response=await fetch(`${supabaseUrl}/auth/v1/user`,{headers:{apikey:anonKey,Authorization:`Bearer ${token}`},signal:AbortSignal.timeout(10000)});
   if(!response.ok)return json({error:'authentication_required'},401);
   const user=await response.json();if(!uuid(user?.id))return json({error:'authentication_required'},401);
-  let input:any;try{input=await request.json();}catch{return json({error:'invalid_json'},400);}
+  let input:any;try{input=await emailRequestJson(request);}catch(error){const code=(error as Error).message;return json({error:code==='email_request_too_large'?code:'invalid_json'},code==='email_request_too_large'?413:400);}
   if(!uuid(input?.workspaceId))return json({error:'invalid_workspace'},400);
   action=['status','waitlist','complete','recent','thread','classify','import','sync','send','connect','disconnect','background'].includes(input.action)?input.action:'invalid_action';
   const workspace=input.workspaceId,userId=user.id;
@@ -261,6 +264,7 @@ Deno.serve(async(request:Request)=>{
     return json({synced:true,partial});
    }
    if(!uuid(input.requestId)||typeof input.subject!=='string'||typeof input.bodyText!=='string'||!input.subject.trim()||!input.bodyText.trim()||input.subject.length>300||input.bodyText.length>20000)return json({error:'invalid_email_content'},400);
+   let attachments;try{attachments=validateEmailAttachments(input.attachments,connection.transport==='gmail'?EMAIL_ATTACHMENT_MAX_BYTES:NYLAS_ATTACHMENT_MAX_BYTES);}catch(error){return json({error:(error as Error).message},400);}
    const allLinks=await db<any[]>(`mailbox_booking_threads?workspace_id=eq.${workspace}&booking_id=eq.${bookingId}&select=connection_id&limit=1`);
    if(allLinks.length&&!links.length)return json({error:'thread_mailbox_required'},409);
    const contacts=await db<any[]>(`contacts?workspace_id=eq.${workspace}&id=eq.${booking.primary_contact_id}&select=email&limit=1`);
@@ -278,11 +282,27 @@ Deno.serve(async(request:Request)=>{
      if(!candidates[0])return json({error:'thread_recipient_mismatch'},409);
      replyId=candidates[0].id;
     }
-    const sent=await provider.send(connection.grant_id,{to,subject:input.subject.trim(),bodyText:input.bodyText.trim(),replyToMessageId:replyId});
+    await member(workspace,userId);
+    const sendConnection=await db<Connection[]>(`${path}&id=eq.${connection.id}&status=eq.connected&select=id&limit=1`);
+    const sendBooking=await db<any[]>(`bookings?workspace_id=eq.${workspace}&id=eq.${bookingId}&select=id,archived_at&limit=1`);
+    if(!sendConnection.length||!sendBooking[0]||sendBooking[0].archived_at)throw new Error('send_access_revoked');
+    const sent=await provider.send(connection.grant_id,{to,subject:input.subject.trim(),bodyText:input.bodyText.trim(),replyToMessageId:replyId,attachments});
     const message=mailboxMessage({...sent,from:[{email:connection.email}],to:[{email:to}],subject:sent.subject||input.subject.trim(),body:input.bodyText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'),date:sent.date||Math.floor(Date.now()/1000)},connection.email);
     await ingest(message.threadId,[message]);
     await db(`mailbox_send_attempts?id=eq.${input.requestId}`,{method:'PATCH',body:JSON.stringify({state:'sent',provider_message_id:message.id})});
-    return json({id:input.requestId,status:'sent',to,providerMessageId:message.id,from:connection.email});
+    let attachmentStatus={stored:0,pending:attachments.length};
+    if(attachments.length){
+     try{
+      const emails=await db<Array<{id:string}>>(`email_messages?workspace_id=eq.${workspace}&booking_id=eq.${bookingId}&provider=eq.${encodeURIComponent('nylas:'+connection.id)}&provider_message_id=eq.${encodeURIComponent(message.id)}&direction=eq.outbound&select=id&limit=1`);
+      if(!emails[0])throw new Error('sent_message_not_saved');
+      attachmentStatus=await persistSentAttachments({base:supabaseUrl,key:serviceKey,workspaceId:workspace,bookingId,emailMessageId:emails[0].id,files:attachments,authorize:async()=>{
+       await member(workspace,userId);
+       const active=await db<Connection[]>(`${path}&id=eq.${connection.id}&status=eq.connected&select=id&limit=1`);
+       return active.length===1;
+      }});
+     }catch{console.warn('outbound_attachment_persistence_pending');}
+    }
+    return json({id:input.requestId,status:'sent',to,providerMessageId:message.id,from:connection.email,attachmentStatus});
    }catch{
     await db(`mailbox_send_attempts?id=eq.${input.requestId}`,{method:'PATCH',body:JSON.stringify({state:'uncertain'})});
     return json({error:'email_send_uncertain'},409);

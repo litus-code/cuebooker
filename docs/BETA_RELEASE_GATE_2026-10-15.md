@@ -36,3 +36,7 @@ The marketing design PR #112 remains separate and requires integration review be
 ## Staging reconciliation continuation
 
 The authenticated audit supersedes the historical access/source blocker below. See STAGING_MAILBOX_AUDIT_2026-10-15.md and current HANDOFF for retrieved source, SQL compatibility correction, RLS/duplicate tests and actual publication/deployment evidence. Live Gmail acceptance, internal-budget availability, expired watch repair and durable attachment recovery remain open. Production remains blocked.
+
+## Outgoing attachment candidate
+
+Owner prioritizes replying directly from Cuebooker with a document. Beta0.0.7 adds selection, validation, provider delivery and private outbound-message copies. See OUTBOUND_EMAIL_ATTACHMENTS.md and current HANDOFF for exact migration/deployment/CI evidence. Local567 tests and handler mocks do not close real outgoing receipt/open, UI/mobile/Safari or durable recovery gates. No production promotion.

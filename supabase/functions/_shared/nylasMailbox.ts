@@ -1,3 +1,5 @@
+import {validateEmailAttachments,NYLAS_ATTACHMENT_MAX_BYTES} from '../../../app/domain/emailAttachments.ts';
+import type {EmailAttachment} from '../../../app/domain/emailAttachments.ts';
 export type MailboxProvider = 'google' | 'microsoft' | 'imap';
 export type NylasConfig = { apiUri: string; apiKey: string; clientId: string; callbackUri: string };
 export function knownMailboxProvider(email: string): MailboxProvider | null {
@@ -75,9 +77,10 @@ export function createNylasMailbox(config: NylasConfig, request: typeof fetch = 
    const ids=(attributes:string[])=>result.data.filter((folder:any)=>typeof folder.id==='string'&&Array.isArray(folder.attributes)&&folder.attributes.some((value:unknown)=>typeof value==='string'&&attributes.includes(value))).map((folder:any)=>folder.id as string);
    return {inbox:ids(['\\Inbox']),excluded:ids(['\\Junk','\\Trash','\\Sent','\\Drafts'])};
   },
-  async send(id:string,input:{to:string;subject:string;bodyText:string;replyToMessageId?:string}) {
+  async send(id:string,input:{to:string;subject:string;bodyText:string;replyToMessageId?:string;attachments?:EmailAttachment[]}) {
+   const attachments=validateEmailAttachments(input.attachments,NYLAS_ATTACHMENT_MAX_BYTES);
    const body=input.bodyText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>');
-   const result=await call(`/v3/grants/${encodeURIComponent(id)}/messages/send`,{method:'POST',body:JSON.stringify({to:[{email:normalizeMailboxEmail(input.to)}],subject:input.subject,body,...(input.replyToMessageId?{reply_to_message_id:input.replyToMessageId}:{})})});
+   const result=await call(`/v3/grants/${encodeURIComponent(id)}/messages/send`,{method:'POST',body:JSON.stringify({to:[{email:normalizeMailboxEmail(input.to)}],subject:input.subject,body,...(attachments.length?{attachments:attachments.map(file=>({filename:file.name,content_type:file.contentType,content:file.contentBase64}))}:{}),...(input.replyToMessageId?{reply_to_message_id:input.replyToMessageId}:{})})});
    if(!result?.data?.id||!result.data.thread_id)throw new Error('invalid_provider_response');
    return result.data;
   },
