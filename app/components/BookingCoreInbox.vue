@@ -839,11 +839,8 @@ async function selectBooking(bookingId: string) {
                 <p>{{ activity.presentation.quotedBody }}</p>
               </details>
             </article>
-          </div>
-
-          <section v-if="!demoData && bookingAttachments.length" class="core-inbox__documents" :aria-label="locale === 'es' ? 'Archivos adjuntos' : 'Attachments'">
+          <section v-if="!demoData && bookingAttachments.length" class="core-inbox__documents thread-item thread-item--inbound" :aria-label="locale === 'es' ? 'Archivos adjuntos' : 'Attachments'">
             <div class="core-inbox__documents-head">
-              <span aria-hidden="true">▤</span>
               <strong>{{ locale === 'es' ? 'Archivos adjuntos' : 'Attachments' }}</strong>
               <small>{{ bookingAttachments.length }}</small>
             </div>
@@ -857,6 +854,8 @@ async function selectBooking(bookingId: string) {
             </div>
             <p v-if="attachmentNotice" role="status">{{ attachmentNotice }}</p>
           </section>
+
+          </div>
 
           <form v-if="canOperate && demoData && !selectedBooking.archived_at" class="core-inbox__demo-composer" @submit.prevent="saveDemoNote">
             <label>{{ locale === 'es' ? 'Registrar interacción' : 'Log an interaction' }}
@@ -976,12 +975,12 @@ async function selectBooking(bookingId: string) {
 </template>
 
 <style scoped>
-.core-inbox__documents { display:grid; gap:10px; margin:14px 0; padding:14px; border:1px solid var(--cue-border); border-radius:14px; background:var(--cue-surface); min-width:0; }
-.core-inbox__documents-head { display:flex; align-items:center; gap:8px; font-size:12px; }
+.core-inbox__documents { display:grid; gap:10px; margin:8px 0 12px; padding:12px 14px; min-width:0; width:min(100%,720px); max-width:100%; align-self:flex-start; border:1px solid var(--cue-border); border-left:3px solid var(--cue-accent); border-radius:10px; background:var(--cue-surface); }
+.core-inbox__documents-head { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; }
 .core-inbox__documents-head strong { flex:1; }
 .core-inbox__documents-head small { background:var(--cue-border); border-radius:20px; padding:2px 7px; }
 .core-inbox__documents-list { display:grid; gap:6px; }
-.core-inbox__document { display:flex; width:100%; min-width:0; align-items:center; gap:10px; text-align:left; border:1px solid var(--cue-border); border-radius:10px; background:transparent; color:inherit; padding:10px; cursor:pointer; }
+.core-inbox__documents .core-inbox__document { display:flex; width:100%; min-width:0; align-items:center; gap:10px; text-align:left; border:1px solid var(--cue-border); border-radius:9px; background:color-mix(in srgb,var(--cue-surface) 90%,var(--cue-accent) 10%); color:var(--cue-text); padding:10px 12px; cursor:pointer; font:inherit; box-shadow:none; }
 .core-inbox__document:hover { border-color:var(--cue-accent); }
 .core-inbox__document-type { flex:none; font:700 10px/1.2 monospace; padding:7px 6px; border-radius:5px; background:color-mix(in srgb,var(--cue-accent) 12%,transparent); color:var(--cue-accent); }
 .core-inbox__document-name { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; }
