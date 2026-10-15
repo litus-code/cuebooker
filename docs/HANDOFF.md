@@ -4,7 +4,7 @@ PR96 branch `feature/agency-multi-artist-beta`, baseline HEAD `485f6bcce74c1ec6e
 
 573 tests pass, including exact inbound/outbound separation with identical filenames, WebP warning ownership and unlinked-history fallback. Full build prerenders40 routes; whitespace checks pass. Existing live staging sample activities have exact message IDs, including the newly accepted PNG reply. This change is frontend only: no schema, Edge Function, Storage/RLS, provider/AI call, file migration, new email or replay. Beta increments0.0.8→0.0.9 for PR preview publication. Browser390px/Safari visual acceptance is still open after the earlier unavailable Chromium download; this build is not a claimed visual check.
 
-Next: publish PR96 preview, verify CI and preview, then owner reloads the original booking and checks each reply has only its own attachments, with the WebP warning under its own message. Production, stable frontend and merge remain untouched. Publication evidence follows in the PR description after completion.
+Next: owner reloads the published PR96 preview and opens the original booking and checks each reply has only its own attachments, with the WebP warning under its own message. Production, stable frontend and merge remain untouched. Implementation `70a023ae7cf21e2d4ec6814bdc22f05aa74da7db`: CI2207/run38789011135 and PR preview2681/run38789011134 SUCCESS. Stable frontend job skipped. Preview https://pr-96.cuebooker-staging.pages.dev. This subsequent evidence-only docs revision does not change application sources.
 
 ## 2026-10-15 / Live supported-file reply acceptance passed in staging
 
