@@ -31,6 +31,7 @@ const emit = defineEmits<{
 
 const formRoot = ref<HTMLFormElement | null>(null)
 const detailsRoot = ref<HTMLDetailsElement | null>(null)
+const previewDetailsOpen = ref(false)
 const minEventDate = ref('')
 const maxEventDate = ref('')
 const fieldErrors = reactive<Partial<Record<FieldName, string>>>({})
@@ -296,7 +297,7 @@ function submit() {
         <small v-if="fieldErrors.initialMessage" id="booking-message-error" class="public-booking-form__field-error">{{ fieldErrors.initialMessage }}</small>
       </label>
 
-      <details ref="detailsRoot" class="public-booking-form__details" :open="preview ? true : undefined">
+      <details ref="detailsRoot" class="public-booking-form__details" :open="preview ? previewDetailsOpen : undefined" @toggle="preview ? (previewDetailsOpen = detailsRoot?.open ?? false) : undefined">
         <summary>{{ copy.details }}</summary>
         <div class="public-booking-form__details-grid">
           <label><span>{{ copy.organization }}</span><input v-model="form.organizationName" maxlength="180"></label>

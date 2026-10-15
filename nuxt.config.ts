@@ -33,7 +33,6 @@ export default defineNuxtConfig({
         { name: 'twitter:title', content: 'CueBooker | Booking de DJs y música electrónica' },
         { name: 'twitter:description', content: 'Descubre artistas disponibles, envía una solicitud y gestiona el booking de música electrónica desde un mismo lugar.' }
       ],
-      link: [{ rel: 'canonical', href: 'https://cuebooker.com/' }],
       script: [{
         type: 'application/ld+json',
         innerHTML: JSON.stringify({

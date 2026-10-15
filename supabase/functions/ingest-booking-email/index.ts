@@ -75,6 +75,108 @@ async function serviceJson<T>(url: string, init: RequestInit, serviceKey: string
 }
 
 
+const ATTACHMENT_MAX_BYTES = 5 * 1024 * 1024;
+const ATTACHMENT_MAX_COUNT = 10;
+const ATTACHMENT_ALLOWED = new Set(["application/pdf", "image/png", "image/jpeg"]);
+
+function verifiedType(bytes: Uint8Array): string | null {
+  if (bytes.length >= 5 && String.fromCharCode(...bytes.slice(0, 5)) === "%PDF-") return "application/pdf";
+  if (bytes.length >= 8 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47 && bytes[4] === 0x0d && bytes[5] === 0x0a) return "image/png";
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
+  return null;
+}
+
+async function limitedBytes(response: Response) {
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error("attachment_empty_response");
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > ATTACHMENT_MAX_BYTES) throw new Error("attachment_too_large");
+      chunks.push(value);
+    }
+  } finally {
+    await reader.cancel().catch(() => {});
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
+  return bytes;
+}
+
+async function persistAttachments(
+  item: Record<string, unknown>,
+  emailMessageId: string,
+  workspaceId: string,
+  bookingId: string,
+  supabaseUrl: string,
+  serviceKey: string,
+  requestId: string
+) {
+  // Off by default until the migration and an actual Brevo roundtrip are verified.
+  if (Deno.env.get("CUEBOOKER_EMAIL_ATTACHMENTS_ENABLED") !== "true") return;
+  const brevoKey = Deno.env.get("BREVO_API_KEY")?.trim();
+  if (!brevoKey) throw new Error("missing_brevo_api_key");
+  const attachments = Array.isArray(item.Attachments) ? item.Attachments : [];
+  for (const [index, unknownAttachment] of attachments.slice(0, ATTACHMENT_MAX_COUNT).entries()) {
+    const attachment = unknownAttachment && typeof unknownAttachment === "object"
+      ? unknownAttachment as Record<string, unknown> : {};
+    const token = typeof attachment.DownloadToken === "string" ? attachment.DownloadToken.trim() : "";
+    const claimedType = typeof attachment.ContentType === "string" ? attachment.ContentType.toLowerCase().split(";")[0].trim() : "";
+    const declaredSize = Number(attachment.ContentLength);
+    if (!token || !ATTACHMENT_ALLOWED.has(claimedType) || !Number.isFinite(declaredSize) || declaredSize < 1 || declaredSize > ATTACHMENT_MAX_BYTES) {
+      logEvent("attachment_skipped", requestId, { reason: "invalid_type_size_or_token", index });
+      continue;
+    }
+    // Provider retries must not create a second object or DB record.
+    const existing = await serviceJson<Array<{ id: string }>>(
+      `${supabaseUrl}/rest/v1/booking_email_attachments?email_message_id=eq.${encodeURIComponent(emailMessageId)}&attachment_index=eq.${index}&select=id&limit=1`,
+      { method: "GET" }, serviceKey
+    );
+    if (existing.length) continue;
+    try {
+      const response = await fetch(`https://api.brevo.com/v3/inbound/attachments/${encodeURIComponent(token)}`, {
+        headers: { "api-key": brevoKey }
+      });
+      if (!response.ok) throw new Error(`attachment_fetch_${response.status}`);
+      const bytes = await limitedBytes(response);
+      const detectedType = verifiedType(bytes);
+      if (!detectedType || detectedType !== claimedType || bytes.length === 0) throw new Error("attachment_content_mismatch");
+      const rawName = typeof attachment.Name === "string" ? attachment.Name : "attachment";
+      const fileName = rawName.replace(/[\\/\x00-\x1f]/g, "_").slice(0, 200) || "attachment";
+      const path = `${workspaceId}/${emailMessageId}/${index}`;
+      const upload = await fetch(`${supabaseUrl}/storage/v1/object/booking-email-attachments/${path}`, {
+        method: "POST",
+        headers: {
+          apikey: serviceKey,
+          Authorization: `Bearer ${serviceKey}`,
+          "Content-Type": detectedType,
+          "x-upsert": "true"
+        },
+        body: bytes
+      });
+      if (!upload.ok) throw new Error(`attachment_storage_${upload.status}`);
+      await serviceJson(`${supabaseUrl}/rest/v1/booking_email_attachments?on_conflict=email_message_id,attachment_index`, {
+        method: "POST",
+        headers: { Prefer: "resolution=ignore-duplicates,return=minimal" },
+        body: JSON.stringify({
+          workspace_id: workspaceId, booking_id: bookingId, email_message_id: emailMessageId,
+          attachment_index: index, file_name: fileName, content_type: detectedType,
+          byte_size: bytes.length, storage_path: path
+        })
+      }, serviceKey);
+      logEvent("attachment_stored", requestId, { index, bytes: bytes.length });
+    } catch (error) {
+      logEvent("attachment_failed", requestId, { index, reason: error instanceof Error ? error.message.slice(0, 90) : "unknown" });
+      // Leave the parent mail/Activity intact. A provider retry may resume this file.
+    }
+  }
+}
+
 function dispatchNotificationEmails(supabaseUrl: string, serviceKey: string, limit = 10) {
   const task = fetch(`${supabaseUrl.replace(/\/$/, "")}/functions/v1/dispatch-notification-emails`, {
     method: "POST",
@@ -241,6 +343,9 @@ Deno.serve(async (request) => {
       );
 
       const result = rows[0];
+      if (result?.email_message_id) {
+        await persistAttachments(item, result.email_message_id, thread.workspace_id, thread.booking_id, supabaseUrl, serviceKey, requestId);
+      }
       if (result?.email_created || result?.activity_created) {
         accepted += 1;
         logEvent("item_accepted", requestId, {

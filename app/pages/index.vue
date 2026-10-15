@@ -96,10 +96,12 @@ onBeforeUnmount(() => {
 useHead(() => ({
   htmlAttrs: { lang: locale.value },
   title: p.value.seo.title,
+  link: [{ rel: 'canonical', href: 'https://cuebooker.com/' }],
   meta: [
     { name: 'description', content: p.value.seo.description },
     { property: 'og:title', content: p.value.seo.title },
     { property: 'og:description', content: p.value.seo.description },
+    { property: 'og:url', content: 'https://cuebooker.com/' },
     { name: 'twitter:title', content: p.value.seo.title },
     { name: 'twitter:description', content: p.value.seo.description }
   ]
