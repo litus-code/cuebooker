@@ -2315,10 +2315,11 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 4 12l5 7M20 5v14"/></svg>
         </button>
       </div>
+      <nav id="workspace-navigation" aria-label="Workspace">
       <div class="workspace-navigation-notifications">
         <WorkspaceNotifications :locale="preferences.locale.value" @open-booking="openNotificationBooking" />
       </div>
-      <nav id="workspace-navigation" aria-label="Workspace">
+
         <button :title="copy.overview" data-workspace-view="overview" :aria-current="workspaceBootResolved && activeView === 'overview' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('overview')">{{ copy.overview }}</button>
         <button :title="copy.bookings" data-workspace-view="bookings" :aria-current="workspaceBootResolved && activeView === 'bookings' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
         <button :title="copy.calendar" data-workspace-view="calendar" :aria-current="workspaceBootResolved && activeView === 'calendar' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
