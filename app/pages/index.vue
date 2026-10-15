@@ -6,13 +6,9 @@ const { locale } = useCuePreferences()
 const p = computed(() => locale.value === 'es' ? es : en)
 const analytics = useAnalytics()
 const heroImage = `${useRuntimeConfig().app.baseURL}club-hero.webp`
-const menuOpen = ref(false)
 const demoStep = ref(0)
-const menuButton = ref<HTMLButtonElement>()
-const mobileMenu = ref<HTMLElement>()
 const reducedMotion = ref(true)
 let motionQuery: MediaQueryList | undefined
-let previousOverflow = ''
 
 function trackSignup(placement: string) {
   analytics.track('signup_click', { placement })
@@ -20,35 +16,12 @@ function trackSignup(placement: string) {
 function updateMotion() {
   reducedMotion.value = motionQuery?.matches ?? true
 }
-function closeMenu(restoreFocus = true) {
-  menuOpen.value = false
-  if (restoreFocus) nextTick(() => menuButton.value?.focus())
-}
 function scrollTo(id: string) {
-  closeMenu(false)
   nextTick(() => {
     const target = document.getElementById(id)
     target?.focus({ preventScroll: true })
     target?.scrollIntoView({ behavior: reducedMotion.value ? 'auto' : 'smooth' })
   })
-}
-function onMenuKey(event: KeyboardEvent) {
-  if (event.key === 'Escape') {
-    event.preventDefault()
-    closeMenu()
-    return
-  }
-  if (event.key !== 'Tab') return
-  const items = mobileMenu.value?.querySelectorAll<HTMLElement>('a, button')
-  const first = items?.[0]
-  const last = items?.[items.length - 1]
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault()
-    last?.focus()
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault()
-    first?.focus()
-  }
 }
 function selectStep(index: number) {
   demoStep.value = index
@@ -65,33 +38,13 @@ function stepKeys(event: KeyboardEvent, index: number) {
   selectStep(next)
   nextTick(() => document.getElementById(`step-${next}`)?.focus())
 }
-function handleResize() {
-  if (window.innerWidth > 1100 && menuOpen.value) {
-    closeMenu(false)
-    nextTick(() => document.querySelector<HTMLElement>('.home-nav-links a')?.focus())
-  }
-}
-watch(menuOpen, async open => {
-  if (!import.meta.client) return
-  if (open) {
-    previousOverflow = document.documentElement.style.overflow
-    document.documentElement.style.overflow = 'hidden'
-    await nextTick()
-    mobileMenu.value?.querySelector<HTMLElement>('button')?.focus()
-  } else {
-    document.documentElement.style.overflow = previousOverflow
-  }
-})
 onMounted(() => {
   motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
   updateMotion()
   motionQuery.addEventListener('change', updateMotion)
-  window.addEventListener('resize', handleResize)
 })
 onBeforeUnmount(() => {
   motionQuery?.removeEventListener('change', updateMotion)
-  window.removeEventListener('resize', handleResize)
-  if (menuOpen.value) document.documentElement.style.overflow = previousOverflow
 })
 useHead(() => ({
   htmlAttrs: { lang: locale.value },
@@ -123,27 +76,11 @@ useHead(() => ({
           <div class="home-desktop-preferences"><CuePreferencesControl compact /></div>
           <NuxtLink class="home-login" to="/access?mode=signin" @click="analytics.track('login_click', { placement: 'header' })">{{ p.nav.login }}</NuxtLink>
           <NuxtLink class="cp-cta home-nav-signup" to="/access?mode=signup" @click="trackSignup('header')">{{ p.nav.signup }}</NuxtLink>
-          <button ref="menuButton" class="home-menu-toggle" type="button" :aria-label="p.nav.open" :aria-expanded="menuOpen" aria-controls="home-mobile-menu" @click="menuOpen = true">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18M3 17h18" /></svg>
-          </button>
+          <PublicMobileMenu @signup="trackSignup('mobile-menu')" />
         </div>
       </nav>
     </header>
-    <Teleport to="body">
-      <div v-if="menuOpen" id="home-mobile-menu" ref="mobileMenu" class="home-mobile-menu" role="dialog" aria-modal="true" :aria-label="p.nav.label" @keydown="onMenuKey">
-        <div class="home-mobile-tools">
-          <CuePreferencesControl />
-          <button type="button" :aria-label="p.nav.close" @click="closeMenu()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 5 14 14M19 5 5 19" /></svg></button>
-        </div>
-        <nav :aria-label="p.nav.label">
-          <a href="#product" @click.prevent="scrollTo('product')">{{ p.nav.product }}</a>
-          <a href="#audience" @click.prevent="scrollTo('audience')">{{ p.nav.audience }}</a>
-          <a href="#system" @click.prevent="scrollTo('system')">{{ p.nav.system }}</a>
-          <NuxtLink to="/access?mode=signin" @click="closeMenu(false)">{{ p.nav.login }}</NuxtLink>
-          <NuxtLink class="home-mobile-signup" to="/access?mode=signup" @click="closeMenu(false); trackSignup('mobile-menu')">{{ p.nav.signup }}</NuxtLink>
-        </nav>
-      </div>
-    </Teleport>
+
 
     <main>
       <section id="top" tabindex="-1" class="home-hero" aria-labelledby="hero-title" :style="{ '--hero-image': `url(${heroImage})` }">
@@ -225,7 +162,6 @@ html[data-theme='light'] .home-v2 :is(.cp-kicker, .cp-eyebrow, .home-mono, .sele
   color: color-mix(in srgb, var(--cp-lime) 85%, var(--cp-paper));
 }
 .home-v2 :deep(:is(a, button, [tabindex='0']):focus-visible),
-.home-mobile-menu :is(a, button):focus-visible { outline: 2px solid var(--cue-accent); outline-offset: 5px; }
 .home-v2 section[tabindex='-1'] { scroll-margin-top: 100px; }
 .home-skip { position: fixed; top: 8px; left: 16px; z-index: 200; padding: 14px 18px; background: var(--cp-lime); color: var(--cue-accent-ink); transform: translateY(-160%); }
 .home-skip:focus { transform: none; }
@@ -237,14 +173,6 @@ html[data-theme='light'] .home-v2 :is(.cp-kicker, .cp-eyebrow, .home-mono, .sele
 .home-nav-links a, .home-login { font-size: 12px; white-space: nowrap; }
 .home-nav-links a:hover, .home-login:hover { color: var(--cp-lime); }
 .home-nav-signup { font-size: 10px; }
-.home-menu-toggle { display: none; }
-.home-menu-toggle, .home-mobile-tools > button { width: 44px; height: 44px; padding: 10px; border: 1px solid var(--cue-border); border-radius: 50%; background: var(--cue-surface); color: var(--cue-text); cursor: pointer; }
-.home-menu-toggle svg, .home-mobile-tools svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.5; }
-.home-mobile-menu { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; gap: 28px; padding: 24px; overflow-y: auto; background: var(--cue-bg); color: var(--cue-text); }
-.home-mobile-tools { display: flex; align-items: center; justify-content: space-between; }
-.home-mobile-menu nav { display: grid; }
-.home-mobile-menu nav a { display: flex; align-items: center; min-height: 64px; padding: 14px 8px; border-bottom: 1px solid var(--cue-border); color: var(--cue-text); text-decoration: none; font-size: 22px; font-weight: 700; }
-.home-mobile-menu nav .home-mobile-signup { justify-content: center; margin-top: 24px; border-radius: 999px; background: var(--cue-accent); color: var(--cue-accent-ink); font-size: 16px; }
 .home-hero { position: relative; isolation: isolate; min-height: min(880px, 100svh); display: grid; align-items: center; background: var(--cp-black); border-bottom: 1px solid var(--cp-lime); }
 .home-hero::before { position: absolute; inset: 0; z-index: -2; content: ''; background: var(--hero-image) 74% center / cover no-repeat; }
 .home-hero-overlay { position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, var(--cp-black), color-mix(in srgb, var(--cp-black) 90%, transparent) 30%, color-mix(in srgb, var(--cp-black) 20%, transparent) 72%), linear-gradient(0deg, var(--cp-black), transparent 40%); }
@@ -351,7 +279,6 @@ html[data-theme='light'] .home-v2 .home-closing .cp-kicker { color: var(--cue-ac
 html[data-theme='light'] .home-hero-route span { color: color-mix(in srgb, var(--cp-lime) 85%, var(--cp-paper)); }
 @media (max-width: 1100px) {
   .home-nav-links, .home-desktop-preferences, .home-login { display: none; }
-  .home-menu-toggle { display: inline-flex; }
   .home-nav-actions { gap: 12px; }
   .home-hero h1 { font-size: clamp(60px, 7.4vw, 82px); }
   .home-hero-signature { bottom: 104px; max-width: 260px; font-size: 12px; }

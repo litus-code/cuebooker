@@ -10,7 +10,8 @@ const showGlobalHeader = computed(() => ['/access', '/onboarding'].includes(norm
       <NuxtLink class="global-brand-preferences__brand" to="/" aria-label="Cuebooker">
         <CueBrand />
       </NuxtLink>
-      <CuePreferencesControl compact />
+      <template v-if="normalizedPath === '/access'"><div class="global-access-preferences"><CuePreferencesControl compact /></div><PublicMobileMenu /></template>
+      <CuePreferencesControl v-else compact />
     </div>
   </header>
 </template>
@@ -25,6 +26,8 @@ const showGlobalHeader = computed(() => ['/access', '/onboarding'].includes(norm
 .workspace-header .account-actions .header-icon-button { width:44px; height:44px; }
 .workspace .history-view button,.workspace .history-view a { text-decoration:none !important; text-underline-offset:0 !important; }
 .workspace .history-view button:hover,.workspace .history-view a:hover { color:var(--cue-accent,#E8FF2F); }
+
+@media(max-width:1100px){.global-access-preferences{display:none}}
 
 @media (max-width:720px) {
   .global-brand-preferences { min-height:66px; }

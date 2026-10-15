@@ -115,16 +115,5 @@
 .commercial-audience .cl-email-showcase{margin-top:28px}
 @media(max-width:900px){.commercial-audience .cl-email-feature .cl-email-intro,.commercial-audience .cl-email-feature .cl-email-intro h2,.commercial-audience .cl-email-feature .cl-email-intro .cl-lead{text-align:left;margin-left:0;margin-right:0}.commercial-audience .cl-email-showcase{margin-top:26px}}
 
-/* Mobile navigation keeps links and preferences inside a native modal. */
-.cl-menu-toggle{display:none}
-.cl-mobile-menu{position:fixed;inset:0;width:100%;max-width:none;height:100%;max-height:none;margin:0;border:0;padding:24px;background:var(--cl-bg);color:var(--cl-text);overflow:auto}
-.cl-mobile-menu::backdrop{background:#0009}
-.cl-menu-top{display:flex;align-items:center;justify-content:space-between;gap:24px}
-.cl-menu-top>.cue-brand{width:140px}
-.cl-menu-top button,.cl-menu-toggle{align-items:center;justify-content:center;width:48px;height:48px;flex-shrink:0;border:1px solid var(--cl-line);border-radius:50%;background:transparent;color:var(--cl-text);cursor:pointer}
-.cl-menu-top button{display:inline-flex}
-.cl-menu-top svg,.cl-menu-toggle svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.5}
-.cl-mobile-menu nav{display:flex;flex-direction:column;gap:0;margin-top:32px}
-.cl-mobile-menu nav a{padding-block:22px;border-bottom:1px solid var(--cl-line);font-size:24px;text-decoration:none}
-.cl-menu-preferences{margin-top:32px}
-@media(max-width:767px){.cl-nav-inner{flex-wrap:nowrap;min-height:78px;padding-block:12px}.cl-nav .cl-desktop-nav,.cl-desktop-preferences{display:none}.cl-menu-toggle{display:inline-flex}.cl-nav .cl-brand{max-width:calc(100% - 72px);width:140px}}
+/* All public headers share the home mobile breakpoint and menu. */
+@media(max-width:1100px){.cl-nav .cl-desktop-nav,.cl-desktop-preferences{display:none}.cl-nav-inner{flex-wrap:nowrap;min-height:78px;padding-block:12px}.cl-nav .cl-brand{max-width:calc(100% - 72px);width:140px}}
