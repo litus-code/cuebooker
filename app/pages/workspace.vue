@@ -2316,15 +2316,15 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         </button>
       </div>
       <nav id="workspace-navigation" aria-label="Workspace">
-        <button :title="copy.overview" data-workspace-view="overview" :aria-current="workspaceBootResolved && activeView === 'overview' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('overview')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span class="workspace-nav-label">{{ copy.overview }}</span></button>
-        <button :title="copy.bookings" data-workspace-view="bookings" :aria-current="workspaceBootResolved && activeView === 'bookings' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('bookings')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="15" rx="2"/><path d="M7 19v2M17 19v2M7 9h10M7 13h6"/></svg><span class="workspace-nav-label">{{ copy.bookings }}</span></button>
-        <button :title="copy.calendar" data-workspace-view="calendar" :aria-current="workspaceBootResolved && activeView === 'calendar' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('calendar')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></svg><span class="workspace-nav-label">{{ copy.calendar }}</span></button>
-        <button :title="copy.history" data-workspace-view="history" :aria-current="workspaceBootResolved && activeView === 'history' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('history')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg><span class="workspace-nav-label">{{ copy.history }}</span></button>
-        <button v-if="isAgency" title="Artistas" data-workspace-view="roster" :aria-current="workspaceBootResolved && ['roster', 'profile', 'passport', 'cue-id'].includes(activeView) && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('roster')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M16 16a4 4 0 0 1 5 4v1"/></svg><span class="workspace-nav-label">{{ preferences.locale.value === 'es' ? 'Artistas' : 'Artists' }}</span></button>
-        <button v-if="!isAgency" :title="copy.profile" data-workspace-view="profile" :aria-current="workspaceBootResolved && activeView === 'profile' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('profile')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg><span class="workspace-nav-label">{{ copy.profile }}</span></button>
-        <button v-if="!isAgency" :title="copy.passport" data-workspace-view="passport" :aria-current="workspaceBootResolved && activeView === 'passport' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('passport')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M8 17h8"/></svg><span class="workspace-nav-label">{{ copy.passport }}</span></button>
-        <button v-if="!isAgency" :title="copy.cueId" data-workspace-view="cue-id" :aria-current="workspaceBootResolved && activeView === 'cue-id' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('cue-id')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M14 10h4M14 14h4M7 17h11"/></svg><span class="workspace-nav-label">{{ copy.cueId }}</span></button>
-        <button :title="copy.settings" data-workspace-view="settings" :aria-current="workspaceBootResolved && settingsOpen ? 'page' : undefined" type="button" @click="openSettings"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2h4l.6 2.2 2 .9 2-.9 2.8 2.8-.9 2 .9 2L23 12l-1.6 2 .9 2-.9 2-2.8 2.8-2-.9-2 .9L14 23h-4l-.6-2.2-2-.9-2 .9-2.8-2.8.9-2-.9-2L1 12l1.6-2-.9-2 .9-2L5.4 3.2l2 .9 2-.9z"/><circle cx="12" cy="12" r="3"/></svg><span class="workspace-nav-label">{{ copy.settings }}</span></button>
+        <button :title="copy.overview" :aria-label="copy.overview" data-workspace-view="overview" :aria-current="workspaceBootResolved && activeView === 'overview' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('overview')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span class="workspace-nav-label">{{ copy.overview }}</span></button>
+        <button :title="copy.bookings" :aria-label="copy.bookings" data-workspace-view="bookings" :aria-current="workspaceBootResolved && activeView === 'bookings' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('bookings')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="15" rx="2"/><path d="M7 19v2M17 19v2M7 9h10M7 13h6"/></svg><span class="workspace-nav-label">{{ copy.bookings }}</span></button>
+        <button :title="copy.calendar" :aria-label="copy.calendar" data-workspace-view="calendar" :aria-current="workspaceBootResolved && activeView === 'calendar' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('calendar')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></svg><span class="workspace-nav-label">{{ copy.calendar }}</span></button>
+        <button :title="copy.history" :aria-label="copy.history" data-workspace-view="history" :aria-current="workspaceBootResolved && activeView === 'history' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('history')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg><span class="workspace-nav-label">{{ copy.history }}</span></button>
+        <button v-if="isAgency" :title="preferences.locale.value === 'es' ? 'Artistas' : 'Artists'" :aria-label="preferences.locale.value === 'es' ? 'Artistas' : 'Artists'" data-workspace-view="roster" :aria-current="workspaceBootResolved && ['roster', 'profile', 'passport', 'cue-id'].includes(activeView) && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('roster')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M16 16a4 4 0 0 1 5 4v1"/></svg><span class="workspace-nav-label">{{ preferences.locale.value === 'es' ? 'Artistas' : 'Artists' }}</span></button>
+        <button v-if="!isAgency" :title="copy.profile" :aria-label="copy.profile" data-workspace-view="profile" :aria-current="workspaceBootResolved && activeView === 'profile' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('profile')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg><span class="workspace-nav-label">{{ copy.profile }}</span></button>
+        <button v-if="!isAgency" :title="copy.passport" :aria-label="copy.passport" data-workspace-view="passport" :aria-current="workspaceBootResolved && activeView === 'passport' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('passport')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M8 17h8"/></svg><span class="workspace-nav-label">{{ copy.passport }}</span></button>
+        <button v-if="!isAgency" :title="copy.cueId" :aria-label="copy.cueId" data-workspace-view="cue-id" :aria-current="workspaceBootResolved && activeView === 'cue-id' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('cue-id')"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M14 10h4M14 14h4M7 17h11"/></svg><span class="workspace-nav-label">{{ copy.cueId }}</span></button>
+        <button :title="copy.settings" :aria-label="copy.settings" data-workspace-view="settings" :aria-current="workspaceBootResolved && settingsOpen ? 'page' : undefined" type="button" @click="openSettings"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2h4l.6 2.2 2 .9 2-.9 2.8 2.8-.9 2 .9 2L23 12l-1.6 2 .9 2-.9 2-2.8 2.8-2-.9-2 .9L14 23h-4l-.6-2.2-2-.9-2 .9-2.8-2.8.9-2-.9-2L1 12l1.6-2-.9-2 .9-2L5.4 3.2l2 .9 2-.9z"/><circle cx="12" cy="12" r="3"/></svg><span class="workspace-nav-label">{{ copy.settings }}</span></button>
         <WorkspaceNotifications :locale="preferences.locale.value" @open-booking="openNotificationBooking">
           <template #trigger="{ toggle, unread }">
             <button type="button" class="workspace-notification-nav" data-workspace-view="notifications" data-notification-trigger :title="preferences.locale.value === 'es' ? 'Notificaciones' : 'Notifications'" :aria-label="preferences.locale.value === 'es' ? 'Notificaciones' : 'Notifications'" aria-haspopup="dialog" @click.stop="toggle">
@@ -3187,14 +3187,17 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
     <div v-if="settingsOpen" class="editor-backdrop" @click.self="closeSettings">
       <aside class="editor-panel settings-panel" :class="isAgency ? 'settings-panel--agency' : 'settings-panel--individual'" role="dialog" aria-modal="true" aria-labelledby="settings-title" tabindex="-1">
         <div class="editor-heading"><div><p class="eyebrow">{{ copy.accountPrivate }}</p><h2 id="settings-title">{{ copy.settingsTitle }}</h2></div><button type="button" :aria-label="copy.close" @click="closeSettings">×</button></div>
-        <AgencyCatalogEditor v-if="isAgency && agencyWorkspaceId" :workspace-id="agencyWorkspaceId" :role="agencyWorkspaceRole" :locale="preferences.locale.value" @edit-artist="id => { closeSettings(); chooseArtist(id, 'profile') }" />
-        <AgencyTeamPanel v-if="isAgency && agencyWorkspaceId" :workspace-id="agencyWorkspaceId" :role="agencyWorkspaceRole" :user-id="auth.session.value?.user.id || ''" :locale="preferences.locale.value" />
-        <ConnectedMailboxPanel v-if="auth.session.value && bookingCoreWorkspaceId && (!isAgency || canOperateAgency)" :workspace-id="bookingCoreWorkspaceId" :locale="preferences.locale.value" />
-        <section class="settings-preferences" :class="{ 'settings-preferences--individual': !isAgency }" aria-labelledby="settings-preferences-title">
+        <div v-if="isAgency && agencyWorkspaceId" class="agency-settings-management">
+          <AgencyCatalogEditor :workspace-id="agencyWorkspaceId" :role="agencyWorkspaceRole" :locale="preferences.locale.value" @edit-artist="id => { closeSettings(); chooseArtist(id, 'profile') }" />
+          <AgencyTeamPanel :workspace-id="agencyWorkspaceId" :role="agencyWorkspaceRole" :user-id="auth.session.value?.user.id || ''" :locale="preferences.locale.value" />
+        </div>
+        <ConnectedMailboxPanel v-if="!isAgency && auth.session.value && bookingCoreWorkspaceId" :workspace-id="bookingCoreWorkspaceId" :locale="preferences.locale.value" />
+        <section class="settings-preferences" :class="{ 'settings-preferences--individual': !isAgency, 'settings-preferences--agency': isAgency }" aria-labelledby="settings-preferences-title">
           <p class="eyebrow">{{ preferences.locale.value === 'es' ? 'PREFERENCIAS' : 'PREFERENCES' }}</p>
           <h3 id="settings-preferences-title">{{ preferences.locale.value === 'es' ? 'Idioma y apariencia' : 'Language and appearance' }}</h3>
           <CuePreferencesControl compact labels />
         </section>
+        <ConnectedMailboxPanel v-if="isAgency && auth.session.value && bookingCoreWorkspaceId && canOperateAgency" :workspace-id="bookingCoreWorkspaceId" :locale="preferences.locale.value" />
         <p class="settings-release">Cuebooker · {{ APP_RELEASE_LABEL }}</p>
       </aside>
     </div>
@@ -4580,7 +4583,7 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .workspace--agency .agency-context-selector{display:grid;gap:3px;min-width:0;color:var(--cue-accent);font:700 10px/1.2 monospace;letter-spacing:.06em}
 .workspace--agency .agency-context-selector span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .workspace--agency .agency-context-selector select{min-width:0;width:100%;min-height:36px;padding:0 8px;font:700 12px Arial,Helvetica,sans-serif;letter-spacing:0}
-@media(max-width:1100px){
+@media(max-width:960px){
   .sidebar-collapse-button{display:none}
   .workspace--agency .workspace-header{
     display:flex;
@@ -5026,5 +5029,34 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   box-sizing:border-box; padding:0 4px; border-radius:999px;
   background:var(--cue-accent); color:var(--cue-accent-ink,#090909);
   font:800 10px/1 Arial,Helvetica,sans-serif;
+}
+</style>
+
+<style scoped>
+/* Keep management panels together; preferences form the next complete DOM row. */
+.agency-settings-management { display:grid; grid-template-columns:minmax(0,1fr); gap:24px; min-width:0; }
+.settings-preferences--agency { margin-top:0; }
+@media(min-width:601px) {
+  /* Anchor help inside its heading row, including when the rail changes width. */
+  .agency-settings-management :deep(.agency-catalog-editor__title-row),
+  .agency-settings-management :deep(.agency-team__heading-row),
+  .agency-settings-management :deep(.agency-team__invite-heading) { position:relative; }
+  .agency-settings-management :deep(.cue-info) { position:static; }
+  .agency-settings-management :deep(.cue-info__popup) { left:0; right:auto; width:min(330px,100%); }
+}
+.workspace > .editor-backdrop > .settings-panel.settings-panel--agency { grid-template-columns:minmax(0,1fr)!important; }
+.workspace .settings-panel--agency > .editor-heading { margin:0 0 18px!important; }
+@media(min-width:1200px) {
+  .agency-settings-management { grid-template-columns:minmax(0,1fr) minmax(280px,420px); gap:44px; }
+  .agency-settings-management :deep(.agency-team > header) { margin-top:0; }
+}
+@media(min-width:961px) {
+  /* The expanded row contract must not re-enable text in the icon-only rail. */
+  .workspace.workspace--sidebar-collapsed #workspace-navigation > button[data-workspace-view] {
+    grid-template-columns:28px!important;
+    justify-content:center!important;
+    column-gap:0!important;
+  }
+  .workspace.workspace--sidebar-collapsed #workspace-navigation .workspace-nav-label { display:none!important; }
 }
 </style>
