@@ -2324,7 +2324,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <button v-if="!isAgency" :title="copy.profile" data-workspace-view="profile" :aria-current="workspaceBootResolved && activeView === 'profile' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('profile')">{{ copy.profile }}</button>
         <button v-if="!isAgency" :title="copy.passport" data-workspace-view="passport" :aria-current="workspaceBootResolved && activeView === 'passport' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('passport')">{{ copy.passport }}</button>
         <button v-if="!isAgency" :title="copy.cueId" data-workspace-view="cue-id" :aria-current="workspaceBootResolved && activeView === 'cue-id' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('cue-id')">{{ copy.cueId }}</button>
-        <button :title="copy.settings" data-workspace-view="settings" :aria-current="workspaceBootResolved && settingsOpen ? 'page' : undefined" type="button" @click="openSettings">{{ copy.settings }}</button>
+        <button :title="copy.settings" data-workspace-view="settings" :aria-current="workspaceBootResolved && settingsOpen ? 'page' : undefined" type="button" @click="openSettings"><svg class="workspace-settings-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8 14.1 4l2.4-.5 1.2 2.1 2.3.9v2.5l1.7 1.8-1.1 2.3.3 2.5-2.2 1.2-.9 2.3-2.5-.1-1.8 1.7-2.3-1.1-2.5.3-1.2-2.2-2.3-.9.1-2.5-1.7-1.8 1.1-2.3-.3-2.5 2.2-1.2.9-2.3 2.5.1z" transform="translate(0 0) scale(.96) translate(.5 .5)"/><circle cx="12" cy="12" r="3"/></svg><span>{{ copy.settings }}</span></button>
       <div class="workspace-navigation-notifications">
         <WorkspaceNotifications :locale="preferences.locale.value" @open-booking="openNotificationBooking" />
       </div>
@@ -4964,4 +4964,17 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .workspace .settings-panel > .editor-heading { box-sizing:border-box; min-width:0; max-width:100%; }
 .workspace .settings-panel > .editor-heading > div { min-width:0; flex:1 1 auto; }
 .workspace .settings-panel > .editor-heading h2 { box-sizing:border-box; max-width:100%; overflow-wrap:anywhere; line-height:1.08; }
+
+/* The bell replaces the generic nav icon; never render two icons. */
+.workspace-navigation-notifications::before,
+.workspace-navigation-notifications::after,
+.workspace-navigation-notifications :deep(.notification-center::before),
+.workspace-navigation-notifications :deep(.notification-trigger::before),
+.workspace-navigation-notifications :deep(.notification-trigger::after) { content:none!important; display:none!important; }
+.workspace-navigation-notifications :deep(.notification-trigger) { gap:12px; }
+.workspace-navigation-notifications :deep(.notification-trigger svg),
+.workspace #workspace-navigation .workspace-settings-icon { flex:none; width:22px!important; height:22px!important; display:block; }
+.workspace #workspace-navigation > button[data-workspace-view="settings"] { display:flex; align-items:center; gap:12px; }
+.workspace #workspace-navigation > button[data-workspace-view="settings"]::before,
+.workspace #workspace-navigation > button[data-workspace-view="settings"]::after { content:none!important; display:none!important; }
 </style>
