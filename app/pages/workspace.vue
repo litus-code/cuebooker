@@ -4978,22 +4978,29 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .workspace #workspace-navigation > button[data-workspace-view="settings"]::before,
 .workspace #workspace-navigation > button[data-workspace-view="settings"]::after { content:none!important; display:none!important; }
 
-/* All sidebar entries share one icon and one label column. */
+/* One sidebar grid: same 56px icon start and 98px label start as the main entries.
+   No transforms/left offsets: rows stay inside their navigation container. */
 @media (min-width:961px) {
-  .workspace #workspace-navigation > button[data-workspace-view="settings"],
-  .workspace #workspace-navigation > .workspace-navigation-notifications {
+  .workspace #workspace-navigation > button[data-workspace-view="settings"] {
+    position:relative!important;
     left:auto!important;
     transform:none!important;
-    margin-left:0!important;
-    padding-left:14px!important;
     box-sizing:border-box;
+    padding-left:62px!important;
+    gap:20px!important;
   }
-  .workspace #workspace-navigation > button[data-workspace-view="settings"] {
-    gap:12px;
+  .workspace #workspace-navigation > .workspace-navigation-notifications {
+    position:relative!important;
+    left:auto!important;
+    transform:none!important;
+    box-sizing:border-box;
+    padding-left:48px!important;
+    width:100%;
   }
   .workspace-navigation-notifications :deep(.notification-trigger) {
-    padding-left:0!important;
-    gap:12px;
+    box-sizing:border-box;
+    padding-left:14px!important;
+    gap:20px!important;
   }
 }
 </style>
