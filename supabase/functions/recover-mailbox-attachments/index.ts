@@ -25,14 +25,14 @@ Deno.serve(async (request: Request) => {
   const base = Deno.env.get("SUPABASE_URL") || "";
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
   if (!base || !serviceKey) return json({ error: "not_configured" }, 503);
-  let jobId: string;
+  let bookingId: string;
   try {
     const body = await request.json();
-    jobId = String(body.job_id || "");
+    bookingId = String(body.booking_id || "");
   } catch {
     return json({ error: "invalid_json" }, 400);
   }
-  if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(jobId)) {
+  if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(bookingId)) {
     return json({ error: "invalid_job_id" }, 400);
   }
   async function db<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -46,7 +46,7 @@ Deno.serve(async (request: Request) => {
   }
   try {
     const jobs = await db<Array<{ connection_id: string; message_id: string; booking_id: string; consent_revision: number }>>(
-      `mailbox_incoming_jobs?id=eq.${jobId}&state=eq.completed&classification_kind=eq.booking&select=connection_id,message_id,booking_id,consent_revision&limit=1`
+      `mailbox_incoming_jobs?booking_id=eq.${bookingId}&state=eq.completed&classification_kind=eq.booking&select=connection_id,message_id,booking_id,consent_revision&limit=1`
     );
     const job = jobs[0];
     if (!job?.booking_id) return json({ error: "job_not_eligible" }, 404);
