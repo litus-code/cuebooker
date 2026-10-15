@@ -1,3 +1,11 @@
+## 2026-10-15 / First live Gmail PDF+PNG acceptance passed
+
+Owner explicitly authorized raising staging's internal monthly per-connection analysis cap100→150; changed only that setting, app cap1000 retained. Verified active account had50 attempts available, valid credential/watch/consent revision. No production, secrets, scheduler, paid service or historical replay changed.
+
+Owner's first test arrived as a reply to an unlinked thread and completed as review at16:50:05Z, with the expected fixed reason, no AI reservation, no booking and no attachments. Owner then sent a fresh enquiry. Job admitted16:53:01Z, completed as booking16:54:03Z, attachment handler finished16:54:07Z with stored2, failed0, skipped0, blockedfalse. Read-only SQL confirms one message/job, one booking/thread, one notification and zero outbound messages. PNG538284 bytes and PDF1980819 bytes both have private objects and exact inbound email/workspace/booking bindings. No content or correspondent details copied into docs. This proves initial live capture/storage, not download UI or complete DJ/agency journeys.
+
+Next owner action: reply from the sender mailbox to that successful enquiry with one additional document; verify it appends to the same booking with no duplicate or additional AI classification. Keep reply recovery, UI/download, revocation/concurrency, expired secondary account and wider beta gates open. No application/Edge change in this documentation-only commit; deployed code remains a3a7841, Beta0.0.6. Parent43e5459 CI2200 and preview2674 succeeded.
+
 ## 2026-10-15 / PR96 Beta0.0.6 staging backend verified
 
 Implementation SHA `a3a78419ebfb607d4e133b97ca70164818f560cb` published on PR96. CI2199/run38770594439 and preview2673/run38770594520 passed. Full local suite559/559,40-route build, five Deno entrypoint checks and whitespace checks pass. Original CI/preview on3251d03 independently verified before work.

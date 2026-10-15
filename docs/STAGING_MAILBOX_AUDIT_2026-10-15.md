@@ -51,3 +51,11 @@ All five staging bundles were retrieved again after deployment and match the pub
 - get-booking-email-attachment: v5, verify_jwt=true, bundle SHA256 4cc1b91ded80df6903b1e46df435de01f5c8a83f40b780bd6b899f8ba02d6907.
 
 Unauthenticated live POST probes returned401 for every entrypoint. Member SQL role can read its attachment metadata; an outsider role reads neither metadata nor private storage objects. Security advisor findings are unchanged after the migration. This evidence does not constitute live Gmail/PDF/image acceptance or remedy the100-attempt internal budget/expired-watch blockers.
+
+## Live acceptance, 16:54Z (supersedes initial budget/acceptance blockers)
+
+The owner approved a staging-only internal cap increase from100 to150 analyses per connection. App cap remains1000; no paid tier, secret, consent or scheduler changed. Healthy mailbox had50 attempts available. The other account still requires reconnection.
+
+First attempt arrived as a reply without a unique saved-booking relation and correctly stopped at review without AI or booking creation. A fresh enquiry was then admitted16:53:01Z and created a booking16:54:03Z. Attachment processing finished16:54:07Z: stored2, failed0, skipped0, blockedfalse. SQL confirms one job/message, one booking/thread, one notification, zero outbound messages, a PNG538284 bytes and PDF1980819 bytes. Both private objects exist and both metadata rows bind the exact inbound email, booking and workspace. No historical failed jobs were replayed.
+
+Initial live enquiry+PDF+PNG capture now passes. An additional document-bearing reply, authenticated UI download, complete DJ/agency operations, durable recovery, revocation/concurrency and broader launch gates remain unproven. Next: owner replies to the successful enquiry with a third document, then inspect the same booking and classifier attempt count.
