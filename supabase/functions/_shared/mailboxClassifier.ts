@@ -29,6 +29,12 @@ JSON.stringify(messages.slice(0,20).map(m=>mailboxClassifierInput(m,extractDraft
  })});
  if(!response.ok){
   let category=response.status===413?'mailbox_ai_request_too_large':response.status===400?'mailbox_ai_bad_request':'mailbox_ai_unavailable';
+  if(response.status===400){
+   const failure=await response.json().catch(()=>null);
+   const code=String(failure?.error?.code||'');
+   const kind=['invalid_json_schema','json_schema_validation_error','invalid_request_error','model_not_supported'].includes(code)?code:'unclassified';
+   console.warn('mailbox_classifier_rejected_request',{kind});
+  }
   if(response.status===429){
    const failure=await response.json().catch(()=>null);
    if(failure?.error?.code==='insufficient_quota')category='mailbox_ai_quota_exhausted';
