@@ -142,7 +142,7 @@ async function select(item: CueNotification) {
 }
 
 function handleDocumentClick(event: MouseEvent) {
-  if (!open.value || !root.value) return
+  if (!open.value) return
   if (!(event.target as Element)?.closest?.('[data-notification-trigger]') && !panel.value?.contains(event.target as Node)) open.value = false
 }
 
