@@ -172,5 +172,10 @@
     "otherPath": "/dj",
     "alt": "Escena editorial ilustrativa de una profesional de booking en una mesa de trabajo de un estudio industrial."
   },
-  "cookiePreferences": "Preferencias de cookies"
+  "cookiePreferences": "Preferencias de cookies",
+  "menu": {
+    "label": "Navegación",
+    "open": "Abrir menú",
+    "close": "Cerrar menú"
+  }
 }

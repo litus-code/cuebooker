@@ -172,5 +172,10 @@
     "otherPath": "/dj",
     "alt": "Illustrative editorial scene of a booking professional at a worktable in an industrial music studio."
   },
-  "cookiePreferences": "Cookie preferences"
+  "cookiePreferences": "Cookie preferences",
+  "menu": {
+    "label": "Navigation",
+    "open": "Open menu",
+    "close": "Close menu"
+  }
 }
