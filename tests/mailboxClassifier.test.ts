@@ -51,7 +51,7 @@ test('splitting stops at a single rejected message and never retries rate limits
  assert.equal(calls,3);assert.deepEqual(usage.at(-1),{inputTokens:100,outputTokens:20});
 });
 
-test('Groq HTTP 400 is a non-retryable request error, never presented as outage',async()=>{
+test('Groq repeated HTTP 400 fails after one format fallback',async()=>{
  const warn=console.warn;
  const logs:unknown[][]=[];
  console.warn=(...parts:unknown[])=>{logs.push(parts)};
@@ -61,7 +61,7 @@ test('Groq HTTP 400 is a non-retryable request error, never presented as outage'
    calls++;
    return Response.json({error:{message:'sensitive provider validation details'}},{status:400});
   }) as typeof fetch,true),{message:'mailbox_ai_bad_request'});
-  assert.equal(calls,1);
+  assert.equal(calls,2);
   assert.deepEqual(logs.at(-1),['mailbox_classifier_http_status',400,'mailbox_ai_bad_request']);
   assert.doesNotMatch(JSON.stringify(logs),/sensitive provider validation details/);
  }finally{console.warn=warn}
@@ -77,4 +77,16 @@ test('Groq 400 reports only allowlisted rejection code',async()=>{
   assert.deepEqual(logs[0],['mailbox_classifier_rejected_request',{kind:'invalid_json_schema'}]);
   assert.doesNotMatch(JSON.stringify(logs),/sensitive validation content/);
  }finally{console.warn=old}
+});
+
+test('strict JSON rejection falls back once to JSON object with identical validation',async()=>{
+ const modes:string[]=[];
+ const booking={id:'one',kind:'other',reason:'No pide una actuación',draft:{eventDate:null,startTime:null,endTime:null,venue:null,city:null,offerAmountMinor:null,currency:null,artistName:null,contactPhone:null,warnings:[]}};
+ const output=await classifyBookingMail([{id:'one',subject:'Publicidad',body:'Hola'}],'key',(async(_url:any,init:any)=>{
+  const payload=JSON.parse(init.body);modes.push(payload.response_format.type);
+  if(modes.length===1)return Response.json({error:{code:'invalid_json_schema'}},{status:400});
+  return Response.json({choices:[{finish_reason:'stop',message:{content:JSON.stringify({messages:[booking]})}}]});
+ }) as typeof fetch,true);
+ assert.deepEqual(modes,['json_schema','json_object']);
+ assert.equal(output[0].kind,'other');
 });
