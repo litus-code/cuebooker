@@ -4954,53 +4954,43 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   }
 }
 
-/* Notifications are a sidebar menu item, directly after Settings. */
-.workspace-navigation-notifications { min-width:0; display:flex; align-items:center; }
-.workspace-navigation-notifications :deep(.notification-center) { width:100%; min-width:0; }
-.workspace-navigation-notifications :deep(.notification-trigger) { box-sizing:border-box; display:flex; justify-content:flex-start; width:100%; min-height:34px; padding:0 14px; border:0; border-radius:0; background:transparent; box-shadow:none; color:var(--cue-muted); font:700 12px/1.2 Arial,Helvetica,sans-serif; text-transform:none; text-decoration:none; }
-.workspace-navigation-notifications :deep(.notification-trigger__label) { font:inherit; text-transform:none; letter-spacing:normal; }
-.workspace-navigation-notifications :deep(.notification-trigger:hover) { color:var(--cue-text); background:transparent; }
-.workspace-navigation-notifications :deep(.notification-badge) { position:static; order:3; margin-left:auto; border:0; }
-.workspace .settings-panel > .editor-heading { box-sizing:border-box; min-width:0; max-width:100%; }
-.workspace .settings-panel > .editor-heading > div { min-width:0; flex:1 1 auto; }
-.workspace .settings-panel > .editor-heading h2 { box-sizing:border-box; max-width:100%; overflow-wrap:anywhere; line-height:1.08; }
-
-/* The bell replaces the generic nav icon; never render two icons. */
-.workspace-navigation-notifications::before,
-.workspace-navigation-notifications::after,
-.workspace-navigation-notifications :deep(.notification-center::before),
-.workspace-navigation-notifications :deep(.notification-trigger::before),
-.workspace-navigation-notifications :deep(.notification-trigger::after) { content:none!important; display:none!important; }
-.workspace-navigation-notifications :deep(.notification-trigger) { gap:12px; }
-.workspace-navigation-notifications :deep(.notification-trigger svg),
-.workspace #workspace-navigation .workspace-settings-icon { flex:none; width:22px!important; height:22px!important; display:block; }
-.workspace #workspace-navigation > button[data-workspace-view="settings"] { display:flex; align-items:center; gap:12px; }
-.workspace #workspace-navigation > button[data-workspace-view="settings"]::before,
-.workspace #workspace-navigation > button[data-workspace-view="settings"]::after { content:none!important; display:none!important; }
-
-/* One sidebar grid: same 56px icon start and 98px label start as the main entries.
-   No transforms/left offsets: rows stay inside their navigation container. */
-@media (min-width:961px) {
-  .workspace #workspace-navigation > button[data-workspace-view="settings"] {
-    position:relative!important;
-    left:auto!important;
-    transform:none!important;
-    box-sizing:border-box;
-    padding-left:62px!important;
-    gap:20px!important;
-  }
-  .workspace #workspace-navigation > .workspace-navigation-notifications {
-    position:relative!important;
-    left:auto!important;
-    transform:none!important;
-    box-sizing:border-box;
-    padding-left:48px!important;
-    width:100%;
-  }
-  .workspace-navigation-notifications :deep(.notification-trigger) {
-    box-sizing:border-box;
-    padding-left:14px!important;
-    gap:20px!important;
-  }
+/* Settings and Notifications: one consistent icon/label grid.
+   The parent navigation already supplies the sidebar row positioning. */
+.workspace #workspace-navigation > button[data-workspace-view="settings"] {
+  display:grid!important;
+  grid-template-columns:28px minmax(0,1fr);
+  align-items:center;
+  column-gap:14px!important;
+  padding-inline:14px!important;
+  min-width:0;
+  left:auto!important;
+  transform:none!important;
 }
+.workspace #workspace-navigation > button[data-workspace-view="settings"]::before,
+.workspace #workspace-navigation > button[data-workspace-view="settings"]::after {display:none!important;content:none!important}
+.workspace #workspace-navigation .workspace-settings-icon {width:22px;height:22px;display:block;justify-self:center}
+.workspace-navigation-notifications {display:block;min-width:0;width:100%;padding:0!important;margin:0!important;left:auto!important;transform:none!important}
+.workspace-navigation-notifications :deep(.notification-center) {width:100%;min-width:0}
+.workspace-navigation-notifications :deep(.notification-trigger) {
+  display:grid!important;
+  grid-template-columns:28px minmax(0,1fr) auto;
+  align-items:center;
+  column-gap:14px;
+  width:100%;
+  min-height:34px;
+  padding-inline:14px!important;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--cue-muted);
+  font:700 12px/1.2 Arial,Helvetica,sans-serif;
+  text-align:left;
+}
+.workspace-navigation-notifications :deep(.notification-trigger::before),
+.workspace-navigation-notifications :deep(.notification-trigger::after),
+.workspace-navigation-notifications::before,
+.workspace-navigation-notifications::after {display:none!important;content:none!important}
+.workspace-navigation-notifications :deep(.notification-trigger svg) {width:22px;height:22px;justify-self:center;display:block}
+.workspace-navigation-notifications :deep(.notification-trigger__label) {font:inherit;text-transform:none;letter-spacing:normal;min-width:0}
+.workspace-navigation-notifications :deep(.notification-badge) {position:static;min-width:18px;margin:0;border:0;justify-self:end}
 </style>
