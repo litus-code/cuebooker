@@ -841,14 +841,20 @@ async function selectBooking(bookingId: string) {
             </article>
           </div>
 
-          <section v-if="!demoData && selectedBooking.source === 'email'" class="thread-item__attachments">
-            <strong>{{ locale === 'es' ? 'Documentos del booking' : 'Booking documents' }}</strong>
-            <button v-for="file in bookingAttachments" :key="file.id" type="button" @click="openBookingDocument(file.id)">
-              {{ file.file_name }} ({{ Math.ceil(file.byte_size / 1024) }} KB)
-            </button>
-            <button v-if="canOperate" type="button" :disabled="attachmentBusy" @click="recoverDocuments">
-              {{ attachmentBusy ? (locale === 'es' ? 'Recuperando…' : 'Recovering…') : (locale === 'es' ? 'Recuperar documentos del correo' : 'Recover email documents') }}
-            </button>
+          <section v-if="!demoData && bookingAttachments.length" class="core-inbox__documents" :aria-label="locale === 'es' ? 'Archivos adjuntos' : 'Attachments'">
+            <div class="core-inbox__documents-head">
+              <span aria-hidden="true">▤</span>
+              <strong>{{ locale === 'es' ? 'Archivos adjuntos' : 'Attachments' }}</strong>
+              <small>{{ bookingAttachments.length }}</small>
+            </div>
+            <div class="core-inbox__documents-list">
+              <button v-for="file in bookingAttachments" :key="file.id" type="button" class="core-inbox__document" @click="openBookingDocument(file.id)">
+                <span class="core-inbox__document-type" aria-hidden="true">{{ /pdf$/i.test(file.file_name) ? 'PDF' : 'IMG' }}</span>
+                <span class="core-inbox__document-name">{{ file.file_name }}</span>
+                <small>{{ Math.ceil(file.byte_size / 1024) }} KB</small>
+                <span aria-hidden="true">↗</span>
+              </button>
+            </div>
             <p v-if="attachmentNotice" role="status">{{ attachmentNotice }}</p>
           </section>
 
@@ -970,6 +976,17 @@ async function selectBooking(bookingId: string) {
 </template>
 
 <style scoped>
+.core-inbox__documents { display:grid; gap:10px; margin:14px 0; padding:14px; border:1px solid var(--cue-border); border-radius:14px; background:var(--cue-surface); min-width:0; }
+.core-inbox__documents-head { display:flex; align-items:center; gap:8px; font-size:12px; }
+.core-inbox__documents-head strong { flex:1; }
+.core-inbox__documents-head small { background:var(--cue-border); border-radius:20px; padding:2px 7px; }
+.core-inbox__documents-list { display:grid; gap:6px; }
+.core-inbox__document { display:flex; width:100%; min-width:0; align-items:center; gap:10px; text-align:left; border:1px solid var(--cue-border); border-radius:10px; background:transparent; color:inherit; padding:10px; cursor:pointer; }
+.core-inbox__document:hover { border-color:var(--cue-accent); }
+.core-inbox__document-type { flex:none; font:700 10px/1.2 monospace; padding:7px 6px; border-radius:5px; background:color-mix(in srgb,var(--cue-accent) 12%,transparent); color:var(--cue-accent); }
+.core-inbox__document-name { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; }
+.core-inbox__document small { flex:none; color:var(--cue-muted); font-size:10px; }
+
 .core-inbox__mailbox-review{margin:14px 0;padding:14px 16px;border:1px solid var(--cue-border);border-left:3px solid var(--cue-status-new);border-radius:var(--cue-radius-panel);font-size:13px;line-height:1.5}.core-inbox__mailbox-review p{color:var(--cue-muted);margin:8px 0 0}
 .core-inbox__email-review{margin:16px 0;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);overflow:hidden}
 .core-inbox__email-review>summary{padding:12px 16px;cursor:pointer;font-size:13px;color:var(--cue-text);min-height:44px;box-sizing:border-box}
