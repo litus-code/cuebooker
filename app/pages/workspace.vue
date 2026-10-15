@@ -2328,9 +2328,8 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <WorkspaceNotifications :locale="preferences.locale.value" @open-booking="openNotificationBooking">
           <template #trigger="{ toggle, unread }">
             <button type="button" class="workspace-notification-nav" data-workspace-view="notifications" data-notification-trigger :title="preferences.locale.value === 'es' ? 'Notificaciones' : 'Notifications'" :aria-label="preferences.locale.value === 'es' ? 'Notificaciones' : 'Notifications'" aria-haspopup="dialog" @click.stop="toggle">
-              <svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+              <span class="workspace-notification-icon"><svg class="workspace-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span v-if="unread" class="workspace-nav-count">{{ unread > 9 ? '9+' : unread }}</span></span>
               <span class="workspace-nav-label">{{ preferences.locale.value === 'es' ? 'Notificaciones' : 'Notifications' }}</span>
-              <span v-if="unread" class="workspace-nav-count">{{ unread > 9 ? '9+' : unread }}</span>
             </button>
           </template>
         </WorkspaceNotifications>
@@ -5017,21 +5016,15 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .workspace-navigation-notifications :deep(.notification-trigger) {color:var(--cue-muted);}
 .workspace-navigation-notifications :deep(.notification-badge) {grid-column:3;position:static!important;justify-self:end;margin:0!important;border:0;}
 
-/* Notifications is a direct navigation button; no nested trigger styling. */
-.workspace #workspace-navigation > button.workspace-notification-nav {
-  grid-template-columns:28px minmax(0,1fr) auto!important;
-}
-.workspace #workspace-navigation .workspace-nav-count {
-  grid-column:3;
-  display:grid;
-  place-items:center;
-  min-width:20px;
-  height:20px;
-  padding:0 5px;
-  border-radius:999px;
-  background:var(--cue-accent);
-  color:var(--cue-accent-ink,#090909);
-  font:800 11px/1 Arial,Helvetica,sans-serif;
-  justify-self:end;
+/* Notification count sits on the bell, not in the label column. */
+.workspace #workspace-navigation > button.workspace-notification-nav { grid-template-columns:28px minmax(0,1fr)!important; overflow:visible; }
+.workspace #workspace-navigation .workspace-notification-icon { grid-column:1; position:relative; width:28px; height:28px; display:grid; place-items:center; overflow:visible; }
+.workspace #workspace-navigation .workspace-notification-icon > .workspace-nav-icon { grid-column:auto; width:22px!important; height:22px!important; }
+.workspace #workspace-navigation .workspace-notification-icon > .workspace-nav-count {
+  position:absolute; top:-6px; right:-9px; z-index:1;
+  display:grid; place-items:center; min-width:18px; height:18px;
+  box-sizing:border-box; padding:0 4px; border-radius:999px;
+  background:var(--cue-accent); color:var(--cue-accent-ink,#090909);
+  font:800 10px/1 Arial,Helvetica,sans-serif;
 }
 </style>
