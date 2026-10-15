@@ -77,13 +77,18 @@ Deno.serve(async(request:Request)=>{
           method:'POST',headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':mime,'x-upsert':'true'},body:bytes
         });
         if(!response.ok)throw new Error('mailbox_attachment_upload_failed');
-        await db('booking_email_attachments',{
-          method:'POST',headers:{Prefer:'return=minimal'},
+        const metadata=await fetch(`${base}/rest/v1/booking_email_attachments`,{
+          method:'POST',
+          headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':'application/json',Prefer:'return=minimal'},
           body:JSON.stringify({workspace_id:job.workspaceId,booking_id:bookingId,mailbox_connection_id:job.connectionId,
             provider_message_id:job.messageId,attachment_index:index,file_name:String(item.name||'Archivo').replace(/[\\/\x00-\x1f]/g,'_').slice(0,200),
             content_type:mime,byte_size:bytes.length,storage_path:path})
         });
-      }catch(error){const kind=error instanceof Error ? error.message : 'unknown';console.warn('mailbox_attachment_item_failed', {stage:kind==='mailbox_attachment_upload_failed'?'storage':kind==='mailbox_storage_failed'?'metadata':kind==='mailbox_provider_unavailable'?'provider':kind==='mailbox_reconnect_required'?'authorization':kind==='invalid_attachment_payload'?'payload':kind==='attachment_too_large'?'size':'other', index});}
+        if(!metadata.ok&&metadata.status!==409){
+          console.warn('mailbox_attachment_metadata_failed',{index,status:metadata.status});
+          throw new Error('mailbox_attachment_metadata_failed');
+        }
+      }catch(error){const kind=error instanceof Error ? error.message : 'unknown';console.warn('mailbox_attachment_item_failed', {stage:kind==='mailbox_attachment_upload_failed'?'storage':(kind==='mailbox_storage_failed'||kind==='mailbox_attachment_metadata_failed')?'metadata':kind==='mailbox_provider_unavailable'?'provider':kind==='mailbox_reconnect_required'?'authorization':kind==='invalid_attachment_payload'?'payload':kind==='attachment_too_large'?'size':'other', index});}
     }
    },
    retry:()=>rpc<boolean>('defer_mailbox_incoming',{target_job:job.id}),
