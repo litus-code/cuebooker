@@ -1,3 +1,13 @@
+## 2026-10-15 / Staging audit and PR96 reconciliation, Beta 0.0.6 candidate
+
+Owner authorizes PR96 and staging only. Baseline HEAD `3251d035d2ad65c2ca1a60ee3af9da77a43f5ee7`; CI/preview independently confirmed green and 556 baseline tests passed. Authenticated connector recovered. Incoming v40 already exactly matches Codex; connected v52/history v15 contain older shared modules. Retrieved all five complete bundles/JWT settings before changes.
+
+Recovered missing historical attachment migrations and recovery/download sources from staging. Found real XOR provenance constraint incompatibility and unsafe client TRUNCATE grants. Applied compatible non-destructive migration `20261015163315_bind_mailbox_attachment_email_and_permissions` to staging only, preserving rows and enforcing exact email/booking/workspace/provider binding. Rollback transaction verifies a valid dual-bound insert, mismatched message rejection, unique rejection and client permission denial. Outsider JWT-sub role tests return zero metadata and zero private objects. Three existing attachments, zero orphans at audit.
+
+Recovery strengthened with caller RLS preflight, repeated consent/processor/cutover/editor/requester checks, exact byte/signature validation, exact message binding and verified duplicate handling. Original-booking recovery remains bounded; durable reply-attachment recovery/incident UI remains a release gate. Added real-handler recovery/download regressions and safe internal-budget diagnostic. Product candidate increments to Beta0.0.6. No secrets, quotas, cron, consent, paid services, mail sending, historical retries, production or merge changed.
+
+Current blocker independently diagnosed: one connected Gmail mailbox has reached Cuebooker internal monthly cap 100/100 (app cap1000). This does not prove Groq quota exhaustion. Another connected Gmail watch is expired. Do not claim successful live classification/attachment acceptance. See `docs/STAGING_MAILBOX_AUDIT_2026-10-15.md` for evidence, migration identity drift, rollback and remaining gates. Backend deployment/publication evidence will be appended only after completion.
+
 ## 2026-10-15 / PR96 private-beta stabilization: local corrections, deployment blocked
 
 Branch `feature/agency-multi-artist-beta`, implementation HEAD `1b381a2beef5cea5b0d09c2d7d99f6103396223e`; base `316fc06d6a45fd5c9bc03d4589f65fd2ba68ccc0`. The initial checkout was clean; switched from the separate landings branch without modifying it. Base CI `38762501830` and preview `38762501715` were successful; 542 baseline tests passed. Current task explicitly authorizes fixes/pushes to PR96 and compatible staging work, never production or merge.

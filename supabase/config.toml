@@ -58,3 +58,9 @@ verify_jwt = false
 # Private scheduled worker validates MAILBOX_WORKER_SECRET.
 [functions.process-gmail-history]
 verify_jwt = false
+
+[functions.get-booking-email-attachment]
+verify_jwt = true
+
+[functions.recover-mailbox-attachments]
+verify_jwt = true

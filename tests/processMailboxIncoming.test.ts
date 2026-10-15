@@ -117,3 +117,11 @@ test('linked replies save documents onto the original booking without AI or crea
 test('partial file failure remains visible without marking a committed booking failed or replaying classification',async()=>{
  for(const linked of [false,true]){const {calls,options}=setup({linkedBooking:async()=>linked?'original-booking':null,create:async()=>{calls.push('create');return 'original-booking'},saveAttachments:async()=>({stored:1,alreadyStored:0,skipped:0,failed:1,blocked:false})});assert.equal(await processMailboxIncoming(job,options),linked?'synced_attachments_pending':'created_attachments_pending');assert.equal(calls.includes('failed'),false);assert.equal(calls.filter(c=>c==='create').length,linked?0:1)}
 });
+
+test('internal monthly budget exhaustion is diagnosed without calling it a provider failure',async()=>{
+ const old=console.warn,logs:unknown[][]=[];console.warn=(...args)=>logs.push(args);
+ try{
+  const result=await processMailboxIncoming(job,{authorize:async()=>true,message:async()=>raw,inbox:async()=>({inbox:['opaque-inbox'],excluded:[]}),linkedBooking:async()=>null,sync:async()=>{},classify:async()=>{throw new Error('mailbox_ai_budget_exhausted')},create:async()=>{throw new Error('must_not_create')},complete:async()=>{}});
+  assert.equal(result,'failed');assert.ok(logs.some(row=>row[0]==='mailbox_classification_failure_category'&&row[1]==='mailbox_ai_budget_exhausted'));
+ }finally{console.warn=old}
+});

@@ -4,12 +4,12 @@ Status: **NOT READY FOR PRODUCTION** (15 October 2026). Work on PR #96 and stagi
 
 ## Verified
 - CI runs unit tests and Nuxt generation. Preview builds do not replace manual end-to-end tests.
-- The attachment writer targets a private bucket with a 5 MiB application limit. Hosted bucket configuration/RLS and uniqueness require re-inspection: their migration is missing from this checkout.
-- The repository diagnostics migration supports safe failure phases, never full provider exceptions. Hosted application/version is historical context until re-inspected.
+- The attachment writer targets a private bucket with a 5 MiB application limit. Hosted private bucket, RLS and uniqueness inspected on 15 October; recovered migrations are now versioned. Exact-message binding and client grants corrected in staging.
+- The repository diagnostics migration supports safe failure phases, never full provider exceptions. Hosted definition inspected; incoming v40 already contained the Codex candidate.
 - Production workflow requires a fixed full commit SHA and reruns tests.
 
 ## Release blockers
-- [ ] Diagnose and resolve live incoming email failures (59 failed jobs at audit).
+- [ ] Diagnose and resolve live incoming email failures (66 failed jobs at 16:30Z audit; one connected mailbox at internal 100/100 monthly cap).
 - [ ] Prove newly received PDFs/images save automatically to the original booking.
 - [ ] Verify safe handling of uncertain failures without replay or duplicate bookings.
 - [ ] Test DJ and agency request, conversation, hold, confirmation, calendar, notifications, public pages.
@@ -32,3 +32,7 @@ The marketing design PR #112 remains separate and requires integration review be
 - **Missing source dependency:** attachment table/bucket migration and recovery/download Edge implementations are referenced but absent. Reconcile deployed definitions, RLS/unique constraints, signed-link ownership and private orphan cleanup before deploying this candidate. Do not invent a replacement schema.
 - Partial failures are observable in worker outcomes/logs, but no durable attachment retry queue or UI incident state is added. Keep the attachment recovery/reconciliation gate open.
 - All release blockers above remain open until actual staging acceptance; no historical failed jobs were retried. See GMAIL_PRIVATE_BETA.md for the exact dependency and live acceptance sequence.
+
+## Staging reconciliation continuation
+
+The authenticated audit supersedes the historical access/source blocker below. See STAGING_MAILBOX_AUDIT_2026-10-15.md and current HANDOFF for retrieved source, SQL compatibility correction, RLS/duplicate tests and actual publication/deployment evidence. Live Gmail acceptance, internal-budget availability, expired watch repair and durable attachment recovery remain open. Production remains blocked.

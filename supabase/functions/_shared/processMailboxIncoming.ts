@@ -45,7 +45,7 @@ export async function processMailboxIncoming(job:Job,options:{authorize:()=>Prom
   // Store only a fixed phase name; never persist raw provider errors or email contents.
   if(stage==='classification'){
     const category=error instanceof Error?error.message:'';
-    const known=['mailbox_ai_quota_exhausted','mailbox_ai_bad_request','mailbox_ai_unavailable','mailbox_ai_not_configured','invalid_classification','missing_booking_draft','mailbox_ai_request_too_large','mailbox_ai_rate_limit'];
+    const known=['mailbox_ai_budget_exhausted','mailbox_analysis_already_attempted','mailbox_ai_quota_exhausted','mailbox_ai_bad_request','mailbox_ai_unavailable','mailbox_ai_not_configured','invalid_classification','missing_booking_draft','mailbox_ai_request_too_large','mailbox_ai_rate_limit'];
     console.warn('mailbox_classification_failure_category',known.includes(category)?category:'unknown');
   }
   const diagnostic=stage;
