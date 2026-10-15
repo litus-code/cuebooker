@@ -27,6 +27,7 @@ type BookingCoreApiOptions = {
 }
 
 export type BookingEmailMessage = {
+  attachment_warnings?: unknown
   id: string
   booking_id: string
   delivery_status: string | null
@@ -620,8 +621,8 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
   }
 
   async function listBookingEmailAttachments(workspaceId: string, bookingId: string) {
-    return $fetch<Array<{id:string;email_message_id:string|null;file_name:string;byte_size:number}>>(`${baseUrl}/rest/v1/booking_email_attachments`, {
-      headers: authHeaders(), query: { workspace_id: `eq.${workspaceId}`, booking_id: `eq.${bookingId}`, select:'id,email_message_id,file_name,byte_size', order:'created_at.asc' }
+    return $fetch<Array<{id:string;email_message_id:string|null;attachment_index:number;file_name:string;byte_size:number}>>(`${baseUrl}/rest/v1/booking_email_attachments`, {
+      headers: authHeaders(), query: { workspace_id: `eq.${workspaceId}`, booking_id: `eq.${bookingId}`, select:'id,email_message_id,attachment_index,file_name,byte_size', order:'created_at.asc' }
     })
   }
 
@@ -638,7 +639,7 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
       query: {
         workspace_id: `eq.${workspaceId}`,
         booking_id: `eq.${bookingId}`,
-        select: 'id,booking_id,to_email,delivery_status,delivered_at,bounced_at,opened_at,last_delivery_event_at,delivery_failure_code,created_at',
+        select: 'id,booking_id,attachment_warnings,to_email,delivery_status,delivered_at,bounced_at,opened_at,last_delivery_event_at,delivery_failure_code,created_at',
         order: 'created_at.asc',
         limit: '100'
       }

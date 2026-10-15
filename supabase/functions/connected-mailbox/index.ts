@@ -1,3 +1,5 @@
+import {attachmentMetadataWarnings} from '../../../app/domain/attachmentWarnings.ts';
+import {saveAttachmentWarnings} from '../_shared/saveAttachmentWarnings.ts';
 import {validateEmailAttachments,EMAIL_ATTACHMENT_MAX_BYTES,NYLAS_ATTACHMENT_MAX_BYTES} from '../../../app/domain/emailAttachments.ts';
 import {emailRequestJson} from '../_shared/emailAttachmentRequest.ts';
 import {persistSentAttachments} from '../_shared/persistSentAttachments.ts';
@@ -256,6 +258,15 @@ Deno.serve(async(request:Request)=>{
      for(let page=0;page<5;page++){
       const result=await provider.messages(connection.grant_id,link.thread_id,cursor);
       if(result.messages.length)await ingest(link.thread_id,result.messages.map((m:any)=>mailboxMessage(m,connection.email)));
+      for(const message of result.messages){
+       if(message.from?.[0]?.email?.toLowerCase()===connection.email)continue;
+       const warnings=attachmentMetadataWarnings(message.attachments);
+       if(warnings.length)await saveAttachmentWarnings({workspaceId:workspace,bookingId,connectionId:connection.id,messageId:message.id,warnings,db,authorize:async()=>{
+        await member(workspace,userId);
+        const current=await db<Connection[]>(`${path}&id=eq.${connection.id}&status=eq.connected&select=id&limit=1`);
+        return current.length===1;
+       }});
+      }
       cursor=result.nextCursor||undefined;
       if(!cursor)break;
      }

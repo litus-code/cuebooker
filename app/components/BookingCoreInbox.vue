@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import {conversationAttachmentWarnings} from '../domain/attachmentWarnings'
 import type { Activity, Contact, CoreBooking, Counterparty, CoreBookingStatus, Hold } from '../domain/bookingCore'
 import type { BookingEmailMessage, WorkspaceActivityHistoryRow } from '../services/bookingCoreApi'
 import { buildFollowUpDraft, shouldSuggestFollowUp } from '../services/followUpDraft'
@@ -27,7 +28,8 @@ const contacts = ref<Contact[]>([])
 const counterparties = ref<Counterparty[]>([])
 const activities = ref<Activity[]>([])
 const emailMessages = ref<BookingEmailMessage[]>([])
-const bookingAttachments = ref<Array<{id:string;email_message_id:string|null;file_name:string;byte_size:number}>>([])
+const bookingAttachments = ref<Array<{id:string;email_message_id:string|null;attachment_index?:number;file_name:string;byte_size:number}>>([])
+const attachmentWarnings = computed(()=>conversationAttachmentWarnings(emailMessages.value,bookingAttachments.value,props.locale))
 const attachmentBusy = ref(false)
 const attachmentNotice = ref('')
 const conversationThread = ref<HTMLElement | null>(null)
@@ -254,7 +256,7 @@ function activitySyncSignature(rows: Activity[]) {
 }
 
 function emailSyncSignature(rows: BookingEmailMessage[]) {
-  return rows.map(item => `${item.id}:${item.delivery_status || ''}`).join('|')
+  return rows.map(item => `${item.id}:${item.delivery_status || ''}:${JSON.stringify(item.attachment_warnings||[])}`).join('|')
 }
 
 async function scrollThreadToLatest() {
@@ -302,6 +304,7 @@ async function loadActivity(options: { silent?: boolean; skipSync?: boolean } = 
     bookingAttachments.value = []
     return
   }
+  const workspaceId=props.workspaceId
   const keepPinnedToLatest = !options.silent || threadIsNearBottom()
   const previousActivitySignature = options.silent ? activitySyncSignature(activities.value) : ''
   const previousEmailSignature = options.silent ? emailSyncSignature(emailMessages.value) : ''
@@ -314,11 +317,12 @@ async function loadActivity(options: { silent?: boolean; skipSync?: boolean } = 
   if (!bookingId || !props.workspaceId) return
   if (!options.silent) loadingActivity.value = true
   try {
-    const [activityRows, emailRows] = await Promise.all([
-      bookingCore.listActivities(props.workspaceId, bookingId),
-      bookingCore.listBookingEmailMessages(props.workspaceId, bookingId)
+    const [activityRows, emailRows,files] = await Promise.all([
+      bookingCore.listActivities(workspaceId, bookingId),
+      bookingCore.listBookingEmailMessages(workspaceId, bookingId),
+      bookingCore.listBookingEmailAttachments(workspaceId, bookingId).catch(() => [])
     ])
-    if (selectedBooking.value?.id !== bookingId) return
+    if (selectedBooking.value?.id !== bookingId || props.workspaceId!==workspaceId) return
 
     const externalChange = options.silent && (
       activitySyncSignature(activityRows) !== previousActivitySignature
@@ -327,7 +331,7 @@ async function loadActivity(options: { silent?: boolean; skipSync?: boolean } = 
 
     activities.value = activityRows
     emailMessages.value = emailRows
-    bookingAttachments.value = await bookingCore.listBookingEmailAttachments(props.workspaceId, bookingId).catch(() => [])
+    bookingAttachments.value = files
     if (keepPinnedToLatest) await scrollThreadToLatest()
     if (externalChange) emit('operationsChanged')
     // The saved history is the source of truth for the initial render.
@@ -862,11 +866,12 @@ async function selectBooking(bookingId: string) {
                 <p>{{ activity.presentation.quotedBody }}</p>
               </details>
             </article>
-          <section v-if="!demoData && bookingAttachments.length" class="core-inbox__documents thread-item thread-item--inbound" :aria-label="locale === 'es' ? 'Archivos adjuntos' : 'Attachments'">
+          <section v-if="!demoData && (bookingAttachments.length || attachmentWarnings.length)" class="core-inbox__documents thread-item thread-item--inbound" :aria-label="locale === 'es' ? 'Archivos adjuntos' : 'Attachments'">
             <div class="core-inbox__documents-head">
               <strong>{{ locale === 'es' ? 'Archivos adjuntos' : 'Attachments' }}</strong>
-              <small>{{ bookingAttachments.length }}</small>
+              <AttachmentLimitsInfo :locale="locale" :max-files="10" per-file /><small>{{ bookingAttachments.length }}</small>
             </div>
+            <ul v-if="attachmentWarnings.length" class="core-inbox__attachment-warnings" role="status" aria-live="polite"><li v-for="warning in attachmentWarnings" :key="warning.id">{{ warning.text }}</li></ul>
             <div class="core-inbox__documents-list">
               <button v-for="file in bookingAttachments" :key="file.id" type="button" class="core-inbox__document" @click="openBookingDocument(file.id)">
                 <span class="core-inbox__document-type" aria-hidden="true">{{ /pdf$/i.test(file.file_name) ? 'PDF' : 'IMG' }}</span>
@@ -998,8 +1003,9 @@ async function selectBooking(bookingId: string) {
 </template>
 
 <style scoped>
+.core-inbox__attachment-warnings {display:grid;gap:6px;margin:0;padding:10px 12px 10px 28px;border-left:3px solid #d99b25;border-radius:8px;background:color-mix(in srgb,#d99b25 12%,var(--cue-surface));color:var(--cue-text);font-size:12px;line-height:1.5;overflow-wrap:anywhere}
 .core-inbox__documents { display:grid; gap:10px; margin:8px 0 12px; padding:12px 14px; min-width:0; width:min(100%,720px); max-width:100%; align-self:flex-start; border:1px solid var(--cue-border); border-left:3px solid var(--cue-accent); border-radius:10px; background:var(--cue-surface); }
-.core-inbox__documents-head { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; }
+.core-inbox__documents-head { position:relative; display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; }
 .core-inbox__documents-head strong { flex:1; }
 .core-inbox__documents-head small { background:var(--cue-border); border-radius:20px; padding:2px 7px; }
 .core-inbox__documents-list { display:grid; gap:6px; }

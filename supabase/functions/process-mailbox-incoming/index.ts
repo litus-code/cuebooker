@@ -1,3 +1,4 @@
+import {saveAttachmentWarnings} from '../_shared/saveAttachmentWarnings.ts';
 import {saveMailboxAttachments} from '../_shared/saveMailboxAttachments.ts';
 import {processMailboxIncoming} from '../_shared/processMailboxIncoming.ts';
 import {mailboxTransport,gmailConfig} from '../_shared/mailboxTransport.ts';
@@ -72,7 +73,7 @@ Deno.serve(async(request:Request)=>{
      emailMessageId=messages[0]?.id||null;
      return Boolean(emailMessageId);
     };
-    return saveMailboxAttachments({
+    const report=await saveMailboxAttachments({
      attachments:raw.attachments,authorize,
      existing:async index=>{
       const rows=await db<Array<{id:string}>>(`booking_email_attachments?workspace_id=eq.${job.workspaceId}&booking_id=eq.${bookingId}&mailbox_connection_id=eq.${job.connectionId}&provider_message_id=eq.${encodeURIComponent(job.messageId)}&attachment_index=eq.${index}&select=id&limit=1`);
@@ -87,6 +88,8 @@ Deno.serve(async(request:Request)=>{
       await db('booking_email_attachments',{method:'POST',headers:{Prefer:'return=minimal,resolution=ignore-duplicates'},body:JSON.stringify({workspace_id:job.workspaceId,booking_id:bookingId,mailbox_connection_id:job.connectionId,email_message_id:emailMessageId,provider_message_id:job.messageId,attachment_index:index,file_name:String(item.name||'Archivo').replace(/[\\/\x00-\x1f]/g,'_').slice(0,200),content_type:item.mime,byte_size:bytes.length,storage_path:path(index)})});
      }
     });
+    if(report.issues?.length)await saveAttachmentWarnings({workspaceId:job.workspaceId,bookingId,connectionId:job.connectionId,messageId:job.messageId,warnings:report.issues,db,authorize});
+    return report;
    },
    retry:()=>rpc<boolean>('defer_mailbox_incoming',{target_job:job.id}),
    complete:(state,value,failureStage)=>rpc('complete_mailbox_incoming',{target_job:job.id,target_state:state,target_kind:value?.kind||null,target_reason:value?.reason||failureStage||null})

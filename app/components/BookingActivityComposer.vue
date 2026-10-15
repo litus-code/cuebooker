@@ -279,11 +279,10 @@ async function submit() {
       <select v-if="type !== 'note' && type !== 'email'" v-model="direction" :aria-label="locale === 'es' ? 'Dirección' : 'Direction'" :disabled="saving"><option value="inbound">{{ copy.inbound }}</option><option value="outbound">{{ copy.outbound }}</option></select>
       <div v-if="sendsRealEmail" class="activity-composer__attachments">
         <input ref="fileInput" class="activity-composer__file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" multiple :disabled="saving || sendUncertain" @change="selectFiles">
-        <button class="activity-composer__attach" type="button" :disabled="saving || sendUncertain" @click="fileInput?.click()">
+        <div class="activity-composer__attachment-actions"><button class="activity-composer__attach" type="button" :disabled="saving || sendUncertain" @click="fileInput?.click()">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m8 12 6-6a3 3 0 0 1 4 4l-8 8a5 5 0 0 1-7-7l9-9"/><path d="m6 14 8-8"/></svg>
           {{ locale === 'es' ? 'Adjuntar archivos' : 'Attach files' }}
-        </button>
-        <small>{{ locale === 'es' ? `PDF, PNG o JPG · hasta 5 archivos y ${attachmentMax / 1048576} MiB en total` : `PDF, PNG or JPG · up to 5 files and ${attachmentMax / 1048576} MiB total` }}</small>
+        </button><AttachmentLimitsInfo :locale="locale" :max-bytes="attachmentMax" :max-files="5" /></div>
         <ul v-if="selectedFiles.length" :aria-label="locale === 'es' ? 'Archivos adjuntos' : 'Attachments'">
           <li v-for="(file,index) in selectedFiles" :key="index"><span>{{ file.name }} <small>{{ fileSize(file.size) }}</small></span><button type="button" :aria-label="`${locale === 'es' ? 'Quitar' : 'Remove'} ${file.name}`" :disabled="saving || sendUncertain" @click="removeFile(index)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></li>
         </ul>
@@ -301,7 +300,7 @@ async function submit() {
 .activity-composer__attachments {grid-column:1 / -1;display:grid;gap:8px;min-width:0}
 .activity-composer__file-input {display:none}
 .activity-composer__attach {display:inline-flex;align-items:center;justify-self:start;gap:8px;min-height:44px;padding:0 14px;border:1px solid var(--cue-border);border-radius:999px;color:var(--cue-text);background:var(--cue-surface);cursor:pointer;font-size:12px}
-.activity-composer__attachments > small {font-size:11px;color:var(--cue-muted)}
+.activity-composer__attachment-actions {position:relative;display:flex;align-items:center;gap:4px;min-width:0}
 .activity-composer__attachments ul {display:grid;gap:6px;margin:0;padding:0;list-style:none}
 .activity-composer__attachments li {display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 4px 2px 12px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control);font-size:12px;min-width:0}
 .activity-composer__attachments li > span {min-width:0;overflow-wrap:anywhere}

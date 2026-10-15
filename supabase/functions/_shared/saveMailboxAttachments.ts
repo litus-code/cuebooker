@@ -1,4 +1,6 @@
-export type MailboxAttachmentReport={stored:number;alreadyStored:number;skipped:number;failed:number;blocked:boolean};
+import {attachmentMetadataWarning} from '../../../app/domain/attachmentWarnings.ts';
+import type {AttachmentWarning} from '../../../app/domain/attachmentWarnings.ts';
+export type MailboxAttachmentReport={stored:number;alreadyStored:number;skipped:number;failed:number;blocked:boolean;issues?:AttachmentWarning[]};
 export type MailboxAttachment={id:string;name:string;mime:string;size:number};
 const limit=5*1024*1024;
 export function mailboxAttachmentMime(bytes:Uint8Array){
@@ -17,13 +19,13 @@ export async function saveMailboxAttachments(options:{
  upload:(index:number,item:MailboxAttachment,bytes:Uint8Array)=>Promise<void>;
  record:(index:number,item:MailboxAttachment,bytes:Uint8Array)=>Promise<void>;
 }){
+ const issues:AttachmentWarning[]=[];
  const report:MailboxAttachmentReport={stored:0,alreadyStored:0,skipped:0,failed:0,blocked:false};
  if(!Array.isArray(options.attachments))return report;
  for(const [index,value] of options.attachments.slice(0,10).entries()){
   const item=value as MailboxAttachment;
-  if(!item||typeof item.id!=='string'||!item.id||!Number.isSafeInteger(item.size)||item.size<1||item.size>limit||!['application/pdf','image/png','image/jpeg'].includes(item.mime)){
-   report.skipped++;continue;
-  }
+  const metadataWarning=attachmentMetadataWarning(item,index);
+  if(metadataWarning){report.skipped++;issues.push(metadataWarning);continue;}
   let stage='authorization';
   try{
    if(!await options.authorize()){report.blocked=true;break;}
@@ -32,7 +34,7 @@ export async function saveMailboxAttachments(options:{
    stage='provider';
    const bytes=await options.download(item);
    if(!bytes.length||bytes.length>limit||bytes.length!==item.size||mailboxAttachmentMime(bytes)!==item.mime){
-    report.failed++;console.warn('mailbox_attachment_item_failed',{stage:'validation',index});continue;
+    report.failed++;issues.push({index,reason:'invalid_file'});console.warn('mailbox_attachment_item_failed',{stage:'validation',index});continue;
    }
    // Consent can be withdrawn during download. Do not persist after that point.
    stage='authorization';
@@ -42,8 +44,8 @@ export async function saveMailboxAttachments(options:{
    if(!await options.authorize()){report.blocked=true;break;}
    stage='metadata';await options.record(index,item,bytes);
    report.stored++;
-  }catch{report.failed++;console.warn('mailbox_attachment_item_failed',{stage,index});}
+  }catch{report.failed++;issues.push({index,reason:'save_failed'});console.warn('mailbox_attachment_item_failed',{stage,index});}
  }
  console.info('mailbox_attachment_result',report);
- return report;
+ return issues.length?{...report,issues}:report;
 }
