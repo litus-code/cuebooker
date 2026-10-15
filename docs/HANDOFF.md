@@ -1,3 +1,9 @@
+## 2026-10-15 / Beta0.0.7 outgoing attachments published and deployed
+
+Implementation `4ac10b0c58edd6a0539e4dae42c8bea458c87af1`, CI2202/run38777815097 and preview2676/run38777815050 SUCCESS.567 local tests,40-route build,5 Deno checks and whitespace checks passed. PR96 remains draft/unmerged. Staging connected54/send40/incoming42/history17/recovery4 ACTIVE, all retrieved source/dependencies match the implementation, original JWT settings retained; five unauthenticated livePOSTs return401. Migration20261015172641 verified with inbound/outbound/invalid-booking/duplicate/outsider rollback SQL; security advisor findings unchanged.
+
+User can now select/remove PDF/PNG/JPG files and send them from the booking composer in PR96. Gmail preserves original threading; platform Brevo and legacy Nylas also receive attachments. Private outgoing copies bind to exact outbound messages; partial history failures do not resend. Sources, limits, failure truth and hashes in OUTBOUND_EMAIL_ATTACHMENTS.md. Browser visual check was attempted but Chromium download failed; compiled Vue interaction tests pass. No live outgoing provider call was made by the agent. Next: owner reloads PR96 and explicitly sends a reply with one file from Cuebooker, then verify original booking, recipient delivery and document download. Mobile/Safari, inbound reply, durable recovery and broad beta gates remain open. No stable frontend promotion, production, merge, secret/limit/consent/cron or paid-service changes.
+
 ## 2026-10-15 / Outgoing reply attachments implemented, Beta0.0.7 candidate
 
 Owner explicitly prioritizes attaching a document when replying from Cuebooker; previous live inbound-reply acceptance is deferred. Baseline PR96 HEADaa773720ec689b761e91fe6af7973d93d7a08dde. Connected53/send39 staging sources match baseline; incoming41/history16/recovery3 bundles retrieved before changes. Work stays on PR96 and staging, no production or merge.

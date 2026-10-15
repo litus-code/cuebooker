@@ -33,3 +33,15 @@ Baseline aa773720ec689b761e91fe6af7973d93d7a08dde matches the retrieved staging 
 Rollback to the baseline source bundles if needed. Keep the compatible migration and already stored files; reverting the trigger to inbound-only would prevent new outgoing history copies. No quota, secret, consent, scheduler or paid-service change in this block.
 
 Next acceptance: owner uses PR96 to reply from Cuebooker on the already-created test booking with a new PDF/image, verifies recipient receives the attachment, and the reply and private file remain in the same conversation. Then test inbound reply, signed download and DJ/agency operations. Do not send email on the owner's behalf just to satisfy a gate.
+
+## Published staging evidence
+
+Implementation SHA `4ac10b0c58edd6a0539e4dae42c8bea458c87af1`. GitHub CI2202/run38777815097 and PR preview2676/run38777815050 completed successfully. No stable frontend or production promotion. All five retrieved deployed bundles and their transitive files match the code revision; JWT settings preserved. Anonymous live POST returns401 on every endpoint.
+
+- connected-mailbox: v54, verify_jwt=false, bundle SHA256 cf10b14fe495da12043a7b208f5278d368022e220e9853e6e8c5e0d018243410.
+- send-booking-email: v40, verify_jwt=true, bundle SHA256 4d8bfa1a885f2449d1236563fa48f0f319b1a764b500387156c689b9732e67f5.
+- process-mailbox-incoming: v42, verify_jwt=false, bundle SHA256 289a9e38a6ca1c8e0dd5664a9eb3d2d5dd803a89b225501fb1d50990414e20ec.
+- process-gmail-history: v17, verify_jwt=false, bundle SHA256 18db089e55f23312aef0f8216b143236d8ecdee84d2e2ac32645d38fbd5133dd.
+- recover-mailbox-attachments: v4, verify_jwt=true, bundle SHA256 de4213c67518dc9d2ada34847799a8bc42f4bfdeba3969799370eab4f48cd103.
+
+Migration20261015172641 is present in staging history. Inbound/outbound fixture metadata, wrong-booking rejection, uniqueness and outsider metadata/Storage denial passed in a rolled-back transaction. Existing security advisor findings unchanged. Live outgoing delivery/recipient-open and visual mobile/Safari remain pending owner acceptance. There was no agent-originated real send or paid-service/secret/limit/consent/cron/production change. This evidence-only revision keeps Beta0.0.7 and does not change deployed sources.
