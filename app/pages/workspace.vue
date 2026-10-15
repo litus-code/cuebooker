@@ -2315,6 +2315,9 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 4 12l5 7M20 5v14"/></svg>
         </button>
       </div>
+      <div class="workspace-navigation-notifications">
+        <WorkspaceNotifications :locale="preferences.locale.value" @open-booking="openNotificationBooking" />
+      </div>
       <nav id="workspace-navigation" aria-label="Workspace">
         <button :title="copy.overview" data-workspace-view="overview" :aria-current="workspaceBootResolved && activeView === 'overview' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('overview')">{{ copy.overview }}</button>
         <button :title="copy.bookings" data-workspace-view="bookings" :aria-current="workspaceBootResolved && activeView === 'bookings' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
@@ -2327,7 +2330,6 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <button :title="copy.settings" data-workspace-view="settings" :aria-current="workspaceBootResolved && settingsOpen ? 'page' : undefined" type="button" @click="openSettings">{{ copy.settings }}</button>
       </nav>
       <div class="account-actions">
-        <WorkspaceNotifications :locale="preferences.locale.value" @open-booking="openNotificationBooking" />
         <CuePreferencesControl compact />
         <button class="header-icon-button" type="button" :aria-label="copy.logout" :title="copy.logout" @click="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/></svg></button>
       </div>
@@ -4951,4 +4953,16 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
     overflow-wrap:anywhere;
   }
 }
+
+/* Keep notification access in the same sidebar column as the workspace menu. */
+.workspace-navigation-notifications { min-width:0; display:flex; align-items:center; justify-content:flex-start; }
+.workspace-navigation-notifications :deep(.notification-center) { width:100%; min-width:0; }
+.workspace-navigation-notifications :deep(.notification-trigger) { max-width:100%; }
+@media (min-width:681px) {
+  .workspace-navigation-notifications { width:100%; padding-inline:0; }
+}
+/* Settings header must never bleed into the sidebar or viewport edge. */
+.workspace .settings-panel > .editor-heading { box-sizing:border-box; margin-inline:0!important; padding-inline:clamp(18px,2.5vw,30px)!important; min-width:0; max-width:100%; }
+.workspace .settings-panel > .editor-heading > div { min-width:0; flex:1 1 auto; }
+.workspace .settings-panel > .editor-heading h2 { box-sizing:border-box; min-width:0; max-width:100%; overflow-wrap:break-word; line-height:1.08; padding-block:3px; }
 </style>
