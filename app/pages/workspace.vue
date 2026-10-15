@@ -4977,4 +4977,17 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .workspace #workspace-navigation > button[data-workspace-view="settings"] { display:flex; align-items:center; gap:12px; }
 .workspace #workspace-navigation > button[data-workspace-view="settings"]::before,
 .workspace #workspace-navigation > button[data-workspace-view="settings"]::after { content:none!important; display:none!important; }
+
+/* Align Settings and Notifications with the icon column used by other sidebar entries. */
+@media (min-width:961px) {
+  .workspace #workspace-navigation > button[data-workspace-view="settings"],
+  .workspace #workspace-navigation > .workspace-navigation-notifications {
+    position:relative;
+    left:-48px;
+  }
+  .workspace #workspace-navigation > button[data-workspace-view="settings"],
+  .workspace-navigation-notifications :deep(.notification-trigger) {
+    gap:2px;
+  }
+}
 </style>
