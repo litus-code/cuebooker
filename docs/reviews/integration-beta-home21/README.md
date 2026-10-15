@@ -60,3 +60,11 @@ Rollback before any later promotion: close the joint review PR or discard its br
 Application `4a6b72357bc5cd719540eb2815b5e10ee6be1c43`: below768px the shared landing header has only logo and hamburger; links and language/theme controls are inside a native modal. Compiled Chromium checks cover both routes/locales at390px, keyboard wrapping, Escape/trigger focus restoration, How target focus, scroll unlock and desktop1024 transition. Zero Axe WCAG2/2.1 A/AA violations in the open menu. 581 tests and44-route build pass.
 
 [Agency menu390](agency-menu-390.jpg) · [DJ menu390](dj-menu-390.jpg). Earlier closed-header landing captures predate this follow-up.
+
+## Shared menu consistency (supersedes separate landing menu)
+
+Application `1b38a3ba5af08f3292ddc872bb10881cfa66209e` extracts the home menu into `PublicMobileMenu.vue` for all public marketing/access headers. Preferences above navigation, same close control, same links and signup CTA, same1100px breakpoint. Authentication forms/composable unchanged.
+
+Compiled browser verification: Home/DJ/Agency/signup/sign-in × ES/EN ×390/768/1100 (30 cases), desktop1101 transition, keyboard wrap/Escape/focus/scroll cleanup and no page errors/overflow. Axe open-menu WCAG2/2.1 A/AA zero violations in dark/light at390 across all routes/locales. Access draft email survives menu interaction; both landing signup destinations retain source/UTM. 581 tests/44-route build pass. No account submission or backend calls.
+
+[Shared access menu390](shared-access-menu-390.jpg) · [Shared agency menu390](shared-agency-menu-390.jpg). Older menu captures above are historical.
