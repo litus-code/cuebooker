@@ -68,3 +68,16 @@ Application `1b38a3ba5af08f3292ddc872bb10881cfa66209e` extracts the home menu in
 Compiled browser verification: Home/DJ/Agency/signup/sign-in × ES/EN ×390/768/1100 (30 cases), desktop1101 transition, keyboard wrap/Escape/focus/scroll cleanup and no page errors/overflow. Axe open-menu WCAG2/2.1 A/AA zero violations in dark/light at390 across all routes/locales. Access draft email survives menu interaction; both landing signup destinations retain source/UTM. 581 tests/44-route build pass. No account submission or backend calls.
 
 [Shared access menu390](shared-access-menu-390.jpg) · [Shared agency menu390](shared-agency-menu-390.jpg). Older menu captures above are historical.
+
+## Theme palette and hero action review — 16 October
+
+Application `4bdd26141ab62db4af65e6d14316d0beb6406f0a`: landing surfaces/text/accent now use home theme tokens. Light mode uses lilac for the second hero phrase and primary CTA, deeper lilac for small text contrast. Dark mode retains lime. Email cards and decorative graphics follow the active theme; no light-mode dark text on fixed dark cards. Hero actions share a row with equal widths and wrapped labels; SVG arrows avoid missing glyphs.
+
+581 tests/44-route build pass.32 unique compiled route/locale/theme/viewport combinations (DJ/Agency, ES/EN, light/dark,390/768/1024/1440), plus targeted final SVG checks: aligned buttons, no document overflow/errors. Full-page Axe WCAG2/2.1 A/AA at390/1440 for each route/locale/theme: zero violations. Imagery explicitly loaded before assertions; representative hero/email views inspected.
+
+| Landing/theme | Desktop1440 | Mobile390 |
+| --- | --- | --- |
+| DJ/light | [Capture](palette-dj-light-1440.jpg) | [Capture](palette-dj-light-390.jpg) |
+| DJ/dark | [Capture](palette-dj-dark-1440.jpg) | [Capture](palette-dj-dark-390.jpg) |
+| Agency/light | [Capture](palette-agency-light-1440.jpg) | [Capture](palette-agency-light-390.jpg) |
+| Agency/dark | [Capture](palette-agency-dark-1440.jpg) | [Capture](palette-agency-dark-390.jpg) |
