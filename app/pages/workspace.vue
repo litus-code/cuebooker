@@ -2316,10 +2316,6 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         </button>
       </div>
       <nav id="workspace-navigation" aria-label="Workspace">
-      <div class="workspace-navigation-notifications">
-        <WorkspaceNotifications :locale="preferences.locale.value" @open-booking="openNotificationBooking" />
-      </div>
-
         <button :title="copy.overview" data-workspace-view="overview" :aria-current="workspaceBootResolved && activeView === 'overview' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('overview')">{{ copy.overview }}</button>
         <button :title="copy.bookings" data-workspace-view="bookings" :aria-current="workspaceBootResolved && activeView === 'bookings' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('bookings')">{{ copy.bookings }}</button>
         <button :title="copy.calendar" data-workspace-view="calendar" :aria-current="workspaceBootResolved && activeView === 'calendar' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('calendar')">{{ copy.calendar }}</button>
@@ -2329,6 +2325,9 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
         <button v-if="!isAgency" :title="copy.passport" data-workspace-view="passport" :aria-current="workspaceBootResolved && activeView === 'passport' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('passport')">{{ copy.passport }}</button>
         <button v-if="!isAgency" :title="copy.cueId" data-workspace-view="cue-id" :aria-current="workspaceBootResolved && activeView === 'cue-id' && !settingsOpen ? 'page' : undefined" type="button" @click="changeView('cue-id')">{{ copy.cueId }}</button>
         <button :title="copy.settings" data-workspace-view="settings" :aria-current="workspaceBootResolved && settingsOpen ? 'page' : undefined" type="button" @click="openSettings">{{ copy.settings }}</button>
+      <div class="workspace-navigation-notifications">
+        <WorkspaceNotifications :locale="preferences.locale.value" @open-booking="openNotificationBooking" />
+      </div>
       </nav>
       <div class="account-actions">
         <CuePreferencesControl compact />
@@ -4955,15 +4954,14 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
   }
 }
 
-/* Keep notification access in the same sidebar column as the workspace menu. */
-.workspace-navigation-notifications { min-width:0; display:flex; align-items:center; justify-content:flex-start; }
+/* Notifications are a sidebar menu item, directly after Settings. */
+.workspace-navigation-notifications { min-width:0; display:flex; align-items:center; }
 .workspace-navigation-notifications :deep(.notification-center) { width:100%; min-width:0; }
-.workspace-navigation-notifications :deep(.notification-trigger) { max-width:100%; }
-@media (min-width:681px) {
-  .workspace-navigation-notifications { width:100%; padding-inline:0; }
-}
-/* Settings header must never bleed into the sidebar or viewport edge. */
-.workspace .settings-panel > .editor-heading { box-sizing:border-box; margin-inline:0!important; padding-inline:clamp(18px,2.5vw,30px)!important; min-width:0; max-width:100%; }
+.workspace-navigation-notifications :deep(.notification-trigger) { box-sizing:border-box; display:flex; justify-content:flex-start; width:100%; min-height:34px; padding:0 14px; border:0; border-radius:0; background:transparent; box-shadow:none; color:var(--cue-muted); font:700 12px/1.2 Arial,Helvetica,sans-serif; text-transform:none; text-decoration:none; }
+.workspace-navigation-notifications :deep(.notification-trigger__label) { font:inherit; text-transform:none; letter-spacing:normal; }
+.workspace-navigation-notifications :deep(.notification-trigger:hover) { color:var(--cue-text); background:transparent; }
+.workspace-navigation-notifications :deep(.notification-badge) { position:static; order:3; margin-left:auto; border:0; }
+.workspace .settings-panel > .editor-heading { box-sizing:border-box; min-width:0; max-width:100%; }
 .workspace .settings-panel > .editor-heading > div { min-width:0; flex:1 1 auto; }
-.workspace .settings-panel > .editor-heading h2 { box-sizing:border-box; min-width:0; max-width:100%; overflow-wrap:break-word; line-height:1.08; padding-block:3px; }
+.workspace .settings-panel > .editor-heading h2 { box-sizing:border-box; max-width:100%; overflow-wrap:anywhere; line-height:1.08; }
 </style>
