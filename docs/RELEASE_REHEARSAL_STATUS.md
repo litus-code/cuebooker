@@ -1,3 +1,39 @@
+# Prepared production SQL delta rehearsal, 17 October 2026
+
+Infrastructure only, based on main3b6d3724f22d4209fad30b5beef6f04ad0fa1364.
+Reviewed candidate9bd56509bb9aba2176b55483988df80c05b1fd6a on PR114,
+Beta0.0.13. No application merge, hosted production SQL, Edge deployment or dispatch.
+
+The existing main-only/manual/protected-production workflow now points to the verified
+backup38889098646/attempt1 (`cuebooker-production-db-38889098646-1`, artifact12041757362)
+and39 exact SQL files from that immutable candidate. Those files cover the named missing
+Agency/mailbox migrations, six attachment/diagnostics follow-ups, campaign SQL and its
+FK indexes, plus the tested legacy last-owner repair. Historical bootstrap aliases are
+excluded. The runner rejects an unexpected81-entry restored ledger, preserves the two
+production-only Next Move/billing functions and triggers by inspected fingerprints,
+and verifies protected counts/FKs/RLS, service-only campaign RPCs, private attachments,
+paused mailbox/Gmail jobs and the test-only dataset. A transaction disables only the
+new analytics observers, checks operational counts and rolls itself back.
+
+The decrypt/export/import implementation, isolated PostgreSQL17 container, disconnect-before-
+decryption, secure cleanup, fixed restore target and permissions remain unchanged.
+The workflow receives only the existing backup decryption secret, no hosted DB URL or
+service-role credential. It cannot connect to hosted production. Exact maintenance paths
+are excluded from CI-push and GitHub Pages publication; PR CI remains active.
+
+Nine focused parser/isolation/preservation regressions, workflow YAML parsing and all39
+real candidate checksums pass locally. Actual39-file execution is PENDING until owner
+approves this bounded infrastructure integration and the protected workflow gate.
+The previous restore38893078933 validates the backup, not this new delta. Stop and fix
+any rehearsal conflict before proposing hosted SQL. Do not call this production ready.
+
+After approval: merge only this infrastructure PR, dispatch Isolated Release Migration
+Rehearsal on main with confirm cuebooker-isolated-release, inspect all actual steps and
+record the result. Then finish required Edge rollback bundles/provider/Auth/Storage
+configuration and remaining acceptance before requesting publication of PR114.
+
+---
+
 # Corrected campaign RPC privilege rehearsal pin, 16 October 2026
 
 Run38932556643 attempt4/job117106725063 proved the updated secure connection works: read-only current staging export, temporary encrypted snapshot, disconnected logical restore, all COPY counts/FK/RLS/unidentified-caller denial and cleanup passed. Exact original campaign SQL executed locally and its preserved-count/domain-definition checks passed; campaign acceptance then FAILED at service-only RPC privileges. No hosted analytics SQL/Edge/cron or production operation occurred. No further credential change is needed.

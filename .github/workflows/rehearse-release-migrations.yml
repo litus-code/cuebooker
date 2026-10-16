@@ -29,7 +29,7 @@ jobs:
       - name: Checkout exact reviewed candidate migrations
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: 83774ef4722d859b80654be13cebc53b60aebcd9
+          ref: 9bd56509bb9aba2176b55483988df80c05b1fd6a
           path: release-candidate
           persist-credentials: false
       - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359
@@ -38,8 +38,8 @@ jobs:
       - name: Download exact encrypted backup
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: cuebooker-production-db-37169429138-2
-          run-id: 37169429138
+          name: cuebooker-production-db-38889098646-1
+          run-id: 38889098646
           github-token: ${{ github.token }}
           path: restore-input
       - name: Restore and verify only in disposable disconnected database
