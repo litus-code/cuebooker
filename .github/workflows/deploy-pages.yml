@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '.github/workflows/ci.yml'
+      - '.github/workflows/deploy-pages.yml'
+      - '.github/workflows/restore-backup-drill.yml'
+      - 'docs/RELEASE_REHEARSAL_STATUS.md'
   workflow_dispatch:
 
 permissions:
