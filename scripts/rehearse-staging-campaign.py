@@ -13,9 +13,9 @@ spec = importlib.util.spec_from_file_location('restore', Path(__file__).with_nam
 restore = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(restore)
 STAGING = 'lycprjeuuynfzwskycwv'
-CANDIDATE = '69172db62772a0f294482d4c9f92f4fb94edf6dd'
+CANDIDATE = '7111f156aefa09dfab8cad721422607460d9c4be'
 MIGRATION = 'supabase/migrations/20261016120000_campaign_funnel_analytics.sql'
-MIGRATION_SHA256 = '793c7f6ef990ef0ee70170ff03ce4f617d47431461add1d1c1dca356b2541189'
+MIGRATION_SHA256 = '5587649f6725d3de8e50d9882f19f2980c53f00965079dd7219caeb54cdde000'
 
 
 def validate_connection(value):

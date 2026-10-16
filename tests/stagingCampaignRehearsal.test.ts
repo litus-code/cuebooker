@@ -79,7 +79,7 @@ test('workflow pins reviewed source, stays manual/main/staging and never uploads
   assert.match(workflow, /workflow_dispatch:/)
   assert.match(workflow, /github.ref == 'refs\/heads\/main'/)
   assert.match(workflow, /environment: staging/)
-  assert.match(workflow, /ref: 69172db62772a0f294482d4c9f92f4fb94edf6dd/)
+  assert.match(workflow, /ref: 7111f156aefa09dfab8cad721422607460d9c4be/)
   assert.match(workflow, /contents: read/)
   assert.doesNotMatch(workflow, /upload-artifact|environment: production|BACKUP_DB_URL|schedule:|pull_request:|push:/)
   for (const path of ['.github/workflows/ci.yml', '.github/workflows/deploy-pages.yml']) {
