@@ -1,3 +1,13 @@
+## 2026-10-16 / Fresh production DB backup completed; isolated restore repin prepared
+
+Owner approved the protected environment gate. Run38889098646/attempt1, job116933969537 completed SUCCESS at11:07Z: roles/schema/data export, AES256 encryption, byte-for-byte decrypt roundtrip and encrypted-only artifact upload passed. Artifact12041757362 (`cuebooker-production-db-38889098646-1`),43464 ZIP bytes, digest `sha256:862f232b473e32391d74f69fa32fc2ee2a234569dc11ce814e8f5796667dfe2a`, expires2026-10-23T11:07:25Z. Source main remainsbbdf29122f704039b353fa4eed788bfdfef5aaa7. No restore success is claimed.
+
+Existing Isolated Backup Restore Drill is main-only and still downloads the old October4 artifact. Prepared separate draft [PR115](https://github.com/litus-code/cuebooker/pull/115), exactSHA `a83a60b786eb4df69770e088a6b54735f78391e9`, branch `chore/restore-backup-20261016` based solely on main. Only repins run/name in restore workflow; Python implementation, main-only guard, explicit confirm, protected production review, read-only permissions and pinned actions/CLI unchanged. Bounded CI/Pages push exclusions prevent these exact4 maintenance paths from publishing frontend/stable staging when integrated alone; application/mixed changes still trigger normal publication. No main merge or deployment performed. Local YAML parsing/guard/artifact/path-filter assertions passed; PR CI result must be checked separately.
+
+The runner cannot decrypt here: no backup passphrase or Docker runtime is available, and no secret is requested in chat. Do not broaden the workflow to arbitrary feature branches or evade environment review. Next concrete action requires owner authorization for this infrastructure-only main merge after green CI, then main workflow dispatch with `cuebooker-isolated-restore` and its protected-environment review. This approval does not authorize PR114/application/backend production release.
+
+Current-staging snapshot/analytics rehearsal remains a separate pending prerequisite. Production backup omits Storage object bytes and external configuration. Previous WAITING-backup statements below are historical and superseded by this completed export; hosted analytics/P1/production release remain pending. Beta0.0.13 application unchanged; only documentation updated in PR114.
+
 ## 2026-10-16 / Work Mode resumes Beta0.0.13 — authenticated backend comparison
 
 Owner asks Work to continue the prepared release. Reviewed candidate/application unchanged at `69172db62772a0f294482d4c9f92f4fb94edf6dd` / application `fbc6b09`, Beta0.0.13. Read-only comparison report committed at `0574df5aad35c2c7f120a428bb8d473a8723fda5`: [WORK_BACKEND_COMPARISON](reviews/release-0.0.13/WORK_BACKEND_COMPARISON.md). No production/main merge authorization added.
