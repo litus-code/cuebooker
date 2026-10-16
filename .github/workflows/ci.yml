@@ -10,6 +10,9 @@ on:
     paths-ignore:
       - '.github/workflows/ci.yml'
       - '.github/workflows/rehearse-release-migrations.yml'
+      - '.github/workflows/restore-backup-drill.yml'
+      - 'tests/restoreBackupDrill.test.ts'
+      - '.github/workflows/deploy-pages.yml'
       - 'scripts/rehearse-release-migrations.py'
       - 'scripts/release-migration-manifest.json'
       - 'tests/releaseMigrationRehearsal.test.ts'
