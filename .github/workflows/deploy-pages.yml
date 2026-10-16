@@ -8,6 +8,7 @@ on:
       - '.github/workflows/ci.yml'
       - '.github/workflows/deploy-pages.yml'
       - '.github/workflows/restore-backup-drill.yml'
+      - 'tests/restoreBackupDrill.test.ts'
       - 'docs/RELEASE_REHEARSAL_STATUS.md'
   workflow_dispatch:
 
