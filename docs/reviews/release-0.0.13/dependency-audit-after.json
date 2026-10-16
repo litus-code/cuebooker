@@ -1,0 +1,195 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@nuxt/nitro-server": {
+      "name": "@nuxt/nitro-server",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "nitropack"
+      ],
+      "effects": [
+        "nuxt"
+      ],
+      "range": ">=3.20.0",
+      "nodes": [
+        "node_modules/@nuxt/nitro-server"
+      ],
+      "fixAvailable": true
+    },
+    "braces": {
+      "name": "braces",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1240992,
+          "name": "braces",
+          "dependency": "braces",
+          "title": "braces vulnerable to stack-exhaustion denial of service through deeply nested patterns",
+          "url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+          "severity": "high",
+          "cwe": [
+            "CWE-674"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<=3.0.3"
+        }
+      ],
+      "effects": [
+        "micromatch"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/braces"
+      ],
+      "fixAvailable": true
+    },
+    "fast-glob": {
+      "name": "fast-glob",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "micromatch"
+      ],
+      "effects": [
+        "globby"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/fast-glob"
+      ],
+      "fixAvailable": true
+    },
+    "globby": {
+      "name": "globby",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "fast-glob",
+        "micromatch"
+      ],
+      "effects": [],
+      "range": ">=8.0.0",
+      "nodes": [
+        "node_modules/globby"
+      ],
+      "fixAvailable": true
+    },
+    "listhen": {
+      "name": "listhen",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "node-forge"
+      ],
+      "effects": [
+        "nitropack"
+      ],
+      "range": ">=0.3.0",
+      "nodes": [
+        "node_modules/listhen"
+      ],
+      "fixAvailable": true
+    },
+    "micromatch": {
+      "name": "micromatch",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "braces"
+      ],
+      "effects": [
+        "fast-glob",
+        "globby"
+      ],
+      "range": ">=0.2.0",
+      "nodes": [
+        "node_modules/micromatch"
+      ],
+      "fixAvailable": true
+    },
+    "nitropack": {
+      "name": "nitropack",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "listhen"
+      ],
+      "effects": [
+        "@nuxt/nitro-server"
+      ],
+      "range": ">=0.5.4",
+      "nodes": [
+        "node_modules/nitropack"
+      ],
+      "fixAvailable": true
+    },
+    "node-forge": {
+      "name": "node-forge",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1240912,
+          "name": "node-forge",
+          "dependency": "node-forge",
+          "title": "node-forge RSA PKCS#1 v1.5 signature verification accepts extra nested DigestAlgorithm elements",
+          "url": "https://github.com/advisories/GHSA-86w9-cpqp-85rv",
+          "severity": "high",
+          "cwe": [
+            "CWE-347"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+          },
+          "range": "<=1.4.0"
+        }
+      ],
+      "effects": [
+        "listhen"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/node-forge"
+      ],
+      "fixAvailable": true
+    },
+    "nuxt": {
+      "name": "nuxt",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@nuxt/nitro-server"
+      ],
+      "effects": [],
+      "range": "3.20.0 - 3.21.11 || >=4.2.0",
+      "nodes": [
+        "node_modules/nuxt"
+      ],
+      "fixAvailable": true
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 9,
+      "critical": 0,
+      "total": 9
+    },
+    "dependencies": {
+      "prod": 667,
+      "dev": 0,
+      "optional": 152,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 818
+    }
+  }
+}
