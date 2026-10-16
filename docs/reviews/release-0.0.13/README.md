@@ -1,3 +1,7 @@
+## Latest hosted staging result, 16 October
+
+Corrected current-staging rehearsal passed. Campaign SQL, Edge version2 and daily retention are now deployed to staging/test, with actual HTTP/SQL/cron consent/dedup/access/retention checks. [Exact sources, evidence, limitations and remaining release gates](STAGING_CAMPAIGN_ACCEPTANCE.md). Production/PR114 merge remain pending. Earlier prepared/not-hosted statements below are historical.
+
 ## 16 October follow-up: isolated current staging restore and campaign ACL correction
 
 Current staging export/restore run38932556643 attempt4/job117106725063 passed actual import/all COPY counts/FK/RLS/unidentified-caller denial and cleanup. Campaign acceptance then stopped at service-only RPC privileges. The disconnected runner creates functions as supabase_admin, whose public-function defaults directly grant client EXECUTE; prepared SQL now revokes anon/authenticated explicitly on both collector and withdrawal RPCs. Hosted postgres owner defaults differ, so this is an owner-dependent security contract defect found before deployment, not evidence of an existing hosted exposure. Nothing has been applied to hosted analytics or production.
