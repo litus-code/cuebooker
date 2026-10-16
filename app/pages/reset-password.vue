@@ -50,7 +50,9 @@ const copy = computed(() => locale.value === 'es' ? {
   titleMeta: 'New password | Cuebooker'
 })
 
-onMounted(async () => {
+// Prerender hydration restores the recovery fragment after component mount.
+// Wait for the original URL before deciding that a recovery link is missing.
+onNuxtReady(async () => {
   try {
     const consumed = await auth.consumePasswordRecoveryFromUrl()
     if (!consumed) await auth.initialize()
@@ -162,10 +164,11 @@ useHead(() => ({ title: copy.value.titleMeta, htmlAttrs: { lang: locale.value } 
   font:700 12px/1.2 monospace;
   letter-spacing:.12em;
 }
-h1{
+.reset-panel h1{
   margin:0;
-  font-size:clamp(2.3rem,7vw,4.8rem);
-  line-height:.92;
+  font-size:clamp(1.75rem,4vw,2.5rem);
+  line-height:1.08;
+  overflow-wrap:anywhere;
   text-transform:uppercase;
 }
 .reset-copy{
