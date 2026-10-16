@@ -5,6 +5,10 @@ on:
     branches:
       - main
     paths-ignore:
+      - '.github/workflows/rehearse-release-migrations.yml'
+      - 'scripts/rehearse-release-migrations.py'
+      - 'scripts/release-migration-manifest.json'
+      - 'tests/releaseMigrationRehearsal.test.ts'
       - '.github/workflows/rehearse-staging-campaign.yml'
       - 'scripts/rehearse-staging-campaign.py'
       - 'scripts/restore-backup-drill.py'
