@@ -30,6 +30,7 @@ test('actual Edge adapter uses existing rate-limit RPC and privileged writes, wi
  Object.defineProperty(globalThis,'Deno',{configurable:true,value:{env:{get:(name:string)=>({SUPABASE_URL:'https://isolated.invalid',SUPABASE_SERVICE_ROLE_KEY:'fixture-server-key'} as Record<string,string>)[name]},serve:(fn:Function)=>{handler=fn}}})
  globalThis.fetch=async(url:any,init:any)=>{
   calls.push({url,headers:init.headers,body:JSON.parse(init.body)})
+  if(String(url).endsWith('revoke_campaign_consent'))return new Response(null,{status:204})
   return new Response(JSON.stringify(String(url).endsWith('consume_public_rate_limit')?[{allowed,retry_after_seconds:60,remaining:10}]:true),{status:200})
  }
  try {

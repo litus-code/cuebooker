@@ -6,6 +6,8 @@ const key=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
 async function serviceJson<T>(endpoint:string,init:RequestInit):Promise<T>{
  const result=await fetch(endpoint,{...init,headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':'application/json'}})
  if(!result.ok)throw new Error('analytics_backend_unavailable')
+ // PostgREST returns no JSON body for a void withdrawal RPC.
+ if(result.status===204)return undefined as T
  return result.json()
 }
 Deno.serve(request=>handleCampaignAnalytics(request,{
