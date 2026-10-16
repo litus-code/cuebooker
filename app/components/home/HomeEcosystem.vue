@@ -17,5 +17,8 @@ defineProps<{ copy: { profile: { name: string; title: string; body: string }; pa
 .home-ecosystem-summary__link{display:inline-flex;align-items:center;gap:16px;margin-block:26px;color:var(--cp-paper);text-underline-offset:5px;font-weight:650}
 .home-ecosystem-summary .home-ecosystem-summary__future{border-top:1px solid var(--cp-line);padding-top:20px;font-size:12px}
 .home-ecosystem-summary__future a{display:inline-flex;align-items:center;gap:8px;color:var(--cp-paper);margin-left:8px;text-underline-offset:3px}.home-ecosystem-summary__future strong{color:var(--cp-paper)}
+.home-ecosystem-summary a{transition:color .18s ease}
+.home-ecosystem-summary a:is(:hover,:focus-visible){color:var(--cp-lime)}
+@media(prefers-reduced-motion:reduce){.home-ecosystem-summary a{transition:none}}
 @media(max-width:800px){.home-ecosystem-summary__items{grid-template-columns:1fr;gap:24px}.home-ecosystem-summary__link{font-size:14px}}
 </style>

@@ -342,7 +342,7 @@ html[data-theme='light'] .home-hero-route span { color: color-mix(in srgb, var(-
   .ed-console-heading { font-size: 11px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .home-v2 .cp-cta { transition: none; }
+  .home-v2 .cp-cta, .home-nav-links a, .home-login, .home-audience-grid h3 a, .home-audience-discover { transition: none; }
   .home-v2 .cp-cta:hover { transform: none; }
 }
 .home-access-note{font-size:12px;line-height:1.6;color:var(--cp-muted);max-width:620px;margin-top:16px}
