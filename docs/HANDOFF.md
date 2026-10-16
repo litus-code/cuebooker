@@ -1,3 +1,11 @@
+## 2026-10-17 / Production delta rehearsal infrastructure PR118 prepared
+
+Application candidate9bd56509bb9aba2176b55483988df80c05b1fd6a on PR114 has CI38976682744 and preview38976682708 SUCCESS. Two staging migrations and hosted QA results below are committed; production is unchanged.
+
+Prepared separate draft PR118, chore/production-delta-rehearsal-20261017, exactSHA72ccedfd66b95e672e360cd4f24ed99d10d21f0f, based only on main3b6d3724f22d4209fad30b5beef6f04ad0fa1364. Six infrastructure files pin fresh verified backup38889098646/attempt1 and exact39-file candidate9bd56509. The disconnected runner checks production-only function/trigger fingerprints before/after,81-entry baseline ledger, protected counts/FKs/RLS, private attachment writes/bucket, campaign service grants/private tables/test mode, paused jobs and observer-disabling rollback. New exact GitHub Pages push exclusions prevent infrastructure-only publication. Existing main-only/manual confirmation, protected environment, read-only permissions and disconnect-before-decrypt/cleanup stay intact.326 main-based tests, nine focused infra regressions, YAML and all39 actual SQL hashes pass locally. PR118 CI38976909615 and preview38976909571 SUCCESS; stable-staging publication is not part of this infrastructure change.
+
+Next action requires explicit owner approval to merge ONLY PR118 and run the isolated release rehearsal. No main merge or dispatch has been performed. The workflow's main-only guard prevents validating this new delta by rerunning the old registered source. PR114 remains draft/unmerged. A passing SQL rehearsal would still leave complete Edge/provider/Auth/Storage rollback/deployment preparation and final production approval separate.
+
 ## 2026-10-17 / Hosted API campaign funnel, FK indexes and last-owner cleanup repair
 
 PR114 integration/beta-home21-review, parent9fcdf0bcbff92280e7675a6272a0587f89ece1d7. Beta0.0.13 unchanged; production/merge untouched. Owner authorizes continuation after real recovery password-change/sign-in acceptance. Dedicated disposable QA scope only.

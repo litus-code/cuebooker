@@ -34,8 +34,9 @@ Use the already verified encrypted production backup38889098646/attempt1,
 artifact12041757362, named `cuebooker-production-db-38889098646-1`.
 Its disconnected restore38893078933 passed. The old release workflow still pins the
 October4 archive and old30-file candidate, so it cannot establish acceptance of this
-new delta. Prepare a bounded infrastructure PR from main to update those pins and
-checks. The current main-only workflow and protected environment must remain intact.
+new delta. Prepared [draft PR118](https://github.com/litus-code/cuebooker/pull/118) from main
+to update those pins and checks. Its exact source is72ccedfd66b95e672e360cd4f24ed99d10d21f0f;
+326 tests and nine focused infra checks pass locally; CI38976909615 and preview38976909571 SUCCESS. Execution remains pending approval. The current main-only workflow and protected environment must remain intact.
 
 The rehearsal must preserve original row counts/FKs/RLS and the two production-only
 behaviors, keep the mailbox/Gmail schedulers paused, check private attachments and
