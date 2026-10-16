@@ -191,7 +191,13 @@ declare w uuid; event text;
 begin
  if tg_table_name='artists' then
   if not new.public_profile_enabled or old.public_profile_enabled then return new; end if;
-  select workspace_id into w from public.workspace_artists where artist_id=new.id order by created_at limit 1;
+  -- Shared/previous agency membership is not publication ownership. Use the actual
+  -- canonical booking route even when requests are closed. Only unambiguous legacy
+  -- association is a valid fallback; never choose an arbitrary oldest workspace.
+  select workspace_id into w from public.artist_booking_routes where artist_id=new.id;
+  if w is null then
+   select min(workspace_id::text)::uuid into w from public.workspace_artists where artist_id=new.id having count(*)=1;
+  end if;
   event:='artist_profile_published';
  else
   if not new.agency_public_enabled or old.agency_public_enabled then return new; end if;

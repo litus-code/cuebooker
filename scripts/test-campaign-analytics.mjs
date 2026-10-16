@@ -16,6 +16,7 @@ await db.exec(`
  create table public.artists(id uuid primary key default gen_random_uuid(),public_profile_enabled boolean default false);
  create table public.organizations(id uuid primary key default gen_random_uuid(),agency_public_enabled boolean default false);
  create table public.workspace_artists(workspace_id uuid,artist_id uuid,created_at timestamptz default now());
+ create table public.artist_booking_routes(artist_id uuid primary key,workspace_id uuid);
  create table public.workspace_legacy_organizations(workspace_id uuid,organization_id uuid);
  create table public.bookings(id uuid primary key default gen_random_uuid(),workspace_id uuid,created_by uuid,capture_method text,origin_channel text,created_at timestamptz default now(),updated_at timestamptz default now(),status text);
 `)
@@ -122,10 +123,11 @@ check(await scalar(`select count(*) from public.product_analytics_events where w
 await query(`insert into public.bookings(workspace_id,capture_method,origin_channel) values($1,'ai_capture','email')`,[autoW])
 check(await scalar(`select count(*) from public.product_analytics_events where workspace_id=$1 and event_name='workspace_first_request_received'`,[autoW])===1,'actual automatic mailbox AI capture activates workspace')
 const autoArtist=await scalar('insert into public.artists default values returning id')
-await query('insert into public.workspace_artists values($1,$2,now())',[autoW,autoArtist])
+await query(`insert into public.workspace_artists values($1,$2,now()-interval '1 day'),($3,$2,now())`,[historicW,autoArtist,autoW])
+await query('insert into public.artist_booking_routes values($1,$2)',[autoArtist,autoW])
 await query('update public.artists set public_profile_enabled=true where id=$1',[autoArtist])
 const reversed=await report('dj')
-check(reversed.rows.find(r=>r.step==='publication').workspaces===1,'artist publication persisted')
+check(reversed.rows.find(r=>r.step==='publication').workspaces===1,'shared artist publication belongs to canonical route, not oldest workspace')
 check(reversed.conversions.find(c=>c.from_step==='publication').numerator===0,'earlier activation cannot convert a later publication')
 await query(`delete from public.bookings where workspace_id=$1`,[autoW])
 await query(`delete from public.product_analytics_events where workspace_id=$1 and event_name='workspace_first_request_received'`,[autoW])
