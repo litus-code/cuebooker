@@ -25,6 +25,7 @@ await db.exec(await readFile(new URL('../supabase/migrations/20260928204500_add_
 // grant EXECUTE directly to client roles. Revoking only PUBLIC must not pass.
 await db.exec('alter default privileges in schema public grant execute on functions to anon,authenticated,service_role;')
 await db.exec(await readFile(new URL('../supabase/migrations/20261016120000_campaign_funnel_analytics.sql',import.meta.url),'utf8'))
+await db.exec(await readFile(new URL('../supabase/migrations/20261016220553_campaign_foreign_key_indexes.sql',import.meta.url),'utf8'))
 let assertions=0
 const check=(condition,message)=>{assert.ok(condition,message);assertions++}
 const query=async(sql,params=[]) => (await db.query(sql,params)).rows

@@ -1,0 +1,87 @@
+{
+  "environment": "staging/test",
+  "transport": "HTTP collector and Auth signup/sign-in/onboarding/publication; Core first-enquiry command in service SQL context; restricted report in authenticated admin SQL context",
+  "rows": [
+    {
+      "step": "visit",
+      "users": 0,
+      "events": 1,
+      "visitors": 1,
+      "workspaces": 0
+    },
+    {
+      "step": "interest",
+      "users": 0,
+      "events": 1,
+      "visitors": 1,
+      "workspaces": 0
+    },
+    {
+      "step": "registration",
+      "users": 1,
+      "events": 1,
+      "visitors": 1,
+      "workspaces": 0
+    },
+    {
+      "step": "onboarding",
+      "users": 1,
+      "events": 1,
+      "visitors": 1,
+      "workspaces": 1
+    },
+    {
+      "step": "publication",
+      "users": 1,
+      "events": 1,
+      "visitors": 1,
+      "workspaces": 1
+    },
+    {
+      "step": "activation",
+      "users": 1,
+      "events": 1,
+      "visitors": 1,
+      "workspaces": 1
+    }
+  ],
+  "conversions": [
+    {
+      "unit": "visitors",
+      "to_step": "interest",
+      "from_step": "visit",
+      "numerator": 1,
+      "denominator": 1
+    },
+    {
+      "unit": "visitors",
+      "to_step": "registration",
+      "from_step": "interest",
+      "numerator": 1,
+      "denominator": 1
+    },
+    {
+      "unit": "users",
+      "to_step": "onboarding",
+      "from_step": "registration",
+      "numerator": 1,
+      "denominator": 1
+    },
+    {
+      "unit": "workspaces",
+      "to_step": "publication",
+      "from_step": "onboarding",
+      "numerator": 1,
+      "denominator": 1
+    },
+    {
+      "unit": "workspaces",
+      "to_step": "activation",
+      "from_step": "publication",
+      "numerator": 1,
+      "denominator": 1
+    }
+  ],
+  "cleanup": "temporary account, artist, workspace, booking, queued emails and campaign events removed; consent revoked and session logged out",
+  "limits": "email confirmation used a scoped QA SQL fixture; no deliverability or new full-browser journey claim"
+}

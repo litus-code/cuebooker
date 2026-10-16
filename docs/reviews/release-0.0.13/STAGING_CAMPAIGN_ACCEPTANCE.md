@@ -6,6 +6,32 @@ Status: deployed to staging and partial hosted acceptance passed. Production pro
 
 Owner confirms the Campaigns test dataset panel loads. This validates panel access, not the complete attributed signup funnel. Owner also confirms Manager restrictions (no invitations/role changes) and preserved DJ workspace. Invitation acceptance, revocation and refusal of a revoked link were checked earlier. Recovery now passes the real browser sequence: fresh email opens the form, a different password saves successfully and owner signs in with that new password. The same-password422 rejection was diagnosed from hosted Auth logs and localized feedback added in source7015aa79b5c0b19d9041a6e91dcdf5bc0224e75b (608 tests). These checks do not establish untested cross-tenant cases or production readiness.
 
+## Hosted API funnel and cleanup, 17 October
+
+A disposable QA visitor/account completed HTTP collector page_view/signup_click/signup_started,
+actual Auth signup and password sign-in, authenticated complete_onboarding/ensure_booking_workspace,
+profile publication and booking-route activation. Email confirmation was set only on the
+reserved-domain QA identity through a scoped SQL fixture; this is not email-delivery acceptance.
+The Core public-booking command ran under service_role SQL context, without invoking outbound
+Edge email delivery. The restricted report ran under authenticated internal-admin SQL context.
+It reports one visitor/account/workspace through each of six steps and five1/1 conversions.
+A same-request retry reuses its booking; a second distinct enquiry still produces one activation.
+These checks used actual hosted triggers, not a mocked persistence layer. No new full-browser
+signup journey, Edge acknowledgement delivery or multi-account conversion test is claimed.
+
+The QA account's actual authenticated HTTP reads return no other-workspace bookings; its campaign
+report call is denied400/P0001/internal_admin_required. Consent withdrawal succeeds200 and the
+session logs out204. Temporary Auth user, artist, workspace, booking, queued notifications and
+campaign facts are removed. Original manually tested accounts remain. Safe aggregate evidence:
+[campaign-api-qa-summary.json](campaign-api-qa-summary.json).
+
+The two campaign FK indexes are deployed. Performance findings decrease8→6 unindexed FKs;
+the six older findings remain. Source20261016220553 maps to hosted20261016220631.
+Cleanup exposed the existing invalid membership-id reference in both last-owner guards.
+Source20261016223115 maps to hosted20261016223158. Sixteen isolated SQL cases pass;
+hosted last-owner denial and parent cascades pass for both entity types in rollback fixtures,
+and actual QA cleanup succeeds. Production's same bug remains unchanged pending release.
+
 ## Exact sources and environment
 
 - Staging: `lycprjeuuynfzwskycwv`, cuebooker-staging. Production `qlocooqfdzehogbwcbhr` was checked read-only and campaign tables remain absent.
@@ -59,7 +85,7 @@ No ERROR-level security/performance advisories appeared. Counts are per finding,
 
 Remediation references: [FK indexes](https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys), [privileged RPC review](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable), [private RLS policies](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy), [existing leaked-password setting](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection).
 
-Still pending: new Auth signup/onboarding/publication/first-enquiry analytics journey and any remaining automated cross-tenant negative checks, two new FK index follow-ups, production-specific schema/function reconciliation and isolated production delta rehearsal. Existing accepted Gmail/attachments/DJ/ESEN/mobile checks stay accepted. Live collection activation is a separate decision. PR114 remains draft/unmerged and production application/backend untouched.
+Still pending: any separately required full-browser signup/multi-account conversion checks and remaining cross-tenant write cases, production-specific schema/function/Edge configuration reconciliation and isolated production delta rehearsal. Existing accepted Gmail/attachments/DJ/ESEN/mobile checks stay accepted. Live collection activation is a separate decision. PR114 remains draft/unmerged and production application/backend untouched.
 
 Rollback remains non-destructive: pause collector/retention and optional observers, preserve schema for inspection, revert optional frontend if needed. No automatic production action follows this staging result.
 
