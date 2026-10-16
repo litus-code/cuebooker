@@ -161,7 +161,7 @@ useHead(() => ({
 
 <style scoped>
 .home-v2 { overflow-wrap: break-word; }
-html[data-theme='light'] .home-v2 :is(.cp-kicker, .cp-eyebrow, .home-mono, .selected .ed-index, .ed-status, .ed-next, .ed-available) {
+html[data-theme='light'] .home-v2 :is(.cp-kicker, .cp-eyebrow, .home-mono, .selected .ed-index, .ed-status, .ed-available) {
   color: color-mix(in srgb, var(--cp-lime) 85%, var(--cp-paper));
 }
 .home-v2 :deep(:is(a, button, [tabindex='0']):focus-visible),
@@ -258,7 +258,8 @@ html[data-theme='light'] .home-v2 :is(.cp-kicker, .cp-eyebrow, .home-mono, .sele
 .ed-request-data dl div { display: flex; justify-content: space-between; gap: 15px; border-bottom: 1px solid var(--cp-line); padding: 13px 0; font-size: 12px; }
 .ed-request-data dt { color: var(--cp-muted); }
 .ed-request-data dd { margin: 0; text-align: right; }
-.ed-next { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 16px 0 0; border: 0; border-top: 1px solid var(--cp-line); background: none; color: var(--cp-lime); cursor: pointer; font-size: 13px; min-height: 48px; }
+.ed-next { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 16px 0 0; border: 0; border-top: 1px solid var(--cp-line); background: none; color: var(--cp-muted); cursor: pointer; font-size: 13px; min-height: 48px; }
+.ed-next:is(:hover,:focus-visible) { color:var(--cp-lime); }
 .ed-console .ed-demo-foot { padding: 18px 26px; margin: 0; font-size: 12px; line-height: 1.5; background: var(--cp-black); color: var(--cp-muted); }
 .ed-calendar { min-height: 210px; }
 .ed-calendar .ed-mono { font-size: 10px; margin: 0 0 10px; }
