@@ -1,3 +1,4 @@
+import { publicCampaignQuery } from '../domain/publicCampaign'
 import es from '../../content/es/landings.json'
 import en from '../../content/en/landings.json'
 export function useCommercialLanding(audience: 'dj' | 'agency') {
@@ -6,16 +7,7 @@ export function useCommercialLanding(audience: 'dj' | 'agency') {
   const analytics = useAnalytics()
   const auth = useCueAuth()
   const copy = computed(() => locale.value === 'es' ? es : en)
-  const campaign = computed(() => {
-    const query: Record<string, string> = {}
-    for (const key of ['ref', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']) {
-      const value = route.query[key]
-      if (typeof value !== 'string' || !value || value.length > 128) continue
-      if (key === 'ref' && !/^[a-z0-9][a-z0-9_-]{1,63}$/i.test(value)) continue
-      query[key] = value
-    }
-    return query
-  })
+  const campaign = computed(() => publicCampaignQuery(route.query))
   const signupTo = computed(() => ({ path: '/access', query: { ...campaign.value, mode: 'signup', source: audience } }))
   function captureOrigin() {
     if (!import.meta.client || !campaign.value.ref || !route.path.startsWith(`/${audience}`)) return

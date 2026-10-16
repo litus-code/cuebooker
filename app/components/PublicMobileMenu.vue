@@ -2,6 +2,7 @@
 import type { RouteLocationRaw } from 'vue-router'
 import es from '../../content/es/home.json'
 import en from '../../content/en/home.json'
+import { campaignDestination } from '../domain/publicCampaign'
 const props = defineProps<{ signupTo?: RouteLocationRaw }>()
 const emit = defineEmits<{ signup: [] }>()
 const { locale } = useCuePreferences()
@@ -13,10 +14,10 @@ const id = useId()
 let previousOverflow = ''
 let desktop: MediaQueryList | undefined
 const links = computed(() => [
-  { label: copy.value.product, to: `${route.path === '/' ? '' : '/'}#product` },
-  { label: copy.value.audience, to: `${route.path === '/' ? '' : '/'}#audience` },
-  { label: copy.value.system, to: `${route.path === '/' ? '' : '/'}#system` },
-  { label: copy.value.login, to: '/access?mode=signin' }
+  { label: copy.value.product, to: campaignDestination(`${route.path === '/' ? '' : '/'}#product`,route.query) },
+  { label: copy.value.audience, to: campaignDestination(`${route.path === '/' ? '' : '/'}#audience`,route.query) },
+  { label: copy.value.system, to: campaignDestination(`${route.path === '/' ? '' : '/'}#system`,route.query) },
+  { label: copy.value.login, to: campaignDestination('/access?mode=signin',route.query) }
 ])
 function show() {
   if (open.value) return
@@ -61,7 +62,7 @@ watch(() => route.fullPath, close)
   <Teleport to="body">
     <dialog :id="id" ref="dialog" class="public-mobile-menu" :aria-label="copy.label" @close="closed" @keydown="keydown">
       <div class="public-menu-tools"><CuePreferencesControl /><button type="button" :aria-label="copy.close" @click="close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 5 14 14M19 5 5 19" /></svg></button></div>
-      <nav :aria-label="copy.label"><NuxtLink v-for="link in links" :key="link.to" :to="link.to" @click="navigate($event, link.to)">{{ link.label }}</NuxtLink><NuxtLink class="public-menu-signup" :to="props.signupTo || '/access?mode=signup'" @click="close(); emit('signup')">{{ copy.signup }}</NuxtLink></nav>
+      <nav :aria-label="copy.label"><NuxtLink v-for="link in links" :key="link.to" :to="link.to" @click="navigate($event, link.to)">{{ link.label }}</NuxtLink><NuxtLink class="public-menu-signup" :to="props.signupTo || campaignDestination('/access?mode=signup', route.query)" @click="close(); emit('signup')">{{ copy.signup }}</NuxtLink></nav>
     </dialog>
   </Teleport>
 </template>

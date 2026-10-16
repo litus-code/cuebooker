@@ -173,11 +173,11 @@
   },
   "extensions": {
     "label": "04 / YOUR ECOSYSTEM",
-    "title": "Your identity has a place, too.",
+    "title": "YOUR PROFILE OPENS THE DOOR. YOUR WORKSPACE MANAGES THE BOOKING.",
     "profile": {
       "name": "Public profile",
       "title": "Your identity. Your booking entry point.",
-      "body": "Present your project and share an entry point for proposals. Promoters don’t need an account.",
+      "body": "One page for your introduction, sound, links and booking enquiries. A promoter can propose a date without creating an account.",
       "status": "PUBLIC PROFILE · AVAILABLE",
       "cta": "Create my profile",
       "example": "EXAMPLE COMPOSITION · NOT A PUBLISHED PROFILE",
@@ -194,8 +194,8 @@
     "passport": {
       "name": "CUE Passport",
       "title": "Every date leaves a mark.",
-      "body": "A view of your journey connected to booking activity. Explore the dates and places that shape your story.",
-      "concept": "JOURNEY CONCEPT · NO REAL ACTIVITY",
+      "body": "Basic CUE Passport is already built from confirmed bookings: cities, venues and dates. You decide whether its summary appears on your public profile. Advanced and media options depend on your plan.",
+      "concept": "BASIC PASSPORT / BETA",
       "steps": [
         "BOOKING",
         "EVENT",
@@ -215,12 +215,14 @@
       "caption": "VISUAL CONCEPT · CUE ID IN DEVELOPMENT",
       "alt": "CUE ID avatar concept with hair and black clothing in an industrial garage",
       "femaleAlt": "Female CUE ID avatar concept with hair and black clothing in an industrial garage"
-    }
+    },
+    "discover": "Explore the DJ profile and CUE Passport"
   },
   "closing": {
     "title": "BE READY FOR THE NEXT BOOKING.",
     "body": "Prepare your workspace to receive proposals, organise them and follow them through to confirmation.",
     "cta": "Create my workspace",
     "footer": "Made for the people behind the sound."
-  }
+  },
+  "initialAccess": "The initial plan includes booking management, a public profile and basic Passport. Connecting your mailbox and enabling AI detection requires beta approval; places are limited."
 }

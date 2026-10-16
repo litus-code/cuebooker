@@ -56,7 +56,7 @@
     "Check dates and distinguish holds from confirmations."
   ],
   "emailTitle": "AN OFFER ARRIVES. CUEBOOKER PUTS IT IN ORDER.",
-  "emailBody": "Cuebooker detects possible booking offers in an authorised inbox and prepares a request from the available details. You review and decide.",
+  "emailBody": "With an approved mailbox and detection enabled, Cuebooker identifies possible proposals and prepares an enquiry from the available information. You review and decide.",
   "emailStatus": "SMART EMAIL CAPTURE",
   "emailStages": [
     [
@@ -72,7 +72,7 @@
       "Prepares a request using available information so you can check it and decide the next step."
     ]
   ],
-  "emailNote": "Private beta with authorised activation. The attachments in this demonstration illustrate a feature in development, not yet confirmed in production.",
+  "emailNote": "Mailbox connection is a private beta, subject to approval and limited places. PDF, PNG and JPG are supported within the workspace limits; other formats may not be imported. The public form does not require connecting your mailbox.",
   "ecosystemTitle": "MORE THAN A PROFILE.",
   "ecosystem": [
     [
@@ -82,8 +82,8 @@
     ],
     [
       "CUE Passport",
-      "A career connected to real booking activity.",
-      "Concept in development"
+      "Basic CUE Passport is already built from confirmed bookings: cities, venues and dates. You decide whether its summary appears on your public profile. Advanced and media options depend on your plan.",
+      "BASIC PASSPORT / BETA"
     ],
     [
       "CUE ID",
@@ -92,7 +92,7 @@
     ]
   ],
   "rosterTitle": "YOUR ROSTER, ORGANISED.",
-  "rosterBody": "Artists, requests and dates in one operation. Keep the relevant artist context without multiplying an agency proposal.",
+  "rosterBody": "Review opportunities across your artists. Select one to focus on their enquiries, conversations and dates.",
   "rosterStatus": "MULTI-ARTIST WORKSPACE / BETA",
   "artist": "Artist",
   "requests": "Request",
@@ -119,12 +119,8 @@
     ]
   ],
   "contextTitle": "EVERY PROPOSAL KEEPS ITS CONTEXT.",
-  "contextBody": "An enquiry addressed to the agency retains its contact and conversation. Assign the relevant artist in that same context; it does not become a separate copy for every artist.",
+  "contextBody": "Open a proposal to see the artist, contact, conversation and next action together. If an enquiry comes to the agency, decide which artist fits while keeping the conversation in view.",
   "context": [
-    [
-      "Contact",
-      "Example promoter"
-    ],
     [
       "Relevant artist",
       "Your artist 01"
@@ -136,10 +132,6 @@
     [
       "Conversation",
       "Check availability and event format"
-    ],
-    [
-      "Terms",
-      "Fee and production pending negotiation"
     ],
     [
       "Next action",
@@ -177,5 +169,70 @@
     "label": "Navigation",
     "open": "Open menu",
     "close": "Close menu"
+  },
+  "initialAccess": "The initial plan includes booking management, a public profile and basic Passport. Connecting your mailbox and enabling AI detection requires beta approval; places are limited.",
+  "product": {
+    "label": "PRODUCT / ACTUAL VIEWS",
+    "title": "THIS IS WHAT YOU WILL FIND INSIDE.",
+    "agencyTitle": "FROM THE ROSTER TO EACH ARTIST’S CONTEXT.",
+    "intro": "Conversation, next actions and dates in the same workspace.",
+    "caption": "Current interface with test data. ORBIT, NOVA and the proposals are fictional, not customer accounts or bookings.",
+    "views": [
+      "Conversation",
+      "Calendar",
+      "Artist selection"
+    ],
+    "descriptions": [
+      "Open a proposal to review the contact, conversation and next action.",
+      "Review confirmed dates and holds alongside your availability.",
+      "Review the roster and filter by artist before opening their context."
+    ],
+    "imageAlts": [
+      "Actual Cuebooker workspace showing a conversation with test data",
+      "Actual Cuebooker calendar with test dates",
+      "Actual roster and artist selector with fictional ORBIT and NOVA"
+    ],
+    "openImage": "Open full-size screenshot"
+  },
+  "profileShowcase": {
+    "title": "YOUR PROJECT. READY FOR ENQUIRIES.",
+    "body": "One page for your introduction, sound, links and booking enquiries. A promoter can propose a date without creating an account.",
+    "parts": [
+      [
+        "Introduction",
+        "Stage name, biography, city and formats."
+      ],
+      [
+        "Sound and links",
+        "Your mixes and the places where people already listen."
+      ],
+      [
+        "Enquiries",
+        "Name, email and proposal; extra details can follow."
+      ]
+    ],
+    "caption": "Actual public profile rendered with a test artist. The artist controls publication and content.",
+    "alt": "Public profile of fictional artist ORBIT with a booking enquiry entry point",
+    "views": [
+      "Introduction",
+      "Sound and links"
+    ],
+    "detailAlt": "Sound and links on test artist ORBIT’s public profile"
+  },
+  "passport": {
+    "title": "CONFIRMED DATES BUILD YOUR TRAJECTORY.",
+    "status": "BASIC PASSPORT / BETA",
+    "body": "Basic CUE Passport is already built from confirmed bookings: cities, venues and dates. You decide whether its summary appears on your public profile. Advanced and media options depend on your plan.",
+    "caption": "Illustration of fictional confirmed dates; not a ranking or a promise of gigs.",
+    "steps": [
+      "Confirmed booking",
+      "City and venue",
+      "Passport trajectory"
+    ],
+    "identity": "CUE ID · In development. An optional visual representation of your project; it does not replace booking management."
+  },
+  "catalog": {
+    "title": "YOUR ROSTER CAN HAVE A PUBLIC ENTRY POINT TOO.",
+    "body": "The public catalogue is in beta. When you publish it from Settings, you choose visible artists and promoters can enquire without registering. Only the roster you choose to publish is shown."
   }
 }

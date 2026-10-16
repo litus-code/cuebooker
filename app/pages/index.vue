@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import es from '../../content/es/home.json'
 import en from '../../content/en/home.json'
+import { campaignDestination } from '../domain/publicCampaign'
+const route = useRoute()
+const campaignTo = (path: string) => campaignDestination(path, route.query)
 
 const { locale } = useCuePreferences()
 const p = computed(() => locale.value === 'es' ? es : en)
@@ -74,8 +77,8 @@ useHead(() => ({
         </div>
         <div class="home-nav-actions">
           <div class="home-desktop-preferences"><CuePreferencesControl compact /></div>
-          <NuxtLink class="home-login" to="/access?mode=signin" @click="analytics.track('login_click', { placement: 'header' })">{{ p.nav.login }}</NuxtLink>
-          <NuxtLink class="cp-cta home-nav-signup" to="/access?mode=signup" @click="trackSignup('header')">{{ p.nav.signup }}</NuxtLink>
+          <NuxtLink class="home-login" :to="campaignTo('/access?mode=signin')" @click="analytics.track('login_click', { placement: 'header' })">{{ p.nav.login }}</NuxtLink>
+          <NuxtLink class="cp-cta home-nav-signup" :to="campaignTo('/access?mode=signup')" @click="trackSignup('header')">{{ p.nav.signup }}</NuxtLink>
           <PublicMobileMenu @signup="trackSignup('mobile-menu')" />
         </div>
       </nav>
@@ -91,10 +94,10 @@ useHead(() => ({
             <h1 id="hero-title">{{ p.hero.title }} <em>{{ p.hero.accent }}</em></h1>
             <p class="home-lead">{{ p.hero.body }}</p>
             <div class="home-actions">
-              <NuxtLink class="cp-cta" to="/access?mode=signup" @click="trackSignup('hero')">{{ p.hero.primary }}<span class="cp-arrow" aria-hidden="true" /></NuxtLink>
+              <NuxtLink class="cp-cta" :to="campaignTo('/access?mode=signup')" @click="trackSignup('hero')">{{ p.hero.primary }}<span class="cp-arrow" aria-hidden="true" /></NuxtLink>
               <a class="cp-cta cp-cta--ghost" href="#system" @click.prevent="scrollTo('system')">{{ p.hero.secondary }}</a>
             </div>
-            <p class="home-hero-note">{{ p.hero.note }}</p>
+            <p class="home-access-note">{{ p.initialAccess }}</p><p class="home-hero-note">{{ p.hero.note }}</p>
           </div>
         <!-- Replace this signature with a verified spot player when the licensed final asset is available. -->
         <p class="home-hero-signature">{{ p.hero.signature }}</p>
@@ -137,16 +140,16 @@ useHead(() => ({
 
       <section id="audience" tabindex="-1" class="home-section cp-wrap" aria-labelledby="audience-title">
         <p class="cp-kicker">{{ p.audience.label }}</p><h2 id="audience-title">{{ p.audience.title }}</h2>
-        <div class="home-card-grid home-audience-grid"><article v-for="(role, i) in p.audience.items" :key="role.title" class="home-card"><span class="home-mono">{{ i === 0 ? 'DJ / SOLO' : 'MANAGER / AGENCY' }}</span><h3><NuxtLink :to="i === 0 ? '/dj' : '/agency'">{{ role.title }}</NuxtLink></h3><p>{{ role.text }}<NuxtLink class="home-audience-discover" :to="i === 0 ? '/dj' : '/agency'">{{ role.discover }}<span class="cp-arrow" aria-hidden="true" /></NuxtLink></p><NuxtLink class="cp-cta" :class="{ 'cp-cta--ghost': i === 1 }" to="/access?mode=signup" @click="trackSignup(i === 0 ? 'audience-dj' : 'audience-agency')">{{ role.cta }}<span class="cp-arrow" aria-hidden="true" /></NuxtLink></article></div>
+        <div class="home-card-grid home-audience-grid"><article v-for="(role, i) in p.audience.items" :key="role.title" class="home-card"><span class="home-mono">{{ i === 0 ? 'DJ / SOLO' : 'MANAGER / AGENCY' }}</span><h3><NuxtLink :to="campaignTo(i === 0 ? '/dj' : '/agency')">{{ role.title }}</NuxtLink></h3><p>{{ role.text }}<NuxtLink class="home-audience-discover" :to="campaignTo(i === 0 ? '/dj' : '/agency')">{{ role.discover }}<span class="cp-arrow" aria-hidden="true" /></NuxtLink></p><NuxtLink class="cp-cta" :class="{ 'cp-cta--ghost': i === 1 }" :to="campaignTo('/access?mode=signup')" @click="trackSignup(i === 0 ? 'audience-dj' : 'audience-agency')">{{ role.cta }}<span class="cp-arrow" aria-hidden="true" /></NuxtLink></article></div>
         <p class="home-audience-note">{{ p.audience.note }}</p>
       </section>
 
       <section class="home-section cp-wrap home-extensions" aria-labelledby="extensions-title">
         <p class="cp-kicker">{{ p.extensions.label }}</p><h2 id="extensions-title">{{ p.extensions.title }}</h2>
-        <HomeEcosystem :copy="p.extensions" @signup="trackSignup('ecosystem-profile')" />
+        <HomeEcosystem :copy="p.extensions" />
       </section>
 
-      <section class="home-closing" aria-labelledby="closing-title"><div class="cp-wrap"><p class="cp-kicker">CUEBOOKER / BOOKING WORKSPACE</p><h2 id="closing-title">{{ p.closing.title }}</h2><p>{{ p.closing.body }}</p><NuxtLink class="cp-cta" to="/access?mode=signup" @click="trackSignup('closing')">{{ p.closing.cta }}<span class="cp-arrow" aria-hidden="true" /></NuxtLink></div></section>
+      <section class="home-closing" aria-labelledby="closing-title"><div class="cp-wrap"><p class="cp-kicker">CUEBOOKER / BOOKING WORKSPACE</p><h2 id="closing-title">{{ p.closing.title }}</h2><p>{{ p.closing.body }}</p><NuxtLink class="cp-cta" :to="campaignTo('/access?mode=signup')" @click="trackSignup('closing')">{{ p.closing.cta }}<span class="cp-arrow" aria-hidden="true" /></NuxtLink><p class="home-access-note">{{ p.initialAccess }}</p></div></section>
     </main>
     <footer class="home-footer cp-wrap">
       <div><span class="home-brand"><CueBrand /></span><p>{{ p.closing.footer }}</p></div>
@@ -338,4 +341,6 @@ html[data-theme='light'] .home-hero-route span { color: color-mix(in srgb, var(-
   .home-v2 .cp-cta { transition: none; }
   .home-v2 .cp-cta:hover { transform: none; }
 }
+.home-access-note{font-size:12px;line-height:1.6;color:var(--cp-muted);max-width:620px;margin-top:16px}
+.home-closing .home-access-note{font-size:12px;line-height:1.6;color:inherit;opacity:.9}
 </style>

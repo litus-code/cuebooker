@@ -173,11 +173,11 @@
   },
   "extensions": {
     "label": "04 / TU ECOSISTEMA",
-    "title": "Tu identidad también tiene su espacio.",
+    "title": "TU PERFIL ABRE LA PUERTA. TU WORKSPACE LLEVA EL BOOKING.",
     "profile": {
       "name": "Perfil público",
       "title": "Tu identidad. Tu entrada de bookings.",
-      "body": "Presenta tu proyecto y comparte un punto de entrada para propuestas. El promotor no necesita una cuenta.",
+      "body": "Una página para presentarte, compartir tu sonido y tus enlaces, y recibir solicitudes. El promotor puede proponer una fecha sin crear una cuenta.",
       "status": "PERFIL PÚBLICO · DISPONIBLE",
       "cta": "Crear mi perfil",
       "example": "COMPOSICIÓN DE EJEMPLO · NO ES UN PERFIL PUBLICADO",
@@ -194,8 +194,8 @@
     "passport": {
       "name": "CUE Passport",
       "title": "Cada fecha deja huella.",
-      "body": "Una lectura de tu trayectoria conectada a tu actividad de booking. Explora las fechas y los lugares que forman parte de tu recorrido.",
-      "concept": "CONCEPTO DE TRAYECTORIA · SIN ACTIVIDAD REAL",
+      "body": "CUE Passport básico ya se construye a partir de los bookings confirmados: ciudades, salas y fechas. Tú decides si muestras su resumen en el perfil público. Las opciones avanzadas y de media dependen del plan.",
+      "concept": "PASSPORT BÁSICO / BETA",
       "steps": [
         "BOOKING",
         "EVENTO",
@@ -215,12 +215,14 @@
       "caption": "CONCEPTO VISUAL · CUE ID EN DESARROLLO",
       "alt": "Concepto del avatar CUE ID con pelo y ropa negra en un garaje industrial",
       "femaleAlt": "Concepto del avatar femenino CUE ID con pelo y ropa negra en un garaje industrial"
-    }
+    },
+    "discover": "Descubrir el perfil y CUE Passport para DJs"
   },
   "closing": {
     "title": "EL PRÓXIMO BOOKING YA ESTÁ EN CAMINO.",
     "body": "Prepara tu espacio para recibir propuestas, organizarlas y seguirlas hasta la confirmación.",
     "cta": "Crear mi espacio",
     "footer": "Hecho para las personas detrás del sonido."
-  }
+  },
+  "initialAccess": "El plan inicial incluye gestión de bookings, perfil público y Passport básico. Conectar tu buzón y activar la detección por IA requiere aprobación en beta, con plazas limitadas."
 }

@@ -56,7 +56,7 @@
     "Consulta las fechas y distingue holds de confirmaciones."
   ],
   "emailTitle": "UNA OFERTA ENTRA. CUEBOOKER LA PONE EN ORDEN.",
-  "emailBody": "Cuebooker detecta posibles propuestas en un buzón autorizado y prepara una solicitud con los datos disponibles. Tú revisas y decides.",
+  "emailBody": "Con un buzón aprobado y la detección activada, Cuebooker identifica posibles propuestas y prepara una solicitud con los datos disponibles. Tú revisas y decides.",
   "emailStatus": "SMART EMAIL CAPTURE",
   "emailStages": [
     [
@@ -72,7 +72,7 @@
       "Prepara una solicitud con los datos disponibles para que la compruebes y decidas el siguiente paso."
     ]
   ],
-  "emailNote": "Beta privada con activación autorizada. Los adjuntos de esta demostración ilustran una función en desarrollo, todavía no confirmada en producción.",
+  "emailNote": "Conexión de correo en beta privada, sujeta a aprobación y plazas limitadas. PDF, PNG y JPG compatibles dentro de los límites indicados en el workspace; otros formatos pueden no incorporarse. El formulario público no requiere conectar tu buzón.",
   "ecosystemTitle": "MÁS QUE UNA FICHA.",
   "ecosystem": [
     [
@@ -82,8 +82,8 @@
     ],
     [
       "CUE Passport",
-      "Una trayectoria conectada con la actividad real de booking.",
-      "Concepto en desarrollo"
+      "CUE Passport básico ya se construye a partir de los bookings confirmados: ciudades, salas y fechas. Tú decides si muestras su resumen en el perfil público. Las opciones avanzadas y de media dependen del plan.",
+      "PASSPORT BÁSICO / BETA"
     ],
     [
       "CUE ID",
@@ -92,7 +92,7 @@
     ]
   ],
   "rosterTitle": "TU ROSTER, ORGANIZADO.",
-  "rosterBody": "Artistas, solicitudes y fechas dentro de una misma operación. Conserva el contexto del artista implicado sin multiplicar una propuesta de agencia.",
+  "rosterBody": "Revisa las oportunidades de todos tus artistas. Selecciona uno para centrarte en sus solicitudes, conversaciones y fechas.",
   "rosterStatus": "WORKSPACE MULTIARTISTA / BETA",
   "artist": "Artista",
   "requests": "Solicitud",
@@ -119,12 +119,8 @@
     ]
   ],
   "contextTitle": "CADA PROPUESTA CONSERVA SU CONTEXTO.",
-  "contextBody": "Una solicitud dirigida a la agencia mantiene el contacto y la conversación. Asigna el artista implicado en ese mismo contexto; no se convierte en una copia por cada artista.",
+  "contextBody": "Abre una propuesta y tendrás a mano el artista, el contacto, lo hablado y el siguiente paso. Si la consulta llega a la agencia, decide qué artista encaja sin perder la conversación.",
   "context": [
-    [
-      "Contacto",
-      "Promotor de ejemplo"
-    ],
     [
       "Artista implicado",
       "Tu artista 01"
@@ -136,10 +132,6 @@
     [
       "Conversación",
       "Consultar disponibilidad y formato del evento"
-    ],
-    [
-      "Condiciones",
-      "Caché y producción pendientes de negociación"
     ],
     [
       "Próximo paso",
@@ -177,5 +169,70 @@
     "label": "Navegación",
     "open": "Abrir menú",
     "close": "Cerrar menú"
+  },
+  "initialAccess": "El plan inicial incluye gestión de bookings, perfil público y Passport básico. Conectar tu buzón y activar la detección por IA requiere aprobación en beta, con plazas limitadas.",
+  "product": {
+    "label": "PRODUCTO / VISTAS REALES",
+    "title": "ESTO ES LO QUE ENCONTRARÁS DENTRO.",
+    "agencyTitle": "DEL ROSTER AL CONTEXTO DE CADA ARTISTA.",
+    "intro": "Conversación, siguientes pasos y fechas en el mismo workspace.",
+    "caption": "Interfaz actual con datos de prueba. ORBIT, NOVA y las propuestas son ficticios; no son cuentas ni bookings de clientes.",
+    "views": [
+      "Conversación",
+      "Calendario",
+      "Selección de artista"
+    ],
+    "descriptions": [
+      "Abre una propuesta para revisar el contacto, la conversación y el próximo movimiento.",
+      "Las fechas confirmadas y los holds se consultan junto a tu disponibilidad.",
+      "Revisa el conjunto y filtra por artista antes de abrir su contexto."
+    ],
+    "imageAlts": [
+      "Workspace real de Cuebooker mostrando una conversación con datos ficticios",
+      "Calendario real de Cuebooker con fechas de prueba",
+      "Vista real de roster y selector de artistas con ORBIT y NOVA ficticios"
+    ],
+    "openImage": "Ampliar captura"
+  },
+  "profileShowcase": {
+    "title": "TU PROYECTO. LISTO PARA RECIBIR PROPUESTAS.",
+    "body": "Una página para presentarte, compartir tu sonido y tus enlaces, y recibir solicitudes. El promotor puede proponer una fecha sin crear una cuenta.",
+    "parts": [
+      [
+        "Presentación",
+        "Nombre artístico, biografía, ciudad y formatos."
+      ],
+      [
+        "Sonido y enlaces",
+        "Tus sesiones y los canales donde ya te escuchan."
+      ],
+      [
+        "Solicitudes",
+        "Nombre, email y propuesta; los detalles se pueden añadir después."
+      ]
+    ],
+    "caption": "Captura del perfil público real con un artista de prueba. La publicación y el contenido los controla el artista.",
+    "alt": "Perfil público de ORBIT, artista ficticio, con entrada de solicitudes de fecha",
+    "views": [
+      "Presentación",
+      "Sonido y enlaces"
+    ],
+    "detailAlt": "Sonido y enlaces del perfil público de ORBIT, artista de prueba"
+  },
+  "passport": {
+    "title": "LAS FECHAS CONFIRMADAS DEJAN TRAYECTORIA.",
+    "status": "PASSPORT BÁSICO / BETA",
+    "body": "CUE Passport básico ya se construye a partir de los bookings confirmados: ciudades, salas y fechas. Tú decides si muestras su resumen en el perfil público. Las opciones avanzadas y de media dependen del plan.",
+    "caption": "Representación ilustrativa de fechas confirmadas ficticias; no es una clasificación ni una promesa de conseguir actuaciones.",
+    "steps": [
+      "Booking confirmado",
+      "Ciudad y sala",
+      "Trayectoria en Passport"
+    ],
+    "identity": "CUE ID · En desarrollo. Una representación visual opcional de tu proyecto; no sustituye la gestión de bookings."
+  },
+  "catalog": {
+    "title": "TU ROSTER TAMBIÉN PUEDE TENER UNA ENTRADA PÚBLICA.",
+    "body": "El catálogo público está en beta. Al publicarlo desde Ajustes, eliges los artistas visibles y el promotor puede consultar a la agencia sin registrarse. Solo se muestra el roster que decidas publicar."
   }
 }
