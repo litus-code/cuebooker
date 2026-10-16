@@ -11,8 +11,9 @@ const authSource = stripTypeScriptTypes((await readFile(new URL('../app/composab
   .replace(/^import .*\n/gm, '').replace('export function', 'function').replaceAll('import.meta.client', 'true'))
 const recoveryHash = '#access_token=fixture-access&refresh_token=fixture-refresh&type=recovery&expires_in=3600'
 
-async function openRecovery(hash: string, options: { rejectToken?: boolean; stored?: object } = {}) {
+async function openRecovery(hash: string, options: { rejectToken?: boolean; stored?: object; passwordUpdateError?: object; locale?: 'es' | 'en' } = {}) {
   const rejectToken = options.rejectToken
+  let passwordUpdateError = options.passwordUpdateError
   const storage = new Map<string, string>()
   if (options.stored) storage.set('cuebooker.auth.session.v2', JSON.stringify(options.stored))
   const location = { hash: '', pathname: '/reset-password', search: '' }
@@ -28,6 +29,11 @@ async function openRecovery(hash: string, options: { rejectToken?: boolean; stor
     document: { title: 'Recovery' },
     $fetch: async (url: string, options: any) => {
       calls.push({url, options})
+      if (url.endsWith('/auth/v1/user') && options.method === 'PUT' && passwordUpdateError) {
+        const error = passwordUpdateError
+        passwordUpdateError = undefined
+        throw error
+      }
       if (url.endsWith('/auth/v1/user') && !options.method) {
         if (rejectToken) throw new Error('invalid_token')
         return { id: 'qa-user', email: 'qa@example.com' }
@@ -39,8 +45,8 @@ async function openRecovery(hash: string, options: { rejectToken?: boolean; stor
   // Run the actual composable, including server token verification and session persistence.
   const auth: any = runInNewContext(authSource + '\nuseCueAuth()', context)
   await auth.initialize()
-  const state: any = runInNewContext(pageSource + '\n;({ready,invalid,completed,password,confirmPassword,submit})', {
-    ...context, useCueAuth: () => auth, useCuePreferences: () => ({ locale: ref('es') }), useHead: () => {},
+  const state: any = runInNewContext(pageSource + '\n;({ready,invalid,completed,password,confirmPassword,errorMessage,saving,submit})', {
+    ...context, useCueAuth: () => auth, useCuePreferences: () => ({ locale: ref(options.locale ?? 'es') }), useHead: () => {},
     onMounted: (fn: () => Promise<void>) => mounted.push(fn),
     onNuxtReady: (fn: () => Promise<void>) => ready.push(fn)
   })
@@ -89,4 +95,32 @@ test('ordinary sign-in sessions cannot enter recovery without a verified recover
   assert.equal(state.ready.value, false)
   assert.equal(state.invalid.value, true)
   await assert.rejects(auth.setRecoveredPassword('Fixture-new-password-123'), /recovery_session_required/)
+})
+
+test('same-password rejection explains the cause in both languages and permits a corrected retry', async () => {
+  for (const locale of ['es', 'en'] as const) {
+    const { auth, state, calls } = await openRecovery(recoveryHash, { locale, passwordUpdateError: { data: { code: 'same_password', msg: 'Provider detail that must stay private' } } })
+    state.password.value = state.confirmPassword.value = 'Fixture-current-password-123'
+    await state.submit()
+    assert.equal(state.errorMessage.value, locale === 'es' ? 'La nueva contraseña debe ser distinta de la actual.' : 'The new password must be different from your current password.')
+    assert.equal(state.ready.value, true)
+    assert.equal(state.saving.value, false)
+    assert.equal(state.completed.value, false)
+    assert.equal(auth.session.value.recovery, true)
+    assert.equal(calls.some(call => call.url.endsWith('/auth/v1/logout')), false)
+    state.password.value = state.confirmPassword.value = 'Fixture-different-password-123'
+    await state.submit()
+    assert.equal(state.errorMessage.value, '')
+    assert.equal(state.completed.value, true)
+    assert.equal(auth.session.value, null)
+  }
+})
+
+test('unknown password-update errors keep a generic message without exposing provider details', async () => {
+  const { state } = await openRecovery(recoveryHash, { passwordUpdateError: { data: { code: 'unexpected_failure', msg: 'Private provider detail' } } })
+  state.password.value = state.confirmPassword.value = 'Fixture-new-password-123'
+  await state.submit()
+  assert.equal(state.errorMessage.value, 'No se pudo actualizar la contraseña. Vuelve a intentarlo.')
+  assert.equal(state.ready.value, true)
+  assert.equal(state.saving.value, false)
 })
