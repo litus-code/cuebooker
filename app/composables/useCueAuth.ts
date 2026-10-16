@@ -1,3 +1,5 @@
+import { campaignDimensions } from '../domain/campaignAnalytics'
+import { campaignSignupMetadata } from '../services/campaignAnalytics'
 import { AGENCY_INVITE_STORAGE, validAgencyInviteToken } from '../domain/agencyTeam'
 type CueUser = {
   id: string
@@ -41,12 +43,17 @@ const REFERRAL_KEY = 'cuebooker.referral.first-touch.v1'
 function normalizeSession(payload: AuthResponse, startedAt = Date.now()): CueSession | null {
   if (!payload.access_token || !payload.refresh_token || !payload.user) return null
 
+  const user = { ...payload.user }
+  if (user.user_metadata) {
+    const { cuebooker_campaign: _campaign, ...metadata } = user.user_metadata
+    user.user_metadata = metadata
+  }
   return {
     access_token: payload.access_token,
     refresh_token: payload.refresh_token,
     expires_at: Math.floor(Date.now() / 1000) + (payload.expires_in || 3600),
     started_at: startedAt,
-    user: payload.user
+    user
   }
 }
 
@@ -265,7 +272,7 @@ export function useCueAuth() {
         body: {
           email: email.trim(),
           password,
-          data: { display_name: displayName.trim() }
+          data: { display_name: displayName.trim(), ...await campaignSignupMetadata() }
         }
       })
       const next = normalizeSession(payload)
@@ -366,6 +373,7 @@ export function useCueAuth() {
 
   function captureReferral(code: string | null | undefined, landingPath: string) {
     if (!import.meta.client || !code) return
+    if (localStorage.getItem('cuebooker:analytics-consent:v2') !== 'granted') return
     if (localStorage.getItem(REFERRAL_KEY)) return
 
     const normalized = code.trim().toLowerCase()
@@ -373,7 +381,7 @@ export function useCueAuth() {
 
     const snapshot: ReferralSnapshot = {
       code: normalized,
-      landingPath: landingPath.slice(0, 512),
+      landingPath: (() => { const url = new URL(landingPath,'https://cuebooker.invalid'); const path = ['/','/dj','/agency','/access'].includes(url.pathname.replace(/\/$/,'') || '/') ? url.pathname : '/'; const query = new URLSearchParams(campaignDimensions(Object.fromEntries(url.searchParams))).toString(); return `${path}${query ? '?'+query : ''}`.slice(0,512) })(),
       firstSeenAt: new Date().toISOString()
     }
     localStorage.setItem(REFERRAL_KEY, JSON.stringify(snapshot))
@@ -381,6 +389,7 @@ export function useCueAuth() {
 
   async function persistReferralAttribution() {
     if (!import.meta.client || !session.value) return
+    if (localStorage.getItem('cuebooker:analytics-consent:v2') !== 'granted') return
     const raw = localStorage.getItem(REFERRAL_KEY)
     if (!raw) return
 

@@ -1,3 +1,5 @@
+import { persistCampaignSignal, revokeCampaignConsent } from '../services/campaignAnalytics'
+import { campaignPage } from '../domain/campaignAnalytics'
 type AnalyticsConsent = 'unknown' | 'granted' | 'denied'
 type AnalyticsPayload = Record<string, string | number | boolean | null | undefined>
 
@@ -26,7 +28,7 @@ export const useAnalytics = () => {
   const preferencesOpen = useState<boolean>('analytics-preferences-open', () => false)
 
   const gtmId = computed(() => String(config.public.gtmId || '').trim())
-  const enabled = computed(() => Boolean(gtmId.value))
+  const enabled = computed(() => Boolean(gtmId.value || (config.public.supabaseUrl && config.public.supabasePublishableKey)))
 
   const getDataLayer = () => {
     const analyticsWindow = window as AnalyticsWindow
@@ -35,7 +37,7 @@ export const useAnalytics = () => {
   }
 
   const loadGtm = () => {
-    if (!import.meta.client || !enabled.value) return
+    if (!import.meta.client || !gtmId.value) return
     if (document.getElementById(GTM_SCRIPT_ID)) return
 
     const dataLayer = getDataLayer()
@@ -78,10 +80,14 @@ export const useAnalytics = () => {
 
   const deny = () => {
     if (!import.meta.client) return
+    const hadGtm = Boolean(document.getElementById(GTM_SCRIPT_ID))
+    revokeCampaignConsent(String(config.public.supabaseUrl || ''), String(config.public.supabasePublishableKey || ''))
     consent.value = 'denied'
     preferencesOpen.value = false
     localStorage.setItem(CONSENT_STORAGE_KEY, 'denied')
     consentCookie.value = 'denied'
+    // Loaded third-party scripts cannot be unexecuted. Reload into the denied state.
+    if (hadGtm) window.location.reload()
   }
 
   const openPreferences = () => {
@@ -93,7 +99,10 @@ export const useAnalytics = () => {
   }
 
   const track = (event: string, payload: AnalyticsPayload = {}) => {
-    if (!import.meta.client || consent.value !== 'granted' || !enabled.value) return false
+    if (!import.meta.client || consent.value !== 'granted') return false
+
+    const persisted = persistCampaignSignal(String(config.public.supabaseUrl || ''), String(config.public.supabasePublishableKey || ''), event, payload)
+    if (!gtmId.value) return Boolean(persisted)
 
     getDataLayer().push({
       event,
@@ -105,9 +114,8 @@ export const useAnalytics = () => {
   const trackPageView = (path = window.location.pathname + window.location.search) => {
     if (!import.meta.client) return false
     return track('page_view', {
-      page_path: path,
-      page_title: document.title,
-      page_referrer: document.referrer || null
+      page_path: campaignPage(path) ? (campaignPage(path) === 'home' ? '/' : `/${campaignPage(path)}`) : '/product',
+      page_title: campaignPage(path) || 'product'
     })
   }
 

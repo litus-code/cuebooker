@@ -6,11 +6,11 @@ import { runInNewContext } from 'node:vm'
 import * as Vue from 'vue'
 import { publicCampaignQuery, campaignDestination } from '../app/domain/publicCampaign.ts'
 const root = new URL('../', import.meta.url)
-const analyticsSource = stripTypeScriptTypes((await readFile(new URL('app/composables/useAnalytics.ts', root), 'utf8')).replace('export const useAnalytics', 'const useAnalytics').replaceAll('import.meta.client','true'))
+const analyticsSource = stripTypeScriptTypes((await readFile(new URL('app/composables/useAnalytics.ts', root), 'utf8')).replace(/^import .*\n/gm,'').replace('export const useAnalytics', 'const useAnalytics').replaceAll('import.meta.client','true'))
 test('campaign analytics require consent and load one tag script without duplicating a CTA event', () => {
-  const storage = new Map<string,string>(), state = new Map(), scripts: any[] = [], window: any = {}
+  const storage = new Map<string,string>(), state = new Map(), scripts: any[] = [], window: any = {location:{reload(){}}}
   const api: any = runInNewContext(analyticsSource + '\nuseAnalytics()', {
-    ...Vue, window, useRuntimeConfig: () => ({ public: { gtmId: 'GTM-FIXTURE' } }),
+    ...Vue, window, campaignPage: (path: string)=>path === '/' ? 'home' : null, persistCampaignSignal(){}, revokeCampaignConsent(){}, useRuntimeConfig: () => ({ public: { gtmId: 'GTM-FIXTURE' } }),
     useCookie: () => ({ value: null }), useState: (key: string, init: Function) => { if (!state.has(key)) state.set(key, Vue.ref(init())); return state.get(key) },
     localStorage: { getItem: (key: string) => storage.get(key), setItem: (key: string, value: string) => storage.set(key,value) },
     document: { title: 'Fixture', getElementById: (id: string) => scripts.find(s=>s.id===id), createElement: () => ({}), head: { appendChild: (script: any) => scripts.push(script) } }

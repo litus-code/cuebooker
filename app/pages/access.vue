@@ -87,6 +87,7 @@ async function submit() {
       message.value = copy.value.resetConfirmation
       return
     }
+    auth.captureReferral(typeof route.query.ref === 'string' ? route.query.ref : '', route.fullPath)
     analytics.track('signup_started', { surface: 'access' })
     const result = await auth.signUp(email.value, password.value, displayName.value)
     analytics.track('signup_completed', {

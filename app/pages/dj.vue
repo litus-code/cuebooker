@@ -7,5 +7,6 @@ const { copy, locale, signupTo, trackSignup } = useCommercialLanding('dj')
   <CommercialBookingJourney :copy="copy" />
   <CommercialProductEvidence :copy="copy" :locale="locale" />
   <CommercialEmailBeta :copy="copy" />
-  <CommercialPassport :copy="copy" />
+  <CommercialPassport :copy="copy" :locale="locale" />
+  <CommercialCueId :copy="copy" />
 </CommercialAudienceLanding></template>

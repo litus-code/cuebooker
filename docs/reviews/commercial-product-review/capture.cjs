@@ -195,7 +195,7 @@ const profile = {
           status: 'confirmed',
           event_name: 'Sesión NOVA',
           event_date: '2026-10-30'
-        }],
+        }, {...booking,id:'50000000-0000-4000-8000-000000000004',status:'confirmed',city:'Madrid',venue_name:'Club Central',event_name:'Sesión de prueba',event_date:'2026-10-02'}, {...booking,id:'50000000-0000-4000-8000-000000000005',status:'confirmed',city:'Lisboa',country_code:'PT',venue_name:'Espacio Atlántico',event_name:'Sesión de prueba',event_date:'2026-10-09'}],
         contacts: [{
           id: '70000000-0000-4000-8000-000000000001',
           workspace_id: W,
@@ -276,6 +276,12 @@ const profile = {
       type: 'jpeg',
       quality: 88
     });
+    await p.goto(`${origin}/workspace/?view=passport&artist=${A}`, {waitUntil:'networkidle'});
+    await p.locator('.passport-constellation__node').first().waitFor();
+    assert.ok(await p.locator('.passport-constellation__node').count() >= 1);
+    await p.locator('.passport-constellation__node').first().click();
+    await p.waitForTimeout(200);
+    await p.screenshot({path:`${outputDir}/product-passport-${theme}-${locale}.jpg`,type:'jpeg',quality:90});
     await p.route(origin + '/orbit-fixture', async r => r.fulfill({
       contentType: 'text/html',
       body: await fs.readFile(`${root}/.output/public/200.html`)

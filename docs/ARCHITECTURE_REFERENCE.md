@@ -1198,3 +1198,25 @@ CUE Passport / identity layers
 ```
 
 This is how the broader Cuebooker world should emerge from real work rather than artificial gamification.
+
+
+## PR114 campaign reporting extension — prepared 16 October 2026
+
+ADR-040 records the current review candidate, not a deployed backend. Optional campaign
+analytics reuses the existing application vocabulary and `product_analytics_events`; GTM
+remains a separate optional delivery destination. The existing internal-admin SQL gate
+protects aggregate reporting. The new public Edge collector bounds/rate-limits inputs and
+can persist only allowlisted public events through service-role RPCs. Account creation,
+onboarding, publication and received-workspace-request facts are observed server-side,
+with no changes to Booking Core commands and fail-open product behaviour.
+
+Browser, account and workspace are distinct units. An unguessable consented browser token
+may be associated with a newly created auth account through transient signup metadata.
+No email/content matching or missing historical attribution reconstruction is allowed.
+Agency members do not multiply the first activation of a shared workspace. Private
+identity/cohort tables are not client-readable; campaign reports return aggregates only.
+Test/live batches are selected server-side and never mixed with legacy operational data.
+
+See [the review audit](reviews/campaign-funnel/README.md) for retention, revocation, indexes,
+units, the prepared migration/function and required staging rehearsal/security-advisor/
+runtime validation before deployment. No production readiness is implied.

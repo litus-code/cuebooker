@@ -6,12 +6,13 @@ definePageMeta({ ssr: false })
 const auth = useCueAuth()
 const telemetry = useProductTelemetry()
 const router = useRouter()
+const { locale } = useCuePreferences()
 
 const days = ref(30)
 const loading = ref(true)
 const authorized = ref(false)
 const errorMessage = ref('')
-const activeTab = ref<'overview' | 'users'>('overview')
+const activeTab = ref<'overview' | 'users' | 'campaign'>('overview')
 const summary = ref<BetaAnalyticsSummary | null>(null)
 const users = ref<BetaAnalyticsUser[]>([])
 const selectedUser = ref<BetaAnalyticsUser | null>(null)
@@ -129,7 +130,7 @@ onMounted(() => { void loadDashboard() })
           <span>Datos operativos para validar uso real antes de monetizar.</span>
         </div>
 
-        <label class="beta-analytics__window">
+        <label v-if="activeTab !== 'campaign'" class="beta-analytics__window">
           <span>PERIODO</span>
           <select v-model.number="days">
             <option :value="7">7 días</option>
@@ -141,12 +142,15 @@ onMounted(() => { void loadDashboard() })
 
       <nav class="beta-analytics__tabs" aria-label="Beta analytics">
         <button type="button" :class="{ active: activeTab === 'overview' }" @click="activeTab = 'overview'">Overview</button>
+        <button type="button" :class="{ active: activeTab === 'campaign' }" @click="activeTab = 'campaign'">{{ locale === 'es' ? 'Campañas' : 'Campaigns' }}</button>
         <button type="button" :class="{ active: activeTab === 'users' }" @click="activeTab = 'users'">Usuarios <small>{{ users.length }}</small></button>
       </nav>
 
       <p v-if="errorMessage" class="beta-analytics__error">{{ errorMessage }}</p>
 
+      <BetaCampaignFunnel v-if="activeTab === 'campaign'" />
       <template v-if="activeTab === 'overview' && summary">
+        <p class="beta-analytics__empty">{{ locale === 'es' ? 'Resumen operativo histórico. Incluye cuentas de prueba sin clasificar; no es el embudo de campaña con consentimiento.' : 'Historical operational summary. Includes unclassified test accounts; this is not the consented campaign funnel.' }}</p>
         <section class="beta-analytics__kpis">
           <article><span>Usuarios totales</span><strong>{{ summary.users_total }}</strong><small>+{{ summary.users_new }} en {{ summary.window_days }}d</small></article>
           <article><span>Activos</span><strong>{{ summary.active_users }}</strong><small>Actividad operacional</small></article>

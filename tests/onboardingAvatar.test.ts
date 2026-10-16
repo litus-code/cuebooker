@@ -7,8 +7,9 @@ import { computed, ref, readonly, createRenderer, h, reactive, nextTick } from '
 
 test('actual onboarding auth command persists the selected avatar before completing registration', async () => {
   const source = await readFile(new URL('../app/composables/useCueAuth.ts', import.meta.url), 'utf8')
+  const campaign = new URL('../app/domain/campaignAnalytics.ts', import.meta.url).href
   const team = new URL('../app/domain/agencyTeam.ts', import.meta.url).href
-  const code = stripTypeScriptTypes(source.replace("'../domain/agencyTeam'", JSON.stringify(team)).replaceAll('import.meta.client', 'true'), { mode: 'transform' })
+  const code = stripTypeScriptTypes(source.replace("'../domain/campaignAnalytics'", JSON.stringify(campaign)).replace(/import \{ campaignSignupMetadata \}[^\n]+\n/, "const campaignSignupMetadata = async () => ({})\n").replace("'../domain/agencyTeam'", JSON.stringify(team)).replaceAll('import.meta.client', 'true'), { mode: 'transform' })
   const module = await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`)
   const states = new Map<string, any>()
   const requests: any[] = []

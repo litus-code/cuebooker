@@ -162,7 +162,8 @@
     "closing": "YOUR ROSTER. YOUR BOOKINGS. ALL CONNECTED.",
     "other": "Also for independent DJs",
     "otherPath": "/dj",
-    "alt": "Illustrative editorial scene of a booking professional at a worktable in an industrial music studio."
+    "alt": "Illustrative editorial scene of a booking professional at a worktable in an industrial music studio.",
+    "initialAccess": "Manage your roster and its enquiries. AI email requires beta approval."
   },
   "cookiePreferences": "Cookie preferences",
   "menu": {
@@ -170,7 +171,7 @@
     "open": "Open menu",
     "close": "Close menu"
   },
-  "initialAccess": "The initial plan includes booking management, a public profile and basic Passport. Connecting your mailbox and enabling AI detection requires beta approval; places are limited.",
+  "initialAccess": "Bookings, public profile and basic Passport. AI email requires beta approval.",
   "product": {
     "label": "PRODUCT / ACTUAL VIEWS",
     "title": "THIS IS WHAT YOU WILL FIND INSIDE.",
@@ -222,17 +223,27 @@
   "passport": {
     "title": "CONFIRMED DATES BUILD YOUR TRAJECTORY.",
     "status": "BASIC PASSPORT / BETA",
-    "body": "Basic CUE Passport is already built from confirmed bookings: cities, venues and dates. You decide whether its summary appears on your public profile. Advanced and media options depend on your plan.",
-    "caption": "Illustration of fictional confirmed dates; not a ranking or a promise of gigs.",
+    "body": "Confirmed bookings build your trajectory: cities, venues and dates in the basic Passport constellation and timeline. You control whether its summary appears on your public profile. Linked media requires a compatible plan.",
+    "caption": "Current CUE Passport interface with fictional confirmed bookings. Enlarge the screenshot to explore the trajectory.",
     "steps": [
       "Confirmed booking",
       "City and venue",
       "Passport trajectory"
     ],
-    "identity": "CUE ID · In development. An optional visual representation of your project; it does not replace booking management."
+    "identity": "CUE ID · In development. An optional visual representation of your project; it does not replace booking management.",
+    "alt": "Actual CUE Passport with a constellation of test cities, venues and dates"
   },
   "catalog": {
     "title": "YOUR ROSTER CAN HAVE A PUBLIC ENTRY POINT TOO.",
     "body": "The public catalogue is in beta. When you publish it from Settings, you choose visible artists and promoters can enquire without registering. Only the roster you choose to publish is shown."
+  },
+  "cueId": {
+    "title": "A REPRESENTATION OF YOUR PROJECT.",
+    "status": "In development",
+    "body": "Exploring the artist’s visual representation: two avatar concepts with hair and clothing. CUE ID is optional and complements your profile; these images show a visual direction in development.",
+    "alts": [
+      "Female CUE ID avatar concept with hair and clothing",
+      "Male CUE ID avatar concept with hair and clothing"
+    ]
   }
 }

@@ -124,16 +124,16 @@
 .cl-profile-presentation-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr);gap:48px;align-items:center}
 .cl-profile-presentation .profile-composition{border:1px solid var(--cl-line);background:var(--cl-panel);box-shadow:12px 12px 0 color-mix(in srgb,var(--cl-line) 20%,transparent)}
 .profile-composition>img{display:block;width:100%;height:auto}
-.profile-composition figcaption,.cl-evidence-frame figcaption,.passport-concept figcaption{padding:16px 20px;font-size:12px;line-height:1.6;color:var(--cl-muted);border-top:1px solid var(--cl-line)}
+.profile-composition figcaption,.cl-evidence-frame figcaption,
 .cl-profile-parts{display:grid;gap:28px}.cl-profile-parts article{border-top:1px solid var(--cl-line);padding-top:20px}.cl-profile-parts h3{margin:12px 0!important}.cl-profile-parts p{color:var(--cl-muted);line-height:1.65}
 .cl-evidence-controls{display:flex;gap:10px;flex-wrap:wrap}.cl-evidence-controls button{min-height:44px;padding:12px 18px;border:1px solid var(--cl-line);border-radius:999px;background:var(--cl-panel);color:var(--cl-text);font:inherit;font-size:13px;cursor:pointer}.cl-evidence-controls button[aria-pressed=true]{background:var(--cl-acid);color:var(--cl-acid-ink);border-color:var(--cl-acid)}
 .cl-evidence-description{margin-block:18px!important;line-height:1.6;color:var(--cl-muted)}
 .cl-evidence-frame{border:1px solid var(--cl-line);background:var(--cl-panel)}.cl-evidence-frame img{display:block;width:100%;height:auto}.cl-evidence-frame a{display:block}
-.passport-concept{border:1px solid var(--cl-line);background:var(--cl-panel)}.passport-concept__map{position:relative;max-width:700px;margin:0 auto;padding:24px}.passport-concept__map svg{display:block;width:100%;height:180px;overflow:visible;fill:var(--cl-acid);stroke:var(--cl-acid);stroke-width:1}.passport-concept__map path{fill:none}.passport-concept__map span{display:inline-block;font-size:12px;line-height:1.6;margin:10px 18px 0 0;color:var(--cl-text)}
-.passport-concept__steps{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;margin:0;padding:20px 36px;border-top:1px solid var(--cl-line);font-size:14px;line-height:1.6}
+
+
 .cl-identity-secondary{font-size:13px;line-height:1.6;color:var(--cl-muted);margin-top:24px!important;border-top:1px solid var(--cl-line);padding-top:20px}
 .commercial-audience .cl-profile .cl-form-frame{max-height:none;overflow:visible}.cl-profile .public-booking-form__preview{font-size:12px;padding:10px 12px;margin-bottom:16px}.cl-profile .public-booking-form__heading>p{display:none}.cl-profile .public-booking-form__heading>span{font-size:13px}.cl-profile .public-booking-form__fields{gap:14px}.cl-profile .public-booking-form textarea{min-height:100px}
-@media(max-width:800px){.cl-profile-presentation-grid{grid-template-columns:1fr;gap:32px}.cl-profile-parts{gap:20px}.cl-evidence-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.cl-evidence-controls button{padding:12px 8px}.cl-evidence-frame figcaption{font-size:11px}.passport-concept__steps{flex-direction:column;gap:10px}}
+@media(max-width:800px){.cl-profile-presentation-grid{grid-template-columns:1fr;gap:32px}.cl-profile-parts{gap:20px}.cl-evidence-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.cl-evidence-controls button{padding:12px 8px}.cl-evidence-frame figcaption{font-size:11px}}
 .cl-profile-view-controls{padding:12px;border-bottom:1px solid var(--cl-line)}
 .profile-composition>a{display:block}.profile-composition>a>img{display:block;width:100%;height:auto}
 /* Keep proof readable without adding full-screen static panels to every section. */
@@ -142,3 +142,5 @@
 .cl-catalog-note{display:grid;grid-template-columns:.8fr 1.2fr;gap:12px 36px;padding-block:36px;border-block:1px solid var(--cl-line)}.cl-catalog-note>.cl-eyebrow{grid-column:1/-1}.commercial-audience .cl-catalog-note h2{font-size:clamp(24px,2.5vw,32px);margin:0}.cl-catalog-note .cl-lead{font-size:16px}
 @media(max-width:800px){.cl-product-evidence{padding-block:48px}.cl-catalog-note{grid-template-columns:1fr}.cl-profile-parts{gap:16px}}
 .cl-product-evidence--continuation{padding-top:0}
+
+.cl-channel-list .cl-button-arrow{width:20px;height:20px;flex:0 0 20px;justify-self:end;align-self:center}

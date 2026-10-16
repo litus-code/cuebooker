@@ -222,3 +222,20 @@ signup_completed
 ```
 
 Do not use raw daily login count as the primary retention metric. Prefer repeat booking work, active booking handling, responses, confirmations and returning operational activity.
+
+
+## Campaign activation review — 16 October 2026
+
+PR114 adds a separate Campaigns tab within the existing restricted beta-analytics page,
+reusing the current calls/event store. The earlier client-oriented V1 funnel above is
+not treated as a persisted or person-level campaign report. In particular, manual
+`booking_capture_created` is not a received-request activation. The pending backend
+observes one `workspace_first_request_received` per workspace from public-form ingress,
+email import or automatic email-origin mailbox AI capture. It never multiplies that
+workspace by the agency member count. `agency_catalog_published` complements the existing
+artist-profile publication vocabulary; publication is deduplicated by workspace.
+
+Only new consented acquisition cohorts have campaign attribution. Historical operational
+overview remains separate and may contain unclassified test accounts. No missing UTM
+values or historical activation timestamps are invented. See
+[units, consent, retention and deployment evidence](reviews/campaign-funnel/README.md).

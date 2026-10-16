@@ -224,5 +224,5 @@
     "cta": "Create my workspace",
     "footer": "Made for the people behind the sound."
   },
-  "initialAccess": "The initial plan includes booking management, a public profile and basic Passport. Connecting your mailbox and enabling AI detection requires beta approval; places are limited."
+  "initialAccess": "Bookings, public profile and basic Passport. AI email requires beta approval."
 }
