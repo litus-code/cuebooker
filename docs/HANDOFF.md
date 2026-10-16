@@ -1,3 +1,7 @@
+## 2026-10-16 / Remove redundant Home CUE ID link; workflow step hover
+
+PR114 integration/beta-home21-review, parent ecdac93cc5f7e83e9715d8eaecca4a37a309473b, Beta0.0.13. Owner screenshot requests: removed only the redundant Home CUE ID arrow link from the development notice, retaining the notice and full DJ landing CUE ID section. Added hover/focus-visible feedback to unselected Home workflow tabs (Captura/Revisa/Haz seguimiento/Confirma): accent title/index/arrow, subtle tinted background and accent left edge. Selected-step rendering and tab selection/keyboard/domain behavior unchanged. SFC/CSS and published preview validation pending. No backend, merge or production change.
+
 ## 2026-10-16 / Home footer single desktop row and remaining public link feedback
 
 PR114 integration/beta-home21-review, parent HEAD b0f355f9ce7debce0d668455ffbf0ab01063f92d. Beta0.0.13 unchanged. Owner requested all Home footer content in one desktop row and another public-link hover sweep. Footer now aligns logo/tagline, legal/contact/preferences links and copyright horizontally above1200px, wraps deliberately below that width, and stacks brand/tagline on narrow mobile without forcing overflow. Prior public navigation/audience/footer accent states retained.

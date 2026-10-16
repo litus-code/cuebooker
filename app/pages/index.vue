@@ -238,6 +238,10 @@ html[data-theme='light'] .home-v2 :is(.cp-kicker, .cp-eyebrow, .home-mono, .sele
 .ed-steps small { display: block; margin-top: 10px; line-height: 1.6; font-size: 14px; }
 .ed-steps .cp-arrow { margin-top: 10px; opacity: 0; }
 .ed-steps .selected .cp-arrow { opacity: 1; color: var(--cp-lime); }
+.ed-steps button:not(.selected):is(:hover,:focus-visible) { border-left-color:var(--cp-lime); background:color-mix(in srgb,var(--cp-lime) 6%,transparent); color:var(--cp-paper); }
+.ed-steps button:not(.selected):is(:hover,:focus-visible) :is(.ed-index,strong,.cp-arrow) { color:var(--cp-lime); }
+.ed-steps button:not(.selected):is(:hover,:focus-visible) .cp-arrow { opacity:1; }
+
 .ed-console { border: 1px solid var(--cp-line); border-top: 3px solid var(--cp-lime); border-radius: 8px; background: var(--cp-panel); box-shadow: 0 28px 70px var(--cue-shadow), 0 0 60px color-mix(in srgb, var(--cp-lime) 5%, transparent); overflow: hidden; }
 .ed-console-bar { display: flex; gap: 10px; align-items: center; padding: 18px 24px; border-bottom: 1px solid var(--cp-line); font: 10px ui-monospace, monospace; letter-spacing: .09em; }
 .ed-indicator { width: 7px; height: 7px; border-radius: 50%; background: var(--cp-lime); }
