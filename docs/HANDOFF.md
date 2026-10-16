@@ -1,3 +1,9 @@
+## 2026-10-16 / Public Home/DJ/Agency hover polish
+
+PR114 branch integration/beta-home21-review, parent HEAD f006cfda4022edace179f2f972128ba5bf43a701, Beta0.0.13. Owner accepted invitation button alignment. Manager role/administration restrictions still await the requested owner check.
+
+Owner requested consistent menu/link hover feedback, including Home audience links to DJ/Agency and muted landing navigation. Home header and audience title/discover links now share accent hover/focus-visible, landing nav defaults to theme muted gray and changes to readable accent on hover/focus-visible. Shared public mobile-menu text uses muted/accent states while the signup CTA retains its filled treatment. Footer links and landing secondary CTA also gain consistent hover/focus feedback. Existing theme tokens preserve dark lime and light palette contrast. Keep natural-case navigation labels, reserve uppercase for existing editorial headings. No route, analytics or auth behavior changed. Build/preview verification pending at this commit. PR114 draft/unmerged; production unchanged.
+
 ## 2026-10-16 / Agency invitation button alignment and owner acceptance
 
 PR114 branch `integration/beta-home21-review`, parent HEAD `dc389dd08feecc65e5d820e110e0c40da56752e4`, Beta0.0.13. Owner reports the corrected invitation flow worked with the existing DJ account. This confirms the reported acceptance flow only; per-role authorization and workspace switching still require their own checks.

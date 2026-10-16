@@ -174,7 +174,8 @@ html[data-theme='light'] .home-v2 :is(.cp-kicker, .cp-eyebrow, .home-mono, .sele
 .home-brand :deep(.cue-brand) { width: 150px; }
 .home-nav-links, .home-nav-actions { display: flex; align-items: center; gap: 20px; }
 .home-nav-links a, .home-login { font-size: 12px; white-space: nowrap; }
-.home-nav-links a:hover, .home-login:hover { color: var(--cp-lime); }
+.home-nav-links a, .home-login { color: var(--cp-muted); transition: color .18s ease; }
+.home-nav-links a:is(:hover, :focus-visible), .home-login:is(:hover, :focus-visible) { color: var(--cp-lime); }
 .home-nav-signup { font-size: 10px; }
 .home-hero { position: relative; isolation: isolate; min-height: min(880px, 100svh); display: grid; align-items: center; background: var(--cp-black); border-bottom: 1px solid var(--cp-lime); }
 .home-hero::before { position: absolute; inset: 0; z-index: -2; content: ''; background: var(--hero-image) 74% center / cover no-repeat; }
@@ -201,6 +202,8 @@ html[data-theme='light'] .home-v2 :is(.cp-kicker, .cp-eyebrow, .home-mono, .sele
 .home-audience-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
 .home-audience-discover { display: flex; align-items: center; gap: 12px; width: fit-content; margin-top: 18px; color: var(--cp-paper); text-decoration: underline; text-underline-offset: 5px; font-size: 14px; line-height: 1.6; }
 .home-audience-grid h3 a { color:inherit; text-decoration:none; }
+.home-audience-grid h3 a, .home-audience-discover { transition: color .18s ease; }
+.home-audience-grid h3 a:is(:hover, :focus-visible), .home-audience-discover:is(:hover, :focus-visible) { color:var(--cp-lime); }
 .home-audience-grid h3 { margin: 0; min-height: 106px; font-size: clamp(30px, 3.2vw, 44px); line-height: 1.12; max-width: 480px; }
 .home-audience-grid p { margin: 0; max-width: 440px; }
 .home-audience-grid .home-mono { align-self: start; }
@@ -211,6 +214,7 @@ html[data-theme='light'] .home-v2 :is(.cp-kicker, .cp-eyebrow, .home-mono, .sele
 .home-closing { position: relative; overflow: hidden; padding-block: 100px; background: var(--cp-lime); color: var(--cue-accent-ink); }
 .home-closing h2 { position: relative; max-width: 980px; font-size: clamp(46px, 7vw, 100px); line-height: .92; letter-spacing: -.055em; margin: 28px 0; }
 .home-closing p:not(.cp-kicker) { position: relative; max-width: 620px; color: inherit; font-size: 18px; line-height: 1.6; margin-bottom: 30px; }
+.home-footer nav :is(a,button):is(:hover,:focus-visible) { color:var(--cp-lime); }
 .home-footer { display: grid; gap: 28px; padding-block: 44px; color: var(--cp-muted); font-size: 12px; }
 .home-footer p { line-height: 1.6; }
 .home-footer nav { display: flex; flex-wrap: wrap; gap: 12px 24px; }

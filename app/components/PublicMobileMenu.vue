@@ -74,8 +74,10 @@ watch(() => route.fullPath, close)
 .public-mobile-menu::backdrop{background:#0009}
 .public-menu-tools{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .public-mobile-menu nav{display:grid;margin-top:28px}
-.public-mobile-menu nav a{display:flex;align-items:center;min-height:64px;padding:14px 8px;border-bottom:1px solid var(--cue-border);color:var(--cue-text);text-decoration:none;font-size:22px;font-weight:700}
+.public-mobile-menu nav a{display:flex;align-items:center;min-height:64px;padding:14px 8px;border-bottom:1px solid var(--cue-border);color:var(--cue-muted);text-decoration:none;transition:color .18s ease;font-size:22px;font-weight:700}
+.public-mobile-menu nav a:not(.public-menu-signup):is(:hover,:focus-visible){color:var(--cue-accent)}
 .public-mobile-menu nav .public-menu-signup{justify-content:center;margin-top:24px;border-radius:999px;background:var(--cue-accent);color:var(--cue-accent-ink);font-size:16px}
 :is(.public-menu-toggle,.public-mobile-menu a,.public-mobile-menu button):focus-visible{outline:2px solid var(--cue-accent);outline-offset:5px}
+@media(prefers-reduced-motion:reduce){.public-mobile-menu nav a{transition:none}}
 @media(max-width:1100px){.public-menu-toggle{display:inline-flex;align-items:center;justify-content:center}}
 </style>
