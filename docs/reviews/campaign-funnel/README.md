@@ -1,7 +1,7 @@
 # PR114 — CUE ID, actual Passport and campaign funnel
 
 Review candidate `integration/beta-home21-review`, same Beta0.0.12. Exact application
-revision: de9d547bfb3bc90209692559f77dbbbb9536b039. No main merge, production operation, hosted migration/function deployment,
+revision: a77fc4c7444bce1586a30e57827e00f507dc69e5. No main merge, production operation, hosted migration/function deployment,
 secret change, email, hosted account or real enquiry was performed.
 
 ## Public pages
@@ -49,7 +49,7 @@ this panel, and external tag/container/conversion settings have not been verifie
 | Interest | Total signup CTA events; distinct browsers separately | Page + placement + source, so two clicks are two events, not two people |
 | Registration | Distinct new server-created auth accounts; browser count separately | One signup per account; may still await email confirmation; existing-account obfuscated responses do not create another fact |
 | Onboarding | Distinct completed accounts and distinct first owned workspaces separately | Profile-completion observer; lazy workspace attachment updates the same fact. Agency members do not multiply workspace denominators |
-| Publication | First observed profile/catalogue publication per workspace | Existing publication success in DB; republishing or multiple artists does not multiply the workspace |
+| Publication | First observed profile/catalogue publication per workspace | Canonical artist booking route (unambiguous legacy association only if no route), or agency catalogue; republishing or multiple artists does not multiply the workspace |
 | Activation | First received request per workspace | `public_form`, `email_import`, or automatic `ai_capture` with email origin; excludes manual captures, outbound messages and other AI inputs |
 
 A visitor is a random **browser identifier**, not a person or a session. It lasts at most
@@ -137,7 +137,7 @@ Before any **separately authorized staging deployment**:
 1. Recheck the target project/migration ledger, current definitions/grants, auth profile
    creation triggers, workspace creation order and internal-admin membership. Dependency
    tables: auth users/profiles, workspaces/members/artists, organizations/legacy bridge,
-   bookings (including origin/capture fields), internal analytics foundation and public
+   bookings (including origin/capture fields), canonical artist booking routes, internal analytics foundation and public
    rate-limit buckets/RPC. Local tests use explicit minimal dependency schemas; they are
    not proof of a complete hosted migration-chain replay.
 2. Rehearse the exact pending migration against an isolated current staging restore.
@@ -177,7 +177,7 @@ campaign observers; failures cannot block them. Production remains a separate de
 - Isolated PostgreSQL/PGlite0.5.10: **43 assertions** against the existing analytics
   foundation plus the exact pending migration, using explicit minimal dependency schemas.
   Collector→facts→report, duplicate keys, actual account creation/metadata cleanup,
-  multi-account browser, agency owner/member cardinality, publication/activation order,
+  multi-account browser, agency owner/member cardinality, shared-artist canonical route, publication/activation order,
   manual/automatic email distinctions, no historical backfill, date/source/campaign/ref
   filters, test/live separation, anonymous/non-admin/direct-insert denial, revocation and
   retention pass. This is not a full current-staging migration-chain rehearsal.
@@ -220,7 +220,7 @@ campaign observers; failures cannot block them. Production remains a separate de
 | Campaign panel, dark | [Test cohort](analytics-dark-390.jpg) | [Test cohort](analytics-dark-1440.jpg) |
 | Campaign panel, light | [Test cohort](analytics-light-390.jpg) | [Test cohort](analytics-light-1440.jpg) |
 
-PR preview publication/CI follow-up is recorded on [PR114](https://github.com/litus-code/cuebooker/pull/114).
+Published frontend revision68c7853: CI38886355974 and preview38886355865 passed;12 public Home/DJ/Agency × ES/EN ×390/1440 cases passed (ES dark,EN light), including loaded new imagery, menus/scroll, compact demo and UTM links. Deployment: https://b852f07b.cuebooker-staging.pages.dev/. The later canonical-route SQL correction changes no frontend asset or application component. Final-head publication/CI follow-up is recorded on [PR114](https://github.com/litus-code/cuebooker/pull/114).
 The hosted preview has frontend changes only; the prepared campaign backend has not been
 applied. An authorized account sees a backend-unavailable message until deployment,
 not invented metrics. No hosted campaign data is claimed.
