@@ -10,7 +10,9 @@ async function review(){
  busy.value=true;error.value=''
  try{if(auth.signedIn.value&&token.value)invitation.value=await api.reviewInvitation(token.value)}catch(e){error.value=failure(e)}finally{busy.value=false}
 }
-onMounted(async()=>{
+// Prerender hydration restores the original URL fragment after component mount.
+// Read it only once Nuxt is ready, before clearing it from the address bar.
+onNuxtReady(async()=>{
  const incoming=new URLSearchParams(route.hash.slice(1)).get('token')
  if(validAgencyInviteToken(incoming)){token.value=incoming;sessionStorage.setItem(AGENCY_INVITE_STORAGE,incoming);await router.replace({hash:''})}
  else{const saved=sessionStorage.getItem(AGENCY_INVITE_STORAGE);if(validAgencyInviteToken(saved))token.value=saved}
