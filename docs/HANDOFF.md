@@ -1,3 +1,9 @@
+## 2026-10-16 / Owner-approved infra merge completed; fresh restore run awaiting environment review
+
+Owner explicitly approved PR115 merge and isolated restore execution. PR115 merged at `bd22cd35c1624bf49c64a284d0ff2fa8d7283d02`. Main change is the5-file infrastructure-only repin/exclusions; no application/backend publication. GitHub browser authentication completed and Isolated Backup Restore Drill dispatched on main with confirm `cuebooker-isolated-restore`. Independently verified via Actions API: [run38893078933](https://github.com/litus-code/cuebooker/actions/runs/38893078933), status WAITING, exact mainSHA bd22cd35c1624bf49c64a284d0ff2fa8d7283d02. This run uses current encrypted backup38889098646/attempt1/artifact12041757362. Owner must review the existing protected production environment for this specific run; the earlier backup approval does not automatically approve the separate restore job.
+
+Next: approve run38893078933 environment review, monitor actual disconnected restore/import/count/FK/RLS/denial/cleanup result and record success/failure. Do not rerun old backup/restore jobs or merge PR114. Current-staging snapshot/analytics rehearsal, hosted analytics and agency/recovery acceptance still pending. No restore success or production release readiness claimed.
+
 ## 2026-10-16 / Restore infrastructure PR115 ready for owner merge decision
 
 Draft PR115 final HEAD `7c2eb160ee3508b326d23503ac510d8c2502f3e3`;5 files total: restore workflow, CI/Pages exact maintenance push exclusions, existing restore safety regression repinned, release-status doc. CI38892008356 and preview workflow38892008113 SUCCESS; stable staging job SKIPPED. Two restore parser/isolation/diagnostic regression tests also passed locally; all original security assertions retained. Earlier initialCI38891870273 failed because the existing test still pinned the old artifact; corrected in the final reviewed revision, no guard removed.
