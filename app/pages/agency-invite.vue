@@ -30,8 +30,37 @@ function leave(){sessionStorage.removeItem(AGENCY_INVITE_STORAGE);return navigat
 useHead({title:'Equipo Agency | Cuebooker',meta:[{name:'robots',content:'noindex,nofollow'},{name:'referrer',content:'no-referrer'}]})
 </script>
 <template>
- <main class="agency-invite"><section><NuxtLink to="/" aria-label="Cuebooker"><CueBrand class="agency-invite__brand" /></NuxtLink><span>AGENCY / {{ es?'INVITACIÓN':'INVITATION' }}</span><h1>{{ invitation?.agency_name||(es?'Únete al equipo.':'Join the team.') }}</h1><p v-if="busy" role="status">{{ es?'Comprobando invitación…':'Checking invitation…' }}</p><p v-if="error" role="alert">{{ error }}</p><template v-if="!busy&&token&&!auth.signedIn.value"><p>{{ es?'Entra o crea una cuenta con el correo invitado. Si debes verificar tu email, vuelve a abrir este enlace después.':'Sign in or create an account with the invited email. If you need to verify your email, reopen this link afterwards.' }}</p><NuxtLink to="/access?next=/agency-invite">{{ es?'Entrar o crear cuenta':'Sign in or create account' }}</NuxtLink></template><template v-if="invitation&&!busy"><p>{{ es?'Tu rol':'Your role' }}: {{ invitation.role }}. {{ es?'El acceso incluye todo el roster y los datos privados del workspace según este rol.':'Access covers the entire roster and private workspace data according to this role.' }}</p><button type="button" @click="accept">{{ invitation.accepted?(es?'Entrar a la agencia':'Open agency'):(es?'Aceptar invitación':'Accept invitation') }}</button></template><button v-if="error&&auth.signedIn.value" type="button" :disabled="busy" @click="switchAccount">{{ es?'Entrar con otra cuenta':'Sign in with another account' }}</button><button v-if="error&&auth.signedIn.value&&token" type="button" :disabled="busy" @click="review">{{ es?'Reintentar':'Retry' }}</button><button type="button" class="agency-invite__leave" :disabled="busy" @click="leave">{{ es?'Salir de la invitación':'Leave invitation' }}</button></section></main>
+ <main class="agency-invite">
+  <section>
+   <NuxtLink to="/" aria-label="Cuebooker"><CueBrand class="agency-invite__brand" /></NuxtLink>
+   <span>AGENCY / {{ es?'INVITACIÓN':'INVITATION' }}</span>
+   <h1>{{ invitation?.agency_name||(es?'Únete al equipo.':'Join the team.') }}</h1>
+   <p v-if="busy" role="status">{{ es?'Comprobando invitación…':'Checking invitation…' }}</p>
+   <p v-if="error" role="alert">{{ error }}</p>
+   <p v-if="!busy&&token&&!auth.signedIn.value">{{ es?'Entra o crea una cuenta con el correo invitado. Si debes verificar tu email, vuelve a abrir este enlace después.':'Sign in or create an account with the invited email. If you need to verify your email, reopen this link afterwards.' }}</p>
+   <p v-if="invitation&&!busy">{{ es?'Tu rol':'Your role' }}: {{ invitation.role }}. {{ es?'El acceso incluye todo el roster y los datos privados del workspace según este rol.':'Access covers the entire roster and private workspace data according to this role.' }}</p>
+   <div class="agency-invite__actions">
+    <NuxtLink v-if="!busy&&token&&!auth.signedIn.value" to="/access?next=/agency-invite">{{ es?'Entrar o crear cuenta':'Sign in or create account' }}</NuxtLink>
+    <button v-if="invitation&&!busy" type="button" @click="accept">{{ invitation.accepted?(es?'Entrar a la agencia':'Open agency'):(es?'Aceptar invitación':'Accept invitation') }}</button>
+    <button v-if="error&&auth.signedIn.value" type="button" :disabled="busy" @click="switchAccount">{{ es?'Entrar con otra cuenta':'Sign in with another account' }}</button>
+    <button v-if="error&&auth.signedIn.value&&token" type="button" :disabled="busy" @click="review">{{ es?'Reintentar':'Retry' }}</button>
+    <button type="button" class="agency-invite__leave" :disabled="busy" @click="leave">{{ es?'Salir de la invitación':'Leave invitation' }}</button>
+   </div>
+  </section>
+ </main>
 </template>
 <style scoped>
-.agency-invite{display:grid;place-items:center;min-height:100dvh;padding:24px;background:var(--cue-bg);color:var(--cue-text)}.agency-invite section{width:min(600px,100%);box-sizing:border-box;border:1px solid var(--cue-border);padding:clamp(24px,5vw,50px)}.agency-invite__brand{width:160px;height:52px;margin-bottom:36px}.agency-invite span{font:700 11px monospace;color:var(--cue-accent);letter-spacing:.12em}.agency-invite h1{font-size:clamp(2.5rem,6vw,4rem);letter-spacing:-.05em;line-height:1.05;overflow-wrap:anywhere}.agency-invite p{color:var(--cue-muted);line-height:1.6}.agency-invite button,.agency-invite section>a:not(:first-child){display:block;min-height:44px;padding:12px 18px;box-sizing:border-box;border:1px solid var(--cue-border);background:var(--cue-accent);color:#080808;cursor:pointer;text-decoration:none;font:700 13px Arial;margin-top:20px}.agency-invite .agency-invite__leave{background:transparent;color:var(--cue-text)}
+.agency-invite{display:grid;place-items:center;min-height:100dvh;padding:24px;background:var(--cue-bg);color:var(--cue-text)}
+.agency-invite section{width:min(600px,100%);box-sizing:border-box;border:1px solid var(--cue-border);padding:clamp(24px,5vw,50px)}
+.agency-invite__brand{width:160px;height:52px;margin-bottom:36px}
+.agency-invite span{font:700 11px monospace;color:var(--cue-accent);letter-spacing:.12em}
+.agency-invite h1{font-size:clamp(2.5rem,6vw,4rem);letter-spacing:-.05em;line-height:1.05;overflow-wrap:anywhere}
+.agency-invite p{color:var(--cue-muted);line-height:1.6}
+.agency-invite__actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:24px}
+.agency-invite__actions>a,.agency-invite__actions>button{display:flex;align-items:center;justify-content:center;min-width:0;min-height:52px;padding:12px 16px;box-sizing:border-box;border:1px solid var(--cue-border);border-radius:var(--cue-radius-control,8px);background:var(--cue-accent);color:#080808;cursor:pointer;text-decoration:none;text-align:center;font:700 13px/1.4 Arial;overflow-wrap:anywhere}
+.agency-invite__actions>:last-child:nth-child(odd){grid-column:1/-1}
+.agency-invite__actions>:focus-visible{outline:2px solid var(--cue-accent);outline-offset:4px}
+.agency-invite__actions>:disabled{cursor:wait;opacity:.6}
+.agency-invite .agency-invite__leave{background:transparent;color:var(--cue-text)}
+@media(max-width:360px){.agency-invite__actions{grid-template-columns:minmax(0,1fr)}}
 </style>

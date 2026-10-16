@@ -1,3 +1,9 @@
+## 2026-10-16 / Agency invitation button alignment and owner acceptance
+
+PR114 branch `integration/beta-home21-review`, parent HEAD `dc389dd08feecc65e5d820e110e0c40da56752e4`, Beta0.0.13. Owner reports the corrected invitation flow worked with the existing DJ account. This confirms the reported acceptance flow only; per-role authorization and workspace switching still require their own checks.
+
+At the owner's request, agency-invite.vue now groups actions in equal-width grid columns with centered labels, equal row height, established control radius and visible keyboard focus. Primary/leave actions share one row at desktop and390px; very narrow screens up to360px stack equal full-width controls. Error actions use the same grid, with an odd final action spanning the row. Authentication/token/RPC behavior unchanged. Validation and published preview status will be recorded after checks. No backend change, merge or production deployment.
+
 ## 2026-10-16 / PR114 agency invitation direct-open hydration correction
 
 Branch `integration/beta-home21-review`, parent HEAD `e5c7b90b5c273a91cb0baa83a7d93078d4e421f3`, Beta0.0.13 review candidate. Owner confirmed the authenticated Campaigns panel loads (availability only, not the complete attributed signup funnel). At the owner's explicit request, created a separate synthetic staging Auth user and empty agency QA workspace. Auth was provisioned through a scoped SQL fixture with bcrypt password and email identity, then real HTTPS password sign-in, authenticated complete_onboarding and ensure_booking_workspace RPCs passed; verification sessions logged out. No password or invitation token belongs in repository docs. This is a manually confirmed fixture, not evidence of signup email delivery or campaign signup attribution.
