@@ -1,0 +1,40 @@
+name: Isolated Staging Campaign Rehearsal
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type cuebooker-staging-campaign to export staging read-only and rehearse locally
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cuebooker-isolated-restore
+  cancel-in-progress: false
+
+jobs:
+  rehearse:
+    if: ${{ github.ref == 'refs/heads/main' && inputs.confirm == 'cuebooker-staging-campaign' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: staging
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Checkout exact reviewed application source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: 69172db62772a0f294482d4c9f92f4fb94edf6dd
+          path: release-candidate
+          persist-credentials: false
+      - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359
+        with:
+          version: 2.119.0
+      - name: Read-only staging snapshot and disconnected migration rehearsal
+        env:
+          CUEBOOKER_STAGING_DB_URL: ${{ secrets.CUEBOOKER_STAGING_DB_URL }}
+        run: python3 scripts/rehearse-staging-campaign.py

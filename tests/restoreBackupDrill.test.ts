@@ -16,13 +16,14 @@ for bad in ['COPY public.a (id) FROM stdin;\n1', 'COPY public.a (id) FROM stdin;
  else: raise AssertionError('unsafe/incomplete COPY accepted')
 def failed(*args,**kwargs):
  assert 'CUEBOOKER_BACKUP_PASSPHRASE' not in kwargs['env']
+ assert 'CUEBOOKER_STAGING_DB_URL' not in kwargs['env']
  return subprocess.CompletedProcess(args[0],1,b'PRIVATE ROW',b'ERROR: 42703\nPRIVATE SQL PASSWORD')
 m.subprocess.run=failed
 try: m.command(['fake'],'verification')
 except RuntimeError as error:
  assert str(error)=='Restore drill failed during verification (SQLSTATE 42703).'
 else: raise AssertionError('command failure accepted')
-`], { encoding: 'utf8', env: { ...process.env, CUEBOOKER_BACKUP_PASSPHRASE: 'fictional-secret' } })
+`], { encoding: 'utf8', env: { ...process.env, CUEBOOKER_BACKUP_PASSPHRASE: 'fictional-secret', CUEBOOKER_STAGING_DB_URL: 'fictional-staging-secret' } })
   assert.equal(result.status, 0, result.stderr)
 })
 
