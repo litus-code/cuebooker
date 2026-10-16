@@ -151,3 +151,10 @@
 .cl-secondary:is(:hover,:focus-visible){color:var(--cl-accent-text);border-color:var(--cl-acid)}
 .cl-primary:is(:hover,:focus-visible),.cl-dark:is(:hover,:focus-visible){filter:brightness(1.08)}
 @media(prefers-reduced-motion:reduce){.cl-nav nav a{transition:none}}
+
+/* Remaining public links: logo home links, image enlargement and cross-audience discovery. */
+.commercial-audience .cl-brand:is(:hover,:focus-visible){opacity:.8}
+.cl-evidence-frame a,.profile-composition>a{display:block;cursor:zoom-in}
+.cl-evidence-frame a:is(:hover,:focus-visible),.profile-composition>a:is(:hover,:focus-visible){outline:2px solid var(--cl-accent-text);outline-offset:4px}
+.cl-close p:last-child a:is(:hover,:focus-visible){text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px}
+.cl-evidence-controls button:not([aria-pressed=true]):is(:hover,:focus-visible),.cl-channel-list button:not([aria-pressed=true]):is(:hover,:focus-visible),.cl-step-list button:not([aria-pressed=true]):is(:hover,:focus-visible){color:var(--cl-accent-text);border-color:var(--cl-acid)}

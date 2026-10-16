@@ -215,9 +215,12 @@ html[data-theme='light'] .home-v2 :is(.cp-kicker, .cp-eyebrow, .home-mono, .sele
 .home-closing h2 { position: relative; max-width: 980px; font-size: clamp(46px, 7vw, 100px); line-height: .92; letter-spacing: -.055em; margin: 28px 0; }
 .home-closing p:not(.cp-kicker) { position: relative; max-width: 620px; color: inherit; font-size: 18px; line-height: 1.6; margin-bottom: 30px; }
 .home-footer nav :is(a,button):is(:hover,:focus-visible) { color:var(--cp-lime); }
-.home-footer { display: grid; gap: 28px; padding-block: 44px; color: var(--cp-muted); font-size: 12px; }
-.home-footer p { line-height: 1.6; }
-.home-footer nav { display: flex; flex-wrap: wrap; gap: 12px 24px; }
+.home-footer { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-block: 44px; color: var(--cp-muted); font-size: 12px; }
+.home-footer > div { display:flex; align-items:center; gap:20px; }
+.home-footer p { margin:0; line-height:1.6; white-space:nowrap; }
+.home-footer > span { white-space:nowrap; }
+.home-footer nav { display: flex; align-items:center; gap: 12px 20px; }
+.home-footer nav a, .home-footer nav button { white-space:nowrap; }
 .home-footer nav a, .home-footer nav button { display: inline-flex; align-items: center; min-height: 44px; }
 .home-footer button { padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
 .home-demo-review, .home-demo-followup { min-height: 210px; color: var(--cp-paper); font-size: 16px; line-height: 1.6; }
@@ -340,6 +343,17 @@ html[data-theme='light'] .home-hero-route span { color: color-mix(in srgb, var(-
   .home-actions { display: grid; justify-items: start; }
   .home-actions .cp-cta { min-height: 44px; }
   .ed-console-heading { font-size: 11px; }
+}
+@media (max-width:1200px) {
+  .home-footer { flex-wrap:wrap; }
+  .home-footer > div { flex-basis:100%; }
+  .home-footer nav { flex-wrap:wrap; }
+}
+@media (max-width:640px) {
+  .home-footer { align-items:flex-start; }
+  .home-footer > div { flex-direction:column; align-items:flex-start; gap:12px; }
+  .home-footer p { white-space:normal; }
+  .home-footer nav { width:100%; gap:4px 20px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .home-v2 .cp-cta, .home-nav-links a, .home-login, .home-audience-grid h3 a, .home-audience-discover { transition: none; }

@@ -1,3 +1,9 @@
+## 2026-10-16 / Home footer single desktop row and remaining public link feedback
+
+PR114 integration/beta-home21-review, parent HEAD b0f355f9ce7debce0d668455ffbf0ab01063f92d. Beta0.0.13 unchanged. Owner requested all Home footer content in one desktop row and another public-link hover sweep. Footer now aligns logo/tagline, legal/contact/preferences links and copyright horizontally above1200px, wraps deliberately below that width, and stacks brand/tagline on narrow mobile without forcing overflow. Prior public navigation/audience/footer accent states retained.
+
+Source sweep found additional missing feedback on landing screenshot enlargement links, brand home links, cross-audience closing links and unselected section controls. Added accent outline/zoom cursor to screenshots, subtle opacity to logo links, heavier underline on colored closing sections (avoids lime-on-lime text), and accent feedback on unselected controls; selected controls retain readable ink. Same keyboard focus treatment. Source/CSS checks and published preview verification pending. No routes, tracking, Auth, backend, merge or production deployment changed.
+
 ## 2026-10-16 / Public Home/DJ/Agency hover polish
 
 PR114 branch integration/beta-home21-review, parent HEAD f006cfda4022edace179f2f972128ba5bf43a701, Beta0.0.13. Owner accepted invitation button alignment. Manager role/administration restrictions still await the requested owner check.
