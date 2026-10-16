@@ -2,6 +2,10 @@
 
 Status: deployed to staging and partial hosted acceptance passed. Production promotion remains blocked by the pending items below.
 
+## Owner browser acceptance update, 17 October
+
+Owner confirms the Campaigns test dataset panel loads. This validates panel access, not the complete attributed signup funnel. Owner also confirms Manager restrictions (no invitations/role changes) and preserved DJ workspace. Invitation acceptance, revocation and refusal of a revoked link were checked earlier. Recovery now passes the real browser sequence: fresh email opens the form, a different password saves successfully and owner signs in with that new password. The same-password422 rejection was diagnosed from hosted Auth logs and localized feedback added in source7015aa79b5c0b19d9041a6e91dcdf5bc0224e75b (608 tests). These checks do not establish untested cross-tenant cases or production readiness.
+
 ## Exact sources and environment
 
 - Staging: `lycprjeuuynfzwskycwv`, cuebooker-staging. Production `qlocooqfdzehogbwcbhr` was checked read-only and campaign tables remain absent.
@@ -55,7 +59,7 @@ No ERROR-level security/performance advisories appeared. Counts are per finding,
 
 Remediation references: [FK indexes](https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys), [privileged RPC review](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable), [private RLS policies](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy), [existing leaked-password setting](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection).
 
-Still pending: actual authenticated browser Campaigns panel and new Auth signup/onboarding/publication/first-enquiry analytics journey, controlled agency/invitation/tenant/recovery acceptance, two new FK index follow-ups, production-specific schema/function reconciliation and isolated production delta rehearsal. Existing accepted Gmail/attachments/DJ/ESEN/mobile checks stay accepted. Live collection activation is a separate decision. PR114 remains draft/unmerged and production application/backend untouched.
+Still pending: new Auth signup/onboarding/publication/first-enquiry analytics journey and any remaining automated cross-tenant negative checks, two new FK index follow-ups, production-specific schema/function reconciliation and isolated production delta rehearsal. Existing accepted Gmail/attachments/DJ/ESEN/mobile checks stay accepted. Live collection activation is a separate decision. PR114 remains draft/unmerged and production application/backend untouched.
 
 Rollback remains non-destructive: pause collector/retention and optional observers, preserve schema for inspection, revert optional frontend if needed. No automatic production action follows this staging result.
 
