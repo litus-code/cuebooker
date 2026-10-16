@@ -1,3 +1,15 @@
+# Corrected campaign RPC privilege rehearsal pin, 16 October 2026
+
+Run38932556643 attempt4/job117106725063 proved the updated secure connection works: read-only current staging export, temporary encrypted snapshot, disconnected logical restore, all COPY counts/FK/RLS/unidentified-caller denial and cleanup passed. Exact original campaign SQL executed locally and its preserved-count/domain-definition checks passed; campaign acceptance then FAILED at service-only RPC privileges. No hosted analytics SQL/Edge/cron or production operation occurred. No further credential change is needed.
+
+Read-only catalog and a synthetic regression identified an owner-default difference: supabase_admin directly grants public-function EXECUTE to anon/authenticated/service_role by default, whereas hosted postgres defaults differ. Original prepared RPC SQL revoked PUBLIC only. PR114 now explicitly revokes PUBLIC, anon and authenticated for collector/withdrawal, retaining service_role. The adversarial-default SQL regression fails on the old SQL; corrected source passes49 SQL assertions,599 unit tests, static build44 routes and whitespace locally. These are separate from actual full corrected staging rehearsal, still pending.
+
+This bounded infrastructure-only change repins checkout/runner/test to immutable corrected candidate `7111f156aefa09dfab8cad721422607460d9c4be` and SQL SHA256 `5587649f6725d3de8e50d9882f19f2980c53f00965079dd7219caeb54cdde000`. Only four existing maintenance files change: workflow, runner source/hash constants, matching source-pin assertion, this status document. Main-only/manual/staging guard, exact project/TLS, read-only export, isolation, permissions, encryption/cleanup, no uploads and production restore defaults remain unchanged. Existing exact push exclusions already cover all four files; this merge alone cannot publish application/stable staging assets.
+
+Six focused restore/rehearsal regressions must pass, plus PR CI on final head. Owner authorization for this new bounded infrastructure integration remains separate from the previous PR116 merge. After approval, dispatch a NEW Isolated Staging Campaign Rehearsal on main with confirm cuebooker-staging-campaign. Re-running old38932556643 still uses old source and cannot validate the correction. Record actual run/job/source/result before hosted staging analytics apply. PR114/application release/production remain separate and unmerged.
+
+---
+
 # Current-staging campaign rehearsal preparation, 16 October 2026
 
 Production logical backup restore run38893078933/job116947026773 PASSED on main `bd22cd35c1624bf49c64a284d0ff2fa8d7283d02`. Import, all COPY counts, FK, RLS, unidentified-caller denial and cleanup passed. That result does not establish campaign compatibility with current staging.

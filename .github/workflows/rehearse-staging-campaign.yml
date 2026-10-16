@@ -28,7 +28,7 @@ jobs:
       - name: Checkout exact reviewed application source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: 69172db62772a0f294482d4c9f92f4fb94edf6dd
+          ref: 7111f156aefa09dfab8cad721422607460d9c4be
           path: release-candidate
           persist-credentials: false
       - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359
