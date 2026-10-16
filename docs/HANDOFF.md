@@ -1,3 +1,9 @@
+## 2026-10-16 / Restore infrastructure PR115 ready for owner merge decision
+
+Draft PR115 final HEAD `7c2eb160ee3508b326d23503ac510d8c2502f3e3`;5 files total: restore workflow, CI/Pages exact maintenance push exclusions, existing restore safety regression repinned, release-status doc. CI38892008356 and preview workflow38892008113 SUCCESS; stable staging job SKIPPED. Two restore parser/isolation/diagnostic regression tests also passed locally; all original security assertions retained. Earlier initialCI38891870273 failed because the existing test still pinned the old artifact; corrected in the final reviewed revision, no guard removed.
+
+Backup run38889098646 remains SUCCESS, artifact12041757362/current encrypted archive available until October23. Owner main-merge authorization is needed only for bounded infrastructure PR115; existing workflow main-only guard and production environment review remain. No main merge, restore, paid service, hosted mutation or production application deployment performed. PR114/Beta0.0.13 application remains unchanged. Next: owner decides PR115 integration; after approval, run its main-only isolated restore and review environment gate. Current-staging migration rehearsal and later production release approval remain separate.
+
 ## 2026-10-16 / Fresh production DB backup completed; isolated restore repin prepared
 
 Owner approved the protected environment gate. Run38889098646/attempt1, job116933969537 completed SUCCESS at11:07Z: roles/schema/data export, AES256 encryption, byte-for-byte decrypt roundtrip and encrypted-only artifact upload passed. Artifact12041757362 (`cuebooker-production-db-38889098646-1`),43464 ZIP bytes, digest `sha256:862f232b473e32391d74f69fa32fc2ee2a234569dc11ce814e8f5796667dfe2a`, expires2026-10-23T11:07:25Z. Source main remainsbbdf29122f704039b353fa4eed788bfdfef5aaa7. No restore success is claimed.
