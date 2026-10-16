@@ -20,11 +20,20 @@ await db.exec(`
  create table public.workspace_legacy_organizations(workspace_id uuid,organization_id uuid);
  create table public.bookings(id uuid primary key default gen_random_uuid(),workspace_id uuid,created_by uuid,capture_method text,origin_channel text,created_at timestamptz default now(),updated_at timestamptz default now(),status text);
 `)
-for (const file of ['20260928204500_add_internal_beta_analytics.sql','20261016120000_campaign_funnel_analytics.sql']) await db.exec(await readFile(new URL('../supabase/migrations/'+file,import.meta.url),'utf8'))
+await db.exec(await readFile(new URL('../supabase/migrations/20260928204500_add_internal_beta_analytics.sql',import.meta.url),'utf8'))
+// The disconnected restore applies SQL as supabase_admin, whose Supabase defaults
+// grant EXECUTE directly to client roles. Revoking only PUBLIC must not pass.
+await db.exec('alter default privileges in schema public grant execute on functions to anon,authenticated,service_role;')
+await db.exec(await readFile(new URL('../supabase/migrations/20261016120000_campaign_funnel_analytics.sql',import.meta.url),'utf8'))
 let assertions=0
 const check=(condition,message)=>{assert.ok(condition,message);assertions++}
 const query=async(sql,params=[]) => (await db.query(sql,params)).rows
 const scalar=async(sql,params=[])=>Object.values((await query(sql,params))[0])[0]
+for (const signature of ['public.record_campaign_event(text,uuid,text,jsonb)','public.revoke_campaign_consent(text)']) {
+ for (const role of ['anon','authenticated','service_role']) {
+  check(await scalar("select has_function_privilege($1,$2,'EXECUTE')",[role,signature])===(role==='service_role'), `${role} privilege for ${signature} respects service-only contract despite default grants`)
+ }
+}
 const token='a'.repeat(64), visitorHash=await scalar(`select encode(sha256(convert_to($1,'UTF8')),'hex')`,[token])
 const dims={source:'agency',utm_source:'instagram',utm_campaign:'beta_launch',ref:'campaign-2026',page:'agency'}
 async function record(event,properties=dims,key=crypto.randomUUID(),t=token){return scalar(`select public.record_campaign_event($1,$2,$3,$4::jsonb)`,[t,key,event,JSON.stringify(properties)])}

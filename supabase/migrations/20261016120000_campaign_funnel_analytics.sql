@@ -59,6 +59,8 @@ language sql immutable set search_path='' as $$
 $$;
 revoke all on function private.clean_campaign_dimensions(jsonb) from public,anon,authenticated;
 
+-- Revoke direct client-role grants as well as PUBLIC: Supabase default privileges
+-- can grant EXECUTE to anon/authenticated for the migration owner.
 create function public.record_campaign_event(visitor_token text,event_key uuid,event_name text,dimensions jsonb default '{}')
 returns boolean language plpgsql security definer set search_path='' as $$
 declare visitor private.campaign_visitors; clean jsonb; fingerprint text;
@@ -82,7 +84,7 @@ begin
  values(event_name,clean,visitor.id,event_key::text,visitor.dataset) on conflict do nothing;
  return true;
 end; $$;
-revoke all on function public.record_campaign_event(text,uuid,text,jsonb) from public;
+revoke all on function public.record_campaign_event(text,uuid,text,jsonb) from public,anon,authenticated;
 grant execute on function public.record_campaign_event(text,uuid,text,jsonb) to service_role;
 
 create function public.revoke_campaign_consent(visitor_token text) returns void
@@ -95,7 +97,7 @@ begin
  delete from public.product_analytics_events where campaign_visitor_id=visitor;
  delete from private.campaign_registrations where visitor_id=visitor;
 end; $$;
-revoke all on function public.revoke_campaign_consent(text) from public;
+revoke all on function public.revoke_campaign_consent(text) from public,anon,authenticated;
 grant execute on function public.revoke_campaign_consent(text) to service_role;
 
 -- Only an actual newly created auth account can produce a persisted signup_completed.

@@ -1,3 +1,9 @@
+## 16 October follow-up: isolated current staging restore and campaign ACL correction
+
+Current staging export/restore run38932556643 attempt4/job117106725063 passed actual import/all COPY counts/FK/RLS/unidentified-caller denial and cleanup. Campaign acceptance then stopped at service-only RPC privileges. The disconnected runner creates functions as supabase_admin, whose public-function defaults directly grant client EXECUTE; prepared SQL now revokes anon/authenticated explicitly on both collector and withdrawal RPCs. Hosted postgres owner defaults differ, so this is an owner-dependent security contract defect found before deployment, not evidence of an existing hosted exposure. Nothing has been applied to hosted analytics or production.
+
+The SQL fixture reproduces those defaults. Old SQL fails the regression; corrected SQL passes49 assertions, including the6-role/signature privilege checks. All599 unit tests, static build44 routes and whitespace check pass. The corrected current-staging rehearsal remains pending until its new source/hash pin is integrated and actually executed. Follow latest HANDOFF for the exact revision/build/CI and infrastructure PR.
+
 # Beta 0.0.13 release preparation — 16 October 2026
 
 PR114, `integration/beta-home21-review`. Production approval is **not ready**.
