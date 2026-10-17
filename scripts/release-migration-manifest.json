@@ -118,5 +118,41 @@
   {
     "path": "supabase/migrations/20261004173627_mailbox_detection_start_and_retry.sql",
     "sha256": "328282d1cc23e5c66bb9239309de367d6e7dc74d498bfa02ca905223f0883f65"
+  },
+  {
+    "path": "supabase/migrations/20261014191153_add_private_booking_email_attachments.sql",
+    "sha256": "d4a3dda6ac2bce9c9aeb1b64941fc13fc95dfe915cd02b1d9542590535efafba"
+  },
+  {
+    "path": "supabase/migrations/20261014193555_allow_connected_mailbox_attachments.sql",
+    "sha256": "64df3c0f1136ab60b25adc0bd60e91fc18c40ca24152d31ccca165d9689828db"
+  },
+  {
+    "path": "supabase/migrations/20261015163315_bind_mailbox_attachment_email_and_permissions.sql",
+    "sha256": "25cde98c433ec6001355e320eadaf5cf515158cf2d856448a094a28787fd8e3b"
+  },
+  {
+    "path": "supabase/migrations/20261015165000_mailbox_failure_phase_diagnostics.sql",
+    "sha256": "8eabadb0966f38d66b8bc9b0082692f91d99fab7e78ae685463cb256589dd440"
+  },
+  {
+    "path": "supabase/migrations/20261015172641_outbound_booking_email_attachments.sql",
+    "sha256": "d6b968cc935c55707346d7529ae1fbbbf5ee12a8cf92fb006f05bc45a6a60fb4"
+  },
+  {
+    "path": "supabase/migrations/20261015183107_email_attachment_warnings.sql",
+    "sha256": "99d6191afc2f33663cc29f25a6c2b9fe29e33fd699bb5c5bccc93310fdf6d680"
+  },
+  {
+    "path": "supabase/migrations/20261016120000_campaign_funnel_analytics.sql",
+    "sha256": "5587649f6725d3de8e50d9882f19f2980c53f00965079dd7219caeb54cdde000"
+  },
+  {
+    "path": "supabase/migrations/20261016220553_campaign_foreign_key_indexes.sql",
+    "sha256": "cc2da7888c221c0db1ef0c56a567516120b8d3d41df5c754ac146286ccfa4189"
+  },
+  {
+    "path": "supabase/migrations/20261016223115_fix_membership_owner_guards.sql",
+    "sha256": "a3f54402e06ee84cae547b77e20bfd17c8513247b9380de3e95189bcf28c1e74"
   }
 ]

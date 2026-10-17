@@ -4,6 +4,20 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '.github/workflows/rehearse-release-migrations.yml'
+      - 'scripts/rehearse-release-migrations.py'
+      - 'scripts/release-migration-manifest.json'
+      - 'tests/releaseMigrationRehearsal.test.ts'
+      - '.github/workflows/rehearse-staging-campaign.yml'
+      - 'scripts/rehearse-staging-campaign.py'
+      - 'scripts/restore-backup-drill.py'
+      - 'tests/stagingCampaignRehearsal.test.ts'
+      - '.github/workflows/ci.yml'
+      - '.github/workflows/deploy-pages.yml'
+      - '.github/workflows/restore-backup-drill.yml'
+      - 'tests/restoreBackupDrill.test.ts'
+      - 'docs/RELEASE_REHEARSAL_STATUS.md'
   workflow_dispatch:
 
 permissions:

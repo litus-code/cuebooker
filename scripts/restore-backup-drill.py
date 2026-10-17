@@ -36,7 +36,7 @@ def copy_counts(sql):
 
 def command(args, stage, *, cwd=None, input=None):
     env = {k: v for k, v in os.environ.items() if k not in
-           ('CUEBOOKER_BACKUP_PASSPHRASE', 'CUEBOOKER_BACKUP_DB_URL')}
+           ('CUEBOOKER_BACKUP_PASSPHRASE', 'CUEBOOKER_BACKUP_DB_URL', 'CUEBOOKER_STAGING_DB_URL')}
     try:
         result = subprocess.run(args, cwd=cwd, input=input, capture_output=True,
                                 env=env, timeout=600)
@@ -89,11 +89,15 @@ END $$;
 """
 
 
-def main(after_restore=None):
+def main(after_restore=None, *, expected_project='qlocooqfdzehogbwcbhr',
+         export_cli_version='2.79.0', artifact_dir='restore-input'):
+    if (expected_project, export_cli_version) not in (
+            ('qlocooqfdzehogbwcbhr', '2.79.0'), ('lycprjeuuynfzwskycwv', '2.119.0')):
+        raise RuntimeError('Unsupported isolated restore source.')
     phrase = os.environ.get('CUEBOOKER_BACKUP_PASSPHRASE', '')
     if len(phrase) < 32 or any(c in phrase for c in '\r\n\0'):
         raise RuntimeError('Missing valid backup decryption passphrase.')
-    artifact = Path('restore-input')
+    artifact = Path(artifact_dir)
     encrypted = artifact / 'database.tar.gz.gpg'
     expected = (artifact / 'database.tar.gz.gpg.sha256').read_text().split()[0]
     if hashlib.sha256(encrypted.read_bytes()).hexdigest() != expected:
@@ -135,7 +139,7 @@ def main(after_restore=None):
                     raise RuntimeError('Unexpected backup archive contents.')
                 files = {m.name: archive.extractfile(m).read() for m in members}
             manifest = json.loads(files['manifest.json'])
-            if manifest.get('project') != 'qlocooqfdzehogbwcbhr' or manifest.get('cliVersion') != '2.79.0':
+            if manifest.get('project') != expected_project or manifest.get('cliVersion') != export_cli_version:
                 raise RuntimeError('Unexpected backup project or tool version.')
             counts = copy_counts(files['data.sql'].decode())
             baseline = {}

@@ -16,13 +16,14 @@ for bad in ['COPY public.a (id) FROM stdin;\n1', 'COPY public.a (id) FROM stdin;
  else: raise AssertionError('unsafe/incomplete COPY accepted')
 def failed(*args,**kwargs):
  assert 'CUEBOOKER_BACKUP_PASSPHRASE' not in kwargs['env']
+ assert 'CUEBOOKER_STAGING_DB_URL' not in kwargs['env']
  return subprocess.CompletedProcess(args[0],1,b'PRIVATE ROW',b'ERROR: 42703\nPRIVATE SQL PASSWORD')
 m.subprocess.run=failed
 try: m.command(['fake'],'verification')
 except RuntimeError as error:
  assert str(error)=='Restore drill failed during verification (SQLSTATE 42703).'
 else: raise AssertionError('command failure accepted')
-`], { encoding: 'utf8', env: { ...process.env, CUEBOOKER_BACKUP_PASSPHRASE: 'fictional-secret' } })
+`], { encoding: 'utf8', env: { ...process.env, CUEBOOKER_BACKUP_PASSPHRASE: 'fictional-secret', CUEBOOKER_STAGING_DB_URL: 'fictional-staging-secret' } })
   assert.equal(result.status, 0, result.stderr)
 })
 
@@ -40,7 +41,7 @@ test('restore targets only fixed disposable container, disconnects before decryp
   assert.match(workflow, /workflow_dispatch:/)
   assert.match(workflow, /github.ref == 'refs\/heads\/main'/)
   assert.match(workflow, /environment: production/)
-  assert.match(workflow, /name: cuebooker-production-db-37169429138-2/)
-  assert.match(workflow, /run-id: 37169429138/)
+  assert.match(workflow, /name: cuebooker-production-db-38889098646-1/)
+  assert.match(workflow, /run-id: 38889098646/)
   assert.doesNotMatch(workflow, /BACKUP_DB_URL|upload-artifact|schedule:|push:|pull_request:/)
 })
