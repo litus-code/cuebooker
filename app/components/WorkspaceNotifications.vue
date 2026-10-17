@@ -7,6 +7,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   openBooking: [notification: CueNotification]
+  readError: [message: string]
 }>()
 
 const notifications = useNotifications()
@@ -17,6 +18,8 @@ const items = ref<CueNotification[]>([])
 const unread = ref(0)
 const root = ref<HTMLElement | null>(null)
 const panel = ref<HTMLElement | null>(null)
+let countRevision = 0
+let loadRevision = 0
 let refreshTimer: ReturnType<typeof window.setInterval> | null = null
 
 const copy = computed(() => props.locale === 'es' ? {
@@ -69,39 +72,46 @@ function timeLabel(value: string) {
 }
 
 async function refreshCount() {
+  const revision = ++countRevision
   try {
-    unread.value = await notifications.unreadCount()
+    const count = await notifications.unreadCount()
+    if (revision === countRevision) unread.value = count
   } catch {
-    unread.value = 0
+    // A failed refresh must not erase the last confirmed unread count.
   }
 }
 
 async function load() {
+  const revision = ++loadRevision
   loading.value = true
   error.value = ''
   try {
     const nextItems = await notifications.list(40)
+    if (revision !== loadRevision) return
     items.value = nextItems
     // Count refresh must not hide a successfully loaded notification list.
-    try { unread.value = await notifications.unreadCount() }
-    catch { unread.value = nextItems.filter(item => !item.read_at).length }
+    await refreshCount()
+    if (revision !== loadRevision) return
     // Reading succeeds only after the visible list has loaded.
     // Avoid resetting a newer notification that arrived after this snapshot.
     if (open.value && nextItems.some(item => !item.read_at)) {
       const unreadSnapshot = nextItems.filter(item => !item.read_at)
       const results = await Promise.allSettled(unreadSnapshot.map(item => notifications.markRead(item.id)))
+      if (revision !== loadRevision) return
+      ++countRevision
       const readIds = new Set(unreadSnapshot.filter((_, index) => results[index].status === 'fulfilled').map(item => item.id))
       const readAt = new Date().toISOString()
       items.value = items.value.map(item => readIds.has(item.id) ? { ...item, read_at: readAt } : item)
+      unread.value = Math.max(0, unread.value - readIds.size)
       await refreshCount()
       if (results.some(result => result.status === 'rejected')) {
         error.value = props.locale === 'es' ? 'Algunos avisos no pudieron marcarse como leídos.' : 'Some alerts could not be marked as read.'
       }
     }
   } catch {
-    error.value = copy.value.retry
+    if (revision === loadRevision) error.value = copy.value.retry
   } finally {
-    loading.value = false
+    if (revision === loadRevision) loading.value = false
   }
 }
 
@@ -116,6 +126,9 @@ async function markAll() {
   if (!unread.value) return
   try {
     await notifications.markAllRead()
+    ++countRevision
+    ++loadRevision
+    loading.value = false
     const readAt = new Date().toISOString()
     items.value = items.value.map(item => item.read_at ? item : { ...item, read_at: readAt })
     unread.value = 0
@@ -127,18 +140,25 @@ async function markAll() {
 }
 
 async function select(item: CueNotification) {
+  // Opening a booking must not wait for a read-state network request.
+  open.value = false
+  emit('openBooking', item)
   if (!item.read_at) {
     try {
       const updated = await notifications.markRead(item.id)
+      ++countRevision
+      const wasUnread = items.value.some(candidate => candidate.id === item.id && !candidate.read_at)
       items.value = items.value.map(candidate => candidate.id === item.id ? updated : candidate)
-      unread.value = Math.max(0, unread.value - 1)
+      if (wasUnread) unread.value = Math.max(0, unread.value - 1)
+      await refreshCount()
     } catch {
       // Navigation still works even if read-state update fails.
+      emit('readError', props.locale === 'es'
+        ? 'La solicitud se ha abierto, pero no se pudo marcar el aviso como leído. Reinténtalo desde Notificaciones.'
+        : 'The enquiry opened, but the alert could not be marked as read. Retry from Notifications.')
     }
   }
 
-  open.value = false
-  emit('openBooking', item)
 }
 
 function handleDocumentClick(event: MouseEvent) {
