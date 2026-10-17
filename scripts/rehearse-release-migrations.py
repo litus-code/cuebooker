@@ -9,6 +9,33 @@ spec = importlib.util.spec_from_file_location('restore', Path(__file__).with_nam
 restore = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(restore)
 
+# The logical backup excludes the managed supabase_migrations schema. Validate
+# the restored input itself, rather than expecting its hosted migration ledger.
+INPUT_RELATIONS = {
+    'bookings': 'bd21532cacf90a27e9e71fecc76662b2',
+    'email_messages': 'e637af45012fab132e2ce9fb448f6ade',
+    'organizations': 'b9430a1784b0fd236a852addb19e44ab',
+    'product_analytics_events': '291dede4f6aff355ea63538473526cc1',
+    'workspace_artists': '4a527a791accc12c56c7ddffc0970242',
+    'workspace_billing': '07bf210d136b017860a2885efe2effba',
+}
+
+
+def verify_input_schema():
+    for table, expected in INPUT_RELATIONS.items():
+        actual = restore.psql(f"""SELECT md5(coalesce(string_agg(
+    a.attname||':'||format_type(a.atttypid,a.atttypmod)||':'||a.attnotnull::text||':'||
+    coalesce(pg_get_expr(d.adbin,d.adrelid),''), ',' ORDER BY a.attnum),''))
+FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+LEFT JOIN pg_attribute a ON a.attrelid=c.oid AND a.attnum>0 AND NOT a.attisdropped
+LEFT JOIN pg_attrdef d ON d.adrelid=c.oid AND d.adnum=a.attnum
+WHERE n.nspname='public' AND c.relname='{table}' AND c.relkind='r'
+GROUP BY c.oid;
+""")
+        if actual != expected:
+            raise RuntimeError('Restored production input schema fingerprint mismatch.')
+
+
 # Catalog fingerprints inspected read-only on the current production project.
 # These production-only behaviors must not be overwritten by staging history.
 PRESERVED_FUNCTIONS = {
@@ -55,8 +82,7 @@ def rehearse():
     protected = ('public.bookings', 'public.contacts', 'public.email_messages',
                  'public.workspaces', 'public.workspace_members', 'auth.users')
     counts = {t: restore.psql(f'SELECT count(*) FROM {t};') for t in protected}
-    if restore.psql('SELECT count(*) FROM supabase_migrations.schema_migrations;') != '81':
-        raise RuntimeError('Unexpected restored production migration ledger.')
+    verify_input_schema()
     verify_production_behaviors()
     for index, sql in enumerate(sql_files, 1):
         restore.psql(sql, f'candidate migration {index:02d}')

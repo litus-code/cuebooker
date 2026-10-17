@@ -3,6 +3,42 @@ import { spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 
+test('restored input without a hosted migration ledger reaches SQL; schema drift stops before SQL', () => {
+  const r = spawnSync('python3', ['-c', String.raw`
+import importlib.util,re
+s=importlib.util.spec_from_file_location('rehearsal','scripts/rehearse-release-migrations.py')
+m=importlib.util.module_from_spec(s);s.loader.exec_module(m)
+class ReachedMigration(Exception):pass
+m.load_migrations=lambda *args:['candidate SQL']*39
+m.verify_production_behaviors=lambda:None
+def run(changed=None,replacement=None):
+ calls=[]
+ def psql(sql,*args):
+  calls.append(sql)
+  if 'supabase_migrations.schema_migrations' in sql:
+   raise AssertionError('Logical backup does not contain hosted migration history')
+  if sql=='candidate SQL':raise ReachedMigration()
+  if sql.startswith('SELECT count(*) FROM '):return '7'
+  assert sql.lstrip().startswith('SELECT md5('),sql
+  table=re.search("c.relname='([^']+)'",sql).group(1)
+  return replacement if table==changed else m.INPUT_RELATIONS[table]
+ m.restore.psql=psql
+ try:m.rehearse()
+ except ReachedMigration:
+  assert changed is None,'Changed schema reached candidate SQL'
+  return
+ except RuntimeError as e:
+  assert changed is not None and 'input schema fingerprint mismatch' in str(e)
+  assert 'candidate SQL' not in calls
+  return
+ raise AssertionError('Expected preflight rejection or candidate SQL')
+run()
+for table in m.INPUT_RELATIONS:
+ for replacement in ('','0'*32):run(table,replacement)
+`], { encoding: 'utf8' })
+  assert.equal(r.status, 0, r.stderr)
+})
+
 test('rehearsal rejects changed SQL, reordered manifests and traversal paths', () => {
   const r = spawnSync('python3', ['-c', String.raw`
 import importlib.util,json,tempfile,pathlib,hashlib
