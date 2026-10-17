@@ -112,7 +112,7 @@
   "limitations": [
     "Only bucket metadata and aggregate object counts read; no object paths/bytes or user rows.",
     "Vault names only; no secret values or cron command bodies read.",
-    "Authenticated dashboard later verified production URLs, SMTP metadata, recovery template and Edge secret names only. Secret values, Google IAM/OAuth and Brevo provider routing remain unverified."
+    "Production secret names verified in rendered dashboard, never values. Google Pub/Sub metadata/IAM supported by owner-pasted command output; OAuth client details and Brevo routing remain unverified. SQL/Storage/Vault observations predate manual provider configuration and require refresh before deployment."
   ],
   "production_dashboard": {
     "observed_at": "2026-10-17",
@@ -140,24 +140,25 @@
       "CUEBOOKER_REPLY_DOMAIN",
       "CUEBOOKER_APP_ORIGIN",
       "CUEBOOKER_INBOUND_WEBHOOK_SECRET",
-      "BREVO_TRANSACTIONAL_WEBHOOK_SECRET"
-    ],
-    "custom_edge_secret_names_absent": [
+      "BREVO_TRANSACTIONAL_WEBHOOK_SECRET",
       "GMAIL_CLIENT_ID",
       "GMAIL_CLIENT_SECRET",
       "GMAIL_TOKEN_ENCRYPTION_KEY",
+      "MAILBOX_WORKER_SECRET",
+      "GROQ_API_KEY",
       "GMAIL_PUBSUB_TOPIC",
       "GMAIL_PUBSUB_SUBSCRIPTION",
       "GMAIL_PUSH_SERVICE_ACCOUNT",
-      "MAILBOX_WORKER_SECRET",
-      "GROQ_API_KEY",
+      "CUEBOOKER_MAILBOX_TRANSPORT",
+      "CUEBOOKER_MAILBOX_RETURN_URL",
       "CUEBOOKER_MAILBOX_ENABLED",
       "CUEBOOKER_MAILBOX_BACKGROUND_ENABLED",
       "CUEBOOKER_CONNECTED_ATTACHMENTS_ENABLED",
-      "CUEBOOKER_MAILBOX_TRANSPORT",
-      "CUEBOOKER_MAILBOX_RETURN_URL",
-      "CUEBOOKER_BETA_ADMIN_EMAIL",
+      "CUEBOOKER_EMAIL_ATTACHMENTS_ENABLED",
       "CUEBOOKER_BETA_NOTIFICATIONS_ENABLED"
+    ],
+    "custom_edge_secret_names_absent": [
+      "CUEBOOKER_BETA_ADMIN_EMAIL"
     ],
     "secret_value_verification": false,
     "auth_signup_policy": {
@@ -165,6 +166,34 @@
       "allow_manual_linking": false,
       "allow_anonymous_sign_ins": false,
       "confirm_email": true
+    },
+    "operator_configuration_checkpoint": {
+      "observed_at": "2026-10-17T09:25:19+02:00",
+      "changes_by": "owner in own browser/Cloud Shell",
+      "agent_verification": "Rendered Supabase secret names only, values not read. Google evidence is owner-pasted command output, not independently retrieved.",
+      "oauth_client_created": "Owner reports separate production Web OAuth client created; callback/scopes/client details not independently verified.",
+      "instructed_gate_values": {
+        "CUEBOOKER_MAILBOX_ENABLED": "false",
+        "CUEBOOKER_MAILBOX_BACKGROUND_ENABLED": "false",
+        "CUEBOOKER_CONNECTED_ATTACHMENTS_ENABLED": "false",
+        "CUEBOOKER_EMAIL_ATTACHMENTS_ENABLED": "false",
+        "CUEBOOKER_BETA_NOTIFICATIONS_ENABLED": "false"
+      },
+      "gate_values_read": false
     }
+  },
+  "production_google_push": {
+    "evidence": "Owner-pasted Cloud Shell creation/IAM output at 2026-10-17T09:25:19+02:00",
+    "project": "cuebooker",
+    "topic": "projects/cuebooker/topics/cuebooker-gmail-prod",
+    "subscription": "projects/cuebooker/subscriptions/cuebooker-gmail-prod-push",
+    "push_endpoint": "https://qlocooqfdzehogbwcbhr.supabase.co/functions/v1/gmail-mailbox-events",
+    "oidc_audience": "https://qlocooqfdzehogbwcbhr.supabase.co/functions/v1/gmail-mailbox-events",
+    "oidc_service_account": "cuebooker-gmail-push-prod@cuebooker.iam.gserviceaccount.com",
+    "topic_publisher": "gmail-api-push@system.gserviceaccount.com",
+    "oidc_token_creator": "service-573163160991@gcp-sa-pubsub.iam.gserviceaccount.com",
+    "wrapped_json": true,
+    "provider_delivery_tested": false,
+    "oauth_consent_tested": false
   }
 }

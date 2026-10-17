@@ -80,7 +80,7 @@ def apply(c, cloud):
         cloud.run(["pubsub", "topics", "create", c["topic"]])
     cloud.run(["pubsub", "topics", "add-iam-policy-binding", c["topic"],
                "--member=serviceAccount:gmail-api-push@system.gserviceaccount.com",
-               "--role=roles/pubsub.publisher", "--condition=None"])
+               "--role=roles/pubsub.publisher"])
     if account is None:
         cloud.run(["iam", "service-accounts", "create", c["account_id"],
                    f"--display-name={c['account_id']}"])

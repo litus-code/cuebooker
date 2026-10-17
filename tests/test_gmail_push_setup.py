@@ -59,6 +59,9 @@ class SetupTests(unittest.TestCase):
         iam = [call for call in cloud.calls if "add-iam-policy-binding" in call]
         self.assertEqual(len(iam), 2)
         self.assertIn(self.c["topic"], iam[0])
+        # Stable Pub/Sub command rejects --condition; IAM service-account command supports it.
+        self.assertFalse(any(arg.startswith("--condition") for arg in iam[0]))
+        self.assertIn("--condition=None", iam[1])
         self.assertIn(self.c["account"], iam[1])
         self.assertFalse(any("keys" in call or "delete" in call for call in cloud.calls))
 

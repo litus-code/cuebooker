@@ -72,10 +72,10 @@ before launch and protect any objects created since then. DB dumps omit object b
 | Auth mail | Preserve/capture existing subjects, templates, confirmation policy, SMTP host/sender and recovery behavior before any change | Custom SMTP enabled, Brevo host/587, sender metadata verified; stored password not read. Recovery subject/body captured with ConfirmationURL and no localhost. Email confirmation and new signups are enabled; anonymous sign-ins/manual linking disabled. Other templates remain uncaptured. sync-supabase-auth-mail-templates.mjs writes immediately, so never invoke it as inspection. |
 | Edge platform values | SUPABASE_URL and platform-provided server/public credentials from the production project | Do not export, print or copy staging values. Environment secret presence is not proven by source code. |
 | Public mail routing | BREVO_API_KEY, CUEBOOKER_FROM_EMAIL, CUEBOOKER_FROM_NAME, CUEBOOKER_REPLY_DOMAIN, CUEBOOKER_APP_ORIGIN, CUEBOOKER_INBOUND_WEBHOOK_SECRET, BREVO_TRANSACTIONAL_WEBHOOK_SECRET and rate limiter secret if separately configured | The seven Brevo/routing names are present in Edge Secrets; values and actual provider routing remain unverified. Preserve originals through private operator controls. |
-| Gmail | Separate production OAuth client, GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_TOKEN_ENCRYPTION_KEY; callback ends /functions/v1/connected-mailbox on qlocooqfdzehogbwcbhr | Gmail secret names are absent from production. Google configuration remains unverified. Existing staged acceptance does not prove production OAuth. Never rotate an encryption secret while retained credentials depend on it. |
-| Gmail push | Dedicated production topic/subscription/OIDC identity and exact endpoint/audience | Offline plan only, no gcloud call or remote change. See names below. |
-| Worker gates | MAILBOX_WORKER_SECRET; production return URL; CUEBOOKER_MAILBOX_TRANSPORT=gmail; explicit mailbox/background/attachment flags | Configure privately only after deployment approval. Keep background and both cron jobs off through initial validation. |
-| AI | GROQ_API_KEY and optional configured capture/transcription models | GROQ_API_KEY is absent from production. Provider quota remains unverified; do not use paid calls as a readiness probe. |
+| Gmail | Separate production OAuth client, GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_TOKEN_ENCRYPTION_KEY; callback ends /functions/v1/connected-mailbox on qlocooqfdzehogbwcbhr | Owner created the production OAuth client and private secrets. All three Gmail secret names are dashboard-verified; their values and actual OAuth client settings/consent remain unverified. Existing staged acceptance does not prove production OAuth. Never rotate an encryption secret while retained credentials depend on it. |
+| Gmail push | Dedicated production topic/subscription/OIDC identity and exact endpoint/audience | Owner Cloud Shell output confirms production resources, exact endpoint/audience/OIDC identity and scoped IAM bindings. No production delivery test yet. See inventory evidence. |
+| Worker gates | MAILBOX_WORKER_SECRET; production return URL; CUEBOOKER_MAILBOX_TRANSPORT=gmail; explicit mailbox/background/attachment flags | Owner configured private worker secret and transport/return URL; names verified only. All mailbox/background/attachment flags were instructed false and owner reported saved. Keep background and both new cron jobs off through initial validation. |
+| AI | GROQ_API_KEY and optional configured capture/transcription models | Owner configured GROQ_API_KEY; name verified, value never read. Provider quota remains unverified; do not use paid calls as a readiness probe. |
 | Beta notices | CUEBOOKER_BETA_ADMIN_EMAIL, CUEBOOKER_BETA_NOTIFICATIONS_ENABLED and sender configuration | Keep notifications disabled until recipient/provider checks. Do not issue invitations or send messages as part of preparation. |
 | Legacy Nylas | NYLAS_API_KEY, NYLAS_CLIENT_ID, NYLAS_WEBHOOK_SECRET, optional NYLAS_API_URI | Conditional only. Do not require or activate Nylas for the Gmail-only cohort. |
 | Vault | cuebooker_mailbox_worker_url, cuebooker_gmail_history_worker_url, cuebooker_mailbox_worker_secret | All three absent in production. URLs must target production; worker secret must agree with Edge configuration. Only names were inspected. |
@@ -83,11 +83,13 @@ before launch and protect any objects created since then. DB dumps omit object b
 The dashboard initially showed sign-in, then an authenticated GitHub session became
 available. Read-only rendered controls verified URLs, SMTP metadata, the recovery
 subject/body and Edge secret names. No credentials were entered/read by the agent,
-no secret values were inspected and no dashboard setting changed. All production
-Gmail/worker/AI secret names are absent. Google IAM/OAuth, Brevo external routing, other
-Auth templates and secret values remain unverified.
+no secret values were inspected. Subsequently the owner manually added production Gmail,
+worker, Groq, gate and Pub/Sub settings; the agent verified names only. The owner also
+created Google Pub/Sub resources and supplied matching final metadata/IAM output.
+OAuth client settings/consent, Brevo external routing, other Auth templates and secret
+values remain unverified. No application deployment/main merge or hosted SQL apply occurred.
 
-Offline Gmail plan, already checked locally without remote calls:
+Production resource names, now confirmed by owner Cloud Shell output:
 
 ```text
 Google project: cuebooker
