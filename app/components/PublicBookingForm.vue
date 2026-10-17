@@ -13,6 +13,7 @@ const props = withDefaults(defineProps<{
   reference?: string
   error?: string
   preview?: boolean
+  collapsePreviewDetails?: boolean
   compact?: boolean
 }>(), {
   locale: 'es',
@@ -22,6 +23,7 @@ const props = withDefaults(defineProps<{
   reference: '',
   error: '',
   preview: false,
+  collapsePreviewDetails: false,
   compact: false
 })
 
@@ -285,7 +287,7 @@ function submit() {
           v-model="form.initialMessage"
           data-field="initialMessage"
           name="message"
-          rows="5"
+          :rows="collapsePreviewDetails ? 3 : 5"
           maxlength="10000"
           :placeholder="copy.messagePlaceholder"
           :aria-invalid="Boolean(fieldErrors.initialMessage)"
@@ -296,7 +298,7 @@ function submit() {
         <small v-if="fieldErrors.initialMessage" id="booking-message-error" class="public-booking-form__field-error">{{ fieldErrors.initialMessage }}</small>
       </label>
 
-      <details ref="detailsRoot" class="public-booking-form__details" :open="preview ? true : undefined">
+      <details ref="detailsRoot" class="public-booking-form__details" :open="preview && !collapsePreviewDetails ? true : undefined">
         <summary>{{ copy.details }}</summary>
         <div class="public-booking-form__details-grid">
           <label><span>{{ copy.organization }}</span><input v-model="form.organizationName" maxlength="180"></label>

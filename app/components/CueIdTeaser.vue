@@ -1,20 +1,26 @@
 <script setup lang="ts">
-import { DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG } from '../domain/cueIdStylizedCreator'
-
-const previewAvatarConfig = {
-  ...DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG,
-  piercings: [...DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG.piercings]
-}
+import { DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG, type CueIdStylizedBodyId } from '../domain/cueIdStylizedCreator'
 
 const props = withDefaults(defineProps<{
   artistName?: string
   compact?: boolean
   previewHref?: string
+  body?: CueIdStylizedBodyId
+  bodySelectable?: boolean
 }>(), {
   artistName: '',
   compact: false,
-  previewHref: '/cue-id'
+  previewHref: '/cue-id',
+  body: 'male',
+  bodySelectable: false
 })
+
+const emit = defineEmits<{ 'update:body': [body: CueIdStylizedBodyId] }>()
+const previewAvatarConfig = computed(() => ({
+  ...DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG,
+  body: props.body,
+  piercings: [...DEFAULT_CUE_ID_STYLIZED_CREATOR_CONFIG.piercings]
+}))
 
 const preferences = useCuePreferences()
 
@@ -43,6 +49,11 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
       <p>{{ copy.eyebrow }}</p>
       <h2>{{ copy.title }}</h2>
       <span>{{ copy.body }}</span>
+      <div v-if="bodySelectable" class="cue-id-teaser__body-choice" role="group" aria-label="Avatar">
+        <button v-for="option in (['male', 'female'] as const)" :key="option" type="button" :class="{ active: body === option }" :aria-pressed="body === option" @click="emit('update:body', option)">
+          {{ preferences.locale.value === 'es' ? (option === 'male' ? 'Hombre' : 'Mujer') : (option === 'male' ? 'Male' : 'Female') }}
+        </button>
+      </div>
       <NuxtLink v-if="previewHref" :to="previewHref" target="_blank" rel="noopener noreferrer">
         {{ copy.action }} ↗
       </NuxtLink>
@@ -118,6 +129,10 @@ const copy = computed(() => preferences.locale.value === 'es' ? {
   border-bottom: 1px solid #ceff54;
   padding-bottom: 5px;
 }
+.cue-id-teaser__body-choice { display:flex; gap:4px; width:fit-content; padding:4px; border:1px solid #45483f; border-radius:999px; }
+.cue-id-teaser__body-choice button { min-height:44px; min-width:86px; padding:10px 16px; border:0; border-radius:999px; background:transparent; color:#f4f2ed; font-weight:800; cursor:pointer; }
+.cue-id-teaser__body-choice button.active { background:#ceff54; color:#101010; }
+.cue-id-teaser__body-choice button:focus-visible { outline:2px solid #ceff54; outline-offset:2px; }
 .cue-id-teaser__visual {
   position: relative;
   min-height: 430px;

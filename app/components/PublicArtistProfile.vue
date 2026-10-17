@@ -13,6 +13,9 @@ const props = withDefaults(defineProps<{
   bookingReference?: string
   bookingError?: string
   preview?: boolean
+  agencyManaged?: boolean
+  agencyHref?: string
+  agencyName?: string
 }>(), {
   locale: 'es',
   bookingFocused: false,
@@ -21,20 +24,25 @@ const props = withDefaults(defineProps<{
   bookingConfirmationSent: null,
   bookingReference: '',
   bookingError: '',
-  preview: false
+  preview: false,
+  agencyManaged: false,
+  agencyHref: '/',
+  agencyName: ''
 })
 
 const analytics = useAnalytics()
 
 const emit = defineEmits<{
   submitBooking: [payload: BookingFormSubmission]
+  agencyBack: []
+  agencyContact: [artistSlug: string]
 }>()
 
-const requestOpen = ref(props.bookingFocused)
+const requestOpen = ref(props.bookingFocused && !props.agencyManaged)
 const bookingModal = ref<HTMLElement | null>(null)
 
 watch(() => props.bookingFocused, value => {
-  if (value) requestOpen.value = true
+  if (value && !props.agencyManaged) requestOpen.value = true
 })
 
 const copy = computed(() => props.locale === 'es' ? {
@@ -45,7 +53,10 @@ const copy = computed(() => props.locale === 'es' ? {
   links: 'Escuchar / seguir',
   based: 'Base',
   years: 'Años en activo',
-  preview: 'Vista previa del perfil público'
+  preview: 'Vista previa del perfil público',
+  backAgency: 'Volver a la agencia',
+  contactAgency: 'Consultar con la agencia',
+  agencyBooking: 'Booking gestionado por la agencia.'
 } : {
   booking: 'Request booking',
   bookingClosed: 'Booking currently unavailable',
@@ -54,7 +65,10 @@ const copy = computed(() => props.locale === 'es' ? {
   links: 'Listen / follow',
   based: 'Based in',
   years: 'Years active',
-  preview: 'Public profile preview'
+  preview: 'Public profile preview',
+  backAgency: 'Back to agency',
+  contactAgency: 'Contact the agency',
+  agencyBooking: 'Booking managed by the agency.'
 })
 
 const genres = computed(() => [...props.profile.primaryGenres, ...props.profile.secondaryGenres].filter(Boolean).slice(0, 7))
@@ -123,7 +137,9 @@ onBeforeUnmount(() => {
   <main class="public-artist-profile">
     <header class="public-artist-profile__topbar">
       <NuxtLink to="/" aria-label="Cuebooker"><CueBrand /></NuxtLink>
-      <span v-if="preview">{{ copy.preview }}</span>
+      <button v-if="preview && agencyManaged" type="button" class="public-artist-profile__agency-return" @click="emit('agencyBack')">← {{ copy.backAgency }} · {{ agencyName }}</button>
+      <NuxtLink v-else-if="agencyManaged" class="public-artist-profile__agency-return" :to="agencyHref">← {{ copy.backAgency }} · {{ agencyName }}</NuxtLink>
+      <span v-else-if="preview">{{ copy.preview }}</span>
     </header>
 
     <section class="public-artist-profile__hero">
@@ -166,7 +182,14 @@ onBeforeUnmount(() => {
           <div v-if="genres.length" class="public-artist-profile__genres">
             <span v-for="(genre, index) in genres.slice(0, 4)" :key="genre"><small>0{{ index + 1 }}</small>{{ genre }}</span>
           </div>
+          <button v-if="agencyManaged && preview" class="public-artist-profile__booking-cta" type="button" @click="emit('agencyContact',profile.slug)">
+            {{ copy.contactAgency }}
+          </button>
+          <NuxtLink v-else-if="agencyManaged" class="public-artist-profile__booking-cta" :to="agencyHref">
+            {{ copy.contactAgency }}
+          </NuxtLink>
           <button
+            v-else
             class="public-artist-profile__booking-cta"
             type="button"
             :disabled="!profile.acceptingRequests && !preview"
@@ -252,12 +275,15 @@ onBeforeUnmount(() => {
       <div class="public-artist-profile__section-index" aria-hidden="true">05</div>
       <div>
         <span>BOOKING</span>
-        <h2>{{ profile.acceptingRequests || preview ? (locale === 'es' ? 'SOLICITAR FECHA.' : 'REQUEST A DATE.') : (locale === 'es' ? 'BOOKING PAUSADO.' : 'BOOKING PAUSED.') }}</h2>
+        <h2>{{ agencyManaged ? (locale === 'es' ? 'PARTE DEL ROSTER.' : 'ON THE ROSTER.') : (profile.acceptingRequests || preview ? (locale === 'es' ? 'SOLICITAR FECHA.' : 'REQUEST A DATE.') : (locale === 'es' ? 'BOOKING PAUSADO.' : 'BOOKING PAUSED.')) }}</h2>
         <p>{{ locale === 'es'
-          ? 'Una fecha empieza con una conversación. Cuéntame qué tienes en mente.'
-          : 'Every date starts with a conversation. Tell me what you have in mind.' }}</p>
+          ? (agencyManaged ? 'Esta ficha forma parte del catálogo de la agencia. Las consultas se envían a su equipo.' : 'Una fecha empieza con una conversación. Cuéntame qué tienes en mente.')
+          : (agencyManaged ? 'This portfolio belongs to the agency catalogue. Enquiries go to its team.' : 'Every date starts with a conversation. Tell me what you have in mind.') }}</p>
       </div>
+      <button v-if="agencyManaged && preview" class="public-artist-profile__agency-contact" type="button" @click="emit('agencyContact',profile.slug)">{{ copy.contactAgency }} <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 18 18 6M6 6h12v12" /></svg></button>
+      <NuxtLink v-else-if="agencyManaged" class="public-artist-profile__agency-contact" :to="agencyHref">{{ copy.contactAgency }} <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 18 18 6M6 6h12v12" /></svg></NuxtLink>
       <button
+        v-else
         type="button"
         :disabled="!profile.acceptingRequests && !preview"
         @click="openBooking"
@@ -266,13 +292,13 @@ onBeforeUnmount(() => {
       </button>
     </section>
 
-    <section v-if="preview" id="artist-booking-preview" class="public-artist-profile__form-preview" :aria-label="locale === 'es' ? 'Vista previa del formulario de booking' : 'Booking form preview'">
+    <section v-if="preview && !agencyManaged" id="artist-booking-preview" class="public-artist-profile__form-preview" :aria-label="locale === 'es' ? 'Vista previa del formulario de booking' : 'Booking form preview'">
       <PublicBookingForm :artist-name="profile.stageName" :locale="locale" preview />
     </section>
 
     <Teleport to="body">
       <div
-        v-if="requestOpen"
+        v-if="requestOpen && !agencyManaged"
         class="public-artist-profile__booking-backdrop"
         role="presentation"
         @click.self="closeBooking"
@@ -290,6 +316,7 @@ onBeforeUnmount(() => {
             <div>
               <span>BOOKING REQUEST</span>
               <strong>{{ profile.stageName }}</strong>
+              <small v-if="profile.bookingManagedBy">{{ locale === 'es' ? 'Gestionado por' : 'Managed by' }} {{ profile.bookingManagedBy }}</small>
             </div>
             <button
               type="button"
@@ -320,6 +347,8 @@ onBeforeUnmount(() => {
 <style scoped>
 :global(body) { margin: 0; background: var(--cue-bg, #080808); }
 .public-artist-profile { min-height: 100vh; background: var(--cue-bg, #080808); color: var(--cue-text, #f2f0eb); font-family: Arial, Helvetica, sans-serif; }
+.public-artist-profile__agency-return { color:var(--cue-accent,#e8ff2f); font:700 10px/1.3 monospace; text-align:right; text-decoration:none; text-transform:uppercase; letter-spacing:.06em; border:0; padding:8px 0; background:transparent; cursor:pointer; }
+.public-artist-profile__agency-contact { box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; gap:12px; min-height:64px; padding:0 24px; border:1px solid var(--cue-accent,#e8ff2f); border-radius:var(--cue-radius-control,12px); color:var(--cue-accent-ink,#111); background:var(--cue-accent,#e8ff2f); font:800 13px/1 Arial,sans-serif; text-align:center; text-decoration:none; text-transform:uppercase; cursor:pointer; }
 .public-artist-profile__topbar { position: relative; z-index: 4; display: flex; justify-content: space-between; align-items: center; min-height: 64px; padding: 0 clamp(18px, 4vw, 48px); border-bottom: 1px solid var(--cue-border, #2c2c2c); }
 .public-artist-profile__topbar a { color: inherit; text-decoration: none; }
 .public-artist-profile__topbar > span { color: var(--cue-muted, #999); font: 700 9px/1.2 monospace; letter-spacing: .1em; text-transform: uppercase; }
@@ -351,7 +380,7 @@ onBeforeUnmount(() => {
 .public-artist-profile__hero-bottom { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-top:clamp(24px,4vw,42px); }
 .public-artist-profile__genres { display:flex; flex-wrap:wrap; gap:7px; margin:0; }
 .public-artist-profile__genres span { padding: 7px 9px; border: 1px solid var(--cue-border, #333); color: var(--cue-muted, #aaa); font: 700 9px/1 monospace; text-transform: uppercase; }
-.public-artist-profile__booking-cta { display: inline-flex; align-items: center; align-self: flex-start; gap: 10px; min-height: 54px; margin-top: 34px; padding: 0 20px; border: 0; background: var(--cue-accent, #e8ff2f); color: #080808; cursor: pointer; font-weight: 900; }
+.public-artist-profile__booking-cta { display: inline-flex; align-items: center; align-self: flex-start; gap: 10px; min-height: 54px; margin-top: 34px; padding: 0 20px; border: 0; border-radius: 14px; background: var(--cue-accent, #e8ff2f); color: var(--cue-accent-ink, #080808); cursor: pointer; font-weight: 900; }
 .public-artist-profile__hero::after { content:""; position:absolute; z-index:2; left:0; right:0; top:0; height:3px; background:linear-gradient(90deg,var(--cue-accent,#e8ff2f) 0 17%,transparent 17% 82%,#ef3a31 82% 100%); pointer-events:none; }
 .public-artist-profile__cover-image { filter:saturate(.83) contrast(1.16) brightness(.78); }
 .public-artist-profile__shade { background:linear-gradient(90deg,rgba(3,3,3,.82) 0%,rgba(3,3,3,.25) 56%,rgba(3,3,3,.06) 100%),linear-gradient(0deg,rgba(3,3,3,.98) 0%,rgba(3,3,3,.1) 65%,rgba(3,3,3,.3) 100%); }
@@ -392,7 +421,8 @@ onBeforeUnmount(() => {
 .public-artist-profile__booking-band { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:end; gap:30px; padding:clamp(46px,7vw,86px) clamp(18px,6vw,90px); border-bottom:1px solid var(--cue-border,#2c2c2c); background:linear-gradient(110deg,color-mix(in srgb,var(--cue-accent,#e8ff2f) 8%,#080808),#080808 58%); }
 .public-artist-profile__booking-band h2 { max-width:900px; margin:10px 0 7px; font-size:clamp(3rem,7vw,7rem); line-height:.82; letter-spacing:-.055em; text-transform:uppercase; }
 .public-artist-profile__booking-band p { max-width:620px; margin:0; color:var(--cue-muted,#888); font-size:12px; line-height:1.5; }
-.public-artist-profile__booking-band button { min-height:52px; padding:0 18px; border:1px solid var(--cue-accent,#e8ff2f); border-radius:8px; background:var(--cue-accent,#e8ff2f); color:#080808; cursor:pointer; font-weight:900; }
+.public-artist-profile__booking-band .public-artist-profile__booking-agent { margin-top:14px; color:var(--cue-accent,#e8ff2f); font-weight:700; }
+.public-artist-profile__booking-band button { min-height:52px; padding:0 18px; border:1px solid var(--cue-accent,#e8ff2f); border-radius:8px; background:var(--cue-accent,#e8ff2f); color:var(--cue-accent-ink,#080808); cursor:pointer; font-weight:900; }
 .public-artist-profile__booking-band button:disabled { border-color:var(--cue-border,#333); background:transparent; color:var(--cue-muted,#777); cursor:default; }
 .public-artist-profile__form-preview { scroll-margin-top:24px; border-bottom:1px solid var(--cue-border,#2c2c2c); }
 .public-artist-profile__form-preview :deep(.public-booking-form) { padding-inline:clamp(18px,6vw,90px); }
@@ -418,7 +448,7 @@ onBeforeUnmount(() => {
   .public-artist-profile__links { grid-template-columns:auto 1fr; gap:18px; }
   .public-artist-profile__links nav { grid-column:1 / -1; }
   .public-artist-profile__booking-band { grid-template-columns:auto 1fr; align-items:start; gap:18px; }
-  .public-artist-profile__booking-band>button { grid-column:2; justify-self:start; }
+  .public-artist-profile__booking-band>button, .public-artist-profile__booking-band>.public-artist-profile__agency-contact { grid-column:2; justify-self:start; }
 
   .public-artist-profile__hero { min-height:78svh; }
   .public-artist-profile__identity {
@@ -558,7 +588,7 @@ onBeforeUnmount(() => {
 .public-artist-profile__booking-band::before { content:""; position:absolute; top:0; left:clamp(24px,5vw,88px); right:clamp(24px,5vw,88px); height:1px; background:linear-gradient(90deg,#ef3935,var(--cue-accent,#e8ff2f) 30%,transparent); }
 .public-artist-profile__booking-band h2 { max-width:1000px; margin:18px 0 26px; font-size:clamp(4.5rem,9vw,11rem); line-height:.82; letter-spacing:-.075em; }
 .public-artist-profile__booking-band p { max-width:530px; color:#c7c7c2; font-size:clamp(15px,1.25vw,19px); }
-.public-artist-profile__booking-band>button { min-height:64px; padding:0 24px; border-radius:0; justify-self:end; font-size:13px; text-transform:uppercase; }
+.public-artist-profile__booking-band>button, .public-artist-profile__booking-band>.public-artist-profile__agency-contact { min-height:64px; padding:0 24px; border-radius:var(--cue-radius-control,12px); justify-self:end; font-size:13px; text-transform:uppercase; }
 .public-artist-profile__form-preview { background:#101010; }
 .public-artist-profile__form-preview :deep(.public-booking-form) { max-width:1440px; margin-inline:auto; border:0; padding-block:clamp(60px,8vw,120px); }
 
@@ -573,7 +603,7 @@ onBeforeUnmount(() => {
   .public-artist-profile__links-head,.public-artist-profile__links nav { grid-column:2; }
   .public-artist-profile__links-head { gap:10px; }
   .public-artist-profile__booking-band { grid-template-columns:70px minmax(0,1fr); min-height:440px; }
-  .public-artist-profile__booking-band>button { grid-column:2; justify-self:start; }
+  .public-artist-profile__booking-band>button, .public-artist-profile__booking-band>.public-artist-profile__agency-contact { grid-column:2; justify-self:start; }
 }
 @media(max-width:600px) {
   .public-artist-profile__topbar { min-height:54px; }
@@ -608,9 +638,15 @@ onBeforeUnmount(() => {
   .public-artist-profile__links a strong { font-size:clamp(1.7rem,8vw,2.5rem); }
   .public-artist-profile__booking-band { grid-template-columns:minmax(0,1fr); gap:24px; min-height:0; padding:100px 18px 110px; }
   .public-artist-profile__booking-band h2 { font-size:clamp(4rem,16vw,7rem); overflow-wrap:anywhere; }
-  .public-artist-profile__booking-band>button { grid-column:1; width:100%; justify-self:stretch; }
+  .public-artist-profile__booking-band>button, .public-artist-profile__booking-band>.public-artist-profile__agency-contact { grid-column:1; width:100%; justify-self:stretch; }
 }
 @media(prefers-reduced-motion:reduce) {
   .public-artist-profile__booking-cta,.public-artist-profile__links a { transition:none; }
 }
+</style>
+
+<style scoped>
+/* Editorial sections keep dark backgrounds in both themes; local ink stays readable. */
+.public-artist-profile__hero,.public-artist-profile__story,.public-artist-profile__sound,.public-artist-profile__cue,.public-artist-profile__passport,.public-artist-profile__links,.public-artist-profile__booking-band { --cue-text:#f2f0eb; --cue-muted:#b3b3ac; --cue-border:#34342f; color:var(--cue-text); }
+.public-artist-profile__agency-contact svg { width:20px; height:20px; flex:none; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 </style>

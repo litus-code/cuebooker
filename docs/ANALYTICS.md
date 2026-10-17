@@ -14,7 +14,7 @@ The application owns event names and payloads. GTM must not invent product seman
 
 CueBooker currently uses a basic consent model:
 
-- analytics is disabled when `NUXT_PUBLIC_GTM_ID` is empty
+- external GTM delivery is disabled when `NUXT_PUBLIC_GTM_ID` is empty; the new consented first-party path is described below
 - Google Tag Manager is not loaded before the visitor explicitly accepts analytics
 - consent is stored locally as `cuebooker:analytics-consent:v2`
 - rejecting analytics keeps GTM unloaded
@@ -78,3 +78,28 @@ When the GTM account is created:
 Once authentication and referral capture are integrated, wire the relevant domain actions to the event contract. Product events should be emitted after the corresponding action succeeds, not merely when a button is clicked, unless the event explicitly represents an attempt such as `signup_started`.
 
 PostHog or another product analytics tool can be evaluated later if funnel/session analysis needs more depth. It should reuse the same application-owned event vocabulary rather than creating a second competing taxonomy.
+
+## Campaign funnel review (16 October 2026, PR114)
+
+The current candidate adds a consented first-party destination alongside GTM. A missing
+GTM ID disables external delivery only; it does not disable the optional first-party
+collector when the public Supabase connection is configured. Both paths require consent.
+Internal feature telemetry now also checks that consent before making a request.
+
+`page_view`, `signup_click` and `signup_started` reuse the application calls. Only the
+public acquisition pages enter this collector; paths, UTM/ref/source and placement are
+allowlisted codes. Raw URLs, referrers, arbitrary titles, slugs and form fields are not
+persisted or added by this change. Router readiness and navigation share deduplication.
+
+The pending `campaign-analytics` Edge Function bounds requests and reuses the existing
+HMAC-address rate limiter (short-lived abuse counters, no raw IP in campaign data). Its
+write/withdraw RPCs are service-role only. Anonymous visitors cannot write verified
+account or workspace milestones. A random browser token hash passed in signup metadata
+links a new server-created account to a consented browser. An auth trigger observes the
+actual creation, including cases pending email confirmation; an obfuscated response for
+an existing account does not become another persisted registration.
+
+The collector, schema and server observers are **prepared, not deployed**. The new
+Campaigns tab retains the existing internal-admin gate and reports an unavailable backend
+explicitly; it does not fall back to demonstration data or historical attribution.
+See [the exact audit, deployment gate and evidence](reviews/campaign-funnel/README.md).

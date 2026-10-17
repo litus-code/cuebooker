@@ -1,0 +1,295 @@
+{
+  "observed_at": "2026-10-17",
+  "production": {
+    "buckets": [
+      {
+        "id": "artist-media",
+        "public": false,
+        "object_count": 0,
+        "file_size_limit": 8388608,
+        "allowed_mime_types": [
+          "image/jpeg",
+          "image/png",
+          "image/webp"
+        ]
+      },
+      {
+        "id": "booking-email-attachments",
+        "public": false,
+        "object_count": 0,
+        "file_size_limit": 5242880,
+        "allowed_mime_types": [
+          "application/pdf",
+          "image/jpeg",
+          "image/png"
+        ]
+      }
+    ],
+    "schedules": [
+      {
+        "name": "cuebooker-expire-holds",
+        "active": true,
+        "schedule": "*/5 * * * *",
+        "targets_staging": false,
+        "targets_production": false
+      },
+      {
+        "name": "cuebooker-prune-public-rate-limits",
+        "active": true,
+        "schedule": "17 */6 * * *",
+        "targets_staging": false,
+        "targets_production": false
+      },
+      {
+        "name": "cuebooker-mailbox-incoming",
+        "active": false,
+        "schedule": "* * * * *"
+      },
+      {
+        "name": "cuebooker-gmail-history",
+        "active": false,
+        "schedule": "* * * * *"
+      }
+    ],
+    "migration_count": 120,
+    "worker_vault_names": [
+      "cuebooker_gmail_history_worker_url",
+      "cuebooker_mailbox_worker_secret",
+      "cuebooker_mailbox_worker_url"
+    ],
+    "worker_vault_verification": {
+      "observed_at": "2026-10-17T09:31:19+02:00",
+      "evidence": "Rendered Vault exact-name presence only, all three names found once.",
+      "values_read": false,
+      "worker_secret_agreement": "Owner reports new random worker value saved in both Edge and Vault after original value was not retained; equality not independently read or tested.",
+      "processing_activated": false
+    }
+  },
+  "staging": {
+    "buckets": [
+      {
+        "id": "artist-media",
+        "public": false,
+        "object_count": 6,
+        "file_size_limit": 8388608,
+        "allowed_mime_types": [
+          "image/jpeg",
+          "image/png",
+          "image/webp"
+        ]
+      },
+      {
+        "id": "booking-email-attachments",
+        "public": false,
+        "object_count": 7,
+        "file_size_limit": 5242880,
+        "allowed_mime_types": [
+          "application/pdf",
+          "image/jpeg",
+          "image/png"
+        ]
+      }
+    ],
+    "schedules": [
+      {
+        "name": "cuebooker-notification-email-retry",
+        "active": true,
+        "schedule": "*/5 * * * *",
+        "targets_staging": true,
+        "targets_production": false
+      },
+      {
+        "name": "cuebooker-expire-holds",
+        "active": true,
+        "schedule": "*/5 * * * *",
+        "targets_staging": false,
+        "targets_production": false
+      },
+      {
+        "name": "cuebooker-prune-public-rate-limits",
+        "active": true,
+        "schedule": "17 */6 * * *",
+        "targets_staging": false,
+        "targets_production": false
+      },
+      {
+        "name": "cuebooker-mailbox-incoming",
+        "active": true,
+        "schedule": "* * * * *",
+        "targets_staging": false,
+        "targets_production": false
+      },
+      {
+        "name": "cuebooker-prune-campaign-analytics",
+        "active": true,
+        "schedule": "17 3 * * *",
+        "targets_staging": false,
+        "targets_production": false
+      },
+      {
+        "name": "cuebooker-gmail-history",
+        "active": true,
+        "schedule": "* * * * *",
+        "targets_staging": false,
+        "targets_production": false
+      }
+    ],
+    "migration_count": 120,
+    "worker_vault_names": [
+      "cuebooker_gmail_history_worker_url",
+      "cuebooker_mailbox_worker_secret",
+      "cuebooker_mailbox_worker_url"
+    ]
+  },
+  "limitations": [
+    "Only bucket metadata and aggregate object counts read; no object paths/bytes or user rows.",
+    "Vault names only; no secret values or cron command bodies read.",
+    "Production secret names verified in rendered dashboard, never values. Google Pub/Sub metadata/IAM supported by owner-pasted command output; OAuth client details and Brevo routing remain unverified. SQL/Storage/Vault observations predate manual provider configuration and require refresh before deployment."
+  ],
+  "production_dashboard": {
+    "observed_at": "2026-10-17",
+    "project_ref": "qlocooqfdzehogbwcbhr",
+    "site_url": "https://cuebooker.com",
+    "redirect_allow_list": [
+      "https://cuebooker.com/**"
+    ],
+    "covers_reset_password_and_agency_invite": true,
+    "custom_smtp_enabled": true,
+    "smtp_host": "smtp-relay.brevo.com",
+    "smtp_port": 587,
+    "smtp_sender_name": "CueBooker",
+    "smtp_sender_address": "present, omitted",
+    "smtp_credentials": "not read; stored password hidden",
+    "recovery_subject": "Restablece tu contrase\u00f1a de Cuebooker",
+    "recovery_uses_confirmation_url": true,
+    "recovery_contains_localhost": false,
+    "recovery_template_path": "docs/reviews/release-0.0.13/production-rollback/auth/recovery.html",
+    "recovery_template_sha256": "c19b210c9dc095527239438240e568a284d84ddd743ee254b129ba472e9fc6ec",
+    "custom_edge_secret_names_present": [
+      "BREVO_API_KEY",
+      "CUEBOOKER_FROM_EMAIL",
+      "CUEBOOKER_FROM_NAME",
+      "CUEBOOKER_REPLY_DOMAIN",
+      "CUEBOOKER_APP_ORIGIN",
+      "CUEBOOKER_INBOUND_WEBHOOK_SECRET",
+      "BREVO_TRANSACTIONAL_WEBHOOK_SECRET",
+      "GMAIL_CLIENT_ID",
+      "GMAIL_CLIENT_SECRET",
+      "GMAIL_TOKEN_ENCRYPTION_KEY",
+      "MAILBOX_WORKER_SECRET",
+      "GROQ_API_KEY",
+      "GMAIL_PUBSUB_TOPIC",
+      "GMAIL_PUBSUB_SUBSCRIPTION",
+      "GMAIL_PUSH_SERVICE_ACCOUNT",
+      "CUEBOOKER_MAILBOX_TRANSPORT",
+      "CUEBOOKER_MAILBOX_RETURN_URL",
+      "CUEBOOKER_MAILBOX_ENABLED",
+      "CUEBOOKER_MAILBOX_BACKGROUND_ENABLED",
+      "CUEBOOKER_CONNECTED_ATTACHMENTS_ENABLED",
+      "CUEBOOKER_EMAIL_ATTACHMENTS_ENABLED",
+      "CUEBOOKER_BETA_NOTIFICATIONS_ENABLED"
+    ],
+    "custom_edge_secret_names_absent": [
+      "CUEBOOKER_BETA_ADMIN_EMAIL"
+    ],
+    "secret_value_verification": false,
+    "auth_signup_policy": {
+      "allow_new_users": true,
+      "allow_manual_linking": false,
+      "allow_anonymous_sign_ins": false,
+      "confirm_email": true
+    },
+    "operator_configuration_checkpoint": {
+      "observed_at": "2026-10-17T09:25:19+02:00",
+      "changes_by": "owner in own browser/Cloud Shell",
+      "agent_verification": "Rendered Supabase secret names only, values not read. Google evidence is owner-pasted command output, not independently retrieved.",
+      "oauth_client_created": "Owner reports separate production Web OAuth client created; callback/scopes/client details not independently verified.",
+      "instructed_gate_values": {
+        "CUEBOOKER_MAILBOX_ENABLED": "false",
+        "CUEBOOKER_MAILBOX_BACKGROUND_ENABLED": "false",
+        "CUEBOOKER_CONNECTED_ATTACHMENTS_ENABLED": "false",
+        "CUEBOOKER_EMAIL_ATTACHMENTS_ENABLED": "false",
+        "CUEBOOKER_BETA_NOTIFICATIONS_ENABLED": "false"
+      },
+      "gate_values_read": false
+    }
+  },
+  "production_google_push": {
+    "evidence": "Owner-pasted Cloud Shell creation/IAM output at 2026-10-17T09:25:19+02:00",
+    "project": "cuebooker",
+    "topic": "projects/cuebooker/topics/cuebooker-gmail-prod",
+    "subscription": "projects/cuebooker/subscriptions/cuebooker-gmail-prod-push",
+    "push_endpoint": "https://qlocooqfdzehogbwcbhr.supabase.co/functions/v1/gmail-mailbox-events",
+    "oidc_audience": "https://qlocooqfdzehogbwcbhr.supabase.co/functions/v1/gmail-mailbox-events",
+    "oidc_service_account": "cuebooker-gmail-push-prod@cuebooker.iam.gserviceaccount.com",
+    "topic_publisher": "gmail-api-push@system.gserviceaccount.com",
+    "oidc_token_creator": "service-573163160991@gcp-sa-pubsub.iam.gserviceaccount.com",
+    "wrapped_json": true,
+    "provider_delivery_tested": false,
+    "oauth_consent_tested": false
+  },
+  "frontend_rollback_review": {
+    "status": "Current production deployment identified; prior production rollback menu verified in owner screenshots. Exact hosted git SHA still unverified.",
+    "observed_at": "2026-10-17T09:40:29+02:00",
+    "evidence": "Owner screenshots at 09:36:18,09:37:11,09:38:29,09:40:15; no agent Cloudflare authentication or mutation.",
+    "project": "cuebooker-production",
+    "current_deployment_id": "8ec8a35f-1f8c-4e49-97d2-e91f9f4a631e",
+    "current_deployment_url": "https://8ec8a35f.cuebooker-production.pages.dev",
+    "production_alias": "cuebooker.com",
+    "displayed_deployment_date": "11:42AM September 29, 2026 (dashboard timezone unspecified)",
+    "status_displayed": "success",
+    "branch_displayed": "main",
+    "displayed_source_title": "feat: guide profile activation a...",
+    "candidate_git_commit_by_title_only": "2f434db69761f09b932bf93b4de126a2677cfc9b",
+    "hosted_git_sha_verified": false,
+    "previous_deployment_short_id": "ecef9cf1",
+    "previous_deployment_url": "https://ecef9cf1.cuebooker-production.pages.dev",
+    "previous_menu_option": "Rollback to this deployment",
+    "current_menu": "Delete deployment disabled; no self-rollback option",
+    "rollback_executed": false,
+    "limitation": "The successful current deployment should be retained as pre-release frontend rollback target after promotion. Menu availability on an earlier successful production deployment proves the UI capability only; no actual recovery test or database rollback implied."
+  },
+  "predeployment_read_only_refresh": {
+    "observed_at": "2026-10-17 Europe/Madrid after 09:41",
+    "migration_count": 81,
+    "artist_media_object_count": 0,
+    "vault_required_names_count": 3,
+    "cron_names": [
+      "cuebooker-expire-holds",
+      "cuebooker-prune-public-rate-limits"
+    ],
+    "existing_crons_active": true,
+    "edge_slugs": [
+      "smart-capture",
+      "get-public-artist-profile",
+      "email-provider-preflight"
+    ],
+    "edge_version": 21,
+    "note": "Secret configuration writes advanced function version counters; no source deployment inferred. No new worker cron exists. Only aggregate metadata/names read.",
+    "rehearsal_fingerprints_match": {
+      "input_tables": 6,
+      "preserved_functions": 2,
+      "preserved_triggers": 2,
+      "all_match": true
+    }
+  },
+  "fresh_backup": {
+    "run_id": 39014718244,
+    "status": "completed",
+    "url": "https://github.com/litus-code/cuebooker/actions/runs/39014718244",
+    "workflow_ref": "main",
+    "workflow_sha": "2259f28c152f8663ba825171294bc5a00b62061a",
+    "scope": "Read-only hosted database export, encrypted archive only, existing workflow. No deployment or SQL mutation.",
+    "artifact_verified": true,
+    "conclusion": "success",
+    "completed_at": "2026-10-17T07:47:18Z",
+    "job_id": 117344308339,
+    "artifact_id": 12094427790,
+    "artifact_name": "cuebooker-production-db-39014718244-1",
+    "artifact_digest": "sha256:1aab916fd7c281416e7047ab3153e0c3a67f919b63b84b4837ecc9c53bedff31",
+    "artifact_expires_at": "2026-10-24T07:47:15Z",
+    "encrypted_export_verified_in_job": true,
+    "fresh_restore_performed": false
+  },
+  "current_release_execution": "production-release-execution.json"
+}

@@ -106,9 +106,9 @@ function parseAmount(raw: string) {
 }
 
 function extractMoney(raw: string) {
-  // The numeric capture must end in a digit. This prevents a date fragment such
-  // as "October 10, $1,250" from being interpreted as "$10".
-  const match = raw.match(/(?:€|£|\$|EUR|GBP|USD)\s*([0-9](?:[0-9.,\s]*[0-9])?)|([0-9](?:[0-9.,\s]*[0-9])?)\s*(€|£|\$|EUR|GBP|USD)/i)
+  // Do not merge dates or times into an amount (10/10, 1200 EUR).
+  const amount = '(?:[0-9]{1,3}(?:[.,\\s][0-9]{3})+(?:[.,][0-9]{2})?|[0-9]+(?:[.,][0-9]{2})?)'
+  const match = raw.match(new RegExp(`(?:€|£|\\$|EUR|GBP|USD)\\s*(${amount})|(?<![0-9/:-])(${amount})\\s*(€|£|\\$|EUR|GBP|USD)`, 'i'))
   if (!match) return {}
   const amountRaw = (match[1] || match[2] || '').trim()
   const token = (match[3] || match[0].match(/€|£|\$|EUR|GBP|USD/i)?.[0] || '').toUpperCase()

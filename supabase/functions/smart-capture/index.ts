@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createGroqCaptureProvider, SmartCaptureProviderError } from "../_shared/smartCaptureProvider.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -194,168 +195,6 @@ function normalizeEvidence(node: unknown): unknown {
   return copy;
 }
 
-function outputText(payload: any) {
-  if (typeof payload?.output_text === "string") return payload.output_text;
-  for (const item of payload?.output || []) {
-    for (const content of item?.content || []) {
-      if (content?.type === "output_text" && typeof content?.text === "string") return content.text;
-    }
-  }
-  return "";
-}
-
-async function transcribeAudio(apiKey: string, file: File, locale: "es" | "en") {
-  if (file.size <= 0 || file.size > 20 * 1024 * 1024) throw new Error("invalid_audio_size");
-  const allowed = ["audio/webm", "audio/mp4", "audio/mpeg", "audio/wav", "audio/x-m4a", "audio/ogg", "audio/aac"];
-  if (file.type && !allowed.some(type => file.type.startsWith(type))) throw new Error("unsupported_audio_type");
-
-  const baseType = (file.type || "").split(";")[0].trim() || "audio/webm";
-  const extension = baseType === "audio/mp4" || baseType === "audio/x-m4a" ? "m4a"
-    : baseType === "audio/mpeg" ? "mp3"
-      : baseType === "audio/wav" ? "wav"
-        : baseType === "audio/ogg" ? "ogg"
-          : baseType === "audio/aac" ? "aac"
-            : "webm";
-
-  const bytes = await file.arrayBuffer();
-  const normalizedFile = new File([bytes], `cuebooker-capture.${extension}`, { type: baseType });
-  const configured = Deno.env.get("CUEBOOKER_TRANSCRIPTION_MODEL")?.trim();
-  const models = [...new Set([configured, "gpt-transcribe", "gpt-4o-transcribe"].filter(Boolean))] as string[];
-  let lastStatus = 0;
-
-  for (const model of models) {
-    const form = new FormData();
-    form.set("model", model);
-    form.set("language", locale);
-    form.set(
-      "prompt",
-      locale === "es"
-        ? "Contexto: bookings de DJs, promotores, salas, festivales, fechas, horarios, fees, hospitality, viajes y nombres propios de la escena electrónica."
-        : "Context: DJ bookings, promoters, venues, festivals, dates, schedules, fees, hospitality, travel and electronic-music proper names."
-    );
-    form.set("file", normalizedFile, normalizedFile.name);
-
-    const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}` },
-      body: form
-    });
-    const text = await response.text();
-    lastStatus = response.status;
-
-    if (!response.ok) {
-      console.warn("smart-capture transcription attempt failed", JSON.stringify({
-        model,
-        status: response.status,
-        mime: baseType,
-        bytes: file.size
-      }));
-      continue;
-    }
-
-    let parsed: any;
-    try { parsed = JSON.parse(text); } catch {
-      console.warn("smart-capture transcription invalid response", model);
-      continue;
-    }
-
-    const transcript = String(parsed?.text || "").trim();
-    if (!transcript) continue;
-    if (transcript.length > 20000) throw new Error("transcription_too_long");
-    return transcript;
-  }
-
-  throw new Error(`transcription_provider_${lastStatus || 502}`);
-}
-
-async function extractBooking(apiKey: string, transcript: string, locale: "es" | "en") {
-  const currentDate = new Date().toISOString();
-  const system = `
-You extract booking information for Cuebooker, a professional DJ booking workflow.
-
-Rules:
-- Never invent facts.
-- If a value is not explicitly stated or cannot be safely normalized, return null with confidence "unknown".
-- "high" means explicitly stated and unambiguous.
-- "medium" means strongly implied but worth checking.
-- "low" means plausible but ambiguous; use sparingly.
-- Evidence must be a short exact fragment from the supplied text. Never fabricate evidence.
-- Normalize dates to YYYY-MM-DD only when the date can be resolved.
-- Normalize times to HH:MM only when explicitly stated.
-- Money must be integer minor units: 1500 EUR -> 150000.
-- countryCode uses ISO-3166 alpha-2 only when clear.
-- currency uses ISO-4217.
-- Preserve conditions such as hotel, travel, hospitality, technical requirements or other commercial terms.
-- nextAction is an actual follow-up action, not a summary.
-- missingFields should list useful booking fields that remain unknown, not every possible field.
-- warnings should call out contradictions, ambiguity or risky assumptions.
-- Do not decide that a booking is confirmed, rejected or cancelled.
-- Return content in ${locale === "es" ? "Spanish" : "English"} where natural-language strings are needed.
-- Current UTC timestamp is ${currentDate}.
-`.trim();
-
-  const configuredModel = Deno.env.get("CUEBOOKER_SMART_CAPTURE_MODEL")?.trim();
-  const models = [...new Set([configuredModel, "gpt-5.6-terra", "gpt-5.6-sol", "gpt-5.6-luna"].filter(Boolean))] as string[];
-  let lastStatus = 0;
-
-  for (const model of models) {
-    const body = {
-      model,
-      input: [
-        { role: "system", content: [{ type: "input_text", text: system }] },
-        { role: "user", content: [{ type: "input_text", text: transcript }] }
-      ],
-      text: {
-        format: {
-          type: "json_schema",
-          name: "cuebooker_smart_capture",
-          strict: true,
-          schema: extractionSchema
-        }
-      }
-    };
-
-    const response = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body)
-    });
-    const text = await response.text();
-    lastStatus = response.status;
-
-    if (!response.ok) {
-      console.warn("smart-capture extraction attempt failed", JSON.stringify({
-        model,
-        status: response.status
-      }));
-      continue;
-    }
-
-    let parsedResponse: any;
-    try { parsedResponse = JSON.parse(text); } catch {
-      console.warn("smart-capture extraction invalid response", model);
-      continue;
-    }
-
-    const structuredText = outputText(parsedResponse);
-    if (!structuredText) {
-      console.warn("smart-capture extraction empty response", model);
-      continue;
-    }
-
-    try {
-      return normalizeEvidence(JSON.parse(structuredText));
-    } catch {
-      console.warn("smart-capture extraction invalid json", model);
-    }
-  }
-
-  throw new Error(`extraction_provider_${lastStatus || 502}`);
-}
-
 async function authorize(accessToken: string, workspaceId: string, artistId: string) {
   const supabaseUrl = requiredEnv("SUPABASE_URL");
   const anonKey = requiredEnv("SUPABASE_ANON_KEY");
@@ -396,13 +235,14 @@ Deno.serve(async (request) => {
   const accessToken = authorization.replace(/^Bearer\s+/i, "").trim();
   if (!accessToken) return json({ error: "authentication_required" }, 401);
 
+  let transcript = "";
+  let extractionStarted = false;
   try {
     const contentType = request.headers.get("content-type") || "";
     let mode = "";
     let workspaceId = "";
     let artistId = "";
     let locale: "es" | "en" = "es";
-    let transcript = "";
 
     if (contentType.includes("multipart/form-data")) {
       const form = await request.formData();
@@ -424,11 +264,14 @@ Deno.serve(async (request) => {
         }, 429);
       }
 
-      const apiKey = Deno.env.get("OPENAI_API_KEY")?.trim();
+      const apiKey = Deno.env.get("GROQ_API_KEY")?.trim();
       if (!apiKey) return json({ error: "smart_capture_provider_not_configured" }, 503);
-      transcript = await transcribeAudio(apiKey, audio, locale);
-
-      const structured = await extractBooking(apiKey, transcript, locale);
+      const provider = createGroqCaptureProvider({ apiKey,
+        transcriptionModel: Deno.env.get("CUEBOOKER_GROQ_TRANSCRIPTION_MODEL"),
+        extractionModel: Deno.env.get("CUEBOOKER_GROQ_CAPTURE_MODEL") });
+      transcript = await provider.transcribeAudio(audio, locale);
+      extractionStarted = true;
+      const structured = normalizeEvidence(await provider.extractBooking(transcript, locale, extractionSchema));
       return json({ transcript, ...(structured as Record<string, unknown>) });
     }
 
@@ -457,10 +300,12 @@ Deno.serve(async (request) => {
       }, 429);
     }
 
-    const apiKey = Deno.env.get("OPENAI_API_KEY")?.trim();
+    const apiKey = Deno.env.get("GROQ_API_KEY")?.trim();
     if (!apiKey) return json({ error: "smart_capture_provider_not_configured" }, 503);
 
-    const structured = await extractBooking(apiKey, transcript, locale);
+    const provider = createGroqCaptureProvider({ apiKey, extractionModel: Deno.env.get("CUEBOOKER_GROQ_CAPTURE_MODEL") });
+    extractionStarted = true;
+    const structured = normalizeEvidence(await provider.extractBooking(transcript, locale, extractionSchema));
     return json({ transcript, ...(structured as Record<string, unknown>) });
   } catch (error) {
     const code = error instanceof Error ? error.message : "smart_capture_failed";
@@ -468,12 +313,11 @@ Deno.serve(async (request) => {
     if (code === "invalid_audio_size" || code === "unsupported_audio_type" || code === "transcription_too_long") {
       return json({ error: code }, 400);
     }
-    if (code.startsWith("transcription_provider_")) {
-      return json({ error: "smart_capture_transcription_failed", detail: code }, 502);
+    if (error instanceof SmartCaptureProviderError) {
+      return json({ error: error.status === 429 ? "smart_capture_rate_limited" : `smart_capture_${error.stage}_failed`, stage: error.stage,
+        ...(error.stage === "extraction" && transcript ? { transcript } : {}) }, error.status === 429 ? 429 : 502);
     }
-    if (code.startsWith("extraction_provider_")) {
-      return json({ error: "smart_capture_extraction_failed", detail: code }, 502);
-    }
+    if (extractionStarted && transcript) return json({ error: "smart_capture_extraction_failed", stage: "extraction", transcript }, 502);
     return json({ error: "smart_capture_failed" }, 500);
   }
 });

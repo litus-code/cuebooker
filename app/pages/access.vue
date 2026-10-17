@@ -87,6 +87,7 @@ async function submit() {
       message.value = copy.value.resetConfirmation
       return
     }
+    auth.captureReferral(typeof route.query.ref === 'string' ? route.query.ref : '', route.fullPath)
     analytics.track('signup_started', { surface: 'access' })
     const result = await auth.signUp(email.value, password.value, displayName.value)
     analytics.track('signup_completed', {
@@ -98,7 +99,7 @@ async function submit() {
       message.value = copy.value.confirmation
       return
     }
-    await navigateTo('/onboarding')
+    await navigateTo(auth.accountDestination())
   } catch (error: any) {
     const raw = String(error?.data?.msg || error?.data?.message || error?.message || '').toLowerCase()
     const status = Number(error?.statusCode || error?.status || error?.response?.status || 0)
@@ -186,14 +187,14 @@ useHead(() => ({ title: copy.value.title, htmlAttrs: { lang: locale.value } }))
 h1 { margin:0; font-size:clamp(2.3rem,7vw,4.8rem); line-height:.92; text-transform:uppercase; }
 .access-copy { color:var(--cue-muted); line-height:1.55; }
 .access-tabs { display:grid; grid-template-columns:1fr 1fr; margin:28px 0 20px; border:1px solid var(--cue-border); background:var(--cue-bg); }
-.access-tabs button { padding:12px; border:0; background:transparent; color:var(--cue-muted); cursor:pointer; }
+.access-tabs button { padding:12px; border:0; border-radius:999px; background:transparent; color:var(--cue-muted); cursor:pointer; }
 .access-tabs button.active { background:var(--cue-toggle); color:var(--cue-toggle-ink); font-weight:800; }
 .access-form { display:grid; gap:16px; }
 label { display:grid; gap:7px; }
 label span { color:var(--cue-muted); font:700 11px/1.2 monospace; text-transform:uppercase; letter-spacing:.1em; }
 input { min-height:48px; padding:0 14px; border:1px solid var(--cue-border); background:var(--cue-bg); color:var(--cue-text); font:inherit; }
 .access-password{position:relative;display:grid}.access-password input{width:100%;box-sizing:border-box;padding-right:48px}.access-password__toggle{position:absolute;top:50%;right:8px;display:grid;place-items:center;width:36px;height:36px;padding:0;border:0;background:transparent;color:var(--cue-muted);cursor:pointer;transform:translateY(-50%)}.access-password__toggle:hover,.access-password__toggle:focus-visible{color:var(--cue-accent)}.access-password__toggle svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.access-submit { min-height:50px; border:0; background:var(--cue-toggle); color:var(--cue-toggle-ink); font:800 14px/1 sans-serif; cursor:pointer; }
+.access-submit { min-height:50px; border:0; border-radius:var(--cue-radius-control,8px); background:var(--cue-toggle); color:var(--cue-toggle-ink); font:800 14px/1 sans-serif; cursor:pointer; }
 .access-submit:disabled { opacity:.45; cursor:not-allowed; }
 .access-link { justify-self:end; padding:0; border:0; background:transparent; color:var(--cue-muted); cursor:pointer; font:700 11px/1.2 monospace; text-decoration:underline; text-underline-offset:3px; }
 .access-link:hover,.access-link:focus-visible { color:var(--cue-accent); }

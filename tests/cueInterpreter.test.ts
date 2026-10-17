@@ -124,3 +124,9 @@ test('extracts venue, time range and verbal EUR amount from spoken Spanish', () 
   assert.equal(result.offerAmountMinor, 300000)
   assert.equal(result.currency, 'EUR')
 })
+
+test('dates and times never join the following booking fee', () => {
+  for (const text of ['El 10/10, 1200 EUR', 'El 24/10/2026, 1200 EUR', 'De 22:00 a 23:00, 1200 EUR', 'October 10, 1,200 EUR']) {
+    assert.equal(interpretCueText(text, 'es', new Date('2026-10-14')).offerAmountMinor, 120000, text)
+  }
+})

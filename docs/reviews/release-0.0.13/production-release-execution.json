@@ -1,0 +1,612 @@
+{
+  "release": "Beta 0.0.13",
+  "approved_at": "2026-10-17T09:51:45+02:00",
+  "reviewed_head": "d70abde770ade9ca52d543623ad2892ad6fa830c",
+  "project": "qlocooqfdzehogbwcbhr",
+  "sql": {
+    "state": "applied_and_verified",
+    "count": 39,
+    "postchecks": 78,
+    "foreign_keys_valid": true,
+    "applied": [
+      {
+        "path": "supabase/migrations/20260928202754_agency_roster_beta.sql",
+        "name": "agency_roster_beta",
+        "sha256": "d2bcea21d8403bfb83803a507492101f5ba0fc3439a95e671c74ceb733bb9a9c",
+        "hosted_version": "20261017075507"
+      },
+      {
+        "path": "supabase/migrations/20260928204843_agency_roster_access.sql",
+        "name": "agency_roster_access",
+        "sha256": "1fb0d9cd120fbb5225c3dbdd4d1b0b774033ee551bd866c55d93fbc30f64f4ec",
+        "ledger_reconciled_after_verified_schema": true,
+        "hosted_version": "20261017075610"
+      },
+      {
+        "path": "supabase/migrations/20260929103000_agency_booking_route_contract.sql",
+        "name": "agency_booking_route_contract",
+        "sha256": "dd324189c3d733f49482b4d3f1664281b43345a7962164b5ee17a0985f896ffa",
+        "hosted_version": "20261017075620"
+      },
+      {
+        "path": "supabase/migrations/20260930094140_agency_team_beta.sql",
+        "name": "agency_team_beta",
+        "sha256": "c9a97fbbceb1cd885068f8dc62ab7fd47fbfec033eaca9b405e32c78021ba09e",
+        "hosted_version": "20261017075706"
+      },
+      {
+        "path": "supabase/migrations/20260930094451_agency_team_invitation_index.sql",
+        "name": "agency_team_invitation_index",
+        "sha256": "6c8aeaea4bc0a9e7a69b3fdbb9b095817155d9b5b8d64b7ace363eb84502325e",
+        "hosted_version": "20261017075708"
+      },
+      {
+        "path": "supabase/migrations/20260930113404_agency_public_catalog.sql",
+        "name": "agency_public_catalog",
+        "sha256": "42e741e9508e196eba76b35b8b185c8b39ff00814eef484ab35b7c238bc74fc8",
+        "hosted_version": "20261017075709"
+      },
+      {
+        "path": "supabase/migrations/20260930113750_agency_catalog_service_access.sql",
+        "name": "agency_catalog_service_access",
+        "sha256": "1d416310cfe414caf4782e4b592bff033512e0fba67c3fb6a000d7812fde13e0",
+        "hosted_version": "20261017075711"
+      },
+      {
+        "path": "supabase/migrations/20260930124323_agency_catalog_media.sql",
+        "name": "agency_catalog_media",
+        "sha256": "a6759bc8077960f571323317c7d7729cdf7ae831bfeeb4c33cacfd928480a360",
+        "hosted_version": "20261017075712"
+      },
+      {
+        "path": "supabase/migrations/20260930124636_qualify_agency_media_object_name.sql",
+        "name": "qualify_agency_media_object_name",
+        "sha256": "90e4599f648ae4cbeb5d597322d4f534c973dd19035adcb79a722e782ee30ee2",
+        "hosted_version": "20261017075713"
+      },
+      {
+        "path": "supabase/migrations/20260930151101_connected_mailbox_auth.sql",
+        "name": "connected_mailbox_auth",
+        "sha256": "38cf40ee7146166a664fd437880bdc18b77ba5ee7353b91233f5af61298f888d",
+        "hosted_version": "20261017075715"
+      },
+      {
+        "path": "supabase/migrations/20260930180438_mailbox_booking_threads.sql",
+        "name": "mailbox_booking_threads",
+        "sha256": "66a3d567cfe9fc8eb489c392fcd62923b0dcfed4434658decf247802cfed8e75",
+        "hosted_version": "20261017075717"
+      },
+      {
+        "path": "supabase/migrations/20260930184019_mailbox_analysis_rate_limit.sql",
+        "name": "mailbox_analysis_rate_limit",
+        "sha256": "9096e257db3dea1b96e6a143dd6ad87ce6ce6a88d992fd702bf1ad4122af24c1",
+        "hosted_version": "20261017075718"
+      },
+      {
+        "path": "supabase/migrations/20260930225159_mailbox_beta_capacity.sql",
+        "name": "mailbox_beta_capacity",
+        "sha256": "32f71e1520c1272fb766b51af0229b6d464f3094c5d20ad5bd364bdaef497a5f",
+        "hosted_version": "20261017075749"
+      },
+      {
+        "path": "supabase/migrations/20261001022812_agency_team_email_result_type.sql",
+        "name": "agency_team_email_result_type",
+        "sha256": "59fba7eae2e89640ea64f22002baa8a49ab705d659ddc44ed8fc1ecc9d5569b5",
+        "hosted_version": "20261017075750"
+      },
+      {
+        "path": "supabase/migrations/20261001073006_mailbox_reviewed_details.sql",
+        "name": "mailbox_reviewed_details",
+        "sha256": "ffccfe48c3b6f0ae57f6e2c4cc8f219afaa250f6093d4385f53aa980c3d17a17",
+        "hosted_version": "20261017075752"
+      },
+      {
+        "path": "supabase/migrations/20261001075121_mailbox_existing_review.sql",
+        "name": "mailbox_existing_review",
+        "sha256": "78ec557f2fe38abdab609704174bbc45d8a83f4b5605682d14bd5aaae7663c01",
+        "hosted_version": "20261017075800"
+      },
+      {
+        "path": "supabase/migrations/20261001103606_mailbox_ai_monthly_budget.sql",
+        "name": "mailbox_ai_monthly_budget",
+        "sha256": "4485a4835abdd2f98d17ecc5172a8f9e31a154dc54feacf6edd641aea6bb3372",
+        "hosted_version": "20261017075802"
+      },
+      {
+        "path": "supabase/migrations/20261001120319_mailbox_ai_result_cache.sql",
+        "name": "mailbox_ai_result_cache",
+        "sha256": "2f18327bc6a73e24238136d8326f609cb2d6436f202cccdbf501f7a681d8b345",
+        "hosted_version": "20261017075803"
+      },
+      {
+        "path": "supabase/migrations/20261001131151_mailbox_background_consent.sql",
+        "name": "mailbox_background_consent",
+        "sha256": "f03e86020fd04d8e47022eb464007f7ab40ea0d2b5581b348fe1c1285c42ff1f",
+        "hosted_version": "20261017075805"
+      },
+      {
+        "path": "supabase/migrations/20261001132957_mailbox_incoming_queue.sql",
+        "name": "mailbox_incoming_queue",
+        "sha256": "d6be1a0eaba88cc001790d498b98a0e706e0a72dd57ef442e50bf9a2c3139fe9",
+        "hosted_version": "20261017075806"
+      },
+      {
+        "path": "supabase/migrations/20261001133744_mailbox_incoming_processing.sql",
+        "name": "mailbox_incoming_processing",
+        "sha256": "5d2bb1b13a344459740d4bf2db09a8637776f16b9bc709410313ef762dec8e2c",
+        "hosted_version": "20261017075808"
+      },
+      {
+        "path": "supabase/migrations/20261001153215_mailbox_worker_schedule.sql",
+        "name": "mailbox_worker_schedule",
+        "sha256": "d45137a506447b4d6863078e83e88b1192e7869549ddef57bce6e1b36432bf83",
+        "hosted_version": "20261017075810"
+      },
+      {
+        "path": "supabase/migrations/20261001181132_mailbox_automatic_requests.sql",
+        "name": "mailbox_automatic_requests",
+        "sha256": "99a92ba9a97b3cc45b2c74cc889c07674c40c1b513bcb86632e3538c8c514450",
+        "hosted_version": "20261017075811"
+      },
+      {
+        "path": "supabase/migrations/20261001182316_mailbox_initial_capture.sql",
+        "name": "mailbox_initial_capture",
+        "sha256": "1311a14a4e386ef5562b804d7d2b4f0872ad73158bced0596849cacc910ad993",
+        "hosted_version": "20261017075813"
+      },
+      {
+        "path": "supabase/migrations/20261002214500_add_public_agency_enquiries.sql",
+        "name": "add_public_agency_enquiries",
+        "sha256": "3599908833c0eba8eed4b4e04b35d34735556a83cb2ca70468038840dad250e5",
+        "hosted_version": "20261017075815"
+      },
+      {
+        "path": "supabase/migrations/20261003200000_agency_managed_catalog_artists.sql",
+        "name": "agency_managed_catalog_artists",
+        "sha256": "e663a0aa68df59c815d7a8569c3782ca88a1207e6672b7189f601878160f2697",
+        "hosted_version": "20261017075816"
+      },
+      {
+        "path": "supabase/migrations/20261004111828_mailbox_beta_access_approval.sql",
+        "name": "mailbox_beta_access_approval",
+        "sha256": "6f64d812caa0bc54599e7ca7fcf4d85102ec520426fde9be8d4a135f38669545",
+        "hosted_version": "20261017075843"
+      },
+      {
+        "path": "supabase/migrations/20261004112859_mailbox_beta_verified_account_read.sql",
+        "name": "mailbox_beta_verified_account_read",
+        "sha256": "2a33ae8d82c1d91decb7972b36fe23c2a1efde6f1974bad86fd6e5f59b7fa89f",
+        "hosted_version": "20261017075845"
+      },
+      {
+        "path": "supabase/migrations/20261004140619_gmail_direct_mailbox.sql",
+        "name": "gmail_direct_mailbox",
+        "sha256": "423999fbfee926db461478bf58a8a77d56386a2543048a6829d35bc9a257833a",
+        "hosted_version": "20261017075906"
+      },
+      {
+        "path": "supabase/migrations/20261004173627_mailbox_detection_start_and_retry.sql",
+        "name": "mailbox_detection_start_and_retry",
+        "sha256": "328282d1cc23e5c66bb9239309de367d6e7dc74d498bfa02ca905223f0883f65",
+        "hosted_version": "20261017075907"
+      },
+      {
+        "path": "supabase/migrations/20261014191153_add_private_booking_email_attachments.sql",
+        "name": "add_private_booking_email_attachments",
+        "sha256": "d4a3dda6ac2bce9c9aeb1b64941fc13fc95dfe915cd02b1d9542590535efafba",
+        "hosted_version": "20261017075909"
+      },
+      {
+        "path": "supabase/migrations/20261014193555_allow_connected_mailbox_attachments.sql",
+        "name": "allow_connected_mailbox_attachments",
+        "sha256": "64df3c0f1136ab60b25adc0bd60e91fc18c40ca24152d31ccca165d9689828db",
+        "hosted_version": "20261017075910"
+      },
+      {
+        "path": "supabase/migrations/20261015163315_bind_mailbox_attachment_email_and_permissions.sql",
+        "name": "bind_mailbox_attachment_email_and_permissions",
+        "sha256": "25cde98c433ec6001355e320eadaf5cf515158cf2d856448a094a28787fd8e3b",
+        "hosted_version": "20261017075912"
+      },
+      {
+        "path": "supabase/migrations/20261015165000_mailbox_failure_phase_diagnostics.sql",
+        "name": "mailbox_failure_phase_diagnostics",
+        "sha256": "8eabadb0966f38d66b8bc9b0082692f91d99fab7e78ae685463cb256589dd440",
+        "hosted_version": "20261017075914"
+      },
+      {
+        "path": "supabase/migrations/20261015172641_outbound_booking_email_attachments.sql",
+        "name": "outbound_booking_email_attachments",
+        "sha256": "d6b968cc935c55707346d7529ae1fbbbf5ee12a8cf92fb006f05bc45a6a60fb4",
+        "hosted_version": "20261017075915"
+      },
+      {
+        "path": "supabase/migrations/20261015183107_email_attachment_warnings.sql",
+        "name": "email_attachment_warnings",
+        "sha256": "99d6191afc2f33663cc29f25a6c2b9fe29e33fd699bb5c5bccc93310fdf6d680",
+        "hosted_version": "20261017075917"
+      },
+      {
+        "path": "supabase/migrations/20261016120000_campaign_funnel_analytics.sql",
+        "name": "campaign_funnel_analytics",
+        "sha256": "5587649f6725d3de8e50d9882f19f2980c53f00965079dd7219caeb54cdde000",
+        "hosted_version": "20261017080043"
+      },
+      {
+        "path": "supabase/migrations/20261016220553_campaign_foreign_key_indexes.sql",
+        "name": "campaign_foreign_key_indexes",
+        "sha256": "cc2da7888c221c0db1ef0c56a567516120b8d3d41df5c754ac146286ccfa4189",
+        "hosted_version": "20261017080045"
+      },
+      {
+        "path": "supabase/migrations/20261016223115_fix_membership_owner_guards.sql",
+        "name": "fix_membership_owner_guards",
+        "sha256": "a3f54402e06ee84cae547b77e20bfd17c8513247b9380de3e95189bcf28c1e74",
+        "hosted_version": "20261017080047"
+      }
+    ],
+    "ledger_recovery": {
+      "migration": "agency_roster_access",
+      "original_error": "INVALID_ARGUMENT after schema commit, no ledger entry",
+      "verified_policy_count": 8,
+      "policies_match_staging": true,
+      "replayed": false,
+      "action": "Guarded ledger insertion of exact original SQL only, after all eight policy fingerprints matched. Cause suspected same-second generated version collision; no precise provider diagnostic returned. Remaining calls paced at least1.2s.",
+      "policy_fingerprints": [
+        {
+          "schemaname": "public",
+          "tablename": "availability_blocks",
+          "policyname": "availability_blocks_delete_agency_managers",
+          "definition_hash": "7a95ee197ebc6a83a0d5e6af0aa6cef5"
+        },
+        {
+          "schemaname": "public",
+          "tablename": "availability_blocks",
+          "policyname": "availability_blocks_insert_agency_managers",
+          "definition_hash": "8efd5c6d785b587f37890cc60ea07911"
+        },
+        {
+          "schemaname": "public",
+          "tablename": "availability_blocks",
+          "policyname": "availability_blocks_select_agency_roster",
+          "definition_hash": "0c391035a217c5bdcad381808668fcb0"
+        },
+        {
+          "schemaname": "public",
+          "tablename": "availability_blocks",
+          "policyname": "availability_blocks_update_agency_managers",
+          "definition_hash": "4ef5f52c0db26f83643f2c8fc943726a"
+        },
+        {
+          "schemaname": "storage",
+          "tablename": "objects",
+          "policyname": "artist_media_delete_agency_managers",
+          "definition_hash": "5553500af5420f8289ca346c1baf1a3b"
+        },
+        {
+          "schemaname": "storage",
+          "tablename": "objects",
+          "policyname": "artist_media_insert_agency_managers",
+          "definition_hash": "76614ea717afb3d3e5d5c7cd8765659c"
+        },
+        {
+          "schemaname": "storage",
+          "tablename": "objects",
+          "policyname": "artist_media_select_agency_roster",
+          "definition_hash": "5fc29c8f7c0b31b40482e3480e167855"
+        },
+        {
+          "schemaname": "storage",
+          "tablename": "objects",
+          "policyname": "artist_media_update_agency_managers",
+          "definition_hash": "d3ff29c91ee996a742fee0c067b21c22"
+        }
+      ]
+    },
+    "original_production_behaviors_preserved": true,
+    "protected_counts_preserved": true,
+    "new_worker_crons_paused": true,
+    "dataset": "test"
+  },
+  "edge": {
+    "project": "qlocooqfdzehogbwcbhr",
+    "source": "d70abde770ade9ca52d543623ad2892ad6fa830c",
+    "functions": [
+      {
+        "slug": "booking-follow-up",
+        "version": 1,
+        "verify_jwt": false,
+        "file_count": 2,
+        "exact_source_match": true,
+        "normalized_prefix": "supabase/",
+        "bundle_sha256": "6d547bb0e2d46a9420b7c165c5a03d1bf619fe7dc5232180e414a45cc8ed1058"
+      },
+      {
+        "slug": "brevo-transactional-events",
+        "version": 1,
+        "verify_jwt": false,
+        "file_count": 2,
+        "exact_source_match": true,
+        "normalized_prefix": "supabase/",
+        "bundle_sha256": "45d12bedaf69df1ab6e2541bac896ed64014d9171cb35e05406ec9e59080494b"
+      },
+      {
+        "slug": "campaign-analytics",
+        "version": 1,
+        "verify_jwt": false,
+        "file_count": 3,
+        "exact_source_match": true,
+        "normalized_prefix": "supabase/",
+        "bundle_sha256": "1c067c0cfc46219f4c1a1b4538573b7c0febcd077476605969c83c34be747cf6"
+      },
+      {
+        "slug": "connected-mailbox",
+        "version": 1,
+        "verify_jwt": false,
+        "file_count": 19,
+        "exact_source_match": true,
+        "normalized_prefix": "",
+        "bundle_sha256": "06c5a18726f30d3c0595ae4f1d8c00a2866b8dc82ddb948ee669c58c45537a8a"
+      },
+      {
+        "slug": "dispatch-notification-emails",
+        "version": 1,
+        "verify_jwt": false,
+        "file_count": 2,
+        "exact_source_match": true,
+        "normalized_prefix": "supabase/",
+        "bundle_sha256": "34494da23b94704923d9d61d8b2732ba01d97898efb63242a1ecd7f13f1cbe11"
+      },
+      {
+        "slug": "get-booking-email-attachment",
+        "version": 1,
+        "verify_jwt": true,
+        "file_count": 1,
+        "exact_source_match": true,
+        "normalized_prefix": "supabase/functions/",
+        "bundle_sha256": "4cc1b91ded80df6903b1e46df435de01f5c8a83f40b780bd6b899f8ba02d6907"
+      },
+      {
+        "slug": "get-public-artist-profile",
+        "version": 22,
+        "verify_jwt": false,
+        "file_count": 1,
+        "exact_source_match": true,
+        "normalized_prefix": "supabase/functions/",
+        "bundle_sha256": "3b9c631ec27030e62c35f9b3c8d0f338476879da30878d3ec6f8f16592d382ca"
+      },
+      {
+        "slug": "gmail-mailbox-events",
+        "version": 1,
+        "verify_jwt": false,
+        "file_count": 4,
+        "exact_source_match": true,
+        "normalized_prefix": "",
+        "bundle_sha256": "ce03b3f3cd8bb6bac4405a633993a0a9d3e04678edf2c0c645ee8f4a50e54657"
+      },
+      {
+        "slug": "ingest-booking-email",
+        "version": 1,
+        "verify_jwt": false,
+        "file_count": 1,
+        "exact_source_match": true,
+        "normalized_prefix": "supabase/functions/",
+        "bundle_sha256": "2bb899bae2c645f391f9316ace577d23d2e90ae0c655993419450737c6845593"
+      },
+      {
+        "slug": "mailbox-beta-admin",
+        "version": 1,
+        "verify_jwt": false,
+        "file_count": 3,
+        "exact_source_match": true,
+        "normalized_prefix": "supabase/",
+        "bundle_sha256": "0f6d3e9fcc16d88d60c433f1bd99c7146ec94148cd18bd40d8c15a5484d6fd7e"
+      },
+      {
+        "slug": "process-gmail-history",
+        "version": 1,
+        "verify_jwt": false,
+        "file_count": 7,
+        "exact_source_match": true,
+        "normalized_prefix": "",
+        "bundle_sha256": "27353fa4a5206f12e90940e77fd1da2b437198b35cb28efacef2a6a545e7a538"
+      },
+      {
+        "slug": "process-mailbox-incoming",
+        "version": 1,
+        "verify_jwt": false,
+        "file_count": 19,
+        "exact_source_match": true,
+        "normalized_prefix": "",
+        "bundle_sha256": "49aa912bc9d7e25c723f4e257795c24a84f4970f7424852021415cc2ed41182b"
+      },
+      {
+        "slug": "recover-mailbox-attachments",
+        "version": 1,
+        "verify_jwt": true,
+        "file_count": 8,
+        "exact_source_match": true,
+        "normalized_prefix": "",
+        "bundle_sha256": "af05adf173e19670ff83d2dd92ce356a7614803f363b49c1d4d243e29980d192"
+      },
+      {
+        "slug": "send-booking-email",
+        "version": 1,
+        "verify_jwt": true,
+        "file_count": 5,
+        "exact_source_match": true,
+        "normalized_prefix": "",
+        "bundle_sha256": "c7e7c9aaa727ca9d906140a4098bed77ca1dbad607afa07fedfc7c28983b6cdb"
+      },
+      {
+        "slug": "smart-capture",
+        "version": 22,
+        "verify_jwt": true,
+        "file_count": 2,
+        "exact_source_match": true,
+        "normalized_prefix": "supabase/",
+        "bundle_sha256": "06bee850983ba1f5917bdd89d573167a263fbd4fd3c495424701bd82dc283d26"
+      },
+      {
+        "slug": "submit-agency-enquiry",
+        "version": 1,
+        "verify_jwt": false,
+        "file_count": 2,
+        "exact_source_match": true,
+        "normalized_prefix": "supabase/",
+        "bundle_sha256": "bbea4d9ee225e4b8c94eb39fed367ea4504e9704f28544f8f21f3c51b047a9c6"
+      },
+      {
+        "slug": "submit-booking-request",
+        "version": 1,
+        "verify_jwt": false,
+        "file_count": 3,
+        "exact_source_match": true,
+        "normalized_prefix": "supabase/",
+        "bundle_sha256": "140fc3544263e47fdec9c869ee5574e5558f5d08e0b66e9af09872f021ce5986"
+      }
+    ],
+    "state": "verified"
+  },
+  "ci": {
+    "run_id": 39015389486,
+    "job_id": 117346333158,
+    "conclusion": "success",
+    "tests": 621,
+    "routes": 44
+  },
+  "preview": {
+    "run_id": 39015389549,
+    "job_id": 117346333371,
+    "conclusion": "success"
+  },
+  "advisors": {
+    "security": [
+      {
+        "name": "rls_enabled_no_policy",
+        "level": "INFO",
+        "count": 21,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+      },
+      {
+        "name": "authenticated_security_definer_function_executable",
+        "level": "WARN",
+        "count": 7,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+      },
+      {
+        "name": "auth_leaked_password_protection",
+        "level": "WARN",
+        "count": 1,
+        "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection"
+      }
+    ],
+    "performance": [
+      {
+        "name": "unindexed_foreign_keys",
+        "level": "INFO",
+        "count": 6,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys"
+      },
+      {
+        "name": "auth_rls_initplan",
+        "level": "WARN",
+        "count": 2,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan"
+      },
+      {
+        "name": "unused_index",
+        "level": "INFO",
+        "count": 54,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index"
+      },
+      {
+        "name": "multiple_permissive_policies",
+        "level": "WARN",
+        "count": 11,
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies"
+      }
+    ],
+    "assessment": "No ERROR-level findings. Service-only tables intentionally have RLS/no client policies. Authenticated administrative RPCs retain internal authorization, tested in prior staging acceptance. Existing password/performance findings retained; no unrelated protections changed."
+  },
+  "frontend": {
+    "state": "not_yet_merged_or_deployed"
+  },
+  "live_provider_acceptance": false,
+  "secret_values_read": false,
+  "http_denial_checks": [
+    {
+      "slug": "ingest-booking-email",
+      "method": "POST",
+      "body": "{}",
+      "authorization": "none",
+      "status": 401,
+      "expected": 401,
+      "passed": true
+    },
+    {
+      "slug": "brevo-transactional-events",
+      "method": "POST",
+      "body": "{}",
+      "authorization": "none",
+      "status": 401,
+      "expected": 401,
+      "passed": true
+    },
+    {
+      "slug": "gmail-mailbox-events",
+      "method": "POST",
+      "body": "{}",
+      "authorization": "none",
+      "status": 503,
+      "expected": 503,
+      "passed": true
+    },
+    {
+      "slug": "process-gmail-history",
+      "method": "POST",
+      "body": "{}",
+      "authorization": "none",
+      "status": 401,
+      "expected": 401,
+      "passed": true
+    },
+    {
+      "slug": "process-mailbox-incoming",
+      "method": "POST",
+      "body": "{}",
+      "authorization": "none",
+      "status": 503,
+      "expected": 503,
+      "passed": true
+    },
+    {
+      "slug": "connected-mailbox",
+      "method": "POST",
+      "body": "{}",
+      "authorization": "none",
+      "status": 401,
+      "expected": 401,
+      "passed": true
+    },
+    {
+      "slug": "mailbox-beta-admin",
+      "method": "POST",
+      "body": "{}",
+      "authorization": "none",
+      "status": 401,
+      "expected": 401,
+      "passed": true
+    },
+    {
+      "slug": "send-booking-email",
+      "method": "POST",
+      "body": "{}",
+      "authorization": "none",
+      "status": 401,
+      "expected": 401,
+      "passed": true
+    }
+  ],
+  "http_check_note": "Gmail history checks worker authentication first, correctly401. Initial harness expected503; corrected after inspecting exact source, no runtime change/repeat request."
+}

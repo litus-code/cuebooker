@@ -1,3 +1,6 @@
+import { campaignDimensions } from '../domain/campaignAnalytics'
+import { campaignSignupMetadata } from '../services/campaignAnalytics'
+import { AGENCY_INVITE_STORAGE, validAgencyInviteToken } from '../domain/agencyTeam'
 type CueUser = {
   id: string
   email?: string
@@ -40,12 +43,17 @@ const REFERRAL_KEY = 'cuebooker.referral.first-touch.v1'
 function normalizeSession(payload: AuthResponse, startedAt = Date.now()): CueSession | null {
   if (!payload.access_token || !payload.refresh_token || !payload.user) return null
 
+  const user = { ...payload.user }
+  if (user.user_metadata) {
+    const { cuebooker_campaign: _campaign, ...metadata } = user.user_metadata
+    user.user_metadata = metadata
+  }
   return {
     access_token: payload.access_token,
     refresh_token: payload.refresh_token,
     expires_at: Math.floor(Date.now() / 1000) + (payload.expires_in || 3600),
     started_at: startedAt,
-    user: payload.user
+    user
   }
 }
 
@@ -264,7 +272,7 @@ export function useCueAuth() {
         body: {
           email: email.trim(),
           password,
-          data: { display_name: displayName.trim() }
+          data: { display_name: displayName.trim(), ...await campaignSignupMetadata() }
         }
       })
       const next = normalizeSession(payload)
@@ -339,8 +347,33 @@ export function useCueAuth() {
     return true
   }
 
+  async function updateAvatarBodyPreference(body: 'male' | 'female') {
+    if (body !== 'male' && body !== 'female') throw new Error('invalid_avatar_body')
+    const current = await ensureFreshSession()
+    if (!current) throw new Error('authentication_required')
+    const payload = await $fetch<{ user?: CueUser } | CueUser>(`${supabaseUrl.value}/auth/v1/user`, {
+      method: 'PUT',
+      headers: baseHeaders(true),
+      body: { data: { ...(current.user.user_metadata || {}), cuebooker_avatar_body: body } }
+    })
+    const updatedUser = 'user' in payload && payload.user ? payload.user : payload as CueUser
+    saveSession({
+      ...current,
+      user: {
+        ...current.user,
+        ...updatedUser,
+        user_metadata: {
+          ...(current.user.user_metadata || {}),
+          ...(updatedUser.user_metadata || {}),
+          cuebooker_avatar_body: body
+        }
+      }
+    })
+  }
+
   function captureReferral(code: string | null | undefined, landingPath: string) {
     if (!import.meta.client || !code) return
+    if (localStorage.getItem('cuebooker:analytics-consent:v2') !== 'granted') return
     if (localStorage.getItem(REFERRAL_KEY)) return
 
     const normalized = code.trim().toLowerCase()
@@ -348,7 +381,7 @@ export function useCueAuth() {
 
     const snapshot: ReferralSnapshot = {
       code: normalized,
-      landingPath: landingPath.slice(0, 512),
+      landingPath: (() => { const url = new URL(landingPath,'https://cuebooker.invalid'); const path = ['/','/dj','/agency','/access'].includes(url.pathname.replace(/\/$/,'') || '/') ? url.pathname : '/'; const query = new URLSearchParams(campaignDimensions(Object.fromEntries(url.searchParams))).toString(); return `${path}${query ? '?'+query : ''}`.slice(0,512) })(),
       firstSeenAt: new Date().toISOString()
     }
     localStorage.setItem(REFERRAL_KEY, JSON.stringify(snapshot))
@@ -356,6 +389,7 @@ export function useCueAuth() {
 
   async function persistReferralAttribution() {
     if (!import.meta.client || !session.value) return
+    if (localStorage.getItem('cuebooker:analytics-consent:v2') !== 'granted') return
     const raw = localStorage.getItem(REFERRAL_KEY)
     if (!raw) return
 
@@ -395,9 +429,12 @@ export function useCueAuth() {
     displayName: string
     entityName: string
     entitySlug: string
+    avatarBody?: 'male' | 'female'
   }) {
     const current = await ensureFreshSession()
     if (!current) throw new Error('authentication_required')
+
+    if (input.accountType === 'dj' && input.avatarBody) await updateAvatarBodyPreference(input.avatarBody)
 
     const result = await $fetch(`${supabaseUrl.value}/rest/v1/rpc/complete_onboarding`, {
       method: 'POST',
@@ -415,6 +452,9 @@ export function useCueAuth() {
   }
 
   function accountDestination() {
+    if (import.meta.client) {
+      try { if (validAgencyInviteToken(sessionStorage.getItem(AGENCY_INVITE_STORAGE))) return '/agency-invite' } catch { /* Normal sign-in remains available without browser storage. */ }
+    }
     return profile.value?.onboarding_completed ? '/workspace' : '/onboarding'
   }
 
@@ -427,6 +467,7 @@ export function useCueAuth() {
     signedIn,
     initialize,
     fetchProfile,
+    ensureFreshSession,
     signIn,
     signUp,
     signOut,

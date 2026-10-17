@@ -1,0 +1,53 @@
+{
+  "source_sha": "df8b90f01c057b67a8a7529824de616ea34ee670",
+  "ci": {
+    "run": 39011862455,
+    "job": 117335909451,
+    "result": "success",
+    "tests": 615,
+    "routes": 44
+  },
+  "typecheck": {
+    "handlers": 18,
+    "deno": "2.9.6",
+    "declaration": "@supabase/functions-js@2.118.0",
+    "declaration_sha256": "427921102ae314a45213a4f919fab835d94421661fcbdaba580406f35bfe5079",
+    "local_type_dependency": "openai@4.104.0",
+    "deployed_import_map_changed": false
+  },
+  "staging": [
+    {
+      "slug": "ingest-booking-email",
+      "version": 40,
+      "verify_jwt": false,
+      "files": [
+        "ingest-booking-email/index.ts"
+      ],
+      "all_source_bytes_match_candidate": true,
+      "unauthenticated_post": {
+        "status": 401,
+        "error": "unauthorized_webhook"
+      }
+    },
+    {
+      "slug": "gmail-mailbox-events",
+      "version": 16,
+      "verify_jwt": false,
+      "files": [
+        "supabase/functions/gmail-mailbox-events/index.ts",
+        "supabase/functions/_shared/gmailPush.ts",
+        "supabase/functions/_shared/nylasMailbox.ts",
+        "app/domain/emailAttachments.ts"
+      ],
+      "all_source_bytes_match_candidate": true,
+      "unauthenticated_post": {
+        "status": 401,
+        "error": "unauthorized"
+      }
+    }
+  ],
+  "production_changed": false,
+  "provider_delivery_tested": false,
+  "sql_candidate_files_unchanged": 39,
+  "google_console": "Site Unavailable in this browser; project/client/provider configuration requires user session outside this browser"
+}

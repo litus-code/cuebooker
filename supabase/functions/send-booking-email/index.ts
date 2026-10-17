@@ -1,4 +1,6 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import {validateEmailAttachments} from '../../../app/domain/emailAttachments.ts';
+import {emailRequestJson} from '../_shared/emailAttachmentRequest.ts';
+import {persistSentAttachments} from '../_shared/persistSentAttachments.ts';
 import { renderBookingConversationEmail } from "../_shared/bookingConversationEmailTemplate.ts";
 
 const corsHeaders = {
@@ -59,9 +61,10 @@ Deno.serve(async (request) => {
 
   let payload: any;
   try {
-    payload = await request.json();
-  } catch {
-    return json({ error: "invalid_json" }, 400);
+    payload = await emailRequestJson(request);
+  } catch(error) {
+    const code=(error as Error).message;
+    return json({error:code==='email_request_too_large'?code:'invalid_json'},code==='email_request_too_large'?413:400);
   }
 
   const workspaceId = String(payload?.workspaceId || "").trim();
@@ -77,6 +80,9 @@ Deno.serve(async (request) => {
     return json({ error: "email_content_too_long" }, 400);
   }
 
+  let deliveryAttempted=false;
+  const requestId=payload.requestId||crypto.randomUUID();
+  if(typeof requestId!=='string'||!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(requestId))return json({error:'invalid_email_content'},400);
   try {
     const supabaseUrl = requiredEnv("SUPABASE_URL");
     const anonKey = requiredEnv("SUPABASE_ANON_KEY");
@@ -140,12 +146,20 @@ Deno.serve(async (request) => {
     const toEmail = contacts[0]?.email?.trim();
     if (!toEmail) return json({ error: "contact_email_required" }, 400);
 
+    let attachments;
+    try{attachments=validateEmailAttachments(payload.attachments);}catch(error){return json({error:(error as Error).message},400);}
+    const boundThreads=await rest<any[]>(`${supabaseUrl}/rest/v1/mailbox_booking_threads?workspace_id=eq.${encodeURIComponent(workspaceId)}&booking_id=eq.${encodeURIComponent(bookingId)}&select=connection_id&limit=1`,{method:'GET'},serviceKey,serviceKey);
+    if(boundThreads.length)return json({error:'thread_mailbox_required'},409);
+    const previous=await rest<any[]>(`${supabaseUrl}/rest/v1/email_messages?id=eq.${requestId}&select=id&limit=1`,{method:'GET'},serviceKey,serviceKey);
+    if(previous.length)return json({error:'email_send_already_attempted'},409);
+
     const queuedRows = await rest<Array<{ id: string; reply_token: string }>>(
       `${supabaseUrl}/rest/v1/email_messages?select=id,reply_token`,
       {
         method: "POST",
         headers: { Prefer: "return=representation" },
         body: JSON.stringify({
+          id: requestId,
           workspace_id: workspaceId,
           booking_id: bookingId,
           contact_id: contactId,
@@ -219,6 +233,10 @@ Deno.serve(async (request) => {
       bodyText
     });
 
+    const sendMembers=await rest<Array<{role:string}>>(`${supabaseUrl}/rest/v1/workspace_members?workspace_id=eq.${encodeURIComponent(workspaceId)}&user_id=eq.${encodeURIComponent(userId)}&select=role&limit=1`,{method:'GET'},anonKey,accessToken);
+    const sendBookings=await rest<Array<{id:string;archived_at:string|null}>>(`${supabaseUrl}/rest/v1/bookings?workspace_id=eq.${encodeURIComponent(workspaceId)}&id=eq.${encodeURIComponent(bookingId)}&select=id,archived_at&limit=1`,{method:'GET'},anonKey,accessToken);
+    if(!['owner','admin','manager','editor'].includes(sendMembers[0]?.role)||!sendBookings[0]||sendBookings[0].archived_at)return json({error:'workspace_edit_permission_required'},403);
+    deliveryAttempted=true;
     const providerResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
@@ -232,6 +250,7 @@ Deno.serve(async (request) => {
         subject,
         htmlContent: renderedEmail.html,
         textContent: renderedEmail.text,
+        ...(attachments.length?{attachment:attachments.map(file=>({name:file.name,content:file.contentBase64}))}:{}),
         tags: ["cuebooker", `cuebooker_email_${queued.id}`]
       })
     });
@@ -316,14 +335,20 @@ Deno.serve(async (request) => {
       serviceKey
     );
 
+    const attachmentStatus=await persistSentAttachments({base:supabaseUrl,key:serviceKey,workspaceId,bookingId,emailMessageId:queued.id,files:attachments,authorize:async()=>{
+      const members=await rest<Array<{role:string}>>(`${supabaseUrl}/rest/v1/workspace_members?workspace_id=eq.${encodeURIComponent(workspaceId)}&user_id=eq.${encodeURIComponent(userId)}&select=role&limit=1`,{method:'GET'},anonKey,accessToken);
+      return ['owner','admin','manager','editor'].includes(members[0]?.role);
+    }});
     return json({
+      attachmentStatus,
       id: queued.id,
       status: "sent",
       to: toEmail,
       providerMessageId
     });
   } catch (error) {
-    console.error("send-booking-email", error);
-    return json({ error: "email_send_failed" }, 500);
+    // Never log provider exceptions, file content or private database payloads.
+    console.warn('send_booking_email_failed',{deliveryAttempted});
+    return json({error:deliveryAttempted?'email_send_uncertain':'email_send_failed'},deliveryAttempted?409:500);
   }
 });

@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import type { CueIdStylizedBodyId } from '../domain/cueIdStylizedCreator'
 const auth = useCueAuth()
 const analytics = useAnalytics()
 const billingIntent = useBillingIntent()
 const { locale } = useCuePreferences()
 const accountType = ref<'dj' | 'agency'>('dj')
 const cueIdNextStep = ref<'now' | 'later'>('later')
+const cueIdBody = ref<CueIdStylizedBodyId>('male')
 const displayName = ref('')
 const entityName = ref('')
 const entitySlug = ref('')
@@ -24,7 +26,7 @@ const copy = computed(() => locale.value === 'es'
       cueIdNowBody: 'Ir al Creator después de crear tu workspace.',
       cueIdLater: 'Hacerlo más tarde',
       cueIdLaterBody: 'Entrar a tu workspace y crear tu CUE ID cuando quieras.',
-      profileNote: 'Después podrás completar tu ficha profesional. Al terminar entrarás en tu Overview con los siguientes pasos claros para activar Cuebooker.',
+      profileNote: accountType.value === 'agency' ? 'Entrarás al Overview de Agencia para crear tu roster.' : 'Después podrás completar tu ficha profesional. Al terminar entrarás en tu Overview con los siguientes pasos claros para activar Cuebooker.',
       planIntent: 'Plan seleccionado', planPending: 'La activación de pago se realizará después de crear el workspace.',
       saving: 'Guardando…', submit: 'Crear workspace', genericError: 'No se pudo completar la configuración.',
       slugTaken: 'Ese identificador ya está en uso. Prueba con otro diferente.',
@@ -44,7 +46,7 @@ const copy = computed(() => locale.value === 'es'
       cueIdNowBody: 'Open the Creator after your workspace is created.',
       cueIdLater: 'Do it later',
       cueIdLaterBody: 'Open your workspace and create your CUE ID whenever you want.',
-      profileNote: 'Afterwards you can complete your professional profile. When setup is complete, Overview will show the next steps to activate Cuebooker.',
+      profileNote: accountType.value === 'agency' ? 'You will enter Agency Overview to build your roster.' : 'Afterwards you can complete your professional profile. When setup is complete, Overview will show the next steps to activate Cuebooker.',
       planIntent: 'Selected plan', planPending: 'Paid activation will happen after the workspace is created.',
       saving: 'Saving…', submit: 'Create workspace', genericError: 'Setup could not be completed.',
       slugTaken: 'That identifier is already in use. Try a different one.',
@@ -79,6 +81,7 @@ onMounted(async () => {
     return
   }
   displayName.value = auth.profile.value?.display_name || ''
+  cueIdBody.value = auth.session.value?.user.user_metadata?.cuebooker_avatar_body === 'female' ? 'female' : 'male'
 })
 
 function friendlyOnboardingError(error: any) {
@@ -115,7 +118,8 @@ async function submit() {
       accountType: accountType.value,
       displayName: displayName.value,
       entityName: entityName.value,
-      entitySlug: entitySlug.value
+      entitySlug: entitySlug.value,
+      avatarBody: accountType.value === 'dj' ? cueIdBody.value : undefined
     })
     analytics.track('onboarding_completed', {
       account_type: accountType.value,
@@ -125,7 +129,7 @@ async function submit() {
       await navigateTo('/cue-id?from=onboarding')
       return
     }
-    await navigateTo('/workspace?view=overview&from=onboarding')
+    await navigateTo(accountType.value === 'agency' ? '/workspace?view=overview&scope=all&from=onboarding' : '/workspace?view=overview&from=onboarding')
   } catch (error: any) {
     errorMessage.value = friendlyOnboardingError(error)
   } finally {
@@ -159,7 +163,7 @@ useHead(() => ({ title: copy.value.pageTitle, htmlAttrs: { lang: locale.value } 
       </div>
 
       <template v-if="accountType === 'dj'">
-        <CueIdTeaser :artist-name="entityName" compact />
+        <CueIdTeaser v-model:body="cueIdBody" :artist-name="entityName" compact body-selectable preview-href="" />
         <section class="cue-id-choice" aria-labelledby="cue-id-choice-title">
           <div class="cue-id-choice__heading">
             <p id="cue-id-choice-title">{{ copy.cueIdTitle }}</p>

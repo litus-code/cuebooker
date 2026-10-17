@@ -288,6 +288,74 @@ Deno.serve(async request => {
   if (request.method !== "GET") return json({ error: "method_not_allowed" }, 405);
 
   const url = new URL(request.url);
+  // Agency is another public presentation, using the same server-only boundary.
+  // Its roster is explicitly published and routed to this agency workspace.
+  if (url.searchParams.has("agency")) {
+    const agencySlug = (url.searchParams.get("agency") || "").trim().toLowerCase();
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(agencySlug) || agencySlug.length > 120) return json({ error: "invalid_agency_slug" }, 400);
+    try {
+      const supabaseUrl = requiredEnv("SUPABASE_URL").replace(/\/$/, "");
+      const serviceKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
+      const agency = await serviceJson<{ name: string; mediaWorkspaceId?: string; coverPath?: string; logoPath?: string; coverUrl?: string | null; logoUrl?: string | null; artists: Array<{ id: string; imagePath?: string | null; coverPath?: string | null; imageUrl?: string | null; coverUrl?: string | null; profile?: Record<string, unknown> }> } | null>(
+        `${supabaseUrl}/rest/v1/rpc/get_public_agency_profile`,
+        { method: "POST", body: JSON.stringify({ agency_slug: agencySlug }) }, serviceKey
+      );
+      if (!agency) return json({ error: "agency_not_found" }, 404, { "Cache-Control": "no-store" });
+      for (const slot of ['cover', 'logo'] as const) {
+        const path = slot === 'cover' ? agency.coverPath : agency.logoPath;
+        const folder = slot === 'cover' ? 'covers' : 'logos';
+        if (path && agency.mediaWorkspaceId && new RegExp(`^agency/${agency.mediaWorkspaceId}/${folder}/[0-9a-f-]{36}\\.(jpg|png|webp)$`).test(path)) {
+          agency[slot === 'cover' ? 'coverUrl' : 'logoUrl'] = await signArtistMedia(supabaseUrl, serviceKey, path);
+        }
+      }
+      delete agency.coverPath; delete agency.logoPath; delete agency.mediaWorkspaceId;
+      await Promise.all(agency.artists.map(async artist => {
+        // The agency RPC is the allowlist: only selected artists on this published
+        // catalogue can be expanded into an agency-managed public portfolio.
+        const details = await serviceJson<Array<{
+          stage_name: string; slug: string; bio: string | null; city: string | null; country_code: string | null;
+          languages: string[] | null; primary_genres: string[] | null; secondary_genres: string[] | null;
+          performance_formats: string[] | null; event_types: string[] | null; years_active: number | null;
+          website_url: string | null; instagram_url: string | null; soundcloud_url: string | null;
+          mixcloud_url: string | null; youtube_url: string | null; spotify_url: string | null;
+          cover_position_y: number; artist_image_style: string; artist_image_position_x: number;
+          artist_image_position_y: number; artist_image_scale: number; visual_source: 'portrait' | 'cue_id';
+          cue_id_config: unknown;
+        }>>(
+          `${supabaseUrl}/rest/v1/artists?id=eq.${encodeURIComponent(artist.id)}&select=stage_name,slug,bio,city,country_code,languages,primary_genres,secondary_genres,performance_formats,event_types,years_active,website_url,instagram_url,soundcloud_url,mixcloud_url,youtube_url,spotify_url,cover_position_y,artist_image_style,artist_image_position_x,artist_image_position_y,artist_image_scale,visual_source,cue_id_config&limit=1`,
+          { method: "GET" }, serviceKey
+        );
+        // Sign only media owned by this published artist; never an arbitrary path.
+        const owns = (path?: string | null) => path?.startsWith(`${artist.id}/`) ? path : null;
+        [artist.imageUrl, artist.coverUrl] = await Promise.all([
+          signArtistMedia(supabaseUrl, serviceKey, owns(artist.imagePath)),
+          signArtistMedia(supabaseUrl, serviceKey, owns(artist.coverPath))
+        ]);
+        const detail = details[0];
+        if (detail) {
+          const cueId = sanitizeCueIdConfig(detail.cue_id_config);
+          const visualMode = detail.visual_source === "cue_id" && cueId
+            ? "cue_id"
+            : detail.artist_image_style === "photo" ? "photo" : "artwork";
+          artist.profile = {
+            stageName: detail.stage_name, slug: detail.slug, bio: detail.bio, city: detail.city,
+            countryCode: detail.country_code, languages: detail.languages || [],
+            primaryGenres: detail.primary_genres || [], secondaryGenres: detail.secondary_genres || [],
+            performanceFormats: detail.performance_formats || [], eventTypes: detail.event_types || [],
+            yearsActive: detail.years_active, websiteUrl: detail.website_url, instagramUrl: detail.instagram_url,
+            soundcloudUrl: detail.soundcloud_url, mixcloudUrl: detail.mixcloud_url, youtubeUrl: detail.youtube_url,
+            spotifyUrl: detail.spotify_url, coverUrl: artist.coverUrl, coverPositionY: detail.cover_position_y,
+            artistImageUrl: artist.imageUrl, artistCutoutUrl: null, artistImageStyle: detail.artist_image_style,
+            artistImagePositionX: detail.artist_image_position_x, artistImagePositionY: detail.artist_image_position_y,
+            artistImageScale: detail.artist_image_scale, visualMode, cueId: visualMode === "cue_id" ? cueId : null,
+            passport: null, acceptingRequests: false, bookingManagedBy: agency.name
+          };
+        }
+        delete artist.imagePath; delete artist.coverPath;
+      }));
+      return json({ agency }, 200, { "Cache-Control": "no-store" });
+    } catch { return json({ error: "agency_profile_failed" }, 500, { "Cache-Control": "no-store" }); }
+  }
   const slug = (url.searchParams.get("slug") || "").trim().toLowerCase();
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 120) {
     return json({ error: "invalid_artist_slug" }, 400, { "Cache-Control": "no-store" });
@@ -339,11 +407,20 @@ Deno.serve(async request => {
     const artist = artists[0];
     if (!artist) return json({ error: "artist_not_found" }, 404, { "Cache-Control": "no-store" });
 
-    const routes = await serviceJson<Array<{ accepting_requests: boolean }>>(
-      `${supabaseUrl}/rest/v1/artist_booking_routes?artist_id=eq.${encodeURIComponent(artist.id)}&select=accepting_requests&limit=1`,
+    const routes = await serviceJson<Array<{ accepting_requests: boolean; workspace_id: string }>>(
+      `${supabaseUrl}/rest/v1/artist_booking_routes?artist_id=eq.${encodeURIComponent(artist.id)}&select=accepting_requests,workspace_id&limit=1`,
       { method: "GET" },
       serviceKey
     );
+
+    const bookingWorkspace = routes[0]?.workspace_id
+      ? await serviceJson<Array<{ name: string; kind: string }>>(
+        `${supabaseUrl}/rest/v1/workspaces?id=eq.${encodeURIComponent(routes[0].workspace_id)}&select=name,kind&limit=1`,
+        { method: "GET" },
+        serviceKey
+      )
+      : [];
+    const bookingManagedBy = bookingWorkspace[0]?.kind === "agency" ? bookingWorkspace[0].name : null;
 
     const workspaceArtists = await serviceJson<Array<{ workspace_id: string }>>(
       `${supabaseUrl}/rest/v1/workspace_artists?artist_id=eq.${encodeURIComponent(artist.id)}&select=workspace_id`,
@@ -450,7 +527,8 @@ Deno.serve(async request => {
         visualMode,
         cueId: visualMode === "cue_id" ? cueId : null,
         passport: artist.passport_public_enabled ? passport : null,
-        acceptingRequests: Boolean(routes[0]?.accepting_requests)
+        acceptingRequests: Boolean(routes[0]?.accepting_requests),
+        bookingManagedBy
       }
     }, 200, { "Cache-Control": "private, no-cache, max-age=0, must-revalidate" });
   } catch (error) {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { PublicArtistProfile, PublicBookingRequestInput } from '../domain/publicArtistProfile'
 import { isReservedArtistSlug, normalizePublicEntrySource } from '../domain/publicArtistProfile'
-import { getPublicArtistProfile, submitPublicBookingRequest } from '../services/publicBookingIngressApi'
+import { getPublicAgencyProfile, getPublicArtistProfile, submitPublicBookingRequest } from '../services/publicBookingIngressApi'
 
 type BookingFormSubmission = Omit<PublicBookingRequestInput, 'artistSlug' | 'requestId' | 'entrySource' | 'locale'>
 
@@ -21,7 +21,10 @@ const bookingReference = ref('')
 const bookingError = ref('')
 const requestId = ref('')
 
-const embedMode = computed(() => route.query.embed === '1')
+const agencySlug = computed(() => String(route.query.agency || '').trim().toLowerCase())
+const agencyManaged = computed(() => route.query.src === 'agency' && Boolean(agencySlug.value))
+const embedMode = computed(() => route.query.embed === '1' && !agencyManaged.value)
+const agencyHref = computed(() => agencySlug.value ? `/agency/${encodeURIComponent(agencySlug.value)}?artist=${encodeURIComponent(slug.value)}#agency-contact` : '/')
 const entrySource = computed(() => normalizePublicEntrySource(route.query.src) || (embedMode.value ? 'website' : null))
 const bookingFocused = computed(() => route.query.booking === '1' || embedMode.value)
 const locale = computed<'es' | 'en'>(() => preferences.locale.value === 'en' ? 'en' : 'es')
@@ -46,7 +49,16 @@ async function loadProfile() {
       loadError.value = 'not_found'
       return
     }
-    profile.value = await getPublicArtistProfile(String(config.public.supabaseUrl || ''), slug.value)
+    if (agencyManaged.value) {
+      const agency = await getPublicAgencyProfile(String(config.public.supabaseUrl || ''), agencySlug.value)
+      profile.value = agency.artists.find(artist => artist.slug === slug.value)?.profile || null
+      if (!profile.value) {
+        loadError.value = 'not_found'
+        return
+      }
+    } else {
+      profile.value = await getPublicArtistProfile(String(config.public.supabaseUrl || ''), slug.value)
+    }
     analytics.track('artist_profile_viewed', {
       entry_source: entrySource.value || 'direct',
       embed: embedMode.value
@@ -95,7 +107,7 @@ async function submitBooking(payload: BookingFormSubmission) {
 }
 
 onMounted(loadProfile)
-watch(slug, () => {
+watch([slug, agencySlug, agencyManaged], () => {
   profile.value = null
   bookingSent.value = false
   bookingConfirmationSent.value = null
@@ -107,11 +119,13 @@ watch(slug, () => {
 
 useHead(() => {
   const artist = profile.value
-  const title = artist ? `${artist.stageName} · Booking | Cuebooker` : 'Artist · Cuebooker'
+  const title = artist ? `${artist.stageName} · ${agencyManaged.value ? (locale.value === 'es' ? 'Catálogo' : 'Catalogue') : 'Booking'} | Cuebooker` : 'Artist · Cuebooker'
   const description = artist?.bio?.trim().slice(0, 180) || (locale.value === 'es'
-    ? 'Perfil profesional y solicitudes de booking en Cuebooker.'
-    : 'Professional artist profile and booking enquiries on Cuebooker.')
-  const canonical = `https://cuebooker.com/${encodeURIComponent(slug.value)}`
+    ? (agencyManaged.value ? 'Artista representado por una agencia en Cuebooker.' : 'Perfil profesional y solicitudes de booking en Cuebooker.')
+    : (agencyManaged.value ? 'Agency-represented artist portfolio on Cuebooker.' : 'Professional artist profile and booking enquiries on Cuebooker.'))
+  const canonical = agencyManaged.value
+    ? `https://cuebooker.com/${encodeURIComponent(slug.value)}?src=agency&agency=${encodeURIComponent(agencySlug.value)}`
+    : `https://cuebooker.com/${encodeURIComponent(slug.value)}`
   return {
     htmlAttrs: { lang: locale.value },
     title,
@@ -154,6 +168,9 @@ useHead(() => {
     :booking-confirmation-sent="bookingConfirmationSent"
     :booking-reference="bookingReference"
     :booking-error="bookingError"
+    :agency-managed="agencyManaged"
+    :agency-href="agencyHref"
+    :agency-name="profile.bookingManagedBy || ''"
     @submit-booking="submitBooking"
   />
 

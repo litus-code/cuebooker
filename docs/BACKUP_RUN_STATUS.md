@@ -1,3 +1,5 @@
+> Historical failed attempt only. Newer docs/HANDOFF.md records successful backup, restore and migration rehearsal. No production deployment yet.
+
 # Backup execution handoff — 4 October 2026
 
 Production export authorized by owner, destination encrypted GitHub artifact. Workflow installed on main at 5debf56c9d3c73b6eb54fbcac197fa49f6307aad through PR102, without web deployment. Run 37168334355 attempts 1/2 failed before export due invalid URI. Owner corrected it privately; attempt 3 passed input validation but failed in Supabase command, uploaded no artifact. No database mutation, restore or app deployment.

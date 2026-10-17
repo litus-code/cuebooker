@@ -27,6 +27,13 @@ verify_jwt = false
 [functions.submit-booking-request]
 verify_jwt = false
 
+[functions.submit-agency-enquiry]
+verify_jwt = false
+
+# Handler requires a server credential; normal user tokens are rejected.
+[functions.mailbox-beta-admin]
+verify_jwt = false
+
 [functions.booking-follow-up]
 verify_jwt = false
 
@@ -37,4 +44,34 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.brevo-transactional-events]
+verify_jwt = false
+
+# GET callback uses an expiring single-use state; POST validates Auth identity.
+[functions.connected-mailbox]
+verify_jwt = false
+
+# Public provider callback; POST requires raw-body HMAC authentication.
+[functions.nylas-mailbox-events]
+verify_jwt = false
+
+# Scheduled/operator callback requires MAILBOX_WORKER_SECRET and explicit server gate.
+[functions.process-mailbox-incoming]
+verify_jwt = false
+
+# Push JWT signature, audience and service account are checked server-side.
+[functions.gmail-mailbox-events]
+verify_jwt = false
+
+# Private scheduled worker validates MAILBOX_WORKER_SECRET.
+[functions.process-gmail-history]
+verify_jwt = false
+
+[functions.get-booking-email-attachment]
+verify_jwt = true
+
+[functions.recover-mailbox-attachments]
+verify_jwt = true
+
+# Optional consented campaign collector; bounded, rate-limited and no account creation.
+[functions.campaign-analytics]
 verify_jwt = false

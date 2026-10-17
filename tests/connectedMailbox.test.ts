@@ -1,0 +1,45 @@
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import { createNylasMailbox,mailboxAuthorizationUrl,normalizeMailboxEmail } from '../supabase/functions/_shared/nylasMailbox.ts'
+const config={apiUri:'https://api.us.nylas.com',apiKey:'server-secret',clientId:'client',callbackUri:'https://staging.invalid/functions/v1/connected-mailbox'}
+test('provider timeout is distinct from expired authorization and is never retried',async()=>{
+ let calls=0
+ const api=createNylasMailbox(config,(async()=>{calls++;throw new DOMException('private timeout detail','TimeoutError')}) as typeof fetch)
+ await assert.rejects(api.grant('grant'),{message:'mailbox_provider_timeout'})
+ assert.equal(calls,1)
+})
+test('authorization uses hosted provider, opaque state and email-only scopes without API secret',()=>{
+ for(const provider of ['google','microsoft','imap'] as const){
+  const target=new URL(mailboxAuthorizationUrl(config,{email:' TEST@EXAMPLE.INVALID ',provider,state:'a'.repeat(64)}))
+  assert.equal(target.origin,config.apiUri);assert.equal(target.searchParams.get('login_hint'),'test@example.invalid');assert.equal(target.searchParams.get('state'),'a'.repeat(64));assert.equal(target.searchParams.get('redirect_uri'),config.callbackUri);assert.equal(target.href.includes(config.apiKey),false)
+  assert.doesNotMatch(target.searchParams.get('scope')||'',/calendar|contacts/i)
+ }
+ assert.throws(()=>mailboxAuthorizationUrl({...config,apiUri:'https://attacker.invalid'},{email:'a@b.invalid',provider:'google',state:'state'}))
+ for(const email of ['bad','a@b.invalid\nInjected','a b@example.invalid'])assert.throws(()=>normalizeMailboxEmail(email))
+})
+test('inbox resolution uses provider attributes and opaque IDs, excluding spam/trash/sent',async()=>{
+ const api=createNylasMailbox(config,(async()=>Response.json({data:[{id:'opaque-inbox',attributes:['\\Inbox'],system_folder:true},{id:'opaque-junk',attributes:['\\Junk']},{id:'opaque-trash',attributes:['\\Trash']},{id:'opaque-sent',attributes:['\\Sent']},{id:'fake-inbox-name',name:'Inbox',system_folder:true}]})) as typeof fetch);
+ assert.deepEqual(await api.inboxFolders('grant'),{inbox:['opaque-inbox'],excluded:['opaque-junk','opaque-trash','opaque-sent']});
+})
+test('exchange keeps API capability server-side and validates grant metadata',async()=>{
+ const calls:Array<{url:string;options:RequestInit}>=[]
+ const request=(async(url:any,options:any)=>{calls.push({url,options});return new Response(JSON.stringify(url.endsWith('/token')?{grant_id:'grant/one',access_token:'unused-secret'}:{data:{email:'TEST@EXAMPLE.INVALID',provider:'google',grant_status:'valid'}}),{status:200})}) as typeof fetch
+ const api=createNylasMailbox(config,request),id=await api.exchange('authorization-code'),grant=await api.grant(id)
+ assert.equal(id,'grant/one');assert.deepEqual(grant,{email:'test@example.invalid',provider:'google',status:'valid'});assert.equal(calls[1].url,'https://api.us.nylas.com/v3/grants/grant%2Fone');assert.equal(JSON.parse(String(calls[0].options.body)).client_secret,config.apiKey)
+})
+test('provider errors never expose provider bodies or private tokens',async()=>{
+ for(const [status,expected] of [[401,'mailbox_reconnect_required'],[403,'mailbox_reconnect_required'],[404,'mailbox_not_found'],[500,'mailbox_provider_unavailable']] as const){
+  const api=createNylasMailbox(config,(async()=>new Response('private message and secret',{status})) as typeof fetch)
+  await assert.rejects(api.grant('grant'),{message:expected})
+ }
+ const invalid=createNylasMailbox(config,(async()=>new Response(JSON.stringify({data:{provider:'unknown',email:'a@b.invalid'}}))) as typeof fetch)
+ await assert.rejects(invalid.grant('grant'),{message:'invalid_provider_response'})
+})
+
+test('provider detection handles custom Workspace and unknown services without guessing',async()=>{
+ const urls:string[]=[]
+ const api=createNylasMailbox(config,(async(url:any)=>{urls.push(url);return Response.json({data:{provider:urls.length===1?'google':'unknown'}})}) as typeof fetch)
+ assert.equal(await api.detect('test@gmail.com'),'google');assert.equal(await api.detect('test@hotmail.es'),'microsoft');assert.equal(urls.length,0)
+ assert.equal(await api.detect('test@workspace.invalid'),'google');assert.equal(await api.detect('test@unknown.invalid'),null)
+ assert.match(urls[0],/\/v3\/providers\/detect\?/);assert.equal(new URL(urls[0]).searchParams.get('email'),'test@workspace.invalid')
+})

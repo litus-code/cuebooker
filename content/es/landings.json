@@ -1,0 +1,249 @@
+{
+  "home": "Inicio",
+  "login": "Acceder",
+  "how": "Cómo funciona",
+  "skip": "Saltar al contenido",
+  "example": "Ejemplo ilustrativo · datos ficticios · sin acciones reales",
+  "photo": "Escena editorial ilustrativa",
+  "privacy": "Privacidad",
+  "legal": "Aviso legal",
+  "cookies": "Cookies",
+  "contact": "Contacto",
+  "distributionTitle": "UN ENLACE. MUCHAS FORMAS DE RECIBIR BOOKINGS.",
+  "distributionBody": "Tu ficha pública y su formulario, donde ya te encuentran. El promotor puede enviar una solicitud sin registrarse.",
+  "channels": [
+    [
+      "Instagram",
+      "Enlaza tu perfil desde la bio o compártelo por mensaje directo."
+    ],
+    [
+      "WhatsApp Business",
+      "Configura el enlace en mensajes de bienvenida, ausencia o respuestas preparadas."
+    ],
+    [
+      "Tu web",
+      "Inserta el widget de booking o enlaza directamente al formulario."
+    ],
+    [
+      "QR",
+      "Lleva tu ficha a carteles, EPK y otros soportes físicos o digitales."
+    ],
+    [
+      "Enlace directo",
+      "Compártelo por correo, mensaje o cualquier otro medio."
+    ]
+  ],
+  "manual": "Instagram y WhatsApp no se conectan automáticamente. Tú configuras y distribuyes el enlace en cada plataforma.",
+  "profileName": "Tu nombre artístico",
+  "publicProfile": "PERFIL PÚBLICO",
+  "linkExample": "Estructura de enlace de ejemplo; no es un perfil publicado.",
+  "journeyTitle": "DE LA SOLICITUD AL BOOKING.",
+  "journeyBody": "Una oportunidad conserva su conversación, sus condiciones y la próxima acción. Un hold no equivale a una confirmación.",
+  "steps": [
+    "Formulario",
+    "Solicitud",
+    "Conversación",
+    "Hold",
+    "Confirmación",
+    "Calendario"
+  ],
+  "stepBodies": [
+    "El promotor envía los datos desde tu perfil público.",
+    "Revisa el contacto, la fecha y la propuesta antes de continuar.",
+    "Registra mensajes y acuerdos en el mismo booking.",
+    "Marca la disponibilidad provisional y su vencimiento.",
+    "Confirma las condiciones cuando la decisión esté acordada.",
+    "Consulta las fechas y distingue holds de confirmaciones."
+  ],
+  "emailTitle": "UNA OFERTA ENTRA. CUEBOOKER LA PONE EN ORDEN.",
+  "emailBody": "Con un buzón aprobado y la detección activada, Cuebooker identifica posibles propuestas y prepara una solicitud con los datos disponibles. Tú revisas y decides.",
+  "emailStatus": "SMART EMAIL CAPTURE",
+  "emailStages": [
+    [
+      "Detección",
+      "Distingue posibles propuestas de booking de otros correos."
+    ],
+    [
+      "Extracción",
+      "Recoge contacto, artista, fecha, venue y condiciones cuando aparecen en el mensaje."
+    ],
+    [
+      "Solicitud y revisión",
+      "Prepara una solicitud con los datos disponibles para que la compruebes y decidas el siguiente paso."
+    ]
+  ],
+  "emailNote": "Conexión de correo en beta privada, sujeta a aprobación y plazas limitadas. PDF, PNG y JPG compatibles dentro de los límites indicados en el workspace; otros formatos pueden no incorporarse. El formulario público no requiere conectar tu buzón.",
+  "ecosystemTitle": "MÁS QUE UNA FICHA.",
+  "ecosystem": [
+    [
+      "Perfil público",
+      "Tu presentación profesional y la puerta de entrada a solicitudes.",
+      "Entrada pública"
+    ],
+    [
+      "CUE Passport",
+      "CUE Passport básico ya se construye a partir de los bookings confirmados: ciudades, salas y fechas. Tú decides si muestras su resumen en el perfil público. Las opciones avanzadas y de media dependen del plan.",
+      "PASSPORT BÁSICO / BETA"
+    ],
+    [
+      "CUE ID",
+      "Una identidad visual propia dentro del universo Cuebooker.",
+      "En desarrollo"
+    ]
+  ],
+  "rosterTitle": "TU ROSTER, ORGANIZADO.",
+  "rosterBody": "Revisa las oportunidades de todos tus artistas. Selecciona uno para centrarte en sus solicitudes, conversaciones y fechas.",
+  "rosterStatus": "WORKSPACE MULTIARTISTA / BETA",
+  "artist": "Artista",
+  "requests": "Solicitud",
+  "status": "Estado",
+  "date": "Próxima fecha",
+  "rosterRows": [
+    [
+      "Tu artista 01",
+      "Propuesta A",
+      "En conversación",
+      "Por definir"
+    ],
+    [
+      "Tu artista 02",
+      "Propuesta B",
+      "Hold",
+      "Fecha provisional"
+    ],
+    [
+      "Tu artista 03",
+      "—",
+      "Sin solicitud",
+      "—"
+    ]
+  ],
+  "contextTitle": "CADA PROPUESTA CONSERVA SU CONTEXTO.",
+  "contextBody": "Abre una propuesta y tendrás a mano el artista, el contacto, lo hablado y el siguiente paso. Si la consulta llega a la agencia, decide qué artista encaja sin perder la conversación.",
+  "context": [
+    [
+      "Artista implicado",
+      "Tu artista 01"
+    ],
+    [
+      "Fecha y venue",
+      "Por acordar · venue de ejemplo"
+    ],
+    [
+      "Conversación",
+      "Consultar disponibilidad y formato del evento"
+    ],
+    [
+      "Próximo paso",
+      "Revisar la propuesta y responder al contacto"
+    ]
+  ],
+  "agencyJourney": "DEL CONTACTO A LA CONFIRMACIÓN.",
+  "agencyDistribution": "LOS PERFILES DE TU ROSTER, EN TODAS PARTES.",
+  "dj": {
+    "tag": "CUEBOOKER / FOR DJs",
+    "top": "TU PERFIL.",
+    "accent": "TU BOOKING.",
+    "lead": "Comparte tu perfil, recibe propuestas y gestiona tus fechas desde un solo lugar.",
+    "create": "CREAR MI PERFIL",
+    "see": "DESCUBRIR CÓMO FUNCIONA",
+    "closing": "TU PRÓXIMA SOLICITUD EMPIEZA AQUÍ.",
+    "other": "También para managers y agencias",
+    "otherPath": "/agency",
+    "alt": "Escena editorial ilustrativa de un DJ vestido junto a una cabina en un backstage industrial."
+  },
+  "agency": {
+    "tag": "CUEBOOKER / FOR AGENCIES",
+    "top": "TODOS TUS ARTISTAS.",
+    "accent": "UN SOLO CONTROL.",
+    "lead": "Organiza las solicitudes, negociaciones y fechas de tu roster sin perder el contexto de cada artista.",
+    "create": "CREAR ESPACIO DE AGENCIA",
+    "see": "VER CÓMO FUNCIONA",
+    "closing": "TU ROSTER. TUS BOOKINGS. TODO CONECTADO.",
+    "other": "También para DJs independientes",
+    "otherPath": "/dj",
+    "alt": "Escena editorial ilustrativa de una profesional de booking en una mesa de trabajo de un estudio industrial.",
+    "initialAccess": "Gestiona tu roster y sus solicitudes. Correo con IA sujeto a aprobación en beta."
+  },
+  "cookiePreferences": "Preferencias de cookies",
+  "menu": {
+    "label": "Navegación",
+    "open": "Abrir menú",
+    "close": "Cerrar menú"
+  },
+  "initialAccess": "Bookings, perfil público y Passport básico. Correo con IA sujeto a aprobación en beta.",
+  "product": {
+    "label": "PRODUCTO / VISTAS REALES",
+    "title": "ESTO ES LO QUE ENCONTRARÁS DENTRO.",
+    "agencyTitle": "DEL ROSTER AL CONTEXTO DE CADA ARTISTA.",
+    "intro": "Conversación, siguientes pasos y fechas en el mismo workspace.",
+    "caption": "Interfaz actual con datos de prueba. ORBIT, NOVA y las propuestas son ficticios; no son cuentas ni bookings de clientes.",
+    "views": [
+      "Conversación",
+      "Calendario",
+      "Selección de artista"
+    ],
+    "descriptions": [
+      "Abre una propuesta para revisar el contacto, la conversación y el próximo movimiento.",
+      "Las fechas confirmadas y los holds se consultan junto a tu disponibilidad.",
+      "Revisa el conjunto y filtra por artista antes de abrir su contexto."
+    ],
+    "imageAlts": [
+      "Workspace real de Cuebooker mostrando una conversación con datos ficticios",
+      "Calendario real de Cuebooker con fechas de prueba",
+      "Vista real de roster y selector de artistas con ORBIT y NOVA ficticios"
+    ],
+    "openImage": "Ampliar captura"
+  },
+  "profileShowcase": {
+    "title": "TU PROYECTO. LISTO PARA RECIBIR PROPUESTAS.",
+    "body": "Una página para presentarte, compartir tu sonido y tus enlaces, y recibir solicitudes. El promotor puede proponer una fecha sin crear una cuenta.",
+    "parts": [
+      [
+        "Presentación",
+        "Nombre artístico, biografía, ciudad y formatos."
+      ],
+      [
+        "Sonido y enlaces",
+        "Tus sesiones y los canales donde ya te escuchan."
+      ],
+      [
+        "Solicitudes",
+        "Nombre, email y propuesta; los detalles se pueden añadir después."
+      ]
+    ],
+    "caption": "Captura del perfil público real con un artista de prueba. La publicación y el contenido los controla el artista.",
+    "alt": "Perfil público de ORBIT, artista ficticio, con entrada de solicitudes de fecha",
+    "views": [
+      "Presentación",
+      "Sonido y enlaces"
+    ],
+    "detailAlt": "Sonido y enlaces del perfil público de ORBIT, artista de prueba"
+  },
+  "passport": {
+    "title": "LAS FECHAS CONFIRMADAS DEJAN TRAYECTORIA.",
+    "status": "PASSPORT BÁSICO / BETA",
+    "body": "Los bookings confirmados construyen tu trayectoria: ciudades, salas y fechas en la constelación y la cronología del Passport básico. Tú controlas si su resumen aparece en el perfil público. La media vinculada requiere un plan compatible.",
+    "caption": "Interfaz actual de CUE Passport con bookings confirmados ficticios. Amplía la captura para explorar la trayectoria.",
+    "steps": [
+      "Booking confirmado",
+      "Ciudad y sala",
+      "Trayectoria en Passport"
+    ],
+    "identity": "CUE ID · En desarrollo. Una representación visual opcional de tu proyecto; no sustituye la gestión de bookings.",
+    "alt": "CUE Passport real con constelación de ciudades, salas y fechas de prueba"
+  },
+  "catalog": {
+    "title": "TU ROSTER TAMBIÉN PUEDE TENER UNA ENTRADA PÚBLICA.",
+    "body": "El catálogo público está en beta. Al publicarlo desde Ajustes, eliges los artistas visibles y el promotor puede consultar a la agencia sin registrarse. Solo se muestra el roster que decidas publicar."
+  },
+  "cueId": {
+    "title": "TU IDENTIDAD. A TU MANERA.",
+    "status": "En desarrollo",
+    "body": "Estamos creando un espacio donde podrás diseñar tu propio avatar y darle una identidad visual única a tu proyecto artístico. La idea es que, en el futuro, puedas mostrarlo en tu perfil de Cuebooker y compartirlo en tus redes, si te apetece.",
+    "alts": [
+      "Concepto de avatar femenino de CUE ID con pelo y ropa",
+      "Concepto de avatar masculino de CUE ID con pelo y ropa"
+    ]
+  }
+}

@@ -106,3 +106,13 @@ for index in range(len(answers)):
 `], {encoding:'utf8'})
   assert.equal(r.status,0,r.stderr)
 })
+
+test('all 39 real candidate migrations pass their saved checksums before restore', () => {
+  const r = spawnSync('python3', ['-c', String.raw`
+import importlib.util
+s=importlib.util.spec_from_file_location('rehearsal','scripts/rehearse-release-migrations.py')
+m=importlib.util.module_from_spec(s);s.loader.exec_module(m)
+assert len(m.load_migrations('.', 'scripts/release-migration-manifest.json')) == 39
+`], { encoding: 'utf8' })
+  assert.equal(r.status, 0, r.stderr)
+})

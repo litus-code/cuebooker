@@ -1,0 +1,101 @@
+# npm audit report
+
+@simple-git/argv-parser  <2.0.1
+Severity: critical
+simple-git: `VISUAL` editor environment variable is omitted from unsafe editor detection - https://github.com/advisories/GHSA-v5rq-49vh-5v5c
+fix available via `npm audit fix`
+node_modules/@simple-git/argv-parser
+  simple-git  <=4.0.1
+  Depends on vulnerable versions of @simple-git/argv-parser
+  node_modules/simple-git
+    @nuxt/devtools  0.8.1 - 3.4.2
+    Depends on vulnerable versions of simple-git
+    node_modules/@nuxt/devtools
+
+brace-expansion  2.0.0 - 2.1.6 || 4.0.0 - 5.0.11
+Severity: high
+brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service - https://github.com/advisories/GHSA-q2hr-2g5m-vwhr
+brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service - https://github.com/advisories/GHSA-q2hr-2g5m-vwhr
+brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion - https://github.com/advisories/GHSA-qhr7-859c-m2p7
+brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion - https://github.com/advisories/GHSA-qhr7-859c-m2p7
+brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion - https://github.com/advisories/GHSA-6j4f-fj2g-mc7p
+brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion - https://github.com/advisories/GHSA-6j4f-fj2g-mc7p
+fix available via `npm audit fix`
+node_modules/archiver-utils/node_modules/brace-expansion
+node_modules/brace-expansion
+node_modules/readdir-glob/node_modules/brace-expansion
+
+braces  *
+Severity: high
+braces vulnerable to stack-exhaustion denial of service through deeply nested patterns - https://github.com/advisories/GHSA-vfj7-8cjw-p6xm
+fix available via `npm audit fix`
+node_modules/braces
+  micromatch  >=0.2.0
+  Depends on vulnerable versions of braces
+  node_modules/micromatch
+    fast-glob  *
+    Depends on vulnerable versions of micromatch
+    node_modules/fast-glob
+      @intlify/unplugin-vue-i18n  <=11.2.5 || 12.0.0-alpha.0 - 12.0.0-alpha.2
+      Depends on vulnerable versions of fast-glob
+      node_modules/@intlify/unplugin-vue-i18n
+      globby  >=8.0.0
+      Depends on vulnerable versions of fast-glob
+      Depends on vulnerable versions of micromatch
+      node_modules/globby
+
+devalue  <=5.9.2
+Severity: high
+devalue: `stringify`/`uneval` serialize shared memory - https://github.com/advisories/GHSA-j22f-vq7h-c4qm
+devalue: Residual sparse-array CPU amplification in uneval - https://github.com/advisories/GHSA-hx4r-w6wj-j8fg
+devalue: Repeated primitive strings cause quadratic expansion in uneval - https://github.com/advisories/GHSA-mcm9-63f2-9j32
+devalue: Sparse arrays emitted by uneval cause eager allocation when evaluated - https://github.com/advisories/GHSA-wf3x-273g-mvxv
+devalue: stringifyAsync can cause an unhandled rejection despite a caught returned promise - https://github.com/advisories/GHSA-x5rw-q4pp-hg5g
+devalue: Malformed null-prototype object keys bypass __proto__ rejection via property-key coercion - https://github.com/advisories/GHSA-4q55-j62x-fr9h
+fix available via `npm audit fix`
+node_modules/devalue
+
+node-forge  *
+Severity: high
+node-forge RSA PKCS#1 v1.5 signature verification accepts extra nested DigestAlgorithm elements - https://github.com/advisories/GHSA-86w9-cpqp-85rv
+fix available via `npm audit fix`
+node_modules/node-forge
+  listhen  >=0.3.0
+  Depends on vulnerable versions of node-forge
+  node_modules/listhen
+    @nuxt/cli  3.20.0 - 3.37.0
+    Depends on vulnerable versions of listhen
+    node_modules/@nuxt/cli
+      nuxt  >=3.15.2
+      Depends on vulnerable versions of @nuxt/cli
+      Depends on vulnerable versions of @nuxt/nitro-server
+      node_modules/nuxt
+    nitropack  >=0.5.4
+    Depends on vulnerable versions of listhen
+    node_modules/nitropack
+      @nuxt/nitro-server  >=3.20.0
+      Depends on vulnerable versions of nitropack
+      node_modules/@nuxt/nitro-server
+
+serialize-javascript  7.1.1
+Serialize JavaScript: Cross-site scripting (XSS) via unescaped </script> in serialized function bodies - https://github.com/advisories/GHSA-gfhx-hw2g-v5hg
+fix available via `npm audit fix`
+node_modules/serialize-javascript
+
+shell-quote  1.8.4 - 1.10.0
+Severity: critical
+shell-quote: `quote()` command injection via a line terminator in a token after a `{ comment }` token - https://github.com/advisories/GHSA-pqg4-j6r4-53mv
+fix available via `npm audit fix`
+node_modules/shell-quote
+
+
+source-map-js  1.0.0 - 1.2.1
+Severity: high
+source-map-js allows event-loop denial of service through indexed source-map section offsets - https://github.com/advisories/GHSA-68fv-2mgg-jv7q
+fix available via `npm audit fix`
+node_modules/source-map-js
+
+19 vulnerabilities (1 low, 15 high, 3 critical)
+
+To address all issues, run:
+  npm audit fix

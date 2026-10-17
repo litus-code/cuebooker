@@ -24,11 +24,12 @@ const copy = computed(() => locale.value === 'es' ? {
   saving: 'Guardando…',
   mismatch: 'Las contraseñas no coinciden.',
   short: 'La contraseña debe tener al menos 8 caracteres.',
+  samePassword: 'La nueva contraseña debe ser distinta de la actual.',
   invalid: 'Este enlace de recuperación no es válido o ha caducado.',
   requestAgain: 'Solicitar otro enlace',
   success: 'Contraseña actualizada. Ya puedes volver a entrar con la nueva contraseña.',
   signin: 'Volver a entrar',
-  generic: 'No se pudo actualizar la contraseña. Solicita un enlace nuevo e inténtalo otra vez.',
+  generic: 'No se pudo actualizar la contraseña. Vuelve a intentarlo.',
   titleMeta: 'Nueva contraseña | Cuebooker'
 } : {
   kicker: 'ACCOUNT / RECOVERY',
@@ -42,15 +43,18 @@ const copy = computed(() => locale.value === 'es' ? {
   saving: 'Saving…',
   mismatch: 'The passwords do not match.',
   short: 'The password must contain at least 8 characters.',
+  samePassword: 'The new password must be different from your current password.',
   invalid: 'This recovery link is invalid or has expired.',
   requestAgain: 'Request another link',
   success: 'Password updated. You can now sign in with your new password.',
   signin: 'Back to sign in',
-  generic: 'The password could not be updated. Request a new link and try again.',
+  generic: 'The password could not be updated. Please try again.',
   titleMeta: 'New password | Cuebooker'
 })
 
-onMounted(async () => {
+// Prerender hydration restores the recovery fragment after component mount.
+// Wait for the original URL before deciding that a recovery link is missing.
+onNuxtReady(async () => {
   try {
     const consumed = await auth.consumePasswordRecoveryFromUrl()
     if (!consumed) await auth.initialize()
@@ -81,8 +85,9 @@ async function submit() {
     confirmPassword.value = ''
     completed.value = true
     ready.value = false
-  } catch {
-    errorMessage.value = copy.value.generic
+  } catch (error) {
+    const code = (error as { data?: { code?: string } })?.data?.code
+    errorMessage.value = code === 'same_password' ? copy.value.samePassword : copy.value.generic
   } finally {
     saving.value = false
   }
@@ -129,7 +134,7 @@ useHead(() => ({ title: copy.value.titleMeta, htmlAttrs: { lang: locale.value } 
             </button>
           </div>
         </label>
-        <p v-if="errorMessage" class="reset-message">{{ errorMessage }}</p>
+        <p v-if="errorMessage" class="reset-message" role="alert">{{ errorMessage }}</p>
         <button type="submit" :disabled="saving">
           {{ saving ? copy.saving : copy.save }}
         </button>
@@ -162,10 +167,11 @@ useHead(() => ({ title: copy.value.titleMeta, htmlAttrs: { lang: locale.value } 
   font:700 12px/1.2 monospace;
   letter-spacing:.12em;
 }
-h1{
+.reset-panel h1{
   margin:0;
-  font-size:clamp(2.3rem,7vw,4.8rem);
-  line-height:.92;
+  font-size:clamp(1.75rem,4vw,2.5rem);
+  line-height:1.08;
+  overflow-wrap:anywhere;
   text-transform:uppercase;
 }
 .reset-copy{

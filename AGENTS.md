@@ -117,6 +117,10 @@ entry attribution = instagram
 
 ## 7. Git and deployment safety
 
+### Release version policy (owner decision, 4 October 2026)
+
+Before every new staging/production release, update the product version in `app/domain/appRelease.ts` without asking the owner to remind you. Increment the patch by default (Beta 0.0.2 -> Beta 0.0.3) unless a different version is explicitly agreed. One release keeps the same version across PR review, stable staging and production: promote the exact reviewed version, never relabel only one environment. Retrying or redeploying the same revision does not increment it. Record the version and deployed SHA/environment in `docs/HANDOFF.md`. Do not deploy merely because the version was updated; normal environment authorization and backend release checks still apply.
+
 Default rule: agents do not commit/push unless the user explicitly asks the current agent to apply the agreed changes directly to the connected repository.
 
 Direct-repository authorization is scoped to the current agreed work. It is not blanket permission to merge PRs or deploy production.

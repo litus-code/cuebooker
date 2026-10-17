@@ -269,6 +269,8 @@ Be exact about what was validated:
 
 ## 10. Production gate
 
+Owner release-version rule (4 October 2026): agents must update the single product version in `app/domain/appRelease.ts` before each new release without another reminder. Default to the next patch number. Stable staging and production must carry the same reviewed version and code revision; a retry of that revision keeps its version. Record version, SHA and environment in the handoff. Version changes do not authorize a deployment or bypass production gates.
+
 Production is always a separate gate for important backend/data changes.
 
 Before production:

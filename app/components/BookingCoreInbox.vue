@@ -1,25 +1,38 @@
 <script setup lang="ts">
-import type { Activity, Contact, CoreBooking, Counterparty, CoreBookingStatus } from '../domain/bookingCore'
-import type { BookingEmailMessage } from '../services/bookingCoreApi'
+import {groupConversationAttachments} from '../domain/conversationAttachments'
+import {downloadBookingAttachment} from '../services/downloadBookingAttachment'
+import type { Activity, Contact, CoreBooking, Counterparty, CoreBookingStatus, Hold } from '../domain/bookingCore'
+import type { BookingEmailMessage, WorkspaceActivityHistoryRow } from '../services/bookingCoreApi'
 import { buildFollowUpDraft, shouldSuggestFollowUp } from '../services/followUpDraft'
 import { buildFailedEmailRetryDraft } from '../services/emailRetryDraft'
+import { emailReplyPresentation } from '../services/emailReplyPresentation'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
+  mailboxArtists?: Array<{id:string;stage_name:string}>
   workspaceId: string
   bookings: CoreBooking[]
   locale: 'es' | 'en'
+  canOperate?: boolean
   focusBookingId?: string
-}>()
+  demoData?: { contacts: Contact[]; counterparties: Counterparty[]; activities: WorkspaceActivityHistoryRow[]; holds: Array<Hold & { bookings: { artist_id: string } }>; nextMoves: Record<string, string> }
+}>(), { canOperate: true })
 
 const emit = defineEmits<{ operationsChanged: []; cueRequested: []; bookingOpened: [bookingId: string]; calendarRequested: [date: string] }>()
 const { capacity: cueCapacity } = useCueEntitlements()
 const bookingCore = useBookingCore()
+const mailboxApi = useConnectedMailbox()
+const mailboxSyncNotice=ref('')
+const reviewEmailsOpen=ref(false)
 const analytics = useAnalytics()
 const selectedBookingId = ref('')
 const contacts = ref<Contact[]>([])
 const counterparties = ref<Counterparty[]>([])
 const activities = ref<Activity[]>([])
 const emailMessages = ref<BookingEmailMessage[]>([])
+const bookingAttachments = ref<Array<{id:string;email_message_id:string|null;attachment_index?:number;file_name:string;byte_size:number}>>([])
+const groupedAttachments = computed(()=>groupConversationAttachments(activities.value,emailMessages.value,bookingAttachments.value,props.locale))
+const attachmentBusy = ref(false)
+const attachmentNotice = ref('')
 const conversationThread = ref<HTMLElement | null>(null)
 const decisionModal = ref<HTMLElement | null>(null)
 const decisionTrigger = ref<HTMLElement | null>(null)
@@ -30,13 +43,70 @@ const pendingDecision = ref<Extract<CoreBookingStatus, 'confirmed' | 'rejected' 
 const decisionError = ref('')
 const selectedBookingHasConflict = ref(false)
 const archiving = ref(false)
+const archiveDialog = ref<HTMLDialogElement | null>(null)
+const pendingArchive = ref<{ id: string; workspaceId: string; archived: boolean } | null>(null)
+const archiveError = ref('')
 const archiveView = ref<'inbox' | 'archived'>('inbox')
 const realSearch = ref('')
 const realStatusFilter = ref<'all' | CoreBookingStatus>('all')
 const visibleLimit = ref(10)
+const demoRevision = ref(0)
+const demoText = ref('')
+const demoChannel = ref<'note' | 'phone' | 'whatsapp' | 'instagram'>('note')
+const demoMoves = ref<Record<string, string>>(props.demoData?.nextMoves || {})
+const demoMoveText = ref('')
+const demoHolds = ref<Record<string, boolean>>(Object.fromEntries((props.demoData?.holds || []).filter(item => item.status === 'active').map(item => [item.booking_id, true])))
+const demoActivities = computed(() => { void demoRevision.value; return props.demoData?.activities || [] })
+const activeDemoMove = computed(() => selectedBooking.value ? demoMoves.value[selectedBooking.value.id] : '')
+const activeDemoHold = computed(() => selectedBooking.value ? Boolean(demoHolds.value[selectedBooking.value.id]) : false)
+
+function addDemoActivity(type: Activity['type'], body: string, direction: Activity['direction'] = 'internal') {
+  const booking = selectedBooking.value
+  if (!props.demoData || !booking || !body.trim()) return
+  const now = new Date().toISOString()
+  props.demoData.activities.push({ id: `preview-${props.demoData.activities.length + 1}`, workspace_id: props.workspaceId, booking_id: booking.id,
+    type, direction, contact_id: booking.primary_contact_id, actor_user_id: null, body: body.trim(), metadata: {},
+    visibility: 'workspace', occurred_at: now, created_by: 'preview', created_at: now,
+    bookings: { id: booking.id, artist_id: booking.artist_id, event_name: booking.event_name, venue_name: booking.venue_name, city: booking.city } })
+  demoRevision.value++
+  activities.value = demoActivities.value.filter(item => item.booking_id === booking.id)
+}
+function saveDemoNote() {
+  if (!demoText.value.trim()) return
+  addDemoActivity(demoChannel.value, demoText.value)
+  if (selectedBooking.value?.status === 'new') selectedBooking.value.status = 'in_conversation'
+  demoText.value = ''
+}
+function saveDemoMove() {
+  if (!selectedBooking.value || !demoMoveText.value.trim()) return
+  demoMoves.value[selectedBooking.value.id] = demoMoveText.value.trim()
+  addDemoActivity('next_move_created', `Próxima acción: ${demoMoveText.value.trim()}`)
+  demoMoveText.value = ''
+}
+function completeDemoMove() {
+  if (!selectedBooking.value || !activeDemoMove.value) return
+  addDemoActivity('next_move_completed', `Completada: ${activeDemoMove.value}`)
+  delete demoMoves.value[selectedBooking.value.id]
+}
+function toggleDemoHold() {
+  const booking = selectedBooking.value
+  if (!booking?.event_date) return
+  const next = !activeDemoHold.value
+  demoHolds.value[booking.id] = next
+  const existing = props.demoData?.holds.find(item => item.booking_id === booking.id && item.status === 'active')
+  if (existing && !next) existing.status = 'released'
+  else if (next && props.demoData) {
+    const now = new Date().toISOString()
+    props.demoData.holds.push({ id: `preview-hold-${booking.id}-${now}`, workspace_id: props.workspaceId, booking_id: booking.id,
+      event_date: booking.event_date, starts_at: null, ends_at: null, event_timezone: booking.event_timezone,
+      expires_at: null, priority: null, status: 'active', released_at: null, converted_at: null,
+      created_by: 'preview', created_at: now, updated_at: now, bookings: { artist_id: booking.artist_id } })
+  }
+  addDemoActivity(next ? 'hold_created' : 'hold_released', next ? 'Fecha reservada provisionalmente.' : 'Fecha liberada.')
+}
 
 const copy = computed(() => props.locale === 'es' ? {
-  eyebrow: 'BOOKINGS / REALES',
+  eyebrow: props.demoData ? 'BOOKINGS / ARTISTA · PREVIEW' : 'BOOKINGS / REALES',
   title: 'Bookings capturados',
   empty: 'Todavía no hay bookings reales.', emptyTitle: 'Tu primer booking empieza con un CUE.', emptyBody: 'Si te llaman, te escriben o aparece una oportunidad, guárdala en segundos. No necesitas tener todos los datos.', emptyAction: '+ CUE',
   date: 'Fecha', venue: 'Sala / entidad', contact: 'Contacto', offer: 'Oferta', source: 'Origen', status: 'Estado', activity: 'Conversación', details: 'Datos del booking',
@@ -46,7 +116,7 @@ const copy = computed(() => props.locale === 'es' ? {
   noDate: 'Sin fecha', noVenue: 'Sin sala definida', noContact: 'Sin contacto', noOffer: 'Sin oferta',
   inbox: 'Inbox', archived: 'Archivados', archive: 'Archivar', restore: 'Restaurar', archiveHint: 'Inbox reúne todo lo que todavía quieres tener a mano, esté en curso o ya tenga una decisión. Archivar lo saca de la operativa diaria sin borrar su historial.', archivedReadOnly: 'Booking archivado. La traza se conserva en modo lectura.'
 } : {
-  eyebrow: 'BOOKINGS / REAL',
+  eyebrow: props.demoData ? 'BOOKINGS / ARTIST · PREVIEW' : 'BOOKINGS / REAL',
   title: 'Captured bookings',
   empty: 'No real bookings yet.', emptyTitle: 'Your first booking starts with a CUE.', emptyBody: 'If someone calls, messages you or an opportunity appears, save it in seconds. You do not need every detail yet.', emptyAction: '+ CUE',
   date: 'Date', venue: 'Venue / entity', contact: 'Contact', offer: 'Offer', source: 'Source', status: 'Status', activity: 'Conversation', details: 'Booking details',
@@ -118,9 +188,13 @@ const suggestedFollowUp = computed(() => {
   return buildFollowUpDraft(booking, contact, activities.value, props.locale)
 })
 
-const conversationActivities = computed(() => activities.value.filter(activity =>
-  Boolean(activity.body?.trim())
-  && !['status_change', 'system', 'hold_converted', 'hold_released'].includes(activity.type)
+const conversationActivities = computed(() => activities.value.map(activity=>({
+  ...activity,
+  documents:groupedAttachments.value.byActivity.get(activity.id) || {files:[],warnings:[]},
+  presentation:activity.type==='email'?emailReplyPresentation(activity.body||''):{body:activity.body,quotedBody:''}
+})).filter(activity =>
+  (Boolean(activity.body?.trim()) || activity.documents.files.length || activity.documents.warnings.length)
+  && !['status_change', 'system', 'hold_created', 'hold_converted', 'hold_released', 'next_move_created', 'next_move_completed'].includes(activity.type)
 ))
 
 watch(() => props.bookings, value => {
@@ -158,6 +232,11 @@ watch(visibleBookings, value => {
 
 watch(() => props.workspaceId, async value => {
   if (!value) return
+  if (props.demoData) {
+    contacts.value = props.demoData.contacts
+    counterparties.value = props.demoData.counterparties
+    return
+  }
   loadingMeta.value = true
   try {
     const [contactRows, counterpartyRows] = await Promise.all([
@@ -182,7 +261,7 @@ function activitySyncSignature(rows: Activity[]) {
 }
 
 function emailSyncSignature(rows: BookingEmailMessage[]) {
-  return rows.map(item => `${item.id}:${item.delivery_status || ''}`).join('|')
+  return rows.map(item => `${item.id}:${item.delivery_status || ''}:${JSON.stringify(item.attachment_warnings||[])}`).join('|')
 }
 
 async function scrollThreadToLatest() {
@@ -191,8 +270,49 @@ async function scrollThreadToLatest() {
   if (element) element.scrollTop = element.scrollHeight
 }
 
-async function loadActivity(options: { silent?: boolean } = {}) {
+async function recoverDocuments() {
+  const id = selectedBooking.value?.id
+  if (!id || props.demoData || !props.canOperate || attachmentBusy.value) return
+  attachmentBusy.value = true
+  attachmentNotice.value = ''
+  try {
+    const result = await bookingCore.recoverBookingAttachments(id)
+    if (selectedBooking.value?.id !== id) return
+    await loadActivity()
+    const stored = result.attachments.filter(file => ['stored','already_stored'].includes(file.status)).length
+    const missing = result.attachments.length - stored
+    attachmentNotice.value = props.locale === 'es'
+      ? `Documentos disponibles: ${stored}. ${missing ? `Pendientes: ${missing}.` : ''}`
+      : `Documents available: ${stored}. ${missing ? `Pending: ${missing}.` : ''}`
+  } catch {
+    attachmentNotice.value = props.locale === 'es'
+      ? 'No se han podido recuperar los documentos. Revisa la conexión e inténtalo de nuevo.'
+      : 'Could not recover documents. Check the mailbox connection and retry.'
+  } finally {
+    attachmentBusy.value = false
+  }
+}
+async function downloadBookingDocument(id:string) {
+  const file=bookingAttachments.value.find(item=>item.id===id)
+  if(!file)return
+  attachmentNotice.value=''
+  try {
+    const url = await bookingCore.getBookingEmailAttachmentUrl(id)
+    await downloadBookingAttachment(url,file.file_name)
+  } catch {
+    attachmentNotice.value = props.locale === 'es' ? 'No se ha podido descargar el documento.' : 'Could not download document.'
+  }
+}
+
+async function loadActivity(options: { silent?: boolean; skipSync?: boolean } = {}) {
   const bookingId = selectedBooking.value?.id
+  if (props.demoData) {
+    activities.value = demoActivities.value.filter(item => item.booking_id === bookingId)
+    emailMessages.value = []
+    bookingAttachments.value = []
+    return
+  }
+  const workspaceId=props.workspaceId
   const keepPinnedToLatest = !options.silent || threadIsNearBottom()
   const previousActivitySignature = options.silent ? activitySyncSignature(activities.value) : ''
   const previousEmailSignature = options.silent ? emailSyncSignature(emailMessages.value) : ''
@@ -200,15 +320,17 @@ async function loadActivity(options: { silent?: boolean } = {}) {
   if (!options.silent) {
     activities.value = []
     emailMessages.value = []
+    bookingAttachments.value = []
   }
   if (!bookingId || !props.workspaceId) return
   if (!options.silent) loadingActivity.value = true
   try {
-    const [activityRows, emailRows] = await Promise.all([
-      bookingCore.listActivities(props.workspaceId, bookingId),
-      bookingCore.listBookingEmailMessages(props.workspaceId, bookingId)
+    const [activityRows, emailRows,files] = await Promise.all([
+      bookingCore.listActivities(workspaceId, bookingId),
+      bookingCore.listBookingEmailMessages(workspaceId, bookingId),
+      bookingCore.listBookingEmailAttachments(workspaceId, bookingId).catch(() => [])
     ])
-    if (selectedBooking.value?.id !== bookingId) return
+    if (selectedBooking.value?.id !== bookingId || props.workspaceId!==workspaceId) return
 
     const externalChange = options.silent && (
       activitySyncSignature(activityRows) !== previousActivitySignature
@@ -217,8 +339,40 @@ async function loadActivity(options: { silent?: boolean } = {}) {
 
     activities.value = activityRows
     emailMessages.value = emailRows
+    bookingAttachments.value = files
     if (keepPinnedToLatest) await scrollThreadToLatest()
     if (externalChange) emit('operationsChanged')
+    // The saved history is the source of truth for the initial render.
+    // Gmail refreshes asynchronously and never blocks opening a booking.
+    if (!options.skipSync) {
+      const workspaceId = props.workspaceId
+      void (async () => {
+        const status = await mailboxApi.status(workspaceId, bookingId).catch(() => null)
+        if (selectedBooking.value?.id !== bookingId) return
+        mailboxSyncNotice.value = ''
+        let synced = false
+        for (const id of status?.linkedConnectionIds || []) {
+          try {
+            const result = await mailboxApi.sync(workspaceId, id, bookingId)
+            synced = true
+            if (result.partial && selectedBooking.value?.id === bookingId) {
+              mailboxSyncNotice.value = props.locale === 'es'
+                ? 'Este hilo es largo; se muestran hasta 100 mensajes.'
+                : 'This is a long thread; up to 100 messages are displayed.'
+            }
+          } catch {
+            if (selectedBooking.value?.id === bookingId) {
+              mailboxSyncNotice.value = props.locale === 'es'
+                ? 'No se pudo actualizar el correo. El historial guardado sigue disponible.'
+                : 'Email could not be refreshed. Saved history remains available.'
+            }
+          }
+        }
+        if (synced && selectedBooking.value?.id === bookingId && props.workspaceId === workspaceId) {
+          await loadActivity({ silent: true, skipSync: true })
+        }
+      })()
+    }
   } finally {
     if (!options.silent) loadingActivity.value = false
   }
@@ -263,12 +417,12 @@ function emailDeliveryTone(activity: Activity) {
   return 'pending'
 }
 
-watch(() => selectedBooking.value?.id, () => loadActivity(), { immediate: true })
+watch(() => selectedBooking.value?.id, () => { reviewEmailsOpen.value=false; void loadActivity() }, { immediate: true })
 
 let activityPollTimer: ReturnType<typeof setInterval> | null = null
 
 function refreshExternalActivity() {
-  if (!import.meta.client || document.visibilityState !== 'visible') return
+  if (props.demoData || !import.meta.client || document.visibilityState !== 'visible') return
   void loadActivity({ silent: true })
 }
 
@@ -305,6 +459,7 @@ async function handleActivityCreated() {
 }
 
 async function decideStatus(status: Extract<CoreBookingStatus, 'confirmed' | 'rejected' | 'cancelled'>) {
+  if (!props.canOperate) return
   if (!selectedBooking.value || selectedBooking.value.status === status) return
   decisionTrigger.value = import.meta.client && document.activeElement instanceof HTMLElement ? document.activeElement : null
   decisionError.value = ''
@@ -332,6 +487,17 @@ async function confirmDecision() {
     decisionError.value = props.locale === 'es'
       ? 'Antes de confirmar necesitas añadir una fecha al booking.'
       : 'Add a booking date before confirming.'
+    return
+  }
+
+  if (props.demoData) {
+    booking.status = status
+    if (status === 'confirmed') {
+      demoHolds.value[booking.id] = false
+      for (const hold of props.demoData.holds.filter(item => item.booking_id === booking.id && item.status === 'active')) hold.status = 'converted'
+    }
+    addDemoActivity('status_change', `Estado: ${status.replaceAll('_', ' ')}`)
+    pendingDecision.value = null
     return
   }
 
@@ -366,19 +532,45 @@ async function confirmDecision() {
 }
 
 async function toggleArchive() {
-  if (!selectedBooking.value) return
-  const nextArchived = !selectedBooking.value.archived_at
-  if (nextArchived && !window.confirm(props.locale === 'es'
-    ? 'Se archivará el booking y se cerrarán su Next Move y Holds activos. La Activity se conserva.'
-    : 'This booking will be archived and its active Next Move and Holds will be closed. Activity is preserved.')) return
+  if (!props.canOperate || archiving.value || !selectedBooking.value) return
+  pendingArchive.value = { id: selectedBooking.value.id, workspaceId: props.workspaceId, archived: !selectedBooking.value.archived_at }
+  archiveError.value = ''
+  await nextTick()
+  archiveDialog.value?.showModal()
+}
+
+function closeArchiveModal() {
+  if (archiving.value) return
+  archiveDialog.value?.close()
+  pendingArchive.value = null
+  archiveError.value = ''
+}
+
+watch(() => [props.workspaceId, selectedBooking.value?.id], () => {
+  if (!archiving.value) closeArchiveModal()
+})
+
+async function confirmArchive() {
+  const target = pendingArchive.value
+  if (!props.canOperate || archiving.value || !target || target.workspaceId !== props.workspaceId || target.id !== selectedBooking.value?.id) return
+  const nextArchived = target.archived
+  if (props.demoData) {
+    selectedBooking.value.archived_at = nextArchived ? new Date().toISOString() : null
+    closeArchiveModal()
+    archiveView.value = nextArchived ? 'archived' : 'inbox'
+    return
+  }
   archiving.value = true
+  archiveError.value = ''
   try {
-    await bookingCore.setBookingArchived(props.workspaceId, selectedBooking.value.id, nextArchived)
+    await bookingCore.setBookingArchived(target.workspaceId, target.id, nextArchived)
     await loadActivity()
     emit('operationsChanged')
+    archiveDialog.value?.close()
+    pendingArchive.value = null
     archiveView.value = nextArchived ? 'archived' : 'inbox'
-  } catch (error: any) {
-    window.alert(error?.message || 'Booking archive could not be updated.')
+  } catch {
+    archiveError.value = props.locale === 'es' ? 'No hemos podido guardar el cambio. Inténtalo de nuevo.' : 'We could not save the change. Try again.'
   } finally {
     archiving.value = false
   }
@@ -462,13 +654,15 @@ async function selectBooking(bookingId: string) {
 
 <template>
   <section class="core-inbox">
+    <MailboxRequestsPanel v-if="!focusBookingId && !demoData && canOperate && mailboxArtists?.length" :workspace-id="workspaceId" :locale="locale" :artists="mailboxArtists" @created="(id) => { emit('operationsChanged'); emit('bookingOpened',id) }" />
     <header class="core-inbox__heading">
       <div>
         <span>{{ copy.eyebrow }}</span>
         <strong>{{ copy.title }}</strong>
       </div>
       <div class="core-inbox__heading-meta">
-        <CueCapacityIndicator
+        <span v-if="demoData" class="core-inbox__demo-count">{{ locale === 'es' ? 'Procesos activos' : 'Active processes' }} · {{ activeBookingCount }}</span>
+        <CueCapacityIndicator v-else
           :used="activeBookingCount"
           limit-key="activeBookings"
           upgrade-entitlement="booking.unlimited"
@@ -482,7 +676,7 @@ async function selectBooking(bookingId: string) {
       <span>{{ copy.empty }}</span>
       <strong>{{ copy.emptyTitle }}</strong>
       <p>{{ copy.emptyBody }}</p>
-      <button type="button" @click="emit('cueRequested')">{{ copy.emptyAction }}</button>
+      <button type="button" v-if="canOperate" @click="emit('cueRequested')">{{ copy.emptyAction }}</button>
     </div>
 
     <div v-if="bookings.length" id="core-inbox-tools" class="core-inbox__tools">
@@ -503,7 +697,7 @@ async function selectBooking(bookingId: string) {
     </div>
 
     <CueUpgradePrompt
-      v-if="activeBookingCapacity.reached"
+      v-if="!demoData && activeBookingCapacity.reached"
       entitlement="booking.unlimited"
       :title="locale === 'es' ? 'Capacidad Free alcanzada' : 'Free capacity reached'"
       :description="locale === 'es'
@@ -556,7 +750,7 @@ async function selectBooking(bookingId: string) {
         </nav>
 
         <BookingCoreConflictNotice
-          v-if="!selectedBooking.archived_at && !['confirmed','rejected','cancelled'].includes(selectedBooking.status)"
+          v-if="!demoData && !selectedBooking.archived_at && !['confirmed','rejected','cancelled'].includes(selectedBooking.status)"
           class="core-inbox__conflict-predecision"
           :workspace-id="workspaceId"
           :booking="selectedBooking"
@@ -572,21 +766,27 @@ async function selectBooking(bookingId: string) {
             <h3>{{ bookingTitle(selectedBooking) }}</h3>
             <p>{{ selectedBooking.event_name || selectedBooking.city || '—' }}</p>
           </div>
-          <button class="core-inbox__archive" type="button" :disabled="archiving" @click="toggleArchive">{{ selectedBooking.archived_at ? copy.restore : copy.archive }}</button>
+          <button v-if="canOperate" class="core-inbox__archive" type="button" :disabled="archiving" @click="toggleArchive"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v5H3zM5 8v13h14V8M9 12h6" /></svg>{{ selectedBooking.archived_at ? copy.restore : copy.archive }}</button>
         </header>
 
+        <aside v-if="selectedBooking.capture_method === 'ai_capture'" class="core-inbox__mailbox-review" aria-label="Datos por revisar">
+          <strong>{{ locale === 'es' ? 'Solicitud recibida por correo' : 'Enquiry received by email' }}</strong>
+          <p>{{ locale === 'es' ? 'Hemos guardado los datos disponibles y la conversación. Revisa la información antes de decidir.' : 'The available details and conversation have been saved. Review the information before deciding.' }}</p>
+          <p v-for="warning in selectedBooking.mailbox_draft?.warnings || []" :key="warning">{{ warning }}</p>
+        </aside>
         <section v-if="!selectedBooking.archived_at" class="core-inbox__decision-strip">
           <div :class="['core-inbox__status', `core-inbox__status--${selectedBooking.status}`]">
             <span>{{ copy.status }}</span>
             <strong>{{ statusLabels[selectedBooking.status] }}</strong>
           </div>
-          <div v-if="!['confirmed','rejected','cancelled'].includes(selectedBooking.status)" class="core-inbox__decisions">
+          <div v-if="canOperate && !['confirmed','rejected','cancelled'].includes(selectedBooking.status)" class="core-inbox__decisions">
             <button type="button" class="decision-confirm" :disabled="updatingStatus" @click="decideStatus('confirmed')">{{ copy.confirm }}</button>
             <button type="button" class="decision-reject" :disabled="updatingStatus" @click="decideStatus('rejected')">{{ copy.reject }}</button>
             <button type="button" class="decision-cancel" :disabled="updatingStatus" @click="decideStatus('cancelled')">{{ copy.cancel }}</button>
           </div>
         </section>
 
+        <p v-if="!canOperate" role="status">{{ locale === 'es' ? 'Acceso de consulta. Tu rol permite ver este booking y su seguimiento.' : 'Read-only access. Your role can view this booking and its follow-up.' }}</p>
         <section class="core-inbox__details-block">
           <div class="core-inbox__details-heading">
             <strong>{{ copy.details }}</strong>
@@ -600,7 +800,7 @@ async function selectBooking(bookingId: string) {
                 {{ locale === 'es' ? 'Ver en calendario' : 'View in calendar' }}
               </button>
               <BookingCoreEditor
-                v-if="!selectedBooking.archived_at"
+                v-if="canOperate && !demoData && !selectedBooking.archived_at"
                 :workspace-id="workspaceId"
                 :booking="selectedBooking"
                 :locale="locale"
@@ -615,7 +815,7 @@ async function selectBooking(bookingId: string) {
               <div class="core-inbox__contact-head">
                 <dt>{{ copy.contact }}</dt>
                 <BookingContactEditor
-                  v-if="selectedContact && !selectedBooking.archived_at"
+                  v-if="!demoData && selectedContact && !selectedBooking.archived_at"
                   :workspace-id="workspaceId"
                   :contact="selectedContact"
                   :locale="locale"
@@ -630,6 +830,11 @@ async function selectBooking(bookingId: string) {
           </dl>
         </section>
 
+        <details v-if="!demoData && canOperate && mailboxArtists?.length && !selectedBooking.archived_at && ['email_import','ai_capture'].includes(selectedBooking.capture_method)" class="core-inbox__email-review" :open="reviewEmailsOpen" @toggle="reviewEmailsOpen=($event.target as HTMLDetailsElement).open">
+          <summary>{{ locale === 'es' ? 'Revisar datos de los correos' : 'Review email details' }}</summary>
+          <MailboxRequestsPanel v-if="reviewEmailsOpen" :key="selectedBooking.id" :booking-id="selectedBooking.id" :workspace-id="workspaceId" :locale="locale" :artists="mailboxArtists" @created="() => { reviewEmailsOpen=false; void handleOperationsChanged() }" />
+        </details>
+
         <section id="core-inbox-conversation" class="core-inbox__conversation" tabindex="-1">
           <div class="core-inbox__conversation-heading">
             <div>
@@ -638,6 +843,7 @@ async function selectBooking(bookingId: string) {
             </div>
           </div>
 
+<p v-if="mailboxSyncNotice" role="status">{{ mailboxSyncNotice }}</p>
           <div ref="conversationThread" class="core-inbox__thread">
             <p v-if="loadingActivity" class="core-inbox__empty">…</p>
             <p v-else-if="!conversationActivities.length" class="core-inbox__empty">{{ copy.noActivity }}</p>
@@ -662,13 +868,32 @@ async function selectBooking(bookingId: string) {
                 >{{ emailDeliveryLabel(activity) }}</em>
                 <time>{{ formatTime(activity.occurred_at) }}</time>
               </div>
-              <p>{{ activity.body }}</p>
+              <p>{{ activity.presentation.body }}</p>
+              <details v-if="activity.presentation.quotedBody" class="thread-item__quote">
+                <summary>{{ locale === 'es' ? 'Ver historial citado' : 'View quoted history' }}</summary>
+                <p>{{ activity.presentation.quotedBody }}</p>
+              </details>
+              <BookingMessageAttachments v-if="!demoData" :files="activity.documents.files" :warnings="activity.documents.warnings" :locale="locale" @download="downloadBookingDocument" />
             </article>
+          <section v-if="!demoData && (groupedAttachments.unassigned.files.length || groupedAttachments.unassigned.warnings.length)" class="core-inbox__unassigned-documents">
+            <p>{{ locale === 'es' ? 'Archivos sin mensaje asociado' : 'Files without a linked message' }}</p>
+            <BookingMessageAttachments :files="groupedAttachments.unassigned.files" :warnings="groupedAttachments.unassigned.warnings" :locale="locale" @download="downloadBookingDocument" />
+          </section>
+          <p v-if="attachmentNotice" role="status">{{ attachmentNotice }}</p>
+
           </div>
 
+          <form v-if="canOperate && demoData && !selectedBooking.archived_at" class="core-inbox__demo-composer" @submit.prevent="saveDemoNote">
+            <label>{{ locale === 'es' ? 'Registrar interacción' : 'Log an interaction' }}
+              <select v-model="demoChannel"><option value="note">Nota</option><option value="phone">Llamada</option><option value="whatsapp">WhatsApp</option><option value="instagram">Instagram</option></select>
+            </label>
+            <textarea v-model="demoText" :placeholder="locale === 'es' ? 'Qué ha pasado con este booking…' : 'What happened with this booking…'" rows="2" />
+            <button type="submit" :disabled="!demoText.trim()">{{ locale === 'es' ? 'Guardar en la conversación' : 'Save in conversation' }}</button>
+          </form>
           <BookingActivityComposer
+            :initial-subject="emailMessages[0]?.subject"
             id="core-inbox-activity-composer"
-            v-if="!selectedBooking.archived_at"
+            v-if="canOperate && !demoData && !selectedBooking.archived_at"
             :key="`activity-${selectedBooking.id}`"
             :workspace-id="workspaceId"
             :booking="selectedBooking"
@@ -679,18 +904,29 @@ async function selectBooking(bookingId: string) {
           />
         </section>
 
+        <section v-if="canOperate && demoData && !selectedBooking.archived_at && !['confirmed','rejected','cancelled'].includes(selectedBooking.status)" id="core-inbox-operations" class="core-inbox__demo-operations">
+          <h4>{{ locale === 'es' ? 'SEGUIMIENTO' : 'FOLLOW-UP' }}</h4>
+          <div><strong>{{ locale === 'es' ? 'Próxima acción' : 'Next action' }}</strong>
+            <p v-if="activeDemoMove">{{ activeDemoMove }} <button type="button" @click="completeDemoMove">{{ locale === 'es' ? 'Hecho' : 'Done' }}</button></p>
+            <p class="core-inbox__demo-help">{{ locale === 'es' ? 'Anota el siguiente paso de esta solicitud.' : 'Note the next step for this enquiry.' }}</p>
+            <form v-if="!activeDemoMove" @submit.prevent="saveDemoMove"><input v-model="demoMoveText" :aria-label="locale === 'es' ? 'Próxima acción' : 'Next action'" maxlength="240" :placeholder="locale === 'es' ? 'Ej. Confirmar horario con la sala' : 'E.g. Confirm schedule with venue'"><button type="submit" :disabled="!demoMoveText.trim()">{{ locale === 'es' ? 'Guardar acción' : 'Save action' }}</button></form>
+          </div>
+          <div><strong>{{ locale === 'es' ? 'Reserva provisional' : 'Provisional reservation' }}</strong><p class="core-inbox__demo-help">{{ locale === 'es' ? 'Mantén la fecha mientras negocias el booking.' : 'Keep the date while you negotiate the booking.' }}</p><p class="core-inbox__demo-date">{{ selectedBooking.event_date ? formatDate(selectedBooking.event_date) : copy.noDate }} · {{ activeDemoHold ? 'Hold activo' : (locale === 'es' ? 'Sin hold' : 'No hold') }}</p><button type="button" :disabled="!selectedBooking.event_date" @click="toggleDemoHold">{{ activeDemoHold ? (locale === 'es' ? 'Liberar fecha' : 'Release date') : (locale === 'es' ? 'Reservar fecha' : 'Reserve date') }}</button></div>
+          <small>{{ locale === 'es' ? 'Simulación local. No envía mensajes ni modifica bookings reales.' : 'Local simulation. No messages are sent or real bookings changed.' }}</small>
+        </section>
         <BookingCoreOperations
           id="core-inbox-operations"
-          v-if="!selectedBooking.archived_at && !['confirmed','rejected','cancelled'].includes(selectedBooking.status)"
+          v-if="!demoData && !selectedBooking.archived_at && !['confirmed','rejected','cancelled'].includes(selectedBooking.status)"
           :key="`operations-${selectedBooking.id}`"
           :workspace-id="workspaceId"
           :booking="selectedBooking"
           :locale="locale"
           :refresh-key="activities.length"
+          :can-operate="canOperate"
           @changed="handleOperationsChanged"
         />
 
-        <BookingRelationshipMemory
+        <BookingRelationshipMemory v-if="!demoData"
           :workspace-id="workspaceId"
           :booking="selectedBooking"
           :bookings="bookings"
@@ -704,6 +940,15 @@ async function selectBooking(bookingId: string) {
       </article>
     </div>
   </section>
+
+  <dialog ref="archiveDialog" class="core-archive-modal" aria-labelledby="core-archive-title" aria-describedby="core-archive-description" @cancel.prevent="closeArchiveModal" @click.self="closeArchiveModal">
+    <template v-if="pendingArchive">
+      <header><h3 id="core-archive-title">{{ pendingArchive.archived ? (locale === 'es' ? 'Archivar booking' : 'Archive booking') : (locale === 'es' ? 'Restaurar booking' : 'Restore booking') }}</h3><button type="button" class="core-archive-modal__close" :aria-label="locale === 'es' ? 'Cerrar' : 'Close'" :disabled="archiving" @click="closeArchiveModal">×</button></header>
+      <p id="core-archive-description">{{ pendingArchive.archived ? (locale === 'es' ? 'Lo moveremos a Archivados y cerraremos sus próximas acciones y reservas provisionales. La conversación y el historial se conservan. Puedes restaurarlo después.' : 'We will move it to Archived and close its next actions and active holds. Conversation and history are kept. You can restore it later.') : (locale === 'es' ? 'Volverá a Inbox. Las acciones y reservas provisionales cerradas no se reactivan.' : 'It will return to Inbox. Closed actions and holds are not reactivated.') }}</p>
+      <p v-if="archiveError" class="core-decision-modal__error" role="alert">{{ archiveError }}</p>
+      <footer><button type="button" class="core-decision-modal__secondary" :disabled="archiving" autofocus @click="closeArchiveModal">{{ locale === 'es' ? 'Cancelar' : 'Cancel' }}</button><button type="button" class="core-decision-modal__primary" :disabled="archiving" @click="confirmArchive">{{ archiving ? (locale === 'es' ? 'Guardando…' : 'Saving…') : pendingArchive.archived ? copy.archive : copy.restore }}</button></footer>
+    </template>
+  </dialog>
 
   <div v-if="pendingDecision" class="core-decision-modal" @click.self="closeDecisionModal">
     <article
@@ -756,12 +1001,45 @@ async function selectBooking(bookingId: string) {
 </template>
 
 <style scoped>
+.core-inbox__unassigned-documents {padding:12px;border:1px solid var(--cue-border);border-radius:10px;font-size:12px;color:var(--cue-muted)}
+
+.core-inbox__mailbox-review{margin:14px 0;padding:14px 16px;border:1px solid var(--cue-border);border-left:3px solid var(--cue-status-new);border-radius:var(--cue-radius-panel);font-size:13px;line-height:1.5}.core-inbox__mailbox-review p{color:var(--cue-muted);margin:8px 0 0}
+.core-inbox__email-review{margin:16px 0;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);overflow:hidden}
+.core-inbox__email-review>summary{padding:12px 16px;cursor:pointer;font-size:13px;color:var(--cue-text);min-height:44px;box-sizing:border-box}
+.core-inbox__email-review>summary:focus-visible{outline:2px solid var(--cue-accent);outline-offset:-3px}
+.core-inbox__email-review[open]>summary{border-bottom:1px solid var(--cue-border)}
+.core-inbox__email-review :deep(.mailbox-requests){margin:0;border:0;border-radius:0}
 .core-inbox { margin:var(--cue-space-3) 0 var(--cue-space-5); border:1px solid var(--cue-border); border-radius:var(--cue-radius-panel); background:var(--cue-surface); overflow:hidden; }
 .core-inbox__heading { display:flex; align-items:center; justify-content:space-between; gap:var(--cue-space-4); padding:var(--cue-space-4); border-bottom:1px solid var(--cue-border); }
 .core-inbox__heading-meta{display:flex;align-items:center;gap:8px}.core-inbox__heading-meta>b{color:var(--cue-accent);font:700 12px monospace}
 .core-inbox__heading span { display:block; color:var(--cue-accent); font:700 9px/1.2 monospace; letter-spacing:.11em; }
 .core-inbox__heading strong { display:block; margin-top:4px; font-size:17px; }
 .core-inbox__heading b { min-width:34px; text-align:center; font:700 12px monospace; color:var(--cue-accent); }
+.core-inbox__demo-count{color:var(--cue-muted);font:700 9px monospace;text-transform:uppercase}
+.core-inbox__demo-composer{display:grid;gap:10px;padding:14px 0;border-top:1px solid var(--cue-border)}
+.core-inbox__demo-composer label{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--cue-muted);font:800 9px monospace;text-transform:uppercase}
+.core-inbox__demo-composer select,.core-inbox__demo-composer textarea,.core-inbox__demo-operations input{min-width:0;padding:10px;border:1px solid var(--cue-border);background:var(--cue-raised);color:var(--cue-text);font:inherit}
+.core-inbox__demo-composer textarea{width:100%;resize:vertical;font-size:12px}
+.core-inbox__demo-composer button,.core-inbox__demo-operations button{min-height:36px;padding:7px 12px;border:1px solid var(--cue-accent);background:transparent;color:var(--cue-accent);cursor:pointer;font:800 9px monospace;text-transform:uppercase}
+.core-inbox__demo-composer button:disabled,.core-inbox__demo-operations button:disabled{opacity:.4;cursor:default}
+.core-inbox__demo-composer>button{justify-self:start}
+.core-inbox__demo-operations{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 28px;margin-top:18px;padding:20px;border:1px solid var(--cue-border);border-radius:var(--cue-radius-panel);background:var(--cue-surface)}
+.core-inbox__demo-operations h4,.core-inbox__demo-operations>small{grid-column:1/-1;margin:0}
+.core-inbox__demo-operations h4{color:var(--cue-muted);font:800 10px monospace;letter-spacing:.1em}
+.core-inbox__demo-operations>div{min-width:0;padding-top:16px;border-top:1px solid var(--cue-border)}
+.core-inbox__demo-operations strong{font-size:13px;line-height:1.5}
+.core-inbox__demo-operations p,.core-inbox__demo-operations>small{color:var(--cue-muted);font-size:12px;line-height:1.5}
+.core-inbox__demo-operations .core-inbox__demo-help{margin:6px 0 16px}
+.core-inbox__demo-operations .core-inbox__demo-date{margin:0 0 12px;color:var(--cue-text)}
+.core-inbox__demo-operations form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:start;margin-top:12px}
+.core-inbox__demo-operations input{width:100%;box-sizing:border-box;min-height:40px;padding:0 12px;border-radius:var(--cue-radius-control);font-size:13px;background:var(--cue-bg)}
+.core-inbox__demo-operations button{min-height:40px;padding:0 14px;border-color:var(--cue-border);border-radius:var(--cue-radius-control);color:var(--cue-text);font-family:inherit;font-size:12px;font-weight:600;line-height:1.3;text-transform:none}
+.core-inbox__demo-operations button:focus-visible,.core-inbox__demo-operations input:focus-visible{outline:2px solid var(--cue-primary);outline-offset:3px}
+.core-inbox__demo-operations button:hover:not(:disabled){border-color:var(--cue-primary)}
+.core-inbox__demo-operations button:disabled{opacity:.5}
+.core-inbox__demo-operations>small{padding-top:14px;border-top:1px solid var(--cue-border);font-size:11px}
+@media(max-width:760px){.core-inbox__demo-operations{grid-template-columns:1fr;padding:16px;gap:16px}.core-inbox__demo-operations form{grid-template-columns:1fr}.core-inbox__demo-operations form button{justify-self:start}}
+
 .core-inbox > :deep(.cue-upgrade-prompt){margin:10px var(--cue-space-4) 0}
 
 .core-inbox__zero { display:grid; justify-items:start; gap:8px; padding:24px 18px 28px; }
@@ -817,15 +1095,18 @@ async function selectBooking(bookingId: string) {
 .core-inbox__detail > header span { color:var(--cue-accent); font:700 9px monospace; text-transform:uppercase; letter-spacing:.1em; }
 .core-inbox__detail h3 { margin:4px 0 3px; font-size:clamp(28px,2.4vw,36px); line-height:.96; letter-spacing:-.03em; }
 .core-inbox__detail header p { margin:0; color:var(--cue-muted); font-size:12px; }
-.core-inbox__archive { align-self:start; min-height:var(--cue-button-sm); padding:0 var(--cue-space-3); border:0; border-radius:var(--cue-radius-control); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 8px monospace; text-transform:uppercase; }
-.core-inbox__archive:hover { color:var(--cue-accent); }
+.core-inbox__archive { align-self:start; display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:0 14px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-control); background:var(--cue-raised); color:var(--cue-text); cursor:pointer; font:700 11px monospace; text-transform:uppercase; }
+.core-inbox__archive svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.7; }
+.core-inbox__archive:hover { color:var(--cue-accent); border-color:var(--cue-accent); }
+.core-inbox__archive:focus-visible { outline:2px solid var(--cue-accent); outline-offset:3px; }
+.core-inbox__archive:disabled { opacity:.5; cursor:not-allowed; }
 .core-inbox__decision-strip { display:grid; grid-template-columns:minmax(150px,.45fr) minmax(0,1fr); align-items:center; gap:var(--cue-space-3); padding:var(--cue-space-3) 0; border-bottom:1px solid var(--cue-border); }
 .core-inbox__status { display:grid; gap:2px; align-self:center; min-width:132px; padding:2px 0 2px 9px; border:0; border-left:2px solid var(--status-color,var(--cue-border)); background:transparent; }
 .core-inbox__status > span { color:var(--cue-muted); font:700 7px monospace; letter-spacing:.08em; text-transform:uppercase; }
 .core-inbox__status > strong { color:var(--status-color,var(--cue-text)); font:800 10px monospace; text-transform:uppercase; }
 .core-inbox__status > small { max-width:220px; color:var(--cue-muted); font-size:9px; line-height:1.35; }
-.core-inbox__decisions { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
-.core-inbox__decisions button { min-height:var(--cue-button-sm); padding:0 10px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-control); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 7px monospace; text-transform:uppercase; }
+.core-inbox__decisions { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:8px; }
+.core-inbox__decisions button { flex:0 0 auto; width:auto; min-height:34px; padding:0 14px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-control); background:transparent; color:var(--cue-muted); cursor:pointer; font:700 10px monospace; text-transform:uppercase; }
 .core-inbox__decisions button:disabled { opacity:.45; cursor:wait; }
 .core-inbox__decisions .decision-confirm { border-color:var(--cue-status-confirmed); color:var(--cue-status-confirmed); }
 .core-inbox__decisions .decision-reject { border-color:var(--cue-status-rejected); color:var(--cue-status-rejected); }
@@ -871,7 +1152,11 @@ async function selectBooking(bookingId: string) {
 .thread-item__delivery--error { border-color:color-mix(in srgb,var(--cue-status-rejected) 58%,var(--cue-border)); color:var(--cue-status-rejected); }
 .thread-item__delivery--pending { color:var(--cue-muted); }
 .thread-item__delivery + time { margin-left:0; }
-.thread-item > p { margin:7px 0 0; font-size:12px; line-height:1.45; }
+.thread-item > p { margin:7px 0 0; font-size:12px; line-height:1.45; white-space:pre-wrap; overflow-wrap:anywhere; }
+.thread-item__quote { margin-top:6px; }
+.thread-item__quote summary { width:fit-content; padding:6px 0; color:var(--cue-muted); font-size:11px; cursor:pointer; }
+.thread-item__quote summary:focus-visible { outline:2px solid var(--cue-accent); outline-offset:3px; border-radius:var(--cue-radius-sm); }
+.thread-item__quote p { margin:6px 0 0; padding-top:8px; border-top:1px solid var(--cue-border); white-space:pre-wrap; overflow-wrap:anywhere; font-size:11px; line-height:1.5; color:var(--cue-muted); }
 .core-inbox__empty { margin:0; padding:18px; color:var(--cue-muted); font-size:12px; }
 .core-inbox__empty--filtered { display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .core-inbox__empty--filtered p { margin:0; }
@@ -910,20 +1195,20 @@ async function selectBooking(bookingId: string) {
   .core-inbox__filters:not(.core-inbox__filters--archive) button { width:auto; min-height:var(--cue-control-standard); white-space:nowrap; }
   .core-inbox__filters--archive { width:max-content; max-width:100%; }
   .core-inbox__detail > header { grid-template-columns:minmax(0,1fr) auto; gap:10px; padding-bottom:12px; }
-  .core-inbox__archive { min-height:32px; padding-inline:0; }
+  .core-inbox__archive { min-height:44px; padding-inline:14px; }
   .core-inbox__decision-strip { display:grid; grid-template-columns:1fr; gap:10px; padding:12px 0 14px; }
   .core-inbox__status { min-width:0; margin:0; padding:7px 0 7px 10px; }
   .core-inbox__decisions { width:100%; }
-  .core-inbox__decisions button { min-height:46px; }
+  .core-inbox__decisions button { min-height:44px; }
   .core-inbox__contact-fact { padding-inline:0 !important; }
   .core-inbox__contact-head { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:10px; }
   .core-inbox__contact-head :deep(.contact-editor-entry) { justify-self:end; min-height:28px; }
   .core-inbox__contact-fact dd { margin-top:8px; overflow:visible; text-overflow:clip; white-space:normal; word-break:break-word; }
   .core-inbox__contact-fact small { overflow-wrap:anywhere; }
-  .core-inbox__decisions { grid-template-columns:repeat(3,minmax(0,1fr)); min-width:0; }
+  .core-inbox__decisions { min-width:0; }
   .core-inbox__decisions button,
   .core-inbox__archive { min-height:44px; }
-  .core-inbox__decisions button { min-width:0; padding-inline:4px; }
+  .core-inbox__decisions button { min-width:0; padding-inline:12px; }
   .core-inbox__details-heading { align-items:center; }
   .core-inbox__details-actions { width:100%; justify-content:flex-start; }
   .core-inbox__details-heading { flex-wrap:wrap; }
@@ -948,6 +1233,16 @@ async function selectBooking(bookingId: string) {
 .core-decision-modal__primary { border:1px solid var(--cue-accent); background:var(--cue-primary); color:var(--cue-primary-ink); }
 .core-decision-modal__primary.danger { border-color:var(--cue-status-rejected); background:var(--cue-status-rejected); }
 .core-decision-modal button:disabled { opacity:.45; cursor:not-allowed; }
+.core-archive-modal { width:min(520px,calc(100% - 32px)); box-sizing:border-box; padding:24px; border:1px solid var(--cue-border); border-radius:var(--cue-radius-panel); background:var(--cue-surface); color:var(--cue-text); box-shadow:0 28px 90px rgba(0,0,0,.55); }
+.core-archive-modal::backdrop { background:rgba(0,0,0,.76); backdrop-filter:blur(7px); }
+.core-archive-modal header { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.core-archive-modal h3 { margin:0; font-size:24px; line-height:1.2; }
+.core-archive-modal p { margin:18px 0 0; font-size:14px; line-height:1.6; color:var(--cue-muted); }
+.core-archive-modal footer { display:flex; justify-content:flex-end; gap:12px; margin-top:24px; }
+.core-archive-modal button { min-height:44px; padding:0 16px; border-radius:var(--cue-radius-control); cursor:pointer; font:700 12px monospace; }
+.core-archive-modal .core-archive-modal__close { width:44px; padding:0; border:1px solid var(--cue-border); border-radius:50%; background:var(--cue-raised); color:var(--cue-text); font-size:24px; flex-shrink:0; }
+.core-archive-modal button:focus-visible { outline:2px solid var(--cue-accent); outline-offset:3px; }
+.core-archive-modal button:disabled { opacity:.45; cursor:not-allowed; }
 @media (max-width:560px) {
   .core-decision-modal { align-items:end; padding:0; }
   .core-decision-modal article { width:100%; box-sizing:border-box; border-right:0; border-bottom:0; border-left:0; }

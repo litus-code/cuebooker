@@ -35,6 +35,7 @@ type BetaAnalyticsUser = {
 export function useProductTelemetry() {
   const config = useRuntimeConfig()
   const auth = useCueAuth()
+  const analytics = useAnalytics()
 
   const baseUrl = computed(() => String(config.public.supabaseUrl || '').replace(/\/$/, ''))
   const publishableKey = computed(() => String(config.public.supabasePublishableKey || ''))
@@ -53,7 +54,7 @@ export function useProductTelemetry() {
     payload: ProductTelemetryPayload = {},
     workspaceId: string | null = null
   ) {
-    if (!import.meta.client || !auth.session.value?.access_token || !baseUrl.value || !publishableKey.value) return false
+    if (!import.meta.client || analytics.consent.value !== 'granted' || !auth.session.value?.access_token || !baseUrl.value || !publishableKey.value) return false
     try {
       await $fetch(`${baseUrl.value}/rest/v1/rpc/record_product_analytics_event`, {
         method: 'POST',
@@ -99,7 +100,14 @@ export function useProductTelemetry() {
     })
   }
 
+  async function getCampaignFunnel(filters: Record<string,string | null>) {
+    return $fetch<import('../domain/campaignAnalytics').CampaignReport>(`${baseUrl.value}/rest/v1/rpc/get_campaign_funnel`, {
+      method: 'POST', headers: headers(), body: filters
+    })
+  }
+
   return {
+    getCampaignFunnel,
     record,
     isInternalAdmin,
     getBetaSummary,

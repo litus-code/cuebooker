@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import type { CoreBooking, Hold, NextMove } from '../domain/bookingCore'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   workspaceId: string
   booking: CoreBooking
   locale: 'es' | 'en'
+  canOperate?: boolean
   refreshKey?: number
-}>()
+}>(), { canOperate: true })
 
 const emit = defineEmits<{ changed: [] }>()
 const bookingCore = useBookingCore()
@@ -155,6 +156,7 @@ function toIsoOrNull(value: string) {
 }
 
 async function setNextMove() {
+  if (!props.canOperate) return
   if (saving.value) return
   const label = nextLabel.value.trim()
   const dueAt = toIsoOrNull(nextDue.value)
@@ -194,6 +196,7 @@ async function setNextMove() {
 }
 
 async function completeNextMove() {
+  if (!props.canOperate) return
   if (!activeNextMove.value) return
   saving.value = true
   try {
@@ -219,6 +222,7 @@ async function completeNextMove() {
 }
 
 async function createHold() {
+  if (!props.canOperate) return
   if (saving.value) return
   const eventDate = holdDate.value
   const expiresAt = toIsoOrNull(holdExpires.value)
@@ -257,6 +261,7 @@ async function createHold() {
 }
 
 async function releaseHold(hold: Hold) {
+  if (!props.canOperate) return
   saving.value = true
   try {
     await bookingCore.releaseHold(props.workspaceId, hold.id)
@@ -284,10 +289,10 @@ async function releaseHold(hold: Hold) {
             <small>{{ activeNextMove.due_at ? localDateTime(activeNextMove.due_at) : '—' }}</small>
             <em v-if="activeNextMove.completion_trigger === 'inbound_activity'" class="core-ops__automation">{{ copy.autoReplyActive }}</em>
           </div>
-          <button type="button" :disabled="saving" @click="completeNextMove">{{ copy.complete }}</button>
+          <button v-if="canOperate" type="button" :disabled="saving" @click="completeNextMove">{{ copy.complete }}</button>
         </div>
         <p v-else class="core-ops__empty">{{ copy.noNext }}</p>
-        <form class="core-ops__form" @submit.prevent="setNextMove">
+        <form v-if="canOperate" class="core-ops__form" @submit.prevent="setNextMove">
           <label class="core-ops__form-main"><span>{{ copy.nextMove }}</span><input v-model="nextLabel" :placeholder="copy.nextPlaceholder" maxlength="240" :disabled="saving"></label>
           <label class="core-ops__auto-reply" :class="{ 'core-ops__auto-reply--locked': !canEntitlement('automation.advanced') }">
             <input
@@ -327,11 +332,11 @@ async function releaseHold(hold: Hold) {
               <small>{{ hold.expires_at ? `${copy.expires}: ${localDateTime(hold.expires_at)}` : '—' }}</small>
             </div>
             <span v-if="hold.priority">P{{ hold.priority }}</span>
-            <div class="core-ops__hold-actions"><button type="button" :disabled="saving" @click="releaseHold(hold)">{{ copy.release }}</button></div>
+            <div v-if="canOperate" class="core-ops__hold-actions"><button type="button" :disabled="saving" @click="releaseHold(hold)">{{ copy.release }}</button></div>
           </article>
         </div>
         <p v-else-if="!loading" class="core-ops__empty">{{ copy.noHold }}</p>
-        <form class="core-ops__form core-ops__form--hold" @submit.prevent="createHold">
+        <form v-if="canOperate" class="core-ops__form core-ops__form--hold" @submit.prevent="createHold">
           <div class="core-ops__form-row core-ops__form-row--hold">
             <label><span>{{ copy.holdDate }}</span><input v-model="holdDate" type="date" :disabled="saving"></label>
             <label><span>{{ copy.expires }}</span><input v-model="holdExpires" type="datetime-local" :disabled="saving"></label>

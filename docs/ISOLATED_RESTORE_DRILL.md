@@ -1,3 +1,13 @@
+## 2026-10-04 04:32 Europe/Madrid — Isolated production backup restoration VERIFIED
+
+- Backup run 37169429138 attempt 2 succeeded. Exact encrypted artifact 11290844352 (expires 2026-10-11) was restored ONLY in a disposable PostgreSQL 17 Docker database with its networks disconnected before decryption.
+- Restore run 37171137469, job 111344159054, main SHA 4cd745d5fe3de1c76613b5f53fe8b90f461c02d7: SUCCESS. Verified authored log marker for import, every COPY row count, foreign keys, RLS, and unidentified-caller denial. Disposable cleanup completed; no plaintext artifact or private rows logged.
+- First attempts failed safely (local connection; SQLSTATE 42703 with outdated managed-schema bootstrap). Updated only disposable bootstrap CLI to official 2.119.0; backup manifest remains original 2.79.0. Third attempt passed.
+- Infrastructure PRs 104/105/106 merged with skip-ci squash titles after normal CI. No stable staging/prod application deployment, hosted restore, or hosted migration performed.
+- This is logical DB restore verification; it does not prove Storage bytes, provider/Auth flows, Vault decryptability, or full tenant isolation. Private long-term retention of the encrypted backup and separate passphrase still not confirmed.
+- Next: complete backend migration/function alignment and production mailbox/Nylas configuration review before staging then prod promotion. PR96 remains draft, Beta0.0.2 candidate; preserve approved product changes and bump policy.
+- Synced restoration workflow/script/tests/docs from main into this feature tree without replacing application files.
+
 # Isolated logical restore drill
 
 Owner authorized 4 October 2026 after encrypted production backup success. Run the manual/main-only workflow with confirm cuebooker-isolated-restore, using the existing production reviewer gate. Fixed artifact: run 37169429138, attempt 2, name cuebooker-production-db-37169429138-2. No production/staging DB URL or provider secrets are supplied. The only existing secret is the independent backup passphrase. No paid project, managed branch or hosted database is created.

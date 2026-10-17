@@ -142,7 +142,7 @@
     padding: 8px !important;
     margin: 0 !important;
     border: 1px solid var(--workspace-line, var(--cue-border)) !important;
-    border-radius: 0 !important;
+    border-radius: 50% !important;
     background: var(--workspace-panel, var(--cue-surface)) !important;
     color: var(--cue-muted) !important;
   }

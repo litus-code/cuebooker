@@ -15,6 +15,11 @@ The goal is to support real booking behavior instead of forcing DJs, managers, a
 
 ## 1. Product outcome
 
+### 4 October 2026: individual DJ preparation
+
+DJ first-run preparation offers private professional profile completion, optional incoming channels and optional public-form sharing. A connected personal mailbox does not require a public artist profile; automatic detection requires explicit additional consent in Settings. Alternatively the DJ may publish the profile and enable its public booking form. Sharing is relevant only to that public path, never a prerequisite for email or manual capture. Manual enquiries remain available throughout. The first saved enquiry/manual booking ends first-run preparation, including an archived record. Onboarding actions navigate to existing settings/editors, never grant consent or publish automatically.
+
+
 Any meaningful booking opportunity should be able to become the same `Booking`, regardless of where it started.
 
 Canonical flow:
