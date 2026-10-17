@@ -1,3 +1,13 @@
+## 2026-10-17 / Production delta actual failure and isolated preflight fix PR119
+
+Owner explicitly approved ONLY infrastructure PR118 and its isolated rehearsal. PR118 merged as main e19b449708e50b96513b59de4cdabe9180be6ef7. Actual run38977296261/job117229713380 FAILED after exact backup download/decryption/import, all COPY counts, FK/RLS/unidentified-caller denial passed. Next preflight queried absent supabase_migrations.schema_migrations (SQLSTATE42P01); managed migration history is excluded from logical dumps. No candidate SQL executed, cleanup completed and hosted production unchanged. Earlier restored81-entry ledger assumption below is incorrect.
+
+Prepared separate draft PR119, fix/release-rehearsal-input-schema-20261017, exact head d569e3028616b8dbe2bb8f8cb0fc3c1702594c70, based only on main e19b449. Three maintenance paths replace the invalid ledger query with six inspected input-table column fingerprints; missing/changed definitions stop before candidate SQL. Fixed backup,39 immutable migration hashes, production-only function/trigger checks, isolation, cleanup and all post-migration checks remain unchanged. Existing exact push exclusions prevent this infrastructure-only integration from publishing application/stable-staging assets.
+
+Local validation:327/327 tests,10 focused isolation/rehearsal tests, Python/YAML parse, whitespace, all39 real candidate checksums. New entry-point regression fails old source at missing hosted history and passes correction. Actual local PostgreSQL-compatible catalog queries reject absent tables and nullability/default/column/type changes across all six relations. PR119 CI39009727784 and preview39009727797 are pending at this checkpoint; inspect final results before proposing integration. Follow docs/RELEASE_REHEARSAL_STATUS.md.
+
+Next: owner must separately approve ONLY PR119 integration and a NEW manual isolated release run. Do not rerun old workflow source as proof of this fix. A successful actual39-file run is still pending, followed by remaining complete Edge/provider/Auth/Storage rollback/configuration and acceptance gates. PR114 draft/unmerged, Beta0.0.13 unchanged, hosted production SQL/Edge/application publication not authorized. This PR114 update changes documentation only, parent33e2e107d4e7cdf9496529db891e0bf1cf087dee.
+
 ## 2026-10-17 / Production delta rehearsal infrastructure PR118 prepared
 
 Application candidate9bd56509bb9aba2176b55483988df80c05b1fd6a on PR114 has CI38976682744 and preview38976682708 SUCCESS. Two staging migrations and hosted QA results below are committed; production is unchanged.
