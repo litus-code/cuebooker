@@ -151,20 +151,21 @@ operational records survive disabling analytics observers, not arbitrary schema 
 
 ## Validation of this preparation
 
-608 application tests and seven offline Gmail-setup tests pass. All candidate relative
-imports resolve; each file/rollback capture hash was verified. Effective JWT settings
-match observed staging. TOML/JSON and whitespace checks pass. Deno2.9.6 was obtained from the npm registry; the full check could not fetch the JSR
-functions-js declaration package. Eight local-only Gmail/core handlers pass separately.
-The conditional Nylas webhook reports a TS2769 BufferSource type error under Deno2.9.6;
-it remains outside the Gmail-only scope. Full type-check remains pending.
-No deployment, provider call, browser product acceptance or credential mutation is
-claimed. Supabase changelog checked: November10 CBC TLS cipher retirement affects old
-clients, not the current native-fetch preparation. No transport protection was reduced.
+Executable source df8b90f01c057b67a8a7529824de616ea34ee670 passed615 app tests,
+44-route generation in CI39011862455/job117335909451, and complete18-handler Deno
+checks. Reconciled Brevo v40/Gmail v16 sources retrieved and byte-verified in staging;
+unsigned requests denied401. SQL39-file isolated rehearsal39009939881 passed; SQL
+checksums unchanged. Current operator script passes seven offline tests, including
+the stable Pub/Sub unsupported-condition regression. No new paid/provider calls.
+Earlier608-test/partial-type-check preparation evidence is superseded.
 
-Manual branch-only CI39011026025/job117333405157 SUCCESS on preparation revision
-292bb7f66c4c84ad6781b457b2fdc9e3340915cd:608 tests and44-route static generation.
-No deployment was triggered by this branch CI; later documentation records that result
-and the read-only signup/confirmation policy inventory.
+Read-only production refresh after09:41 on October17:81 migrations, the original
+two active cron jobs, one private artist-media bucket with zero objects, three
+required Vault names present, only smart-capture/get-public-artist-profile/closed
+preflight deployed. Version counters21 reflect secret updates; they do not prove
+source changes. Fresh encrypted backup run39014718244 dispatched on reviewed main
+2259f28; WAITING for protected production environment approval. No fresh artifact
+verified yet. Owner must review that export separately from release approval.
 
 ## 2026-10-17 frontend recovery evidence
 

@@ -227,5 +227,32 @@
     "current_menu": "Delete deployment disabled; no self-rollback option",
     "rollback_executed": false,
     "limitation": "The successful current deployment should be retained as pre-release frontend rollback target after promotion. Menu availability on an earlier successful production deployment proves the UI capability only; no actual recovery test or database rollback implied."
+  },
+  "predeployment_read_only_refresh": {
+    "observed_at": "2026-10-17 Europe/Madrid after 09:41",
+    "migration_count": 81,
+    "artist_media_object_count": 0,
+    "vault_required_names_count": 3,
+    "cron_names": [
+      "cuebooker-expire-holds",
+      "cuebooker-prune-public-rate-limits"
+    ],
+    "existing_crons_active": true,
+    "edge_slugs": [
+      "smart-capture",
+      "get-public-artist-profile",
+      "email-provider-preflight"
+    ],
+    "edge_version": 21,
+    "note": "Secret configuration writes advanced function version counters; no source deployment inferred. No new worker cron exists. Only aggregate metadata/names read."
+  },
+  "fresh_backup": {
+    "run_id": 39014718244,
+    "status": "waiting for protected production environment review",
+    "url": "https://github.com/litus-code/cuebooker/actions/runs/39014718244",
+    "workflow_ref": "main",
+    "workflow_sha": "2259f28c152f8663ba825171294bc5a00b62061a",
+    "scope": "Read-only hosted database export, encrypted archive only, existing workflow. No deployment or SQL mutation.",
+    "artifact_verified": false
   }
 }
