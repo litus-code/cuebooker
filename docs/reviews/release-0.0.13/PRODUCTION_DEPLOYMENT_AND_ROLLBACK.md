@@ -164,8 +164,13 @@ two active cron jobs, one private artist-media bucket with zero objects, three
 required Vault names present, only smart-capture/get-public-artist-profile/closed
 preflight deployed. Version counters21 reflect secret updates; they do not prove
 source changes. Fresh encrypted backup run39014718244 dispatched on reviewed main
-2259f28; WAITING for protected production environment approval. No fresh artifact
-verified yet. Owner must review that export separately from release approval.
+2259f28; owner approved protected environment and the run finished SUCCESS at
+07:47:18Z. Job117344308339 verified encrypted export without restoring. Artifact
+12094427790, cuebooker-production-db-39014718244-1, digest
+sha256:1aab916fd7c281416e7047ab3153e0c3a67f919b63b84b4837ecc9c53bedff31,
+expires2026-10-24T07:47:15Z. Current six input table hashes and both preserved
+function/trigger pairs exactly match the passing rehearsal. No fresh restore claimed.
+Final application release approval remains separate from backup approval.
 
 ## 2026-10-17 frontend recovery evidence
 

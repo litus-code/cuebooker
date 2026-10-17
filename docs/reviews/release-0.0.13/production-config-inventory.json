@@ -244,15 +244,30 @@
       "email-provider-preflight"
     ],
     "edge_version": 21,
-    "note": "Secret configuration writes advanced function version counters; no source deployment inferred. No new worker cron exists. Only aggregate metadata/names read."
+    "note": "Secret configuration writes advanced function version counters; no source deployment inferred. No new worker cron exists. Only aggregate metadata/names read.",
+    "rehearsal_fingerprints_match": {
+      "input_tables": 6,
+      "preserved_functions": 2,
+      "preserved_triggers": 2,
+      "all_match": true
+    }
   },
   "fresh_backup": {
     "run_id": 39014718244,
-    "status": "waiting for protected production environment review",
+    "status": "completed",
     "url": "https://github.com/litus-code/cuebooker/actions/runs/39014718244",
     "workflow_ref": "main",
     "workflow_sha": "2259f28c152f8663ba825171294bc5a00b62061a",
     "scope": "Read-only hosted database export, encrypted archive only, existing workflow. No deployment or SQL mutation.",
-    "artifact_verified": false
+    "artifact_verified": true,
+    "conclusion": "success",
+    "completed_at": "2026-10-17T07:47:18Z",
+    "job_id": 117344308339,
+    "artifact_id": 12094427790,
+    "artifact_name": "cuebooker-production-db-39014718244-1",
+    "artifact_digest": "sha256:1aab916fd7c281416e7047ab3153e0c3a67f919b63b84b4837ecc9c53bedff31",
+    "artifact_expires_at": "2026-10-24T07:47:15Z",
+    "encrypted_export_verified_in_job": true,
+    "fresh_restore_performed": false
   }
 }
