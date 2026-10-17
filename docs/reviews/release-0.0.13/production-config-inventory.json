@@ -31,7 +31,18 @@
       }
     ],
     "migration_count": 81,
-    "worker_vault_names": []
+    "worker_vault_names": [
+      "cuebooker_gmail_history_worker_url",
+      "cuebooker_mailbox_worker_secret",
+      "cuebooker_mailbox_worker_url"
+    ],
+    "worker_vault_verification": {
+      "observed_at": "2026-10-17T09:31:19+02:00",
+      "evidence": "Rendered Vault exact-name presence only, all three names found once.",
+      "values_read": false,
+      "worker_secret_agreement": "Owner reports new random worker value saved in both Edge and Vault after original value was not retained; equality not independently read or tested.",
+      "processing_activated": false
+    }
   },
   "staging": {
     "buckets": [
@@ -195,5 +206,11 @@
     "wrapped_json": true,
     "provider_delivery_tested": false,
     "oauth_consent_tested": false
+  },
+  "frontend_rollback_review": {
+    "status": "blocked pending sign-in method authorization",
+    "cloudflare_login_page_observed": true,
+    "deployment_identity_verified": false,
+    "note": "Automatic review blocked subsequent credential-field metadata inspection at accounts.google.com because owner had not selected/authorized Google. No bypass or credential entry attempted."
   }
 }

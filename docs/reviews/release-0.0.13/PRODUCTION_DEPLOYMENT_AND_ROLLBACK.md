@@ -78,7 +78,7 @@ before launch and protect any objects created since then. DB dumps omit object b
 | AI | GROQ_API_KEY and optional configured capture/transcription models | Owner configured GROQ_API_KEY; name verified, value never read. Provider quota remains unverified; do not use paid calls as a readiness probe. |
 | Beta notices | CUEBOOKER_BETA_ADMIN_EMAIL, CUEBOOKER_BETA_NOTIFICATIONS_ENABLED and sender configuration | Keep notifications disabled until recipient/provider checks. Do not issue invitations or send messages as part of preparation. |
 | Legacy Nylas | NYLAS_API_KEY, NYLAS_CLIENT_ID, NYLAS_WEBHOOK_SECRET, optional NYLAS_API_URI | Conditional only. Do not require or activate Nylas for the Gmail-only cohort. |
-| Vault | cuebooker_mailbox_worker_url, cuebooker_gmail_history_worker_url, cuebooker_mailbox_worker_secret | All three absent in production. URLs must target production; worker secret must agree with Edge configuration. Only names were inspected. |
+| Vault | cuebooker_mailbox_worker_url, cuebooker_gmail_history_worker_url, cuebooker_mailbox_worker_secret | Owner saved all three names; exact-name presence verified in rendered production Vault. Owner regenerated the worker secret and reports saving it in both Edge and Vault; no values read or equality test performed. URLs were instructed to target production. No cron activated. |
 
 The dashboard initially showed sign-in, then an authenticated GitHub session became
 available. Read-only rendered controls verified URLs, SMTP metadata, the recovery
