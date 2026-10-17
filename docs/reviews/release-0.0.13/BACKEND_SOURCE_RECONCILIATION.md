@@ -36,7 +36,11 @@ the Gmail and Nylas handlers. Full checks use the official functions-js2.118.0 d
 whose SHA256427921102ae314a45213a4f919fab835d94421661fcbdaba580406f35bfe5079
 matches JSR registry metadata; normal Deno JSR dependency download is unavailable in
 this environment. The local-only import map is not a production configuration change.
-Full package check/result and CI will be recorded after they finish.
+All18 exact candidate handlers now pass the complete check. The official declaration
+requires openai types; openai4.104.0 was installed only in an isolated validation
+directory to satisfy its declared ^4.52.5 range. Repository dependencies and deployed
+imports remain unchanged. A public-enquiry locale union annotation fixes a pre-existing
+type error; emitted JavaScript is identical before/after. CI remains pending.
 
 Exact original staged ingress/Gmail source bundles are saved under staging-rollback
 with per-file hashes and original JWT settings in production-edge-manifest.json.

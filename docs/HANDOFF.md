@@ -1,3 +1,7 @@
+## 2026-10-17 / Complete18-handler type-check passed
+
+Follow-up on reconciliation source198008ebef684499b7d6107f1344a4209b78845d. All18 exact candidate handlers pass Deno2.9.6 with the hash-verified official functions-js2.118 declaration and its openai4.104.0 type dependency installed only in an isolated scratch validation directory. No repository dependency or deployed import map change. Existing public-enquiry ES/EN locale inference needed an explicit union annotation; compiled JavaScript before/after is byte-equal.615 application tests and13 focused regressions remain green; final branch CI and two-function staging deployment/verification next. Production untouched.
+
 ## 2026-10-17 / Brevo source reconciliation and complete Gmail package candidate
 
 PR114 integration/beta-home21-review, parent9c9bb5e32dd4b319fc3b138477c05103075184cc, Beta0.0.13 unchanged. Owner asks to proceed toward production preparation and asks timing. Production SQL/Edge/configuration/main integration remain separate and untouched. No new migration.

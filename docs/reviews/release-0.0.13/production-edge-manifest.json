@@ -631,8 +631,10 @@
       "staging_version": 41,
       "production_version": null,
       "staging_verify_jwt": false,
-      "staging_exact_source_match": true,
-      "staging_different_or_missing_files": [],
+      "staging_exact_source_match": false,
+      "staging_different_or_missing_files": [
+        "supabase/functions/submit-booking-request/index.ts"
+      ],
       "staging_extra_files": [],
       "files": [
         {
@@ -645,12 +647,13 @@
         },
         {
           "path": "supabase/functions/submit-booking-request/index.ts",
-          "sha256": "230e9e958472c163c45cb502d8e92ffb3bfec9eb65f92731c648f9099ef10e78"
+          "sha256": "28e8b3121722fe511a172659eaa27437b638c3a059cf5511a03ef2c6c512b952"
         }
       ],
       "external_imports": [
         "jsr:@supabase/functions-js/edge-runtime.d.ts"
-      ]
+      ],
+      "staging_difference_classification": "Type-only ES/EN locale union annotation; emitted JavaScript exactly matches previous repository handler."
     }
   ],
   "production_rollback": [
@@ -722,7 +725,16 @@
   "validation": {
     "application_tests": 615,
     "focused_brevo_and_nylas_tests": 13,
-    "prior_full_typecheck_blocker": "JSR resolver could not download the functions-js declaration; using exact official 2.118.0 declaration verified against registry SHA256 for local verification; no deploy import map changed."
+    "prior_full_typecheck_blocker": "JSR resolver could not download the functions-js declaration; using exact official 2.118.0 declaration verified against registry SHA256 for local verification; no deploy import map changed.",
+    "full_edge_typecheck": {
+      "handlers": 18,
+      "status": "passed",
+      "deno": "2.9.6",
+      "functions_js_declaration": "2.118.0",
+      "declaration_sha256": "427921102ae314a45213a4f919fab835d94421661fcbdaba580406f35bfe5079",
+      "local_type_dependency": "openai@4.104.0 installed separately from repository; satisfies declaration ^4.52.5",
+      "production_import_map_changed": false
+    }
   },
   "staging_before_reconciliation": [
     {

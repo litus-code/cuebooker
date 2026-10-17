@@ -81,7 +81,7 @@ function normalizePayload(payload: Record<string, unknown>) {
   const entrySource = cleanOptional(payload.entrySource, 64)?.toLowerCase() || null;
   if (entrySource && !/^[a-z0-9][a-z0-9_-]*$/.test(entrySource)) throw new Error("invalid_payload");
 
-  const locale = payload.locale === "en" ? "en" : "es";
+  const locale: "es" | "en" = payload.locale === "en" ? "en" : "es";
 
   if (!eventName && !venueName && !eventDate && !initialMessage) throw new Error("booking_context_required");
 
