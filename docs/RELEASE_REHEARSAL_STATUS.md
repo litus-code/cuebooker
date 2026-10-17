@@ -1,4 +1,38 @@
-# Prepared production SQL delta rehearsal, 17 October 2026
+# Production SQL delta rehearsal preflight correction, 17 October 2026
+
+Owner approved infrastructure PR118 only. It was squash-merged as
+`e19b449708e50b96513b59de4cdabe9180be6ef7`; the actual manual run
+[38977296261](https://github.com/litus-code/cuebooker/actions/runs/38977296261),
+job117229713380, FAILED. Exact backup download/decryption/import, every COPY row count,
+foreign keys, RLS and unidentified-caller denial passed. The next preflight queried
+`supabase_migrations.schema_migrations`, which is excluded from the logical dump,
+and failed with SQLSTATE42P01. No candidate migration executed and no hosted database
+changed. Cleanup completed. The earlier assumption that the restored backup included
+the hosted81-entry migration ledger was incorrect.
+
+This follow-up replaces that unavailable-history check with six input-table column
+fingerprints inspected read-only on production: bookings, email_messages, organizations,
+product_analytics_events, workspace_artists and workspace_billing. They cover ordered
+column names, types, nullability and default expressions; missing tables or drift stop
+the rehearsal before candidate SQL. They are input checks only, not a claim that the
+whole schema is identical. The fixed backup artifact and its verification, exact39
+candidate hashes, production-only function/trigger fingerprints and every existing
+post-migration assertion remain unchanged. No migration ledger is fabricated.
+
+The regression exercises the rehearsal entry point without hosted migration history
+and rejects each missing/changed input fingerprint before any candidate SQL. An actual
+local PostgreSQL-compatible catalog query check verifies all six queries against missing
+tables and changes to nullability, defaults, added columns and types. Local focused
+tests pass (10/10), as does the full main-based suite (327/327), Python/YAML parsing
+and whitespace validation. The new regression fails on the old runner at the absent
+hosted ledger and passes on the corrected runner. A fresh actual isolated
+39-file run is still required after separately approved infrastructure integration.
+PR114 remains draft/unmerged. Production SQL/application/Edge publication remains a
+separate decision; this correction does not establish production readiness.
+
+---
+
+# Historical PR118 preparation, 17 October 2026
 
 Infrastructure only, based on main3b6d3724f22d4209fad30b5beef6f04ad0fa1364.
 Reviewed candidate9bd56509bb9aba2176b55483988df80c05b1fd6a on PR114,
@@ -9,7 +43,7 @@ backup38889098646/attempt1 (`cuebooker-production-db-38889098646-1`, artifact120
 and39 exact SQL files from that immutable candidate. Those files cover the named missing
 Agency/mailbox migrations, six attachment/diagnostics follow-ups, campaign SQL and its
 FK indexes, plus the tested legacy last-owner repair. Historical bootstrap aliases are
-excluded. The runner rejects an unexpected81-entry restored ledger, preserves the two
+excluded. The original runner incorrectly expected an81-entry restored ledger (corrected above), preserves the two
 production-only Next Move/billing functions and triggers by inspected fingerprints,
 and verifies protected counts/FKs/RLS, service-only campaign RPCs, private attachments,
 paused mailbox/Gmail jobs and the test-only dataset. A transaction disables only the
