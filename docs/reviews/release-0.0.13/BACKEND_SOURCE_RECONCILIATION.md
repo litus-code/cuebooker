@@ -52,3 +52,30 @@ The passed39-file SQL delta and production-only preserved definitions are unchan
 After this source block: finish production Gmail/Groq/worker private configuration and
 Google/Brevo provider inspection, refresh pre-deploy backup/state, then obtain separate
 production integration/deployment approval. Existing accepted user journeys stand.
+
+## Actual result
+
+Exact source df8b90f01c057b67a8a7529824de616ea34ee670 passed branch-only
+CI39011862455/job117335909451:615 tests, zero failures and44 routes. All18 function
+bundles pass the local full Deno check described above. All39 SQL hashes still match
+the candidate that passed the isolated production-backup rehearsal.
+
+Staging only: ingest-booking-email is now v40 (one exact source file), and
+gmail-mailbox-events is v16 (all four exact candidate files). Both retain
+verify_jwt=false and their existing handler authentication. Retrieved every deployed
+source and compared bytes, including Supabase's single-file ingress path alias.
+Empty unsigned POSTs return401/unauthorized_webhook and401/unauthorized respectively.
+No user data, mail, Booking, provider operation, flag, consent, secret, Vault, cron or
+production change occurred during these negative checks. This is not a new real
+Brevo/Gmail roundtrip acceptance. Original staged bundles remain available for rollback.
+
+Conditional Nylas type compatibility correction and public-enquiry type-only locale
+annotation are in source; neither additional handler was deployed by this block.
+The public-enquiry compiled JavaScript is unchanged. The exact staged ingress source
+mismatch and Gmail missing-dependency findings are resolved.
+
+Google Cloud console reports Site Unavailable in this browser. No sign-in, OAuth
+client creation, Pub/Sub/IAM mutation or credential read was attempted. Production
+Gmail/Groq/worker settings and external Google/Brevo checks therefore remain pending.
+Use the owner's own Google session for the next production client inventory; never
+paste credentials in chat or copy staging tokens/consent into production.

@@ -1,3 +1,9 @@
+Verified follow-up: source df8b90f passes615 tests/44-route CI and all18 Edge type checks.
+Brevo ingress-v40 and complete Gmail-events-v16 now match that source in staging and
+reject unsigned calls. See BACKEND_SOURCE_RECONCILIATION.md for exact evidence/limits.
+Google Cloud console is unavailable in this browser; external provider/private production
+configuration remains the next gate. Production unchanged.
+
 Current follow-up: BACKEND_SOURCE_RECONCILIATION.md supersedes the original Brevo/Nylas
 source findings below. Reconciled source has615 passing tests; exact staged deployment
 and final checks are recorded there. No production action follows from that preparation.

@@ -250,14 +250,11 @@
       "entrypoint": "supabase/functions/gmail-mailbox-events/index.ts",
       "release_scope": "release runtime",
       "verify_jwt": false,
-      "staging_version": 15,
+      "staging_version": 16,
       "production_version": null,
       "staging_verify_jwt": false,
-      "staging_exact_source_match": false,
-      "staging_different_or_missing_files": [
-        "app/domain/emailAttachments.ts",
-        "supabase/functions/_shared/nylasMailbox.ts"
-      ],
+      "staging_exact_source_match": true,
+      "staging_different_or_missing_files": [],
       "staging_extra_files": [],
       "files": [
         {
@@ -278,20 +275,18 @@
         }
       ],
       "external_imports": [],
-      "staging_difference_classification": "Entry handler matches; bundled nylasMailbox helper is older and omits attachment dependency. Verify complete candidate bundle before promotion."
+      "staging_difference_classification": "Reconciled complete bundle deployed only to staging; every source byte/JWT flag matches candidate, unsigned POST denied401."
     },
     {
       "slug": "ingest-booking-email",
       "entrypoint": "supabase/functions/ingest-booking-email/index.ts",
       "release_scope": "release runtime",
       "verify_jwt": false,
-      "staging_version": 39,
+      "staging_version": 40,
       "production_version": null,
       "staging_verify_jwt": false,
-      "staging_exact_source_match": false,
-      "staging_different_or_missing_files": [
-        "supabase/functions/ingest-booking-email/index.ts"
-      ],
+      "staging_exact_source_match": true,
+      "staging_different_or_missing_files": [],
       "staging_extra_files": [],
       "files": [
         {
@@ -302,7 +297,7 @@
       "external_imports": [
         "jsr:@supabase/functions-js/edge-runtime.d.ts"
       ],
-      "staging_difference_classification": "Current candidate restores the captured v39 attachment path with reviewed privacy/redirect/PNG safeguards; staging deployment pending."
+      "staging_difference_classification": "Reconciled complete bundle deployed only to staging; every source byte/JWT flag matches candidate, unsigned POST denied401."
     },
     {
       "slug": "mailbox-beta-admin",
@@ -721,7 +716,7 @@
   "proposed_config_sha256": "96feba107c695ed4b0be7019234c4f6a445f833fb39f3166b579e9117e36a40b",
   "baseline_candidate_sha": "9bd56509bb9aba2176b55483988df80c05b1fd6a",
   "baseline_source_tree_sha": "94d3f691635f869089cb1dca371c994b23430f04",
-  "function_source_revision": "PR114 backend source reconciliation; exact per-file SHA256 values identify this snapshot. See HANDOFF for commit.",
+  "function_source_revision": "df8b90f01c057b67a8a7529824de616ea34ee670",
   "validation": {
     "application_tests": 615,
     "focused_brevo_and_nylas_tests": 13,
@@ -773,5 +768,60 @@
         }
       ]
     }
-  ]
+  ],
+  "candidate_sha": "df8b90f01c057b67a8a7529824de616ea34ee670",
+  "source_tree_sha": "38e76aec5d3cb75ec93158b93748882743a12cac",
+  "staging_reconciliation_result": {
+    "source_sha": "df8b90f01c057b67a8a7529824de616ea34ee670",
+    "ci": {
+      "run": 39011862455,
+      "job": 117335909451,
+      "result": "success",
+      "tests": 615,
+      "routes": 44
+    },
+    "typecheck": {
+      "handlers": 18,
+      "deno": "2.9.6",
+      "declaration": "@supabase/functions-js@2.118.0",
+      "declaration_sha256": "427921102ae314a45213a4f919fab835d94421661fcbdaba580406f35bfe5079",
+      "local_type_dependency": "openai@4.104.0",
+      "deployed_import_map_changed": false
+    },
+    "staging": [
+      {
+        "slug": "ingest-booking-email",
+        "version": 40,
+        "verify_jwt": false,
+        "files": [
+          "ingest-booking-email/index.ts"
+        ],
+        "all_source_bytes_match_candidate": true,
+        "unauthenticated_post": {
+          "status": 401,
+          "error": "unauthorized_webhook"
+        }
+      },
+      {
+        "slug": "gmail-mailbox-events",
+        "version": 16,
+        "verify_jwt": false,
+        "files": [
+          "supabase/functions/gmail-mailbox-events/index.ts",
+          "supabase/functions/_shared/gmailPush.ts",
+          "supabase/functions/_shared/nylasMailbox.ts",
+          "app/domain/emailAttachments.ts"
+        ],
+        "all_source_bytes_match_candidate": true,
+        "unauthenticated_post": {
+          "status": 401,
+          "error": "unauthorized"
+        }
+      }
+    ],
+    "production_changed": false,
+    "provider_delivery_tested": false,
+    "sql_candidate_files_unchanged": 39,
+    "google_console": "Site Unavailable in this browser; project/client/provider configuration requires user session outside this browser"
+  }
 }
