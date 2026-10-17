@@ -208,9 +208,24 @@
     "oauth_consent_tested": false
   },
   "frontend_rollback_review": {
-    "status": "blocked pending sign-in method authorization",
-    "cloudflare_login_page_observed": true,
-    "deployment_identity_verified": false,
-    "note": "Automatic review blocked subsequent credential-field metadata inspection at accounts.google.com because owner had not selected/authorized Google. No bypass or credential entry attempted."
+    "status": "Current production deployment identified; prior production rollback menu verified in owner screenshots. Exact hosted git SHA still unverified.",
+    "observed_at": "2026-10-17T09:40:29+02:00",
+    "evidence": "Owner screenshots at 09:36:18,09:37:11,09:38:29,09:40:15; no agent Cloudflare authentication or mutation.",
+    "project": "cuebooker-production",
+    "current_deployment_id": "8ec8a35f-1f8c-4e49-97d2-e91f9f4a631e",
+    "current_deployment_url": "https://8ec8a35f.cuebooker-production.pages.dev",
+    "production_alias": "cuebooker.com",
+    "displayed_deployment_date": "11:42AM September 29, 2026 (dashboard timezone unspecified)",
+    "status_displayed": "success",
+    "branch_displayed": "main",
+    "displayed_source_title": "feat: guide profile activation a...",
+    "candidate_git_commit_by_title_only": "2f434db69761f09b932bf93b4de126a2677cfc9b",
+    "hosted_git_sha_verified": false,
+    "previous_deployment_short_id": "ecef9cf1",
+    "previous_deployment_url": "https://ecef9cf1.cuebooker-production.pages.dev",
+    "previous_menu_option": "Rollback to this deployment",
+    "current_menu": "Delete deployment disabled; no self-rollback option",
+    "rollback_executed": false,
+    "limitation": "The successful current deployment should be retained as pre-release frontend rollback target after promotion. Menu availability on an earlier successful production deployment proves the UI capability only; no actual recovery test or database rollback implied."
   }
 }

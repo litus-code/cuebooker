@@ -165,3 +165,19 @@ Manual branch-only CI39011026025/job117333405157 SUCCESS on preparation revision
 292bb7f66c4c84ad6781b457b2fdc9e3340915cd:608 tests and44-route static generation.
 No deployment was triggered by this branch CI; later documentation records that result
 and the read-only signup/confirmation policy inventory.
+
+## 2026-10-17 frontend recovery evidence
+
+Owner screenshots identify the current successful production deployment as
+`8ec8a35f-1f8c-4e49-97d2-e91f9f4a631e`, project `cuebooker-production`, alias
+`cuebooker.com`, URL `https://8ec8a35f.cuebooker-production.pages.dev`.
+Dashboard displays September29,2026 11:42AM without timezone. Retain this
+deployment as the frontend recovery target after promotion. The owner also
+opened the menu on previous successful production deployment `ecef9cf1`: it
+shows `Rollback to this deployment`. No rollback/delete was selected. The active
+deployment only showed disabled delete, so never expect a self-rollback menu.
+
+This is screenshot evidence of identity/menu capability, not an executed recovery
+test. Exact hosted git SHA remains unverified; repository title matches candidate
+`2f434db69761f09b932bf93b4de126a2677cfc9b` but title alone does not prove linkage.
+Frontend rollback does not revert SQL, providers, Vault, or Edge Functions.
