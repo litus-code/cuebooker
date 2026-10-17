@@ -12,6 +12,17 @@
           "image/png",
           "image/webp"
         ]
+      },
+      {
+        "id": "booking-email-attachments",
+        "public": false,
+        "object_count": 0,
+        "file_size_limit": 5242880,
+        "allowed_mime_types": [
+          "application/pdf",
+          "image/jpeg",
+          "image/png"
+        ]
       }
     ],
     "schedules": [
@@ -28,9 +39,19 @@
         "schedule": "17 */6 * * *",
         "targets_staging": false,
         "targets_production": false
+      },
+      {
+        "name": "cuebooker-mailbox-incoming",
+        "active": false,
+        "schedule": "* * * * *"
+      },
+      {
+        "name": "cuebooker-gmail-history",
+        "active": false,
+        "schedule": "* * * * *"
       }
     ],
-    "migration_count": 81,
+    "migration_count": 120,
     "worker_vault_names": [
       "cuebooker_gmail_history_worker_url",
       "cuebooker_mailbox_worker_secret",
@@ -269,5 +290,6 @@
     "artifact_expires_at": "2026-10-24T07:47:15Z",
     "encrypted_export_verified_in_job": true,
     "fresh_restore_performed": false
-  }
+  },
+  "current_release_execution": "production-release-execution.json"
 }
