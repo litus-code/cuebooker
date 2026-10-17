@@ -1,6 +1,6 @@
 # Production delta preparation, 17 October 2026
 
-Status: prepared for an isolated rehearsal, not approved for hosted application.
+Status: exact isolated SQL rehearsal PASSED, not approved for hosted application.
 PR114 remains draft/unmerged, Beta0.0.13. Production has only been read.
 
 ## Reconciled SQL candidate
@@ -32,16 +32,19 @@ only in staging; production must receive it only through the reviewed delta.
 
 Use the already verified encrypted production backup38889098646/attempt1,
 artifact12041757362, named `cuebooker-production-db-38889098646-1`.
-Its disconnected restore38893078933 passed. The old release workflow still pins the
-October4 archive and old30-file candidate, so it cannot establish acceptance of this
-new delta. Prepared [draft PR118](https://github.com/litus-code/cuebooker/pull/118) from main
-to update those pins and checks. Its exact source is72ccedfd66b95e672e360cd4f24ed99d10d21f0f;
-326 tests and nine focused infra checks pass locally; CI38976909615 and preview38976909571 SUCCESS. Execution remains pending approval. The current main-only workflow and protected environment must remain intact.
+Its disconnected restore38893078933 passed. Owner-approved infrastructure PR118 and correction PR119 now pin the fresh archive
+and exact39-file candidate. Actual run39009939881/job117330153817 on main2259f28
+PASSED the disconnected restore, every39-file migration and all preservation,
+permissions, private attachments, test dataset, paused jobs and observer rollback
+assertions; cleanup passed. PR119 replaced the missing managed-ledger preflight
+with inspected input schema fingerprints. See RELEASE_REHEARSAL_STATUS.md.
+The main-only workflow and protected environment remain intact.
 
 The rehearsal must preserve original row counts/FKs/RLS and the two production-only
 behaviors, keep the mailbox/Gmail schedulers paused, check private attachments and
 analytics grants, and verify that operational records survive disabling the optional
-analytics observers. Run only after owner approval to integrate that infrastructure.
+analytics observers. The owner-approved run completed with all of these checks passing. Hosted SQL still
+requires its own approval.
 
 ## Remaining deployment preparation
 
