@@ -530,7 +530,14 @@
     "assessment": "No ERROR-level findings. Service-only tables intentionally have RLS/no client policies. Authenticated administrative RPCs retain internal authorization, tested in prior staging acceptance. Existing password/performance findings retained; no unrelated protections changed."
   },
   "frontend": {
-    "state": "not_yet_merged_or_deployed"
+    "state": "workflow_waiting_for_protected_environment_approval",
+    "pr": 114,
+    "merged": true,
+    "main_sha": "e3bd0b040369c150fac7800f27643c30d69f0599",
+    "run_id": 39016119822,
+    "url": "https://github.com/litus-code/cuebooker/actions/runs/39016119822",
+    "main_tree_equals_verified_checkpoint": true,
+    "public_web_release_verified": false
   },
   "live_provider_acceptance": false,
   "secret_values_read": false,
