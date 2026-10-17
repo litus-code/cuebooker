@@ -27,6 +27,12 @@ test('signed incoming event enqueues only identifiers and provider date, with op
  assert.deepEqual(values[0],{target_grant:'grant-one',target_event:'event-one',target_message:'mail-one',target_thread:'thread-one',target_date:new Date(notification.data.object.date*1000).toISOString()});
  assert.equal(JSON.stringify(values).includes('Private'),false);
 });
+test('HMAC verification accepts the exact byte view without including backing-buffer padding',async()=>{
+ const text='fictional signed payload',bytes=new TextEncoder().encode(text),padded=new Uint8Array(bytes.length+4);
+ padded.set(bytes,2);const view=padded.subarray(2,2+bytes.length),signature=await signed(text);
+ assert.equal(await verifyNylasSignature(view,signature,secret),true);
+ view[0]^=1;assert.equal(await verifyNylasSignature(view,signature,secret),false);
+});
 test('truncated new mail is supported while irrelevant events never enter queue',async()=>{
  let calls=0;const handler=createNylasEventsHandler({secret:()=>secret,enqueue:async()=>{calls++;return {accepted:false}}});
  assert.equal((await handler(await request({...notification,type:'message.created.truncated'}))).status,200);

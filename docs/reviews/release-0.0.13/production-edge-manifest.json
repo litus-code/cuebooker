@@ -1,7 +1,5 @@
 {
   "observed_at": "2026-10-17",
-  "candidate_sha": "9bd56509bb9aba2176b55483988df80c05b1fd6a",
-  "source_tree_sha": "94d3f691635f869089cb1dca371c994b23430f04",
   "production_project": "qlocooqfdzehogbwcbhr",
   "staging_project": "lycprjeuuynfzwskycwv",
   "scope": "read-only inventory and local preparation; no deployment",
@@ -298,13 +296,13 @@
       "files": [
         {
           "path": "supabase/functions/ingest-booking-email/index.ts",
-          "sha256": "8965ee96c0c3ed0d0812a57eef7ffcd65db402b11d26fccc49042b1c4881fcdf"
+          "sha256": "ed8b9cf70a80a4d9b7b0a09bc3d79de0ba5df1803f196df8a03ad093e4e76e36"
         }
       ],
       "external_imports": [
         "jsr:@supabase/functions-js/edge-runtime.d.ts"
       ],
-      "staging_difference_classification": "Staging has gated Brevo attachment persistence missing from repository. Release blocker until source/feature scope is reconciled; captured separately, not copied into runtime."
+      "staging_difference_classification": "Current candidate restores the captured v39 attachment path with reviewed privacy/redirect/PNG safeguards; staging deployment pending."
     },
     {
       "slug": "mailbox-beta-admin",
@@ -341,20 +339,23 @@
       "staging_version": 20,
       "production_version": null,
       "staging_verify_jwt": false,
-      "staging_exact_source_match": true,
-      "staging_different_or_missing_files": [],
+      "staging_exact_source_match": false,
+      "staging_different_or_missing_files": [
+        "supabase/functions/_shared/nylasIncomingNotification.ts"
+      ],
       "staging_extra_files": [],
       "files": [
         {
           "path": "supabase/functions/_shared/nylasIncomingNotification.ts",
-          "sha256": "4cc287634d570526e6f0ab1ceb920b22ca024e210b85e3a1a37dc84e68c88d73"
+          "sha256": "aabff86bd6aff79ace506aade736c5aab03a5604b8761ad30e02d7d51f19e808"
         },
         {
           "path": "supabase/functions/nylas-mailbox-events/index.ts",
           "sha256": "8b4db1d41457532fe7a20da91a4ee06643c5d437e0ba566af47ce7641f867681"
         }
       ],
-      "external_imports": []
+      "external_imports": [],
+      "staging_difference_classification": "BufferSource type compatibility correction copies only the input byte view; isolated HMAC regressions pass. Conditional legacy route, not activated."
     },
     {
       "slug": "process-gmail-history",
@@ -714,5 +715,51 @@
     "sha256": "1ee065787a2c9a49a0924c3a6576e0f65c24602c92ca8431cadaa5f8ed8f48ca",
     "use": "inspection only; not a reviewed deployable candidate"
   },
-  "proposed_config_sha256": "96feba107c695ed4b0be7019234c4f6a445f833fb39f3166b579e9117e36a40b"
+  "proposed_config_sha256": "96feba107c695ed4b0be7019234c4f6a445f833fb39f3166b579e9117e36a40b",
+  "baseline_candidate_sha": "9bd56509bb9aba2176b55483988df80c05b1fd6a",
+  "baseline_source_tree_sha": "94d3f691635f869089cb1dca371c994b23430f04",
+  "function_source_revision": "PR114 backend source reconciliation; exact per-file SHA256 values identify this snapshot. See HANDOFF for commit.",
+  "validation": {
+    "application_tests": 615,
+    "focused_brevo_and_nylas_tests": 13,
+    "prior_full_typecheck_blocker": "JSR resolver could not download the functions-js declaration; using exact official 2.118.0 declaration verified against registry SHA256 for local verification; no deploy import map changed."
+  },
+  "staging_before_reconciliation": [
+    {
+      "slug": "ingest-booking-email",
+      "version": 39,
+      "verify_jwt": false,
+      "deployed_bundle_sha256": "32722a6ef94fc7202638a8efc4d7ecda54704deef7407d8200b086d81114c7af",
+      "files": [
+        {
+          "path": "docs/reviews/release-0.0.13/staging-rollback/ingest-booking-email-v39/index.ts",
+          "original_name": "index.ts",
+          "sha256": "1ee065787a2c9a49a0924c3a6576e0f65c24602c92ca8431cadaa5f8ed8f48ca"
+        }
+      ]
+    },
+    {
+      "slug": "gmail-mailbox-events",
+      "version": 15,
+      "verify_jwt": false,
+      "deployed_bundle_sha256": "a07bdf8711603b9ec0fed1276a4734d067307025c114fbf9d193758a3edd9c42",
+      "files": [
+        {
+          "path": "docs/reviews/release-0.0.13/staging-rollback/gmail-mailbox-events-v15/functions/gmail-mailbox-events/index.ts",
+          "original_name": "functions/gmail-mailbox-events/index.ts",
+          "sha256": "9d6fce0c6707486b8d945b8924bb77ab74ae4e6a4c2a190ef78c245a04b545dc"
+        },
+        {
+          "path": "docs/reviews/release-0.0.13/staging-rollback/gmail-mailbox-events-v15/functions/_shared/gmailPush.ts",
+          "original_name": "functions/_shared/gmailPush.ts",
+          "sha256": "c6adf37539ecda40635f0c4c6a1baffde30695ef18bfc1a8ba3141062d21b92c"
+        },
+        {
+          "path": "docs/reviews/release-0.0.13/staging-rollback/gmail-mailbox-events-v15/functions/_shared/nylasMailbox.ts",
+          "original_name": "functions/_shared/nylasMailbox.ts",
+          "sha256": "6535a71b2ca9a39dfd938c824a4f0fab315aba2d0d7c6eaf833596783d208bb0"
+        }
+      ]
+    }
+  ]
 }

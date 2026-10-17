@@ -1,3 +1,7 @@
+Current follow-up: BACKEND_SOURCE_RECONCILIATION.md supersedes the original Brevo/Nylas
+source findings below. Reconciled source has615 passing tests; exact staged deployment
+and final checks are recorded there. No production action follows from that preparation.
+
 # Beta0.0.13 production preparation, 17 October 2026
 
 Status: prepared inventory, publication blocked by the explicit items below. PR114

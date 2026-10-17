@@ -2,7 +2,7 @@ export async function verifyNylasSignature(body:Uint8Array,signature:string|null
  if(!secret||!signature||!/^[a-f0-9]{64}$/i.test(signature))return false;
  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['verify']);
  const bytes=Uint8Array.from(signature.match(/../g)!,v=>parseInt(v,16));
- return crypto.subtle.verify('HMAC',key,bytes,body);
+ return crypto.subtle.verify('HMAC',key,bytes,new Uint8Array(body));
 }
 const identifier=(value:unknown)=>typeof value==='string'&&value.length>0&&value.length<=512&&!/[\u0000-\u001f]/.test(value);
 export function nylasIncomingNotification(value:any){
