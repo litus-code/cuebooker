@@ -159,6 +159,12 @@
       "CUEBOOKER_BETA_ADMIN_EMAIL",
       "CUEBOOKER_BETA_NOTIFICATIONS_ENABLED"
     ],
-    "secret_value_verification": false
+    "secret_value_verification": false,
+    "auth_signup_policy": {
+      "allow_new_users": true,
+      "allow_manual_linking": false,
+      "allow_anonymous_sign_ins": false,
+      "confirm_email": true
+    }
   }
 }

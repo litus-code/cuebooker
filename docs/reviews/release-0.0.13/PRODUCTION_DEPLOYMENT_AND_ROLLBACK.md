@@ -59,7 +59,7 @@ before launch and protect any objects created since then. DB dumps omit object b
 | Area | Production requirement | Current verification |
 | --- | --- | --- |
 | Auth URLs | site URL https://cuebooker.com; exact reset-password and agency-invite return routes for this environment | Verified in authenticated dashboard: site URL is cuebooker.com and existing cuebooker.com/** allow-list covers both routes. No setting changed. |
-| Auth mail | Preserve/capture existing subjects, templates, confirmation policy, SMTP host/sender and recovery behavior before any change | Custom SMTP enabled, Brevo host/587, sender metadata verified; stored password not read. Recovery subject/body captured with ConfirmationURL and no localhost. Other templates/policies remain pending. sync-supabase-auth-mail-templates.mjs writes immediately, so never invoke it as inspection. |
+| Auth mail | Preserve/capture existing subjects, templates, confirmation policy, SMTP host/sender and recovery behavior before any change | Custom SMTP enabled, Brevo host/587, sender metadata verified; stored password not read. Recovery subject/body captured with ConfirmationURL and no localhost. Email confirmation and new signups are enabled; anonymous sign-ins/manual linking disabled. Other templates remain uncaptured. sync-supabase-auth-mail-templates.mjs writes immediately, so never invoke it as inspection. |
 | Edge platform values | SUPABASE_URL and platform-provided server/public credentials from the production project | Do not export, print or copy staging values. Environment secret presence is not proven by source code. |
 | Public mail routing | BREVO_API_KEY, CUEBOOKER_FROM_EMAIL, CUEBOOKER_FROM_NAME, CUEBOOKER_REPLY_DOMAIN, CUEBOOKER_APP_ORIGIN, CUEBOOKER_INBOUND_WEBHOOK_SECRET, BREVO_TRANSACTIONAL_WEBHOOK_SECRET and rate limiter secret if separately configured | The seven Brevo/routing names are present in Edge Secrets; values and actual provider routing remain unverified. Preserve originals through private operator controls. |
 | Gmail | Separate production OAuth client, GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_TOKEN_ENCRYPTION_KEY; callback ends /functions/v1/connected-mailbox on qlocooqfdzehogbwcbhr | Gmail secret names are absent from production. Google configuration remains unverified. Existing staged acceptance does not prove production OAuth. Never rotate an encryption secret while retained credentials depend on it. |
@@ -75,7 +75,7 @@ available. Read-only rendered controls verified URLs, SMTP metadata, the recover
 subject/body and Edge secret names. No credentials were entered/read by the agent,
 no secret values were inspected and no dashboard setting changed. All production
 Gmail/worker/AI secret names are absent. Google IAM/OAuth, Brevo external routing, other
-Auth templates/policies and secret values remain unverified.
+Auth templates and secret values remain unverified.
 
 Offline Gmail plan, already checked locally without remote calls:
 
@@ -148,3 +148,8 @@ it remains outside the Gmail-only scope. Full type-check remains pending.
 No deployment, provider call, browser product acceptance or credential mutation is
 claimed. Supabase changelog checked: November10 CBC TLS cipher retirement affects old
 clients, not the current native-fetch preparation. No transport protection was reduced.
+
+Manual branch-only CI39011026025/job117333405157 SUCCESS on preparation revision
+292bb7f66c4c84ad6781b457b2fdc9e3340915cd:608 tests and44-route static generation.
+No deployment was triggered by this branch CI; later documentation records that result
+and the read-only signup/confirmation policy inventory.
