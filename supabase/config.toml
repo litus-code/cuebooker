@@ -27,6 +27,13 @@ verify_jwt = false
 [functions.submit-booking-request]
 verify_jwt = false
 
+[functions.submit-agency-enquiry]
+verify_jwt = false
+
+# Handler requires a server credential; normal user tokens are rejected.
+[functions.mailbox-beta-admin]
+verify_jwt = false
+
 [functions.booking-follow-up]
 verify_jwt = false
 

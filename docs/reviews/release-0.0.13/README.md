@@ -119,3 +119,12 @@ analytics. Use explicitly identified test data in the authorized staging QA scop
 No new account, email, invitation or booking was created for this review. No hosted
 migration, function or retention deployment has occurred. No stable staging or
 production readiness is implied by these local checks.
+
+## Production preparation checkpoint, 17 October
+
+PRODUCTION_DEPLOYMENT_AND_ROLLBACK.md records the ordered proposal and remaining
+source/configuration gates. production-edge-manifest.json pins all local bundle files
+and three captured original production function sources. production-config-inventory.json
+contains only safe metadata/aggregate counts. The captured recovery template is source
+rollback material; staging-source-drift contains an unpromoted Brevo handler for review.
+No hosted production change is represented by these files.

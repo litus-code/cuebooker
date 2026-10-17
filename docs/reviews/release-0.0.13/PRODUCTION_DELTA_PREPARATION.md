@@ -58,3 +58,15 @@ Storage object bytes and external configuration. No live campaign collection is 
 Staging API funnel acceptance, owner recovery/Manager acceptance and the two new FK
 indexes are recorded in STAGING_CAMPAIGN_ACCEPTANCE.md. Preserve the accepted
 connected email, attachments, DJ, languages, mobile and public visual checks.
+
+## Deployment/rollback inventory follow-up
+
+See PRODUCTION_DEPLOYMENT_AND_ROLLBACK.md and production-edge-manifest.json for
+all18 candidate handler closures/JWT settings, three exact current production source
+rollback captures, staged Brevo ingress/Gmail helper drift, and configuration gates.
+production-config-inventory.json records only safe catalog metadata/aggregate counts.
+Production Storage has zero objects at inspection and all three worker Vault names
+are absent. Authenticated dashboard verification confirms production site/redirect URLs, active
+Brevo SMTP metadata, recovery template and present Brevo/missing Gmail/AI secret names.
+Secret values, other Auth templates/policies and Google/Brevo provider settings remain
+pending. This is preparation, not production approval.

@@ -1,0 +1,164 @@
+{
+  "observed_at": "2026-10-17",
+  "production": {
+    "buckets": [
+      {
+        "id": "artist-media",
+        "public": false,
+        "object_count": 0,
+        "file_size_limit": 8388608,
+        "allowed_mime_types": [
+          "image/jpeg",
+          "image/png",
+          "image/webp"
+        ]
+      }
+    ],
+    "schedules": [
+      {
+        "name": "cuebooker-expire-holds",
+        "active": true,
+        "schedule": "*/5 * * * *",
+        "targets_staging": false,
+        "targets_production": false
+      },
+      {
+        "name": "cuebooker-prune-public-rate-limits",
+        "active": true,
+        "schedule": "17 */6 * * *",
+        "targets_staging": false,
+        "targets_production": false
+      }
+    ],
+    "migration_count": 81,
+    "worker_vault_names": []
+  },
+  "staging": {
+    "buckets": [
+      {
+        "id": "artist-media",
+        "public": false,
+        "object_count": 6,
+        "file_size_limit": 8388608,
+        "allowed_mime_types": [
+          "image/jpeg",
+          "image/png",
+          "image/webp"
+        ]
+      },
+      {
+        "id": "booking-email-attachments",
+        "public": false,
+        "object_count": 7,
+        "file_size_limit": 5242880,
+        "allowed_mime_types": [
+          "application/pdf",
+          "image/jpeg",
+          "image/png"
+        ]
+      }
+    ],
+    "schedules": [
+      {
+        "name": "cuebooker-notification-email-retry",
+        "active": true,
+        "schedule": "*/5 * * * *",
+        "targets_staging": true,
+        "targets_production": false
+      },
+      {
+        "name": "cuebooker-expire-holds",
+        "active": true,
+        "schedule": "*/5 * * * *",
+        "targets_staging": false,
+        "targets_production": false
+      },
+      {
+        "name": "cuebooker-prune-public-rate-limits",
+        "active": true,
+        "schedule": "17 */6 * * *",
+        "targets_staging": false,
+        "targets_production": false
+      },
+      {
+        "name": "cuebooker-mailbox-incoming",
+        "active": true,
+        "schedule": "* * * * *",
+        "targets_staging": false,
+        "targets_production": false
+      },
+      {
+        "name": "cuebooker-prune-campaign-analytics",
+        "active": true,
+        "schedule": "17 3 * * *",
+        "targets_staging": false,
+        "targets_production": false
+      },
+      {
+        "name": "cuebooker-gmail-history",
+        "active": true,
+        "schedule": "* * * * *",
+        "targets_staging": false,
+        "targets_production": false
+      }
+    ],
+    "migration_count": 120,
+    "worker_vault_names": [
+      "cuebooker_gmail_history_worker_url",
+      "cuebooker_mailbox_worker_secret",
+      "cuebooker_mailbox_worker_url"
+    ]
+  },
+  "limitations": [
+    "Only bucket metadata and aggregate object counts read; no object paths/bytes or user rows.",
+    "Vault names only; no secret values or cron command bodies read.",
+    "Authenticated dashboard later verified production URLs, SMTP metadata, recovery template and Edge secret names only. Secret values, Google IAM/OAuth and Brevo provider routing remain unverified."
+  ],
+  "production_dashboard": {
+    "observed_at": "2026-10-17",
+    "project_ref": "qlocooqfdzehogbwcbhr",
+    "site_url": "https://cuebooker.com",
+    "redirect_allow_list": [
+      "https://cuebooker.com/**"
+    ],
+    "covers_reset_password_and_agency_invite": true,
+    "custom_smtp_enabled": true,
+    "smtp_host": "smtp-relay.brevo.com",
+    "smtp_port": 587,
+    "smtp_sender_name": "CueBooker",
+    "smtp_sender_address": "present, omitted",
+    "smtp_credentials": "not read; stored password hidden",
+    "recovery_subject": "Restablece tu contrase\u00f1a de Cuebooker",
+    "recovery_uses_confirmation_url": true,
+    "recovery_contains_localhost": false,
+    "recovery_template_path": "docs/reviews/release-0.0.13/production-rollback/auth/recovery.html",
+    "recovery_template_sha256": "c19b210c9dc095527239438240e568a284d84ddd743ee254b129ba472e9fc6ec",
+    "custom_edge_secret_names_present": [
+      "BREVO_API_KEY",
+      "CUEBOOKER_FROM_EMAIL",
+      "CUEBOOKER_FROM_NAME",
+      "CUEBOOKER_REPLY_DOMAIN",
+      "CUEBOOKER_APP_ORIGIN",
+      "CUEBOOKER_INBOUND_WEBHOOK_SECRET",
+      "BREVO_TRANSACTIONAL_WEBHOOK_SECRET"
+    ],
+    "custom_edge_secret_names_absent": [
+      "GMAIL_CLIENT_ID",
+      "GMAIL_CLIENT_SECRET",
+      "GMAIL_TOKEN_ENCRYPTION_KEY",
+      "GMAIL_PUBSUB_TOPIC",
+      "GMAIL_PUBSUB_SUBSCRIPTION",
+      "GMAIL_PUSH_SERVICE_ACCOUNT",
+      "MAILBOX_WORKER_SECRET",
+      "GROQ_API_KEY",
+      "CUEBOOKER_MAILBOX_ENABLED",
+      "CUEBOOKER_MAILBOX_BACKGROUND_ENABLED",
+      "CUEBOOKER_CONNECTED_ATTACHMENTS_ENABLED",
+      "CUEBOOKER_MAILBOX_TRANSPORT",
+      "CUEBOOKER_MAILBOX_RETURN_URL",
+      "CUEBOOKER_BETA_ADMIN_EMAIL",
+      "CUEBOOKER_BETA_NOTIFICATIONS_ENABLED"
+    ],
+    "secret_value_verification": false
+  }
+}
