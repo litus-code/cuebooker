@@ -10,7 +10,7 @@
       "release_scope": "release runtime",
       "verify_jwt": false,
       "staging_version": 39,
-      "production_version": null,
+      "production_version": 1,
       "staging_verify_jwt": false,
       "staging_exact_source_match": true,
       "staging_different_or_missing_files": [],
@@ -27,7 +27,9 @@
       ],
       "external_imports": [
         "jsr:@supabase/functions-js/edge-runtime.d.ts"
-      ]
+      ],
+      "production_exact_source_match": true,
+      "production_normalized_prefix": "supabase/"
     },
     {
       "slug": "brevo-transactional-events",
@@ -35,7 +37,7 @@
       "release_scope": "release runtime",
       "verify_jwt": false,
       "staging_version": 25,
-      "production_version": null,
+      "production_version": 1,
       "staging_verify_jwt": false,
       "staging_exact_source_match": false,
       "staging_different_or_missing_files": [
@@ -55,7 +57,9 @@
       "external_imports": [
         "jsr:@supabase/functions-js/edge-runtime.d.ts"
       ],
-      "staging_difference_classification": "Trailing newline only; bytes differ, executable lines equal."
+      "staging_difference_classification": "Trailing newline only; bytes differ, executable lines equal.",
+      "production_exact_source_match": true,
+      "production_normalized_prefix": "supabase/"
     },
     {
       "slug": "campaign-analytics",
@@ -63,7 +67,7 @@
       "release_scope": "release runtime",
       "verify_jwt": false,
       "staging_version": 2,
-      "production_version": null,
+      "production_version": 1,
       "staging_verify_jwt": false,
       "staging_exact_source_match": true,
       "staging_different_or_missing_files": [],
@@ -84,7 +88,9 @@
       ],
       "external_imports": [
         "jsr:@supabase/functions-js/edge-runtime.d.ts"
-      ]
+      ],
+      "production_exact_source_match": true,
+      "production_normalized_prefix": "supabase/"
     },
     {
       "slug": "connected-mailbox",
@@ -92,7 +98,7 @@
       "release_scope": "release runtime",
       "verify_jwt": false,
       "staging_version": 56,
-      "production_version": null,
+      "production_version": 1,
       "staging_verify_jwt": false,
       "staging_exact_source_match": true,
       "staging_different_or_missing_files": [],
@@ -178,7 +184,9 @@
       "external_imports": [
         "){\n    if(!bookingId&&!uuid(input.artistId))return json({error:",
         ","
-      ]
+      ],
+      "production_exact_source_match": true,
+      "production_normalized_prefix": ""
     },
     {
       "slug": "dispatch-notification-emails",
@@ -186,7 +194,7 @@
       "release_scope": "release runtime",
       "verify_jwt": false,
       "staging_version": 27,
-      "production_version": null,
+      "production_version": 1,
       "staging_verify_jwt": false,
       "staging_exact_source_match": true,
       "staging_different_or_missing_files": [],
@@ -203,7 +211,9 @@
       ],
       "external_imports": [
         "jsr:@supabase/functions-js/edge-runtime.d.ts"
-      ]
+      ],
+      "production_exact_source_match": true,
+      "production_normalized_prefix": "supabase/"
     },
     {
       "slug": "get-booking-email-attachment",
@@ -211,7 +221,7 @@
       "release_scope": "release runtime",
       "verify_jwt": true,
       "staging_version": 6,
-      "production_version": null,
+      "production_version": 1,
       "staging_verify_jwt": true,
       "staging_exact_source_match": true,
       "staging_different_or_missing_files": [],
@@ -222,7 +232,9 @@
           "sha256": "7098e31e53791e4c8c456f3dde54b72a597bdf94d1d70831aecc805d61c15e41"
         }
       ],
-      "external_imports": []
+      "external_imports": [],
+      "production_exact_source_match": true,
+      "production_normalized_prefix": "supabase/functions/"
     },
     {
       "slug": "get-public-artist-profile",
@@ -230,7 +242,7 @@
       "release_scope": "release runtime",
       "verify_jwt": false,
       "staging_version": 43,
-      "production_version": 5,
+      "production_version": 22,
       "staging_verify_jwt": false,
       "staging_exact_source_match": true,
       "staging_different_or_missing_files": [],
@@ -243,7 +255,9 @@
       ],
       "external_imports": [
         "jsr:@supabase/functions-js/edge-runtime.d.ts"
-      ]
+      ],
+      "production_exact_source_match": true,
+      "production_normalized_prefix": "supabase/functions/"
     },
     {
       "slug": "gmail-mailbox-events",
@@ -251,7 +265,7 @@
       "release_scope": "release runtime",
       "verify_jwt": false,
       "staging_version": 16,
-      "production_version": null,
+      "production_version": 1,
       "staging_verify_jwt": false,
       "staging_exact_source_match": true,
       "staging_different_or_missing_files": [],
@@ -275,7 +289,9 @@
         }
       ],
       "external_imports": [],
-      "staging_difference_classification": "Reconciled complete bundle deployed only to staging; every source byte/JWT flag matches candidate, unsigned POST denied401."
+      "staging_difference_classification": "Reconciled complete bundle deployed only to staging; every source byte/JWT flag matches candidate, unsigned POST denied401.",
+      "production_exact_source_match": true,
+      "production_normalized_prefix": ""
     },
     {
       "slug": "ingest-booking-email",
@@ -283,7 +299,7 @@
       "release_scope": "release runtime",
       "verify_jwt": false,
       "staging_version": 40,
-      "production_version": null,
+      "production_version": 1,
       "staging_verify_jwt": false,
       "staging_exact_source_match": true,
       "staging_different_or_missing_files": [],
@@ -297,7 +313,9 @@
       "external_imports": [
         "jsr:@supabase/functions-js/edge-runtime.d.ts"
       ],
-      "staging_difference_classification": "Reconciled complete bundle deployed only to staging; every source byte/JWT flag matches candidate, unsigned POST denied401."
+      "staging_difference_classification": "Reconciled complete bundle deployed only to staging; every source byte/JWT flag matches candidate, unsigned POST denied401.",
+      "production_exact_source_match": true,
+      "production_normalized_prefix": "supabase/functions/"
     },
     {
       "slug": "mailbox-beta-admin",
@@ -305,7 +323,7 @@
       "release_scope": "release runtime",
       "verify_jwt": false,
       "staging_version": 18,
-      "production_version": null,
+      "production_version": 1,
       "staging_verify_jwt": false,
       "staging_exact_source_match": true,
       "staging_different_or_missing_files": [],
@@ -324,7 +342,9 @@
           "sha256": "18fa5a4c90c4c99bc1b15903c31ac45d947bcfae6c27fc446446ccbe3bac63fe"
         }
       ],
-      "external_imports": []
+      "external_imports": [],
+      "production_exact_source_match": true,
+      "production_normalized_prefix": "supabase/"
     },
     {
       "slug": "nylas-mailbox-events",
@@ -358,7 +378,7 @@
       "release_scope": "release runtime",
       "verify_jwt": false,
       "staging_version": 18,
-      "production_version": null,
+      "production_version": 1,
       "staging_verify_jwt": false,
       "staging_exact_source_match": true,
       "staging_different_or_missing_files": [],
@@ -393,7 +413,9 @@
           "sha256": "19ee260472f51b9b3215167013f17330068c8cde6977ced3674f765070c549eb"
         }
       ],
-      "external_imports": []
+      "external_imports": [],
+      "production_exact_source_match": true,
+      "production_normalized_prefix": ""
     },
     {
       "slug": "process-mailbox-incoming",
@@ -401,7 +423,7 @@
       "release_scope": "release runtime",
       "verify_jwt": false,
       "staging_version": 44,
-      "production_version": null,
+      "production_version": 1,
       "staging_verify_jwt": false,
       "staging_exact_source_match": true,
       "staging_different_or_missing_files": [],
@@ -484,7 +506,9 @@
           "sha256": "453a16a1af4c541fc61cb93f5a17d6e0bad27ba488a506b98dd3886ab6302604"
         }
       ],
-      "external_imports": []
+      "external_imports": [],
+      "production_exact_source_match": true,
+      "production_normalized_prefix": ""
     },
     {
       "slug": "recover-mailbox-attachments",
@@ -492,7 +516,7 @@
       "release_scope": "release runtime",
       "verify_jwt": true,
       "staging_version": 6,
-      "production_version": null,
+      "production_version": 1,
       "staging_verify_jwt": true,
       "staging_exact_source_match": true,
       "staging_different_or_missing_files": [],
@@ -531,7 +555,9 @@
           "sha256": "70d146b7b84a2607c7c58ed30575a887bd3921eb45f8076278fb736a5c71fce6"
         }
       ],
-      "external_imports": []
+      "external_imports": [],
+      "production_exact_source_match": true,
+      "production_normalized_prefix": ""
     },
     {
       "slug": "send-booking-email",
@@ -539,7 +565,7 @@
       "release_scope": "release runtime",
       "verify_jwt": true,
       "staging_version": 41,
-      "production_version": null,
+      "production_version": 1,
       "staging_verify_jwt": true,
       "staging_exact_source_match": true,
       "staging_different_or_missing_files": [],
@@ -566,7 +592,9 @@
           "sha256": "787bd9fd2ccebdfcae1a202e26af6be240ec76ca382b46ae88a1b99cf430963e"
         }
       ],
-      "external_imports": []
+      "external_imports": [],
+      "production_exact_source_match": true,
+      "production_normalized_prefix": ""
     },
     {
       "slug": "smart-capture",
@@ -574,7 +602,7 @@
       "release_scope": "release runtime",
       "verify_jwt": true,
       "staging_version": 30,
-      "production_version": 5,
+      "production_version": 22,
       "staging_verify_jwt": true,
       "staging_exact_source_match": true,
       "staging_different_or_missing_files": [],
@@ -591,7 +619,9 @@
       ],
       "external_imports": [
         "jsr:@supabase/functions-js/edge-runtime.d.ts"
-      ]
+      ],
+      "production_exact_source_match": true,
+      "production_normalized_prefix": "supabase/"
     },
     {
       "slug": "submit-agency-enquiry",
@@ -599,7 +629,7 @@
       "release_scope": "release runtime",
       "verify_jwt": false,
       "staging_version": 17,
-      "production_version": null,
+      "production_version": 1,
       "staging_verify_jwt": false,
       "staging_exact_source_match": true,
       "staging_different_or_missing_files": [],
@@ -616,7 +646,9 @@
       ],
       "external_imports": [
         "jsr:@supabase/functions-js/edge-runtime.d.ts"
-      ]
+      ],
+      "production_exact_source_match": true,
+      "production_normalized_prefix": "supabase/"
     },
     {
       "slug": "submit-booking-request",
@@ -624,7 +656,7 @@
       "release_scope": "release runtime",
       "verify_jwt": false,
       "staging_version": 41,
-      "production_version": null,
+      "production_version": 1,
       "staging_verify_jwt": false,
       "staging_exact_source_match": false,
       "staging_different_or_missing_files": [
@@ -648,7 +680,9 @@
       "external_imports": [
         "jsr:@supabase/functions-js/edge-runtime.d.ts"
       ],
-      "staging_difference_classification": "Type-only ES/EN locale union annotation; emitted JavaScript exactly matches previous repository handler."
+      "staging_difference_classification": "Type-only ES/EN locale union annotation; emitted JavaScript exactly matches previous repository handler.",
+      "production_exact_source_match": true,
+      "production_normalized_prefix": "supabase/"
     }
   ],
   "production_rollback": [
@@ -823,5 +857,13 @@
     "provider_delivery_tested": false,
     "sql_candidate_files_unchanged": 39,
     "google_console": "Site Unavailable in this browser; project/client/provider configuration requires user session outside this browser"
+  },
+  "actual_production_release": {
+    "source_main_sha": "e3bd0b040369c150fac7800f27643c30d69f0599",
+    "frontend_run_id": 39016119822,
+    "runtime_functions": 17,
+    "legacy_nylas_deployed": false,
+    "preflight_preserved": true,
+    "details": "production-release-execution.json"
   }
 }

@@ -1,3 +1,20 @@
+## Actual production release, 17 October 2026
+
+Owner-approved PR114 merged as e3bd0b040369c150fac7800f27643c30d69f0599.
+Deploy Production39016119822/job117348467214 SUCCESS at08:15:17Z,621tests and
+44routes; Cloudflare published https://57d8a398.cuebooker-production.pages.dev.
+Browser confirms cuebooker.com Home ES/EN, access form, DJ and Agency pages render.
+Exact39 SQL delta is now installed (120 ledger entries),78postchecks/FK integrity
+pass,17 runtime Edge bundles retrieved and byte/JWT verified. All sources, version
+mapping, bounded migration-ledger recovery and limits are in production-release-execution.json.
+
+Keep Gmail/background/attachments/automatic beta notifications disabled and both new
+workers paused. No live provider delivery, new user consent or private workspace
+journey is claimed. Next is owner login and scoped production acceptance before
+provider activation. Prior8ec8a35f deployment and original Edge sources remain recovery
+material; frontend rollback does not undo current SQL/data/provider state. Statements
+below describe historical preparation unless superseded by this release evidence.
+
 Verified follow-up: source df8b90f passes615 tests/44-route CI and all18 Edge type checks.
 Brevo ingress-v40 and complete Gmail-events-v16 now match that source in staging and
 reject unsigned calls. See BACKEND_SOURCE_RECONCILIATION.md for exact evidence/limits.
