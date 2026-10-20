@@ -14,6 +14,16 @@ on:
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - '.github/workflows/audit-campaign-analytics.yml'
+      - '.github/workflows/deploy-staging.yml'
+      - 'scripts/audit-campaign-analytics.py'
+      - 'scripts/sql/campaign-analytics-readonly-audit.sql'
+      - 'tests/campaignActionsAudit.test.ts'
+      - 'docs/CAMPAIGN_ANALYTICS_ACTIONS_AUDIT.md'
+      - 'docs/HANDOFF.md'
+      - '.github/workflows/ci.yml'
+      - '.github/workflows/deploy-pages.yml'
     types:
       - opened
       - synchronize
