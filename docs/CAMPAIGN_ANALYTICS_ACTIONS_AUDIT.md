@@ -187,3 +187,8 @@ Successful audit39435561163 confirmed test collection. Owner confirms Pruebas is
 This new workflow needs default-branch registration and normal protected-environment approval. No integration/deployment protection is weakened. Explicit prior no-main-merge instruction remains: obtain scoped authorization for this infrastructure PR before merge, then dispatch the already authorized live setting. Exact paths-ignore rules prevent application publication. Product stays Beta0.0.14 and PR122 remains separate. Reverting uses same workflow dataset=test, preserving facts and retention. If connection/result fails after commit, first re-audit to determine actual state.
 
 Validation:638 unit tests pass; isolated PostgreSQL49 foundation checks plus exact SQL live/idempotence/test rollback/conflicting-job rollback pass. Local cron is a stand-in; no production setting or scheduler change has run yet. No new credential, personal information or synthetic production event used.
+
+
+## Live activation result — verified20 October16:29 Madrid
+
+Owner approved PR126 merge and protected execution39439480511. SUCCESS at exact maina569a71fdec0aed140cc22b5acce30973f973820: collection_dataset=live, retention_scheduled=true; both subsequent read-only snapshots confirm persisted live and active daily03:17UTC cron job5. Retention execution not yet observed (last status null). Existing41testviews and remaining test funnel counts preserved; no live facts yet in immediate snapshots. Only new consenting identities enter live; previous test identities remain test. No synthetic production event, app publish, schema/function/secret change. Product Beta0.0.14 unchanged. First natural live event and first scheduled retention success remain separate evidence to collect.
