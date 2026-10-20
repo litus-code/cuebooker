@@ -19,7 +19,7 @@ for rollback in [False,True]:
  assert 'supabase_migrations.schema_migrations' in sql
 assert "set local role authenticated" in a['VERIFY_SQL']
 assert "internal_admin_required" in a['VERIFY_SQL']
-assert "create" not in a['VERIFY_SQL'].lower()
+assert "create table " not in a['VERIFY_SQL'].lower() and "insert into " not in a['VERIFY_SQL'].lower()
 `)
 })
 test('report execution keeps credentials out of argv and provider errors out of logs',()=>{

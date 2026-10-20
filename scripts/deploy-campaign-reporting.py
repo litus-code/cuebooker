@@ -85,6 +85,12 @@ def execute(sql, env, run=subprocess.run):
     except Exception:
         raise RuntimeError('report_result_unknown_reaudit_before_retry') from None
     if result.returncode:
+        # Only fixed authored categories; never echo provider SQL, rows or connection data.
+        for category in ('report_function_drift','collector_drift','migration_version_conflict',
+                         'campaign_settings_missing','report_definition_mismatch','report_grants_mismatch',
+                         'existing_internal_admin_required','anonymous_report_not_denied'):
+            if category in (result.stderr or ''):
+                raise RuntimeError(category + '_reaudit_before_retry')
         raise RuntimeError('report_step_failed_no_provider_output_reaudit_before_retry')
     return result.stdout
 
