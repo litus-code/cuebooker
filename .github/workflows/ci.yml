@@ -8,6 +8,13 @@ on:
     branches:
       - main
     paths-ignore:
+      - '.github/workflows/audit-campaign-analytics.yml'
+      - '.github/workflows/deploy-staging.yml'
+      - 'scripts/audit-campaign-analytics.py'
+      - 'scripts/sql/campaign-analytics-readonly-audit.sql'
+      - 'tests/campaignActionsAudit.test.ts'
+      - 'docs/CAMPAIGN_ANALYTICS_ACTIONS_AUDIT.md'
+      - 'docs/HANDOFF.md'
       - '.github/workflows/rehearse-staging-campaign.yml'
       - 'scripts/rehearse-staging-campaign.py'
       - 'scripts/restore-backup-drill.py'
