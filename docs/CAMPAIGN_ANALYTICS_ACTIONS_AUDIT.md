@@ -1,6 +1,11 @@
 # Production campaign analytics — protected Actions audit
 
-20 October 2026. **Prepared, not executed. No production result claimed.**
+20 October 2026. **Production read-only audit SUCCESS** in run39435561163 at
+main93e674e0198b0339887999be86fb46a0afc8c159. Collection is test; default Real view is
+empty while consented test facts exist. See **Verified production result** below for
+actual counts, retention finding and limits. Preparation/approval sections record the
+historical review procedure; owner subsequently authorized the infrastructure merges
+and protected runs. No product data/settings were changed.
 
 Owner asks for an agent-run read-only audit using existing GitHub Actions credentials,
 in an independent PR, with explicit authorization before execution. No new credentials,
