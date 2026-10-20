@@ -5,11 +5,14 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import tempfile
 import time
+from contextlib import contextmanager
 from urllib.parse import parse_qsl, unquote, urlsplit
 
 PROJECT = 'qlocooqfdzehogbwcbhr'
 SQL_HASH = 'a087fe4542211317bb84dd8a9a5bbd70d1f7c86c63510bb7330d07b10c01e073'
+SUPABASE_CA_HASH = '700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7'
 SOURCE_SECTIONS = ('settings', 'migrations', 'events', 'instagram', 'functions', 'rls', 'admins', 'retention')
 SECTIONS = SOURCE_SECTIONS + ('panel_default_window',)
 PANEL_QUERY = """select e.dataset,e.event_name,count(*) as events,
@@ -30,6 +33,19 @@ TABLES = {'campaign_analytics_settings', 'campaign_visitors', 'campaign_registra
           'campaign_workspace_dedup'}
 MIGRATIONS = {'add_internal_beta_analytics', 'campaign_funnel_analytics',
               'campaign_foreign_key_indexes', 'campaign_reporting_diagnostics'}
+
+
+@contextmanager
+def verified_ca_bundle():
+    # Public Supabase CA, pinned in review; never fetch trust roots during a secret-bearing job.
+    certificate = Path(__file__).with_name('certificates').joinpath('supabase-prod-ca-2021.crt').read_bytes()
+    if hashlib.sha256(certificate).hexdigest() != SUPABASE_CA_HASH:
+        raise RuntimeError('supabase_ca_checksum_mismatch')
+    system = Path('/etc/ssl/certs/ca-certificates.crt').read_bytes()
+    with tempfile.TemporaryDirectory(prefix='cuebooker-audit-ca-') as directory:
+        path = Path(directory) / 'trusted-roots.pem'
+        path.write_bytes(system + b'\n' + certificate)
+        yield str(path)
 
 
 def connection_environment(value):
@@ -172,9 +188,11 @@ def main():
         raise RuntimeError('main_reviewed_revision_required')
     sql = compile_audit(Path(__file__).with_name('sql').joinpath('campaign-analytics-readonly-audit.sql').read_bytes())
     env = connection_environment(os.environ.get('CUEBOOKER_BACKUP_DB_URL', ''))
-    first = read_snapshot(sql, env)
-    time.sleep(10)
-    second = read_snapshot(sql, env)
+    with verified_ca_bundle() as bundle:
+        env['PGSSLROOTCERT'] = bundle
+        first = read_snapshot(sql, env)
+        time.sleep(10)
+        second = read_snapshot(sql, env)
     report = {'project': PROJECT, 'revision': revision, 'interval_seconds': 10,
               'first': first, 'second': second,
               'limits': 'Read-only persisted aggregates, no event injection. New natural facts may appear or be removed by retention/withdrawal. Does not prove a specific browser-to-Edge-to-panel journey or an individual admin permission.'}

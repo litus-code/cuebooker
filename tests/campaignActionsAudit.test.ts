@@ -83,11 +83,42 @@ test('workflow requires protected main, exact SHA and manual dispatch; infrastru
   assert.match(workflow, /contents: read/)
   assert.match(workflow, /secrets.CUEBOOKER_BACKUP_DB_URL/)
   assert.doesNotMatch(workflow, /pull_request:|push:|schedule:|upload-artifact|contents: write|SUPABASE_ACCESS_TOKEN/)
-  const paths = ['.github/workflows/audit-campaign-analytics.yml', '.github/workflows/ci.yml', '.github/workflows/deploy-pages.yml', '.github/workflows/deploy-staging.yml', 'scripts/audit-campaign-analytics.py', 'scripts/sql/campaign-analytics-readonly-audit.sql', 'tests/campaignActionsAudit.test.ts', 'docs/CAMPAIGN_ANALYTICS_ACTIONS_AUDIT.md', 'docs/HANDOFF.md']
+  const paths = ['.github/workflows/audit-campaign-analytics.yml', '.github/workflows/ci.yml', '.github/workflows/deploy-pages.yml', '.github/workflows/deploy-staging.yml', 'scripts/audit-campaign-analytics.py', 'scripts/certificates/supabase-prod-ca-2021.crt', 'scripts/sql/campaign-analytics-readonly-audit.sql', 'tests/campaignActionsAudit.test.ts', 'docs/CAMPAIGN_ANALYTICS_ACTIONS_AUDIT.md', 'docs/HANDOFF.md']
   for (const file of ['ci.yml', 'deploy-pages.yml', 'deploy-staging.yml']) {
     const text = readFileSync('.github/workflows/' + file, 'utf8')
     const ignored = text.split('    paths-ignore:\n')[1].split(/\n  [a-z]/)[0]
     for (const path of paths) assert.ok(ignored.includes(`'${path}'`), `${file} must exclude infrastructure-only path ${path}`)
     assert.doesNotMatch(ignored, /app\/|supabase\/|package|\*\*/)
   }
+})
+
+test('audit adds the reviewed public Supabase CA without disabling certificate or hostname checks', () => {
+  python(`
+import ssl,hashlib
+from pathlib import Path
+with a.verified_ca_bundle() as file:
+ path=Path(file)
+ context=ssl.create_default_context(cafile=file)
+ assert context.check_hostname and context.verify_mode==ssl.CERT_REQUIRED
+ fingerprints={hashlib.sha256(value).hexdigest() for value in context.get_ca_certs(binary_form=True)}
+ assert '807025ad50d4ed219d2c9c7d299c004f824eb00cf7f65afef607d07b72e6cafa' in fingerprints
+ assert path.read_bytes().endswith(Path('scripts/certificates/supabase-prod-ca-2021.crt').read_bytes())
+assert not path.exists()
+`)
+})
+
+test('modified Supabase CA fails before connecting and temporary trust files are cleaned on failure', () => {
+  python(`
+from pathlib import Path
+try:
+ with a.verified_ca_bundle() as file:
+  path=Path(file)
+  raise RuntimeError('fixture_failure')
+except RuntimeError: pass
+assert not path.exists()
+a.SUPABASE_CA_HASH='0'*64
+try:
+ with a.verified_ca_bundle(): raise AssertionError('unreviewed CA accepted')
+except RuntimeError as error: assert str(error)=='supabase_ca_checksum_mismatch'
+`)
 })

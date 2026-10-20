@@ -37,7 +37,8 @@ Workflow `.github/workflows/audit-campaign-analytics.yml`:
  passphrase, service-role key, new token or credentials in process arguments.
 - Installs the PostgreSQL client before the secret-bearing step. The Python runner
  validates production project/direct-or-session endpoint/port/database. It strengthens
- TLS to verify-full with the system trust store; TLS failure stops rather than downgrades.
+ TLS to verify-full with the system trust store plus the reviewed public Supabase CA;
+ TLS failure stops rather than downgrades.
 - Reuses the exact SQL from PR122 (`scripts/sql/campaign-analytics-readonly-audit.sql`,
  SHA256 a087fe4542211317bb84dd8a9a5bbd70d1f7c86c63510bb7330d07b10c01e073).
  It rejects a changed file before connecting. It wraps those eight fixed SELECTs as
@@ -116,3 +117,34 @@ publication exclusions. Actual assembled SQL was exercised on isolated PGlite ca
 using the existing analytics fixture and fake migration/cron metadata, then fed to the
 real output sanitizer. This is a protocol/schema-shape test, not production access.
 No actual psql/TLS connection from Actions has been tested before owner authorization.
+
+## 20 October follow-up — first hosted attempt stopped at TLS
+
+Owner authorized PR123 integration and audit execution. Main27cb953e0e14d4cc2af152039b8bab84b342124b
+exactly matched reviewed53cea748. Run39429043605 passed checkout/client installation and,
+after owner environment approval, stopped with `database_tls_verification_failed` before
+SQL execution. No current dataset, event count or server authentication result is established.
+Only the audit run was triggered; no application deployment occurred.
+
+The original client trusted the system CAs only. This follow-up adds Supabase's public
+Root2021 CA to an ephemeral **client-only** bundle alongside system CAs, keeps verify-full
+and hostname verification and pins the public certificate SHA256 before any connection.
+No secret, server trust store, production configuration or encryption downgrade is involved.
+The bundle is deleted on success or error. This is a bounded trust-chain correction;
+an actual hosted retry is required to confirm whether it resolves the observed failure.
+
+Public authoritative download (retrieved over verified HTTPS):
+https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt
+
+- Certificate subject/issuer: Supabase Root2021 CA, Supabase Inc (self-signed CA).
+- Validity:28 April2021 through26 April2031.
+- DER SHA256 fingerprint:807025ad50d4ed219d2c9c7d299c004f824eb00cf7f65afef607d07b72e6cafa.
+- Pinned PEM file SHA256:700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7.
+
+OpenSSL verifies the public root signature; the Python TLS context loads that exact root
+with certificate/hostname checks enabled. Tests cover modified-root refusal and cleanup
+when execution fails. A non-authenticated TLS probe to a public example pooler from this
+cloud machine was connection-refused, so no live handshake is claimed from local tests.
+No credential-bearing connection was attempted locally. Existing production execution
+must be retried on the reviewed new main SHA only after follow-up merge authorization,
+retaining the normal production review gate. Original read-only SQL hash is unchanged.
