@@ -178,3 +178,12 @@ schema/data, not a captured production response. New tests exercise multiline do
 through the mocked psql transport, trailing garbage, truncation, extra documents and safe
 phase diagnostics. Real production dataset/counts remain unreported until a reviewed
 new dispatch succeeds. A further merge/retry requires its own scoped authorization.
+
+
+## 20 October: owner-authorized live activation — prepared, not applied
+
+Successful audit39435561163 confirmed test collection. Owner confirms Pruebas is visible and explicitly requests live activation. The dedicated set-campaign-collection workflow uses existing protected credentials, main plus exact reviewed SHA and fixed live/test modes. It changes only the default new-browser cohort and schedules existing90-day purge daily03:17 UTC. Function hashes are pinned to the audited production definitions; conflicting cron fails before setting changes. No immediate purge or historical reclassification. Existing test browsers remain test; existing live browsers remain live on rollback. Retention scheduling is not evidence of a successful cleanup run.
+
+This new workflow needs default-branch registration and normal protected-environment approval. No integration/deployment protection is weakened. Explicit prior no-main-merge instruction remains: obtain scoped authorization for this infrastructure PR before merge, then dispatch the already authorized live setting. Exact paths-ignore rules prevent application publication. Product stays Beta0.0.14 and PR122 remains separate. Reverting uses same workflow dataset=test, preserving facts and retention. If connection/result fails after commit, first re-audit to determine actual state.
+
+Validation:638 unit tests pass; isolated PostgreSQL49 foundation checks plus exact SQL live/idempotence/test rollback/conflicting-job rollback pass. Local cron is a stand-in; no production setting or scheduler change has run yet. No new credential, personal information or synthetic production event used.

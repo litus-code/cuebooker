@@ -1,0 +1,57 @@
+name: Set Production Campaign Collection
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type cuebooker-production-collection (configuration and retention schedule only)
+        required: true
+        type: string
+      reviewed_sha:
+        description: Exact reviewed 40-character main SHA
+        required: true
+        type: string
+      dataset:
+        description: New browser cohort; existing identities and facts are unchanged
+        required: true
+        type: choice
+        options:
+          - live
+          - test
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cuebooker-production-campaign-audit
+  cancel-in-progress: false
+
+jobs:
+  configure:
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.confirm == 'cuebooker-production-collection' && inputs.reviewed_sha == github.sha }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - name: Checkout exact reviewed revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Install PostgreSQL client without database credentials
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install --yes --no-install-recommends postgresql-client
+      - name: Configure collection and schedule existing retention
+        env:
+          CUEBOOKER_BACKUP_DB_URL: ${{ secrets.CUEBOOKER_BACKUP_DB_URL }}
+          CUEBOOKER_AUDIT_REVIEWED_SHA: ${{ inputs.reviewed_sha }}
+          CUEBOOKER_AUDIT_REVISION: ${{ github.sha }}
+          CUEBOOKER_COLLECTION_DATASET: ${{ inputs.dataset }}
+        run: python3 scripts/set-campaign-collection.py
+      - name: Verify persisted setting and aggregates read only
+        env:
+          CUEBOOKER_BACKUP_DB_URL: ${{ secrets.CUEBOOKER_BACKUP_DB_URL }}
+          CUEBOOKER_AUDIT_REVIEWED_SHA: ${{ inputs.reviewed_sha }}
+          CUEBOOKER_AUDIT_REVISION: ${{ github.sha }}
+        run: python3 scripts/audit-campaign-analytics.py
