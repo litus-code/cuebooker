@@ -8,6 +8,7 @@ on:
       - '.github/workflows/audit-campaign-analytics.yml'
       - '.github/workflows/deploy-staging.yml'
       - 'scripts/audit-campaign-analytics.py'
+      - 'scripts/certificates/supabase-prod-ca-2021.crt'
       - 'scripts/sql/campaign-analytics-readonly-audit.sql'
       - 'tests/campaignActionsAudit.test.ts'
       - 'docs/CAMPAIGN_ANALYTICS_ACTIONS_AUDIT.md'
