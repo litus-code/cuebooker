@@ -1,0 +1,37 @@
+{
+  "scope": "Production static asset emission only; collector requests intercepted, never forwarded. No production event/account created. Chromium, not Edge.",
+  "cases": [
+    {
+      "consent": "accept",
+      "signals": [
+        {
+          "event": "page_view",
+          "dimensions": {
+            "utm_source": "instagram",
+            "utm_medium": "social",
+            "utm_campaign": "launch2026",
+            "page": "home"
+          }
+        },
+        {
+          "event": "signup_click",
+          "dimensions": {
+            "utm_source": "instagram",
+            "utm_medium": "social",
+            "utm_campaign": "launch2026",
+            "page": "home",
+            "placement": "hero"
+          }
+        }
+      ],
+      "signupUrl": "/access?mode=signup&utm_source=instagram&utm_medium=social&utm_campaign=launch2026",
+      "optionalIdentifier": true
+    },
+    {
+      "consent": "reject",
+      "signals": [],
+      "signupUrl": "/access?mode=signup&utm_source=instagram&utm_medium=social&utm_campaign=launch2026",
+      "optionalIdentifier": false
+    }
+  ]
+}

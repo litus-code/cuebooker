@@ -9,7 +9,7 @@ const db = new PGlite()
 await db.exec(`
  create role anon; create role authenticated; create role service_role bypassrls; create schema auth; create schema private;
  create function auth.uid() returns uuid language sql as $$select nullif(current_setting('test.user_id',true),'')::uuid$$;
- create table auth.users(id uuid primary key default gen_random_uuid(),email text,raw_user_meta_data jsonb default '{}',created_at timestamptz default now());
+ create table auth.users(id uuid primary key default gen_random_uuid(),email text,email_confirmed_at timestamptz,raw_user_meta_data jsonb default '{}',created_at timestamptz default now());
  create table public.profiles(user_id uuid primary key references auth.users(id),display_name text,onboarding_completed boolean default false,created_at timestamptz default now(),updated_at timestamptz default now());
  create table public.workspaces(id uuid primary key default gen_random_uuid(),kind text,created_at timestamptz default now());
  create table public.workspace_members(workspace_id uuid references public.workspaces(id),user_id uuid references auth.users(id),role text,created_at timestamptz default now(),primary key(workspace_id,user_id));
@@ -26,6 +26,7 @@ await db.exec(await readFile(new URL('../supabase/migrations/20260928204500_add_
 await db.exec('alter default privileges in schema public grant execute on functions to anon,authenticated,service_role;')
 await db.exec(await readFile(new URL('../supabase/migrations/20261016120000_campaign_funnel_analytics.sql',import.meta.url),'utf8'))
 await db.exec(await readFile(new URL('../supabase/migrations/20261016220553_campaign_foreign_key_indexes.sql',import.meta.url),'utf8'))
+await db.exec(await readFile(new URL('../supabase/migrations/20261020120000_campaign_reporting_diagnostics.sql',import.meta.url),'utf8'))
 let assertions=0
 const check=(condition,message)=>{assert.ok(condition,message);assertions++}
 const query=async(sql,params=[]) => (await db.query(sql,params)).rows
@@ -79,6 +80,19 @@ await query(`insert into public.bookings(workspace_id,capture_method) values($1,
 check(await scalar(`select count(*) from public.product_analytics_events where event_name='workspace_first_request_received'`)===1,'two enquiries and two agency members still one activation')
 const report=async(source=null,campaign=null,dataset='test')=>scalar(`select public.get_campaign_funnel(now()-interval '1 day',now()+interval '1 day',$1,null,$2,null,$3)`,[source,campaign,dataset])
 const result=await report('agency','beta_launch')
+check(result.collection_dataset==='test','report states actual collection mode without changing it')
+check(result.available_datasets.test>0 && result.available_datasets.live===0,'test data is discoverable while live is empty')
+check(result.registration_attempts.events===1 && result.registration_attempts.visitors===1,'signup submission is an attempt and a browser, not an account')
+check(result.registration_confirmation.pending===1 && result.registration_confirmation.confirmed===0,'new unconfirmed account is distinct from email confirmation')
+await query('update auth.users set email_confirmed_at=now() where id=$1',[U])
+const confirmed=await report('agency','beta_launch')
+check(confirmed.registration_confirmation.confirmed===1 && confirmed.registration_confirmation.pending===0,'current confirmation status updates without another signup')
+check(confirmed.rows.find(r=>r.step==='registration').users===1,'confirmation never duplicates account creation')
+const emptyLive=await report('agency','beta_launch','live')
+check(emptyLive.rows.every(r=>r.events===0) && emptyLive.available_datasets.test>0,'live report remains empty but explains test dataset records')
+check((await report('agency','other-campaign','live')).available_datasets.test===0,'alternate-dataset count respects the exact campaign filter')
+check(JSON.stringify(confirmed).includes('fixture@example.invalid')===false,'report contains no account email')
+
 check(result.rows.find(r=>r.step==='interest').events===2,'total CTA clicks are two')
 check(result.rows.find(r=>r.step==='interest').visitors===1,'same browser is one visitor, not two people')
 check(result.rows.find(r=>r.step==='registration').users===1,'registration counted as server account')

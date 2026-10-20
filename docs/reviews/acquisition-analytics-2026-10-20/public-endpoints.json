@@ -1,0 +1,25 @@
+{
+  "checked_on": "2026-10-20",
+  "scope": "Read-only GET/OPTIONS and anonymous report query; no campaign event POST",
+  "production": {
+    "collector_get": 405,
+    "collector_options": 204,
+    "anonymous_report": {
+      "status": 401,
+      "code": "42501"
+    },
+    "served_project": "qlocooqfdzehogbwcbhr",
+    "external_gtm_configured": false
+  },
+  "staging": {
+    "collector_get": 405,
+    "collector_options": 204,
+    "anonymous_report": {
+      "status": 401,
+      "code": "42501"
+    },
+    "served_project": "lycprjeuuynfzwskycwv",
+    "external_gtm_configured": true
+  },
+  "limitation": "Does not verify current database dataset/counts, source versions, retention or authenticated admin access."
+}

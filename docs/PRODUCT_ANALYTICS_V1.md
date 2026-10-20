@@ -1,5 +1,15 @@
 # Cuebooker V1 product analytics
 
+## Current campaign reporting review — 20 October 2026
+
+The operational event contract remains unchanged. PR114 is merged; historical
+“pending backend” wording below is superseded by release evidence and the
+[current audit](reviews/acquisition-analytics-2026-10-20/README.md). Optional campaign
+metrics still require consent. Registration attempts are events/browsers, not accounts;
+server-created accounts and their current email confirmation status are distinct.
+Beta0.0.15 prepares this aggregate breakdown without changing Auth or registration.
+
+
 Updated: 24 September 2026  
 Scope: product behaviour only
 
