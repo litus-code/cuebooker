@@ -178,3 +178,91 @@ schema/data, not a captured production response. New tests exercise multiline do
 through the mocked psql transport, trailing garbage, truncation, extra documents and safe
 phase diagnostics. Real production dataset/counts remain unreported until a reviewed
 new dispatch succeeds. A further merge/retry requires its own scoped authorization.
+
+## Verified production result — 20 October 2026
+
+**Audit SUCCESS:** [39435561163](https://github.com/litus-code/cuebooker/actions/runs/39435561163),
+job118671528140, completed14:10:24UTC /16:10:24 Europe/Madrid. Exact main audit SHA
+93e674e0198b0339887999be86fb46a0afc8c159. No application release; Beta0.0.14 unchanged.
+Owner authorized the infrastructure merges and each protected run; no data, migration,
+secret, setting or product deployment was performed. The audit reused the existing DB URL.
+
+### Confirmed explanation of the default zero panel
+
+Production collection setting is **test**. All44 campaign events in the inspected period
+are classified test; **no live events** were returned. The served panel code defaults to
+live/Real. The separate consented-default-panel-window query returns exactly the same
+counts as the inventory, so those records are not all excluded by consent/window rules.
+This confirms a dataset mismatch as the explanation for an all-zero default Real view.
+It does not prove a logged-in browser RPC render or diagnose every custom filter.
+
+Default panel window audited:21 September through20 October2026 inclusive UTC, unfiltered
+source/UTM/ref. The rolling30-day inventory has the same counts for these facts.
+
+| Persisted event | Total events | Distinct browsers within that event | Accounts |
+| --- | ---: | ---: | ---: |
+| page_view |39 |9 |— |
+| signup_click |2 |2 |— |
+| signup_started |1 |1 |— |
+| signup_completed |1 |1 |1 |
+| onboarding_completed |1 |1 |1 |
+
+No campaign publication/first-received-request facts returned. This does not mean the
+whole product has no published profiles or bookings: only attributed campaign facts are
+in scope. The onboarding fact has workspace count0; no workspace link is inferred from
+that account count and no workspace conversion is claimed. Email confirmation state was
+not queried by this audit, so account-created does not mean email-confirmed.
+
+The exact Instagram/social/launch2026 filter returns **1 event from1 browser**, in test.
+The query does not break that event down by type, so it is not described as one signup
+or necessarily one visit. The39 page views are not all attributed to Instagram. Counts
+per event must not be summed to infer total people. “test” is the server's technical
+cohort classification, not proof that every event is simulated or every browser is QA.
+
+Latest page view:20 October11:53:28UTC /13:53:28 Europe/Madrid. Other milestones date
+17 October. Two snapshots10seconds apart are identical: no natural arrivals/removals
+were observed during the sample. Existing persistence is confirmed; a new browser→Edge→DB→
+admin-panel transaction was not generated or correlated, respecting the no-write scope.
+
+### Backend/security/retention evidence
+
+Known ledger records actually returned:
+
+- add_internal_beta_analytics:20260928193535.
+- campaign_funnel_analytics:20261017080043.
+- campaign_foreign_key_indexes:20261017080045.
+
+The new PR122 report-diagnostics migration is not among the returned known ledger names.
+PR122 remains open/draft and its changes were not applied by this audit. Prior public
+endpoint probes established the collector exists; this DB audit did not retrieve the
+exact currently deployed Edge bundle/version.
+
+All four campaign private tables have RLS enabled and deny direct anon/authenticated
+SELECT. record_campaign_event/revoke_campaign_consent permit service_role only among
+those inspected roles. Report/manual purge permit authenticated execution, with their
+internal-admin authorization contract; one internal admin is configured. The audit does
+not identify that account or prove any particular browser session's authorization. Exact
+source hashes/grants are in the safe job summary, without function bodies or identifiers.
+
+**Retention gap:** the query for cron job `cuebooker-prune-campaign-analytics` returns no
+rows in either snapshot. This establishes that the expected named job was not found,
+not that no equivalent external/differently named retention mechanism exists. Automatic
+retention is therefore not verified in production and must be reconciled before live
+activation. The private/public purge helpers exist, which is not evidence of scheduling.
+No job or helper was run/created by this audit.
+
+### Immediate interpretation and next gate
+
+To inspect existing data, select **Pruebas** in Campaigns and Apply filters, keep the
+above UTC period and remove unintended source/UTM/ref filters. This is a report query,
+not a production setting change. If that view still shows zero, record actual applied
+filters and the authenticated RPC result; do not relabel facts to conceal the discrepancy.
+
+Live activation remains unapproved. Prepare/review the retention mechanism and explicit
+activation procedure separately. Changing collection mode affects new visitor cohorts;
+existing test identities remain test. Do not retrospectively move QA/history into live
+or invent attribution. PR122 improves operator visibility/attempt and confirmation metrics,
+but publishing it requires its separate migration/staging/product approval gates.
+
+The result is documented on PR125 and its reporting branch; main remains the audited SHA
+until a separately authorized change. No additional main commit is needed for this report.

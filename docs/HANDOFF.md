@@ -1,3 +1,25 @@
+## 2026-10-20 / Production campaign audit SUCCESS — test/live mismatch confirmed
+
+Read-only run39435561163/job118671528140 SUCCESS, completed14:10:24UTC /16:10:24 Europe/Madrid, exact main93e674e0198b0339887999be86fb46a0afc8c159. Owner approved PR123/124/125 infrastructure merges and protected runs. Main app remains Beta0.0.14; no product publish, data/schema/settings/secret write, new account/email/enquiry or synthetic event. Existing credential reused. Full safe result in GitHub job summary; final explanation appended to CAMPAIGN_ANALYTICS_ACTIONS_AUDIT.
+
+Actual production collection_dataset=test. Forty-four campaign facts returned, alltest and none live:39page_view across9browsers;2signup_click/2browsers;1signup_started/1browser;1signup_completed/1account;1onboarding_completed/1account. Do not sum per-event browsers into people. No attributed publication/activation facts; not a global absence of bookings. Onboarding workspace count0, no workspace conversion inferred. Email confirmation not queried. Exact instagram/social/launch2026 filter yields1event/1browser in test, not necessarily a signup or visit.
+
+Same counts returned for the consented default panel UTC window21September–20October inclusive. Current panel defaults live, so empty Real metrics have a confirmed dataset-mismatch explanation. Select Pruebas + apply/default filters to inspect existing facts. Still no authenticated browser-RPC rendering proof, no full new browser→Edge→persisted→panel test. Latest view today11:53:28UTC /13:53:28 Madrid; snapshots10s apart identical, not a collector-failure signal. Test is a technical collection classification, not proof all records are fake; never reclassify history/QA automatically.
+
+Current ledger names/versions actually returned: internal beta analytics20260928193535, campaign foundation20261017080043, FK indexes20261017080045. Four private campaign tables RLS=true/no anon/auth SELECT; collector/withdraw RPC execute onlyservice_role among inspected client roles. Authenticated report/purge contract/internal-admin gate remains;1admin configured, identity not exposed/individual access not proved. Edge endpoint existence was previously checked, exact current bundle not retrieved by this DB audit. PR122 reporting diagnostics migration not deployed/open draft remains separate.
+
+Retention finding: expected named cron cuebooker-prune-campaign-analytics returns no job in either snapshot. Private purge helper exists, but production automatic retention is NOT verified; another external/renamed mechanism was not searched by this bounded query. Do not claim retention runs just because staging passed. Reconcile/prepare approved retention and live activation separately. No cron or dataset setting changed.
+
+Next: owner can inspect Pruebas in current Campaigns; if stillzero, capture exact applied filters/authenticated report error. Prepare any desired live activation and retention procedure for separate approval; new cohorts vs existing test-browser semantics must be explicit and QA/history preserved. No new credential/manual SQL needed. Result docs commit stays on audit reporting branch/PR125 evidence; no further main merge or publication authorized just to store the report.
+
+## 2026-10-20 / PR125 authorized and merged; native JSON audit awaits protected review
+
+Owner explicitly authorized PR125 parser correction merge and audit retry. Reviewed f41d4a2d2a99a7b0ce3920f38171182c634aa0c4, CI39433668653 success. Merge93e674e0198b0339887999be86fb46a0afc8c159 has identical tree. Four infrastructure files only, covered by no-publication exclusions; product Beta0.0.14 unchanged. PR122 not merged. No data/schema/settings/secret changes or application deployment.
+
+New read-only dispatch https://github.com/litus-code/cuebooker/actions/runs/39435561163 uses exact main SHA and confirmation; WAITING for production protected review. Only audit run exists for that merge SHA. No current-run query/result yet. Prior run39432510306 established TLS/auth/SQL read access but failed old JSON reader; it is not a dataset/count result. Current run contains corrected native multiline reader and unchanged strict sanitization/read-only/TLS protections.
+
+Approval API capability already confirmed403 in this integration; preserve normal gate and direct owner to this exact run → Review deployments → production → Approve and deploy. Existing chat authorization is sufficient task scope but does not unlock GitHub review. Next: follow this run after review and inspect safe actual counts or fixed failure-phase category. No new key or SQL Editor request. This local handoff records progress without an additional main push.
+
 ## 2026-10-20 / TLS/read access confirmed; native multiline JSON reader correction prepared
 
 Follow-up branch `fix/campaign-audit-multiline-json-20261020` based on authorized maina33d96159e3970ddc602b0f6e7146008361cbd84. Exact parser fix source `72a79fe1e4ef44108513c84bbe3431a9c1416d8c`. Product Beta0.0.14 unchanged; no production rows, schema, settings/secrets, app deployment or event injection. Owner reports another run error; no follow-up merge/retry performed in this preparation.
