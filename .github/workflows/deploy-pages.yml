@@ -5,6 +5,9 @@ on:
     branches:
       - main
     paths-ignore:
+      - '.github/workflows/set-campaign-collection.yml'
+      - 'scripts/set-campaign-collection.py'
+      - 'tests/campaignCollection.test.ts'
       - '.github/workflows/audit-campaign-analytics.yml'
       - '.github/workflows/deploy-staging.yml'
       - 'scripts/audit-campaign-analytics.py'
