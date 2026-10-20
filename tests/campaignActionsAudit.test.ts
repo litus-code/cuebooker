@@ -122,3 +122,40 @@ try:
 except RuntimeError as error: assert str(error)=='supabase_ca_checksum_mismatch'
 `)
 })
+
+test('native PostgreSQL multiline JSON documents survive the psql transport without relaxing output checks', () => {
+  python(`
+rows={key:[] for key in a.SECTIONS}
+rows['settings']=[{'collection_dataset_for_new_browsers':'test'}]
+rows['admins']=[{'internal_admin_count':1}]
+base={'dataset':'test','events':2,'browsers':1,'accounts':0,'workspaces':0,'latest_event':'2026-10-20T13:00:00+00:00'}
+rows['events']=[dict(base,event_name='page_view',private='PRIVATE_MARKER'),dict(base,event_name='signup_click')]
+wire='  '+ '\\n\\n'.join(json.dumps({'section':key,'rows':rows[key]},indent=1) for key in a.SECTIONS)+'\\n'
+try: [json.loads(line) for line in wire.splitlines() if line.strip()]
+except json.JSONDecodeError: pass
+else: raise AssertionError('fixture must reproduce the old line parser failure')
+def run(args,**options): return subprocess.CompletedProcess(args,0,stdout=wire,stderr='')
+result=a.read_snapshot('fixed SQL',{},run)
+assert result['collection_dataset']=='test' and len(result['events'])==2
+assert 'PRIVATE_MARKER' not in json.dumps(result)
+for bad in (wire+'PRIVATE_MARKER',wire[:-8],wire+json.dumps({'section':'PRIVATE_MARKER','rows':[]})):
+ try: a.sanitize_output(bad)
+ except RuntimeError as error:
+  assert str(error)=='unexpected_audit_json_stream_shape_no_raw_output_disclosed'
+  assert 'PRIVATE_MARKER' not in str(error)
+ else: raise AssertionError('invalid trailing/truncated JSON accepted')
+`)
+})
+
+test('audit shape errors identify only a fixed section, never a field value or raw PostgreSQL output', () => {
+  python(`
+rows={key:[] for key in a.SECTIONS}
+rows['settings']=[{'collection_dataset_for_new_browsers':'test'}]
+rows['admins']=[{'internal_admin_count':1}]
+rows['events']=[{'dataset':'test','event_name':'page_view','events':'PRIVATE_MARKER'}]
+wire='\\n'.join(json.dumps({'section':key,'rows':rows[key]}) for key in a.SECTIONS)
+try: a.sanitize_output(wire)
+except RuntimeError as error: assert str(error)=='unexpected_audit_events_shape_no_raw_output_disclosed'
+else: raise AssertionError('invalid count accepted')
+`)
+})

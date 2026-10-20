@@ -114,41 +114,61 @@ def timestamp(value):
 
 def sanitize_output(output):
     """Allowlisted aggregate fields only. Unknown names/provider text never get printed."""
+    phase = 'json_stream'
     try:
         if len(output) > 1024 * 1024:
             raise ValueError()
-        documents = [json.loads(line) for line in output.splitlines() if line.strip()]
+        # json_agg(composite) inserts literal newlines. psql's unaligned mode does
+        # not remove them: parse complete JSON documents, never individual lines.
+        decoder = json.JSONDecoder()
+        remaining = output.lstrip()
+        documents = []
+        while remaining:
+            document, end = decoder.raw_decode(remaining)
+            documents.append(document)
+            if len(documents) > len(SECTIONS):
+                raise ValueError()
+            remaining = remaining[end:].lstrip()
+        phase = 'sections'
         if [d['section'] for d in documents] != list(SECTIONS) or any(not isinstance(d['rows'], list) for d in documents):
             raise ValueError()
         data = {d['section']: d['rows'] for d in documents}
+        phase = 'settings'
         if len(data['settings']) != 1 or data['settings'][0]['collection_dataset_for_new_browsers'] not in ('test', 'live'):
             raise ValueError()
         result = {'collection_dataset': data['settings'][0]['collection_dataset_for_new_browsers'], 'events': [], 'panel_default_window': [], 'instagram': [], 'migrations': [], 'functions': [], 'private_rls': [], 'retention': []}
         for section in ('events', 'panel_default_window'):
+            phase = section
             for row in data[section]:
                 if row['dataset'] not in ('test', 'live') or row['event_name'] not in EVENTS:
                     raise ValueError()
                 result[section].append({**{k: row[k] for k in ('dataset', 'event_name')}, **{k: integer(row[k]) for k in ('events', 'browsers', 'accounts', 'workspaces')}, 'latest_event': timestamp(row['latest_event'])})
+        phase = 'instagram'
         for row in data['instagram']:
             if row['dataset'] not in ('test', 'live'):
                 raise ValueError()
             result['instagram'].append({'dataset': row['dataset'], **{k: integer(row[k]) for k in ('instagram_events', 'instagram_browsers')}})
+        phase = 'migrations'
         for row in data['migrations']:
             if row['name'] in MIGRATIONS:
                 if not re.fullmatch(r'\d{14}', row['version']):
                     raise ValueError()
                 result['migrations'].append({'name': row['name'], 'version': row['version']})
+        phase = 'functions'
         for row in data['functions']:
             if row['schema'] in ('public', 'private') and row['proname'] in FUNCTIONS:
                 if not re.fullmatch('[a-f0-9]{32}', row['source_hash']):
                     raise ValueError()
                 result['functions'].append({'schema': row['schema'], 'name': row['proname'], 'hash': row['source_hash'], **{k: boolean(row[k]) for k in ('security_definer', 'anon_execute', 'authenticated_execute', 'service_execute')}})
+        phase = 'rls'
         for row in data['rls']:
             if row['schema'] == 'private' and row['relname'] in TABLES:
                 result['private_rls'].append({'table': row['relname'], **{k: boolean(row[k]) for k in ('relrowsecurity', 'anon_select', 'authenticated_select')}})
+        phase = 'admins'
         if len(data['admins']) != 1:
             raise ValueError()
         result['internal_admin_count'] = integer(data['admins'][0]['internal_admin_count'])
+        phase = 'retention'
         for row in data['retention']:
             if row['jobname'] != 'cuebooker-prune-campaign-analytics' or not re.fullmatch(r'[\d\s*/,-]{1,80}', row['schedule']):
                 raise ValueError()
@@ -156,7 +176,7 @@ def sanitize_output(output):
             result['retention'].append({'jobid': integer(row['jobid']), 'active': boolean(row['active']), 'schedule': row['schedule'], 'last_status': status if status in (None, 'succeeded', 'failed', 'running', 'starting', 'connecting', 'sending') else 'other', 'last_finished': timestamp(row['last_finished'])})
         return result
     except Exception:
-        raise RuntimeError('unexpected_audit_result_shape_no_raw_output_disclosed') from None
+        raise RuntimeError(f'unexpected_audit_{phase}_shape_no_raw_output_disclosed') from None
 
 
 def read_snapshot(sql, env, run=subprocess.run):

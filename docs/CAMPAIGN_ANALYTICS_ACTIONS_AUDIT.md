@@ -148,3 +148,33 @@ cloud machine was connection-refused, so no live handshake is claimed from local
 No credential-bearing connection was attempted locally. Existing production execution
 must be retried on the reviewed new main SHA only after follow-up merge authorization,
 retaining the normal production review gate. Original read-only SQL hash is unchanged.
+
+## 20 October follow-up — native PostgreSQL JSON framing
+
+Owner authorized PR124 integration/retry. Maina33d96159e3970ddc602b0f6e7146008361cbd84
+exactly matched revieweda0dcd2ef. Corrected-TLS run39432510306 reached psql successfully
+and returned exit0 after the first read-only batch. It then stopped with
+`unexpected_audit_result_shape_no_raw_output_disclosed`. TLS, DB authentication and
+SQL read access are therefore no longer the blocker. No raw output was published,
+no second snapshot was reached and no product data was modified.
+
+Reproduced reader defect: PostgreSQL `json_agg` of composite rows emits literal newlines
+between objects. psql unaligned output preserves them. The runner incorrectly used one
+json.loads per physical line. Earlier isolated tests converted PostgreSQL's parsed JSON
+back to compact JSON, accidentally hiding its actual wire formatting. This is an audit
+client defect, not evidence that campaign events are absent or Supabase returns bad data.
+
+The reader now decodes consecutive complete JSON documents with normal JSON whitespace
+handling. It still requires all9 sections in order, validates every emitted field and
+rejects extra/truncated/garbage documents. Fixed categorical failure phases distinguish
+JSON framing from settings/events/metadata shape errors without logging values/bodies.
+The original SQL checksum, read-only transactions, CA/TLS, credentials and all gates are
+unchanged. No collection setting is changed and no test events are sent.
+
+Local confirmation uses the actual nine assembled PostgreSQL queries cast to text before
+the driver can deserialize them. Native text reproduces failure with the old line reader
+and passes the corrected reader/sanitizer. This is isolated PostgreSQL with artificial
+schema/data, not a captured production response. New tests exercise multiline documents
+through the mocked psql transport, trailing garbage, truncation, extra documents and safe
+phase diagnostics. Real production dataset/counts remain unreported until a reviewed
+new dispatch succeeds. A further merge/retry requires its own scoped authorization.

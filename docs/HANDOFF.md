@@ -1,3 +1,23 @@
+## 2026-10-20 / TLS/read access confirmed; native multiline JSON reader correction prepared
+
+Follow-up branch `fix/campaign-audit-multiline-json-20261020` based on authorized maina33d96159e3970ddc602b0f6e7146008361cbd84. Exact parser fix source `72a79fe1e4ef44108513c84bbe3431a9c1416d8c`. Product Beta0.0.14 unchanged; no production rows, schema, settings/secrets, app deployment or event injection. Owner reports another run error; no follow-up merge/retry performed in this preparation.
+
+Corrected-TLS audit39432510306 completed its first psql read-only batch with exit0, then failed output sanitization: unexpected_audit_result_shape_no_raw_output_disclosed. Therefore TLS, DB authentication and SQL read access worked with the existing credential; no new key/manual SQL needed. The second snapshot was not reached. No raw production output leaked and dataset/counts remain unknown to this session.
+
+Reproduced exact local defect: PostgreSQL json_agg(composite) inserts literal newlines, preserved by psql unaligned output; per-line json.loads incorrectly rejects valid result documents. The prior local fixture converted already-parsed native JSON back to compact text, masking this wire-format defect. New reader uses consecutive complete JSON decoding, bounds document count, preserves section order/type/allowlist validation, rejects trailing/truncated/extra data and emits only fixed phase diagnostics. SQL/checksum/CA/TLS/read-only/main/SHA/environment protections are unchanged.
+
+Validation635 unit tests pass (633 +2 multiline/transport/privacy regressions),0 failures/skips; focused9 pass. Actual nine assembled queries cast to TEXT on isolated PostgreSQL preserve native formatting, reproduce failure in old parser and pass fixed parser/sanitizer. Not a production response capture. Whitespace clean; actual4-file diff remains within existing no-publication infrastructure exclusions. See CAMPAIGN_ANALYTICS_ACTIONS_AUDIT follow-up for evidence/limits. PR CI will verify build/tests; no preview required.
+
+Next: review dedicated parser correction PR/green CI and obtain scoped authorization before merging into main and dispatching a new audit at its exact reviewed main SHA, preserving production review gate. Original SQL remains byte-identical, no migration. After successful safe output, report actual collection setting, test/live/raw-vs-consented-panel windows and recent natural persistence. Do not infer missing events from the runner's parsing failure or claim current dataset before results exist.
+
+## 2026-10-20 / PR124 authorized and merged; corrected TLS audit waits for protected review
+
+Owner explicitly authorized merging only CA correction PR124 and repeating read-only audit. Reviewed a0dcd2ef3a9df1a7e2d9cc8d4708d27d59ac5148, green CI39432178143. Merge a33d96159e3970ddc602b0f6e7146008361cbd84 tree exactly equals reviewed source. No product/version/data/schema/secret/server config change, Beta0.0.14 unchanged, PR122 remains separate.
+
+New dispatch https://github.com/litus-code/cuebooker/actions/runs/39432510306 uses exact reviewed main SHA and confirmation; WAITING on protected production review. Only audit run exists for the merge SHA; no application publication triggered. This run has not yet accessed DB credentials or queried Supabase. Prior run39429043605 TLS failure is not a result for this corrected source. Current dataset/events/persistence remain unverified.
+
+GitHub integration approval API was already verified403 on the previous protected run; user chat authorization does not grant endpoint capability. Preserve the gate and direct owner to this exact new run, Review deployments → production → Approve and deploy. No new credential/manual SQL/config weakening needed. Next: follow corrected run after gate opens, inspect sanitized results/categories, and report actual findings. Local handoff note pending completion; no extra main commit/push performed to store it.
+
 ## 2026-10-20 / First read-only audit fails TLS; pinned public Supabase CA correction prepared
 
 Independent follow-up `fix/campaign-audit-supabase-ca-20261020` from authorized main27cb953e0e14d4cc2af152039b8bab84b342124b. Exact fix source `c629034df6ecd0f57a20c4be2edd463b6ae3c5f9`. Product Beta0.0.14 unchanged. Owner reports error; scope remains diagnose/prepare bounded audit fix. Prior authorization covered PR123 merge and execution; no follow-up merge/retry or product deployment performed.
