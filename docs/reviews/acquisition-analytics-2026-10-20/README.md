@@ -153,3 +153,8 @@ source change is needed by this correction.
 - `git diff --check` passes. No typecheck/lint script is exposed by package.json; no
   separate typecheck/lint success is claimed. Hosted Edge source/SQL/readiness checks,
   actual staging events/panel and administrator acceptance remain pending access.
+
+
+## Release execution checkpoint
+
+PR122 merged with owner publication authorization as6e6c42734e8236c0c5af6bce2c8551a1872619d6 / Beta0.0.15; reviewed tree identical. CI647 tests/build and preview pass; main CI/Pages pass. Immutable preview8d4397b4 passes actual served Accept/Reject and one view/CTA with collector intercepted (no hosted facts). Backend workflow39441670259 staging job118692839053 SUCCESS: actual migration+ledger and restricted existing-admin RPC verified, anonymous gate denied; current collection test,29testevents,0liveevents,6steps,attempts/confirmation metadata present. Production job awaits protected owner review; no production backend change yet. Production frontend must follow backend verification at same SHA, not before. No unrelated PR promotion or production event/account seeding.
