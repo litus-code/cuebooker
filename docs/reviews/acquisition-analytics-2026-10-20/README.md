@@ -3,7 +3,11 @@
 Scope: production read-only diagnosis; isolated correction branch from current main,
 no production writes/deployment, settings/secret change, Auth change, merge, email or booking.
 
-## Current evidence
+## Publication update —20 October
+
+Owner now authorizes full PR122 analytics publication (Beta0.0.15). Production collection already verified live in protected run39439480511, following read-only audit39435561163; user confirms Test panel renders. Historical access/pending-mode statements below are checkpoint history. New reporting migration is still pending hosted application until deployment results are recorded. No collector redeploy needed. Exact fixed migration deployed by deploy-campaign-reporting.yml: staging first; protected production follows only after fresh encrypted verified backup; no historical migration chain. Real admin RPC/negative-gate verification uses existing admin transaction-local claims, logs only aggregate results; creates no identity. Rollback restores prior report function and removes only this migration ledger row. Retains live setting, old cohorts, events, consent and retention. No production event/account seeding.
+
+## Current evidence (historical checkpoint)
 
 - PR114 merged 17 October at e3bd0b040369c150fac7800f27643c30d69f0599.
   Main now 10d94956e128ca8c5105d4411ce0565bebf800d0, Beta0.0.14, production workflow

@@ -5,7 +5,7 @@
 PR114 is merged and release evidence records the campaign backend deployment. Current
 public probes find the collector and protected report RPC on both projects. The
 16 October “prepared, not deployed” statements below are historical, not current status.
-Current collection mode/counts still require authenticated read-only verification.
+Production collection was verified live by protected run39439480511 on20October; existing test browsers/facts remain test. Active retention is scheduled daily03:17UTC; first execution remains to be observed.
 See [the current audit, evidence and activation gate](reviews/acquisition-analytics-2026-10-20/README.md).
 The Beta0.0.15 delivery/report diagnostics migration is prepared, not hosted.
 

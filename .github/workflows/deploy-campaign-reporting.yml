@@ -1,0 +1,94 @@
+name: Deploy Campaign Reporting Backend
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type cuebooker-reporting-release (only reviewed report function)
+        required: true
+        type: string
+      reviewed_sha:
+        description: Exact reviewed main SHA, same release as frontend
+        required: true
+        type: string
+      action:
+        required: true
+        type: choice
+        options:
+          - deploy
+          - rollback
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cuebooker-production-campaign-audit
+  cancel-in-progress: false
+
+jobs:
+  staging:
+    if: ${{ github.ref == 'refs/heads/main' && inputs.confirm == 'cuebooker-reporting-release' && inputs.reviewed_sha == github.sha }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: staging
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Install database client without credentials
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install --yes --no-install-recommends postgresql-client
+      - name: Apply only the reviewed report and verify existing admin access and negative gate
+        env:
+          CUEBOOKER_REPORT_ENVIRONMENT: staging
+          CUEBOOKER_REPORT_DB_URL: ${{ secrets.CUEBOOKER_STAGING_DB_URL }}
+          CUEBOOKER_AUDIT_REVISION: ${{ github.sha }}
+          CUEBOOKER_AUDIT_REVIEWED_SHA: ${{ inputs.reviewed_sha }}
+          CUEBOOKER_REPORT_ACTION: ${{ inputs.action }}
+        run: python3 scripts/deploy-campaign-reporting.py
+
+  production:
+    needs: staging
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: production
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359
+        with:
+          version: 2.79.0
+      - name: Install database client without credentials
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install --yes --no-install-recommends postgresql-client
+      - name: Fresh encrypted verified backup before production change
+        env:
+          CUEBOOKER_BACKUP_DB_URL: ${{ secrets.CUEBOOKER_BACKUP_DB_URL }}
+          CUEBOOKER_BACKUP_PASSPHRASE: ${{ secrets.CUEBOOKER_BACKUP_PASSPHRASE }}
+        run: node scripts/backup-production.mjs
+      - name: Preserve encrypted backup only
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: campaign-reporting-backup-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            backup-output/database.tar.gz.gpg
+            backup-output/database.tar.gz.gpg.sha256
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
+      - name: Apply only the reviewed report and verify existing admin access and negative gate
+        env:
+          CUEBOOKER_REPORT_ENVIRONMENT: production
+          CUEBOOKER_REPORT_DB_URL: ${{ secrets.CUEBOOKER_BACKUP_DB_URL }}
+          CUEBOOKER_AUDIT_REVISION: ${{ github.sha }}
+          CUEBOOKER_AUDIT_REVIEWED_SHA: ${{ inputs.reviewed_sha }}
+          CUEBOOKER_REPORT_ACTION: ${{ inputs.action }}
+        run: python3 scripts/deploy-campaign-reporting.py
