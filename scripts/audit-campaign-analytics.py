@@ -48,11 +48,13 @@ def verified_ca_bundle():
         yield str(path)
 
 
-def connection_environment(value):
+def connection_environment(value, project=PROJECT):
     try:
+        if project not in (PROJECT, 'lycprjeuuynfzwskycwv'):
+            raise ValueError()
         url = urlsplit(value)
-        direct = url.hostname == f'db.{PROJECT}.supabase.co' and url.username == 'postgres'
-        pooler = bool(re.fullmatch(r'aws-\d+-[a-z0-9-]+\.pooler\.supabase\.com', url.hostname or '')) and url.username == f'postgres.{PROJECT}'
+        direct = url.hostname == f'db.{project}.supabase.co' and url.username == 'postgres'
+        pooler = bool(re.fullmatch(r'aws-\d+-[a-z0-9-]+\.pooler\.supabase\.com', url.hostname or '')) and url.username == f'postgres.{project}'
         options = parse_qsl(url.query, keep_blank_values=True)
         if (url.scheme not in ('postgres', 'postgresql') or not (direct or pooler)
                 or url.path != '/postgres' or url.port not in (None, 5432)

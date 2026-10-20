@@ -6,14 +6,14 @@ import { runInNewContext } from 'node:vm'
 import { webcrypto, randomUUID } from 'node:crypto'
 import { campaignDimensions, campaignPage, campaignConversion } from '../app/domain/campaignAnalytics.ts'
 const serviceSource=stripTypeScriptTypes((await readFile(new URL('../app/services/campaignAnalytics.ts',import.meta.url),'utf8')).replace(/^import .*\n/gm,'').replace(/export /g,''))
-function service(consent='unknown') {
+function service(consent='unknown', response: () => Promise<any> = async()=>({ok:true,status:200,json:async()=>({accepted:true})})) {
  const storage = new Map<string,string>([['cuebooker:analytics-consent:v2',consent]])
- const sent: any[]=[]
+ const sent: any[]=[], warnings: any[]=[]
  const location={pathname:'/dj/',search:'?utm_source=instagram&utm_campaign=beta_launch&ref=campaign-2026&email=private@example.invalid'}
- const api:any=runInNewContext(serviceSource+'\n({persistCampaignSignal,campaignSignupMetadata,campaignSnapshot,revokeCampaignConsent})',{
-  campaignDimensions,campaignPage,window:{location},localStorage:{getItem:(k:string)=>storage.get(k),setItem:(k:string,v:string)=>storage.set(k,v),removeItem:(k:string)=>storage.delete(k)},crypto:{getRandomValues:webcrypto.getRandomValues.bind(webcrypto),subtle:webcrypto.subtle,randomUUID},URLSearchParams,TextEncoder,Uint8Array,Date,setTimeout,fetch:async(url:string,options:any)=>{sent.push({url,...options,body:JSON.parse(options.body)});return {ok:true}}
+ const api:any=runInNewContext(serviceSource+'\n({persistCampaignSignal,campaignSignupMetadata,campaignSnapshot,revokeCampaignConsent,campaignDeliveryDiagnostic})',{
+  campaignDimensions,campaignPage,window:{location},localStorage:{getItem:(k:string)=>storage.get(k),setItem:(k:string,v:string)=>storage.set(k,v),removeItem:(k:string)=>storage.delete(k)},crypto:{getRandomValues:webcrypto.getRandomValues.bind(webcrypto),subtle:webcrypto.subtle,randomUUID},URLSearchParams,TextEncoder,Uint8Array,Date,setTimeout,console:{warn:(...args:any[])=>warnings.push(args)},fetch:async(url:string,options:any)=>{sent.push({url,...options,body:JSON.parse(options.body)});return response()}
  })
- return {api,storage,sent,location}
+ return {api,storage,sent,location,warnings}
 }
 test('campaign dimensions and page paths never accept arbitrary query content or profile slugs',()=>{
  assert.deepEqual(campaignDimensions({source:'agency',utm_source:'paid-social',ref:'beta',email:'private@example.invalid',utm_term:'private@example.invalid',utm_campaign:['one','two']}),{source:'agency',utm_source:'paid-social',ref:'beta'})
@@ -88,4 +88,30 @@ test('analytics router plugin emits one initial view and ignores hash-only navig
  await new Promise(resolve=>setImmediate(resolve));assert.equal(events.length,1)
  consent.value='granted';consentWatch('granted','denied')
  await new Promise(resolve=>setImmediate(resolve));assert.deepEqual(events,['/dj?utm_campaign=beta','/agency'])
+})
+
+for (const [label,response,outcome,status] of [
+ ['HTTP rejection',async()=>({ok:false,status:503,json:async()=>({error:'PRIVATE_RESPONSE_TOKEN'})}),'http_error',503],
+ ['network rejection',async()=>{throw new Error('PRIVATE_NETWORK_TOKEN')},'network_error',undefined],
+ ['explicit refusal',async()=>({ok:true,status:200,json:async()=>({accepted:false})}),'not_accepted',200],
+ ['invalid acknowledgement',async()=>({ok:true,status:200,json:async()=>({})}),'invalid_response',200],
+ ['invalid JSON',async()=>({ok:true,status:200,json:async()=>{throw new Error('PRIVATE_RESPONSE_TOKEN')}}),'invalid_response',200],
+] as const) test(`campaign ${label} is diagnosed without PII, replay or blocking signup`,async()=>{
+ const {api,sent,warnings}=service('granted',response)
+ assert.equal(api.persistCampaignSignal('https://fixture.invalid','key','page_view',{}),true)
+ const metadata=await api.campaignSignupMetadata()
+ assert.equal(metadata.cuebooker_campaign.token_hash.length,64,'signup remains independent of optional delivery')
+ assert.equal(sent.length,1,'no automatic retry/double count')
+ const diagnostic=JSON.parse(JSON.stringify(api.campaignDeliveryDiagnostic()))
+ assert.equal(diagnostic.outcome,outcome);assert.equal(diagnostic.status,status)
+ assert.equal(warnings.length,1)
+ assert.doesNotMatch(JSON.stringify(warnings),/PRIVATE_|visitor_token|token_hash|fixture.invalid|private@example/)
+})
+test('delivery acknowledgement is distinct from scheduling and diagnostic snapshots cannot mutate it',async()=>{
+ const {api,warnings}=service('granted')
+ api.persistCampaignSignal('https://fixture.invalid','key','page_view',{})
+ await api.campaignSignupMetadata()
+ assert.equal(api.campaignDeliveryDiagnostic().outcome,'accepted');assert.equal(warnings.length,0)
+ const snapshot=api.campaignDeliveryDiagnostic();snapshot.outcome='http_error'
+ assert.equal(api.campaignDeliveryDiagnostic().outcome,'accepted')
 })

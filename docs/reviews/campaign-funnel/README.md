@@ -1,5 +1,12 @@
 # PR114 — CUE ID, actual Passport and campaign funnel
 
+> Historical PR114 review evidence (16 October). PR114 was subsequently merged and
+> the backend deployed according to release evidence. Use the
+> [20 October audit](../acquisition-analytics-2026-10-20/README.md) for current checks,
+> access limitations and the new prepared diagnostics migration. The deployment-pending
+> statements in this historical review must not be treated as current environment truth.
+
+
 Review candidate `integration/beta-home21-review`, same Beta0.0.12. Exact application
 revision: a77fc4c7444bce1586a30e57827e00f507dc69e5. No main merge, production operation, hosted migration/function deployment,
 secret change, email, hosted account or real enquiry was performed.

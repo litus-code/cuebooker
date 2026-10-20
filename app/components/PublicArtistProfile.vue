@@ -97,7 +97,6 @@ function openBooking() {
     return
   }
   analytics.track('public_booking_open', {
-    artist_slug: props.profile.slug,
     preview: props.preview
   })
   requestOpen.value = true

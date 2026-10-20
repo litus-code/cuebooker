@@ -23,4 +23,8 @@ export type CampaignReport = {
   breakdown: { step: string; page: string; placement: string; audience: string; account_type: string; events: number; visitors: number; users: number }[]
   conversions: { from_step: string; to_step: string; unit: string; numerator: number; denominator: number }[]
   dataset: string
+  collection_dataset?: 'test' | 'live'
+  available_datasets?: { test: number; live: number }
+  registration_attempts?: { events: number; visitors: number }
+  registration_confirmation?: { confirmed: number; pending: number }
 }

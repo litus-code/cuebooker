@@ -37,7 +37,7 @@ async function axe(p,target){
   assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   assert.equal(await p.locator('h1').count(),1);
   if(path==='/'){
-   assert.match(await p.locator('.home-ecosystem-summary__future a').getAttribute('href'),/\/dj\?.*utm_campaign=product_update.*#cue-id/);
+   assert.match(await p.locator('.home-ecosystem-summary__link').getAttribute('href'),/\/dj\?.*utm_campaign=product_update/);
    assert.equal(await p.locator('img[src*="cue-id-"]').count(),0);
   }else{
    const arrows=p.locator('.cl-channel-list .cl-button-arrow');assert.equal(await arrows.count(),5);
@@ -86,10 +86,16 @@ async function axe(p,target){
   await p.goto(origin+'/beta-analytics/',{waitUntil:'networkidle'});
   await p.getByRole('button',{name:'Campañas',exact:true}).click();
   await p.locator('.campaign-funnel').waitFor();await p.getByText('Sin datos para estos filtros.',{exact:true}).waitFor();
+  assert.equal(await p.locator('.campaign-funnel__collection strong').innerText(),'Pruebas');
+  assert.match(await p.locator('.campaign-funnel__confirmation').innerText(),/0 confirmadas.*0 pendientes/);
+  await p.getByRole('button',{name:'Consultar Pruebas',exact:true}).click();
+  await p.waitForFunction(()=>document.querySelector('.campaign-funnel__dataset')?.innerText.includes('DATOS DE PRUEBA'));
+  assert.equal(await p.locator('.campaign-funnel__collection strong').innerText(),'Pruebas','querying a dataset never activates collection');
   await p.locator('.campaign-funnel select').last().selectOption('test');await p.getByRole('button',{name:'Aplicar filtros'}).click();
   await p.waitForFunction(()=>document.querySelector('.campaign-funnel__table')?.innerText.includes('Primera solicitud'));
   await p.locator('.campaign-funnel select').last().selectOption('live');assert.match(await p.locator('.campaign-funnel__dataset').innerText(),/DATOS DE PRUEBA/,'unsubmitted filter changes cannot relabel test results as live');await p.locator('.campaign-funnel select').last().selectOption('test');
   const report=await (await fetch(bridge+'/fixture/report')).json();
+  assert.equal(report.collection_dataset,'test');assert.equal(report.registration_attempts.events,audience==='agency'?1:2);assert.equal(report.registration_confirmation.pending,audience==='agency'?1:2);
   const registration=report.rows.find(r=>r.step==='registration');assert.equal(registration.users,audience==='agency'?1:2);
   assert.equal(report.rows.find(r=>r.step==='activation').workspaces,audience==='agency'?1:2);
   assert.equal(await p.evaluate(()=>Boolean(JSON.parse(localStorage.getItem('cuebooker.auth.session.v2')).user.user_metadata?.cuebooker_campaign)),false);
@@ -114,6 +120,18 @@ async function axe(p,target){
    console.log('PASS panel',audience,locale,theme,width);
   }
   // Request missing deployment, then empty response, then denied authorization: no fake fallback.
+  // A frontend preview may precede the additive report migration: display unavailable metadata, never invent mode/counts.
+  await p.route('**/get_campaign_funnel',async r=>{
+   const response=await fetch(bridge+'/rest/v1/rpc/get_campaign_funnel',{method:'POST',body:r.request().postData(),headers:{'Content-Type':'application/json'}});
+   const legacy=await response.json();for(const key of ['collection_dataset','available_datasets','registration_attempts','registration_confirmation'])delete legacy[key];
+   return r.fulfill({json:legacy});
+  });
+  await p.getByRole('button',{name:'Apply filters',exact:true}).click();
+  await p.getByText(/This backend version does not report collection mode/).waitFor();
+  assert.equal(await p.locator('.campaign-funnel__collection').count(),0);
+  assert.equal(await p.locator('.campaign-funnel__confirmation').count(),0);
+  assert.equal(await p.locator('.campaign-funnel__table').count(),2);
+  console.log('PASS additive report compatibility',audience);
   await p.route('**/get_campaign_funnel',r=>r.fulfill({status:404,json:{message:'fixture_missing_rpc'}}));
   await p.getByRole('button',{name:'Apply filters'}).click();await p.getByText(/The funnel cannot be queried/).waitFor();
   await p.route('**/is_internal_admin',r=>r.fulfill({json:false}));await p.reload({waitUntil:'networkidle'});assert.equal(await p.locator('.campaign-funnel').count(),0);
