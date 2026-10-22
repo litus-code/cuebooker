@@ -314,7 +314,7 @@ const baseCopy = computed(() => preferences.locale.value === 'es' ? {
   language: 'Idioma', password: 'Cambiar contraseña', currentPassword: 'Contraseña actual',
   newPassword: 'Nueva contraseña', confirmPassword: 'Repetir contraseña', savePassword: 'Guardar contraseña',
   passwordSaved: 'Contraseña actualizada.', passwordMismatch: 'Las contraseñas nuevas no coinciden.',
-  passwordLength: 'La nueva contraseña debe tener al menos 8 caracteres.', close: 'Cerrar', accountPrivate: 'CUENTA / PRIVADO',
+  passwordLength: 'La nueva contraseña debe tener al menos 8 caracteres.', close: 'Cerrar', cancel: 'Cancelar', accountPrivate: 'CUENTA / PRIVADO',
   editSlot: 'EDITAR BLOQUEO MANUAL', newSlot: 'NUEVO BLOQUEO MANUAL', privateLabel: 'Qué bloqueas', privatePlaceholder: 'Estudio, viaje, no disponible…', start: 'Inicio', end: 'Fin', invalidTime: 'La hora de fin debe ser posterior a la hora de inicio.', status: 'Estado', saving: 'Guardando…', saveChanges: 'Guardar cambios', createSlot: 'Crear horario', deleteSlot: 'Eliminar horario', finish: 'Terminar', next: 'Siguiente', closeTour: 'Cerrar recorrido'
 } : {
   overview: 'Overview', bookings: 'Bookings', calendar: 'Calendar', history: 'Activity', profile: 'Profile', passport: 'Passport', cueId: 'CUE ID',
@@ -350,7 +350,7 @@ const baseCopy = computed(() => preferences.locale.value === 'es' ? {
   language: 'Language', password: 'Change password', currentPassword: 'Current password',
   newPassword: 'New password', confirmPassword: 'Repeat password', savePassword: 'Save password',
   passwordSaved: 'Password updated.', passwordMismatch: 'The new passwords do not match.',
-  passwordLength: 'The new password must contain at least 8 characters.', close: 'Close', accountPrivate: 'ACCOUNT / PRIVATE',
+  passwordLength: 'The new password must contain at least 8 characters.', close: 'Close', cancel: 'Cancel', accountPrivate: 'ACCOUNT / PRIVATE',
   editSlot: 'EDIT MANUAL BLOCK', newSlot: 'NEW MANUAL BLOCK', privateLabel: 'What are you blocking?', privatePlaceholder: 'Studio, travel, unavailable…', start: 'Start', end: 'End', invalidTime: 'The end time must be later than the start time.', status: 'Status', saving: 'Saving…', saveChanges: 'Save changes', createSlot: 'Create slot', deleteSlot: 'Delete slot', finish: 'Finish', next: 'Next', closeTour: 'Close tour'
 })
 
@@ -2117,7 +2117,11 @@ async function selectDay(date: string) {
 
 async function focusCalendarEditor() {
   await nextTick()
-  document.querySelector<HTMLElement>('.calendar-editor-panel')?.focus({ preventScroll: true })
+  const panel = document.querySelector<HTMLElement>('.calendar-editor-panel')
+  if (panel) {
+    panel.scrollTop = 0
+    panel.focus({ preventScroll: true })
+  }
 }
 
 function openCreate(start = '18:00') {
@@ -3218,6 +3222,7 @@ useHead(() => ({ title: 'Workspace | CueBooker', htmlAttrs: { lang: preferences.
             <p v-if="!validTimeRange" class="form-hint form-hint--error">{{ copy.invalidTime }}</p>
             <label><span>{{ copy.status }}</span><select v-model="blockStatus"><option value="unavailable">{{ copy.unavailable }}</option><option value="hold">Hold</option><option value="confirmed">{{ copy.confirmedStatus }}</option></select></label>
             <button class="primary-button" type="submit" :disabled="saving || !validTimeRange">{{ saving ? copy.saving : editingBlockId ? copy.saveChanges : copy.createSlot }}</button>
+            <button class="calendar-editor-cancel" type="button" @click="closeEditor">{{ copy.cancel }}</button>
             <button v-if="editingBlockId" class="delete-button" type="button" :disabled="saving" @click="removeBlock">{{ copy.deleteSlot }}</button>
           </form>
         </aside>
@@ -3369,6 +3374,9 @@ select:focus, input:focus, textarea:focus { border-color: #e8ff2f; }
 .timeline-block--confirmed { border-color: #8ce99a; background: #15281a; }
 .timeline-block--unavailable { border-color: #ff8585; background: #291818; }
 .editor-backdrop { position: fixed; z-index: 40; inset: 0; display: flex; justify-content: flex-end; background: rgba(0, 0, 0, .66); }
+/* Teleported dialog must clear the mobile workspace header (z-index: 90). */
+.calendar-editor-backdrop { z-index: 120; }
+.calendar-editor-cancel { min-height: 46px; border: 1px solid var(--cue-border); background: transparent; color: var(--cue-text); cursor: pointer; }
 .editor-panel { width: min(460px, 100%); box-sizing: border-box; padding: 26px; overflow-y: auto; border-left: 1px solid var(--cue-border); background: var(--cue-surface); color: var(--cue-text); box-shadow: -30px 0 80px rgba(0, 0, 0, .45); }
 .editor-heading { padding-bottom: 28px; }
 .editor-panel form, .roster-form { display: grid; gap: 18px; }
