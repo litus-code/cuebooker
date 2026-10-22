@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import type { CoreBooking } from '../domain/bookingCore'
+import type { Contact, CoreBooking } from '../domain/bookingCore'
 
 const props = defineProps<{
   workspaceId: string
   booking: CoreBooking
+  contact?: Contact | null
   locale: 'es' | 'en'
 }>()
 
@@ -26,17 +27,18 @@ const form = reactive({
   eventTimezone: '',
   offer: '',
   currency: 'EUR',
-  feeBasis: ''
+  feeBasis: '',
+  contactName: '', contactEmail: '', contactPhone: ''
 })
 
 const copy = computed(() => props.locale === 'es' ? {
   edit: 'Editar datos',
-  title: 'Completar booking',
+  title: 'Editar datos', booking: 'Reserva', contact: 'Contacto', name: 'Nombre', email: 'Correo', phone: 'Teléfono', contactRequired: 'Añade el nombre de la persona de contacto.', invalidEmail: 'Revisa el formato del correo.', sharedContact: 'Los datos de esta persona se actualizan también en las otras reservas donde figure como contacto.',
   event: 'Evento', venue: 'Sala', city: 'Ciudad', country: 'País', date: 'Fecha', start: 'Inicio', end: 'Fin', timezone: 'Zona horaria', offer: 'Oferta', currency: 'Moneda', feeBasis: 'Base del fee',
   cancel: 'Cancelar', save: 'Guardar cambios', saving: 'Guardando…', invalidOffer: 'La oferta no es válida.', confirmedDateRequired: 'Un booking confirmado debe mantener una fecha.', error: 'No se ha podido actualizar el booking.'
 } : {
   edit: 'Edit details',
-  title: 'Complete booking',
+  title: 'Edit details', booking: 'Booking', contact: 'Contact', name: 'Name', email: 'Email', phone: 'Phone', contactRequired: 'Add the contact person’s name.', invalidEmail: 'Check the email format.', sharedContact: 'This person’s details also update in other bookings that use the same contact.',
   event: 'Event', venue: 'Venue', city: 'City', country: 'Country', date: 'Date', start: 'Start', end: 'End', timezone: 'Timezone', offer: 'Offer', currency: 'Currency', feeBasis: 'Fee basis',
   cancel: 'Cancel', save: 'Save changes', saving: 'Saving…', invalidOffer: 'The offer is not valid.', confirmedDateRequired: 'A confirmed booking must keep an event date.', error: 'The booking could not be updated.'
 })
@@ -53,6 +55,9 @@ function syncForm() {
   form.offer = props.booking.offer_amount_minor == null ? '' : String(props.booking.offer_amount_minor / 100)
   form.currency = props.booking.currency || 'EUR'
   form.feeBasis = props.booking.fee_basis || ''
+  form.contactName = props.contact?.name || ''
+  form.contactEmail = props.contact?.email || ''
+  form.contactPhone = props.contact?.phone || ''
   errorMessage.value = ''
 }
 
@@ -83,6 +88,15 @@ async function close() {
 }
 
 async function save() {
+  if (saving.value) return
+  if ((props.booking.primary_contact_id || form.contactEmail.trim() || form.contactPhone.trim()) && !form.contactName.trim()) {
+    errorMessage.value = copy.value.contactRequired
+    return
+  }
+  if (form.contactEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contactEmail.trim())) {
+    errorMessage.value = copy.value.invalidEmail
+    return
+  }
   if (props.booking.status === 'confirmed' && !form.eventDate) {
     errorMessage.value = copy.value.confirmedDateRequired
     return
@@ -100,6 +114,7 @@ async function save() {
     const updated = await bookingCore.updateBookingDetails({
       workspaceId: props.workspaceId,
       bookingId: props.booking.id,
+      contact: { id: props.booking.primary_contact_id, name: form.contactName, email: form.contactEmail, phone: form.contactPhone },
       eventName: form.eventName,
       venueName: form.venueName,
       city: form.city,
@@ -118,7 +133,11 @@ async function save() {
     triggerButton.value?.focus({ preventScroll: true })
   } catch (error: any) {
     const code = String(error?.data?.message || error?.data?.error || error?.message || '')
-    errorMessage.value = code.includes('booking_time_requires_date')
+    errorMessage.value = code.includes('booking_contact_changed')
+      ? (props.locale === 'es' ? 'El contacto ha cambiado. Cierra y vuelve a abrir la reserva.' : 'The contact has changed. Close and reopen the booking.')
+      : code.includes('booking_archived')
+        ? (props.locale === 'es' ? 'Esta reserva está archivada.' : 'This booking is archived.')
+      : code.includes('booking_time_requires_date')
       ? (props.locale === 'es' ? 'Añade una fecha antes de indicar horario.' : 'Add a date before setting a schedule.')
       : code.includes('invalid_country_code')
         ? (props.locale === 'es' ? 'El país debe ser un código de dos letras, por ejemplo ES.' : 'Country must use a two-letter code, for example ES.')
@@ -139,14 +158,14 @@ async function save() {
 
 <template>
   <div class="booking-editor-entry">
-    <button ref="triggerButton" class="booking-editor-entry__button" type="button" @click="show">
+    <button ref="triggerButton" class="booking-editor-entry__button" type="button" :disabled="Boolean(booking.primary_contact_id && !contact)" @click="show">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4ZM13.5 6.5l4 4"/></svg>
       <span>{{ copy.edit }}</span>
     </button>
-    <div v-if="open" class="booking-editor-backdrop" @click.self="close">
+    <Teleport to="body"><div v-if="open" class="booking-editor-backdrop" @click.self="close" @keydown.esc.stop.prevent="close">
       <form ref="editorDialog" class="booking-editor" role="dialog" aria-modal="true" tabindex="-1" @submit.prevent="save">
         <header><div><span>CUE / BOOKING</span><h3>{{ copy.title }}</h3></div><button type="button" aria-label="Close" @click="close">×</button></header>
-        <div class="booking-editor__grid">
+        <fieldset><legend>{{ copy.booking }}</legend><div class="booking-editor__grid">
           <label><span>{{ copy.event }}</span><input v-model="form.eventName"></label>
           <label><span>{{ copy.venue }}</span><input v-model="form.venueName"></label>
           <label><span>{{ copy.city }}</span><input v-model="form.city"></label>
@@ -157,11 +176,17 @@ async function save() {
           <label><span>{{ copy.timezone }}</span><input v-model="form.eventTimezone" placeholder="Europe/Madrid"></label>
           <label class="booking-editor__offer"><span>{{ copy.offer }}</span><div><input v-model="form.offer" inputmode="decimal" placeholder="1200"><input v-model="form.currency" maxlength="3" placeholder="EUR"></div></label>
           <label><span>{{ copy.feeBasis }}</span><input v-model="form.feeBasis" placeholder="event"></label>
-        </div>
+        </div></fieldset>
+        <fieldset><legend>{{ copy.contact }}</legend><div class="booking-editor__grid">
+          <label><span>{{ copy.name }}</span><input v-model="form.contactName" autocomplete="name" maxlength="160"></label>
+          <label><span>{{ copy.email }}</span><input v-model="form.contactEmail" type="email" autocomplete="email" maxlength="254"></label>
+          <label><span>{{ copy.phone }}</span><input v-model="form.contactPhone" type="tel" autocomplete="tel" maxlength="80"></label>
+          <p v-if="contact" class="booking-editor__contact-hint">{{ copy.sharedContact }}</p>
+        </div></fieldset>
         <p v-if="errorMessage" class="booking-editor__error">{{ errorMessage }}</p>
         <footer><button type="button" :disabled="saving" @click="close">{{ copy.cancel }}</button><button class="primary" type="submit" :disabled="saving">{{ saving ? copy.saving : copy.save }}</button></footer>
       </form>
-    </div>
+    </div></Teleport>
   </div>
 </template>
 
@@ -176,6 +201,9 @@ async function save() {
 .booking-editor h3 { margin:5px 0 0; font-size:22px; }
 .booking-editor header button { border:0; background:transparent; color:var(--cue-text); cursor:pointer; font-size:24px; }
 .booking-editor__grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:20px; }
+.booking-editor fieldset { min-width:0; margin:0; padding:0; border:0; }
+.booking-editor legend { padding:18px 20px 0; font-weight:700; }
+.booking-editor__contact-hint { grid-column:1 / -1; margin:0; color:var(--cue-muted); font-size:12px; }
 .booking-editor label > span { display:block; margin-bottom:5px; color:var(--cue-muted); font:700 8px monospace; text-transform:uppercase; }
 .booking-editor input { width:100%; min-height:38px; box-sizing:border-box; border:1px solid var(--cue-border); background:var(--cue-raised); color:var(--cue-text); padding:0 10px; }
 .booking-editor__offer > div { display:grid; grid-template-columns:1fr 80px; gap:7px; }

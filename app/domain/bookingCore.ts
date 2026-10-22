@@ -223,6 +223,7 @@ export interface CreateManualBookingInput {
 export interface UpdateBookingDetailsInput {
   workspaceId: string
   bookingId: string
+  contact?: { id: string | null; name: string; email: string; phone: string }
   eventName?: string | null
   venueName?: string | null
   city?: string | null
