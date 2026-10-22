@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { BookingSource, CoreBooking, CounterpartyKind, CreateManualBookingInput } from '../domain/bookingCore'
+import { matchCaptureContact } from '../services/cueContactDetails'
 import type { SmartCaptureResult } from '../domain/smartCapture'
 
 import { interpretCueText } from '../services/cueInterpreter'
@@ -32,7 +33,7 @@ const captureArtists = computed(() => props.artists || [])
 const analyzing = ref(false)
 const loadingOptions = ref(false)
 const errorMessage = ref('')
-const contacts = ref<Array<{ id: string; name: string; email: string | null }>>([])
+const contacts = ref<Array<{ id: string; name: string; email: string | null; phone: string | null }>>([])
 const counterparties = ref<Array<{ id: string; name: string; kind: CounterpartyKind }>>([])
 
 const source = ref<BookingSource>('phone')
@@ -64,6 +65,8 @@ const smartResult = ref<SmartCaptureResult | null>(null)
 const moreOpen = ref(false)
 const capturePanel = ref<HTMLElement | null>(null)
 let previousFocus: HTMLElement | null = null
+
+const contactMatchNotice = computed(() => contactMode.value === 'new' && contactName.value.trim() && contacts.value.some(item => normalizeEntityName(item.name) === normalizeEntityName(contactName.value)))
 
 const text = computed(() => props.locale === 'es' ? {
   eyebrow: 'CUE / NUEVA OPORTUNIDAD',
@@ -240,16 +243,16 @@ async function interpretNote() {
   }
 }
 
-function applyEntityMatches(contact: string | null, party: string | null) {
-  if (contact) {
-    const match = contacts.value.find(item => normalizeEntityName(item.name) === normalizeEntityName(contact))
+function applyEntityMatches(contact: string | null, party: string | null, email: string | null, phone: string | null) {
+  if (contact || email || phone) {
+    const match = matchCaptureContact(contacts.value, contact, email, phone)
     if (match) {
       contactMode.value = 'existing'
       existingContactId.value = match.id
     } else {
       contactMode.value = 'new'
       existingContactId.value = ''
-      contactName.value = contact
+      contactName.value = contact || ''
     }
   }
 
@@ -282,7 +285,7 @@ function applySmartResult() {
   }, props.workspaceId)
 
   if (parsed.source.value) source.value = parsed.source.value
-  applyEntityMatches(parsed.contact.name.value, parsed.counterparty.name.value)
+  applyEntityMatches(parsed.contact.name.value, parsed.counterparty.name.value, parsed.contact.email.value, parsed.contact.phone.value)
 
   if (parsed.contact.email.value) contactEmail.value = parsed.contact.email.value
   if (parsed.contact.phone.value) contactPhone.value = parsed.contact.phone.value
@@ -410,6 +413,11 @@ async function submit() {
   errorMessage.value = ''
   if (!captureArtistId.value || (props.artists && !captureArtists.value.some(item => item.id === captureArtistId.value))) {
     errorMessage.value = props.locale === 'es' ? 'Selecciona el artista de este booking.' : 'Select the artist for this booking.'
+    return
+  }
+  if (contactMode.value === 'new' && !contactName.value.trim() && (contactEmail.value.trim() || contactPhone.value.trim())) {
+    errorMessage.value = props.locale === 'es' ? 'Añade el nombre del contacto para guardar su correo o teléfono.' : 'Add the contact name to save their email or phone.'
+    moreOpen.value = true
     return
   }
   const hasContact = contactMode.value === 'existing' ? Boolean(existingContactId.value) : Boolean(contactName.value.trim())
@@ -568,6 +576,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
               <label><span>{{ text.contactEmail }}</span><input v-model="contactEmail" type="email" autocomplete="email"></label>
               <label v-if="moreOpen"><span>{{ text.phoneLabel }}</span><input v-model="contactPhone" type="tel" autocomplete="tel"></label>
             </div>
+            <small v-if="contactMatchNotice">{{ locale === 'es' ? 'Ya hay un contacto con este nombre. Revisa los datos: se guardará como nuevo. Puedes elegir «Ya lo conozco» si es la misma persona.' : 'A contact with this name already exists. Review these details: this will be saved as new. Choose “Already known” if this is the same person.' }}</small>
           </section>
 
           <section class="cue-capture__section">

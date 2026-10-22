@@ -218,6 +218,8 @@ The user should not need to recreate a huge administrative form merely because t
 
 Sparse/incomplete Booking remains valid.
 
+Smart Capture maps an explicitly named person to Contact, independently from the venue/promoter/event. Dictated or typed email/phone belong in the contact fields and must survive review and creation. If an address/phone is supplied without a person name, ask for that missing name rather than silently dropping the supplied details. Reusing a known contact requires a unique match consistent with the supplied metadata; same-name differences stay visible for review and do not silently modify an existing person.
+
 ---
 
 ## 8. Future automated capture adapters

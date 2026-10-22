@@ -6,6 +6,7 @@ import type {
   SmartCaptureTextInput
 } from '../domain/smartCapture'
 import type { CueInterpretation } from './cueInterpreter'
+import { completeCaptureContact } from './cueContactDetails.ts'
 
 export type CaptureEngineMethod =
   | 'smart_text'
@@ -64,7 +65,7 @@ export function localInterpretationToSmartCapture(
     ? 'He recuperado algunos datos con confianza limitada. Revísalos antes de aplicarlos.'
     : 'I recovered some details with limited confidence. Review them before applying.'
 
-  return {
+  return completeCaptureContact({
     transcript: raw,
     summary: locale === 'es'
       ? 'Detección básica de respaldo'
@@ -101,14 +102,14 @@ export function localInterpretationToSmartCapture(
     conditions: [],
     missingFields: [],
     warnings: [warning]
-  }
+  }, raw)
 }
 
 export function createCaptureEngine(dependencies: CaptureEngineDependencies) {
   async function analyzeText(input: SmartCaptureTextInput): Promise<CaptureEngineAnalysis> {
     try {
       return {
-        result: await dependencies.analyzeText(input),
+        result: completeCaptureContact(await dependencies.analyzeText(input), input.text),
         method: 'smart_text'
       }
     } catch (error) {
@@ -119,7 +120,7 @@ export function createCaptureEngine(dependencies: CaptureEngineDependencies) {
   async function analyzeAudio(input: CaptureEngineAudioInput): Promise<CaptureEngineAnalysis> {
     try {
       return {
-        result: await dependencies.analyzeAudio(input),
+        result: await dependencies.analyzeAudio(input).then(result => completeCaptureContact(result, result.transcript)),
         method: 'smart_audio'
       }
     } catch (audioError) {
@@ -131,12 +132,12 @@ export function createCaptureEngine(dependencies: CaptureEngineDependencies) {
 
       try {
         return {
-          result: await dependencies.analyzeText({
+          result: completeCaptureContact(await dependencies.analyzeText({
             workspaceId: input.workspaceId,
             artistId: input.artistId,
             locale: input.locale,
             text: fallbackTranscript
-          }),
+          }), fallbackTranscript),
           method: 'browser_transcript'
         }
       } catch (textError) {
