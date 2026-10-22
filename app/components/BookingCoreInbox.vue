@@ -444,14 +444,14 @@ async function handleOperationsChanged() {
 }
 
 async function handleBookingSaved() {
+  const workspace = props.workspaceId
+  try {
+    const rows = await bookingCore.listContacts(workspace)
+    if (props.workspaceId === workspace) contacts.value = rows
+  } finally {
+    emit('operationsChanged')
+  }
   await loadActivity()
-  emit('operationsChanged')
-}
-
-function handleContactSaved(updated: Contact) {
-  const index = contacts.value.findIndex(item => item.id === updated.id)
-  if (index >= 0) contacts.value.splice(index, 1, updated)
-  else contacts.value.push(updated)
 }
 
 async function handleActivityCreated() {
@@ -762,7 +762,7 @@ async function selectBooking(bookingId: string) {
 
         <header>
           <div>
-            <span>{{ sourceLabels[selectedBooking.source] || selectedBooking.source }}</span>
+            <span>{{ copy.source }}: {{ sourceLabels[selectedBooking.origin_channel || selectedBooking.source] || selectedBooking.origin_channel || selectedBooking.source }}</span>
             <h3>{{ bookingTitle(selectedBooking) }}</h3>
             <p>{{ selectedBooking.event_name || selectedBooking.city || '—' }}</p>
           </div>
@@ -803,6 +803,7 @@ async function selectBooking(bookingId: string) {
                 v-if="canOperate && !demoData && !selectedBooking.archived_at"
                 :workspace-id="workspaceId"
                 :booking="selectedBooking"
+                :contact="selectedContact"
                 :locale="locale"
                 @saved="handleBookingSaved"
               />
@@ -814,13 +815,6 @@ async function selectBooking(bookingId: string) {
             <div class="core-inbox__contact-fact">
               <div class="core-inbox__contact-head">
                 <dt>{{ copy.contact }}</dt>
-                <BookingContactEditor
-                  v-if="!demoData && selectedContact && !selectedBooking.archived_at"
-                  :workspace-id="workspaceId"
-                  :contact="selectedContact"
-                  :locale="locale"
-                  @saved="handleContactSaved"
-                />
               </div>
               <dd :class="{ missing: !loadingMeta && !selectedContact?.name }">{{ loadingMeta ? '…' : selectedContact?.name || copy.noContact }}</dd>
               <small v-if="selectedContact?.email">{{ selectedContact.email }}</small>

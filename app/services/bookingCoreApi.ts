@@ -547,7 +547,8 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
       throw new Error('invalid_offer_amount_minor')
     }
 
-    const response = await $fetch<CoreBooking | CoreBooking[]>(`${baseUrl}/rest/v1/rpc/update_booking_details`, {
+    const command = input.contact ? 'update_booking_details_with_contact' : 'update_booking_details'
+    const response = await $fetch<CoreBooking | CoreBooking[]>(`${baseUrl}/rest/v1/rpc/${command}`, {
       method: 'POST',
       headers: authHeaders(),
       body: {
@@ -563,7 +564,13 @@ export function createBookingCoreApi(options: BookingCoreApiOptions) {
         next_event_timezone: normalizedText(input.eventTimezone),
         next_offer_amount_minor: input.offerAmountMinor ?? null,
         next_currency: currency(input.currency),
-        next_fee_basis: normalizedText(input.feeBasis)
+        next_fee_basis: normalizedText(input.feeBasis),
+        ...(input.contact ? {
+          expected_contact_id: input.contact.id,
+          next_contact_name: normalizedText(input.contact.name),
+          next_contact_email: normalizedText(input.contact.email),
+          next_contact_phone: normalizedText(input.contact.phone)
+        } : {})
       }
     })
     const row = rpcRow(response)
